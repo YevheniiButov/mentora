@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ t('learning_dashboard', lang) }} - Become a Tandarts
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div id="login-page-content" class="container main-content-padding">
+<section class="learning-dashboard">
+    <!-- Плавающие фоновые элементы -->
+    <div class="dashboard-floating-shape dashboard-shape-1"></div>
+    <div class="dashboard-floating-shape dashboard-shape-2"></div>
+    <div class="dashboard-floating-shape dashboard-shape-3"></div>
+    
+    <div class="container">
+        <!-- Шапка дашборда с названием и кнопкой -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>Become a Tandarts</h1>
+            </div>
+            <div class="dashboard-cta">
+                <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-primary">
+                    {{ t('continue_learning', lang) }}
+                </a>
+            </div>
+        </div>
+
+        <!-- Секция прогресса -->
+        <div class="progress-section">
+            <!-- Круговой индикатор прогресса -->
+            <div class="progress-card">
+                <div class="progress-circle-wrapper">
+                    <div class="progress-circle-outer">
+                        <div class="progress-circle-inner">
+                            <div class="progress-percentage">
+                                <span id="progress-value">{{ stats.overall_progress if stats and stats.overall_progress else 32 }}%</span>
+                            </div>
+                        </div>
+                        <svg class="progress-circle-svg" width="160" height="160" viewBox="0 0 160 160">
+                            <circle class="progress-circle-bg" cx="80" cy="80" r="70" stroke-width="12" />
+                            <circle class="progress-circle-progress" cx="80" cy="80" r="70" stroke-width="12" 
+                                   stroke-dasharray="439.6" 
+                                   stroke-dashoffset="{{ 439.6 - (439.6 * (stats.overall_progress if stats and stats.overall_progress else 32)) / 100 }}" />
+                        </svg>
+                    </div>
+                    <div class="progress-label">
+                        {{ t('your_progress', lang) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Дни активности -->
+            <div class="progress-card">
+                <h3 class="card-title">{{ t('activity_days', lang) }}</h3>
+                <div class="card-value">{{ stats.active_days if stats and stats.active_days else 14 }}</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" style="width: '{{ (stats.active_days if stats and stats.active_days else 14) / 30 * 100 }}%'"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Дата экзамена -->
+            <div class="progress-card">
+                <h3 class="card-title">{{ t('exam_date', lang) }}</h3>
+                <div class="card-value">{{ stats.next_exam_date if stats and stats.next_exam_date else t('exam_date_placeholder', lang) }}</div>
+                <button id="changeExamDateBtn" class="btn btn-outline-secondary btn-sm mt-2">
+                    {{ t('change_date', lang) }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Настройка плана обучения -->
+        <div class="setup-plan">
+            <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-secondary btn-block">
+                <i class="bi bi-gear"></i> 
+                {{ t('customize_learning_plan', lang) }}
+            </a>
+        </div>
+
+        <!-- Секция подписки (если пользователь не на премиуме) -->
+        {% if not user.has_subscription %}
+        <div class="subscription-section">
+            <div class="card bg-light mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">{{ t('unlock_all_features', lang) }}</h4>
+                            <p class="mb-0 text-muted">{{ t('upgrade_premium_description', lang) }}</p>
+                        </div>
+                        <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="btn btn-primary">
+                            <i class="bi bi-star-fill me-1"></i>
+                            {{ t('subscribe_now', lang) }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Рекомендуемый модуль -->
+        <div class="recommended-section">
+            <h2 class="section-title">{{ t('recommended_module', lang) }}</h2>
+            
+            {% if recommended_module %}
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <h3 class="module-title">
+                        {{ recommended_module.title }}
+                    </h3>
+                </div>
+                
+                <div class="module-description">
+                    {{ recommended_module.description }}
+                </div>
+                
+                <div class="module-progress">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: '{{ recommended_module.progress }}%'"></div>
+                    </div>
+                    <div class="module-progress-text">
+                        <span class="module-progress-value">{{ recommended_module.progress }}%</span>
+                        <span class="module-progress-total">{{ recommended_module.completed_lessons }}/{{ recommended_module.total_lessons }} {{ t('sections', lang) }}</span>
+                    </div>
+                </div>
+                
+                <div class="module-cta">
+                    <a href="{{ url_for('learning_map_bp.start_module_redirect', module_id=recommended_module.id, lang=lang) }}" class="btn btn-primary">
+                        {{ t('continue_this_module', lang) }}
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <h3 class="module-title">
+                        {{ t('dental_anatomy', lang) }}
+                    </h3>
+                </div>
+                
+                <div class="module-description">
+                    {{ t('dental_anatomy_description', lang) }}
+                </div>
+                
+                <div class="module-progress">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: 86%"></div>
+                    </div>
+                    <div class="module-progress-text">
+                        <span class="module-progress-value">86%</span>
+                        <span class="module-progress-total">3/5 {{ t('sections', lang) }}</span>
+                    </div>
+                </div>
+                
+                <div class="module-cta">
+                    <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-primary">
+                        {{ t('go_to_learning', lang) }}
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Все модули -->
+        <div class="all-modules-section">
+            <div class="section-header">
+                <h2 class="section-title">{{ t('your_modules', lang) }}</h2>
+                <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-outline-primary btn-sm">
+                    {{ t('all_modules', lang) }}
+                </a>
+            </div>
+            
+            <div class="modules-grid">
+                {% if recent_modules %}
+                    {% for module in recent_modules %}
+                    <div class="module-small-card">
+                        <div class="module-small-icon">
+                            <i class="bi {{ module.icon if module.icon else 'bi-book' }}"></i>
+                        </div>
+                        <div class="module-small-content">
+                            <h4 class="module-small-title">
+                                {{ module.title }}
+                            </h4>
+                            <div class="module-small-progress">
+                                <div class="progress-small-bar-bg">
+                                    <div class="progress-small-bar-fill" style="width: '{{ module.progress }}%'"></div>
+                                </div>
+                                <span class="module-small-percentage">{{ module.progress }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Пример модулей, если нет данных из базы -->
+                    <div class="module-small-card">
+                        <div class="module-small-icon">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="module-small-content">
+                            <h4 class="module-small-title">
+                                {{ t('terminology', lang) }}
+                            </h4>
+                            <div class="module-small-progress">
+                                <div class="progress-small-bar-bg">
+                                    <div class="progress-small-bar-fill" style="width: 45%"></div>
+                                </div>
+                                <span class="module-small-percentage">45%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="module-small-card">
+                        <div class="module-small-icon">
+                            <i class="bi bi-lungs"></i>
+                        </div>
+                        <div class="module-small-content">
+                            <h4 class="module-small-title">
+                                {{ t('physiology', lang) }}
+                            </h4>
+                            <div class="module-small-progress">
+                                <div class="progress-small-bar-bg">
+                                    <div class="progress-small-bar-fill" style="width: 30%"></div>
+                                </div>
+                                <span class="module-small-percentage">30%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="module-small-card">
+                        <div class="module-small-icon">
+                            <i class="bi bi-prescription2"></i>
+                        </div>
+                        <div class="module-small-content">
+                            <h4 class="module-small-title">
+                                {{ t('radiology', lang) }}
+                            </h4>
+                            <div class="module-small-progress">
+                                <div class="progress-small-bar-bg">
+                                    <div class="progress-small-bar-fill" style="width: 12%"></div>
+                                </div>
+                                <span class="module-small-percentage">12%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="module-small-card">
+                        <div class="module-small-icon">
+                            <i class="bi bi-file-medical"></i>
+                        </div>
+                        <div class="module-small-content">
+                            <h4 class="module-small-title">
+                                {{ t('diagnostics', lang) }}
+                            </h4>
+                            <div class="module-small-progress">
+                                <div class="progress-small-bar-bg">
+                                    <div class="progress-small-bar-fill" style="width: 5%"></div>
+                                </div>
+                                <span class="module-small-percentage">5%</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Модальное окно для изменения даты экзамена -->
+        <div class="modal fade" id="examDateModal" tabindex="-1" aria-labelledby="examDateModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="examDateModalLabel">
+                            {{ t('set_exam_date', lang) }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="examDateForm">
+                            <div class="mb-3">
+                                <label for="examDate" class="form-label">
+                                    {{ t('select_date', lang) }}
+                                </label>
+                                <input type="date" class="form-control" id="examDate" name="examDate">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            {{ t('cancel', lang) }}
+                        </button>
+                        <button type="button" class="btn btn-primary" id="saveExamDate">
+                            {{ t('save', lang) }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Настройка прогресс-кругов
+    const progressCircle = document.querySelector('.progress-circle-progress');
+    if (progressCircle) {
+        const progressValue = parseFloat(document.getElementById('progress-value').textContent);
+        const radius = progressCircle.getAttribute('r');
+        const circumference = 2 * Math.PI * radius;
+        
+        // Обновляем stroke-dasharray и stroke-dashoffset программно
+        progressCircle.style.strokeDasharray = circumference;
+        progressCircle.style.strokeDashoffset = circumference - (circumference * progressValue / 100);
+    }
+    
+    // Настройка модального окна с датой экзамена
+    const changeExamDateBtn = document.getElementById('changeExamDateBtn');
+    const saveExamDateBtn = document.getElementById('saveExamDate');
+    
+    if (changeExamDateBtn && saveExamDateBtn) {
+        // Открытие модального окна
+        changeExamDateBtn.addEventListener('click', function() {
+            const examDateModal = new bootstrap.Modal(document.getElementById('examDateModal'));
+            examDateModal.show();
+        });
+        
+        // Сохранение даты
+        saveExamDateBtn.addEventListener('click', function() {
+            const examDateInput = document.getElementById('examDate');
+            if (examDateInput && examDateInput.value) {
+                // Форматируем дату
+                const examDate = new Date(examDateInput.value);
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = examDate.toLocaleDateString('{{ lang }}', options);
+                
+                // Обновляем значение на странице
+                const cardValue = document.querySelector('.progress-card:nth-child(3) .card-value');
+                if (cardValue) {
+                    cardValue.textContent = formattedDate;
+                }
+                
+                // Отправляем запрос на сервер для сохранения даты
+                fetch('{{ url_for("dashboard_bp.save_exam_date", lang=lang) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        examDate: examDateInput.value 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Закрываем модальное окно
+                        bootstrap.Modal.getInstance(document.getElementById('examDateModal')).hide();
+                        
+                        // Показываем сообщение об успехе
+                        showNotification('{{ t("exam_date_saved", lang) }}', 'success');
+                    } else {
+                        showNotification('{{ t("error_saving_date", lang) }}', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('{{ t("server_error", lang) }}', 'danger');
+                });
+            }
+        });
+    }
+    
+    // Функция для отображения уведомлений
+    function showNotification(message, type) {
+        const notificationContainer = document.createElement('div');
+        notificationContainer.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+        notificationContainer.style.zIndex = '9999';
+        notificationContainer.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.body.appendChild(notificationContainer);
+        
+        // Автоматически скрываем уведомление через 5 секунд
+        setTimeout(() => {
+            const bootstrapAlert = bootstrap.Alert.getOrCreateInstance(notificationContainer);
+            bootstrapAlert.close();
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

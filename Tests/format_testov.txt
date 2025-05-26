@@ -1,0 +1,143 @@
+Инструкции по организации многоязычных тестов (8+ языков)
+Поскольку вы ещё не начали работу с переводами, я предлагаю самую эффективную структуру для большого количества языков:
+1. Базовая структура файлов и каталогов
+/tests
+  /cariology                   # Тематический раздел 
+    /basic_concepts            # Конкретная тема
+      _metadata.json           # Метаданные темы (общие для всех языков)
+      en.json                  # Английская версия
+      ru.json                  # Русская версия
+      nl.json                  # Голландская версия
+      es.json                  # Испанская версия
+      и т.д.
+    /advanced_topics
+      _metadata.json
+      en.json
+      ru.json
+      ...
+  /endodontics
+    /root_canal_basics
+      _metadata.json
+      en.json
+      ru.json
+      ...
+2. Структура файла _metadata.json
+json{
+  "topic_id": "cariology_basic_concepts",
+  "version": "1.2.0",
+  "total_questions": 25,
+  "languages": {
+    "en": {"status": "complete", "version": "1.2.0", "updated": "2025-04-10"},
+    "ru": {"status": "partial", "version": "1.1.0", "updated": "2025-03-15", "completion": 0.8},
+    "nl": {"status": "complete", "version": "1.2.0", "updated": "2025-04-05"},
+    "es": {"status": "partial", "version": "1.0.0", "updated": "2025-02-20", "completion": 0.6}
+  },
+  "default_language": "en"
+}
+3. Структура языкового файла (например, en.json)
+json{
+  "language": "en",
+  "version": "1.2.0",
+  "questions": [
+    {
+      "card_id": "caries_t1_1",
+      "question": "At what pH does enamel typically begin to demineralize?",
+      "options": ["A) 4.5", "B) 5.5", "C) 6.0", "D) 6.5"],
+      "answer": "B",
+      "explanation": "Demineralization usually starts below pH 5.5, leading to enamel breakdown."
+    },
+    {
+      "card_id": "caries_t1_2",
+      "question": "Which bacterial species is most associated with early caries development?",
+      "options": ["A) Streptococcus mutans", "B) Porphyromonas gingivalis", "C) Actinomyces viscosus", "D) Lactobacillus acidophilus"],
+      "answer": "A",
+      "explanation": "Streptococcus mutans is considered the primary initiator of dental caries."
+    }
+    // остальные вопросы...
+  ]
+}
+4. Создайте мастер-индекс для всех тем
+Файл /tests/index.json:
+json{
+  "version": "2.0.0",
+  "updated": "2025-05-01",
+  "topics": [
+    {
+      "id": "cariology_basic_concepts",
+      "path": "cariology/basic_concepts",
+      "name": {
+        "en": "Basic Concepts of Cariology",
+        "ru": "Основные понятия кариологии"
+      },
+      "questions_count": 25
+    },
+    {
+      "id": "cariology_advanced_topics",
+      "path": "cariology/advanced_topics",
+      "name": {
+        "en": "Advanced Cariology",
+        "ru": "Продвинутая кариология"
+      },
+      "questions_count": 30
+    }
+    // другие темы
+  ],
+  "languages": [
+    {"code": "en", "name": "English", "default": true},
+    {"code": "ru", "name": "Русский"},
+    {"code": "nl", "name": "Nederlands"},
+    {"code": "uk", "name": "Українська"},
+    {"code": "es", "name": "Español"},
+    {"code": "pt", "name": "Português"},
+    {"code": "tr", "name": "Türkçe"},
+    {"code": "fa", "name": "فارسی"}
+  ]
+}
+5. Поэтапный процесс разработки и перевода
+
+Создайте полный комплект тестов на базовом языке (обычно английский)
+Установите систему управления версиями для отслеживания изменений
+Создайте скрипт для проверки согласованности между языковыми версиями
+Разрабатывайте инструменты для переводчиков, чтобы они видели, какие вопросы нуждаются в переводе
+
+6. Автоматизация для управления многоязычными файлами
+Создайте утилиты (Python-скрипты) для:
+python# Пример скрипта для проверки согласованности между языками
+def check_language_consistency(topic_path):
+    """Проверяет, что все card_id присутствуют во всех языковых файлах"""
+    # Реализация...
+
+# Пример скрипта для обновления метаданных
+def update_metadata(topic_path):
+    """Обновляет _metadata.json на основе текущего состояния файлов"""
+    # Реализация...
+
+# Пример скрипта для создания шаблона для перевода
+def create_translation_template(source_lang, target_lang, topic_path):
+    """Создает JSON-файл с пустыми полями для перевода"""
+    # Реализация...
+7. Пример кода для Flask для работы с такой структурой
+pythondef get_test_questions(topic_id, language):
+    # Пытаемся загрузить файл для запрошенного языка
+    try:
+        # Получаем путь из индекса
+        topic_info = get_topic_info(topic_id)
+        topic_path = topic_info["path"]
+        
+        # Загружаем метаданные
+        with open(f"tests/{topic_path}/_metadata.json") as f:
+            metadata = json.load(f)
+        
+        # Проверяем доступность языка
+        if language not in metadata["languages"]:
+            language = metadata["default_language"]
+        
+        # Загружаем файл с вопросами
+        with open(f"tests/{topic_path}/{language}.json") as f:
+            questions_data = json.load(f)
+            
+        return questions_data["questions"]
+    except:
+        # В случае ошибки возвращаем вопросы на языке по умолчанию
+        return get_default_questions(topic_id)
+Такая структура будет масштабироваться до любого количества языков, обеспечивая при этом хорошую производительность и удобство управления переводами.

@@ -1,0 +1,691 @@
+{
+  "title": {
+    "ru": "Тревожный пациент: Плановый осмотр",
+    "nl": "De Angstige Patiënt: Routine Controle",
+    "en": "The Anxious Patient: Routine Check-up"
+  },
+  "description": {
+    "ru": "Пациент приходит на полугодовой плановый осмотр и сообщает, что испытывает тревогу. Цель – справиться с тревогой, провести полный осмотр полости рта и адекватно сообщить о результатах.",
+    "nl": "Een patiënt komt voor een halfjaarlijkse controle en geeft aan angstig te zijn. Het doel is om de angst te managen, een volledig mondonderzoek uit te voeren en bevindingen adequaat te communiceren.",
+    "en": "A patient presents for a routine check-up and indicates they are anxious. The goal is to manage anxiety, perform a full oral examination, and communicate findings appropriately."
+  },
+  "scenario_data": {
+    "translations": {
+      "ru": {
+        "patient_info": {
+          "name": "Господин де Врис",
+          "medical_history": "Известна боязнь стоматологов после негативного опыта в прошлом (болезненное лечение). В остальном здоров. Лекарств не принимает. Не курит, алкоголь употребляет редко."
+        },
+        "initial_state": {
+          "patient_statement": "Доброе утро, доктор. Я пришел на полугодовой осмотр, но, честно говоря, я очень волнуюсь. У меня был неприятный опыт в прошлом, и с тех пор мне это дается тяжело.",
+          "patient_emotion": "concerned",
+          "notes": "Пациент сразу сообщает о своей тревоге. Приоритет – построение доверия и создание безопасной атмосферы."
+        },
+        "dialogue_nodes": [
+          {
+            "id": "node_1_anxious_ack",
+            "title": "Признание тревоги и сбор информации",
+            "patient_statement": "Да, это так. Это было лечение, которое оказалось очень болезненным, и я тогда чувствовал, что меня не слышат.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Мне очень жаль это слышать. Хочу, чтобы вы знали, что мы уделим вам столько времени, сколько потребуется. Не могли бы вы рассказать немного больше о том, что тогда произошло, чтобы я мог это учесть?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 20
+              },
+              {
+                "text": "Хорошо, тогда давайте быстро начнем, чтобы вы поскорее освободились.",
+                "next_node": "node_2_anxious_rushed",
+                "score": -10
+              },
+              {
+                "text": "Большинство людей не любят стоматологов. Мы просто проведем осмотр.",
+                "next_node": "node_2_anxious_dismiss",
+                "score": -5
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_explain_procedure",
+            "title": "Объяснение процедуры и запрос согласия",
+            "patient_statement": "Это меня уже немного успокоило. Я боялся, что все будет так же. Что именно вы собираетесь сегодня делать?",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "Я подробно объясню, что буду делать. Сначала я спокойно осмотрю вашу полость рта. Я буду говорить, что вижу. Если вы захотите что-то спросить или сделать перерыв, просто скажите. Мы ничего не будем делать в спешке. Согласны?",
+                "next_node": "node_3_anxious_examination_start",
+                "score": 20
+              },
+              {
+                "text": "Просто стандартный осмотр: посмотрим, пощупаем, сделаем снимки, если нужно.",
+                "next_node": "node_3_anxious_examination_start_less_info",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_rushed",
+            "title": "Реакция на поспешный подход",
+            "patient_statement": "Ох... хорошо тогда. (Пациент выглядит еще более встревоженным и замыкается)",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "(Начать осмотр без дальнейших объяснений)",
+                "next_node": "node_3_anxious_examination_start_bad",
+                "score": -15
+              },
+              {
+                "text": "Вы чувствуете, что это вас ошеломляет? Может, все-таки обсудим, чего вам ожидать?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_dismiss",
+            "title": "Реакция на пренебрежительный подход",
+            "patient_statement": "Хм, да. (Пациент явно чувствует, что его не принимают всерьез)",
+            "patient_emotion": "angry",
+            "options": [
+              {
+                "text": "(Начать осмотр без дальнейших объяснений)",
+                "next_node": "node_3_anxious_examination_start_bad",
+                "score": -10
+              },
+              {
+                "text": "Я замечаю, что моя реакция вам не помогает. Скажите, что я могу сделать, чтобы вам сегодня было комфортнее?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_anxious_examination_start",
+            "title": "Начало осмотра – Обнаружение: Гингивит",
+            "patient_statement": "Да, согласен. Приятно, что вы так объясняете.",
+            "patient_emotion": "neutral",
+            "notes_dentist": "Во время осмотра полости рта заметно, что десны в нескольких местах красные, слегка опухшие и легко кровоточат при зондировании (глубина карманов 2-3 мм). Также присутствует некоторый зубной камень.",
+            "options": [
+              {
+                "text": "Господин де Врис, я вижу, что ваши десны в нескольких местах немного воспалены. Они красные и немного кровоточат. Вы замечали это, например, при чистке зубов?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 20
+              },
+              {
+                "text": "У вас воспаление десен и зубной камень. Нужно лучше чистить зубы.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": 0
+              }
+            ]
+          },
+           {
+            "id": "node_3_anxious_examination_start_less_info",
+            "title": "Начало осмотра (меньше информации предварительно) – Обнаружение: Гингивит",
+            "patient_statement": "Хорошо... (Пациент все еще немного напряжен)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Во время осмотра полости рта заметно, что десны в нескольких местах красные, слегка опухшие и легко кровоточат при зондировании (глубина карманов 2-3 мм). Также присутствует некоторый зубной камень.",
+            "options": [
+              {
+                "text": "Я вижу некоторое воспаление десен. Это потому, что вы недостаточно хорошо чистите зубы.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": -5
+              },
+              {
+                "text": "Я вижу, что ваши десны в некоторых местах немного чувствительны и слегка кровоточат. Это указывает на легкое воспаление. Вы сами что-нибудь замечаете при чистке зубов?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_anxious_examination_start_bad",
+            "title": "Начало осмотра (плохая коммуникация) – Обнаружение: Гингивит",
+            "patient_statement": "(Пациент проходит осмотр напряженно и молча)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Во время осмотра полости рта заметно, что десны в нескольких местах красные, слегка опухшие и легко кровоточат при зондировании (глубина карманов 2-3 мм). Также присутствует некоторый зубной камень.",
+            "options": [
+              {
+                "text": "Ваши десны везде воспалены. Вам действительно нужно начать лучше чистить зубы, иначе у вас будут проблемы.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": -10
+              },
+              {
+                "text": "Итак, осмотр закончен. Я вижу, что вашим деснам нужно уделить внимание; они воспалены.",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_anxious_explain_gingivitis",
+            "title": "Объяснение гингивита и рекомендации",
+            "patient_statement": "Да, теперь, когда вы говорите, иногда они действительно кровоточат, когда я чищу зубы. Я думал, что это нормально или что я слишком сильно чищу.",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "Кровоточивость десен действительно является признаком воспаления, называемого гингивитом. Это вызвано бактериями в зубном налете. К счастью, это хорошо лечится профессиональной чисткой зубов и хорошей гигиеной полости рта в домашних условиях. Я могу показать вам, как лучше всего чистить зубы и использовать межзубные ершики/зубочистки. Что вы об этом думаете?",
+                "next_node": "node_5_anxious_motivation",
+                "score": 25
+              },
+              {
+                "text": "Это ненормально. Вам просто нужно лучше чистить зубы, а также чистить между зубами. Мы запишем вас на прием к гигиенисту.",
+                "next_node": "node_5_anxious_referral_direct",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_anxious_blunt_gingivitis",
+            "title": "Реакция на резкое объяснение гингивита",
+            "patient_statement": "Ох. (Пациент чувствует себя раскритикованным)",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Хотите, я объясню, как вы можете это улучшить и что мы можем с этим сделать?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 10
+              },
+              {
+                "text": "Просто запишитесь на прием к гигиенисту на ресепшене.",
+                "next_node": "outcome_anxious_average",
+                "score": -5
+              }
+            ]
+          },
+          {
+            "id": "node_5_anxious_motivation",
+            "title": "Мотивация и завершение",
+            "patient_statement": "Да, я бы хотел этому научиться. Я хочу предотвратить ухудшение. И спасибо, что так спокойно уделили время, это меня очень успокоило.",
+            "patient_emotion": "happy",
+            "options": [
+              {
+                "text": "Очень хорошо. Мы запланируем повторный прием для чистки зубов и инструктажа. И приятно слышать, что вам стало комфортнее. До следующего раза!",
+                "next_node": "outcome_anxious_good",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_5_anxious_referral_direct",
+            "title": "Прямое направление без подробных объяснений",
+            "patient_statement": "Хорошо тогда.",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "Хорошо. Тогда увидимся через полгода на контрольном осмотре.",
+                "next_node": "outcome_anxious_average",
+                "score": 5
+              }
+            ]
+          }
+        ],
+        "outcomes": {
+          "good": {
+            "title": "Отличный разговор и подход!",
+            "text": "Вы признали и эффективно справились с тревогой пациента. Вы дали четкие объяснения, запросили согласие и мотивировали пациента на лучшую гигиену полости рта. Пациент чувствует себя услышанным и хорошо обслуженным."
+          },
+          "average": {
+            "title": "Разумный подход, есть куда стремиться",
+            "text": "Вы правильно определили стоматологическую проблему, но общение по поводу тревоги пациента и объяснение результатов могли бы быть более эмпатичными и четкими. Пациент, возможно, не полностью мотивирован или успокоен."
+          },
+          "poor": {
+            "title": "Общение требует значительного улучшения",
+            "text": "Тревога пациента не была адекватно учтена, что может повредить доверительным отношениям. Объяснение было, возможно, слишком прямым или неполным. Важно уделять больше внимания пациент-ориентированному общению."
+          }
+        }
+      },
+      "nl": {
+        "patient_info": {
+          "name": "Meneer de Vries",
+          "medical_history": "Bekend met tandartsangst na een negatieve ervaring in het verleden (pijnlijke behandeling). Verder gezond. Gebruikt geen medicatie. Rookt niet, drinkt zelden alcohol."
+        },
+        "initial_state": {
+          "patient_statement": "Goedemorgen tandarts. Ik ben hier voor mijn halfjaarlijkse controle, maar ik moet eerlijk zeggen dat ik er best wel tegenop zie. Ik heb in het verleden een nare ervaring gehad en sindsdien vind ik het spannend.",
+          "patient_emotion": "concerned",
+          "notes": "Patiënt geeft direct aan angstig te zijn. Prioriteit is het opbouwen van vertrouwen en het creëren van een veilige sfeer."
+        },
+        "dialogue_nodes": [
+          {
+            "id": "node_1_anxious_ack",
+            "title": "Erkenning Angst & Informatie Inwinnen",
+            "patient_statement": "Ja, dat klopt. Het was een behandeling die erg pijnlijk was en ik voelde me toen niet gehoord.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Dat is heel vervelend om te horen. Ik wil dat u weet dat we hier alle tijd voor u nemen. Kunt u mij iets meer vertellen over wat er destijds gebeurd is, zodat ik daar rekening mee kan houden?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 20
+              },
+              {
+                "text": "Oké, laten we dan maar snel beginnen, dan bent u er zo vanaf.",
+                "next_node": "node_2_anxious_rushed",
+                "score": -10
+              },
+              {
+                "text": "De meeste mensen vinden de tandarts niet leuk. We gaan gewoon de controle doen.",
+                "next_node": "node_2_anxious_dismiss",
+                "score": -5
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_explain_procedure",
+            "title": "Procedure Uitleggen & Toestemming Vragen",
+            "patient_statement": "Dat stelt me al iets geruster. Ik was bang dat het weer zo zou gaan. Wat gaat u vandaag precies doen?",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "Ik zal u precies uitleggen wat ik ga doen. Eerst kijk ik rustig rond in uw mond. Ik zal benoemen wat ik zie. Als u tussendoor iets wilt vragen of een pauze wilt, geef het gerust aan. We doen niks overhaast. Akkoord?",
+                "next_node": "node_3_anxious_examination_start",
+                "score": 20
+              },
+              {
+                "text": "Gewoon de standaard controle: kijken, prikken, foto's maken als het nodig is.",
+                "next_node": "node_3_anxious_examination_start_less_info",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_rushed",
+            "title": "Reactie op Gehaaste Benadering",
+            "patient_statement": "Oh... oké dan. (Patiënt kijkt nog angstiger en trekt zich terug)",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "(Start de controle zonder verdere uitleg)",
+                "next_node": "node_3_anxious_examination_start_bad",
+                "score": -15
+              },
+              {
+                "text": "Merkt u dat dit u overvalt? Zullen we toch even bespreken wat u kunt verwachten?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_dismiss",
+            "title": "Reactie op Minimaliserende Benadering",
+            "patient_statement": "Hmm, ja. (Patiënt voelt zich duidelijk niet serieus genomen)",
+            "patient_emotion": "angry",
+            "options": [
+              {
+                "text": "(Start de controle zonder verdere uitleg)",
+                "next_node": "node_3_anxious_examination_start_bad",
+                "score": -10
+              },
+              {
+                "text": "Ik merk dat mijn reactie u niet helpt. Vertel, wat kan ik doen om het voor u vandaag beter te maken?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_anxious_examination_start",
+            "title": "Start Mondonderzoek - Bevinding: Gingivitis",
+            "patient_statement": "Ja, dat is akkoord. Fijn dat u het zo uitlegt.",
+            "patient_emotion": "neutral",
+            "notes_dentist": "Tijdens het mondonderzoek valt op dat het tandvlees op meerdere plekken rood, licht gezwollen is en snel bloedt bij sonderen (pocketdieptes 2-3mm). Er is ook wat tandsteen aanwezig.",
+            "options": [
+              {
+                "text": "Meneer de Vries, ik zie dat uw tandvlees op een paar plaatsen wat ontstoken is. Het is rood en bloedt een beetje. Herkent u dat, bijvoorbeeld bij het poetsen?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 20
+              },
+              {
+                "text": "U heeft tandvleesontsteking en tandsteen. Dat moet beter gepoetst worden.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": 0
+              }
+            ]
+          },
+           {
+            "id": "node_3_anxious_examination_start_less_info",
+            "title": "Start Mondonderzoek (minder info vooraf) - Bevinding: Gingivitis",
+            "patient_statement": "Oké... (Patiënt is nog steeds wat gespannen)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Tijdens het mondonderzoek valt op dat het tandvlees op meerdere plekken rood, licht gezwollen is en snel bloedt bij sonderen (pocketdieptes 2-3mm). Er is ook wat tandsteen aanwezig.",
+            "options": [
+              {
+                "text": "Ik zie wat tandvleesontsteking. Dat komt doordat u niet goed genoeg poetst.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": -5
+              },
+              {
+                "text": "Ik zie dat uw tandvlees wat gevoelig is op sommige plekken en het bloedt een beetje. Dat duidt op een lichte ontsteking. Merkt u zelf ook iets bij het poetsen?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_anxious_examination_start_bad",
+            "title": "Start Mondonderzoek (slechte communicatie) - Bevinding: Gingivitis",
+            "patient_statement": "(Patiënt ondergaat de controle gespannen en stil)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Tijdens het mondonderzoek valt op dat het tandvlees op meerdere plekken rood, licht gezwollen is en snel bloedt bij sonderen (pocketdieptes 2-3mm). Er is ook wat tandsteen aanwezig.",
+            "options": [
+              {
+                "text": "Uw tandvlees is overal ontstoken. U moet echt beter gaan poetsen, anders krijgt u problemen.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": -10
+              },
+              {
+                "text": "Zo, de controle is klaar. Ik zie wel dat uw tandvlees wat aandacht nodig heeft; het is ontstoken.",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_anxious_explain_gingivitis",
+            "title": "Uitleg Gingivitis & Advies",
+            "patient_statement": "Ja, nu u het zegt, soms bloedt het wel als ik poets. Ik dacht dat dat erbij hoorde of dat ik te hard poetste.",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "Bloedend tandvlees is inderdaad een teken van ontsteking, gingivitis genaamd. Dit komt door bacteriën in tandplak. Gelukkig is dit goed te behandelen met een professionele gebitsreiniging en goede mondhygiëne thuis. Ik kan u laten zien hoe u het beste kunt poetsen en rageren/stokeren. Wat denkt u daarvan?",
+                "next_node": "node_5_anxious_motivation",
+                "score": 25
+              },
+              {
+                "text": "Dat is niet normaal. U moet gewoon beter poetsen en ook tussen uw tanden schoonmaken. We maken een afspraak voor de mondhygiënist.",
+                "next_node": "node_5_anxious_referral_direct",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_anxious_blunt_gingivitis",
+            "title": "Reactie op Botte Uitleg Gingivitis",
+            "patient_statement": "Oh. (Patiënt voelt zich bekritiseerd)",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Wilt u dat ik uitleg hoe u dit kunt verbeteren en wat we eraan kunnen doen?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 10
+              },
+              {
+                "text": "Maak maar een afspraak bij de balie voor de mondhygiënist.",
+                "next_node": "outcome_anxious_average",
+                "score": -5
+              }
+            ]
+          },
+          {
+            "id": "node_5_anxious_motivation",
+            "title": "Motivatie & Afronding",
+            "patient_statement": "Ja, dat wil ik wel graag leren. Ik wil erger voorkomen. En bedankt dat u zo rustig de tijd nam, dat stelde me erg op mijn gemak.",
+            "patient_emotion": "happy",
+            "options": [
+              {
+                "text": "Heel goed. We plannen een vervolgafspraak voor gebitsreiniging en instructie. En fijn om te horen dat u zich beter voelde. Tot de volgende keer!",
+                "next_node": "outcome_anxious_good",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_5_anxious_referral_direct",
+            "title": "Directe Verwijzing Zonder Veel Uitleg",
+            "patient_statement": "Oké dan.",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "Prima. Dan zie ik u over een half jaar weer voor controle.",
+                "next_node": "outcome_anxious_average",
+                "score": 5
+              }
+            ]
+          }
+        ],
+        "outcomes": {
+          "good": {
+            "title": "Uitstekend Gesprek en Aanpak!",
+            "text": "U heeft de angst van de patiënt erkend en effectief gemanaged. U heeft duidelijke uitleg gegeven, toestemming gevraagd en de patiënt gemotiveerd voor een betere mondhygiëne. De patiënt voelt zich gehoord en goed behandeld."
+          },
+          "average": {
+            "title": "Redelijke Aanpak, Ruimte voor Verbetering",
+            "text": "U heeft de tandheelkundige bevinding correct geïdentificeerd, maar de communicatie rondom de angst van de patiënt en de uitleg van de bevindingen kon empathischer en duidelijker. De patiënt is mogelijk niet volledig gemotiveerd of gerustgesteld."
+          },
+          "poor": {
+            "title": "Communicatie Vereist Aanzienlijke Verbetering",
+            "text": "De angst van de patiënt is niet adequaat aangepakt, wat de vertrouwensband kan schaden. De uitleg was mogelijk te direct of onvolledig. Het is belangrijk om meer aandacht te besteden aan patiëntgerichte communicatie."
+          }
+        }
+      },
+      "en": {
+        "patient_info": {
+          "name": "Mr. de Vries",
+          "medical_history": "Known dental anxiety after a negative experience in the past (painful treatment). Otherwise healthy. Takes no medication. Does not smoke, rarely drinks alcohol."
+        },
+        "initial_state": {
+          "patient_statement": "Good morning, doctor. I'm here for my six-monthly check-up, but I must honestly say I'm quite apprehensive about it. I had a nasty experience in the past and I've found it stressful ever since.",
+          "patient_emotion": "concerned",
+          "notes": "Patient immediately indicates anxiety. Priority is to build trust and create a safe atmosphere."
+        },
+        "dialogue_nodes": [
+          {
+            "id": "node_1_anxious_ack",
+            "title": "Acknowledging Anxiety & Gathering Information",
+            "patient_statement": "Yes, that's right. It was a treatment that was very painful, and I didn't feel heard at the time.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "I'm very sorry to hear that. I want you to know that we will take all the time you need. Can you tell me a bit more about what happened then, so I can take it into account?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 20
+              },
+              {
+                "text": "Okay, let's get started quickly then, so it'll be over soon.",
+                "next_node": "node_2_anxious_rushed",
+                "score": -10
+              },
+              {
+                "text": "Most people don't like the dentist. We'll just do the check-up.",
+                "next_node": "node_2_anxious_dismiss",
+                "score": -5
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_explain_procedure",
+            "title": "Explaining Procedure & Asking Consent",
+            "patient_statement": "That already puts me a bit more at ease. I was afraid it would be like that again. What exactly will you be doing today?",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "I will explain exactly what I'm going to do. First, I'll take a calm look around your mouth. I'll tell you what I see. If you want to ask something or need a break, just let me know. We won't rush anything. Agreed?",
+                "next_node": "node_3_anxious_examination_start",
+                "score": 20
+              },
+              {
+                "text": "Just the standard check-up: looking, probing, taking X-rays if necessary.",
+                "next_node": "node_3_anxious_examination_start_less_info",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_rushed",
+            "title": "Reaction to Rushed Approach",
+            "patient_statement": "Oh... okay then. (Patient looks even more anxious and withdraws)",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "(Start the check-up without further explanation)",
+                "next_node": "node_3_anxious_examination_start_bad",
+                "score": -15
+              },
+              {
+                "text": "Do you feel this is overwhelming you? Shall we discuss what you can expect?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_2_anxious_dismiss",
+            "title": "Reaction to Dismissive Approach",
+            "patient_statement": "Hmm, yes. (Patient clearly feels not taken seriously)",
+            "patient_emotion": "angry",
+            "options": [
+              {
+                "text": "(Start the check-up without further explanation)",
+                "next_node": "node_3_anxious_examination_start_bad",
+                "score": -10
+              },
+              {
+                "text": "I notice my reaction isn't helping you. Tell me, what can I do to make it better for you today?",
+                "next_node": "node_2_anxious_explain_procedure",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_anxious_examination_start",
+            "title": "Start Oral Examination - Finding: Gingivitis",
+            "patient_statement": "Yes, that's agreed. Nice of you to explain it like that.",
+            "patient_emotion": "neutral",
+            "notes_dentist": "During the oral examination, it is noted that the gums are red, slightly swollen in several places, and bleed easily on probing (pocket depths 2-3mm). Some calculus is also present.",
+            "options": [
+              {
+                "text": "Mr. de Vries, I see that your gums are a bit inflamed in a few places. They are red and bleed a little. Do you recognize that, for example, when brushing?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 20
+              },
+              {
+                "text": "You have gum inflammation and calculus. You need to brush better.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": 0
+              }
+            ]
+          },
+          {
+            "id": "node_3_anxious_examination_start_less_info",
+            "title": "Start Oral Exam (less info prior) - Finding: Gingivitis",
+            "patient_statement": "Okay... (Patient is still a bit tense)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "During the oral examination, it is noted that the gums are red, slightly swollen in several places, and bleed easily on probing (pocket depths 2-3mm). Some calculus is also present.",
+            "options": [
+              {
+                "text": "I see some gum inflammation. That's because you're not brushing well enough.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": -5
+              },
+              {
+                "text": "I see your gums are a bit sensitive in some places and bleed a little. That indicates a slight inflammation. Do you notice anything yourself when brushing?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_anxious_examination_start_bad",
+            "title": "Start Oral Exam (poor communication) - Finding: Gingivitis",
+            "patient_statement": "(Patient undergoes the check-up tense and silent)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "During the oral examination, it is noted that the gums are red, slightly swollen in several places, and bleed easily on probing (pocket depths 2-3mm). Some calculus is also present.",
+            "options": [
+              {
+                "text": "Your gums are inflamed everywhere. You really need to brush better, or you'll have problems.",
+                "next_node": "node_4_anxious_blunt_gingivitis",
+                "score": -10
+              },
+              {
+                "text": "Well, the check-up is done. I do see your gums need some attention; they're inflamed.",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_anxious_explain_gingivitis",
+            "title": "Explaining Gingivitis & Advice",
+            "patient_statement": "Yes, now that you mention it, sometimes it does bleed when I brush. I thought that was normal or that I was brushing too hard.",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "Bleeding gums are indeed a sign of inflammation, called gingivitis. This is caused by bacteria in dental plaque. Fortunately, this is easily treatable with professional teeth cleaning and good oral hygiene at home. I can show you the best way to brush and use interdental brushes/sticks. What do you think about that?",
+                "next_node": "node_5_anxious_motivation",
+                "score": 25
+              },
+              {
+                "text": "That's not normal. You just need to brush better and also clean between your teeth. We'll make an appointment for the dental hygienist.",
+                "next_node": "node_5_anxious_referral_direct",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_anxious_blunt_gingivitis",
+            "title": "Reaction to Blunt Explanation of Gingivitis",
+            "patient_statement": "Oh. (Patient feels criticized)",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Would you like me to explain how you can improve this and what we can do about it?",
+                "next_node": "node_4_anxious_explain_gingivitis",
+                "score": 10
+              },
+              {
+                "text": "Just make an appointment at the front desk for the dental hygienist.",
+                "next_node": "outcome_anxious_average",
+                "score": -5
+              }
+            ]
+          },
+          {
+            "id": "node_5_anxious_motivation",
+            "title": "Motivation & Conclusion",
+            "patient_statement": "Yes, I'd like to learn that. I want to prevent it from getting worse. And thank you for taking your time so calmly, that really put me at ease.",
+            "patient_emotion": "happy",
+            "options": [
+              {
+                "text": "Very good. We'll schedule a follow-up appointment for teeth cleaning and instruction. And I'm glad to hear you felt more comfortable. See you next time!",
+                "next_node": "outcome_anxious_good",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_5_anxious_referral_direct",
+            "title": "Direct Referral Without Much Explanation",
+            "patient_statement": "Okay then.",
+            "patient_emotion": "neutral",
+            "options": [
+              {
+                "text": "Alright. I'll see you again in six months for your check-up.",
+                "next_node": "outcome_anxious_average",
+                "score": 5
+              }
+            ]
+          }
+        ],
+        "outcomes": {
+          "good": {
+            "title": "Excellent Conversation and Approach!",
+            "text": "You acknowledged and effectively managed the patient's anxiety. You provided clear explanations, asked for consent, and motivated the patient for better oral hygiene. The patient feels heard and well treated."
+          },
+          "average": {
+            "title": "Reasonable Approach, Room for Improvement",
+            "text": "You correctly identified the dental finding, but communication regarding the patient's anxiety and explanation of findings could have been more empathetic and clearer. The patient may not be fully motivated or reassured."
+          },
+          "poor": {
+            "title": "Communication Requires Significant Improvement",
+            "text": "The patient's anxiety was not adequately addressed, which can damage the trust relationship. The explanation may have been too direct or incomplete. It is important to pay more attention to patient-centered communication."
+          }
+        }
+      }
+    },
+    "default": "nl",
+    "patient_info": {
+      "age": 45,
+      "gender": "male",
+      "image": "patient_alex.jpg"
+    }
+  }
+}

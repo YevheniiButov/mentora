@@ -1,0 +1,754 @@
+{
+  "title": {
+    "ru": "Острая боль: Диагностика пульпита",
+    "nl": "Acute Pijnklacht: Diagnose Pulpitis",
+    "en": "Acute Pain Complaint: Diagnosing Pulpitis"
+  },
+  "description": {
+    "ru": "Пациент обращается с острой, сильной зубной болью. Цель – провести дифференциальную диагностику, уделяя особое внимание пульпиту, и проинформировать пациента о результатах и вариантах лечения.",
+    "nl": "Een patiënt presenteert zich met acute, heftige kiespijn. Het doel is om een differentiële diagnose te stellen, specifiek gericht op pulpitis, en de patiënt te informeren over de bevindingen en behandelopties.",
+    "en": "A patient presents with acute, severe toothache. The goal is to establish a differential diagnosis, specifically focusing on pulpitis, and to inform the patient about the findings and treatment options."
+  },
+  "scenario_data": {
+    "translations": {
+      "ru": {
+        "patient_info": {
+          "name": "Госпожа Эль Идрисси",
+          "medical_history": "В остальном здорова, лекарств не принимает. Известна аллергия на пенициллин."
+        },
+        "initial_state": {
+          "patient_statement": "Доктор, я умираю от боли! Это невыносимо. Здесь, внизу справа, и ужасно пульсирует.",
+          "patient_emotion": "angry",
+          "notes": "Пациент явно испытывает сильную боль. Требуется быстрая и точная диагностика, а также сочувствие к боли."
+        },
+        "dialogue_nodes": [
+          {
+            "id": "node_1_pain_onset",
+            "title": "Анамнез боли: Начало и характер",
+            "patient_statement": "Со вчерашнего вечера стало внезапно очень сильно. До этого несколько дней было немного чувствительно, но сейчас это просто ненормально.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Можете описать боль? Она постоянная или приступообразная? Усиливается ли она от чего-то конкретного, например, от горячего, холодного или при накусывании?",
+                "next_node": "node_2_pain_triggers",
+                "score": 20
+              },
+              {
+                "text": "Хорошо, я сейчас же посмотрю, что там.",
+                "next_node": "node_2_pain_direct_look",
+                "score": 5
+              },
+              {
+                "text": "Вы уже приняли обезболивающее?",
+                "next_node": "node_1a_painkiller_query",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_1a_painkiller_query",
+            "title": "Вопрос об обезболивающих",
+            "patient_statement": "Да, я выпила ибупрофен час назад, но он почти не помогает.",
+            "patient_emotion": "concerned",
+            "options": [
+               {
+                "text": "Жаль, что обезболивающее не очень помогает. Можете описать боль? Она постоянная или приступообразная? Усиливается ли она от чего-то конкретного, например, от горячего, холодного или при накусывании?",
+                "next_node": "node_2_pain_triggers",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_2_pain_triggers",
+            "title": "Анамнез боли: Триггеры и длительность",
+            "patient_statement": "Это ноющая, пульсирующая боль, которая, по сути, присутствует постоянно. А от горячего, например, чая, становится еще сильнее! Холод, кажется, на мгновение облегчает, но потом боль возвращается с удвоенной силой. Накусывать на этот зуб тоже больно.",
+            "patient_emotion": "angry",
+            "options": [
+              {
+                "text": "А когда боль возникает после холодного или горячего, как долго она длится? Секунды или минуты?",
+                "next_node": "node_3_pain_duration_provoked",
+                "score": 20
+              },
+              {
+                "text": "Боль мешает вам спать по ночам?",
+                "next_node": "node_3_pain_night",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_2_pain_direct_look",
+            "title": "Непосредственный осмотр без полного анамнеза",
+            "patient_statement": "(Пациент с трудом открывает рот, указывает на больной зуб.)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Визуально большой кариозной полости сразу не видно, однако в данном моляре (46) имеется глубокая пломба. Явной припухлости нет.",
+            "options": [
+              {
+                "text": "Я вижу большую пломбу. Зуб реагирует на горячее или холодное? И как долго тогда длится боль?",
+                "next_node": "node_3_pain_duration_provoked_from_look",
+                "score": 10
+              },
+              {
+                "text": "Мы немедленно сделаем снимок.",
+                "next_node": "node_4_pain_xray_early",
+                "score": 0
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_duration_provoked",
+            "title": "Анамнез боли: Длительность спровоцированной боли",
+            "patient_statement": "Если ее спровоцировать горячим, то она действительно держится минутами, иногда до получаса, сильно ноет.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Хорошо, это важная информация. Боль также не дает вам спать по ночам?",
+                "next_node": "node_3_pain_night_continuation",
+                "score": 15
+              },
+              {
+                "text": "На основании этих симптомов – особенно длительной боли после горячего – я думаю о воспалении нерва. Мы сделаем рентгеновский снимок и проверим зуб, чтобы это подтвердить.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 20
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_duration_provoked_from_look",
+            "title": "Анамнез боли: Длительность спровоцированной боли (после непосредственного осмотра)",
+            "patient_statement": "Да, от горячего становится намного хуже, и эта боль действительно держится минутами.",
+            "patient_emotion": "concerned",
+             "options": [
+              {
+                "text": "Хорошо, это важная информация. А боль также не дает вам спать по ночам?",
+                "next_node": "node_3_pain_night_continuation",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_night",
+            "title": "Анамнез боли: Ночная боль",
+            "patient_statement": "Да, прошлой ночью я почти не спала. Казалось, что боль ночью усиливалась, когда я лежала.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Это явный признак того, что нерв зуба воспален. Длительная боль после горячего и ночная боль часто указывают на необратимый пульпит. Сейчас мы проведем дальнейшее обследование с помощью рентгеновского снимка и тестов на жизнеспособность.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 25
+              },
+              {
+                "text": "Хорошо, тогда мы сделаем снимок, чтобы посмотреть, что там.",
+                "next_node": "node_4_pain_xray_early",
+                "score": 5
+              }
+            ]
+          },
+           {
+            "id": "node_3_pain_night_continuation",
+            "title": "Анамнез боли: Ночная боль (продолжение)",
+            "patient_statement": "Да, прошлая ночь была ужасной, я не могла из-за нее спать.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Все симптомы, которые вы называете – длительная боль после горячего и спонтанная ночная боль – убедительно указывают на серьезное воспаление нерва, вероятно, необратимый пульпит. Я хочу сейчас сделать рентгеновский снимок и несколько тестов, чтобы подтвердить диагноз.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 20
+              }
+            ]
+          },
+          {
+            "id": "node_4_pain_xray_informed",
+            "title": "Диагностика: Рентген и тест на чувствительность",
+            "patient_statement": "Воспаленный нерв? Что это значит?",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Рентгеновский снимок показывает глубокую пломбу рядом с пульпой и небольшое расширение периодонтальной щели у зуба 46. Тест на чувствительность к холоду (-): нет реакции. Перкуссия (+): болезненна.",
+            "options": [
+              {
+                "text": "Снимок и тесты подтверждают, что нерв в вашем зубе (46), к сожалению, отмер и воспален. Это называется необратимый пульпит с периапикальным периодонтитом. Единственные способы это исправить – это лечение корневых каналов или удаление зуба. Я объясню оба варианта.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 25
+              },
+              {
+                "text": "Нерв мертв. Нам нужно провести лечение корневых каналов или удалить зуб.",
+                "next_node": "node_5_pain_blunt_options",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_pain_xray_early",
+            "title": "Диагностика: Рентген (слишком рано/мало информации)",
+            "patient_statement": "Хорошо, если нужно...",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Рентгеновский снимок показывает глубокую пломбу рядом с пульпой и небольшое расширение периодонтальной щели у зуба 46. Тест на чувствительность к холоду (-): нет реакции. Перкуссия (+): болезненна.",
+            "options": [
+              {
+                "text": "Нерв воспален. Нам нужно провести лечение корневых каналов или удалить зуб. У вас ночью тоже сильно болело?",
+                "next_node": "node_5_pain_blunt_options_retro_ask",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_explain_options",
+            "title": "Объяснение вариантов лечения (WGBO)",
+            "patient_statement": "О боже, это звучит не очень хорошо. Лечение корневых каналов, это не очень больно? А удалять зуб я бы тоже не хотела.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Я понимаю ваши опасения. Лечение корневых каналов проводится под анестезией, так что самого лечения вы не почувствуете. Цель – устранить воспаление и сохранить ваш зуб. Удаление – это другой вариант, тогда вы сразу избавитесь от боли, но потеряете зуб. У обоих вариантов есть свои плюсы и минусы, а также последствия для стоимости. Давайте спокойно их обсудим, чтобы вы могли принять взвешенное решение?",
+                "next_node": "outcome_pain_good",
+                "score": 20
+              },
+              {
+                "text": "Большинство людей выбирают лечение корневых каналов. Это лучшее для ваших зубов.",
+                "next_node": "outcome_pain_average",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_blunt_options",
+            "title": "Резкое объяснение вариантов лечения",
+            "patient_statement": "Это довольно прямо. Что именно это означает?",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Лечение корневых каналов – это удаление нерва и пломбирование зуба. Удаление – это просто вырвать его. Что вы хотите?",
+                "next_node": "outcome_pain_poor",
+                "score": -10
+              },
+              {
+                "text": "Хорошо, извините за прямоту. Лечение корневых каналов – это спасение зуба путем удаления воспаленного нерва. Удаление – это удаление зуба. Оба варианта имеют последствия, которые я хотел бы с вами обсудить.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_blunt_options_retro_ask",
+            "title": "Резкое объяснение вариантов лечения (после преждевременного снимка)",
+            "patient_statement": "Да, ночью у меня тоже сильно болело. Что включает в себя это лечение корневых каналов?",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Это означает, что нерв удаляется, а зуб очищается и пломбируется. Альтернатива – удаление зуба. Я обсужу с вами оба варианта.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 5
+              }
+            ]
+          }
+        ],
+        "outcomes": {
+          "good": {
+            "title": "Отличная диагностика и общение!",
+            "text": "Вы систематически и тщательно расспросили о болевых ощущениях, что привело к правильному диагнозу. Объяснение результатов и вариантов лечения было четким, эмпатичным и соответствовало WGBO, что позволило пациенту принять информированное решение."
+          },
+          "average": {
+            "title": "Диагноз верный, общение можно улучшить",
+            "text": "Диагноз, вероятно, верен, но сбор анамнеза был неполным, или общение по поводу диагноза и вариантов лечения было слишком директивным или неполным. Пациент может чувствовать себя недостаточно информированным или вовлеченным в принятие решений."
+          },
+          "poor": {
+            "title": "Диагностический процесс и/или общение неудовлетворительны",
+            "text": "Диагностический процесс был неполным или поспешным. Общение было нечетким, слишком прямым или недостаточно эмпатичным. Пациент, возможно, неправильно понял ситуацию, и доверительные отношения подорваны."
+          }
+        }
+      },
+      "nl": {
+        "patient_info": {
+          "name": "Mevrouw El Idrissi",
+          "medical_history": "Verder gezond, geen medicatiegebruik. Allergie voor penicilline bekend."
+        },
+        "initial_state": {
+          "patient_statement": "Tandarts, ik verga van de pijn! Het is niet te houden. Het zit hier rechtsonder en het klopt enorm.",
+          "patient_emotion": "angry",
+          "notes": "Patiënt heeft duidelijk veel pijn. Snelle en accurate diagnostiek is vereist, evenals empathie voor de pijn."
+        },
+        "dialogue_nodes": [
+          {
+            "id": "node_1_pain_onset",
+            "title": "Pijn Anamnese: Start & Karakter",
+            "patient_statement": "Het is sinds gisteravond ineens heel erg geworden. Daarvoor was het al een paar dagen een beetje gevoelig, maar nu is het echt niet normaal meer.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Kunt u de pijn omschrijven? Is het constant, of komt het in vlagen? En wordt het erger door iets specifieks, zoals warmte, kou of bijten?",
+                "next_node": "node_2_pain_triggers",
+                "score": 20
+              },
+              {
+                "text": "Oké, ik ga meteen kijken wat er aan de hand is.",
+                "next_node": "node_2_pain_direct_look",
+                "score": 5
+              },
+              {
+                "text": "Heeft u al een pijnstiller genomen?",
+                "next_node": "node_1a_painkiller_query",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_1a_painkiller_query",
+            "title": "Navraag Pijnstillers",
+            "patient_statement": "Ja, ik heb ibuprofen genomen, een uur geleden, maar het helpt bijna niks.",
+            "patient_emotion": "concerned",
+            "options": [
+               {
+                "text": "Dat is vervelend dat de pijnstiller niet goed helpt. Kunt u de pijn omschrijven? Is het constant, of komt het in vlagen? En wordt het erger door iets specifieks, zoals warmte, kou of bijten?",
+                "next_node": "node_2_pain_triggers",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_2_pain_triggers",
+            "title": "Pijn Anamnese: Triggers & Duur",
+            "patient_statement": "Het is een zeurende, kloppende pijn die eigenlijk continu aanwezig is. En bij warmte, zoals thee, wordt het nog veel erger! Kou lijkt het heel even te verlichten, maar daarna komt het dubbel zo hard terug. Bijten op die kies doet ook zeer.",
+            "patient_emotion": "angry",
+            "options": [
+              {
+                "text": "En als de pijn opkomt na koud of warm, hoe lang houdt die pijn dan aan? Is dat seconden, of minutenlang?",
+                "next_node": "node_3_pain_duration_provoked",
+                "score": 20
+              },
+              {
+                "text": "Houdt de pijn u 's nachts uit uw slaap?",
+                "next_node": "node_3_pain_night",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_2_pain_direct_look",
+            "title": "Direct Kijken Zonder Volledige Anamnese",
+            "patient_statement": "(Patiënt opent met moeite de mond, wijst de pijnlijke kies aan.)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Visueel is er niet direct een groot gat te zien, wel een diepe vulling in de betreffende molaar (46). Geen duidelijke zwelling.",
+            "options": [
+              {
+                "text": "Ik zie een grote vulling. Reageert de kies op warm of koud? En hoe lang houdt de pijn dan aan?",
+                "next_node": "node_3_pain_duration_provoked_from_look",
+                "score": 10
+              },
+              {
+                "text": "We gaan meteen een foto maken.",
+                "next_node": "node_4_pain_xray_early",
+                "score": 0
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_duration_provoked",
+            "title": "Pijn Anamnese: Duur Uitgelokte Pijn",
+            "patient_statement": "Als het eenmaal getriggerd is door warmte, dan blijft het echt minutenlang, soms wel een half uur, hevig zeuren.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Oké, dat is belangrijke informatie. Houdt de pijn u 's nachts ook wakker?",
+                "next_node": "node_3_pain_night_continuation",
+                "score": 15
+              },
+              {
+                "text": "Op basis van deze symptomen – vooral de langdurige pijn na warmte – denk ik aan een ontstoken zenuw. We gaan een röntgenfoto maken en de kies testen om dit te bevestigen.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 20
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_duration_provoked_from_look",
+            "title": "Pijn Anamnese: Duur Uitgelokte Pijn (na direct kijken)",
+            "patient_statement": "Ja, bij warmte wordt het veel erger en die pijn blijft dan echt minutenlang hangen.",
+            "patient_emotion": "concerned",
+             "options": [
+              {
+                "text": "Oké, dat is belangrijke informatie. En houdt de pijn u 's nachts ook wakker?",
+                "next_node": "node_3_pain_night_continuation",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_night",
+            "title": "Pijn Anamnese: Nachtelijke Pijn",
+            "patient_statement": "Ja, afgelopen nacht heb ik bijna geen oog dichtgedaan. Het leek wel alsof de pijn 's nachts erger werd als ik plat lag.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Dat is een sterk teken dat de zenuw van de kies ontstoken is. De langdurige pijn na warmte en de nachtelijke pijn wijzen vaak op een irreversibele pulpitis. We gaan nu verder onderzoek doen met een röntgenfoto en vitaliteitstesten.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 25
+              },
+              {
+                "text": "Oké, dan maken we een foto om te zien wat er is.",
+                "next_node": "node_4_pain_xray_early",
+                "score": 5
+              }
+            ]
+          },
+           {
+            "id": "node_3_pain_night_continuation",
+            "title": "Pijn Anamnese: Nachtelijke Pijn (vervolg)",
+            "patient_statement": "Ja, vannacht was het verschrikkelijk, ik kon er niet van slapen.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Alle symptomen die u noemt – de langdurige pijn na warmte en de spontane nachtelijke pijn – wijzen sterk op een serieuze ontsteking van de zenuw, waarschijnlijk een irreversibele pulpitis. Ik wil nu een röntgenfoto maken en wat testjes doen om de diagnose te bevestigen.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 20
+              }
+            ]
+          },
+          {
+            "id": "node_4_pain_xray_informed",
+            "title": "Diagnostiek: Röntgen & Sensibiliteitstest",
+            "patient_statement": "Een ontstoken zenuw? Wat betekent dat?",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Röntgenfoto toont een diepe vulling dichtbij de pulpa en een lichte verbreding van de periapicale spleet bij de 46. Sensibiliteitstest met koude (-): geen reactie. Percussietest (+): pijnlijk.",
+            "options": [
+              {
+                "text": "De foto en de testjes bevestigen dat de zenuw in uw kies (de 46) helaas afgestorven en ontstoken is. Dit heet een irreversibele pulpitis met periapicale parodontitis. De enige manieren om dit te verhelpen zijn een wortelkanaalbehandeling of het trekken van de kies. Ik zal beide opties uitleggen.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 25
+              },
+              {
+                "text": "De zenuw is dood. We moeten een wortelkanaalbehandeling doen of de kies trekken.",
+                "next_node": "node_5_pain_blunt_options",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_pain_xray_early",
+            "title": "Diagnostiek: Röntgen (Te Vroeg/Weinig Info)",
+            "patient_statement": "Oké, als het moet...",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Röntgenfoto toont een diepe vulling dichtbij de pulpa en een lichte verbreding van de periapicale spleet bij de 46. Sensibiliteitstest met koude (-): geen reactie. Percussietest (+): pijnlijk.",
+            "options": [
+              {
+                "text": "De zenuw is ontstoken. We moeten een wortelkanaalbehandeling doen of de kies trekken. Had u 's nachts ook veel last?",
+                "next_node": "node_5_pain_blunt_options_retro_ask",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_explain_options",
+            "title": "Behandelopties Uitleggen (WGBO)",
+            "patient_statement": "Oh jee, dat klinkt niet best. Een wortelkanaalbehandeling, is dat niet heel pijnlijk? En de kies trekken wil ik liever ook niet.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Ik begrijp uw zorgen. Een wortelkanaalbehandeling gebeurt onder verdoving, dus van de behandeling zelf voelt u niets. Het doel is om de ontsteking weg te nemen en uw kies te behouden. Trekken is de andere optie, dan bent u direct van de pijn af, maar dan mist u een kies. Beide hebben voor- en nadelen, en ook gevolgen voor de kosten. Zullen we ze rustig doornemen zodat u een weloverwogen keuze kunt maken?",
+                "next_node": "outcome_pain_good",
+                "score": 20
+              },
+              {
+                "text": "De meeste mensen kiezen voor een wortelkanaalbehandeling. Dat is het beste voor uw gebit.",
+                "next_node": "outcome_pain_average",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_blunt_options",
+            "title": "Behandelopties Bot Uitleggen",
+            "patient_statement": "Dat is nogal direct. Wat houdt dat precies in?",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Een wortelkanaalbehandeling is de zenuw eruit halen en de kies vullen. Trekken is gewoon eruit halen. Wat wilt u?",
+                "next_node": "outcome_pain_poor",
+                "score": -10
+              },
+              {
+                "text": "Oké, excuus voor de directheid. Een wortelkanaalbehandeling is om de kies te redden door de ontstoken zenuw te verwijderen. Trekken is de kies verwijderen. Beide hebben consequenties die ik graag met u bespreek.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_blunt_options_retro_ask",
+            "title": "Behandelopties Bot Uitleggen (na te vroege foto)",
+            "patient_statement": "Ja, ik had 's nachts ook veel last. Wat houdt die wortelkanaalbehandeling in?",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Dat betekent dat de zenuw eruit gehaald wordt en de kies wordt schoongemaakt en gevuld. Het alternatief is de kies trekken. Ik zal beide opties met u bespreken.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 5
+              }
+            ]
+          }
+        ],
+        "outcomes": {
+          "good": {
+            "title": "Uitstekende Diagnostiek en Communicatie!",
+            "text": "U heeft de pijnklacht systematisch en grondig uitgevraagd, wat leidde tot een correcte diagnose. De uitleg over de bevindingen en behandelopties was helder, empathisch en conform de WGBO, waardoor de patiënt een geïnformeerde keuze kan maken."
+          },
+          "average": {
+            "title": "Diagnose Correct, Communicatie Kan Beter",
+            "text": "De diagnose is waarschijnlijk correct, maar de anamnese was niet volledig of de communicatie over de diagnose en opties was te sturend of onvolledig. De patiënt voelt zich mogelijk onvoldoende geïnformeerd of betrokken bij de besluitvorming."
+          },
+          "poor": {
+            "title": "Diagnostisch Proces en/of Communicatie Ondermaats",
+            "text": "Het diagnostisch proces was onvolledig of overhaast. De communicatie was onduidelijk, te direct, of onvoldoende empathisch. De patiënt begrijpt de situatie mogelijk niet goed en de vertrouwensband is geschaad."
+          }
+        }
+      },
+      "en": {
+        "patient_info": {
+          "name": "Mrs. El Idrissi",
+          "medical_history": "Otherwise healthy, no medication use. Known allergy to penicillin."
+        },
+        "initial_state": {
+          "patient_statement": "Doctor, I'm in agony! It's unbearable. It's here on my lower right and it's throbbing البروتوكولات.",
+          "patient_emotion": "angry",
+          "notes": "Patient is clearly in a lot of pain. Quick and accurate diagnostics are required, as well as empathy for the pain."
+        },
+        "dialogue_nodes": [
+          {
+            "id": "node_1_pain_onset",
+            "title": "Pain History: Onset & Character",
+            "patient_statement": "It suddenly got very bad last night. Before that, it was a bit sensitive for a few days, but now it's really unbearable.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Can you describe the pain? Is it constant, or does it come in waves? And does anything specific make it worse, like heat, cold, or biting?",
+                "next_node": "node_2_pain_triggers",
+                "score": 20
+              },
+              {
+                "text": "Okay, I'll take a look right away to see what's wrong.",
+                "next_node": "node_2_pain_direct_look",
+                "score": 5
+              },
+              {
+                "text": "Have you taken any painkillers yet?",
+                "next_node": "node_1a_painkiller_query",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_1a_painkiller_query",
+            "title": "Inquiring about Painkillers",
+            "patient_statement": "Yes, I took ibuprofen an hour ago, but it's hardly helping.",
+            "patient_emotion": "concerned",
+            "options": [
+               {
+                "text": "I'm sorry the painkiller isn't helping much. Can you describe the pain? Is it constant, or does it come in waves? And does anything specific make it worse, like heat, cold, or biting?",
+                "next_node": "node_2_pain_triggers",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_2_pain_triggers",
+            "title": "Pain History: Triggers & Duration",
+            "patient_statement": "It's a dull, throbbing pain that's pretty much always there. And with heat, like tea, it gets much worse! Cold seems to relieve it for a moment, but then it comes back twice as hard. Biting on that tooth also hurts.",
+            "patient_emotion": "angry",
+            "options": [
+              {
+                "text": "And when the pain starts after cold or heat, how long does it last? Is it seconds, or for minutes?",
+                "next_node": "node_3_pain_duration_provoked",
+                "score": 20
+              },
+              {
+                "text": "Does the pain keep you up at night?",
+                "next_node": "node_3_pain_night",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_2_pain_direct_look",
+            "title": "Direct Look Without Full History",
+            "patient_statement": "(Patient opens mouth with difficulty, points to the painful tooth.)",
+            "patient_emotion": "concerned",
+            "notes_dentist": "Visually, no large cavity is immediately apparent, but there is a deep filling in the molar in question (46). No clear swelling.",
+            "options": [
+              {
+                "text": "I see a large filling. Does the tooth react to heat or cold? And how long does the pain last then?",
+                "next_node": "node_3_pain_duration_provoked_from_look",
+                "score": 10
+              },
+              {
+                "text": "We're going to take an X-ray right away.",
+                "next_node": "node_4_pain_xray_early",
+                "score": 0
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_duration_provoked",
+            "title": "Pain History: Duration of Provoked Pain",
+            "patient_statement": "Once it's triggered by heat, it really lingers 악화되다 for minutes, sometimes half an hour.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "Okay, that's important information. Does the pain also keep you awake at night?",
+                "next_node": "node_3_pain_night_continuation",
+                "score": 15
+              },
+              {
+                "text": "Based on these symptoms – especially the prolonged pain after heat – I'm thinking of an inflamed nerve. We'll take an X-ray and test the tooth to confirm this.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 20
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_duration_provoked_from_look",
+            "title": "Pain History: Duration of Provoked Pain (after direct look)",
+            "patient_statement": "Yes, with heat it gets much worse, and that pain really lingers for minutes.",
+            "patient_emotion": "concerned",
+             "options": [
+              {
+                "text": "Okay, that's important information. And does the pain also keep you awake at night?",
+                "next_node": "node_3_pain_night_continuation",
+                "score": 15
+              }
+            ]
+          },
+          {
+            "id": "node_3_pain_night",
+            "title": "Pain History: Night Pain",
+            "patient_statement": "Yes, last night I barely slept. It felt like the pain got worse at night when I was lying down.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "That's a strong sign that the nerve of the tooth is inflamed. Prolonged pain after heat and night pain often indicate irreversible pulpitis. We'll now do further investigation with an X-ray and vitality tests.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 25
+              },
+              {
+                "text": "Okay, then we'll take an X-ray to see what's wrong.",
+                "next_node": "node_4_pain_xray_early",
+                "score": 5
+              }
+            ]
+          },
+           {
+            "id": "node_3_pain_night_continuation",
+            "title": "Pain History: Night Pain (continued)",
+            "patient_statement": "Yes, last night was terrible, I couldn't sleep because of it.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "All the symptoms you mention – the prolonged pain after heat and the spontaneous night pain – strongly suggest a serious inflammation of the nerve, probably irreversible pulpitis. I want to take an X-ray now and do some tests to confirm the diagnosis.",
+                "next_node": "node_4_pain_xray_informed",
+                "score": 20
+              }
+            ]
+          },
+          {
+            "id": "node_4_pain_xray_informed",
+            "title": "Diagnostics: X-ray & Sensibility Test",
+            "patient_statement": "An inflamed nerve? What does that mean?",
+            "patient_emotion": "concerned",
+            "notes_dentist": "X-ray shows a deep filling close to the pulp and a slight widening of the periapical ligament space at 46. Sensibility test with cold (-): no reaction. Percussion test (+): painful.",
+            "options": [
+              {
+                "text": "The X-ray and the tests confirm that the nerve in your tooth (the 46) has unfortunately died and is inflamed. This is called irreversible pulpitis with periapical periodontitis. The only ways to remedy this are a root canal treatment or extracting the tooth. I will explain both options.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 25
+              },
+              {
+                "text": "The nerve is dead. We need to do a root canal or pull the tooth.",
+                "next_node": "node_5_pain_blunt_options",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_4_pain_xray_early",
+            "title": "Diagnostics: X-ray (Too Early/Little Info)",
+            "patient_statement": "Okay, if it's necessary...",
+            "patient_emotion": "concerned",
+            "notes_dentist": "X-ray shows a deep filling close to the pulp and a slight widening of the periapical ligament space at 46. Sensibility test with cold (-): no reaction. Percussion test (+): painful.",
+            "options": [
+              {
+                "text": "The nerve is inflamed. We need to do a root canal or pull the tooth. Did you also have a lot of pain at night?",
+                "next_node": "node_5_pain_blunt_options_retro_ask",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_explain_options",
+            "title": "Explaining Treatment Options (WGBO)",
+            "patient_statement": "Oh dear, that doesn't sound good. A root canal treatment, isn't that very painful? And I'd rather not have the tooth pulled either.",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "I understand your concerns. A root canal treatment is done under anesthesia, so you won't feel the treatment itself. The goal is to remove the inflammation and save your tooth. Extraction is the other option, then you'll be rid of the pain immediately, but you'll miss a tooth. Both have pros and cons, and also cost implications. Shall we go over them calmly so you can make an informed decision?",
+                "next_node": "outcome_pain_good",
+                "score": 20
+              },
+              {
+                "text": "Most people opt for a root canal treatment. That's best for your teeth.",
+                "next_node": "outcome_pain_average",
+                "score": 5
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_blunt_options",
+            "title": "Explaining Treatment Options Bluntly",
+            "patient_statement": "That's rather direct. What exactly does that entail?",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "A root canal is taking the nerve out and filling the tooth. Pulling is just taking it out. What do you want?",
+                "next_node": "outcome_pain_poor",
+                "score": -10
+              },
+              {
+                "text": "Okay, apologies for the directness. A root canal treatment is to save the tooth by removing the inflamed nerve. Extraction is removing the tooth. Both have consequences I'd like to discuss with you.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 10
+              }
+            ]
+          },
+          {
+            "id": "node_5_pain_blunt_options_retro_ask",
+            "title": "Explaining Treatment Options Bluntly (after early X-ray)",
+            "patient_statement": "Yes, I had a lot of pain at night too. What does that root canal treatment involve?",
+            "patient_emotion": "concerned",
+            "options": [
+              {
+                "text": "That means the nerve is removed, and the tooth is cleaned and filled. The alternative is to extract the tooth. I will discuss both options with you.",
+                "next_node": "node_5_pain_explain_options",
+                "score": 5
+              }
+            ]
+          }
+        ],
+        "outcomes": {
+          "good": {
+            "title": "Excellent Diagnostics and Communication!",
+            "text": "You systematically and thoroughly investigated the pain complaint, leading to a correct diagnosis. The explanation of findings and treatment options was clear, empathetic, and in accordance with WGBO, allowing the patient to make an informed choice."
+          },
+          "average": {
+            "title": "Diagnosis Correct, Communication Could Be Better",
+            "text": "The diagnosis is likely correct, but the history taking was not complete, or communication about the diagnosis and options was too directive or incomplete. The patient may feel insufficiently informed or involved in decision-making."
+          },
+          "poor": {
+            "title": "Diagnostic Process and/or Communication Subpar",
+            "text": "The diagnostic process was incomplete or rushed. Communication was unclear, too direct, or insufficiently empathetic. The patient may not understand the situation well, and the trust relationship is damaged."
+          }
+        }
+      }
+    },
+    "default": "nl",
+    "patient_info": {
+      "age": 35,
+      "gender": "female",
+      "image": "patient_elena.jpg"
+    }
+  }
+}

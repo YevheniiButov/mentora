@@ -1,0 +1,1076 @@
+План реорганизации образовательной платформы для стоматологов
+Вы правы, это достаточно большая реорганизация, которая потребует внимания к деталям. Чтобы максимально избежать путаницы с маршрутами и длительных периодов неработоспособности, составлю подробный план действий с конкретными шагами и методами тестирования после каждого этапа.
+1. Подготовительный этап
+1.1. Создание резервной копии
+bash# Создаем резервную копию всего проекта перед началом реорганизации
+cp -r project/ project_backup/
+1.2. Создание новой структуры директорий шаблонов
+bash# Создаём новую структуру директорий для шаблонов
+mkdir -p templates/learning templates/tests templates/auth templates/profile
+2. Реорганизация шаблонов
+2.1. Переименование и перемещение сохраняемых шаблонов
+Текущий файлНовый путьКомментарийlearning_dashboard.htmltemplates/learning/dashboard.htmlДашборд обучения, сохраняемlearning_map.htmltemplates/learning/map.htmlКарта обучения, сохраняемmodule_view.htmltemplates/learning/module.htmlОсновной вид модуляlesson.htmltemplates/learning/lesson.htmlСтандартный вид урокаlearn.htmltemplates/learning/modules_list.htmlСписок модулейtest_question.htmltemplates/tests/question.htmlОсновной вид вопроса тестаtest_result.htmltemplates/tests/result.htmlСтраница результатов тестаtest_setup.htmltemplates/tests/setup.htmlНастройка тестаprofile.htmltemplates/profile/profile.htmlПрофиль пользователяbase.htmltemplates/base.htmlОставляем без изменений_macros.htmltemplates/includes/_macros.htmlПеремещаем в includes_flash_messages.htmltemplates/includes/_flash_messages.htmlПеремещаем в includes_header.htmltemplates/includes/_header.htmlПеремещаем в includes_footer.htmltemplates/includes/_footer.htmlПеремещаем в includes если есть
+Команды для перемещения и переименования файлов:
+bash# Создаем директорию для включаемых файлов
+mkdir -p templates/includes
+
+# Перемещаем включаемые файлы
+mv templates/_macros.html templates/includes/
+mv templates/_flash_messages.html templates/includes/
+mv templates/_header.html templates/includes/
+# Если есть _footer.html
+if [ -f templates/_footer.html ]; then mv templates/_footer.html templates/includes/; fi
+
+# Перемещаем основные файлы обучения
+mv templates/learning_dashboard.html templates/learning/dashboard.html
+mv templates/learning_map.html templates/learning/map.html
+mv templates/module_view.html templates/learning/module.html
+mv templates/lesson.html templates/learning/lesson.html
+mv templates/learn.html templates/learning/modules_list.html
+
+# Перемещаем файлы тестов
+mv templates/test_question.html templates/tests/question.html
+mv templates/test_result.html templates/tests/result.html
+mv templates/test_setup.html templates/tests/setup.html
+
+# Перемещаем профиль
+mv templates/profile.html templates/profile/profile.html
+2.2. Создание списка удаляемых шаблонов
+Следующие файлы можно удалить, так как их функциональность будет объединена в других файлах:
+
+test_card.html - объединяется с templates/tests/question.html
+test_full.html - объединяется с templates/tests/question.html
+test_setup_category.html - объединяется с templates/tests/setup.html
+card_view.html - заменяется templates/learning/lesson.html
+learn_chapter.html - заменяется templates/learning/module.html
+learning_module.html - заменяется templates/learning/module.html
+demo.html - заменяется редиректом на карту обучения
+
+Примечание: Эти файлы пока не удаляем! Сначала обновим маршруты, затем перенесем нужный функционал, и только потом удалим ненужные файлы.
+3. Обновление маршрутов (routes)
+3.1. Создание новых контроллеров (blueprints)
+Создаем новый modules_routes.py (заменяет learn_bp.py)
+python# routes/modules_routes.py
+
+from flask import Blueprint, render_template, redirect, url_for, g, flash, current_app, request
+from flask_login import login_required, current_user
+from models import db, Module, Lesson, UserProgress
+
+# Создаем Blueprint
+modules_bp = Blueprint(
+    "modules_bp",
+    __name__,
+    url_prefix='/<string:lang>/modules',
+    template_folder='../templates'
+)
+
+@modules_bp.context_processor
+def inject_lang_modules():
+    lang = getattr(g, 'lang', current_app.config['DEFAULT_LANGUAGE'])
+    return dict(lang=lang)
+
+@modules_bp.route("/")
+@login_required
+def modules_list(lang):
+    """Отображает список доступных модулей обучения."""
+    user = current_user
+    categorized_modules = {}
+    
+    try:
+        # Группировка модулей по категориям
+        modules = Module.query.all()
+        for module in modules:
+            category = module.module_type or 'misc'
+            if category not in categorized_modules:
+                categorized_modules[category] = []
+            
+            # Получаем уроки модуля
+            lessons = Lesson.query.filter_by(module_id=module.id).all()
+            total_lessons = len(lessons)
+            
+            # Получаем завершенные уроки
+            completed_lessons = UserProgress.query.filter_by(
+                user_id=user.id,
+                completed=True
+            ).filter(UserProgress.lesson_id.in_([l.id for l in lessons])).count()
+            
+            # Добавляем модуль с данными прогресса
+            module_data = {
+                'id': module.id,
+                'title': module.title,
+                'description': module.description,
+                'is_premium': module.is_premium,
+                'icon': module.icon,
+                'total_lessons': total_lessons,
+                'completed_lessons': completed_lessons
+            }
+            
+            categorized_modules[category].append(module_data)
+    except Exception as e:
+        current_app.logger.error(f"Error fetching modules: {e}", exc_info=True)
+        flash("Failed to load modules list.", "danger")
+        categorized_modules = {}
+    
+    return render_template('learning/modules_list.html', 
+                           categories=categorized_modules, 
+                           user=user)
+
+@modules_bp.route("/<int:module_id>")
+@login_required
+def module_view(lang, module_id):
+    """Отображает содержимое модуля."""
+    try:
+        # Получаем модуль из БД
+        module = Module.query.get_or_404(module_id)
+        
+        # Получаем уроки для модуля
+        lessons = Lesson.query.filter_by(module_id=module.id).order_by(Lesson.order).all()
+        
+        # Получаем прогресс пользователя для уроков этого модуля
+        user_progress = {}
+        for lesson in lessons:
+            progress = UserProgress.query.filter_by(
+                user_id=current_user.id,
+                lesson_id=lesson.id
+            ).first()
+            user_progress[lesson.id] = progress.completed if progress else False
+        
+        return render_template(
+            "learning/module.html",
+            module=module,
+            lessons=lessons,
+            user_progress=user_progress,
+            title=module.title
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error loading module {module_id}: {e}", exc_info=True)
+        flash(f"Error loading module: {e}", "danger")
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+
+# Добавляем обратную совместимость для старых URL (временно)
+@modules_bp.route("/old_learn_chapter/<int:module_id>")
+@login_required
+def old_learn_chapter_redirect(lang, module_id):
+    """Редирект со старого маршрута на новый."""
+    return redirect(url_for('.module_view', lang=lang, module_id=module_id))
+Обновляем lesson_routes.py
+python# routes/lesson_routes.py (оставляем большую часть старого кода, но обновляем путь шаблона)
+
+# ... существующий код ...
+
+@lesson_bp.route("/<int:lesson_index>", methods=["GET", "POST"])
+@login_required
+def lesson_view(lang, module_id, lesson_index):
+    """Отображает урок и обрабатывает квиз."""
+    # ... существующий код ...
+    
+    # Изменяем только путь к шаблону:
+    return render_template(
+        "learning/lesson.html",  # Новый путь
+        lesson=lesson,
+        lesson_index=lesson_index,
+        total_lessons=total_lessons,
+        quiz_result=quiz_result
+    )
+Обновляем tests_routes.py
+python# routes/tests_routes.py (обновляем пути к шаблонам)
+
+# ... существующий код ...
+
+@tests_bp.route("/", methods=['GET'])
+@login_required
+def setup_test(lang):
+    # ... существующий код ...
+    return render_template("tests/setup.html", categories=categories, test_lengths=test_lengths)
+
+@tests_bp.route("/take", methods=['GET', 'POST'])
+@login_required
+def take_test(lang):
+    # ... существующий код ...
+    return render_template("tests/question.html", 
+                           question=question, 
+                           step=step, 
+                           total=total, 
+                           result=result, 
+                           correct_answer=correct_answer_text)
+
+# ... остальные маршруты ...
+
+# Обновляем шаблон для результатов теста
+# ...
+    return render_template("tests/result.html", score=final_score, total=total)
+Обновляем learning_map_routes.py
+python# routes/learning_map_routes.py (обновляем путь к шаблону)
+
+# ... существующий код ...
+
+@learning_map_bp.route("/")
+@learning_map_bp.route("/<int:path_id>")
+@login_required
+def learning_map(lang, path_id=None):
+    # ... существующий код ...
+    return render_template(
+        "learning/map.html",  # Новый путь
+        title='Learning Map',
+        learning_paths=learning_paths,
+        current_path=current_path,
+        subjects=all_subjects,
+        user=current_user,
+        has_subscription=current_user.has_subscription,
+        stats=stats
+    )
+Обновляем dashboard_routes.py
+python# routes/dashboard_routes.py (обновляем путь к шаблону)
+
+# ... существующий код ...
+
+@dashboard_bp.route("/")
+@login_required
+def learning_dashboard(lang):
+    # ... существующий код ...
+    return render_template(
+        "learning/dashboard.html",  # Новый путь
+        title='Learning Dashboard',
+        stats=stats,
+        recommended_module=recommended_module,
+        recent_modules=recent_modules,
+        user=current_user
+    )
+Обновляем demo_routes.py
+python# routes/demo_routes.py (превращаем в перенаправление на карту обучения)
+
+from flask import Blueprint, redirect, url_for, g, current_app
+from flask_login import login_required
+
+# Определение Blueprint (оставляем без префикса)
+demo_bp = Blueprint(
+    "demo_bp",
+    __name__,
+    template_folder='../templates'
+)
+
+# Контекстный процессор (оставляем для обратной совместимости)
+@demo_bp.context_processor
+def inject_lang_demo():
+    lang = getattr(g, 'lang', current_app.config['DEFAULT_LANGUAGE'])
+    return dict(lang=lang)
+
+# Маршрут для демо-страницы теперь просто перенаправляет на карту обучения
+@demo_bp.route("/<string:lang>/demo/")
+@login_required
+def demo_view(lang):
+    """Перенаправляет на карту обучения."""
+    g.lang = lang
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+3.2. Регистрация новых Blueprint-ов в app.py
+python# app.py (обновленная часть регистрации Blueprint-ов)
+
+# Импортируем новый Blueprint
+from routes.modules_routes import modules_bp
+
+# ... существующий код ...
+
+# Регистрируем блюпринты
+app.register_blueprint(main_bp)
+app.register_blueprint(auth_bp)
+app.register_blueprint(lesson_bp)
+app.register_blueprint(tests_bp)
+app.register_blueprint(modules_bp)  # Новый Blueprint
+app.register_blueprint(demo_bp)     # Теперь перенаправляет на карту обучения
+app.register_blueprint(forum_bp)
+app.register_blueprint(admin_bp, url_prefix='/admin')
+app.register_blueprint(learning_map_bp)
+app.register_blueprint(api_bp, url_prefix='/api')
+app.register_blueprint(dashboard_bp)
+
+# На время переходного периода сохраняем старый Blueprint для обратной совместимости
+app.register_blueprint(learn_bp)    # Скоро будет удален
+4. Обновление импортов в шаблонах
+4.1. Обновление путей в include-директивах
+В каждом шаблоне нужно обновить пути в директивах включения:
+Например, в базовом шаблоне (templates/base.html):
+html<!-- Старый путь -->
+{% include "_header.html" %}
+
+<!-- Новый путь -->
+{% include "includes/_header.html" %}
+В любых других шаблонах, использующих include:
+html<!-- Старый путь -->
+{% include '_flash_messages.html' ignore missing %}
+
+<!-- Новый путь -->
+{% include 'includes/_flash_messages.html' ignore missing %}
+4.2. Обновление extends в дочерних шаблонах
+Все дочерние шаблоны должны правильно расширять базовый шаблон.
+html<!-- Путь к base.html не меняется, так как он остается в корне templates -->
+{% extends "base.html" %}
+5. Постепенный переход и тестирование
+5.1. Поэтапный план перехода
+
+Этап 1: Создать и обновить структуру директорий
+
+Создать новые директории
+Переместить основные шаблоны
+
+
+Этап 2: Обновить пути в шаблонах
+
+Обновить все пути include/extends
+Обновить URL в шаблонах, используя url_for
+
+
+Этап 3: Внедрить новые контроллеры
+
+Создать новые blueprint-файлы
+Зарегистрировать их в app.py
+Сохранить старые для обратной совместимости
+
+
+Этап 4: Тестирование и переход
+
+Тестировать каждый основной маршрут
+Исправлять ошибки
+Постепенно переходить на новую структуру
+
+
+Этап 5: Удаление устаревших файлов
+
+После полного тестирования удалить неиспользуемые файлы
+
+
+
+5.2. Тестирование после каждого шага
+Тестовый сценарий:
+
+Авторизация пользователя
+Просмотр карты обучения
+Открытие модуля
+Просмотр урока
+Прохождение теста
+Просмотр профиля
+Проверка дашборда обучения
+
+Этот сценарий должен выполняться после каждого значительного изменения.
+6. Объединение и улучшение функциональности
+6.1. Объединение функционала тестов
+Для объединения test_card.html и test_question.html в единый templates/tests/question.html:
+html{% extends "base.html" %}
+
+{% block title %}
+    {% if lang == 'ru' %}Тест: Вопрос {{ step + 1 }}{% else %}Test: Question {{ step + 1 }}{% endif %} - Become a Tandarts
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        /* Общие стили для всех типов вопросов */
+        .question-container {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        /* Стили для карточного режима */
+        .card-mode .question-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Стили для обычного режима */
+        .standard-mode .options-container .option {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        /* Общие стили результатов */
+        .feedback-container {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .feedback-container.correct {
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            color: #155724;
+        }
+        
+        .feedback-container.incorrect {
+            background-color: rgba(220, 53, 69, 0.1);
+            border: 1px solid #dc3545;
+            color: #721c24;
+        }
+
+        /* Дополнительные стили результатов для карточного режима */
+        .card-mode .feedback-container {
+            text-align: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 main-content-padding {% if card_mode %}card-mode{% else %}standard-mode{% endif %}">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main_bp.home', lang=lang) }}">{% if lang == 'ru' %}Главная{% else %}Home{% endif %}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}">{% if lang == 'ru' %}Обучение{% else %}Learning{% endif %}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if lang == 'ru' %}Тест{% else %}Test{% endif %}</li>
+        </ol>
+    </nav>
+
+    <!-- Прогресс теста -->
+    <div class="progress-section mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <h1 class="h4 mb-0">{% if test_title %}{{ test_title }}{% else %}{% if lang == 'ru' %}Тестирование{% else %}Test{% endif %}{% endif %}</h1>
+                <small class="text-muted">
+                    {% if lang == 'ru' %}Вопрос {{ step + 1 }} из {{ total }}{% else %}Question {{ step + 1 }} of {{ total }}{% endif %}
+                </small>
+            </div>
+            <span class="badge {% if step + 1 == total %}bg-success{% else %}bg-primary{% endif %} rounded-pill py-2 px-3">
+                {{ ((step + 1) / total * 100) | int }}%
+            </span>
+        </div>
+        <div class="progress" style="height: 10px;">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ ((step + 1) / total * 100) | int }}%" 
+                 aria-valuenow="{{ ((step + 1) / total * 100) | int }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+    
+    <!-- Вопрос и варианты ответов -->
+    <div class="question-container animate__animated animate__fadeIn">
+        <h2 class="h5 mb-4 fw-bold">{{ question.text | safe }}</h2>
+        
+        {% if question.image_url %}
+        <div class="text-center mb-4">
+            <img src="{{ question.image_url }}" alt="Question image" class="img-fluid rounded" style="max-height: 300px;">
+        </div>
+        {% endif %}
+        
+        <!-- Форма для отправки ответа -->
+        <form method="post" action="{{ url_for('tests_bp.take_test', lang=lang) }}">
+            <div class="options-container">
+                {% for option in question.options %}
+                <div class="option {% if submitted_answer == option %}selected{% endif %} 
+                              {% if result is not none and submitted_answer == option %}
+                                {% if result %}correct{% else %}incorrect{% endif %}
+                              {% endif %}">
+                    <input type="radio" name="selected_option" id="option{{ loop.index }}" value="{{ option }}" 
+                           {% if submitted_answer == option %}checked{% endif %}
+                           {% if result is not none %}disabled{% endif %}>
+                    <label for="option{{ loop.index }}" class="d-block w-100">{{ option }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="mt-4">
+                {% if result is none %}
+                <button type="submit" class="btn btn-primary">
+                    {% if lang == 'ru' %}Ответить{% else %}Submit Answer{% endif %}
+                </button>
+                {% else %}
+                <a href="{{ url_for('tests_bp.next_question', lang=lang) }}" class="btn btn-success">
+                    {% if step + 1 < total %}
+                        {% if lang == 'ru' %}Следующий{% else %}Next{% endif %}
+                    {% else %}
+                        {% if lang == 'ru' %}Завершить тест{% else %}Finish Test{% endif %}
+                    {% endif %}
+                </a>
+                {% endif %}
+            </div>
+        </form>
+        
+        <!-- Отображение результата ответа -->
+        {% if result is not none %}
+        <div class="feedback-container {% if result %}correct{% else %}incorrect{% endif %}">
+            {% if result %}
+                <h5>{% if lang == 'ru' %}Правильно!{% else %}Correct!{% endif %}</h5>
+                {% if explanation %}
+                    <p>{{ explanation }}</p>
+                {% endif %}
+            {% else %}
+                <h5>{% if lang == 'ru' %}Неправильно!{% else %}Incorrect!{% endif %}</h5>
+                <p>{% if lang == 'ru' %}Правильный ответ:{% else %}Correct answer:{% endif %} <strong>{{ correct_answer }}</strong></p>
+                {% if explanation %}
+                    <p>{{ explanation }}</p>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Нижние кнопки (назад к тестам / к карте обучения) -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{{ url_for('tests_bp.setup_test', lang=lang) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            {% if lang == 'ru' %}К списку тестов{% else %}Back to Tests{% endif %}
+        </a>
+        
+        <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-outline-primary">
+            <i class="bi bi-map me-1"></i>
+            {% if lang == 'ru' %}К карте обучения{% else %}Learning Map{% endif %}
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+    // Анимация выбора опций
+    document.addEventListener('DOMContentLoaded', function() {
+        const options = document.querySelectorAll('.option');
+        
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                // Снимаем выделение со всех опций
+                options.forEach(opt => opt.classList.remove('selected'));
+                
+                // Выделяем текущую опцию
+                this.classList.add('selected');
+                
+                // Отмечаем радио-кнопку
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                }
+            });
+        });
+        
+        // Воспроизведение звука при наличии результата
+        {% if result is not none %}
+        try {
+            const sound = new Audio("{{ url_for('static', filename='sounds/' + ('correct.mp3' if result else 'wrong.mp3')) }}");
+            sound.play().catch(e => console.warn("Audio not played:", e));
+        } catch (e) {
+            console.error("Error playing sound:", e);
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}
+6.2. Объединение функционала настройки теста
+Для объединения test_setup.html и test_setup_category.html в единый templates/tests/setup.html:
+html{% extends "base.html" %}
+
+{% block title %}
+    {% if lang == 'ru' %}Настройка теста{% else %}Test Setup{% endif %} - Become a Tandarts
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .test-setup-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    
+    .category-list {
+        max-height: 250px;
+        overflow-y: auto;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .test-type-card {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .test-type-card:hover, .test-type-card.selected {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .test-type-card.selected {
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    }
+    
+    .test-length-btn {
+        min-width: 60px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 main-content-padding">
+    <div class="test-setup-container">
+        <!-- Хлебные крошки -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main_bp.home', lang=lang) }}">{% if lang == 'ru' %}Главная{% else %}Home{% endif %}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}">{% if lang == 'ru' %}Обучение{% else %}Learning{% endif %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% if lang == 'ru' %}Настройка теста{% else %}Test Setup{% endif %}</li>
+            </ol>
+        </nav>
+        
+        <h1 class="h3 mb-4">{% if lang == 'ru' %}Настройка теста{% else %}Test Setup{% endif %}</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h5 mb-4">{% if lang == 'ru' %}Выберите параметры теста{% else %}Select Test Parameters{% endif %}</h2>
+                
+                <!-- Форма настройки теста -->
+                <form method="post" action="{{ url_for('tests_bp.start_custom_test', lang=lang) }}">
+                    <!-- Тип теста - карточки или стандартный (опционально) -->
+                    <div class="mb-4">
+                        <label class="form-label">{% if lang == 'ru' %}Формат теста{% else %}TestRetryClaude hit the max length for a message and has paused its response. You can write Continue to keep the chat going.МГContinueEditПродолжаю подробный план реорганизации:
+6.2. Объединение функционала настройки теста (продолжение)
+html                    <div class="mb-4">
+                        <label class="form-label">{% if lang == 'ru' %}Формат теста{% else %}Test Format{% endif %}</label>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="test-type-card selected" onclick="selectTestType(this, 'standard')">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="test_format" id="format_standard" value="standard" checked>
+                                        <label class="form-check-label" for="format_standard">
+                                            <h6 class="mb-2">{% if lang == 'ru' %}Стандартный тест{% else %}Standard Test{% endif %}</h6>
+                                            <p class="mb-0 small text-muted">{% if lang == 'ru' %}Последовательные вопросы и ответы{% else %}Sequential questions and answers{% endif %}</p>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="test-type-card" onclick="selectTestType(this, 'cards')">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="test_format" id="format_cards" value="cards">
+                                        <label class="form-check-label" for="format_cards">
+                                            <h6 class="mb-2">{% if lang == 'ru' %}Карточки{% else %}Flashcards{% endif %}</h6>
+                                            <p class="mb-0 small text-muted">{% if lang == 'ru' %}Удобный формат с карточками{% else %}Convenient flashcard format{% endif %}</p>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Выбор категории -->
+                    <div class="mb-4">
+                        <label class="form-label">{% if lang == 'ru' %}Категория{% else %}Category{% endif %}</label>
+                        <select class="form-select" name="category">
+                            <option value="all">{% if lang == 'ru' %}Все категории{% else %}All Categories{% endif %}</option>
+                            {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Расширенный выбор категорий (показывается при клике на "Дополнительные параметры") -->
+                    <div class="mb-4 advanced-options" style="display: none;">
+                        <label class="form-label">{% if lang == 'ru' %}Точный выбор категорий{% else %}Specific Categories{% endif %}</label>
+                        <div class="category-list">
+                            <div class="form-check">
+                                <input class="form-check-input category-checkbox" type="checkbox" value="all" id="cat_all" name="category_ids" checked>
+                                <label class="form-check-label" for="cat_all">
+                                    <strong>{% if lang == 'ru' %}Все категории{% else %}All Categories{% endif %}</strong>
+                                </label>
+                            </div>
+                            <hr>
+                            {% for category in categories %}
+                                <div class="form-check">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="{{ category }}" id="cat_{{ loop.index }}" name="category_ids">
+                                    <label class="form-check-label" for="cat_{{ loop.index }}">
+                                        {{ category }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Количество вопросов -->
+                    <div class="mb-4">
+                        <label class="form-label">{% if lang == 'ru' %}Количество вопросов{% else %}Number of Questions{% endif %}</label>
+                        <div class="btn-group" role="group" aria-label="Test length options">
+                            {% for length in [5, 10, 15, 20, 30] %}
+                                <input type="radio" class="btn-check" name="length" id="length_{{ length }}" value="{{ length }}" {% if length == 10 %}checked{% endif %}>
+                                <label class="btn btn-outline-primary test-length-btn" for="length_{{ length }}">{{ length }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопка "Дополнительные параметры" -->
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-link p-0" id="toggle-advanced">
+                            <i class="bi bi-gear"></i> 
+                            <span id="advanced-text">{% if lang == 'ru' %}Показать дополнительные параметры{% else %}Show Advanced Options{% endif %}</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Кнопка отправки -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-lg btn-primary">
+                            <i class="bi bi-play-fill me-1"></i>
+                            {% if lang == 'ru' %}Начать тест{% else %}Start Test{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Нижние кнопки -->
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                {% if lang == 'ru' %}К карте обучения{% else %}Back to Learning Map{% endif %}
+            </a>
+            
+            {% if user.role == 'admin' %}
+            <a href="{{ url_for('admin_bp.dashboard', lang=lang) }}" class="btn btn-outline-dark">
+                <i class="bi bi-gear me-1"></i>
+                {% if lang == 'ru' %}Управление тестами{% else %}Manage Tests{% endif %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+    // Функция выбора типа теста
+    function selectTestType(element, type) {
+        // Убираем класс selected со всех карточек
+        document.querySelectorAll('.test-type-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Добавляем класс selected к выбранной карточке
+        element.classList.add('selected');
+        
+        // Отмечаем соответствующую радио-кнопку
+        document.getElementById('format_' + type).checked = true;
+    }
+    
+    // Функция для переключения дополнительных параметров
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('toggle-advanced');
+        const advancedOptions = document.querySelector('.advanced-options');
+        const advancedText = document.getElementById('advanced-text');
+        
+        if (toggleBtn && advancedOptions && advancedText) {
+            toggleBtn.addEventListener('click', function() {
+                if (advancedOptions.style.display === 'none') {
+                    advancedOptions.style.display = 'block';
+                    advancedText.textContent = '{% if lang == 'ru' %}Скрыть дополнительные параметры{% else %}Hide Advanced Options{% endif %}';
+                } else {
+                    advancedOptions.style.display = 'none';
+                    advancedText.textContent = '{% if lang == 'ru' %}Показать дополнительные параметры{% else %}Show Advanced Options{% endif %}';
+                }
+            });
+        }
+        
+        // Обработка чекбоксов категорий
+        const allCategoriesCheckbox = document.getElementById('cat_all');
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox:not(#cat_all)');
+        
+        if (allCategoriesCheckbox && categoryCheckboxes.length > 0) {
+            // При клике на "Все категории"
+            allCategoriesCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Снимаем выбор со всех остальных чекбоксов
+                    categoryCheckboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                }
+            });
+            
+            // При клике на любую категорию
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Снимаем выбор с "Все категории"
+                        allCategoriesCheckbox.checked = false;
+                    } else {
+                        // Проверяем, выбрана ли хоть одна категория
+                        const anyChecked = Array.from(categoryCheckboxes).some(cb => cb.checked);
+                        if (!anyChecked) {
+                            // Если ни одна не выбрана, выбираем "Все категории"
+                            allCategoriesCheckbox.checked = true;
+                        }
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
+7. Обновление контроллеров для работы с обновленными шаблонами
+7.1. Обновление маршрута профиля
+python# routes/main_routes.py (обновление маршрута профиля)
+
+@main_bp.route("/<string:lang>/profile")
+@login_required
+def profile(lang):
+    """Отображает профиль пользователя."""
+    current_lang = getattr(g, 'lang', lang)
+    user = current_user
+    user_progress_list = []
+    
+    try:
+        # Получаем данные о прогрессе для отображения в профиле
+        all_modules = Module.query.order_by(Module.id).all()
+        completed_lesson_ids = { p.lesson_id for p in UserProgress.query.filter_by(user_id=user.id, completed=True).all() }
+        
+        for module in all_modules:
+            lessons_in_module = Lesson.query.filter_by(module_id=module.id).with_entities(Lesson.id).all()
+            lesson_ids_in_module = {lesson.id for lesson in lessons_in_module}
+            total_lessons = len(lesson_ids_in_module)
+            completed_lessons_count = len(lesson_ids_in_module.intersection(completed_lesson_ids))
+            percentage = int((completed_lessons_count / total_lessons * 100)) if total_lessons > 0 else 0
+            
+            user_progress_list.append({
+                'id': module.id,
+                'title': module.title,
+                'completed_lessons': completed_lessons_count,
+                'total_lessons': total_lessons,
+                'percentage': percentage
+            })
+    except Exception as e:
+        current_app.logger.error(f"Error calculating progress for user {user.id}: {e}", exc_info=True)
+        flash("Could not load learning progress.", "warning")
+        user_progress_list = []
+    
+    # Используем новый путь к шаблону профиля
+    return render_template("profile/profile.html", user=user, progress=user_progress_list)
+7.2. Обновление маршрутов старого learn_bp.py с перенаправлениями
+python# routes/learn_bp.py (временная версия для перенаправлений)
+
+from flask import Blueprint, redirect, url_for, g, current_app
+from flask_login import login_required
+
+# Создаем Blueprint
+learn_bp = Blueprint(
+    "learn_bp",
+    __name__,
+    template_folder='../templates'
+)
+
+@learn_bp.context_processor
+def inject_learn_context():
+    lang = getattr(g, 'lang', current_app.config['DEFAULT_LANGUAGE'])
+    return dict(lang=lang)
+
+@learn_bp.route("/<string:lang>/learn")
+@login_required
+def learn(lang):
+    """Перенаправляет на новый маршрут списка модулей."""
+    g.lang = lang
+    return redirect(url_for('modules_bp.modules_list', lang=lang))
+
+@learn_bp.route("/<string:lang>/learn/chapter/<int:module_id>")
+@login_required
+def learn_chapter(lang, module_id):
+    """Перенаправляет на новый маршрут просмотра модуля."""
+    g.lang = lang
+    return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module_id))
+
+@learn_bp.route("/<string:lang>/learning/module/<int:module_id>")
+@login_required
+def module_view(lang, module_id):
+    """Перенаправляет на новый маршрут просмотра модуля."""
+    g.lang = lang
+    return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module_id))
+
+# Добавляем перенаправления для всех других маршрутов
+@learn_bp.route("/<string:lang>/learn/chapter/<int:module_id>/continue_after_test", methods=['POST'])
+@login_required
+def continue_after_test(lang, module_id):
+    """Перенаправляет из старого маршрута. Скоро будет удален."""
+    g.lang = lang
+    return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module_id))
+
+@learn_bp.route("/<string:lang>/learn/chapter/<int:module_id>/next", methods=['POST'])
+@login_required
+def next_learning_card(lang, module_id):
+    """Перенаправляет из старого маршрута. Скоро будет удален."""
+    g.lang = lang
+    return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module_id))
+
+@learn_bp.route("/<string:lang>/learn/chapter/<int:module_id>/reset", methods=['POST'])
+@login_required
+def reset_chapter_progress(lang, module_id):
+    """Перенаправляет из старого маршрута. Скоро будет удален."""
+    g.lang = lang
+    return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module_id))
+8. Тестирование и документирование
+8.1. Тестирование основных путей пользователя
+После каждого шага реорганизации необходимо выполнить тесты основных путей пользователя:
+
+Авторизация:
+
+Вход в систему
+Выход из системы
+Регистрация
+
+
+Обучение:
+
+Просмотр карты обучения
+Открытие и просмотр модуля
+Просмотр и прохождение урока
+Отслеживание прогресса
+
+
+Тестирование:
+
+Настройка теста
+Прохождение теста
+Просмотр результатов
+
+
+Профиль:
+
+Просмотр профиля
+Редактирование профиля
+
+
+Дашборд:
+
+Просмотр дашборда
+Взаимодействие с рекомендациями
+
+
+
+8.2. Документирование структуры и маршрутов
+Создание документации для новой структуры проекта:
+markdown# Структура шаблонов и маршрутов
+
+## Шаблоны
+
+### Базовые шаблоны
+- `templates/base.html` - Основной шаблон
+- `templates/includes/_header.html` - Шапка сайта
+- `templates/includes/_footer.html` - Подвал сайта
+- `templates/includes/_flash_messages.html` - Сообщения и уведомления
+- `templates/includes/_macros.html` - Макросы для повторяющихся элементов
+
+### Обучение
+- `templates/learning/map.html` - Карта обучения
+- `templates/learning/dashboard.html` - Дашборд пользователя
+- `templates/learning/modules_list.html` - Список доступных модулей
+- `templates/learning/module.html` - Страница модуля
+- `templates/learning/lesson.html` - Страница урока
+
+### Тестирование
+- `templates/tests/setup.html` - Настройка параметров теста
+- `templates/tests/question.html` - Страница вопроса теста
+- `templates/tests/result.html` - Результаты теста
+
+### Профиль и аутентификация
+- `templates/auth/login.html` - Страница входа
+- `templates/auth/register.html` - Страница регистрации
+- `templates/profile/profile.html` - Профиль пользователя
+
+## Маршруты (URL)
+
+### Основные маршруты
+- `/<lang>/` - Главная страница
+- `/<lang>/home` - Главная страница (альтернативный URL)
+- `/<lang>/big-info` - Информация о BIG-экзамене
+
+### Обучение
+- `/<lang>/modules` - Список модулей
+- `/<lang>/modules/<module_id>` - Просмотр модуля
+- `/<lang>/module/<module_id>/lesson/<lesson_index>` - Просмотр урока
+- `/<lang>/learning-map` - Карта обучения
+- `/<lang>/learning-map/<path_id>` - Карта конкретного пути обучения
+- `/<lang>/dashboard` - Дашборд обучения
+
+### Тестирование
+- `/<lang>/tests` - Настройка теста
+- `/<lang>/tests/start` - Запуск теста
+- `/<lang>/tests/take` - Прохождение теста
+- `/<lang>/tests/next` - Следующий вопрос
+
+### Профиль и аутентификация
+- `/<lang>/login` - Вход
+- `/<lang>/register` - Регистрация
+- `/<lang>/logout` - Выход
+- `/<lang>/profile` - Профиль пользователя
+
+### API
+- `/<lang>/api/progress/<module_id>` - Получение прогресса по модулю
+- `/<lang>/api/save-progress` - Сохранение прогресса
+9. Завершение реорганизации
+9.1. Удаление устаревших файлов
+После полного тестирования и убеждения в работоспособности новой структуры можно удалить лишние файлы:
+bash# Удаление устаревших шаблонов
+rm templates/test_card.html
+rm templates/test_full.html
+rm templates/test_setup_category.html
+rm templates/card_view.html
+rm templates/learn_chapter.html
+rm templates/learning_module.html
+rm templates/demo.html
+9.2. Удаление устаревших маршрутов в learn_bp.py
+После переходного периода (минимум 2-4 недели) можно полностью удалить старый learn_bp.py и убрать его регистрацию из app.py.
+9.3. Финальная проверка
+Выполните финальную проверку всех ключевых функций после полной реорганизации:
+
+Проверьте все пользовательские сценарии
+Проверьте работу во всех поддерживаемых языках
+Проверьте корректность SEO-метаданных в шаблонах
+Убедитесь, что все внутренние ссылки работают
+
+10. Дополнительные рекомендации для улучшения проекта
+10.1. Внедрение компонентного подхода
+Рассмотрите возможность создания переиспользуемых компонентов для элементов UI, которые повторяются на разных страницах:
+
+Создайте директорию templates/components/ для хранения переиспользуемых компонентов
+Переместите общие элементы (карточки, навигационные панели, индикаторы прогресса) в отдельные файлы
+Подключайте их через {% include %} или макросы
+
+10.2. Улучшение организации статических файлов
+static/
+  css/
+    components/
+      cards.css
+      progress.css
+      navigation.css
+    pages/
+      dashboard.css
+      learning_map.css
+      modules.css
+      tests.css
+    main.css
+  js/
+    components/
+      progress-tracker.js
+      test-handler.js
+    pages/
+      dashboard.js
+      learning-map.js
+  images/
+  sounds/
+10.3. Документирование API
+Создайте документацию для API-эндпоинтов, используемых в вашем приложении. Это упростит добавление новых функций и интеграцию с другими системами.
+Заключение
+Этот подробный план реорганизации позволит вам постепенно и без длительных периодов простоя перейти к более чистой и поддерживаемой структуре проекта. Ключевые моменты:
+
+Постепенный переход с сохранением обратной совместимости
+Тестирование после каждого значительного изменения
+Документирование новой структуры и маршрутов
+Удаление устаревшего кода только после убеждения в работоспособности новой структуры
+
+Такой подход позволит значительно упростить поддержку проекта в долгосрочной перспективе и сделает его более масштабируемым для будущих улучшений.

@@ -1,0 +1,199 @@
+  /**
+     * Сплеш-скрин (показывается один раз за сессию)
+     */
+    checkAndShowSplash() {
+        const splashShown = sessionStorage.getItem('splashShown');
+        if (!splashShown && window.location.pathname.includes('/learning-map')) {
+            this.showSplashScreen();
+            sessionStorage.setItem('splashShown', 'true');
+        }
+    }
+
+    showSplashScreen() {
+        const splash = document.createElement('div');
+        splash.id = 'splash-screen';
+        splash.innerHTML = `
+            <div class="splash-content">
+                <div class="splash-logo">
+                    <div class="logo-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                        <div class="ring ring-3"></div>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-main">Dental</span>
+                        <span class="logo-sub">Academy</span>
+                    </div>
+                </div>
+                <div class="splash-tagline">Preparing for Excellence</div>
+                <div class="splash-loader">
+                    <div class="loader-bar"></div>
+                    <div class="loader-text">Loading your learning experience...</div>
+                </div>
+            </div>
+        `;
+
+        // Стили для сплеш-скрина
+        const splashStyles = document.createElement('style');
+        splashStyles.textContent = `
+            #splash-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: splashFadeIn 0.5s ease-out;
+            }
+            
+            .splash-content {
+                text-align: center;
+                color: white;
+            }
+            
+            .splash-logo {
+                margin-bottom: 2rem;
+                position: relative;
+            }
+            
+            .logo-rings {
+                position: relative;
+                width: 120px;
+                height: 120px;
+                margin: 0 auto 1rem;
+            }
+            
+            .ring {
+                position: absolute;
+                border: 3px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                animation: ringPulse 2s ease-in-out infinite;
+            }
+            
+            .ring-1 {
+                width: 60px;
+                height: 60px;
+                top: 30px;
+                left: 30px;
+                border-color: #3ECDC1;
+            }
+            
+            .ring-2 {
+                width: 90px;
+                height: 90px;
+                top: 15px;
+                left: 15px;
+                animation-delay: 0.5s;
+                border-color: #6C5CE7;
+            }
+            
+            .ring-3 {
+                width: 120px;
+                height: 120px;
+                top: 0;
+                left: 0;
+                animation-delay: 1s;
+                border-color: #FDCB6E;
+            }
+            
+            .logo-text {
+                font-family: 'Poppins', sans-serif;
+            }
+            
+            .logo-main {
+                font-size: 2.5rem;
+                font-weight: 700;
+                display: block;
+                margin-bottom: 0.25rem;
+                background: linear-gradient(45deg, #3ECDC1, #6C5CE7);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            
+            .logo-sub {
+                font-size: 1.2rem;
+                font-weight: 300;
+                opacity: 0.9;
+                letter-spacing: 0.2em;
+                text-transform: uppercase;
+            }
+            
+            .splash-tagline {
+                font-size: 1.1rem;
+                margin-bottom: 3rem;
+                opacity: 0.8;
+                font-style: italic;
+            }
+            
+            .splash-loader {
+                width: 300px;
+                margin: 0 auto;
+            }
+            
+            .loader-bar {
+                width: 100%;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 2px;
+                overflow: hidden;
+                margin-bottom: 1rem;
+            }
+            
+            .loader-bar::after {
+                content: '';
+                display: block;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, #3ECDC1, #6C5CE7, #FDCB6E);
+                border-radius: 2px;
+                animation: loaderProgress 2.5s ease-out forwards;
+            }
+            
+            .loader-text {
+                font-size: 0.9rem;
+                opacity: 0.7;
+            }
+            
+            @keyframes splashFadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes ringPulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.1); opacity: 0.7; }
+            }
+            
+            @keyframes loaderProgress {
+                from { transform: translateX(-100%); }
+                to { transform: translateX(0); }
+            }
+        `;
+
+        document.head.appendChild(splashStyles);
+        document.body.appendChild(splash);
+
+        // Убираем сплеш через 3 секунды
+        setTimeout(() => {
+            splash.style.animation = 'splashFadeOut 0.5s ease-out forwards';
+            splash.addEventListener('animationend', () => {
+                splash.remove();
+                splashStyles.remove();
+            });
+        }, 3000);
+
+        // Добавляем стиль для fade out
+        setTimeout(() => {
+            splashStyles.textContent += `
+                @keyframes splashFadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+            `;
+        }, 100);
+    }

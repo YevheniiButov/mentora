@@ -1,0 +1,499 @@
+/* learning_dashboard.css - Стили для дашборда обучения */
+
+/* Основной контейнер страницы */
+.learning-dashboard {
+    padding-top: 1.5rem;
+    font-family: var(--font-family-primary);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .learning-dashboard .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+  
+  /* Плавающие фоновые элементы */
+  .dashboard-floating-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.7;
+    z-index: 0;
+    pointer-events: none;
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+  }
+  
+  .dashboard-shape-1 {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(90deg, rgba(62, 205, 193, 0.6), rgba(62, 205, 193, 0.2));
+    top: -50px;
+    left: -150px;
+    animation: float-shape-1 25s infinite alternate ease-in-out;
+    box-shadow: 0 0 50px rgba(62, 205, 193, 0.3);
+  }
+  
+  .dashboard-shape-2 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(90deg, rgba(108, 92, 231, 0.5), rgba(108, 92, 231, 0.15));
+    bottom: -100px;
+    right: -100px;
+    animation: float-shape-2 30s infinite alternate ease-in-out;
+    box-shadow: 0 0 50px rgba(108, 92, 231, 0.3);
+  }
+  
+  .dashboard-shape-3 {
+    width: 250px;
+    height: 250px;
+    background: linear-gradient(90deg, rgba(255, 209, 102, 0.4), rgba(255, 209, 102, 0.1));
+    top: 30%;
+    right: 15%;
+    animation: float-shape-3 20s infinite alternate ease-in-out;
+    box-shadow: 0 0 40px rgba(255, 209, 102, 0.3);
+  }
+  
+  /* Анимации для плавающих элементов */
+  @keyframes float-shape-1 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(80px, 50px) rotate(15deg) scale(1.1); }
+  }
+  
+  @keyframes float-shape-2 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(-50px, -80px) rotate(-10deg) scale(1.2); }
+  }
+  
+  @keyframes float-shape-3 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(-30px, 30px) rotate(5deg) scale(0.9); }
+  }
+  
+  /* Шапка дашборда */
+  .dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+  
+  .dashboard-title h1 {
+    font-family: var(--font-family-secondary);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+  
+  .dashboard-cta .btn {
+    padding: 0.5rem 1.25rem;
+    font-weight: 600;
+  }
+  
+  /* Секция с прогрессом */
+  .progress-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .progress-card {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+    overflow: hidden;
+  }
+  
+  .progress-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+  
+  .progress-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 70%);
+    pointer-events: none;
+  }
+  
+  /* Карточка с круговым прогрессом */
+  .progress-circle-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+  
+  .progress-circle-outer {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin: 0 auto;
+  }
+  
+  .progress-circle-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  
+  .progress-percentage {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+  
+  .progress-circle-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-90deg);
+  }
+  
+  .progress-circle-bg {
+    fill: none;
+    stroke: #f0f0f0;
+  }
+  
+  .progress-circle-progress {
+    fill: none;
+    stroke: var(--color-primary);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease;
+  }
+  
+  .progress-label {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin-top: 1rem;
+    text-align: center;
+  }
+  
+  /* Карточки с активностью и датой экзамена */
+  .card-title {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+  }
+  
+  .card-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 1rem;
+  }
+  
+  .progress-bar-container {
+    margin-top: auto;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    background-color: rgba(240, 240, 240, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-bar-fill {
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  
+  /* Кнопка настройки плана */
+  .setup-plan {
+    margin-bottom: 2.5rem;
+  }
+  
+  .btn-secondary {
+    background-color: rgba(248, 249, 250, 0.7);
+    color: var(--color-text-primary);
+    border: 1px solid rgba(222, 226, 230, 0.5);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+  
+  .btn-secondary:hover {
+    background-color: rgba(233, 236, 239, 0.8);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .btn-block {
+    display: block;
+    width: 100%;
+  }
+  
+  /* Раздел рекомендуемого модуля */
+  .recommended-section {
+    margin-bottom: 2.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 1.25rem;
+  }
+  
+  .module-card {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .module-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+  
+  .module-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 70%);
+    pointer-events: none;
+  }
+  
+  .module-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .module-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.5rem;
+    background-color: rgba(32, 178, 170, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: var(--color-primary);
+    font-size: 1.25rem;
+  }
+  
+  .module-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+  
+  .module-description {
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  
+  .module-progress {
+    margin-bottom: 1.5rem;
+  }
+  
+  .progress-bar-bg {
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .module-progress-text {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .module-progress-value {
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+  
+  .module-progress-total {
+    color: var(--color-text-secondary);
+  }
+  
+  .module-cta {
+    text-align: center;
+  }
+  
+  .module-cta .btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-weight: 600;
+  }
+  
+  /* Раздел всех модулей */
+  .all-modules-section {
+    margin-bottom: 2.5rem;
+  }
+  
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  
+  .btn-outline-primary {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background-color: transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-outline-primary:hover {
+    color: white;
+    background-color: var(--color-primary);
+  }
+  
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .module-small-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .module-small-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  }
+  
+  .module-small-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.5rem;
+    background-color: rgba(32, 178, 170, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: var(--color-primary);
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  
+  .module-small-content {
+    flex: 1;
+  }
+  
+  .module-small-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 0.5rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .module-small-progress {
+    display: flex;
+    align-items: center;
+  }
+  
+  .progress-small-bar-bg {
+    flex: 1;
+    height: 6px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-right: 0.5rem;
+  }
+  
+  .progress-small-bar-fill {
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: 3px;
+  }
+  
+  .module-small-percentage {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    min-width: 30px;
+    text-align: right;
+  }
+  
+  /* Модальное окно */
+  .modal-content {
+    border-radius: 1rem;
+    border: none;
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .modal-footer {
+    border-top: 1px solid #f0f0f0;
+  }
+  
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .progress-section {
+      grid-template-columns: 1fr;
+    }
+    
+    .modules-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .progress-circle-outer {
+      width: 140px;
+      height: 140px;
+    }
+    
+    .progress-percentage {
+      font-size: 2rem;
+    }
+  }

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "includes/_macros.html" import render_pagination %}
+
+{% block title %}Форум{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
+{% endblock %}
+
+{% block content %}
+{# Используем ваш класс для отступа от шапки #}
+<div class="container main-content-padding pt-3 forum-page-content"> {<div class="container py-4 main-content-padding">
+
+
+    {# Заголовок и кнопка "Создать тему" #}
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
+        <h1 class="mb-0">Форум Tandarts Academy</h1>
+        {% if current_user.is_authenticated %}
+            {# --- ИСПРАВЛЕНИЕ ЗДЕСЬ: Добавлен lang=g.lang --- #}
+            <a href="{{ url_for('forum_bp.new_topic', lang=g.lang) }}" class="btn btn-primary fw-semibold ms-sm-2 flex-shrink-0">
+                <i class="bi bi-plus-lg"></i> Создать новую тему
+            </a>
+            {# --- КОНЕЦ ИСПРАВЛЕНИЯ --- #}
+        {% else %}
+             {# Добавлен lang=g.lang и сюда #}
+             <a href="{{ url_for('auth_bp.login', lang=g.lang, next=request.url) }}" class="btn btn-secondary ms-sm-2 flex-shrink-0">                Войдите, чтобы создать тему
+            </a>
+        {% endif %}
+    </div>
+
+    {# Отображение Flash сообщений (Удалите, если есть в base.html) #}
+    {# {% include '_flash_messages.html' ignore missing %} #}
+
+    {# Список тем #}
+    <div class="forum-topic-list"> {# Класс-обертка для специфичных стилей #}
+        <div class="list-group shadow-sm">
+            {# Заголовки колонок для больших экранов #}
+            <div class="list-group-item list-group-item-secondary fw-bold d-none d-md-flex">
+                 <div class="col-md-7">Тема / Автор</div>
+                 <div class="col-md-2 text-center">Статистика</div>
+                 <div class="col-md-3 text-end">Последнее сообщение</div>
+            </div>
+
+            {% if topics %}
+                {% for topic in topics %}
+                {# Добавляем класс featured-topic, если нужно #}
+                {# Добавляем классы отступов py-2 py-md-3 #}
+                <div class="list-group-item list-group-item-action {% if topic.is_featured %}featured-topic{% endif %} py-2 py-md-3">
+                    <div class="row align-items-center">
+
+                        {# Колонка Названия и Автора #}
+                        <div class="col-12 col-md-7 mb-2 mb-md-0">
+                            <h5 class="mb-1 fw-semibold"> {# Убрали text-primary #}
+                                {% if topic.is_featured %}<i class="bi bi-pin-angle-fill text-warning me-1" title="Закреплено"></i>{% endif %}
+                                {# Добавлен lang=g.lang #}
+                                <a href="{{ url_for('forum_bp.view_topic', lang=g.lang, topic_id=topic.id) }}" class="text-decoration-none">
+                                    {{ topic.title }}
+                                </a>
+                            </h5>
+                            <p class="mb-0 small text-muted"> {# Уменьшили шрифт и сделали серым #}
+                                 <i class="bi bi-person"></i> <a href="#" class="text-decoration-none">{{ topic.author.name }}</a> {# Ссылка стилизуется через CSS #}
+                                 <span class="mx-1">|</span>
+                                 <i class="bi bi-clock"></i> <span title="{{ topic.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">{{ topic.timestamp.strftime('%d %b %Y') }}</span>
+                                 {% if topic.category %}
+                                     <span class="mx-1 d-none d-md-inline">|</span> {# Скрываем разделитель и категорию на мобильных #}
+                                     <span class="d-none d-md-inline">
+                                         <i class="bi bi-tag"></i> <span class="badge bg-light text-dark rounded-pill border fw-normal">{{ topic.category }}</span>
+                                     </span>
+                                 {% endif %}
+                            </p>
+                        </div>
+
+                        {# Колонка Статистики (Скрыта на мобильных) #}
+                        <div class="col-6 col-md-2 text-center text-md-center small text-muted mb-2 mb-md-0 topic-stats d-none d-md-block">
+                            <div><i class="bi bi-chat-left-text me-1"></i> {{ topic.posts.count() - 1 if topic.posts else 0 }}</div> {# TODO: Оптимизировать #}
+                            <div><i class="bi bi-eye me-1"></i> {{ topic.views }}</div>
+                        </div>
+
+                        {# Колонка Последнего Сообщения (Скрыта на мобильных) #}
+                        <div class="col-6 col-md-3 text-end small text-muted last-post-info d-none d-md-block">
+                            {# TODO: Получать инфо о последнем посте #}
+                            <div><a href="#" class="text-decoration-none">User Name</a></div>
+                            <div><span title="YYYY-MM-DD HH:MM:SS">DD MonYYYY, HH:MM</span></div>
+                             {# Добавлен lang=g.lang #}
+                            <a href="{{ url_for('forum_bp.view_topic', lang=g.lang, topic_id=topic.id) }}#latest" class="text-decoration-none text-muted" title="Перейти к последнему сообщению"><i class="bi bi-box-arrow-in-right"></i></a>
+                        </div>
+
+                    </div> {# end .row #}
+                </div> {# end .list-group-item #}
+                {% endfor %}
+            {% else %}
+                <div class="list-group-item">
+                     {# Добавлен lang=g.lang #}
+                    <p class="text-muted mb-0 text-center">На форуме пока нет тем. <a href="{{ url_for('forum_bp.new_topic', lang=g.lang) }}" class="text-primary">Станьте первым!</a></p>
+                </div>
+            {% endif %}
+        </div> {# Конец list-group #}
+    </div> {# Конец forum-topic-list #}
+
+    {# Пагинация для тем #}
+    {% if pagination and pagination.pages > 1 %}
+        <div class="mt-4">
+             {# Используем Bootstrap макрос #}
+             {{ render_pagination(pagination, 'forum.forum_home') }}
+        </div>
+    {% endif %}
+
+</div> {# Конец .container #}
+{% endblock %}

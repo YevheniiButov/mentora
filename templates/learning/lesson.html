@@ -1,0 +1,856 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if lang == 'ru' %}Урок: {{ lesson.title }}{% else %}Lesson: {{ lesson.title }}{% endif %} - Become a Tandarts
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <style>
+        /* Основные стили с использованием переменных */
+        :root {
+            --primary-color: #3ECDC1;
+            --primary-dark: #32A39A;
+            --primary-light: #6bcbc7;
+            --secondary-color: #6C5CE7;
+            --accent-color: #FDCB6E;
+            --danger-color: #e74c3c;
+            --text-primary: #2c3e50;
+            --text-secondary: #5d6d7e;
+            --border-color: #e9ecef;
+            --background-light: #f8fafc;
+            --card-bg: #ffffff;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --transition-fast: 200ms ease;
+            --transition-normal: 300ms ease;
+        }
+        
+        /* Основной контейнер */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 64px);
+            margin-top: 64px;
+            background-color: var(--background-light);
+        }
+        
+        /* Левая колонка с подтемами */
+        .left-column {
+            width: 280px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            overflow-y: auto;
+            height: calc(100vh - 64px);
+            flex-shrink: 0;
+            z-index: 10;
+            position: sticky;
+            top: 64px;
+        }
+        
+        .section-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--background-light);
+        }
+        
+        .section-header h2 {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .subtopics-list {
+            padding: 1rem;
+        }
+        
+        .subtopic-item {
+            margin-bottom: 0.75rem;
+        }
+        
+        .subtopic-link {
+            display: block;
+            padding: 0.75rem;
+            background-color: var(--background-light);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all var(--transition-fast);
+            border-left: 4px solid transparent;
+        }
+        
+        .subtopic-link:hover {
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-1px);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .subtopic-link.active {
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-md);
+            color: var(--primary-color);
+            font-weight: 600;
+            border-left-color: var(--primary-color);
+        }
+        
+        .subtopic-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .subtopic-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+        
+        .progress-bar-mini {
+            width: 60px;
+            height: 4px;
+            background-color: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill-mini {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Средняя колонка с контентом урока */
+        .middle-column {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            min-height: calc(100vh - 64px);
+        }
+        
+        /* Хлебные крошки */
+        .breadcrumb-nav {
+            margin-bottom: 20px;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .breadcrumb-item:not(:last-child)::after {
+            content: "/";
+            margin: 0 8px;
+            color: #adb5bd;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        /* Заголовок модуля */
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .module-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .lesson-count {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Индикатор прогресса */
+        .progress-container {
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Заголовок урока */
+        .lesson-header {
+            margin-bottom: 25px;
+        }
+        
+        .lesson-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 10px;
+        }
+        
+        .lesson-type {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 4px;
+        }
+        
+        /* Контент урока */
+        .lesson-content-card {
+            background-color: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 30px;
+            margin-bottom: 30px;
+            min-height: 300px;
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+        }
+        
+        .lesson-content-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .lesson-content h3 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+        
+        .lesson-content p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .lesson-content ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .lesson-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Стили для тестовых вопросов */
+        .test-options {
+            margin: 20px 0;
+        }
+        
+        .test-option {
+            background: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .test-option:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            transform: translateY(-2px);
+        }
+        
+        .test-option.correct {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .test-option.incorrect {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .quiz-explanation {
+            background: #e2f3ff;
+            border: 1px solid #b8daff;
+            border-radius: var(--radius-md);
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .quiz-explanation h4 {
+            color: #004085;
+            margin-top: 0;
+        }
+        
+        /* Теги */
+        .tags-container {
+            margin-top: 20px;
+        }
+        
+        .tag {
+            display: inline-block;
+            background-color: var(--background-light);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            margin: 2px;
+            transition: all var(--transition-fast);
+        }
+        
+        .tag:hover {
+            background-color: var(--border-color);
+            transform: translateY(-1px);
+        }
+        
+        /* Навигация */
+        .lesson-navigation {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 1rem;
+        }
+        
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .nav-btn.prev {
+            background-color: var(--background-light);
+            color: var(--text-secondary);
+        }
+        
+        .nav-btn.prev:hover {
+            background-color: var(--border-color);
+            color: var(--text-primary);
+            transform: translateX(-2px);
+        }
+        
+        .nav-btn.next {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 3px 8px rgba(62, 205, 193, 0.2);
+        }
+        
+        .nav-btn.next:hover {
+            background-color: var(--primary-dark);
+            transform: translateX(2px);
+            box-shadow: 0 5px 12px rgba(62, 205, 193, 0.3);
+        }
+        
+        .nav-btn i {
+            font-size: 1.1rem;
+        }
+        
+        .nav-btn.prev i {
+            margin-right: 8px;
+        }
+        
+        .nav-btn.next i {
+            margin-left: 8px;
+        }
+        
+        /* Правая колонка */
+        .right-column {
+            width: 320px;
+            background-color: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+            height: calc(100vh - 64px);
+            position: sticky;
+            top: 64px;
+            flex-shrink: 0;
+        }
+        
+        .right-column h2 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin: 0 0 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        .stats-section, .resources-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .progress-circle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .progress-circle {
+            position: relative;
+            width: 8rem;
+            height: 8rem;
+        }
+        
+        .circle-background, .circle-progress {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+        
+        .circle-background {
+            border: 8px solid #f1f5f9;
+        }
+        
+        .circle-progress {
+            border: 8px solid transparent;
+            border-top: 8px solid var(--primary-color);
+            border-right: 8px solid var(--primary-color);
+            transition: transform 1s ease;
+        }
+        
+        .circle-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .stats-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--background-light);
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-fast);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+        
+        .stat-icon.blue {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+        
+        .stat-icon.purple {
+            background-color: rgba(108, 92, 231, 0.1);
+            color: #6c5ce7;
+        }
+        
+        .stat-content {
+            flex: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .stat-value {
+            font-weight: 700;
+        }
+        
+        .resource-card {
+            background-color: var(--background-light);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .resource-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .resource-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Медиа запросы для адаптивности */
+        @media (max-width: 1200px) {
+            .right-column {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .left-column {
+                width: 240px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .left-column {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+            
+            .middle-column {
+                padding: 1rem;
+            }
+            
+            .lesson-navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Левая колонка с списком подтем -->
+    <div class="left-column">
+        <div class="section-header">
+            <h2>{% if lang == 'ru' %}Подтемы{% else %}Subtopics{% endif %}</h2>
+        </div>
+        
+        <div class="subtopics-list">
+            {% for subtopic in subtopics_with_progress %}
+                <div class="subtopic-item">
+                    <a href="{{ url_for('modules_bp.subtopic_lessons_list', lang=lang, module_id=module.id, slug=subtopic.slug) }}" 
+                       class="subtopic-link {% if subtopic.is_current %}active{% endif %}">
+                        <div class="subtopic-name">{{ subtopic.name }}</div>
+                        <div class="subtopic-progress">
+                            <span>{{ subtopic.completed_lessons }}/{{ subtopic.total_lessons }}</span>
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill-mini" style="width: {{ subtopic.progress_percent }}%"></div>
+                            </div>
+                            <span>{{ subtopic.progress_percent }}%</span>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Средняя колонка с контентом урока -->
+    <div class="middle-column">
+        <!-- Хлебные крошки -->
+        <nav class="breadcrumb-nav" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main_bp.home', lang=lang) }}">{% if lang == 'ru' %}Главная{% else %}Home{% endif %}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('modules_bp.modules_list', lang=lang) }}">{% if lang == 'ru' %}Модули{% else %}Modules{% endif %}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('modules_bp.module_view', lang=lang, module_id=module.id) }}">{{ module.title }}</a></li>
+                {% if current_subtopic %}
+                    <li class="breadcrumb-item"><span>{{ current_subtopic }}</span></li>
+                {% endif %}
+                <li class="breadcrumb-item active">{{ lesson.title }}</li>
+            </ol>
+        </nav>
+        
+        <!-- Заголовок модуля и прогресс -->
+        <div class="module-header">
+            <h2 class="module-title">{{ module.title }}</h2>
+            <div class="lesson-count">
+                {% if lang == 'ru' %}Урок{% else %}Lesson{% endif %} {{ lesson_index + 1 }} / {{ total_lessons }}
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" style="width: {{ (lesson_index + 1) / total_lessons * 100 }}%"></div>
+        </div>
+        
+        <!-- Заголовок урока -->
+        <div class="lesson-header">
+            <h1 class="lesson-title">{{ lesson.title }}</h1>
+            <span class="lesson-type">
+                {% if lesson.content_type == 'learning_card' %}
+                    {% if lang == 'ru' %}Обучающая карточка{% else %}Learning Card{% endif %}
+                {% elif lesson.content_type == 'test_question' %}
+                    {% if lang == 'ru' %}Тестовый вопрос{% else %}Test Question{% endif %}
+                {% else %}
+                    {{ lesson.content_type }}
+                {% endif %}
+            </span>
+        </div>
+        
+        <!-- Контент урока -->
+        <div class="lesson-content-card">
+            <div class="lesson-content">
+                {% if processed_content and processed_content.type == 'learning_cards' %}
+                    <!-- Отображение обучающих карточек -->
+                    {% for card in processed_content.cards %}
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h3>{{ card.question }}</h3>
+                                <div class="answer">{{ card.answer }}</div>
+                                {% if card.tags %}
+                                    <div class="tags-container mt-3">
+                                        {% for tag in card.tags %}
+                                            <span class="tag">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                
+                {% elif processed_content and processed_content.type == 'quiz' %}
+                    <!-- Отображение тестовых вопросов -->
+                    {% for question in processed_content.questions %}
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h3>Вопрос {{ loop.index }}: {{ question.question }}</h3>
+                                <div class="test-options">
+                                    {% for option in question.options %}
+                                        <div class="test-option {% if question.answer == loop.index0|string or question.answer == ['A', 'B', 'C', 'D'][loop.index0] %}correct{% endif %}">
+                                            <strong>{{ ['A', 'B', 'C', 'D'][loop.index0] }})</strong> {{ option }}
+                                            {% if question.answer == loop.index0|string or question.answer == ['A', 'B', 'C', 'D'][loop.index0] %}
+                                                <i class="bi bi-check-circle-fill text-success float-end"></i>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if question.explanation %}
+                                    <div class="quiz-explanation mt-3">
+                                        <h4>Объяснение:</h4>
+                                        <p>{{ question.explanation }}</p>
+                                    </div>
+                                {% endif %}
+                                {% if question.tags %}
+                                    <div class="tags-container mt-3">
+                                        {% for tag in question.tags %}
+                                            <span class="tag">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                
+                {% else %}
+                    <!-- Простое текстовое содержимое -->
+                    <div class="text-content">
+                        {% if processed_content and processed_content.content %}
+                            {{ processed_content.content|safe }}
+                        {% elif lesson.content %}
+                            {{ lesson.content|safe }}
+                        {% else %}
+                            <p>{% if lang == 'ru' %}Содержимое этого урока отсутствует.{% else %}Content for this lesson is missing.{% endif %}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Навигация по урокам -->
+        <div class="lesson-navigation">
+            {% if lesson_index > 0 %}
+                <a href="{{ url_for('lesson_bp.lesson_view', lang=lang, module_id=module.id, lesson_index=lesson_index - 1) }}" class="nav-btn prev">
+                    <i class="bi bi-arrow-left"></i>
+                    {% if lang == 'ru' %}Предыдущий урок{% else %}Previous Lesson{% endif %}
+                </a>
+            {% else %}
+                <a href="{{ url_for('modules_bp.module_view', lang=lang, module_id=module.id) }}" class="nav-btn prev">
+                    <i class="bi bi-arrow-left"></i>
+                    {% if lang == 'ru' %}К модулю{% else %}Back to Module{% endif %}
+                </a>
+            {% endif %}
+            
+            {% if lesson_index + 1 < total_lessons %}
+                <form method="POST" action="{{ url_for('lesson_bp.next_lesson', lang=lang, module_id=module.id, lesson_index=lesson_index) }}" style="display: inline;">
+                    <button type="submit" class="nav-btn next">
+                        {% if lang == 'ru' %}Следующий урок{% else %}Next Lesson{% endif %}
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </form>
+            {% else %}
+                <form method="POST" action="{{ url_for('lesson_bp.next_lesson', lang=lang, module_id=module.id, lesson_index=lesson_index) }}" style="display: inline;">
+                    <button type="submit" class="nav-btn next">
+                        {% if lang == 'ru' %}Завершить модуль{% else %}Complete Module{% endif %}
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Правая колонка со статистикой и ресурсами -->
+    <div class="right-column">
+        <div class="stats-section">
+            <h2>{% if lang == 'ru' %}Ваш прогресс{% else %}Your Progress{% endif %}</h2>
+            
+            <!-- Круговой индикатор прогресса -->
+            <div class="progress-circle-container">
+                <div class="progress-circle" data-progress="{{ (lesson_index + 1) / total_lessons * 100 }}">
+                    <div class="circle-background"></div>
+                    <div class="circle-progress" style="transform: rotate({{ (lesson_index + 1) / total_lessons * 100 * 3.6 }}deg)"></div>
+                    <div class="circle-text">{{ ((lesson_index + 1) / total_lessons * 100) | int }}%</div>
+                </div>
+            </div>
+            
+            <!-- Статистика -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="bi bi-journal-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">{% if lang == 'ru' %}Завершенные уроки{% else %}Completed Lessons{% endif %}</span>
+                    </div>
+                    <div class="stat-value">{{ lesson_index + 1 }}/{{ total_lessons }}</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">{% if lang == 'ru' %}Время урока{% else %}Lesson Time{% endif %}</span>
+                    </div>
+                    <div class="stat-value">10 {% if lang == 'ru' %}мин{% else %}min{% endif %}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="resources-section">
+            <h2>{% if lang == 'ru' %}Дополнительные ресурсы{% else %}Additional Resources{% endif %}</h2>
+            
+            <div class="resource-card">
+                <div class="resource-title">{% if lang == 'ru' %}Словарь терминов{% else %}Glossary{% endif %}</div>
+                <div class="resource-description">{% if lang == 'ru' %}Ключевые термины по теме{% else %}Key terms related to this topic{% endif %}</div>
+            </div>
+            
+            <div class="resource-card">
+                <div class="resource-title">{% if lang == 'ru' %}Учебные видео{% else %}Learning Videos{% endif %}</div>
+                <div class="resource-description">{% if lang == 'ru' %}Дополнительные видеоматериалы{% else %}Additional video materials{% endif %}</div>
+            </div>
+            
+            <div class="resource-card">
+                <div class="resource-title">{% if lang == 'ru' %}Рекомендуемая литература{% else %}Recommended Reading{% endif %}</div>
+                <div class="resource-description">{% if lang == 'ru' %}Книги и статьи по теме{% else %}Books and articles on this topic{% endif %}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+// Сохранение прогресса
+document.addEventListener('DOMContentLoaded', function() {
+    // Через 10 секунд отмечаем урок как просмотренный
+    setTimeout(function() {
+        fetch('{{ url_for("lesson_bp.save_lesson_progress", lang=lang, module_id=module.id, lesson_id=lesson.id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                'time_spent': 5.0,
+                'completed': false
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Progress saved:', data);
+        })
+        .catch(error => {
+            console.error('Error saving progress:', error);
+        });
+    }, 10000);
+    
+    // Анимация кругового прогресса
+    const progressCircle = document.querySelector('.progress-circle');
+    const progressValue = parseFloat(progressCircle.getAttribute('data-progress'));
+    
+    // Если прогресс больше 50%, нужно изменить стиль для корректного отображения
+    if (progressValue > 50) {
+        const circleProgress = document.querySelector('.circle-progress');
+        circleProgress.style.borderBottom = '8px solid var(--primary-color)';
+        circleProgress.style.borderLeft = '8px solid var(--primary-color)';
+    }
+});
+</script>
+{% endblock %}

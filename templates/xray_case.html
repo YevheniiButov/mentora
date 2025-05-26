@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Рентген-задание</h2>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    Изображение
+                </div>
+                <div class="card-body">
+                    <div class="xray-container" 
+                         id="xrayContainer"
+                         data-image="/static/xray/{{ filename }}"
+                         data-regions='{{ regions | tojson | safe }}'
+                         data-tasks='{{ tasks | tojson | safe }}'
+                         style="position: relative; max-width: 100%; overflow: auto;">
+                        <canvas id="xrayCanvas" style="cursor: crosshair;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    Задание
+                </div>
+                <div class="card-body">
+                    <p id="taskDescription">Загрузка...</p>
+                    <div id="taskResult" class="alert d-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('xrayCanvas');
+const ctx = canvas.getContext('2d');
+const container = document.getElementById('xrayContainer');
+const imagePath = container.dataset.image;
+const regions = JSON.parse(container.dataset.regions);
+const tasks = JSON.parse(container.dataset.tasks);
+
+let currentTaskIndex = 0;
+let img = new Image();
+img.src = imagePath;
+img.onload = function() {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    drawImage();
+    showTask(currentTaskIndex);
+};
+
+canvas.addEventListener('click', function(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const task = tasks[currentTaskIndex];
+    const region = regions[task.target_region];
+
+    const inRegion = isPointInRegion(x, y, region);
+    showResult(inRegion, region);
+});
+
+function drawImage() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+}
+
+function drawRegion(region, color = 'rgba(255, 0, 0, 0.5)', lineWidth = 2) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    if (region.type === 'polyline') {
+        ctx.beginPath();
+        ctx.moveTo(region.points_x[0], region.points_y[0]);
+        for (let i = 1; i < region.points_x.length; i++) {
+            ctx.lineTo(region.points_x[i], region.points_y[i]);
+        }
+        ctx.stroke();
+    } else {
+        ctx.strokeRect(region.x, region.y, region.w, region.h);
+    }
+    if (region.label) {
+        ctx.fillStyle = color;
+        ctx.font = '14px Arial';
+        ctx.fillText(region.label, region.x, region.y - 5);
+    }
+}
+
+function isPointInRegion(x, y, region) {
+    return x >= region.x && x <= region.x + region.w && y >= region.y && y <= region.y + region.h;
+}
+
+function showTask(index) {
+    if (tasks[index]) {
+        document.getElementById('taskDescription').innerText = tasks[index].description;
+    }
+}
+
+function showResult(success, region) {
+    drawImage();
+    drawRegion(region, success ? 'rgba(0,255,0,0.6)' : 'rgba(255,0,0,0.6)', 3);
+    const resultBox = document.getElementById('taskResult');
+    resultBox.className = success ? 'alert alert-success' : 'alert alert-danger';
+    resultBox.innerText = success ? 'Правильно!' : 'Неправильно, попробуйте снова.';
+    resultBox.classList.remove('d-none');
+}
+</script>
+{% endblock %}

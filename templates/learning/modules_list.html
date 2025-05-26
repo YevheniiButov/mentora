@@ -1,0 +1,1015 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if lang == 'ru' %}Учебные модули{% elif lang == 'nl' %}Leermodules{% else %}Learning Modules{% endif %} - Become a Tandarts
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <style>
+        /* Основные переменные */
+        :root {
+            /* Основные цвета */
+            --primary-color: #3ECDC1;
+            --primary-dark: #32A39A;
+            --primary-light: #6bcbc7;
+            --secondary-color: #6C5CE7;
+            --accent-color: #FDCB6E;
+            --danger-color: #e74c3c;
+            
+            /* Цвета категорий */
+            --knowledge-gradient: linear-gradient(135deg, #3498db, #2980b9);
+            --communication-gradient: linear-gradient(135deg, #7d5fff, #5352ed);
+            --preclinical-gradient: linear-gradient(135deg, #4EB5B1, #3a8c88);
+            --workstation-gradient: linear-gradient(135deg, #ff7675, #e74c3c);
+            --bitoets-gradient: linear-gradient(135deg, #f1c40f, #f39c12);
+            --dutch-gradient: linear-gradient(135deg, #9b59b6, #8e44ad);
+            
+            /* Нейтральные цвета */
+            --text-primary: #2c3e50;
+            --text-secondary: #5d6d7e;
+            --border-color: #e9ecef;
+            --background-light: #f8fafc;
+            --card-bg: #ffffff;
+            
+            /* Радиусы */
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            
+            /* Тени */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            
+            /* Переходы */
+            --transition-fast: 200ms ease;
+            --transition-normal: 300ms ease;
+            --transition-slow: 500ms ease;
+        }
+        
+        /* Основной контейнер */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 64px);
+            margin-top: 64px; /* Высота шапки */
+            background-color: var(--background-light);
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+        }
+        
+        /* Левая колонка - фильтры */
+        .left-column {
+            width: 280px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            overflow-y: auto;
+            height: calc(100vh - 64px);
+            flex-shrink: 0;
+            z-index: 10;
+            position: sticky;
+            top: 64px;
+            padding: 2rem 1.5rem;
+        }
+        
+        .filters-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+        
+        .filter-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            transition: background-color var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .filter-option:hover {
+            background-color: var(--background-light);
+        }
+        
+        .filter-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .filter-option label {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .category-badge {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .category-badge.education {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .category-badge.bi_toets {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+        }
+        
+        .category-badge.dutch {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        
+        .filter-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 1.5rem 0;
+        }
+        
+        .apply-filters-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            box-shadow: 0 3px 8px rgba(62, 205, 193, 0.2);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .apply-filters-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(62, 205, 193, 0.3);
+        }
+        
+        .clear-filters-btn {
+            display: block;
+            width: 100%;
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background-color: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .clear-filters-btn:hover {
+            background-color: var(--background-light);
+            color: var(--text-primary);
+        }
+        
+        /* Средняя колонка - модули */
+        .middle-column {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .section-controls {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .view-toggle {
+            display: inline-flex;
+            background-color: var(--background-light);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        
+        .view-toggle-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background-color: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .view-toggle-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .search-container {
+            position: relative;
+        }
+        
+        .search-input {
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            width: 250px;
+            transition: all var(--transition-fast);
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.2);
+            outline: none;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        
+        /* Категории модулей */
+        .category-section {
+            margin-bottom: 3rem;
+        }
+        
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(62, 205, 193, 0.3);
+            display: inline-block;
+        }
+        
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .module-card {
+            background-color: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .module-link {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .module-header {
+            margin-bottom: 1rem;
+        }
+        
+        .module-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .module-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--primary-color);
+        }
+        
+        .module-description {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+        
+        .module-footer {
+            margin-top: auto;
+        }
+        
+        .module-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-round);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-available {
+            background-color: rgba(62, 205, 193, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .badge-locked {
+            background-color: rgba(158, 158, 158, 0.1);
+            color: #616161;
+        }
+        
+        .badge-premium {
+            background-color: rgba(253, 203, 110, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .progress-info {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: var(--radius-round);
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: var(--radius-round);
+            transition: width 0.8s ease;
+        }
+        
+        /* Стилизация для различных категорий */
+        .module-card.education .module-icon {
+            color: #3498db;
+        }
+        
+        .module-card.bi_toets .module-icon {
+            color: #f1c40f;
+        }
+        
+        .module-card.dutch .module-icon {
+            color: #9b59b6;
+        }
+        
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            background-color: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--border-color);
+            margin-bottom: 1rem;
+        }
+        
+        .empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .empty-description {
+            color: var(--text-secondary);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        /* Стили для списочного представления */
+        .modules-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .module-list-item {
+            background-color: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+        }
+        
+        .module-list-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .module-list-link {
+            display: flex;
+            padding: 1.25rem;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .module-list-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background-color: var(--background-light);
+            border-radius: var(--radius-md);
+            margin-right: 1.25rem;
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+        
+        .module-list-content {
+            flex-grow: 1;
+        }
+        
+        .module-list-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+        
+        .module-list-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .module-list-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Медиа запросы для адаптивности */
+        @media (max-width: 1200px) {
+            .left-column {
+                width: 250px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .modules-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .left-column {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 1.5rem;
+            }
+            
+            .middle-column {
+                padding: 1.5rem;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .section-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .module-card {
+            animation: fadeIn 0.5s ease, slideUp 0.5s ease;
+        }
+        
+        /* Стили для flash-сообщений */
+        .flash-container {
+            margin-bottom: 2rem;
+        }
+        
+        .flash-message {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+        }
+        
+        .flash-success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-left: 4px solid #2ecc71;
+            color: #27ae60;
+        }
+        
+        .flash-error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid #e74c3c;
+            color: #c0392b;
+        }
+        
+        .flash-info {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid #3498db;
+            color: #2980b9;
+        }
+        
+        /* Дополнительные стили для категорий */
+        .category-section[data-category="education"] .category-title {
+            border-bottom-color: rgba(52, 152, 219, 0.5);
+            color: #2980b9;
+        }
+        
+        .category-section[data-category="bi_toets"] .category-title {
+            border-bottom-color: rgba(241, 196, 15, 0.5);
+            color: #f39c12;
+        }
+        
+        .category-section[data-category="dutch"] .category-title {
+            border-bottom-color: rgba(155, 89, 182, 0.5);
+            color: #8e44ad;
+        }
+        
+        .pe-none {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        /* Пейджинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .pagination-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            margin: 0 0.25rem;
+            border-radius: var(--radius-md);
+            background-color: white;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .pagination-item:hover {
+            background-color: var(--background-light);
+            transform: translateY(-2px);
+        }
+        
+        .pagination-item.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .pagination-item.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+<div class="main-container">
+    <!-- Левая колонка с фильтрами -->
+    <div class="left-column">
+        <h2 class="filters-title">{% if lang == 'ru' %}Фильтры{% elif lang == 'nl' %}Filters{% else %}Filters{% endif %}</h2>
+        
+        <form id="filtersForm">
+            <div class="filter-section">
+                <h3>{% if lang == 'ru' %}Категории{% elif lang == 'nl' %}Categorieën{% else %}Categories{% endif %}</h3>
+                <div class="filter-options">
+                    <div class="filter-option">
+                        <input type="checkbox" id="category-education" name="category[]" value="education" checked>
+                        <label for="category-education">
+                            <span class="category-badge education"></span>
+                            {% if lang == 'ru' %}Основные модули{% elif lang == 'nl' %}Kernmodules{% else %}Core Modules{% endif %}
+                        </label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="category-bi-toets" name="category[]" value="bi_toets" checked>
+                        <label for="category-bi-toets">
+                            <span class="category-badge bi_toets"></span>
+                            BI-Toets
+                        </label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="category-dutch" name="category[]" value="dutch" checked>
+                        <label for="category-dutch">
+                            <span class="category-badge dutch"></span>
+                            {% if lang == 'ru' %}Голландский для стоматологов{% elif lang == 'nl' %}Nederlands voor Tandartsen{% else %}Dutch for Dentists{% endif %}
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-divider"></div>
+            
+            <div class="filter-section">
+                <h3>{% if lang == 'ru' %}Доступность{% elif lang == 'nl' %}Beschikbaarheid{% else %}Availability{% endif %}</h3>
+                <div class="filter-options">
+                    <div class="filter-option">
+                        <input type="checkbox" id="availability-all" name="availability[]" value="all" checked>
+                        <label for="availability-all">{% if lang == 'ru' %}Все модули{% elif lang == 'nl' %}Alle modules{% else %}All modules{% endif %}</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="availability-free" name="availability[]" value="free" checked>
+                        <label for="availability-free">{% if lang == 'ru' %}Бесплатные{% elif lang == 'nl' %}Gratis{% else %}Free{% endif %}</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="availability-premium" name="availability[]" value="premium" checked>
+                        <label for="availability-premium">Premium</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-divider"></div>
+            
+            <div class="filter-section">
+                <h3>{% if lang == 'ru' %}Прогресс{% elif lang == 'nl' %}Voortgang{% else %}Progress{% endif %}</h3>
+                <div class="filter-options">
+                    <div class="filter-option">
+                        <input type="checkbox" id="progress-all" name="progress[]" value="all" checked>
+                        <label for="progress-all">{% if lang == 'ru' %}Все модули{% elif lang == 'nl' %}Alle modules{% else %}All modules{% endif %}</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="progress-in-progress" name="progress[]" value="in-progress" checked>
+                        <label for="progress-in-progress">{% if lang == 'ru' %}В процессе{% elif lang == 'nl' %}In uitvoering{% else %}In progress{% endif %}</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="progress-completed" name="progress[]" value="completed" checked>
+                        <label for="progress-completed">{% if lang == 'ru' %}Завершённые{% elif lang == 'nl' %}Voltooid{% else %}Completed{% endif %}</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="progress-not-started" name="progress[]" value="not-started" checked>
+                        <label for="progress-not-started">{% if lang == 'ru' %}Не начатые{% elif lang == 'nl' %}Niet gestart{% else %}Not started{% endif %}</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-divider"></div>
+            
+            <button type="submit" class="apply-filters-btn">
+                {% if lang == 'ru' %}Применить фильтры{% elif lang == 'nl' %}Filters toepassen{% else %}Apply Filters{% endif %}
+            </button>
+            <button type="reset" class="clear-filters-btn">
+                {% if lang == 'ru' %}Сбросить{% elif lang == 'nl' %}Reset{% else %}Clear All{% endif %}
+            </button>
+        </form>
+    </div>
+    
+    <!-- Средняя колонка с модулями -->
+    <div class="middle-column">
+        <div class="section-header">
+            <h1 class="section-title">
+                {% if lang == 'ru' %}Учебные модули{% elif lang == 'nl' %}Leermodules{% else %}Learning Modules{% endif %}
+            </h1>
+            
+            <div class="section-controls">
+                <div class="view-toggle">
+                    <button class="view-toggle-btn active" data-view="grid">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </button>
+                    <button class="view-toggle-btn" data-view="list">
+                        <i class="bi bi-list-ul"></i>
+                    </button>
+                </div>
+                
+                <div class="search-container">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="{% if lang == 'ru' %}Поиск модулей...{% elif lang == 'nl' %}Zoek modules...{% else %}Search modules...{% endif %}">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Flash сообщения -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Модули по категориям -->
+        {% if categories %}
+            {% for category_key, module_list in categories.items() %}
+                {% if module_list %}
+                <section class="category-section" data-category="{{ category_key }}">
+                    <h2 class="category-title">
+                        {% if category_key == 'education' %}{% if lang == 'ru' %}Основные модули{% elif lang == 'nl' %}Kernmodules{% else %}Core Modules{% endif %}
+                        {% elif category_key == 'bi_toets' %}{% if lang == 'ru' %}BI-Toets{% elif lang == 'nl' %}BI-Toets{% else %}BI-Toets{% endif %}
+                        {% elif category_key == 'dutch' %}{% if lang == 'ru' %}Голландский для стоматологов{% elif lang == 'nl' %}Nederlands voor Tandartsen{% else %}Dutch for Dentists{% endif %}
+                        {% else %}{{ category_key | replace('_', ' ') | title }}{% endif %}
+                    </h2>
+                    
+                    <div class="modules-grid">
+                        {% for module in module_list %}
+                        <div class="module-card {{ category_key }}">
+                            {% set is_card_module = module.id <= 5 %}
+                            {% if is_card_module %}
+                                {% set module_url = url_for('learning_map_bp.start_module_redirect', lang=lang, module_id=module.id) %}
+                            {% else %}
+                                {% set module_url = url_for('lesson_bp.lesson_view', lang=lang, module_id=module.id, lesson_index=0) %}
+                            {% endif %}
+                            
+                            {% set total = module.total_lessons | default(0) %}
+                            {% set done = module.completed_lessons | default(0) %}
+                            {% set progress_percent = (done / total * 100) | round | int if total > 0 else 0 %}
+                            
+                            <a href="{{ module_url if (user.has_subscription or not module.is_premium) else '#' }}" 
+                               class="module-link {% if not user.has_subscription and module.is_premium %}pe-none{% endif %}">
+                                <div class="module-header">
+                                    <div class="module-title">
+                                        <i class="bi bi-journal-bookmark-fill module-icon"></i>
+                                        {{ module.title }}
+                                    </div>
+                                </div>
+                                <div class="module-description">
+                                    {{ module.description | default('', true) }}
+                                </div>
+                                <div class="module-footer">
+                                    <div class="module-status">
+                                        <div class="status-badge {% if not user.has_subscription and module.is_premium %}badge-locked{% else %}badge-available{% endif %}">
+                                            {% if not user.has_subscription and module.is_premium %}
+                                                <i class="bi bi-lock-fill me-1"></i> {% if lang == 'ru' %}Нужна подписка{% elif lang == 'nl' %}Abonnement Vereist{% else %}Subscription Required{% endif %}
+                                            {% elif module.is_premium %}
+                                                <i class="bi bi-star-fill me-1 text-warning"></i> {% if lang == 'ru' %}Премиум{% elif lang == 'nl' %}Premium{% else %}Premium{% endif %}
+                                            {% else %}
+                                                <i class="bi bi-unlock-fill me-1"></i> {% if lang == 'ru' %}Доступно{% elif lang == 'nl' %}Beschikbaar{% else %}Available{% endif %}
+                                            {% endif %}
+                                        </div>
+                                        <div class="progress-info">{{ done }}/{{ total }}</div>
+                                    </div>
+                                    
+                                    {% if user.has_subscription or not module.is_premium %}
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill" style="width: {{ progress_percent }}%"></div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-journal-x"></i>
+                </div>
+                <h3 class="empty-title">{% if lang == 'ru' %}Модули не найдены{% elif lang == 'nl' %}Geen modules gevonden{% else %}No modules found{% endif %}</h3>
+                <p class="empty-description">{% if lang == 'ru' %}Учебные модули не найдены или еще не загружены.{% elif lang == 'nl' %}Geen leermodules gevonden of nog niet geladen.{% else %}Learning modules not found or not loaded yet.{% endif %}</p>
+            </div>
+        {% endif %}
+        
+        <!-- Пагинация -->
+        <div class="pagination">
+            <a href="#" class="pagination-item disabled">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            <a href="#" class="pagination-item active">1</a>
+            <a href="#" class="pagination-item">2</a>
+            <a href="#" class="pagination-item">3</a>
+            <a href="#" class="pagination-item">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Переключение вида отображения (сетка/список)
+    const viewToggleBtns = document.querySelectorAll('.view-toggle-btn');
+    const modulesContainers = document.querySelectorAll('.modules-grid');
+    
+    viewToggleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const view = this.getAttribute('data-view');
+            
+            // Переключение активной кнопки
+            viewToggleBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Изменение отображения модулей
+            modulesContainers.forEach(container => {
+                if (view === 'list') {
+                    container.classList.remove('modules-grid');
+                    container.classList.add('modules-list');
+                } else {
+                    container.classList.remove('modules-list');
+                    container.classList.add('modules-grid');
+                }
+            });
+        });
+    });
+    
+    // Поиск модулей
+    const searchInput = document.querySelector('.search-input');
+    const moduleCards = document.querySelectorAll('.module-card');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        
+        moduleCards.forEach(card => {
+            const title = card.querySelector('.module-title').textContent.toLowerCase();
+            const description = card.querySelector('.module-description').textContent.toLowerCase();
+            
+            if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Проверка и скрытие пустых категорий
+        document.querySelectorAll('.category-section').forEach(section => {
+            const visibleCards = section.querySelectorAll('.module-card[style="display: none;"]').length;
+            const totalCards = section.querySelectorAll('.module-card').length;
+            
+            if (visibleCards === totalCards) {
+                section.style.display = 'none';
+            } else {
+                section.style.display = '';
+            }
+        });
+    });
+    
+    // Обработка фильтров
+    const filtersForm = document.getElementById('filtersForm');
+    
+    filtersForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const selectedCategories = formData.getAll('category[]');
+        const selectedAvailability = formData.getAll('availability[]');
+        const selectedProgress = formData.getAll('progress[]');
+        
+        // Применение фильтров к модулям
+        moduleCards.forEach(card => {
+            const category = card.classList.contains('education') ? 'education' : 
+                            card.classList.contains('bi_toets') ? 'bi_toets' : 
+                            card.classList.contains('dutch') ? 'dutch' : '';
+            
+            const isPremium = card.querySelector('.badge-premium') !== null || 
+                            card.querySelector('.badge-locked') !== null;
+            
+            const progressText = card.querySelector('.progress-info').textContent;
+            const [done, total] = progressText.split('/').map(num => parseInt(num.trim(), 10));
+            const progressStatus = done === 0 ? 'not-started' : 
+                                done === total ? 'completed' : 'in-progress';
+            
+            // Проверка совпадения с выбранными фильтрами
+            const matchesCategory = selectedCategories.includes('all') || selectedCategories.includes(category);
+            const matchesAvailability = selectedAvailability.includes('all') || 
+                                    (isPremium && selectedAvailability.includes('premium')) || 
+                                    (!isPremium && selectedAvailability.includes('free'));
+            const matchesProgress = selectedProgress.includes('all') || selectedProgress.includes(progressStatus);
+            
+            // Отображение или скрытие карточки
+            if (matchesCategory && matchesAvailability && matchesProgress) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Проверка и скрытие пустых категорий
+        document.querySelectorAll('.category-section').forEach(section => {
+            const visibleCards = Array.from(section.querySelectorAll('.module-card')).filter(card => 
+                card.style.display !== 'none'
+            ).length;
+            
+            if (visibleCards === 0) {
+                section.style.display = 'none';
+            } else {
+                section.style.display = '';
+            }
+        });
+    });
+    
+    // Сброс фильтров
+    const clearFiltersBtn = document.querySelector('.clear-filters-btn');
+    
+    clearFiltersBtn.addEventListener('click', function() {
+        setTimeout(() => {
+            // Отображение всех карточек
+            moduleCards.forEach(card => {
+                card.style.display = '';
+            });
+            
+            // Отображение всех категорий
+            document.querySelectorAll('.category-section').forEach(section => {
+                section.style.display = '';
+            });
+            
+            // Сброс строки поиска
+            searchInput.value = '';
+        }, 0);
+    });
+});
+</script>
+{% endblock %}

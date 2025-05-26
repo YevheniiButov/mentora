@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if lang == 'ru' %}Виртуальные пациенты{% else %}Virtual Patients{% endif %} - Become a Tandarts
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 main-content-padding">
+    <h1 class="mb-4">{% if lang == 'ru' %}Виртуальные пациенты{% else %}Virtual Patients{% endif %}</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <p class="lead">
+                {% if lang == 'ru' %}
+                Практикуйте клиническое мышление и коммуникационные навыки с виртуальными пациентами.
+                Выбирайте сценарий и пройдите его, принимая клинические решения как настоящий стоматолог.
+                {% else %}
+                Practice clinical reasoning and communication skills with virtual patients.
+                Choose a scenario and work through it, making clinical decisions like a real dentist.
+                {% endif %}
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-outline-primary">
+                <i class="bi bi-map"></i> 
+                {% if lang == 'ru' %}К карте обучения{% else %}Back to Learning Map{% endif %}
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% if scenarios %}
+            {% for scenario in scenarios %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm hover-card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ scenario.title }}</h5>
+                            <div class="difficulty-badge mb-2">
+                                {% if scenario.difficulty == 'easy' %}
+                                    <span class="badge bg-success">{% if lang == 'ru' %}Лёгкий{% else %}Easy{% endif %}</span>
+                                {% elif scenario.difficulty == 'medium' %}
+                                    <span class="badge bg-warning text-dark">{% if lang == 'ru' %}Средний{% else %}Medium{% endif %}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{% if lang == 'ru' %}Сложный{% else %}Hard{% endif %}</span>
+                                {% endif %}
+                                
+                                {% if scenario.is_premium %}
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-star-fill"></i> Premium
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <p class="card-text">{{ scenario.description }}</p>
+                            
+                            <!-- Отображение лучшего результата пользователя, если есть -->
+                            {% if scenario.id in user_attempts %}
+                                {% set attempt = user_attempts[scenario.id] %}
+                                <div class="progress mb-2" style="height: 10px;">
+                                    <div class="progress-bar {% if attempt.percentage_score >= 70 %}bg-success{% elif attempt.percentage_score >= 40 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ attempt.percentage_score }}%;" 
+                                         aria-valuenow="{{ attempt.percentage_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">{% if lang == 'ru' %}Ваш лучший результат{% else %}Your best score{% endif %}</small>
+                                    <small class="text-muted">{{ attempt.score }}/{{ attempt.max_score }} ({{ attempt.percentage_score }}%)</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            {% if scenario.is_premium and not current_user.has_subscription %}
+                                <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="btn btn-outline-info d-block">
+                                    <i class="bi bi-lock-fill"></i> 
+                                    {% if lang == 'ru' %}Требуется подписка{% else %}Subscription Required{% endif %}
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('.start_scenario', lang=lang, scenario_id=scenario.id) }}" class="btn btn-primary d-block">
+                                    <i class="bi bi-play-fill"></i> 
+                                    {% if scenario.id in user_attempts %}
+                                        {% if lang == 'ru' %}Пройти снова{% else %}Try again{% endif %}
+                                    {% else %}
+                                        {% if lang == 'ru' %}Начать{% else %}Start{% endif %}
+                                    {% endif %}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    {% if lang == 'ru' %}
+                        Сценарии виртуальных пациентов пока отсутствуют.
+                    {% else %}
+                        No virtual patient scenarios are available yet.
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

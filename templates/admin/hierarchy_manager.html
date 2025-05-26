@@ -1,0 +1,370 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Управление иерархией контента{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .hierarchy-container {
+        padding: 20px;
+    }
+    .hierarchy-level {
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+    }
+    .item-list {
+        max-height: 400px;
+        overflow-y: auto;
+        margin-top: 10px;
+    }
+    .hierarchy-item {
+        padding: 10px;
+        border: 1px solid #eee;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .hierarchy-item:hover {
+        background-color: #f8f9fa;
+    }
+    .item-actions {
+        display: flex;
+        gap: 5px;
+    }
+    .modal-body form .form-group {
+        margin-bottom: 15px;
+    }
+    
+    /* Стили для панели импорта/экспорта */
+    .import-export-panel {
+        background-color: #f8fafc;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+    }
+
+    .import-export-panel .card-header {
+        background-color: #f0f4f8;
+        border-bottom: 1px solid #e3e8ef;
+    }
+
+    .import-export-panel .card-header h4 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #334155;
+    }
+
+    .import-export-panel .card-body {
+        padding: 20px;
+    }
+
+    .import-export-panel h5 {
+        color: #475569;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid hierarchy-container">
+    <h1>Управление иерархией контента</h1>
+    
+    <!-- Панель импорта/экспорта JSON -->
+    <div class="card mb-4 import-export-panel">
+        <div class="card-header">
+            <h4>Импорт/Экспорт данных</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Импорт JSON -->
+                <div class="col-md-6">
+                    <h5>Импорт из JSON</h5>
+                    <form action="{{ url_for('admin_bp.import_json', lang=lang) }}" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="json-file" class="form-label">Выберите JSON-файл</label>
+                            <input type="file" class="form-control" id="json-file" name="json_file" accept=".json" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="import-type" class="form-label">Тип импорта</label>
+                            <select class="form-select" id="import-type" name="import_type">
+                                <option value="paths">Категории обучения</option>
+                                <option value="subjects">Предметы</option>
+                                <option value="modules">Модули</option>
+                                <option value="lessons">Уроки</option>
+                                <option value="all">Полный импорт (все уровни)</option>
+                            </select>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="replace-existing" name="replace_existing">
+                            <label class="form-check-label" for="replace-existing">
+                                Заменить существующие элементы
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Импортировать
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Экспорт JSON -->
+                <div class="col-md-6">
+                    <h5>Экспорт в JSON</h5>
+                    <form action="{{ url_for('admin_bp.export_json', lang=lang) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="export-type" class="form-label">Что экспортировать</label>
+                            <select class="form-select" id="export-type" name="export_type">
+                                <option value="paths">Категории обучения</option>
+                                <option value="subjects">Предметы</option>
+                                <option value="modules">Модули</option>
+                                <option value="lessons">Уроки</option>
+                                <option value="all">Всё (полная иерархия)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="export-format" class="form-label">Формат</label>
+                            <select class="form-select" id="export-format" name="export_format">
+                                <option value="pretty">JSON (с отступами)</option>
+                                <option value="compact">JSON (компактный)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-download"></i> Экспортировать
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Уровень: Learning Paths -->
+        <div class="col-md-4">
+            <div class="hierarchy-level">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>Категории обучения</h3>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addPathModal">
+                        <i class="bi bi-plus-circle"></i> Добавить
+                    </button>
+                </div>
+                <div class="item-list" id="paths-list">
+                    {% for path in learning_paths %}
+                    <div class="hierarchy-item" data-id="{{ path.id }}">
+                        <span>{{ path.name }}</span>
+                        <div class="item-actions">
+                            <button class="btn btn-sm btn-outline-secondary edit-path-btn" 
+                                    data-id="{{ path.id }}"
+                                    data-name="{{ path.name }}"
+                                    data-description="{{ path.description }}"
+                                    data-order="{{ path.order|default(0) }}"
+                                    data-icon="{{ path.icon|default('list-task') }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-path-btn" data-id="{{ path.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Уровень: Subjects -->
+        <div class="col-md-4">
+            <div class="hierarchy-level">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>Предметы</h3>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                        <i class="bi bi-plus-circle"></i> Добавить
+                    </button>
+                </div>
+                <div class="item-list" id="subjects-list">
+                    {% for subject in subjects %}
+                    <div class="hierarchy-item" data-id="{{ subject.id }}" data-path="{{ subject.learning_path_id }}">
+                        <span>{{ subject.name }}</span>
+                        <div class="item-actions">
+                            <button class="btn btn-sm btn-outline-secondary edit-subject-btn" 
+                                    data-id="{{ subject.id }}"
+                                    data-name="{{ subject.name }}"
+                                    data-description="{{ subject.description|default('') }}"
+                                    data-path="{{ subject.learning_path_id }}"
+                                    data-order="{{ subject.order|default(0) }}"
+                                    data-icon="{{ subject.icon|default('folder2-open') }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-subject-btn" data-id="{{ subject.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Уровень: Modules -->
+        <div class="col-md-4">
+            <div class="hierarchy-level">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>Модули</h3>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModuleModal">
+                        <i class="bi bi-plus-circle"></i> Добавить
+                    </button>
+                </div>
+                <div class="item-list" id="modules-list">
+                    {% for module in modules %}
+                    <div class="hierarchy-item" data-id="{{ module.id }}" data-subject="{{ module.subject_id }}">
+                        <span>{{ module.title }}</span>
+                        <div class="item-actions">
+                            <button class="btn btn-sm btn-outline-secondary edit-module-btn" 
+                                    data-id="{{ module.id }}"
+                                    data-title="{{ module.title }}"
+                                    data-description="{{ module.description|default('') }}"
+                                    data-subject="{{ module.subject_id }}"
+                                    data-type="{{ module.module_type|default('content') }}"
+                                    data-order="{{ module.order|default(0) }}"
+                                    data-icon="{{ module.icon|default('file-earmark-text') }}"
+                                    data-premium="{{ module.is_premium|default(false)|string|lower }}"
+                                    data-final-test="{{ module.is_final_test|default(false)|string|lower }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-module-btn" data-id="{{ module.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна -->
+{% include "admin/modals/path_modal.html" %}
+{% include "admin/modals/subject_modal.html" %}
+{% include "admin/modals/module_modal.html" %}
+{% endblock %}
+
+{% block body_scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Редактирование Category Path
+        document.querySelectorAll('.edit-path-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const pathId = this.dataset.id;
+                const pathName = this.dataset.name;
+                const pathDesc = this.dataset.description;
+                const pathOrder = this.dataset.order || 0;
+                const pathIcon = this.dataset.icon || 'list-task';
+                
+                // Заполняем форму редактирования
+                document.getElementById('edit-path-id').value = pathId;
+                document.getElementById('edit-path-name').value = pathName;
+                document.getElementById('edit-path-description').value = pathDesc;
+                document.getElementById('edit-path-order').value = pathOrder;
+                document.getElementById('edit-path-icon').value = pathIcon;
+                
+                // Открываем модальное окно
+                const modal = new bootstrap.Modal(document.getElementById('editPathModal'));
+                modal.show();
+            });
+        });
+        
+        // Редактирование Subject
+        document.querySelectorAll('.edit-subject-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const subjectId = this.dataset.id;
+                const subjectName = this.dataset.name;
+                const subjectDesc = this.dataset.description;
+                const pathId = this.dataset.path;
+                const subjectOrder = this.dataset.order || 0;
+                const subjectIcon = this.dataset.icon || 'folder2-open';
+                
+                // Заполняем форму редактирования
+                document.getElementById('edit-subject-id').value = subjectId;
+                document.getElementById('edit-subject-name').value = subjectName;
+                document.getElementById('edit-subject-description').value = subjectDesc;
+                document.getElementById('edit-subject-path').value = pathId;
+                document.getElementById('edit-subject-order').value = subjectOrder;
+                document.getElementById('edit-subject-icon').value = subjectIcon;
+                
+                // Открываем модальное окно
+                const modal = new bootstrap.Modal(document.getElementById('editSubjectModal'));
+                modal.show();
+            });
+        });
+        
+        // Редактирование Module
+        document.querySelectorAll('.edit-module-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const moduleId = this.dataset.id;
+                const moduleTitle = this.dataset.title;
+                const moduleDesc = this.dataset.description;
+                const subjectId = this.dataset.subject;
+                const moduleType = this.dataset.type || 'content';
+                const moduleOrder = this.dataset.order || 0;
+                const moduleIcon = this.dataset.icon || 'file-earmark-text';
+                const isPremium = this.dataset.premium === 'true';
+                const isFinalTest = this.dataset.finalTest === 'true';
+                
+                // Заполняем форму редактирования
+                document.getElementById('edit-module-id').value = moduleId;
+                document.getElementById('edit-module-title').value = moduleTitle;
+                document.getElementById('edit-module-description').value = moduleDesc;
+                document.getElementById('edit-module-subject').value = subjectId;
+                document.getElementById('edit-module-type').value = moduleType;
+                document.getElementById('edit-module-order').value = moduleOrder;
+                document.getElementById('edit-module-icon').value = moduleIcon;
+                document.getElementById('edit-module-premium').checked = isPremium;
+                document.getElementById('edit-module-final-test').checked = isFinalTest;
+                
+                // Открываем модальное окно
+                const modal = new bootstrap.Modal(document.getElementById('editModuleModal'));
+                modal.show();
+            });
+        });
+        
+        // Удаление элементов
+        document.querySelectorAll('.delete-path-btn, .delete-subject-btn, .delete-module-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const type = this.classList.contains('delete-path-btn') ? 'path' :
+                             this.classList.contains('delete-subject-btn') ? 'subject' : 'module';
+                
+                if (confirm(`Вы уверены, что хотите удалить этот ${type}?`)) {
+                    // Отправка AJAX-запроса на удаление
+                    fetch(`/{{ lang }}/admin/api/delete-${type}/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Удаляем элемент из DOM
+                            this.closest('.hierarchy-item').remove();
+                        } else {
+                            alert(`Ошибка: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Произошла ошибка при удалении');
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

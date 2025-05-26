@@ -1,0 +1,120 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Дашборд{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <h1 class="mb-4">Дашборд администратора</h1>
+    
+    <div class="row">
+        <!-- Статистика -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Статистика контента</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Категории
+                            <span class="badge bg-primary rounded-pill">{{ learning_paths|length }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Предметы
+                            <span class="badge bg-primary rounded-pill">{{ subjects|length }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Модули
+                            <span class="badge bg-primary rounded-pill">{{ modules|length }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Уроки
+                            <span class="badge bg-primary rounded-pill">{{ lessons|length }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Последняя активность -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Последние зарегистрированные пользователи</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Имя</th>
+                                    <th>Email</th>
+                                    <th>Дата регистрации</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in latest_users %}
+                                <tr>
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if user.role == 'admin' %}
+                                        <span class="badge bg-danger">Админ</span>
+                                        {% elif user.has_subscription %}
+                                        <span class="badge bg-success">Подписан</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Базовый</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Быстрые ссылки -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Быстрые ссылки</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin_bp.hierarchy_manager', lang=lang) }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="bi bi-diagram-3 fs-2 mb-2"></i>
+                                Управление иерархией
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin_bp.users', lang=lang) }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="bi bi-people fs-2 mb-2"></i>
+                                Пользователи
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin_bp.modules', lang=lang) }}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="bi bi-folder2 fs-2 mb-2"></i>
+                                Модули
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin_bp.xray_manager', lang=lang) }}" class="btn btn-outline-danger w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="bi bi-image fs-2 mb-2"></i>
+                                Рентген-менеджер
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

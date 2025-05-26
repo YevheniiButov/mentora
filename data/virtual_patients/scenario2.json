@@ -1,0 +1,582 @@
+{
+    "default": {
+      "patient_info": {
+        "name": "Alex Jensen",
+        "age": 28,
+        "gender": "male",
+        "image": "patient_alex.jpg",
+        "medical_history": "Type 1 diabetes (diagnosed at age 12), mild hypertension controlled with medication (amlodipine 5mg daily), no known allergies. Last dental check-up was 8 months ago."
+      },
+      "initial_state": {
+        "node_id": "start",
+        "patient_statement": "Hi doctor, I fell off my bike yesterday evening and hit my face on the pavement. My front tooth is loose and extremely painful. I have an important presentation at work tomorrow and I'm really worried!",
+        "patient_emotion": "distressed",
+        "notes": "Patient appears anxious and in pain. Visible swelling on upper lip. Blood glucose levels reportedly normal this morning (8.2 mmol/L). BP: 135/85 mmHg. Patient took 400mg ibuprofen 2 hours ago."
+      },
+      "dialogue_nodes": [
+        {
+          "id": "start",
+          "options": [
+            {
+              "text": "I'm sorry about your accident. Let me examine your mouth to see what's happening with your tooth.",
+              "next_node": "examination",
+              "score": 10
+            },
+            {
+              "text": "That sounds painful. We'll make sure you look presentable for your presentation tomorrow. Let me check your tooth.",
+              "next_node": "examination",
+              "score": 5
+            },
+            {
+              "text": "I see you have diabetes. Is your blood sugar under control today?",
+              "next_node": "diabetes_focus",
+              "score": -5
+            }
+          ]
+        },
+        {
+          "id": "diabetes_focus",
+          "patient_statement": "Yes, I checked it this morning and it was 8.2. I've been managing it well for years now. But my tooth is really painful and loose - can you please look at that?",
+          "patient_emotion": "frustrated",
+          "options": [
+            {
+              "text": "You're right, let's focus on your tooth. I'll take a look now.",
+              "next_node": "examination",
+              "score": 5
+            },
+            {
+              "text": "High stress from dental trauma can affect your glucose levels. Let's check it again before proceeding.",
+              "next_node": "patient_annoyed",
+              "score": -10
+            },
+            {
+              "text": "I needed to check because diabetes can affect healing. Let me examine your tooth now.",
+              "next_node": "examination",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "patient_annoyed",
+          "patient_statement": "Look, I monitor my diabetes carefully and it's under control. My tooth is killing me. If you won't help, I'll find another dentist who will!",
+          "patient_emotion": "angry",
+          "options": [
+            {
+              "text": "I apologize for the confusion. You're right - let's examine your tooth right away.",
+              "next_node": "examination_after_delay",
+              "score": 0
+            },
+            {
+              "text": "It's standard procedure for diabetic patients. We need to check before treatment.",
+              "next_node": "patient_leaves",
+              "score": -15
+            },
+            {
+              "text": "I'm sorry for focusing too much on your diabetes. Your dental trauma is the priority right now.",
+              "next_node": "examination_after_delay",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "examination",
+          "patient_statement": "It's mainly this front tooth that's loose. It hurts when I touch it or try to eat. There's also some bleeding from my gums.",
+          "patient_emotion": "pained",
+          "options": [
+            {
+              "text": "I'm going to gently check the mobility of your tooth and take an X-ray to assess the root and surrounding bone.",
+              "next_node": "diagnosis",
+              "score": 15
+            },
+            {
+              "text": "We should extract this tooth. It's too damaged to save.",
+              "next_node": "premature_extraction",
+              "score": -20
+            },
+            {
+              "text": "Let me check if your other teeth are affected and then we'll take some X-rays.",
+              "next_node": "diagnosis",
+              "score": 10
+            }
+          ]
+        },
+        {
+          "id": "examination_after_delay",
+          "patient_statement": "Finally! It's throbbing even more now. I feel like the tooth has become looser in the last hour while waiting.",
+          "patient_emotion": "pained",
+          "options": [
+            {
+              "text": "I'll examine it right away. Let me check the mobility and we'll take an X-ray.",
+              "next_node": "diagnosis_delayed",
+              "score": 5
+            },
+            {
+              "text": "I'll be gentle. Let's see what's happening with your tooth.",
+              "next_node": "diagnosis_delayed",
+              "score": 5
+            },
+            {
+              "text": "Let me prescribe some stronger painkillers first before we continue.",
+              "next_node": "medication_focus",
+              "score": -5
+            }
+          ]
+        },
+        {
+          "id": "diagnosis",
+          "patient_statement": "What can you see? Is it bad? Will I lose my tooth?",
+          "patient_emotion": "anxious",
+          "options": [
+            {
+              "text": "You have a subluxation injury - your tooth is loose but still in position. The X-ray shows the root is intact, which is good news.",
+              "next_node": "treatment_options",
+              "score": 15
+            },
+            {
+              "text": "It's a subluxation with no root fracture. We'll need to splint the tooth to stabilize it while it heals.",
+              "next_node": "treatment_options",
+              "score": 15
+            },
+            {
+              "text": "Let's wait and see how it develops. Take painkillers and come back in a week.",
+              "next_node": "delayed_treatment",
+              "score": -15
+            }
+          ]
+        },
+        {
+          "id": "diagnosis_delayed",
+          "patient_statement": "It feels worse than before. Is there still a chance to save it?",
+          "patient_emotion": "worried",
+          "options": [
+            {
+              "text": "The X-ray shows subluxation - your tooth is loose but salvageable. We need to act quickly to stabilize it.",
+              "next_node": "treatment_options",
+              "score": 10
+            },
+            {
+              "text": "I'm concerned that the delay has complicated things. Let's splint it immediately and monitor closely.",
+              "next_node": "treatment_options",
+              "score": 5
+            },
+            {
+              "text": "It's gotten worse. Extraction might be our best option now.",
+              "next_node": "premature_extraction",
+              "score": -15
+            }
+          ]
+        },
+        {
+          "id": "treatment_options",
+          "patient_statement": "OK, so what do we do now? Will this affect my presentation tomorrow? I really can't miss it.",
+          "patient_emotion": "concerned",
+          "options": [
+            {
+              "text": "I'll place a flexible splint to stabilize your tooth. It's tooth-colored and won't be very noticeable for your presentation.",
+              "next_node": "splint_treatment",
+              "score": 15
+            },
+            {
+              "text": "We need to splint the tooth. You can postpone your presentation while you recover.",
+              "next_node": "insensitive_response",
+              "score": -10
+            },
+            {
+              "text": "Let me explain our options, including how each might affect your appearance for tomorrow's presentation.",
+              "next_node": "splint_treatment",
+              "score": 10
+            }
+          ]
+        },
+        {
+          "id": "insensitive_response",
+          "patient_statement": "That's not an option! This presentation determines my promotion. Can't you use a treatment that won't be visible?",
+          "patient_emotion": "upset",
+          "options": [
+            {
+              "text": "I understand your concern. We can use a tooth-colored splint that will be minimally noticeable.",
+              "next_node": "splint_treatment",
+              "score": 5
+            },
+            {
+              "text": "Your health should be your priority, not a presentation.",
+              "next_node": "patient_leaves",
+              "score": -15
+            },
+            {
+              "text": "I'll do my best to make the splint as discreet as possible, and give you care instructions for the presentation.",
+              "next_node": "splint_treatment",
+              "score": 10
+            }
+          ]
+        },
+        {
+          "id": "premature_extraction",
+          "patient_statement": "Extract it?! No way! I can't give a presentation with a missing front tooth! There has to be another option!",
+          "patient_emotion": "shocked",
+          "options": [
+            {
+              "text": "You're right, let me reconsider. The X-ray shows we can try stabilizing it with a splint first.",
+              "next_node": "splint_treatment",
+              "score": 0
+            },
+            {
+              "text": "We could place a temporary crown, but extraction is still my recommendation.",
+              "next_node": "second_opinion",
+              "score": -10
+            },
+            {
+              "text": "I apologize for jumping to extraction. Let's try a splint to stabilize the tooth first.",
+              "next_node": "splint_treatment",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "medication_focus",
+          "patient_statement": "I don't just want painkillers! I need this tooth fixed - my presentation is tomorrow!",
+          "patient_emotion": "desperate",
+          "options": [
+            {
+              "text": "You're right. Let's examine and treat the tooth right away.",
+              "next_node": "diagnosis_delayed",
+              "score": 5
+            },
+            {
+              "text": "Painkillers are just part of the treatment. Let me check your tooth now.",
+              "next_node": "diagnosis_delayed",
+              "score": 0
+            },
+            {
+              "text": "I recommend rescheduling your presentation while we manage this over several appointments.",
+              "next_node": "second_opinion",
+              "score": -10
+            }
+          ]
+        },
+        {
+          "id": "delayed_treatment",
+          "patient_statement": "A week?! I can't walk around with a loose tooth for a week! And what about my presentation tomorrow?",
+          "patient_emotion": "disbelief",
+          "options": [
+            {
+              "text": "You're right, we should treat this now. Let me place a splint to stabilize your tooth.",
+              "next_node": "splint_treatment",
+              "score": 5
+            },
+            {
+              "text": "I suppose we could splint it today if you're concerned about your presentation.",
+              "next_node": "splint_treatment",
+              "score": 0
+            },
+            {
+              "text": "Standard protocol for minor trauma is to wait and observe.",
+              "next_node": "second_opinion",
+              "score": -10
+            }
+          ]
+        },
+        {
+          "id": "second_opinion",
+          "patient_statement": "I think I need a second opinion. I'm not comfortable with your approach.",
+          "patient_emotion": "distrustful",
+          "options": [
+            {
+              "text": "I understand your concern. Let me reconsider and suggest a splint to stabilize your tooth today.",
+              "next_node": "splint_treatment_after_conflict",
+              "score": 0
+            },
+            {
+              "text": "That's your right. I can refer you to another specialist if you prefer.",
+              "next_node": "patient_leaves",
+              "score": -5
+            },
+            {
+              "text": "I apologize if my approach caused concern. I'd like to try a splint, which is the standard treatment for this injury.",
+              "next_node": "splint_treatment_after_conflict",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "splint_treatment",
+          "patient_statement": "OK, that sounds better. Will it hurt? And how long will I need the splint?",
+          "patient_emotion": "relieved",
+          "options": [
+            {
+              "text": "I'll use local anesthesia, so you'll just feel some pressure but no pain. The splint will stay for 2-4 weeks.",
+              "next_node": "anesthesia_concern",
+              "score": 15
+            },
+            {
+              "text": "It might be a bit uncomfortable, but it's necessary. The splint stays for 2-4 weeks.",
+              "next_node": "anesthesia_concern",
+              "score": 5
+            },
+            {
+              "text": "I'll be quick. Just bear with me for a few minutes while I place the splint.",
+              "next_node": "anesthesia_concern",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "splint_treatment_after_conflict",
+          "patient_statement": "I just want this fixed properly without missing my presentation or losing my tooth.",
+          "patient_emotion": "wary",
+          "options": [
+            {
+              "text": "I understand. I'll place a discreet splint today and give you specific care instructions for your presentation.",
+              "next_node": "anesthesia_concern",
+              "score": 10
+            },
+            {
+              "text": "Let's start fresh. A splint is the right treatment, and I'll make sure it's as unnoticeable as possible.",
+              "next_node": "anesthesia_concern",
+              "score": 5
+            },
+            {
+              "text": "I'll do the splint, but I can't guarantee how it will look for your presentation.",
+              "next_node": "anesthesia_concern",
+              "score": -5
+            }
+          ]
+        },
+        {
+          "id": "anesthesia_concern",
+          "patient_statement": "Wait - anesthesia might affect my diabetes, right? My endocrinologist always warns me about procedures. Should we check my blood sugar again?",
+          "patient_emotion": "thoughtful",
+          "options": [
+            {
+              "text": "That's an excellent point. Let's check your blood glucose now and adjust if needed before proceeding with the anesthesia.",
+              "next_node": "diabetes_management",
+              "score": 20
+            },
+            {
+              "text": "We're using a small amount of local anesthetic, so the impact should be minimal. But we can check to be safe.",
+              "next_node": "diabetes_management",
+              "score": 15
+            },
+            {
+              "text": "Let's proceed without anesthesia to avoid complications. The procedure shouldn't be too painful.",
+              "next_node": "no_anesthesia",
+              "score": -10
+            }
+          ]
+        },
+        {
+          "id": "no_anesthesia",
+          "patient_statement": "No anesthesia? I'm already in pain! There must be a way to do this safely.",
+          "patient_emotion": "alarmed",
+          "options": [
+            {
+              "text": "You're right. Let's check your blood glucose and use anesthesia with epinephrine 1:100,000, which is appropriate for controlled diabetes.",
+              "next_node": "diabetes_management",
+              "score": 5
+            },
+            {
+              "text": "We could use anesthesia without epinephrine to minimize impact on your glucose levels.",
+              "next_node": "diabetes_management",
+              "score": 10
+            },
+            {
+              "text": "I can give you nitrous oxide instead of local anesthesia.",
+              "next_node": "inappropriate_treatment",
+              "score": -15
+            }
+          ]
+        },
+        {
+          "id": "diabetes_management",
+          "patient_statement": "My glucose is 9.1 mmol/L. That's a bit higher than this morning, probably from the stress.",
+          "patient_emotion": "concerned",
+          "options": [
+            {
+              "text": "That's still within an acceptable range for treatment. I'll use anesthesia with minimal epinephrine and monitor you closely.",
+              "next_node": "successful_treatment",
+              "score": 15
+            },
+            {
+              "text": "I'd like you to take your regular insulin dose now before we proceed with treatment.",
+              "next_node": "inappropriate_insulin",
+              "score": -20
+            },
+            {
+              "text": "We'll be careful with the anesthesia and check your glucose again after the procedure to ensure it remains stable.",
+              "next_node": "successful_treatment",
+              "score": 10
+            }
+          ]
+        },
+        {
+          "id": "inappropriate_treatment",
+          "patient_statement": "I don't think nitrous oxide will help with the pain while you're manipulating my loose tooth. This doesn't seem right.",
+          "patient_emotion": "suspicious",
+          "options": [
+            {
+              "text": "You're right. Let's check your glucose and use appropriate local anesthesia instead.",
+              "next_node": "diabetes_management",
+              "score": 5
+            },
+            {
+              "text": "Let me refer you to a specialist who handles diabetic patients more often.",
+              "next_node": "patient_leaves",
+              "score": -10
+            },
+            {
+              "text": "You're correct. I'll use local anesthesia with minimal epinephrine after checking your glucose levels.",
+              "next_node": "diabetes_management",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "inappropriate_insulin",
+          "patient_statement": "Take insulin now? Without eating? My endocrinologist would never recommend that - I could go hypoglycemic during the procedure!",
+          "patient_emotion": "alarmed",
+          "options": [
+            {
+              "text": "You're absolutely right. I misspoke. Your current glucose level is acceptable for treatment without additional insulin.",
+              "next_node": "successful_treatment",
+              "score": 0
+            },
+            {
+              "text": "Maybe I should consult with your endocrinologist before proceeding.",
+              "next_node": "further_delay",
+              "score": -10
+            },
+            {
+              "text": "I apologize for the incorrect recommendation. Your glucose is in an acceptable range for treatment with careful monitoring.",
+              "next_node": "successful_treatment",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "further_delay",
+          "patient_statement": "This is getting ridiculous! I've been managing my diabetes for 16 years. My glucose is fine for a dental procedure, and I need this tooth fixed today!",
+          "patient_emotion": "exasperated",
+          "options": [
+            {
+              "text": "You're right. I apologize for the unnecessary delays. Let's proceed with the splint placement now.",
+              "next_node": "successful_treatment",
+              "score": 0
+            },
+            {
+              "text": "I understand your frustration. Your glucose is indeed within acceptable range. Let's move forward with treatment.",
+              "next_node": "successful_treatment",
+              "score": 5
+            },
+            {
+              "text": "I'm not comfortable treating you without endocrinologist clearance.",
+              "next_node": "patient_leaves",
+              "score": -20
+            }
+          ]
+        },
+        {
+          "id": "successful_treatment",
+          "patient_statement": "That feels much better already. How do I take care of it for my presentation tomorrow?",
+          "patient_emotion": "relieved",
+          "options": [
+            {
+              "text": "Avoid biting directly with this tooth. Stick to soft foods for 48 hours. Take anti-inflammatories as prescribed. Use the discrete mouthguard I'll give you at night.",
+              "next_node": "aftercare_instructions",
+              "score": 15
+            },
+            {
+              "text": "You should cancel your presentation. Rest is important after dental trauma.",
+              "next_node": "unhelpful_advice",
+              "score": -15
+            },
+            {
+              "text": "I'll give you detailed care instructions and show you how to speak clearly with the splint. We'll also discuss pain management.",
+              "next_node": "aftercare_instructions",
+              "score": 15
+            }
+          ]
+        },
+        {
+          "id": "unhelpful_advice",
+          "patient_statement": "That's not helpful at all! I've told you multiple times I can't cancel this presentation. I need practical advice.",
+          "patient_emotion": "irritated",
+          "options": [
+            {
+              "text": "You're right, I apologize. Here are specific instructions: avoid direct biting, stick to soft foods, and use anti-inflammatories as needed.",
+              "next_node": "aftercare_instructions",
+              "score": 5
+            },
+            {
+              "text": "I'm giving you medical advice. Your job shouldn't be the priority.",
+              "next_node": "patient_leaves",
+              "score": -15
+            },
+            {
+              "text": "I understand the presentation is important. Let me give you specific care instructions that will help you manage during your presentation.",
+              "next_node": "aftercare_instructions",
+              "score": 10
+            }
+          ]
+        },
+        {
+          "id": "aftercare_instructions",
+          "patient_statement": "Thanks. I'm also worried about permanent damage. What's the long-term outlook for my tooth?",
+          "patient_emotion": "concerned",
+          "options": [
+            {
+              "text": "The prognosis is good. We'll monitor for pulp necrosis, but most subluxated teeth recover well with proper stabilization. We'll evaluate it weekly.",
+              "next_node": "treatment_success",
+              "score": 20
+            },
+            {
+              "text": "We'll need to wait and see. Some trauma cases develop complications months later.",
+              "next_node": "treatment_partial",
+              "score": 0
+            },
+            {
+              "text": "There's a good chance you'll need a root canal eventually, but let's see how it heals first.",
+              "next_node": "treatment_partial",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "treatment_success",
+          "patient_statement": "That's reassuring. I'll follow all your instructions carefully. Thank you for addressing both my immediate concerns and long-term prognosis.",
+          "patient_emotion": "grateful",
+          "options": []
+        },
+        {
+          "id": "treatment_partial",
+          "patient_statement": "I guess that's as good as I can hope for right now. I'll take care of it and come back for the follow-ups.",
+          "patient_emotion": "resigned",
+          "options": []
+        },
+        {
+          "id": "patient_leaves",
+          "patient_statement": "I'm going to find another dentist who listens to my concerns. This isn't working.",
+          "patient_emotion": "disappointed",
+          "options": []
+        }
+      ],
+            "outcomes": {
+              "correct_diagnosis": {
+                "text": "Excellent work! You properly diagnosed the subluxation injury, placed an appropriate splint, and managed the patient's diabetes considerations correctly. You also balanced the patient's medical needs with their personal concerns about appearance for their presentation. The patient received optimal care and is likely to have a good outcome.",
+                "min_score": 70,
+                "badge": "trauma_management_expert"
+              },
+              "partial_diagnosis": {
+                "text": "You provided adequate treatment for the dental trauma but missed some opportunities to address the patient's concerns or medical history optimally. While the tooth will likely stabilize, your patient communication could have been more effective, and some treatment decisions could have been better informed.",
+                "min_score": 40,
+                "badge": null
+              },
+              "incorrect_diagnosis": {
+                "text": "Your management of this case had significant issues that affected patient care. You either failed to properly diagnose the condition, recommended inappropriate treatment, or didn't properly consider the patient's diabetes in your treatment planning. The patient left dissatisfied and may have experienced complications.",
+                "min_score": 0,
+                "badge": null
+              }
+            }
+          }
+      }
+      
+    

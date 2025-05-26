@@ -1,0 +1,1968 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Редактор сценария{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .editor-container {
+        display: flex;
+        height: calc(100vh - 100px);
+        overflow: hidden;
+    }
+    
+    .sidebar {
+        width: 300px;
+        background-color: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        overflow-y: auto;
+        padding: 15px;
+    }
+    
+    .content-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+    
+    .node-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .node-item {
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .node-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .node-item.active {
+        background-color: #e7f1ff;
+        border-color: #b8daff;
+    }
+    
+    .node-editor {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 20px;
+    }
+    
+    .option-item {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+
+    .option-item.enhanced-option { /* Стиль для улучшенного варианта */
+        border-left: 3px solid #0d6efd; /* Пример выделения */
+    }
+    
+    .option-item .delete-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .option-header {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+    }
+
+    .option-header .delete-btn {
+        position: static; /* Сброс абсолютного позиционирования */
+        margin-left: 5px;
+    }
+     .option-header .preview-btn {
+        position: static;
+        margin-left: 5px;
+    }
+    
+    .score-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .score-positive {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+    
+    .score-negative {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .score-neutral {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .patient-preview {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .patient-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .patient-speech {
+        background-color: white;
+        border-radius: 8px;
+        padding: 10px 15px;
+        position: relative;
+        flex: 1;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .patient-speech:before {
+        content: "";
+        position: absolute;
+        left: -10px;
+        top: 20px;
+        border-width: 10px 10px 10px 0;
+        border-style: solid;
+        border-color: transparent white transparent transparent;
+    }
+    
+    .action-bar {
+        position: sticky;
+        bottom: 0;
+        background-color: white;
+        border-top: 1px solid #dee2e6;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+    }
+    
+    .nav-tabs {
+        margin-bottom: 20px;
+    }
+    
+    .node-number {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background-color: #6c757d;
+        color: white;
+        text-align: center;
+        line-height: 24px;
+        border-radius: 50%;
+        margin-right: 8px;
+        font-size: 0.8rem;
+    }
+    
+    .node-title {
+        font-weight: 500;
+    }
+    
+    .draggable {
+        cursor: grab;
+    }
+    
+    .dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+    }
+
+    /* Стили для enhanced-node-editor */
+    .clinical-phase-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .phase-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+        min-width: 100px;
+        text-align: center;
+    }
+    .phase-option i {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    .phase-option:hover {
+        background-color: #e9ecef;
+    }
+    .phase-option.selected {
+        background-color: #e7f1ff;
+        border-color: #b8daff;
+        font-weight: bold;
+    }
+    .tools-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .tool-checkbox {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+    }
+    .tool-checkbox input {
+        margin-right: 8px;
+    }
+    .notes-editor .notes-tabs {
+        display: flex;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .notes-tab {
+        padding: 10px 15px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-bottom: none;
+        margin-bottom: -1px; /* Cover bottom border of container */
+    }
+    .notes-tab.active {
+        border-color: #dee2e6 #dee2e6 #fff;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        font-weight: 500;
+        background-color: white;
+    }
+    .notes-section {
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+    }
+
+    /* Стили для улучшенного редактора вариантов ответа */
+    .empathy-level-controls {
+        display: flex;
+        gap: 5px;
+    }
+    .empathy-btn {
+        flex: 1;
+        font-size: 0.85rem;
+        padding: 5px 8px;
+    }
+    .empathy-low.active { background-color: #f8d7da; border-color: #f5c2c7; color: #842029; }
+    .empathy-medium.active { background-color: #fff3cd; border-color: #ffe69c; color: #664d03; }
+    .empathy-high.active { background-color: #d1e7dd; border-color: #badbcc; color: #0f5132; }
+
+    .scoring-preview {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #e9ecef;
+        border-radius: 4px;
+    }
+    .scoring-preview h6 {
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+    .score-factors {
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+    }
+    .factor-item div:first-child {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+    .factor-item div:last-child {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    .preview-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: none; /* flex by JS */
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        padding: 20px;
+    }
+    .preview-content {
+        background-color: white;
+        padding: 25px;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        position: relative;
+    }
+    .preview-close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6c757d;
+    }
+    .preview-close:hover {
+        color: #343a40;
+    }
+    .preview-option, .preview-feedback, .preview-attributes {
+        margin-bottom: 15px;
+    }
+     .preview-attributes ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    /* Стили для предупреждений валидации */
+    .validation-warnings {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
+        background-color: #fff3cd;
+        border: 1px solid #ffe69c;
+        border-radius: .25rem;
+        padding: 1rem;
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+        z-index: 1060; /* Выше модальных окон Bootstrap */
+    }
+    .validation-warnings h5 {
+        color: #664d03;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+    }
+    .warning-icon {
+        margin-right: 8px;
+        color: #ffc107;
+    }
+     .validation-warnings .warning-item {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+        font-size: 0.9rem;
+        color: #664d03;
+    }
+    .validation-warnings .warning-item .warning-icon {
+         color: #664d03; /* Темнее для лучшей видимости на желтом */
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+{% if debug %}
+<div class="alert alert-info">
+    <h5>Отладочная информация</h5>
+    <button class="btn btn-sm btn-outline-primary mb-2" onclick="toggleDebugData()">Показать/скрыть данные</button>
+    <div id="debug-data" style="display: none; max-height: 300px; overflow: auto;">
+        <p><strong>ID сценария:</strong> {{ scenario.id }}</p>
+        <p><strong>Заголовок:</strong> {{ scenario.title }}</p>
+        <p><strong>Доступные языки:</strong> {{ scenario_data.available_languages|join(', ') }}</p>
+        <p><strong>Текущий язык:</strong> {{ scenario_data.current_language }}</p>
+        
+        <p><strong>Информация о пациенте:</strong></p>
+        <ul>
+            <li>Имя: {{ scenario_data.patient_info.name|default('не указано') }}</li>
+            <li>Возраст: {{ scenario_data.patient_info.age|default('не указан') }}</li>
+            <li>Пол: {{ scenario_data.patient_info.gender|default('не указан') }}</li>
+            <li>Анамнез: {{ scenario_data.patient_info.medical_history|default('не указан')|truncate(100) }}</li>
+        </ul>
+        
+        <p><strong>Начальное состояние:</strong></p>
+        <ul>
+            <li>Фраза: {{ scenario_data.initial_state.patient_statement|default('не указана')|truncate(100) }}</li>
+            <li>Эмоция: {{ scenario_data.initial_state.patient_emotion|default('не указана') }}</li>
+        </ul>
+        
+        <p><strong>Количество диалоговых узлов:</strong> {{ scenario_data.dialogue_nodes|length }}</p>
+    </div>
+</div>
+
+<script>
+function toggleDebugData() {
+    const debugData = document.getElementById('debug-data');
+    debugData.style.display = debugData.style.display === 'none' ? 'block' : 'none';
+}
+// Функция для диагностики состояния редактора
+function diagnosticCheck() {
+    console.log("=== ДИАГНОСТИКА РЕДАКТОРА ===");
+    console.log("scenarioData доступен:", typeof scenarioData !== 'undefined');
+    if (typeof scenarioData !== 'undefined') {
+        console.log("Текущий язык:", scenarioData.current_language);
+        console.log("Доступные языки:", scenarioData.available_languages);
+        console.log("Узлы диалога:", scenarioData.dialogue_nodes?.length || 0);
+        console.log("Информация о пациенте:", scenarioData.patient_info);
+        console.log("Начальное состояние:", scenarioData.initial_state);
+        // Дополнительная диагностика для новых полей, если они уже в scenarioData
+        console.log("Клиническая фаза (пример первого узла):", scenarioData.dialogue_nodes?.[0]?.clinical_phase);
+        console.log("Доступные инструменты (пример первого узла):", scenarioData.dialogue_nodes?.[0]?.available_tools);
+    }
+    
+    console.log("Обработчики событий:");
+    console.log("- Кнопка добавления узла:", document.getElementById('add-node-btn'));
+    console.log("- Кнопка сохранения:", document.getElementById('save-scenario-btn'));
+    console.log("- Выбор узла:", document.querySelectorAll('.node-item').length);
+    
+    console.log("=== КОНЕЦ ДИАГНОСТИКИ ===");
+}
+
+// Выполняем диагностику после загрузки страницы
+window.addEventListener('load', function() {
+    setTimeout(diagnosticCheck, 1000);
+});
+</script>
+{% endif %}
+<div class="container-fluid p-0">
+    <div class="p-3 bg-light border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-0">{{ scenario.title }}</h1>
+                <div class="text-muted">ID: {{ scenario.id }} | Создан: {{ scenario.created_at.strftime('%d.%m.%Y') }}</div>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_bp.virtual_patient_manager', lang=lang) }}" class="btn btn-sm btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-left"></i> Назад к списку
+                </a>
+                <button id="save-scenario-btn" class="btn btn-success">
+                    <i class="bi bi-save"></i> Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="editor-container">
+        <div class="sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Узлы диалога</h5>
+                <button id="add-node-btn" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus"></i> Добавить
+                </button>
+            </div>
+            
+            <ul class="node-list" id="node-list">
+                <li class="node-item active" data-node-id="initial">
+                    <span class="node-number">0</span>
+                    <span class="node-title">Начальное состояние</span>
+                </li>
+                {% for node in scenario_data.dialogue_nodes %}
+                <li class="node-item" data-node-id="{{ node.id }}">
+                    <span class="node-number">{{ loop.index }}</span>
+                    <span class="node-title">{{ node.title or 'Узел ' ~ loop.index }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            
+            <hr>
+            
+            <h5 class="mb-3">Параметры сценария</h5>
+            <div class="mb-3">
+                <label for="scenario-max-score" class="form-label">Максимальный балл</label>
+                <input type="number" class="form-control form-control-sm" id="scenario-max-score" value="{{ scenario.max_score }}">
+            </div>
+            <div class="mb-3">
+                <label for="scenario-timeframe" class="form-label">Ограничение времени (сек)</label>
+                <input type="number" class="form-control form-control-sm" id="scenario-timeframe" value="{{ scenario.timeframe or 0 }}">
+            </div>
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="scenario-premium" {{ 'checked' if scenario.is_premium else '' }}>
+                <label class="form-check-label" for="scenario-premium">Премиум контент</label>
+            </div>
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="scenario-published" {{ 'checked' if scenario.is_published else '' }}>
+                <label class="form-check-label" for="scenario-published">Опубликован</label>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <ul class="nav nav-tabs" id="editorTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="patient-tab" data-bs-toggle="tab" data-bs-target="#patient" type="button" role="tab">
+                        Данные пациента
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="node-tab" data-bs-toggle="tab" data-bs-target="#node" type="button" role="tab">
+                        Узел диалога
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="outcomes-tab" data-bs-toggle="tab" data-bs-target="#outcomes" type="button" role="tab">
+                        Результаты
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="translations-tab" data-bs-toggle="tab" data-bs-target="#translations" type="button" role="tab">
+                        Переводы
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="editorTabsContent">
+                <div class="tab-pane fade show active" id="patient" role="tabpanel" aria-labelledby="patient-tab">
+                    <div class="node-editor">
+                        <h4 class="mb-4">Информация о пациенте</h4>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="patient-name" class="form-label">Имя пациента</label>
+                                    <input type="text" class="form-control" id="patient-name" value="{{ scenario_data.patient_info.name }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="patient-age" class="form-label">Возраст</label>
+                                    <input type="number" class="form-control" id="patient-age" value="{{ scenario_data.patient_info.age }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="patient-gender" class="form-label">Пол</label>
+                                    <select class="form-select" id="patient-gender">
+                                        <option value="male" {{ 'selected' if scenario_data.patient_info.gender == 'male' else '' }}>Мужской</option>
+                                        <option value="female" {{ 'selected' if scenario_data.patient_info.gender == 'female' else '' }}>Женский</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="patient-image" class="form-label">Изображение пациента</label>
+                                    <select class="form-select" id="patient-image">
+                                        <option value="patient_maria.jpg" {{ 'selected' if scenario_data.patient_info.image == 'patient_maria.jpg' else '' }}>Мария (Ж)</option>
+                                        <option value="patient_alex.jpg" {{ 'selected' if scenario_data.patient_info.image == 'patient_alex.jpg' else '' }}>Алекс (М)</option>
+                                        <option value="patient_elena.jpg" {{ 'selected' if scenario_data.patient_info.image == 'patient_elena.jpg' else '' }}>Елена (Ж)</option>
+                                        <option value="patient_mikhail.jpg" {{ 'selected' if scenario_data.patient_info.image == 'patient_mikhail.jpg' else '' }}>Михаил (М)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="patient-history" class="form-label">История болезни</label>
+                                    <textarea class="form-control" id="patient-history" rows="5">{{ scenario_data.patient_info.medical_history }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="initial-statement" class="form-label">Начальное заявление пациента</label>
+                            <textarea class="form-control" id="initial-statement" rows="3">{{ scenario_data.get('initial_state', {}).get('patient_statement', '') }}</textarea>                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="initial-emotion" class="form-label">Эмоциональное состояние</label>
+                                <select class="form-select" id="initial-emotion">
+                                    <option value="neutral" {{ 'selected' if scenario_data.initial_state.patient_emotion == 'neutral' else '' }}>Нейтральное</option>
+                                    <option value="concerned" {{ 'selected' if scenario_data.initial_state.patient_emotion == 'concerned' else '' }}>Обеспокоенное</option>
+                                    <option value="happy" {{ 'selected' if scenario_data.initial_state.patient_emotion == 'happy' else '' }}>Счастливое</option>
+                                    <option value="angry" {{ 'selected' if scenario_data.initial_state.patient_emotion == 'angry' else '' }}>Раздраженное</option>
+                                    <option value="confused" {{ 'selected' if scenario_data.initial_state.patient_emotion == 'confused' else '' }}>Растерянное</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="initial-notes" class="form-label">Заметки для стоматолога</label>
+                                <textarea class="form-control" id="initial-notes" rows="3">{{ scenario_data.initial_state.notes }}</textarea>
+                            </div>
+                        </div>
+                        <h5 class="mt-4 mb-3">Предпросмотр</h5>
+                        <div class="patient-preview">
+                            <img src="{{ url_for('static', filename='images/virtual_patients/' + (scenario_data.patient_info.image or 'patient_alex.jpg') ) }}" class="patient-image" alt="Пациент" id="patient-preview-image">
+                            <div class="patient-speech">
+                                <p class="mb-0" id="patient-preview-initial-statement">{{ scenario_data.initial_state.patient_statement }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="translations" role="tabpanel" aria-labelledby="translations-tab">
+                    <div class="node-editor">
+                        <h4 class="mb-4">Управление переводами</h4>
+                        
+                        <div class="mb-4">
+                            <label for="default-language" class="form-label">Язык по умолчанию</label>
+                            <select class="form-select" id="default-language">
+                                <option value="en" {% if scenario_data.default == 'en' %}selected{% endif %}>English</option>
+                                <option value="ru" {% if scenario_data.default == 'ru' %}selected{% endif %}>Русский</option>
+                                <option value="nl" {% if scenario_data.default == 'nl' %}selected{% endif %}>Nederlands</option>
+                                <option value="uk" {% if scenario_data.default == 'uk' %}selected{% endif %}>Українська</option>
+                                <option value="es" {% if scenario_data.default == 'es' %}selected{% endif %}>Español</option>
+                                <option value="pt" {% if scenario_data.default == 'pt' %}selected{% endif %}>Português</option>
+                                <option value="tr" {% if scenario_data.default == 'tr' %}selected{% endif %}>Türkçe</option>
+                                <option value="fa" {% if scenario_data.default == 'fa' %}selected{% endif %}>فارسی</option>
+                            </select>
+                        </div>
+                        
+                        <div class="language-selector mb-4">
+                            <label class="form-label">Выберите язык для редактирования</label>
+                            <div class="btn-group" role="group" id="language-selector-buttons">
+                                <button type="button" class="btn btn-outline-primary active" data-lang="en">English</button>
+                                <button type="button" class="btn btn-outline-primary" data-lang="ru">Русский</button>
+                                <button type="button" class="btn btn-outline-primary" data-lang="nl">Nederlands</button>
+                                <button type="button" class="btn btn-outline-primary" data-lang="uk">Українська</button>
+                                <button type="button" class="btn btn-outline-primary" data-lang="es">Español</button>
+                                <button type="button" class="btn btn-outline-primary" data-lang="pt">Português</button>
+                                <button type="button" class="btn btn-outline-primary" data-lang="tr">Türkçe</button>
+                                <button type="button" class="btn btn-outline-primary" data-lang="fa">فارسی</button>
+                            </div>
+                        </div>
+                        
+                        <div id="translation-fields" class="mt-4">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Основная информация</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="translate-title" class="form-label">Название сценария</label>
+                                        <input type="text" class="form-control translation-field" id="translate-title" data-field="title">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="translate-description" class="form-label">Описание</label>
+                                        <textarea class="form-control translation-field" id="translate-description" data-field="description" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Информация о пациенте</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="translate-patient-name" class="form-label">Имя пациента</label>
+                                        <input type="text" class="form-control translation-field" id="translate-patient-name" data-field="patient_info.name">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="translate-medical-history" class="form-label">История болезни</label>
+                                        <textarea class="form-control translation-field" id="translate-medical-history" data-field="patient_info.medical_history" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Начальное состояние</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="translate-initial-statement" class="form-label">Начальное заявление пациента</label>
+                                        <textarea class="form-control translation-field" id="translate-initial-statement" data-field="initial_state.patient_statement" rows="3"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="translate-notes" class="form-label">Заметки</label>
+                                        <textarea class="form-control translation-field" id="translate-notes" data-field="initial_state.notes" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Диалоговые узлы</h5>
+                                    <div>
+                                        <select class="form-select form-select-sm" id="node-selector-translate" style="width: auto; display: inline-block;">
+                                            <option value="">Выберите узел...</option>
+                                            </select>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="node-translation-fields">
+                                        <div class="alert alert-info">
+                                            Выберите узел диалога для перевода из выпадающего списка выше.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Результаты</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <h6>Хороший результат (70-100%)</h6>
+                                        <div class="mb-3">
+                                            <label for="translate-outcome-good-title" class="form-label">Заголовок</label>
+                                            <input type="text" class="form-control translation-field" id="translate-outcome-good-title" data-field="outcomes.good.title">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="translate-outcome-good-text" class="form-label">Текст</label>
+                                            <textarea class="form-control translation-field" id="translate-outcome-good-text" data-field="outcomes.good.text" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <h6>Средний результат (40-69%)</h6>
+                                        <div class="mb-3">
+                                            <label for="translate-outcome-average-title" class="form-label">Заголовок</label>
+                                            <input type="text" class="form-control translation-field" id="translate-outcome-average-title" data-field="outcomes.average.title">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="translate-outcome-average-text" class="form-label">Текст</label>
+                                            <textarea class="form-control translation-field" id="translate-outcome-average-text" data-field="outcomes.average.text" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <h6>Плохой результат (0-39%)</h6>
+                                        <div class="mb-3">
+                                            <label for="translate-outcome-poor-title" class="form-label">Заголовок</label>
+                                            <input type="text" class="form-control translation-field" id="translate-outcome-poor-title" data-field="outcomes.poor.title">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="translate-outcome-poor-text" class="form-label">Текст</label>
+                                            <textarea class="form-control translation-field" id="translate-outcome-poor-text" data-field="outcomes.poor.text" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="bi bi-info-circle me-2"></i> Не забудьте сохранить изменения после редактирования переводов.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="node" role="tabpanel" aria-labelledby="node-tab">
+                    <div class="node-editor">
+                        <h4 class="mb-4" id="node-editor-title">Редактирование узла</h4>
+                        
+                        <div class="mb-4">
+                            <label for="node-statement" class="form-label">Фраза пациента</label>
+                            <textarea class="form-control" id="node-statement" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="node-emotion" class="form-label">Эмоциональное состояние</label>
+                                <select class="form-select" id="node-emotion">
+                                    <option value="neutral">Нейтральное</option>
+                                    <option value="concerned">Обеспокоенное</option>
+                                    <option value="happy">Счастливое</option>
+                                    <option value="angry">Раздраженное</option>
+                                    <option value="confused">Растерянное</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="node-is-final" class="form-label">Тип узла</label>
+                                <select class="form-select" id="node-is-final">
+                                    <option value="false">Промежуточный (с вариантами ответа)</option>
+                                    <option value="true">Финальный (конец сценария)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="enhanced-node-editor"> <div class="mb-4">
+                                <label class="form-label">Клиническая фаза</label>
+                                <div class="clinical-phase-selector">
+                                    <div class="phase-option" data-phase="initial">
+                                        <i class="bi bi-door-open"></i>
+                                        <div>Первичный прием</div>
+                                    </div>
+                                    <div class="phase-option" data-phase="anamnesis">
+                                        <i class="bi bi-clipboard-data"></i>
+                                        <div>Сбор анамнеза</div>
+                                    </div>
+                                    <div class="phase-option" data-phase="examination">
+                                        <i class="bi bi-search"></i>
+                                        <div>Осмотр</div>
+                                    </div>
+                                    <div class="phase-option" data-phase="diagnostic">
+                                        <i class="bi bi-lightning"></i>
+                                        <div>Диагностика</div>
+                                    </div>
+                                    <div class="phase-option" data-phase="treatment">
+                                        <i class="bi bi-tools"></i>
+                                        <div>Лечение</div>
+                                    </div>
+                                    <div class="phase-option" data-phase="conclusion">
+                                        <i class="bi bi-check-circle"></i>
+                                        <div>Заключение</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="node-clinical-phase-value"> </div>
+                            <div class="clinical-tools-container mb-4">
+                                <label class="form-label">Доступные инструменты и процедуры</label>
+                                <div class="tools-grid">
+                                    <label class="tool-checkbox">
+                                        <input type="checkbox" value="visual_examination" name="available_tools">
+                                        <span>Визуальный осмотр</span>
+                                    </label>
+                                    <label class="tool-checkbox">
+                                        <input type="checkbox" value="palpation" name="available_tools">
+                                        <span>Пальпация</span>
+                                    </label>
+                                    <label class="tool-checkbox">
+                                        <input type="checkbox" value="percussion" name="available_tools">
+                                        <span>Перкуссия</span>
+                                    </label>
+                                    <label class="tool-checkbox">
+                                        <input type="checkbox" value="vitality_test" name="available_tools">
+                                        <span>Тест жизнеспособности</span>
+                                    </label>
+                                    <label class="tool-checkbox">
+                                        <input type="checkbox" value="xray" name="available_tools">
+                                        <span>Рентген</span>
+                                    </label>
+                                    <label class="tool-checkbox">
+                                        <input type="checkbox" value="probing" name="available_tools">
+                                        <span>Зондирование</span>
+                                    </label>
+                                    <label class="tool-checkbox">
+                                        <input type="checkbox" value="mobility_test" name="available_tools">
+                                        <span>Тест подвижности</span>
+                                    </label>
+                                    <label class="tool-checkbox">
+                                        <input type="checkbox" value="bite_test" name="available_tools">
+                                        <span>Тест накусывания</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="notes-editor">
+                                <div class="notes-tabs">
+                                    <div class="notes-tab active" data-tab="patient">Заметки пациента</div>
+                                    <div class="notes-tab" data-tab="dentist">Клинические наблюдения</div>
+                                    <div class="notes-tab" data-tab="hints">Диагностические подсказки</div>
+                                </div>
+                                <div class="notes-content">
+                                    <div class="notes-section" data-section="patient">
+                                        <label for="node-patient-notes" class="form-label">Дополнительная информация для пациента</label>
+                                        <textarea class="form-control" id="node-patient-notes" rows="3"
+                                                  placeholder="Информация, которую пациент может предоставить при прямом вопросе..."></textarea>
+                                    </div>
+                                    <div class="notes-section" data-section="dentist" style="display: none;">
+                                        <label for="node-dentist-notes" class="form-label">Клинические наблюдения</label>
+                                        <textarea class="form-control" id="node-dentist-notes" rows="3"
+                                                  placeholder="Что стоматолог наблюдает при осмотре, результаты тестов..."></textarea>
+                                    </div>
+                                    <div class="notes-section" data-section="hints" style="display: none;">
+                                        <label for="node-diagnostic-hints" class="form-label">Диагностические подсказки</label>
+                                        <textarea class="form-control" id="node-diagnostic-hints" rows="3"
+                                                  placeholder="Подсказки для постановки правильного диагноза..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="options-container">
+                            <h5 class="mb-3">Варианты ответа</h5>
+                            <div id="options-list">
+                                </div>
+                            
+                            <button id="add-option-btn" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="bi bi-plus-circle"></i> Добавить вариант ответа
+                            </button>
+                        </div>
+                        
+                        <h5 class="mt-4 mb-3">Предпросмотр</h5>
+                        <div class="patient-preview">
+                            <img src="{{ url_for('static', filename='images/virtual_patients/' + (scenario_data.patient_info.image or 'patient_alex.jpg')) }}" class="patient-image" alt="Пациент" id="node-preview-image">
+                            <div class="patient-speech">
+                                <p class="mb-0" id="preview-statement"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="outcomes" role="tabpanel" aria-labelledby="outcomes-tab">
+                    <div class="node-editor">
+                        <h4 class="mb-4">Результаты сценария</h4>
+                        
+                        <div class="mb-4">
+                            <p class="text-muted">Настройте результаты для разных диапазонов баллов.</p>
+                        </div>
+                        
+                        <div class="card mb-3 border-success">
+                            <div class="card-header bg-success-subtle">
+                                <strong>Хороший результат (70-100%)</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="outcome-good-title" class="form-label">Заголовок</label>
+                                    <input type="text" class="form-control" id="outcome-good-title" value="{{ scenario_data.outcomes.good.title or 'Отличная диагностика!' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="outcome-good-text" class="form-label">Текст</label>
+                                    <textarea class="form-control" id="outcome-good-text" rows="3">{{ scenario_data.outcomes.good.text or 'Вы проявили отличные навыки диагностики. Ваши решения были обоснованными и профессиональными.' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3 border-warning">
+                            <div class="card-header bg-warning-subtle">
+                                <strong>Средний результат (40-69%)</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="outcome-average-title" class="form-label">Заголовок</label>
+                                    <input type="text" class="form-control" id="outcome-average-title" value="{{ scenario_data.outcomes.average.title or 'Хорошая попытка' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="outcome-average-text" class="form-label">Текст</label>
+                                    <textarea class="form-control" id="outcome-average-text" rows="3">{{ scenario_data.outcomes.average.text or 'Вы продемонстрировали некоторые хорошие навыки диагностики, но есть аспекты, требующие улучшения.' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3 border-danger">
+                            <div class="card-header bg-danger-subtle">
+                                <strong>Плохой результат (0-39%)</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="outcome-poor-title" class="form-label">Заголовок</label>
+                                    <input type="text" class="form-control" id="outcome-poor-title" value="{{ scenario_data.outcomes.poor.title or 'Требуется дополнительная практика' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="outcome-poor-text" class="form-label">Текст</label>
+                                    <textarea class="form-control" id="outcome-poor-text" rows="3">{{ scenario_data.outcomes.poor.text or 'Ваша диагностика нуждается в значительном улучшении. Рекомендуется повторить теоретический материал и попробовать снова.' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteNodeModal" tabindex="-1" aria-labelledby="deleteNodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteNodeModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить этот узел диалога? Это действие нельзя отменить.</p>
+                <p><strong>Внимание:</strong> Будут удалены все ссылки на этот узел из других узлов, что может привести к нерабочим путям в сценарии.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-node">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="validation-warnings" class="validation-warnings" style="display: none;">
+    </div>
+{% endblock %}
+
+{% block body_scripts %}
+{{ super() }}
+<script>
+// Глобальные переменные
+let currentNodeId = 'initial';
+let scenarioData = null; // Будет содержать все данные сценария, включая переводы и новые поля
+const defaultScenarioData = {
+    title: {{ scenario.title|tojson|safe }},
+    description: {{ scenario.description|tojson|safe }}
+};
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEditor();
+});
+
+// Функция инициализации редактора
+function initializeEditor() {
+    try {
+        initializeScenarioData();
+        setupEventHandlers();
+        loadNodeData(currentNodeId); // Загрузка начального ('initial') или первого узла
+        console.log('Редактор успешно инициализирован');
+    } catch (e) {
+        console.error('Ошибка при инициализации редактора:', e);
+        alert('Ошибка при инициализации редактора. Проверьте консоль для деталей.');
+    }
+}
+
+// Инициализация данных сценария
+function initializeScenarioData() {
+    console.log('Инициализация данных сценария');
+    scenarioData = {
+        patient_info: {}, // Общая информация о пациенте (возраст, пол, изображение)
+        initial_state: {}, // Начальное состояние (заявление пациента, эмоция, заметки)
+        dialogue_nodes: [], // Массив узлов диалога
+        outcomes: { good: {}, average: {}, poor: {} }, // Результаты сценария
+        translations: {}, // Объект для хранения переводов различных частей сценария
+        // ---- Новые поля для scenarioData (глобальные, если применимо) ----
+        default_language: 'ru', // Язык по умолчанию для сценария
+        // title: '', // Название сценария (теперь будет в translations)
+        // description: '', // Описание сценария (теперь будет в translations)
+        // difficulty: 'medium', // Сложность
+        // category: 'diagnosis', // Категория
+    };
+
+    // Загружаем данные из переменных шаблона Flask
+    // Эти данные обычно представляют собой текущее сохраненное состояние сценария
+    try {
+        // Информация о пациенте (глобальная часть)
+        const patientInfoData = {{ scenario_data.patient_info|tojson|safe }};
+        if (typeof patientInfoData === 'object' && patientInfoData !== null) {
+             scenarioData.patient_info = { ...scenarioData.patient_info, ...patientInfoData };
+        }
+        // Начальное состояние
+        const initialStateData = {{ scenario_data.initial_state|tojson|safe }};
+         if (typeof initialStateData === 'object' && initialStateData !== null) {
+            scenarioData.initial_state = { ...scenarioData.initial_state, ...initialStateData };
+        }
+        // Узлы диалога
+        const dialogueNodesData = {{ scenario_data.dialogue_nodes|tojson|safe }};
+        if (Array.isArray(dialogueNodesData)) {
+            scenarioData.dialogue_nodes = dialogueNodesData;
+        }
+        // Результаты
+        const outcomesData = {{ scenario_data.outcomes|tojson|safe }};
+        if (typeof outcomesData === 'object' && outcomesData !== null) {
+            scenarioData.outcomes = { ...scenarioData.outcomes, ...outcomesData };
+        }
+
+        // Загрузка основного объекта scenario_data, который может содержать переводы и другие метаданные
+        const rawScenarioFullData = {{ scenario.scenario_data|fromjson|tojson|safe }};
+        if (typeof rawScenarioFullData === 'object' && rawScenarioFullData !== null) {
+            if (rawScenarioFullData.translations) {
+                 scenarioData.translations = rawScenarioFullData.translations;
+            }
+            if (rawScenarioFullData.default) { // Язык по умолчанию из сохраненных данных
+                scenarioData.default_language = rawScenarioFullData.default;
+                // Устанавливаем выбранный язык в UI, если есть элемент
+                const defaultLangSelect = document.getElementById('default-language');
+                if (defaultLangSelect) defaultLangSelect.value = scenarioData.default_language;
+            }
+             // Загрузка информации о пациенте, которая может быть переводимой и храниться в translations
+            const currentLang = scenarioData.default_language; // или {{ scenario_data.current_language|tojson|safe }}
+            const currentLangPatientInfo = scenarioData.translations?.[currentLang]?.patient_info;
+            if (currentLangPatientInfo) {
+                scenarioData.patient_info = { ...scenarioData.patient_info, ...currentLangPatientInfo };
+            }
+            const currentLangInitialState = scenarioData.translations?.[currentLang]?.initial_state;
+            if (currentLangInitialState) {
+                scenarioData.initial_state = { ...scenarioData.initial_state, ...currentLangInitialState };
+            }
+             const currentLangDialogueNodes = scenarioData.translations?.[currentLang]?.dialogue_nodes;
+            if (currentLangDialogueNodes) {
+                // Эта логика может быть сложнее, если узлы также полностью переводимы
+                // Сейчас предполагаем, что структура узлов одинакова, переводятся только текстовые поля
+                 scenarioData.dialogue_nodes = currentLangDialogueNodes;
+            }
+            const currentLangOutcomes = scenarioData.translations?.[currentLang]?.outcomes;
+            if (currentLangOutcomes) {
+                scenarioData.outcomes = { ...scenarioData.outcomes, ...currentLangOutcomes };
+            }
+        }
+
+    } catch (e) {
+        console.error('Ошибка при загрузке данных сценария из шаблона:', e);
+        // Можно оставить значения по умолчанию или показать ошибку пользователю
+    }
+    
+    // Обновление UI на основе загруженных данных (если они есть)
+    // Например, document.getElementById('patient-name').value = scenarioData.patient_info.name || '';
+    // ... и так далее для всех полей ...
+
+    console.log('Данные сценария загружены/инициализированы:', { 
+        'Узлов диалога': scenarioData.dialogue_nodes.length,
+        'Информация о пациенте': scenarioData.patient_info,
+        'Начальное состояние': scenarioData.initial_state,
+        'Переводы': Object.keys(scenarioData.translations).length > 0,
+        'Язык по умолчанию': scenarioData.default_language
+    });
+    // Обновление UI элементов, которые зависят от scenarioData
+    updatePatientInfoUI();
+    updateInitialStateUI();
+    renderNodeList();
+    updateOutcomesUI();
+}
+function updatePatientInfoUI() {
+    document.getElementById('patient-name').value = scenarioData.patient_info.name || '';
+    document.getElementById('patient-age').value = scenarioData.patient_info.age || '';
+    document.getElementById('patient-gender').value = scenarioData.patient_info.gender || 'male';
+    document.getElementById('patient-image').value = scenarioData.patient_info.image || 'patient_alex.jpg';
+    document.getElementById('patient-history').value = scenarioData.patient_info.medical_history || '';
+    document.getElementById('patient-preview-image').src = `{{ url_for('static', filename='images/virtual_patients/') }}${scenarioData.patient_info.image || 'patient_alex.jpg'}`;
+}
+
+function updateInitialStateUI() {
+    document.getElementById('initial-statement').value = scenarioData.initial_state.patient_statement || '';
+    document.getElementById('initial-emotion').value = scenarioData.initial_state.patient_emotion || 'neutral';
+    document.getElementById('initial-notes').value = scenarioData.initial_state.notes || '';
+    document.getElementById('patient-preview-initial-statement').textContent = scenarioData.initial_state.patient_statement || '';
+}
+
+function updateOutcomesUI() {
+    if (scenarioData.outcomes && scenarioData.outcomes.good) {
+        document.getElementById('outcome-good-title').value = scenarioData.outcomes.good.title || '';
+        document.getElementById('outcome-good-text').value = scenarioData.outcomes.good.text || '';
+    }
+    if (scenarioData.outcomes && scenarioData.outcomes.average) {
+        document.getElementById('outcome-average-title').value = scenarioData.outcomes.average.title || '';
+        document.getElementById('outcome-average-text').value = scenarioData.outcomes.average.text || '';
+    }
+    if (scenarioData.outcomes && scenarioData.outcomes.poor) {
+        document.getElementById('outcome-poor-title').value = scenarioData.outcomes.poor.title || '';
+        document.getElementById('outcome-poor-text').value = scenarioData.outcomes.poor.text || '';
+    }
+}
+
+
+function renderNodeList() {
+    const nodeList = document.getElementById('node-list');
+    if (!nodeList) return;
+    // Очищаем существующие узлы (кроме "Начальное состояние")
+    while (nodeList.children.length > 1) {
+        nodeList.removeChild(nodeList.lastChild);
+    }
+    // Добавляем узлы из scenarioData
+    scenarioData.dialogue_nodes.forEach((node, index) => {
+        addNodeToList(node, index + 1); // index + 1 так как 0 это initial state
+    });
+}
+
+
+// Настройка обработчиков событий
+function setupEventHandlers() {
+    console.log('Настройка обработчиков событий');
+    
+    document.querySelectorAll('#editorTabs .nav-link').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Возможно, сохранять данные текущей активной вкладки перед переключением
+            // saveCurrentNodeData(); // Если активна вкладка узла
+        });
+    });
+    
+    document.querySelectorAll('.node-item').forEach(item => {
+        item.addEventListener('click', function() {
+            selectNode(this.dataset.nodeId);
+        });
+    });
+    
+    const addNodeBtn = document.getElementById('add-node-btn');
+    if (addNodeBtn) {
+        addNodeBtn.addEventListener('click', addNewNode);
+    }
+    
+    const addOptionBtn = document.getElementById('add-option-btn');
+    if (addOptionBtn) {
+        addOptionBtn.addEventListener('click', function() {
+            addOptionToNode(); // Эта функция вызовет улучшенный addOptionToUI
+        });
+    }
+    
+    const saveBtn = document.getElementById('save-scenario-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveScenario); // saveScenario теперь с валидацией
+    }
+
+    // Обработчики для новых элементов из фрагмента 2
+    // Переключение вкладок заметок в редакторе узла
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('notes-tab')) {
+            const tab = e.target.dataset.tab;
+            const notesEditor = e.target.closest('.notes-editor');
+            if (!notesEditor) return;
+
+            notesEditor.querySelectorAll('.notes-tab').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            notesEditor.querySelectorAll('.notes-section').forEach(s => s.style.display = 'none');
+            notesEditor.querySelector(`.notes-section[data-section="${tab}"]`).style.display = 'block';
+        }
+    });
+
+    // Выбор клинической фазы в редакторе узла
+    document.addEventListener('click', function(e) {
+        const phaseOption = e.target.closest('.phase-option');
+        if (phaseOption) {
+            const phase = phaseOption.dataset.phase;
+            const phaseSelector = phaseOption.closest('.clinical-phase-selector');
+            if (!phaseSelector) return;
+
+            phaseSelector.querySelectorAll('.phase-option').forEach(o => o.classList.remove('selected'));
+            phaseOption.classList.add('selected');
+            
+            // Сохраняем значение в скрытое поле или напрямую в scenarioData при сохранении узла
+            const phaseValueInput = document.getElementById('node-clinical-phase-value');
+            if (phaseValueInput) {
+                phaseValueInput.value = phase;
+            }
+        }
+    });
+
+    // Обновление превью пациента при изменении данных на вкладке "Данные пациента"
+    document.getElementById('patient-name')?.addEventListener('input', updatePatientDataFromUI);
+    document.getElementById('patient-age')?.addEventListener('input', updatePatientDataFromUI);
+    document.getElementById('patient-gender')?.addEventListener('change', updatePatientDataFromUI);
+    document.getElementById('patient-image')?.addEventListener('change', updatePatientDataFromUI);
+    document.getElementById('patient-history')?.addEventListener('input', updatePatientDataFromUI);
+    document.getElementById('initial-statement')?.addEventListener('input', updatePatientDataFromUI);
+    document.getElementById('initial-emotion')?.addEventListener('change', updatePatientDataFromUI);
+    document.getElementById('initial-notes')?.addEventListener('input', updatePatientDataFromUI);
+}
+
+function updatePatientDataFromUI() {
+    // Эта функция вызывается при изменении полей на вкладке "Данные пациента"
+    // Она обновляет scenarioData и превью в реальном времени
+    if (!scenarioData.patient_info) scenarioData.patient_info = {};
+    if (!scenarioData.initial_state) scenarioData.initial_state = {};
+
+    scenarioData.patient_info.name = document.getElementById('patient-name').value;
+    scenarioData.patient_info.age = document.getElementById('patient-age').value;
+    scenarioData.patient_info.gender = document.getElementById('patient-gender').value;
+    scenarioData.patient_info.image = document.getElementById('patient-image').value;
+    scenarioData.patient_info.medical_history = document.getElementById('patient-history').value;
+
+    scenarioData.initial_state.patient_statement = document.getElementById('initial-statement').value;
+    scenarioData.initial_state.patient_emotion = document.getElementById('initial-emotion').value;
+    scenarioData.initial_state.notes = document.getElementById('initial-notes').value;
+
+    // Обновляем превью на вкладке "Данные пациента"
+    document.getElementById('patient-preview-image').src = `{{ url_for('static', filename='images/virtual_patients/') }}${scenarioData.patient_info.image || 'patient_alex.jpg'}`;
+    document.getElementById('patient-preview-initial-statement').textContent = scenarioData.initial_state.patient_statement;
+
+    // Обновляем превью на вкладке "Узел диалога", если выбран начальный узел
+    if (currentNodeId === 'initial') {
+        document.getElementById('node-preview-image').src = `{{ url_for('static', filename='images/virtual_patients/') }}${scenarioData.patient_info.image || 'patient_alex.jpg'}`;
+        document.getElementById('preview-statement').textContent = scenarioData.initial_state.patient_statement;
+    }
+}
+
+
+// Выбор узла
+function selectNode(nodeId) {
+    console.log('Выбор узла:', nodeId);
+    
+    if (currentNodeId !== nodeId) { // Только если узел действительно меняется
+      saveCurrentNodeData(); // Сохраняем данные предыдущего узла
+    }
+    
+    currentNodeId = nodeId;
+    
+    document.querySelectorAll('.node-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    const selectedItem = document.querySelector(`.node-item[data-node-id="${nodeId}"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('active');
+    }
+    
+    loadNodeData(nodeId); // Загружаем данные нового узла
+    
+    // Автоматически переключаемся на вкладку "Узел диалога", если выбран не "initial"
+    // или на вкладку "Данные пациента", если выбран "initial"
+    const nodeTab = document.getElementById('node-tab');
+    const patientTab = document.getElementById('patient-tab');
+
+    if (nodeId === 'initial' && patientTab) {
+        new bootstrap.Tab(patientTab).show();
+    } else if (nodeTab) {
+        new bootstrap.Tab(nodeTab).show();
+    }
+}
+
+// Загрузка данных узла
+function loadNodeData(nodeId) {
+    console.log('Загрузка данных узла:', nodeId);
+    let nodeData;
+    const enhancedNodeEditorDiv = document.querySelector('.enhanced-node-editor');
+
+    if (nodeId === 'initial') {
+        nodeData = scenarioData.initial_state || {};
+        document.getElementById('node-editor-title').textContent = 'Начальное состояние';
+        document.getElementById('options-container').style.display = 'none';
+        if (enhancedNodeEditorDiv) enhancedNodeEditorDiv.style.display = 'none'; // Скрываем расширенный редактор для initial
+
+        // Заполняем поля из initial_state (поля совпадают с полями узла для простоты)
+        document.getElementById('node-statement').value = nodeData.patient_statement || '';
+        document.getElementById('node-emotion').value = nodeData.patient_emotion || 'neutral';
+        // Для 'initial' нет is_final, clinical_phase и т.д.
+    } else {
+        nodeData = scenarioData.dialogue_nodes.find(node => node.id === nodeId);
+        if (!nodeData) {
+            console.error('Узел не найден:', nodeId);
+            // Можно создать новый узел, если он не найден, или показать ошибку
+            // Для примера, просто выйдем
+            return;
+        }
+        document.getElementById('node-editor-title').textContent = nodeData.title || 'Редактирование узла ' + nodeId;
+        
+        const isFinalSelect = document.getElementById('node-is-final');
+        isFinalSelect.value = nodeData.is_final ? 'true' : 'false';
+        document.getElementById('options-container').style.display = nodeData.is_final ? 'none' : 'block';
+        
+        document.getElementById('node-statement').value = nodeData.patient_statement || '';
+        document.getElementById('node-emotion').value = nodeData.patient_emotion || 'neutral';
+
+        if (enhancedNodeEditorDiv) {
+            enhancedNodeEditorDiv.style.display = 'block'; // Показываем расширенный редактор
+            // Загрузка данных для расширенного редактора
+            const phaseValueInput = document.getElementById('node-clinical-phase-value');
+            if (phaseValueInput) phaseValueInput.value = nodeData.clinical_phase || 'initial';
+            
+            // Обновление UI для clinical_phase_selector
+            document.querySelectorAll('.clinical-phase-selector .phase-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.dataset.phase === (nodeData.clinical_phase || 'initial')) {
+                    opt.classList.add('selected');
+                }
+            });
+
+            document.querySelectorAll('.tools-grid input[name="available_tools"]').forEach(checkbox => {
+                checkbox.checked = (nodeData.available_tools || []).includes(checkbox.value);
+            });
+            document.getElementById('node-patient-notes').value = nodeData.notes_patient || '';
+            document.getElementById('node-dentist-notes').value = nodeData.notes_dentist || '';
+            document.getElementById('node-diagnostic-hints').value = nodeData.notes_hints || '';
+        }
+        
+        loadOptions(nodeData); // Загружаем варианты ответов
+    }
+    
+    updatePreview(nodeData); // Обновляем предпросмотр узла
+}
+
+
+// Загрузка вариантов ответов (использует улучшенную функцию addOptionToUI)
+function loadOptions(nodeData) {
+    const optionsList = document.getElementById('options-list');
+    if (!optionsList) return;
+    
+    optionsList.innerHTML = ''; // Очищаем список
+    
+    if (nodeData.options && Array.isArray(nodeData.options) && !nodeData.is_final) {
+        nodeData.options.forEach(option => {
+            addOptionToUI(option); // Вызываем улучшенную функцию (переименованную)
+        });
+    }
+}
+
+// Улучшенная функция добавления варианта ответа (переименована из addOptionToUIEnhanced)
+function addOptionToUI(option = {}) { // Добавлен параметр по умолчанию
+    const optionsList = document.getElementById('options-list');
+    if (!optionsList) return;
+        
+    const optionItem = document.createElement('div');
+    optionItem.className = 'option-item enhanced-option'; // Используем новый класс
+        
+    let nodeOptionsHTML = '<option value="">Выберите узел...</option>';
+    if (scenarioData.dialogue_nodes && Array.isArray(scenarioData.dialogue_nodes)) {
+        nodeOptionsHTML += scenarioData.dialogue_nodes.map(node => {
+            const selected = option.next_node === node.id ? 'selected' : '';
+            return `<option value="${node.id}" ${selected}>${node.title || node.id}</option>`;
+        }).join('');
+    }
+        
+    let scoreClass = 'score-neutral';
+    if (option.score > 0) scoreClass = 'score-positive';
+    else if (option.score < 0) scoreClass = 'score-negative';
+        
+    optionItem.innerHTML = `
+        <div class="option-header">
+            <button type="button" class="btn btn-sm btn-outline-info preview-btn">
+                <i class="bi bi-eye"></i> Предпросмотр
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger delete-btn">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+                
+        <div class="mb-3">
+            <label class="form-label">Текст варианта ответа</label>
+            <textarea class="form-control option-text" rows="2">${option.text || ''}</textarea>
+        </div>
+                
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Следующий узел</label>
+                <select class="form-select option-next-node">
+                    ${nodeOptionsHTML}
+                </select>
+            </div>
+                        
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Базовые баллы <span class="score-badge ${scoreClass}">${option.score || 0}</span></label>
+                <input type="range" class="form-range option-score" min="-15" max="15" value="${option.score || 0}" step="1">
+            </div>
+        </div>
+                
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Уровень эмпатии</label>
+                <div class="empathy-level-controls">
+                    <button type="button" class="btn empathy-btn empathy-low ${option.empathy_level === 'low' ? 'active' : ''}" data-empathy="low">Низкий</button>
+                    <button type="button" class="btn empathy-btn empathy-medium ${option.empathy_level === 'medium' || !option.empathy_level ? 'active' : ''}" data-empathy="medium">Средний</button>
+                    <button type="button" class="btn empathy-btn empathy-high ${option.empathy_level === 'high' ? 'active' : ''}" data-empathy="high">Высокий</button>
+                </div>
+                <input type="hidden" class="option-empathy" value="${option.empathy_level || 'medium'}">
+            </div>
+                        
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Клиническая обоснованность</label>
+                <select class="form-select option-clinical-validity">
+                    <option value="excellent" ${option.clinical_validity === 'excellent' ? 'selected' : ''}>Отличная</option>
+                    <option value="good" ${option.clinical_validity === 'good' || !option.clinical_validity ? 'selected' : ''}>Хорошая</option>
+                    <option value="acceptable" ${option.clinical_validity === 'acceptable' ? 'selected' : ''}>Приемлемая</option>
+                    <option value="poor" ${option.clinical_validity === 'poor' ? 'selected' : ''}>Плохая</option>
+                </select>
+            </div>
+        </div>
+                
+        <div class="mb-3">
+            <label class="form-label">Обратная связь (отображается после выбора)</label>
+            <textarea class="form-control option-feedback" rows="2" 
+                      placeholder="Объяснение, почему этот выбор хорош или плох...">${option.feedback || ''}</textarea>
+        </div>
+                
+        <div class="scoring-preview">
+            <h6>Предпросмотр оценки</h6>
+            <div class="score-factors">
+                <div class="factor-item"><div class="factor-value">${option.score || 0}</div><div>Базовые баллы</div></div>
+                <div class="factor-item"><div class="factor-value">×1.0</div><div>Эмпатия</div></div>
+                <div class="factor-item"><div class="factor-value">×1.0</div><div>Клиника</div></div>
+                <div class="factor-item"><div class="factor-value">${option.score || 0}</div><div>Итого</div></div>
+            </div>
+        </div>    
+    `;
+        
+    optionsList.appendChild(optionItem);
+    setupEnhancedOptionHandlers(optionItem); // Настройка обработчиков для улучшенного варианта
+    updateScoringPreview(optionItem); // Инициализация предпросмотра оценки
+}
+
+// Настройка обработчиков для улучшенного варианта ответа
+function setupEnhancedOptionHandlers(optionItem) {
+    const deleteBtn = optionItem.querySelector('.delete-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            optionItem.remove();
+            // TODO: Обновить scenarioData после удаления варианта, если это не делается при общем сохранении узла
+        });
+    }
+        
+    const empathyBtns = optionItem.querySelectorAll('.empathy-btn');
+    const empathyInput = optionItem.querySelector('.option-empathy');
+    empathyBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            empathyBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            if (empathyInput) empathyInput.value = this.dataset.empathy;
+            updateScoringPreview(optionItem);
+        });
+    });
+        
+    const scoreInput = optionItem.querySelector('.option-score');
+    const scoreBadge = optionItem.querySelector('.score-badge');
+    if (scoreInput && scoreBadge) {
+        scoreInput.addEventListener('input', function() {
+            const score = parseInt(this.value, 10);
+            scoreBadge.textContent = score;
+            scoreBadge.className = 'score-badge '; // Reset classes
+            if (score > 0) scoreBadge.classList.add('score-positive');
+            else if (score < 0) scoreBadge.classList.add('score-negative');
+            else scoreBadge.classList.add('score-neutral');
+            updateScoringPreview(optionItem);
+        });
+    }
+        
+    const clinicalSelect = optionItem.querySelector('.option-clinical-validity');
+    if (clinicalSelect) {
+        clinicalSelect.addEventListener('change', function() {
+            updateScoringPreview(optionItem);
+        });
+    }
+        
+    const previewBtn = optionItem.querySelector('.preview-btn');
+    if (previewBtn) {
+        previewBtn.addEventListener('click', function() {
+            showOptionPreview(optionItem);
+        });
+    }
+}
+
+// Обновление предпросмотра оценки для варианта ответа
+function updateScoringPreview(optionItem) {
+    const baseScoreInput = optionItem.querySelector('.option-score');
+    const empathyInput = optionItem.querySelector('.option-empathy');
+    const clinicalSelect = optionItem.querySelector('.option-clinical-validity');
+
+    if (!baseScoreInput || !empathyInput || !clinicalSelect) return;
+
+    const baseScore = parseInt(baseScoreInput.value) || 0;
+    const empathy = empathyInput.value;
+    const clinical = clinicalSelect.value;
+        
+    const empathyMultiplier = empathy === 'high' ? 1.15 : empathy === 'low' ? 0.85 : 1.0;
+    const clinicalMultiplier = clinical === 'excellent' ? 1.2 : clinical === 'good' ? 1.0 : clinical === 'acceptable' ? 0.9 : 0.8;
+        
+    const finalScore = Math.round(baseScore * empathyMultiplier * clinicalMultiplier);
+        
+    const factors = optionItem.querySelectorAll('.scoring-preview .factor-value');
+    if (factors.length >= 4) {
+        factors[0].textContent = baseScore;
+        factors[1].textContent = `×${empathyMultiplier.toFixed(2)}`;
+        factors[2].textContent = `×${clinicalMultiplier.toFixed(2)}`;
+        factors[3].textContent = finalScore;
+    }
+}
+
+// Показ модального окна предпросмотра варианта ответа
+function showOptionPreview(optionItem) {
+    const text = optionItem.querySelector('.option-text')?.value || 'Текст не указан';
+    const feedback = optionItem.querySelector('.option-feedback')?.value || 'Обратная связь не указана';
+    const empathyValue = optionItem.querySelector('.option-empathy')?.value || 'medium';
+    const clinicalValue = optionItem.querySelector('.option-clinical-validity')?.value || 'good';
+
+    const empathyText = empathyValue === 'high' ? 'Высокая' : empathyValue === 'low' ? 'Низкая' : 'Средняя';
+    const clinicalText = clinicalValue === 'excellent' ? 'Отличная' : clinicalValue === 'good' ? 'Хорошая' : clinicalValue === 'acceptable' ? 'Приемлемая' : 'Плохая';
+
+    const modalHTML = `
+        <div class="preview-modal" style="display: flex;">
+            <div class="preview-content">
+                <button type="button" class="preview-close">&times;</button>
+                <h4>Предпросмотр варианта ответа</h4>
+                <div class="preview-option mt-3">
+                    <h5>Текст ответа:</h5>
+                    <p class="border p-3 bg-light rounded">${text}</p>
+                </div>
+                <div class="preview-feedback mt-3">
+                    <h5>Обратная связь:</h5>
+                    <p class="border p-3 bg-light rounded">${feedback}</p>
+                </div>
+                <div class="preview-attributes mt-3">
+                    <h5>Характеристики:</h5>
+                    <ul>
+                        <li><strong>Эмпатия:</strong> ${empathyText}</li>
+                        <li><strong>Клиническая обоснованность:</strong> ${clinicalText}</li>
+                    </ul>
+                </div>
+                 <div class="scoring-preview mt-3">
+                    ${optionItem.querySelector('.scoring-preview').innerHTML}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const modalElement = document.createElement('div');
+    modalElement.innerHTML = modalHTML;
+    document.body.appendChild(modalElement.firstChild); // Добавляем сам .preview-modal
+
+    const actualModal = document.body.lastChild;
+    actualModal.querySelector('.preview-close').addEventListener('click', () => actualModal.remove());
+    actualModal.addEventListener('click', (e) => {
+        if (e.target === actualModal) actualModal.remove();
+    });
+}
+
+
+// Добавление нового варианта ответа (вызывает улучшенный addOptionToUI)
+function addOptionToNode() {
+    addOptionToUI({ // Вызываем улучшенную функцию (переименованную)
+        text: 'Новый вариант ответа',
+        next_node: '',
+        score: 0,
+        empathy_level: 'medium',
+        clinical_validity: 'good',
+        feedback: ''
+    });
+}
+
+// Добавление нового узла
+function addNewNode() {
+    saveCurrentNodeData(); // Сохраняем текущий узел перед добавлением нового
+    const nodeId = 'node_' + Date.now();
+    const newNode = {
+        id: nodeId,
+        title: 'Новый узел ' + (scenarioData.dialogue_nodes.length + 1),
+        patient_statement: 'Что вы мне посоветуете?',
+        patient_emotion: 'neutral',
+        is_final: false,
+        options: [],
+        // Инициализация новых полей для узла
+        clinical_phase: 'initial',
+        available_tools: [],
+        notes_patient: '',
+        notes_dentist: '',
+        notes_hints: ''
+    };
+    
+    if (!Array.isArray(scenarioData.dialogue_nodes)) {
+        scenarioData.dialogue_nodes = [];
+    }
+    scenarioData.dialogue_nodes.push(newNode);
+    
+    addNodeToList(newNode, scenarioData.dialogue_nodes.length); // Обновляем список в UI
+    selectNode(nodeId); // Выбираем новый узел для редактирования
+}
+
+// Добавление узла в список в UI
+function addNodeToList(node, index) {
+    const nodeList = document.getElementById('node-list');
+    if (!nodeList) return;
+    
+    const nodeItem = document.createElement('li');
+    nodeItem.className = 'node-item';
+    nodeItem.dataset.nodeId = node.id;
+    
+    nodeItem.innerHTML = `
+        <span class="node-number">${index}</span>
+        <span class="node-title">${node.title || 'Узел ' + index}</span>
+    `;
+    
+    nodeList.appendChild(nodeItem);
+    nodeItem.addEventListener('click', function() {
+        selectNode(this.dataset.nodeId);
+    });
+}
+
+// Обновление предпросмотра узла
+function updatePreview(nodeData) {
+    const previewStatement = document.getElementById('preview-statement');
+    const previewImage = document.getElementById('node-preview-image');
+
+    if (nodeData) {
+        if (previewStatement) previewStatement.textContent = nodeData.patient_statement || '';
+        // Обновляем изображение пациента в предпросмотре узла на основе глобальных данных пациента
+        if (previewImage && scenarioData.patient_info) {
+            previewImage.src = `{{ url_for('static', filename='images/virtual_patients/') }}${scenarioData.patient_info.image || 'patient_alex.jpg'}`;
+        }
+    }
+}
+
+// Сохранение данных текущего узла (обновлено для новых полей)
+function saveCurrentNodeData() {
+    console.log('Сохранение данных узла:', currentNodeId);
+    if (!currentNodeId) return; // Ничего не сохранять, если узел не выбран
+
+    const statement = document.getElementById('node-statement').value;
+    const emotion = document.getElementById('node-emotion').value;
+
+    if (currentNodeId === 'initial') {
+        if (!scenarioData.initial_state) scenarioData.initial_state = {};
+        scenarioData.initial_state.patient_statement = statement;
+        scenarioData.initial_state.patient_emotion = emotion;
+        // Заметки для initial_state сохраняются в savePatientInfo
+    } else {
+        const nodeIndex = scenarioData.dialogue_nodes.findIndex(node => node.id === currentNodeId);
+        if (nodeIndex === -1) {
+            console.warn('Узел для сохранения не найден:', currentNodeId);
+            return;
+        }
+        
+        const nodeToSave = scenarioData.dialogue_nodes[nodeIndex];
+        nodeToSave.patient_statement = statement;
+        nodeToSave.patient_emotion = emotion;
+        nodeToSave.is_final = document.getElementById('node-is-final').value === 'true';
+
+        // Сохранение данных из расширенного редактора узла
+        const phaseValueInput = document.getElementById('node-clinical-phase-value');
+        if (phaseValueInput) nodeToSave.clinical_phase = phaseValueInput.value;
+        
+        nodeToSave.available_tools = Array.from(document.querySelectorAll('.tools-grid input[name="available_tools"]:checked')).map(cb => cb.value);
+        nodeToSave.notes_patient = document.getElementById('node-patient-notes').value;
+        nodeToSave.notes_dentist = document.getElementById('node-dentist-notes').value;
+        nodeToSave.notes_hints = document.getElementById('node-diagnostic-hints').value;
+
+        if (!nodeToSave.is_final) {
+            const options = [];
+            document.querySelectorAll('#options-list .option-item').forEach(item => {
+                const textEl = item.querySelector('.option-text');
+                const nextNodeEl = item.querySelector('.option-next-node');
+                const scoreEl = item.querySelector('.option-score');
+                const empathyEl = item.querySelector('.option-empathy');
+                const clinicalEl = item.querySelector('.option-clinical-validity');
+                const feedbackEl = item.querySelector('.option-feedback');
+                
+                if (textEl && nextNodeEl && scoreEl) {
+                    options.push({
+                        text: textEl.value,
+                        next_node: nextNodeEl.value,
+                        score: parseInt(scoreEl.value, 10) || 0,
+                        empathy_level: empathyEl ? empathyEl.value : 'medium',
+                        clinical_validity: clinicalEl ? clinicalEl.value : 'good',
+                        feedback: feedbackEl ? feedbackEl.value : ''
+                    });
+                }
+            });
+            nodeToSave.options = options;
+        } else {
+            nodeToSave.options = []; // Очищаем опции для финального узла
+        }
+        
+        // Обновляем заголовок узла в списке (если он есть)
+        let nodeTitle = statement.substring(0, 25) + (statement.length > 25 ? '...' : '');
+        if (!nodeTitle) nodeTitle = 'Узел ' + (nodeIndex + 1);
+        nodeToSave.title = nodeTitle;
+        
+        const nodeItemInList = document.querySelector(`.node-item[data-node-id="${currentNodeId}"] .node-title`);
+        if (nodeItemInList) nodeItemInList.textContent = nodeTitle;
+    }
+}
+
+// Сохранение информации о пациенте (из вкладки "Данные пациента")
+function savePatientInfo() {
+    if (!scenarioData.patient_info) scenarioData.patient_info = {};
+    if (!scenarioData.initial_state) scenarioData.initial_state = {};
+
+    // Глобальная информация о пациенте
+    scenarioData.patient_info.age = parseInt(document.getElementById('patient-age').value, 10) || null;
+    scenarioData.patient_info.gender = document.getElementById('patient-gender').value;
+    scenarioData.patient_info.image = document.getElementById('patient-image').value;
+
+    // Переводимая информация (сохраняется для текущего языка редактирования)
+    const currentEditLang = scenarioData.current_edit_language || scenarioData.default_language;
+    if (!scenarioData.translations[currentEditLang]) scenarioData.translations[currentEditLang] = {};
+    if (!scenarioData.translations[currentEditLang].patient_info) scenarioData.translations[currentEditLang].patient_info = {};
+    if (!scenarioData.translations[currentEditLang].initial_state) scenarioData.translations[currentEditLang].initial_state = {};
+    
+    scenarioData.translations[currentEditLang].patient_info.name = document.getElementById('patient-name').value;
+    scenarioData.translations[currentEditLang].patient_info.medical_history = document.getElementById('patient-history').value;
+    
+    scenarioData.translations[currentEditLang].initial_state.patient_statement = document.getElementById('initial-statement').value;
+    scenarioData.translations[currentEditLang].initial_state.patient_emotion = document.getElementById('initial-emotion').value;
+    scenarioData.translations[currentEditLang].initial_state.notes = document.getElementById('initial-notes').value;
+    
+    // Обновляем scenarioData.patient_info и scenarioData.initial_state для текущего отображения, если язык совпадает
+    if (currentEditLang === ({{ scenario_data.current_language|tojson|safe }} || scenarioData.default_language)) {
+        scenarioData.patient_info.name = document.getElementById('patient-name').value;
+        scenarioData.patient_info.medical_history = document.getElementById('patient-history').value;
+        scenarioData.initial_state.patient_statement = document.getElementById('initial-statement').value;
+        scenarioData.initial_state.patient_emotion = document.getElementById('initial-emotion').value;
+        scenarioData.initial_state.notes = document.getElementById('initial-notes').value;
+    }
+    console.log("Patient info saved for lang", currentEditLang, scenarioData.translations[currentEditLang]);
+}
+
+// Сохранение результатов (из вкладки "Результаты")
+function saveOutcomes() {
+    const currentEditLang = scenarioData.current_edit_language || scenarioData.default_language;
+    if (!scenarioData.translations[currentEditLang]) scenarioData.translations[currentEditLang] = {};
+    if (!scenarioData.translations[currentEditLang].outcomes) scenarioData.translations[currentEditLang].outcomes = { good: {}, average: {}, poor: {} };
+
+    const outcomesForLang = scenarioData.translations[currentEditLang].outcomes;
+
+    outcomesForLang.good.title = document.getElementById('outcome-good-title').value;
+    outcomesForLang.good.text = document.getElementById('outcome-good-text').value;
+    outcomesForLang.average.title = document.getElementById('outcome-average-title').value;
+    outcomesForLang.average.text = document.getElementById('outcome-average-text').value;
+    outcomesForLang.poor.title = document.getElementById('outcome-poor-title').value;
+    outcomesForLang.poor.text = document.getElementById('outcome-poor-text').value;
+
+    // Обновляем scenarioData.outcomes для текущего отображения, если язык совпадает
+     if (currentEditLang === ({{ scenario_data.current_language|tojson|safe }} || scenarioData.default_language)) {
+        scenarioData.outcomes = JSON.parse(JSON.stringify(outcomesForLang)); // Глубокое копирование
+    }
+    console.log("Outcomes saved for lang", currentEditLang, outcomesForLang);
+}
+
+// Валидация сценария (из фрагмента 2)
+function validateScenario() {
+    const warnings = [];
+    const currentLangData = scenarioData.translations[scenarioData.current_edit_language || scenarioData.default_language] || {};
+    const dialogueNodes = currentLangData.dialogue_nodes || scenarioData.dialogue_nodes; // Используем переведенные или основные узлы
+
+    if (!currentLangData.patient_info?.name && !scenarioData.patient_info?.name) { // Проверяем и там и там
+        warnings.push('Не указано имя пациента');
+    }
+    if (!currentLangData.initial_state?.patient_statement && !scenarioData.initial_state?.patient_statement) {
+        warnings.push('Не указано начальное заявление пациента');
+    }
+
+    if (!dialogueNodes || dialogueNodes.length === 0) {
+        warnings.push('Нет диалоговых узлов');
+    } else {
+        dialogueNodes.forEach((node, index) => {
+            if (!node.patient_statement) {
+                warnings.push(`Узел "${node.title || index + 1}": Нет заявления пациента`);
+            }
+            if (!node.is_final && (!node.options || node.options.length === 0)) {
+                warnings.push(`Промежуточный узел "${node.title || index + 1}" не имеет вариантов ответа`);
+            } else if (node.options) {
+                node.options.forEach((option, optIndex) => {
+                    if (!option.text) {
+                        warnings.push(`Узел "${node.title || index + 1}", Вариант ${optIndex + 1}: Нет текста`);
+                    }
+                    if (!option.next_node && !node.is_final) { // Если не финальный узел, то next_node должен быть
+                         // Финальные узлы не имеют next_node в опциях, они ведут к результатам сценария
+                         // Но если опция есть, она должна куда-то вести или сам узел должен быть финальным.
+                         // Это условие может быть сложнее. Пока считаем, что у опции всегда есть next_node.
+                        warnings.push(`Узел "${node.title || index + 1}", Вариант ${optIndex + 1}: Не указан следующий узел`);
+                    }
+                });
+            }
+        });
+    }
+    
+    const warningsContainer = document.getElementById('validation-warnings');
+    if (warningsContainer) {
+        if (warnings.length > 0) {
+            warningsContainer.innerHTML = `
+                <h5><i class="bi bi-exclamation-triangle warning-icon"></i> Обнаружены проблемы:</h5>
+                ${warnings.map(warning => `
+                    <div class="warning-item">
+                        <i class="bi bi-chevron-right warning-icon"></i>
+                        <span>${warning}</span>
+                    </div>
+                `).join('')}
+            `;
+            warningsContainer.style.display = 'block';
+        } else {
+            warningsContainer.style.display = 'none';
+        }
+    }
+    return warnings.length === 0;
+}
+
+// Сохранение сценария (обновлено для включения новых данных и валидации)
+const originalSaveFunction = function() { // Замыкаем оригинальную логику сохранения
+    console.log('Оригинальная логика сохранения запущена');
+    saveCurrentNodeData(); // Убедимся, что данные текущего узла сохранены в scenarioData
+    savePatientInfo();     // Убедимся, что данные пациента сохранены в scenarioData.translations и scenarioData.patient_info
+    saveOutcomes();        // Убедимся, что результаты сохранены в scenarioData.translations и scenarioData.outcomes
+
+    const scenarioTitleInput = document.getElementById('translate-title'); // Заголовок теперь из поля перевода
+    const scenarioDescriptionInput = document.getElementById('translate-description'); // Описание из поля перевода
+
+    const currentEditLang = scenarioData.current_edit_language || scenarioData.default_language;
+
+    // Обновляем данные для текущего языка редактирования в scenarioData.translations
+    if (!scenarioData.translations[currentEditLang]) scenarioData.translations[currentEditLang] = {};
+    
+    // Основная информация о сценарии (название, описание)
+    scenarioData.translations[currentEditLang].title = scenarioTitleInput ? scenarioTitleInput.value : (scenarioData.translations[currentEditLang].title || {{ scenario.title|tojson|safe }});
+    scenarioData.translations[currentEditLang].description = scenarioDescriptionInput ? scenarioDescriptionInput.value : (scenarioData.translations[currentEditLang].description || {{ scenario.description|tojson|safe }});
+    
+    // Информация о пациенте (имя, история) для текущего языка
+    scenarioData.translations[currentEditLang].patient_info = {
+        name: document.getElementById('patient-name').value, // Эти поля напрямую редактируются
+        medical_history: document.getElementById('patient-history').value
+    };
+     // Начальное состояние для текущего языка
+    scenarioData.translations[currentEditLang].initial_state = {
+        patient_statement: document.getElementById('initial-statement').value,
+        patient_emotion: document.getElementById('initial-emotion').value,
+        notes: document.getElementById('initial-notes').value
+    };
+    // Узлы диалога для текущего языка (если они полностью переводимы и хранятся в translations)
+    // Сейчас предполагаем, что структура узлов (ID, next_node) одинакова, переводятся только текстовые поля узлов и опций
+    // Это значит, что scenarioData.dialogue_nodes является "мастер" списком узлов со всеми полями (включая новые)
+    // А переводы текстовых полей хранятся отдельно. Логика переводов узлов здесь не полностью реализована.
+    // Пока что сохраним "мастер" узлы.
+    scenarioData.translations[currentEditLang].dialogue_nodes = JSON.parse(JSON.stringify(scenarioData.dialogue_nodes));
+
+
+    // Результаты для текущего языка
+    scenarioData.translations[currentEditLang].outcomes = {
+        good: {
+            title: document.getElementById('outcome-good-title').value,
+            text: document.getElementById('outcome-good-text').value
+        },
+        average: {
+            title: document.getElementById('outcome-average-title').value,
+            text: document.getElementById('outcome-average-text').value
+        },
+        poor: {
+            title: document.getElementById('outcome-poor-title').value,
+            text: document.getElementById('outcome-poor-text').value
+        }
+    };
+    
+    // Глобальные параметры сценария
+    const timeframe = document.getElementById('scenario-timeframe') ? parseInt(document.getElementById('scenario-timeframe').value, 10) || 0 : 0;
+    const max_score = document.getElementById('scenario-max-score') ? parseInt(document.getElementById('scenario-max-score').value, 10) || 100 : 100;
+    const is_premium = document.getElementById('scenario-premium') ? document.getElementById('scenario-premium').checked : false;
+    const is_published = document.getElementById('scenario-published') ? document.getElementById('scenario-published').checked : false;
+    const defaultLanguage = document.getElementById('default-language') ? document.getElementById('default-language').value : scenarioData.default_language;
+    const dataToSave = {
+        title: scenarioData.translations[defaultLanguage]?.title || {{ scenario.title|tojson|safe }}, // Используем заголовок языка по умолчанию
+        description: scenarioData.translations[defaultLanguage]?.description || {{ scenario.description|tojson|safe }}, // Используем описание языка по умолчанию
+        difficulty: JSON.parse('{{ scenario.difficulty|tojson|safe }}'), // Эти поля пока не редактируются в UI этого шаблона
+        category: {{ scenario.category|tojson|safe }},   // Эти поля пока не редактируются в UI этого шаблона
+        timeframe: timeframe,
+        max_score: max_score,
+        is_premium: is_premium,
+        is_published: is_published,
+        scenario_data: JSON.stringify({ // В scenario_data теперь глобальная информация и все переводы
+            patient_info: scenarioData.patient_info, // Глобальные (возраст, пол, картинка)
+            default: defaultLanguage,
+            translations: scenarioData.translations // Включает все языковые версии patient_info (имя, история), initial_state, dialogue_nodes, outcomes
+        })
+    };
+    
+    console.log('Отправляемые данные на сервер:', dataToSave);
+
+    fetch('/{{ lang }}/admin/api/update-scenario/{{ scenario.id }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(dataToSave)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Сценарий успешно сохранен!');
+        } else {
+            alert('Ошибка при сохранении сценария: ' + (data.message || 'неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка при сохранении:', error);
+        alert('Произошла ошибка при сохранении сценария. Проверьте консоль для деталей.');
+    });
+};
+
+// Переопределяем saveScenario для добавления валидации
+saveScenario = function() {
+    console.log('Запуск saveScenario с валидацией');
+    if (validateScenario()) {
+        originalSaveFunction();
+        } else {
+            if (confirm('Обнаружены проблемы в сценарии. Все равно продолжить сохранение? Некоторые данные могут быть некорректны или отсутствовать.')) {
+                originalSaveFunction();
+            } else {
+                alert('Сохранение отменено. Пожалуйста, исправьте ошибки в сценарии.');
+            }
+        }
+    };
+</script>
+{% endblock %}

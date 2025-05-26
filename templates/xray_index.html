@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Список рентгеновских снимков</h2>
+
+    {% if files %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            {% for file in files %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="{{ url_for('static', filename='xray/' ~ file.filename) }}" class="card-img-top" alt="X-ray image of {{ file.filename }}">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ file.filename }}</h6>
+                            <p class="card-text small text-muted">Размер: {{ (file.size / 1024)|round(1) }} КБ</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <a href="{{ url_for('main_bp.xray_case', lang=lang, filename=file.filename) }}" class="btn btn-outline-primary w-100">Открыть кейс</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Нет загруженных рентгеновских снимков.</div>
+    {% endif %}
+</div>
+{% endblock %}

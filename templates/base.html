@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="{{ g.lang | default('en') }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Become a Tandarts{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Платформа для подготовки к BIG экзамену для стоматологов в Нидерландах.{% endblock %}">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" />
+  
+  <!-- Preconnect for Performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Font Awesome (для дополнительных иконок) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Flag Icons (опционально для флагов стран) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
+
+  <!-- Modern Theme System -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+  
+  <!-- Legacy CSS (для совместимости) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  
+  <!-- Page-specific styles -->
+  {% block page_styles %}{% endblock %}
+  
+  <!-- Additional styles from child templates -->
+  {% block styles %}{% endblock %}
+  
+  <!-- Theme initialization script (critical, must be in head) -->
+  <script>
+    // Prevent flash of unstyled content (FOUC)
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body class="modern-app">
+
+  <!-- Header -->
+  {% include "includes/_header.html" %}
+
+  <!-- Flash Messages Container -->
+  <div class="flash-container" id="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message alert alert-{{ 'danger' if category == 'error' else category }}" 
+               data-category="{{ category }}" role="alert">
+            <div class="flash-content">
+              <div class="flash-icon">
+                {% if category == 'success' %}
+                  <i class="bi bi-check-circle-fill"></i>
+                {% elif category == 'error' or category == 'danger' %}
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                {% elif category == 'warning' %}
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                {% else %}
+                  <i class="bi bi-info-circle-fill"></i>
+                {% endif %}
+              </div>
+              <div class="flash-text">{{ message }}</div>
+              <button type="button" class="flash-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  {% include "includes/_footer.html" ignore missing %}
+
+  <!-- Loading Indicator -->
+  <div class="loading-indicator" id="loading-indicator">
+    <div class="loading-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+  <!-- React (for existing components) -->
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+
+  <!-- Theme System (must load early) -->
+  <script src="{{ url_for('static', filename='js/theme-system.js') }}"></script>
+
+  <!-- NEW: Splash and Guide System -->
+  <script src="{{ url_for('static', filename='js/splash-and-guide-system.js') }}"></script>
+
+  <!-- Legacy JS -->
+  <script src="{{ url_for('static', filename='js/simple-counters.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/modern_flash_messages.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+
+  <!-- Global Application Scripts -->
+  <script>
+    // Global App Configuration
+    window.AppConfig = {
+      currentLanguage: '{{ g.lang }}',
+      isAuthenticated: "{{ 'true' if current_user.is_authenticated else 'false' }}",
+      userId: "{{ current_user.id if current_user.is_authenticated else 'null' }}",
+      csrfToken: '{{ csrf_token() }}',
+      apiBaseUrl: '/api'
+    };
+
+    // Flash Messages System
+    class FlashMessagesSystem {
+      constructor() {
+        this.container = document.getElementById('flash-container');
+        this.init();
+      }
+
+      init() {
+        // Auto-hide flash messages after 5 seconds
+        this.autoHideMessages();
+        
+        // Handle server flash messages
+        this.processServerMessages();
+      }
+
+      autoHideMessages() {
+        const messages = this.container.querySelectorAll('.flash-message');
+        messages.forEach(message => {
+          setTimeout(() => {
+            this.hideMessage(message);
+          }, 5000);
+        });
+      }
+
+      processServerMessages() {
+        const serverMessages = document.getElementById('server-flash-messages');
+        if (serverMessages) {
+          serverMessages.style.display = 'none';
+        }
+      }
+
+      showMessage(type, text, duration = 5000) {
+        const message = document.createElement('div');
+        message.className = `flash-message alert alert-${type}`;
+        message.innerHTML = `
+          <div class="flash-content">
+            <div class="flash-icon">
+              ${this.getIconForType(type)}
+            </div>
+            <div class="flash-text">${text}</div>
+            <button type="button" class="flash-close" onclick="this.parentElement.parentElement.remove()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        `;
+
+        this.container.appendChild(message);
+
+        // Trigger entrance animation
+        setTimeout(() => message.classList.add('show'), 10);
+
+        // Auto-hide
+        if (duration > 0) {
+          setTimeout(() => this.hideMessage(message), duration);
+        }
+
+        return message;
+      }
+
+      hideMessage(message) {
+        message.classList.add('hiding');
+        setTimeout(() => {
+          if (message.parentNode) {
+            message.parentNode.removeChild(message);
+          }
+        }, 300);
+      }
+
+      getIconForType(type) {
+        const icons = {
+          success: '<i class="bi bi-check-circle-fill"></i>',
+          error: '<i class="bi bi-exclamation-triangle-fill"></i>',
+          danger: '<i class="bi bi-exclamation-triangle-fill"></i>',
+          warning: '<i class="bi bi-exclamation-circle-fill"></i>',
+          info: '<i class="bi bi-info-circle-fill"></i>'
+        };
+        return icons[type] || icons.info;
+      }
+    }
+
+    // Loading System
+    class LoadingSystem {
+      constructor() {
+        this.indicator = document.getElementById('loading-indicator');
+        this.isLoading = false;
+      }
+
+      show() {
+        if (this.isLoading) return;
+        this.isLoading = true;
+        this.indicator.classList.add('active');
+        document.body.classList.add('loading');
+      }
+
+      hide() {
+        if (!this.isLoading) return;
+        this.isLoading = false;
+        this.indicator.classList.remove('active');
+        document.body.classList.remove('loading');
+      }
+
+      // Show loading for AJAX requests
+      setupAjaxLoading() {
+        // Intercept fetch requests
+        const originalFetch = window.fetch;
+        window.fetch = (...args) => {
+          this.show();
+          return originalFetch(...args).finally(() => {
+            setTimeout(() => this.hide(), 300); // Small delay for UX
+          });
+        };
+      }
+    }
+
+    // Performance Monitor
+    class PerformanceMonitor {
+      constructor() {
+        this.metrics = {
+          loadTime: 0,
+          firstPaint: 0,
+          firstContentfulPaint: 0
+        };
+        this.init();
+      }
+
+      init() {
+        // Measure page load time
+        window.addEventListener('load', () => {
+          this.measurePerformance();
+        });
+      }
+
+      measurePerformance() {
+        if (window.performance) {
+          const navigation = performance.getEntriesByType('navigation')[0];
+          this.metrics.loadTime = navigation.loadEventEnd - navigation.loadEventStart;
+
+          // Paint metrics
+          const paintEntries = performance.getEntriesByType('paint');
+          paintEntries.forEach(entry => {
+            if (entry.name === 'first-paint') {
+              this.metrics.firstPaint = entry.startTime;
+            } else if (entry.name === 'first-contentful-paint') {
+              this.metrics.firstContentfulPaint = entry.startTime;
+            }
+          });
+
+          // Log to console in development
+          if (window.location.hostname === 'localhost') {
+            console.log('Performance Metrics:', this.metrics);
+          }
+        }
+      }
+    }
+
+    // Initialize Global Systems
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize flash messages
+      window.flashMessages = new FlashMessagesSystem();
+      
+      // Initialize loading system
+      window.loadingSystem = new LoadingSystem();
+      window.loadingSystem.setupAjaxLoading();
+      
+      // Initialize performance monitoring
+      window.performanceMonitor = new PerformanceMonitor();
+
+      // Legacy React Learning Map Support
+      const learningMapContainer = document.getElementById('learning-map-container');
+      if (learningMapContainer && typeof React !== 'undefined') {
+        const serverData = learningMapContainer.dataset.serverData 
+                          ? JSON.parse(learningMapContainer.dataset.serverData) 
+                          : {};
+        if (typeof ReactDOM !== 'undefined' && ReactDOM.createRoot) {
+          const root = ReactDOM.createRoot(learningMapContainer);
+          root.render(React.createElement(LearningMap, {
+            userData: serverData.userData || {},
+            modules: serverData.modules || {}
+          }));
+        }
+      }
+
+      // Language Switcher Handler
+      document.querySelectorAll('.language-switcher, [data-lang]').forEach(switcher => {
+        switcher.addEventListener('click', function(e) {
+          const langElement = e.target.closest('[data-lang]') || e.target;
+          const newLang = langElement.dataset.lang;
+          
+          if (newLang) {
+            e.preventDefault();
+            window.loadingSystem?.show();
+            
+            let currentPath = window.location.pathname;
+            const pathParts = currentPath.split('/');
+            
+            // Replace language in URL
+            if (pathParts.length > 1 && ['en', 'nl', 'ru', 'uk', 'es', 'pt', 'tr', 'fa'].includes(pathParts[1])) {
+              pathParts[1] = newLang;
+              window.location.href = pathParts.join('/');
+            } else {
+              // Fallback: use cookie and reload
+              document.cookie = `lang=${newLang}; path=/; max-age=31536000`;
+              window.location.reload();
+            }
+          }
+        });
+      });
+
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            const headerHeight = document.querySelector('.modern-header')?.offsetHeight || 70;
+            const targetPosition = target.offsetTop - headerHeight - 20;
+            
+            window.scrollTo({
+              top: targetPosition,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+
+      // Add loaded class for CSS animations
+      document.body.classList.add('loaded');
+    });
+
+    // Global utility functions
+    window.showFlashMessage = (type, message, duration) => {
+      return window.flashMessages?.showMessage(type, message, duration);
+    };
+
+    window.showLoading = () => window.loadingSystem?.show();
+    window.hideLoading = () => window.loadingSystem?.hide();
+
+    // Error handling
+    window.addEventListener('error', function(e) {
+      console.error('JavaScript Error:', e.error);
+      if (window.flashMessages) {
+        window.flashMessages.showMessage('error', 'Произошла ошибка. Попробуйте обновить страницу.');
+      }
+    });
+
+    // Handle unhandled promise rejections
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Unhandled Promise Rejection:', e.reason);
+      if (window.flashMessages) {
+        window.flashMessages.showMessage('error', 'Произошла ошибка при загрузке данных.');
+      }
+    });
+  </script>
+
+  <!-- Page-specific scripts -->
+  {% block body_scripts %}{% endblock %}
+
+</body>
+</html>
+
+<style>
+/* ===== ИСПРАВЛЕННЫЕ БАЗОВЫЕ СТИЛИ ПРИЛОЖЕНИЯ ===== */
+.modern-app {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all var(--transition-slow);
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* ИСПРАВЛЕНО: убираем глобальный padding-top */
+  padding-top: 0 !important;
+  margin: 0;
+}
+
+.modern-app.loaded {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.modern-app.loading {
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== ИСПРАВЛЕНИЯ ДЛЯ ОСНОВНОГО КОНТЕНТА ===== */
+.main-content {
+  /* ИСПРАВЛЕНО: добавляем отступ только здесь */
+  margin-top: var(--header-height, 70px);
+  min-height: calc(100vh - var(--header-height, 70px));
+  padding-top: 0; /* Убираем дополнительные отступы */
+}
+
+/* ===== FLASH MESSAGES ===== */
+.flash-container {
+  position: fixed;
+  top: calc(var(--header-height, 70px) + 20px); /* Позиционируем относительно шапки */
+  right: 20px;
+  z-index: 1050;
+  max-width: 400px;
+  pointer-events: none;
+}
+
+.flash-message {
+  pointer-events: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  margin-bottom: 1rem;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.flash-message.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.flash-message.hiding {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.flash-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.flash-icon {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  margin-top: 0.125rem;
+}
+
+.flash-text {
+  flex: 1;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.flash-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all var(--transition-normal);
+}
+
+.flash-close:hover {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+}
+
+/* Flash message types */
+.flash-message.alert-success {
+  border-left: 4px solid var(--success-color);
+}
+
+.flash-message.alert-success .flash-icon {
+  color: var(--success-color);
+}
+
+.flash-message.alert-danger,
+.flash-message.alert-error {
+  border-left: 4px solid var(--danger-color);
+}
+
+.flash-message.alert-danger .flash-icon,
+.flash-message.alert-error .flash-icon {
+  color: var(--danger-color);
+}
+
+.flash-message.alert-warning {
+  border-left: 4px solid var(--warning-color);
+}
+
+.flash-message.alert-warning .flash-icon {
+  color: var(--warning-color);
+}
+
+.flash-message.alert-info {
+  border-left: 4px solid var(--info-color);
+}
+
+.flash-message.alert-info .flash-icon {
+  color: var(--info-color);
+}
+
+/* ===== LOADING INDICATOR ===== */
+.loading-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.loading-indicator.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.loading-spinner {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.spinner-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-ring:nth-child(2) {
+  animation-delay: 0.1s;
+  border-top-color: var(--secondary-color);
+}
+
+.spinner-ring:nth-child(3) {
+  animation-delay: 0.2s;
+  border-top-color: var(--accent-color);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .flash-container {
+    left: 15px;
+    right: 15px;
+    top: calc(var(--header-mobile-height, 60px) + 15px);
+    max-width: none;
+  }
+
+  .flash-content {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .flash-icon {
+    font-size: 1.1rem;
+  }
+
+  .flash-text {
+    font-size: 0.9rem;
+  }
+  
+  .main-content {
+    margin-top: var(--header-mobile-height, 60px);
+    min-height: calc(100vh - var(--header-mobile-height, 60px));
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  .flash-message {
+    transition: none;
+  }
+  
+  .loading-indicator {
+    transition: none;
+  }
+  
+  .spinner-ring {
+    animation: none;
+  }
+  
+  .modern-app.loaded {
+    animation: none;
+  }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+  .flash-message {
+    border-width: 2px;
+  }
+  
+  .flash-close:hover {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .flash-container,
+  .loading-indicator,
+  .modern-header {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-top: 0 !important;
+  }
+}
+</style>

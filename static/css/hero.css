@@ -1,0 +1,185 @@
+/* hero.css - Animations and styles for hero sections */
+
+/* ======================================
+   Animations
+   ====================================== */
+
+/* Float animations for decorative elements */
+@keyframes float-1 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes float-2 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes float-3 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Element animations */
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ======================================
+   Hero Section - Common Elements
+   ====================================== */
+
+/* Base hero container */
+.hero-section {
+  padding: 80px 0;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f9ff 0%, #edf7f4 100%);
+}
+
+/* Decorative shapes */
+.hero-shape {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.shape-1 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 150, 136, 0.1) 0%, rgba(0, 150, 136, 0) 70%);
+  top: -100px;
+  right: -100px;
+  animation: float-1 14s ease-in-out infinite;
+}
+
+.shape-2 {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(3, 169, 244, 0.1) 0%, rgba(3, 169, 244, 0) 70%);
+  bottom: -50px;
+  left: -50px;
+  animation: float-2 10s ease-in-out infinite;
+}
+
+/* ======================================
+   Hero Elements with Animations
+   ====================================== */
+
+/* Text elements */
+.hero-title {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+.hero-subtitle {
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out 0.3s forwards;
+}
+
+/* Call to action elements */
+.hero-cta .btn {
+  opacity: 0;
+  transform: scale(0.95);
+  animation: scaleIn 0.5s ease-out 0.6s forwards;
+}
+
+.hero-cta .btn:nth-child(2) {
+  animation-delay: 0.8s;
+}
+
+/* Stats section */
+.hero-stats .stat-item {
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out 1s forwards;
+}
+
+/* Hero image */
+.hero-image {
+  opacity: 0;
+  transform: translateX(30px);
+  animation: slideInRight 0.8s ease-out 0.3s forwards;
+}
+
+/* Floating cards */
+.floating-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+  animation: float-2 5s ease-in-out infinite;
+}
+
+.card-1 {
+  top: 20%;
+  left: 10%;
+  animation-duration: 6s;
+}
+
+.card-2 {
+  top: 60%;
+  right: 15%;
+  animation-duration: 7s;
+}
+
+.card-3 {
+  bottom: 25%;
+  left: 20%;
+  animation-duration: 5s;
+}
+
+/* ======================================
+   Responsive Adjustments
+   ====================================== */
+
+@media (max-width: 991.98px) {
+  .hero-section {
+    padding: 60px 0;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-content {
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+  
+  .hero-features, .hero-stats, .hero-cta {
+    justify-content: center;
+  }
+  
+  .hero-subtitle {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .floating-card {
+    display: none;
+  }
+}
+/* ======================================
+   End of Hero Section Styles
+   ====================================== */
