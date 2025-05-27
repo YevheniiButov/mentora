@@ -1,0 +1,975 @@
+{% extends "mobile_base.html" %}
+
+{% block title %}{{ lesson.title }} - Dental Academy{% endblock %}
+
+{% block mobile_title %}{{ lesson.title|truncate(30) }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+/* Mobile Lesson Specific Styles */
+.mobile-lesson-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-lesson-progress {
+  background: var(--mobile-bg-primary);
+  border-bottom: 1px solid var(--mobile-border);
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.mobile-lesson-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--mobile-bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.mobile-lesson-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.mobile-lesson-progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--mobile-text-secondary);
+}
+
+.mobile-lesson-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0;
+}
+
+.mobile-card-container {
+  padding: 16px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-learning-card {
+  background: var(--mobile-bg-primary);
+  border-radius: 20px;
+  border: 1px solid var(--mobile-border);
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: var(--mobile-shadow-md);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-card-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.mobile-card-header::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: var(--mobile-bg-primary);
+  border-radius: 20px 20px 0 0;
+  transform: translateY(10px);
+}
+
+.mobile-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+  position: relative;
+  z-index: 1;
+}
+
+.mobile-card-subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.mobile-card-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-card-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--mobile-text-primary);
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.mobile-card-image {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: 12px;
+  margin: 16px auto;
+  display: block;
+  box-shadow: var(--mobile-shadow-sm);
+}
+
+.mobile-card-video {
+  width: 100%;
+  height: 200px;
+  border-radius: 12px;
+  margin: 16px 0;
+  background: #000;
+}
+
+.mobile-card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--mobile-border);
+}
+
+.mobile-card-btn {
+  flex: 1;
+  min-height: 48px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--mobile-transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.mobile-card-btn:active {
+  transform: scale(0.95);
+}
+
+.mobile-card-btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  box-shadow: var(--mobile-shadow-md);
+}
+
+.mobile-card-btn-secondary {
+  background: var(--mobile-bg-secondary);
+  color: var(--mobile-text-primary);
+  border: 1px solid var(--mobile-border);
+}
+
+.mobile-card-flip {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  cursor: pointer;
+}
+
+.mobile-card-flip.flipped {
+  transform: rotateY(180deg);
+}
+
+.mobile-card-front,
+.mobile-card-back {
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mobile-card-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-lesson-navigation {
+  background: var(--mobile-bg-primary);
+  border-top: 1px solid var(--mobile-border);
+  padding: 16px;
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.mobile-nav-btn {
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--mobile-transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.mobile-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.mobile-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mobile-nav-btn-back {
+  background: var(--mobile-bg-secondary);
+  color: var(--mobile-text-primary);
+  border: 1px solid var(--mobile-border);
+}
+
+.mobile-nav-btn-next {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  flex: 1;
+  box-shadow: var(--mobile-shadow-md);
+}
+
+.mobile-lesson-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mobile-text-secondary);
+  font-size: 12px;
+}
+
+.mobile-lesson-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mobile-quiz-container {
+  padding: 20px;
+}
+
+.mobile-quiz-question {
+  background: var(--mobile-bg-primary);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--mobile-border);
+}
+
+.mobile-quiz-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--mobile-text-primary);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.mobile-quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-quiz-option {
+  background: var(--mobile-bg-secondary);
+  border: 2px solid var(--mobile-border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all var(--mobile-transition-fast);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.mobile-quiz-option:active {
+  transform: scale(0.98);
+}
+
+.mobile-quiz-option.selected {
+  border-color: var(--primary-color);
+  background: rgba(62, 205, 193, 0.1);
+  color: var(--primary-color);
+}
+
+.mobile-quiz-option.correct {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.mobile-quiz-option.incorrect {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.mobile-feedback {
+  background: var(--mobile-bg-primary);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.mobile-feedback.success {
+  border-left-color: #22c55e;
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.mobile-feedback.error {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.mobile-feedback-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--mobile-text-primary);
+}
+
+.mobile-feedback-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--mobile-text-secondary);
+}
+
+.mobile-completion-card {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border-radius: 20px;
+  padding: 32px 20px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.mobile-completion-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.mobile-completion-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.mobile-completion-subtitle {
+  font-size: 16px;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.mobile-completion-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-completion-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  min-height: 48px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--mobile-transition-fast);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mobile-completion-btn:active {
+  transform: scale(0.95);
+}
+
+.mobile-completion-btn.primary {
+  background: rgba(255, 255, 255, 0.9);
+  color: #16a34a;
+}
+
+/* Animations */
+@keyframes mobile-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mobile-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+.mobile-card-enter {
+  animation: mobile-slide-in 0.3s ease-out;
+}
+
+.mobile-card-exit {
+  animation: mobile-slide-out 0.3s ease-out;
+}
+
+/* Swipe indicators */
+.mobile-swipe-hint {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  animation: mobile-pulse 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes mobile-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Accessibility */
+.mobile-lesson-container:focus-within .mobile-swipe-hint {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-card-flip,
+  .mobile-card-enter,
+  .mobile-card-exit,
+  .mobile-swipe-hint {
+    animation: none;
+    transition: none;
+  }
+}
+</style>
+{% endblock %}
+
+{% block mobile_content %}
+
+<div class="mobile-lesson-container">
+  <!-- Lesson Progress -->
+  <div class="mobile-lesson-progress">
+    <div class="mobile-lesson-progress-bar">
+      <div class="mobile-lesson-progress-fill" style="width: {{ ((current_card_index + 1) / total_cards * 100) if total_cards > 0 else 0 }}%"></div>
+    </div>
+    <div class="mobile-lesson-progress-text">
+      <div class="mobile-lesson-info">
+        <i class="bi bi-card-text"></i>
+        <span>{{ current_card_index + 1 }} из {{ total_cards }}</span>
+      </div>
+      <div class="mobile-lesson-timer">
+        <i class="bi bi-clock"></i>
+        <span id="mobile-lesson-timer">0:00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lesson Content -->
+  <div class="mobile-lesson-content" id="mobile-lesson-content">
+    <div class="mobile-card-container">
+      
+      {% if lesson.content_type == 'learning_card' %}
+        <!-- Learning Cards -->
+        <div class="mobile-learning-card" id="mobile-current-card">
+          {% set current_card = lesson_cards[current_card_index] if lesson_cards and current_card_index < lesson_cards|length %}
+          
+          {% if current_card %}
+            {% if current_card.type == 'flip' %}
+              <!-- Flip Card -->
+              <div class="mobile-card-flip" id="mobile-flip-card">
+                <div class="mobile-card-front">
+                  <div class="mobile-card-header">
+                    <h2 class="mobile-card-title">{{ current_card.front_title }}</h2>
+                    <p class="mobile-card-subtitle">{{ t('tap_to_reveal', g.lang)|default('Нажмите чтобы увидеть ответ') }}</p>
+                  </div>
+                  <div class="mobile-card-content">
+                    <div class="mobile-card-text">
+                      {{ current_card.front_content|safe }}
+                    </div>
+                    {% if current_card.front_image %}
+                      <img src="{{ current_card.front_image }}" alt="{{ current_card.front_title }}" class="mobile-card-image">
+                    {% endif %}
+                  </div>
+                </div>
+                
+                <div class="mobile-card-back">
+                  <div class="mobile-card-header">
+                    <h2 class="mobile-card-title">{{ current_card.back_title }}</h2>
+                    <p class="mobile-card-subtitle">{{ t('answer', g.lang)|default('Ответ') }}</p>
+                  </div>
+                  <div class="mobile-card-content">
+                    <div class="mobile-card-text">
+                      {{ current_card.back_content|safe }}
+                    </div>
+                    {% if current_card.back_image %}
+                      <img src="{{ current_card.back_image }}" alt="{{ current_card.back_title }}" class="mobile-card-image">
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              
+            {% elif current_card.type == 'quiz' %}
+              <!-- Quiz Card -->
+              <div class="mobile-quiz-container">
+                <div class="mobile-quiz-question">
+                  <h2 class="mobile-quiz-title">{{ current_card.question }}</h2>
+                  <div class="mobile-quiz-options" id="mobile-quiz-options">
+                    {% for option in current_card.options %}
+                      <div class="mobile-quiz-option" data-value="{{ loop.index0 }}" data-correct="{{ option.is_correct }}">
+                        {{ option.text }}
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+                
+                <div class="mobile-feedback" id="mobile-quiz-feedback" style="display: none;">
+                  <div class="mobile-feedback-title" id="mobile-feedback-title"></div>
+                  <div class="mobile-feedback-text" id="mobile-feedback-text"></div>
+                </div>
+              </div>
+              
+            {% else %}
+              <!-- Regular Card -->
+              <div class="mobile-card-header">
+                <h2 class="mobile-card-title">{{ current_card.title }}</h2>
+                {% if current_card.subtitle %}
+                  <p class="mobile-card-subtitle">{{ current_card.subtitle }}</p>
+                {% endif %}
+              </div>
+              <div class="mobile-card-content">
+                <div class="mobile-card-text">
+                  {{ current_card.content|safe }}
+                </div>
+                {% if current_card.image %}
+                  <img src="{{ current_card.image }}" alt="{{ current_card.title }}" class="mobile-card-image">
+                {% endif %}
+                {% if current_card.video %}
+                  <video controls class="mobile-card-video">
+                    <source src="{{ current_card.video }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endif %}
+        </div>
+        
+        <!-- Swipe Hint -->
+        <div class="mobile-swipe-hint" id="mobile-swipe-hint">
+          <i class="bi bi-arrow-right"></i> {{ t('swipe_next', g.lang)|default('Свайп →') }}
+        </div>
+        
+      {% elif lesson.completed %}
+        <!-- Completion Card -->
+        <div class="mobile-completion-card">
+          <div class="mobile-completion-icon">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <h2 class="mobile-completion-title">{{ t('lesson_completed', g.lang)|default('Урок завершен!') }}</h2>
+          <p class="mobile-completion-subtitle">{{ t('great_job', g.lang)|default('Отличная работа!') }}</p>
+          
+          <div class="mobile-completion-actions">
+            <a href="{{ url_for('modules_bp.module_view', lang=g.lang, module_id=lesson.module_id) }}" 
+               class="mobile-completion-btn primary">
+              <i class="bi bi-arrow-left"></i>
+              {{ t('back_to_module', g.lang)|default('Вернуться к модулю') }}
+            </a>
+            {% if next_lesson %}
+              <a href="{{ url_for('lesson_bp.lesson_view', lang=g.lang, module_id=lesson.module_id, lesson_index=next_lesson.order) }}" 
+                 class="mobile-completion-btn">
+                <i class="bi bi-arrow-right"></i>
+                {{ t('next_lesson', g.lang)|default('Следующий урок') }}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+        
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="mobile-lesson-navigation">
+    <button class="mobile-nav-btn mobile-nav-btn-back" id="mobile-prev-btn" 
+            {% if current_card_index <= 0 %}disabled{% endif %}>
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    
+    <button class="mobile-nav-btn mobile-nav-btn-next" id="mobile-next-btn">
+      {% if current_card_index >= total_cards - 1 %}
+        <i class="bi bi-check-circle"></i>
+        {{ t('complete', g.lang)|default('Завершить') }}
+      {% else %}
+        {{ t('next', g.lang)|default('Далее') }}
+        <i class="bi bi-chevron-right"></i>
+      {% endif %}
+    </button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block mobile_scripts %}
+<script>
+class MobileLessonController {
+  constructor() {
+    this.currentCard = {{ current_card_index }};
+    this.totalCards = {{ total_cards }};
+    this.lessonId = {{ lesson.id }};
+    this.moduleId = {{ lesson.module_id }};
+    this.startTime = Date.now();
+    this.cardStartTime = Date.now();
+    this.timeSpent = 0;
+    this.isQuizAnswered = false;
+    
+    this.init();
+  }
+  
+  init() {
+    this.setupTimer();
+    this.setupNavigation();
+    this.setupSwipeGestures();
+    this.setupCardInteractions();
+    this.setupQuizHandlers();
+    this.startProgressTracking();
+    
+    // Hide swipe hint after a few seconds
+    setTimeout(() => {
+      const hint = document.getElementById('mobile-swipe-hint');
+      if (hint) hint.style.display = 'none';
+    }, 3000);
+  }
+  
+  setupTimer() {
+    this.timerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      
+      const timerEl = document.getElementById('mobile-lesson-timer');
+      if (timerEl) {
+        timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      }
+    }, 1000);
+  }
+  
+  setupNavigation() {
+    const prevBtn = document.getElementById('mobile-prev-btn');
+    const nextBtn = document.getElementById('mobile-next-btn');
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => this.previousCard());
+    }
+    
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => this.nextCard());
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') this.previousCard();
+      if (e.key === 'ArrowRight') this.nextCard();
+      if (e.key === ' ') {
+        e.preventDefault();
+        this.handleCardInteraction();
+      }
+    });
+  }
+  
+  setupSwipeGestures() {
+    const content = document.getElementById('mobile-lesson-content');
+    let startX = 0;
+    let startY = 0;
+    let threshold = 50;
+    
+    content.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    content.addEventListener('touchend', (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const diffX = startX - endX;
+      const diffY = startY - endY;
+      
+      // Only trigger if horizontal swipe is more prominent than vertical
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+        if (diffX > 0) {
+          // Swipe left - next card
+          this.nextCard();
+        } else {
+          // Swipe right - previous card
+          this.previousCard();
+        }
+      }
+    }, { passive: true });
+  }
+  
+  setupCardInteractions() {
+    const flipCard = document.getElementById('mobile-flip-card');
+    if (flipCard) {
+      flipCard.addEventListener('click', () => {
+        flipCard.classList.toggle('flipped');
+      });
+    }
+  }
+  
+  setupQuizHandlers() {
+    const quizOptions = document.querySelectorAll('.mobile-quiz-option');
+    quizOptions.forEach(option => {
+      option.addEventListener('click', () => this.handleQuizAnswer(option));
+    });
+  }
+  
+  handleQuizAnswer(selectedOption) {
+    if (this.isQuizAnswered) return;
+    
+    const options = document.querySelectorAll('.mobile-quiz-option');
+    const feedback = document.getElementById('mobile-quiz-feedback');
+    const feedbackTitle = document.getElementById('mobile-feedback-title');
+    const feedbackText = document.getElementById('mobile-feedback-text');
+    
+    const isCorrect = selectedOption.dataset.correct === 'true';
+    this.isQuizAnswered = true;
+    
+    // Show correct/incorrect states
+    options.forEach(option => {
+      if (option.dataset.correct === 'true') {
+        option.classList.add('correct');
+      } else if (option === selectedOption && !isCorrect) {
+        option.classList.add('incorrect');
+      }
+      option.style.pointerEvents = 'none';
+    });
+    
+    // Show feedback
+    if (feedback && feedbackTitle && feedbackText) {
+      feedback.style.display = 'block';
+      feedback.className = `mobile-feedback ${isCorrect ? 'success' : 'error'}`;
+      feedbackTitle.textContent = isCorrect ? 'Правильно!' : 'Неправильно';
+      feedbackText.textContent = isCorrect ? 
+        'Отличная работа! Вы можете перейти к следующей карточке.' : 
+        'Не расстраивайтесь, попробуйте еще раз в следующий раз.';
+    }
+    
+    // Enable next button after answer
+    const nextBtn = document.getElementById('mobile-next-btn');
+    if (nextBtn) {
+      nextBtn.disabled = false;
+    }
+    
+    // Auto-advance after correct answer (optional)
+    if (isCorrect) {
+      setTimeout(() => this.nextCard(), 2000);
+    }
+  }
+  
+  previousCard() {
+    if (this.currentCard > 0) {
+      this.saveCardProgress();
+      this.currentCard--;
+      this.loadCard();
+    }
+  }
+  
+  nextCard() {
+    // Check if quiz needs to be answered first
+    if (this.isQuizCard() && !this.isQuizAnswered) {
+      if (window.mobileApp) {
+        window.mobileApp.showToast('Сначала ответьте на вопрос', 'warning');
+      }
+      return;
+    }
+    
+    if (this.currentCard < this.totalCards - 1) {
+      this.saveCardProgress();
+      this.currentCard++;
+      this.loadCard();
+    } else {
+      this.completeLesson();
+    }
+  }
+  
+  isQuizCard() {
+    return document.querySelector('.mobile-quiz-container') !== null;
+  }
+  
+  loadCard() {
+    // This would typically load the next card via AJAX
+    // For now, we'll redirect to the next card
+    const currentLang = '{{ g.lang }}';
+    const url = `/${currentLang}/lesson/${this.moduleId}/${this.lessonId}?card=${this.currentCard}`;
+    
+    // Show loading state
+    const content = document.getElementById('mobile-lesson-content');
+    if (content) {
+      content.style.opacity = '0.6';
+    }
+    
+    // Navigate to next card
+    window.location.href = url;
+  }
+  
+  saveCardProgress() {
+    const timeOnCard = Date.now() - this.cardStartTime;
+    this.timeSpent += timeOnCard;
+    this.cardStartTime = Date.now();
+    
+    // Send progress to server
+    fetch('/api/lesson-progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({
+        lesson_id: this.lessonId,
+        card_index: this.currentCard,
+        time_spent: Math.floor(timeOnCard / 1000),
+        completed: false
+      })
+    }).catch(error => {
+      console.error('Failed to save progress:', error);
+    });
+  }
+  
+  completeLesson() {
+    this.saveCardProgress();
+    
+    // Show completion feedback
+    if (window.mobileApp) {
+      window.mobileApp.showToast('Урок завершен!', 'success');
+    }
+    
+    // Send completion to server
+    fetch('/api/lesson-complete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({
+        lesson_id: this.lessonId,
+        total_time: Math.floor(this.timeSpent / 1000),
+        completed: true
+      })
+    }).then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Redirect to completion page or next lesson
+        const currentLang = '{{ g.lang }}';
+        window.location.href = `/${currentLang}/lesson/${this.moduleId}/${this.lessonId}/complete`;
+      }
+    }).catch(error => {
+      console.error('Failed to complete lesson:', error);
+    });
+  }
+  
+  startProgressTracking() {
+    // Track time spent on current card
+    this.cardStartTime = Date.now();
+    
+    // Save progress periodically
+    this.progressInterval = setInterval(() => {
+      this.saveCardProgress();
+      this.cardStartTime = Date.now();
+    }, 30000); // Every 30 seconds
+  }
+  
+  cleanup() {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.progressInterval) clearInterval(this.progressInterval);
+  }
+}
+
+// Initialize lesson controller
+document.addEventListener('DOMContentLoaded', function() {
+  window.lessonController = new MobileLessonController();
+  
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    if (window.lessonController) {
+      window.lessonController.cleanup();
+    }
+  });
+  
+  // Handle visibility change (when user switches tabs)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      // Page is hidden, pause timer
+      if (window.lessonController) {
+        window.lessonController.saveCardProgress();
+      }
+    } else {
+      // Page is visible, resume timer
+      if (window.lessonController) {
+        window.lessonController.cardStartTime = Date.now();
+      }
+    }
+  });
+});
+
+// Handle offline functionality
+window.addEventListener('offline', function() {
+  if (window.mobileApp) {
+    window.mobileApp.showToast('Оффлайн режим - прогресс будет сохранен при подключении', 'info');
+  }
+});
+
+window.addEventListener('online', function() {
+  if (window.mobileApp) {
+    window.mobileApp.showToast('Соединение восстановлено', 'success');
+  }
+  
+  // Sync offline progress
+  if (window.lessonController) {
+    window.lessonController.saveCardProgress();
+  }
+});
+</script>
+{% endblock %}

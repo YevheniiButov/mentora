@@ -1,0 +1,169 @@
+# docker/Dockerfile.mobile
+# Multi-stage Docker build for Dental Academy Mobile System
+# Оптимизированная сборка для мобильной системы
+
+# ===== STAGE 1: Build Assets =====
+FROM node:18-alpine AS asset-builder
+
+LABEL maintainer="Dental Academy Team"
+LABEL description="Mobile-optimized build for Dental Academy"
+
+# Установка инструментов для оптимизации ресурсов
+RUN npm install -g \
+    imagemin-cli \
+    imagemin-webp \
+    imagemin-mozjpeg \
+    imagemin-pngquant \
+    terser \
+    cssnano-cli
+
+# Создаем рабочую директорию
+WORKDIR /build
+
+# Копируем статические файлы
+COPY static/ ./static/
+COPY package.json package-lock.json ./
+
+# Устанавливаем Node.js зависимости
+RUN npm ci --only=production
+
+# Оптимизируем CSS
+RUN mkdir -p optimized/css && \
+    cssnano static/css/mobile-app.css optimized/css/mobile-app.min.css && \
+    cssnano static/css/theme-fixes.css optimized/css/theme-fixes.min.css && \
+    cssnano static/css/modern-theme.css optimized/css/modern-theme.min.css
+
+# Минифицируем JavaScript
+RUN mkdir -p optimized/js && \
+    terser static/js/mobile-app.js \
+        --compress drop_console=true,drop_debugger=true \
+        --mangle \
+        --output optimized/js/mobile-app.min.js && \
+    terser static/sw.js \
+        --compress \
+        --mangle \
+        --output optimized/sw.min.js
+
+# Оптимизируем изображения
+RUN mkdir -p optimized/images && \
+    imagemin 'static/images/*.{jpg,jpeg}' \
+        --plugin=mozjpeg --plugin.mozjpeg.quality=85 \
+        --out-dir=optimized/images && \
+    imagemin 'static/images/*.png' \
+        --plugin=pngquant --plugin.pngquant.quality='75-90' \
+        --out-dir=optimized/images
+
+# Создаем WebP версии изображений
+RUN imagemin 'static/images/*.{jpg,jpeg,png}' \
+    --plugin=webp --plugin.webp.quality=85 \
+    --out-dir=optimized/images
+
+# Генерируем иконки PWA разных размеров (если исходная иконка есть)
+RUN if [ -f "static/images/logo.png" ]; then \
+        convert static/images/logo.png -resize 72x72 optimized/images/icon-72.png && \
+        convert static/images/logo.png -resize 96x96 optimized/images/icon-96.png && \
+        convert static/images/logo.png -resize 128x128 optimized/images/icon-128.png && \
+        convert static/images/logo.png -resize 144x144 optimized/images/icon-144.png && \
+        convert static/images/logo.png -resize 152x152 optimized/images/icon-152.png && \
+        convert static/images/logo.png -resize 192x192 optimized/images/icon-192.png && \
+        convert static/images/logo.png -resize 384x384 optimized/images/icon-384.png && \
+        convert static/images/logo.png -resize 512x512 optimized/images/icon-512.png; \
+    fi
+
+# ===== STAGE 2: Python Application =====
+FROM python:3.11-slim AS app-builder
+
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libffi-dev \
+    libssl-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libwebp-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создаем пользователя для приложения
+RUN groupadd -r dental && useradd -r -g dental dental
+
+# Создаем рабочую директорию
+WORKDIR /app
+
+# Копируем requirements и устанавливаем Python зависимости
+COPY requirements.txt requirements-mobile.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements-mobile.txt
+
+# Копируем исходный код приложения
+COPY . .
+
+# Копируем оптимизированные статические файлы из первого этапа
+COPY --from=asset-builder /build/optimized ./static
+
+# Устанавливаем права доступа
+RUN chown -R dental:dental /app && \
+    chmod +x /app/docker/entrypoint.sh
+
+# ===== STAGE 3: Production Image =====
+FROM python:3.11-slim AS production
+
+# Метаданные
+LABEL version="1.2.0"
+LABEL description="Dental Academy Mobile System - Production Ready"
+LABEL maintainer="dental-academy@example.com"
+
+# Устанавливаем только runtime зависимости
+RUN apt-get update && apt-get install -y \
+    libffi8 \
+    libssl3 \
+    libjpeg62-turbo \
+    libpng16-16 \
+    libwebp7 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создаем пользователя
+RUN groupadd -r dental && useradd -r -g dental dental
+
+# Создаем необходимые директории
+RUN mkdir -p /app /app/logs /app/uploads /app/cache && \
+    chown -R dental:dental /app
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем Python зависимости
+COPY --from=app-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=app-builder /usr/local/bin /usr/local/bin
+
+# Копируем приложение
+COPY --from=app-builder --chown=dental:dental /app .
+
+# Переменные окружения для production
+ENV FLASK_ENV=production \
+    FLASK_APP=app.py \
+    PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    MOBILE_FORCE_HTTPS=True \
+    MOBILE_ANALYTICS_ENABLED=True \
+    MOBILE_COMPRESS_RESPONSES=True \
+    MOBILE_IMAGE_OPTIMIZATION=True \
+    PWA_BACKGROUND_COLOR=#ffffff \
+    PWA_THEME_COLOR=#3ECDC1
+
+# Порты
+EXPOSE 5000 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# Переключаемся на непривилегированного пользователя
+USER dental
+
+# Точка входа
+ENTRYPOINT ["/app/docker/entrypoint.sh"]
+CMD ["gunicorn", "--config", "/app/docker/gunicorn.conf.py", "app:app"]

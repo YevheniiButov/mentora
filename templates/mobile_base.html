@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="{{ g.lang | default('en') }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#3ECDC1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Dental Academy">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/icon-192.png') }}">
+  
+  <title>{% block title %}Dental Academy{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Профессиональная подготовка стоматологов{% endblock %}">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
+  
+  <!-- Fonts optimized for mobile -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+  
+  <!-- Page-specific styles -->
+  {% block styles %}{% endblock %}
+  
+  <!-- Theme initialization -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body class="mobile-app">
+
+  <!-- Mobile App Container -->
+  <div class="mobile-app-container">
+    
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button class="mobile-header-action" id="mobile-back-btn" aria-label="Назад">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      
+      <h1 class="mobile-header-title">
+        {% block mobile_title %}Dental Academy{% endblock %}
+      </h1>
+      
+      <button class="mobile-header-action" id="mobile-menu-btn" aria-label="Меню">
+        <i class="bi bi-three-dots"></i>
+      </button>
+    </header>
+    
+    <!-- Mobile Content Area -->
+    <main class="mobile-content" id="mobile-main-content">
+      <!-- Mobile Flash Messages -->
+      <div id="mobile-flash-container" aria-live="polite" aria-atomic="true"></div>
+      
+      <!-- Page Content -->
+      {% block mobile_content %}{% endblock %}
+    </main>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav" aria-label="Главная навигация">
+      <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" 
+         class="mobile-nav-item {% if request.endpoint == 'learning_map_bp.learning_map' %}active{% endif %}"
+         aria-label="Обучение">
+        <i class="mobile-nav-icon bi bi-book"></i>
+        <span class="mobile-nav-label">{{ t('learning', g.lang)|default('Обучение') }}</span>
+      </a>
+      
+      <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=g.lang) }}" 
+         class="mobile-nav-item {% if request.endpoint == 'dashboard_bp.learning_dashboard' %}active{% endif %}"
+         aria-label="Прогресс">
+        <i class="mobile-nav-icon bi bi-graph-up"></i>
+        <span class="mobile-nav-label">{{ t('progress', g.lang)|default('Прогресс') }}</span>
+      </a>
+      
+      <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=g.lang) }}" 
+         class="mobile-nav-item {% if 'virtual_patient_bp' in request.endpoint %}active{% endif %}"
+         aria-label="Пациенты">
+        <i class="mobile-nav-icon bi bi-person-hearts"></i>
+        <span class="mobile-nav-label">{{ t('patients', g.lang)|default('Пациенты') }}</span>
+      </a>
+      
+      <a href="{{ url_for('tests_bp.test_dashboard', lang=g.lang) }}" 
+         class="mobile-nav-item {% if 'tests_bp' in request.endpoint %}active{% endif %}"
+         aria-label="Тесты">
+        <i class="mobile-nav-icon bi bi-clipboard-check"></i>
+        <span class="mobile-nav-label">{{ t('tests', g.lang)|default('Тесты') }}</span>
+        {% if user_has_pending_tests %}
+        <span class="mobile-nav-badge">!</span>
+        {% endif %}
+      </a>
+      
+      <a href="{{ url_for('main_bp.profile', lang=g.lang) }}" 
+         class="mobile-nav-item {% if request.endpoint == 'main_bp.profile' %}active{% endif %}"
+         aria-label="Профиль">
+        <i class="mobile-nav-icon bi bi-person-circle"></i>
+        <span class="mobile-nav-label">{{ t('profile', g.lang)|default('Профиль') }}</span>
+      </a>
+    </nav>
+  </div>
+  
+  <!-- Mobile Modals and Overlays -->
+  <div id="mobile-modal-container"></div>
+  <div id="mobile-toast-container"></div>
+  
+  <!-- Mobile Menu Modal -->
+  <div class="mobile-modal-overlay" id="mobile-menu-modal" style="display: none;">
+    <div class="mobile-modal">
+      <div class="mobile-modal-header">
+        <h2 class="mobile-modal-title">Меню</h2>
+        <button class="mobile-modal-close" id="mobile-menu-close" aria-label="Закрыть меню">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="mobile-modal-content">
+        <div class="mobile-menu-items">
+          
+          {% if current_user.is_authenticated %}
+          <div class="mobile-menu-section">
+            <h3 class="mobile-menu-section-title">Аккаунт</h3>
+            <a href="{{ url_for('main_bp.profile', lang=g.lang) }}" class="mobile-menu-item">
+              <i class="bi bi-person"></i>
+              <span>{{ t('profile', g.lang)|default('Профиль') }}</span>
+            </a>
+            <a href="{{ url_for('main_bp.settings', lang=g.lang) }}" class="mobile-menu-item">
+              <i class="bi bi-gear"></i>
+              <span>{{ t('settings', g.lang)|default('Настройки') }}</span>
+            </a>
+            <button class="mobile-menu-item" id="mobile-theme-toggle">
+              <i class="bi bi-moon theme-icon"></i>
+              <span class="theme-text">{{ t('dark_theme', g.lang)|default('Темная тема') }}</span>
+            </button>
+          </div>
+          
+          <div class="mobile-menu-section">
+            <h3 class="mobile-menu-section-title">Помощь</h3>
+            <a href="{{ url_for('main_bp.help', lang=g.lang) }}" class="mobile-menu-item">
+              <i class="bi bi-question-circle"></i>
+              <span>{{ t('help', g.lang)|default('Помощь') }}</span>
+            </a>
+            <a href="{{ url_for('main_bp.contact', lang=g.lang) }}" class="mobile-menu-item">
+              <i class="bi bi-envelope"></i>
+              <span>{{ t('contact', g.lang)|default('Контакты') }}</span>
+            </a>
+          </div>
+          
+          <div class="mobile-menu-section">
+            <a href="{{ url_for('auth_bp.logout', lang=g.lang) }}" class="mobile-menu-item mobile-menu-danger">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>{{ t('logout', g.lang)|default('Выйти') }}</span>
+            </a>
+          </div>
+          
+          {% else %}
+          
+          <div class="mobile-menu-section">
+            <a href="{{ url_for('auth_bp.login', lang=g.lang) }}" class="mobile-menu-item">
+              <i class="bi bi-box-arrow-in-right"></i>
+              <span>{{ t('login', g.lang)|default('Вход') }}</span>
+            </a>
+            <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="mobile-menu-item">
+              <i class="bi bi-person-plus"></i>
+              <span>{{ t('register', g.lang)|default('Регистрация') }}</span>
+            </a>
+          </div>
+          
+          {% endif %}
+          
+          <div class="mobile-menu-section">
+            <h3 class="mobile-menu-section-title">Язык</h3>
+            <div class="mobile-language-selector">
+              <select id="mobile-language-select" class="mobile-select">
+                <option value="en" {% if g.lang == 'en' %}selected{% endif %}>🇺🇸 English</option>
+                <option value="ru" {% if g.lang == 'ru' %}selected{% endif %}>🇷🇺 Русский</option>
+                <option value="nl" {% if g.lang == 'nl' %}selected{% endif %}>🇳🇱 Nederlands</option>
+                <option value="uk" {% if g.lang == 'uk' %}selected{% endif %}>🇺🇦 Українська</option>
+                <option value="es" {% if g.lang == 'es' %}selected{% endif %}>🇪🇸 Español</option>
+                <option value="pt" {% if g.lang == 'pt' %}selected{% endif %}>🇵🇹 Português</option>
+                <option value="tr" {% if g.lang == 'tr' %}selected{% endif %}>🇹🇷 Türkçe</option>
+                <option value="fa" {% if g.lang == 'fa' %}selected{% endif %}>🇮🇷 فارسی</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Core JavaScript -->
+  <script src="{{ url_for('static', filename='js/mobile-app.js') }}"></script>
+  
+  <!-- Page-specific scripts -->
+  {% block mobile_scripts %}{% endblock %}
+
+  <style>
+  /* Mobile Menu Styles */
+  .mobile-menu-items {
+    padding: 8px 0;
+  }
+  
+  .mobile-menu-section {
+    margin-bottom: 24px;
+  }
+  
+  .mobile-menu-section:last-child {
+    margin-bottom: 0;
+  }
+  
+  .mobile-menu-section-title {
+    font-size: var(--mobile-text-sm);
+    font-weight: 600;
+    color: var(--mobile-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 8px 0;
+    padding: 0 4px;
+  }
+  
+  .mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 4px;
+    border-radius: 12px;
+    color: var(--mobile-text-primary);
+    text-decoration: none;
+    transition: all var(--mobile-transition-fast);
+    border: none;
+    background: none;
+    width: 100%;
+    font-size: var(--mobile-text-base);
+    cursor: pointer;
+  }
+  
+  .mobile-menu-item:hover,
+  .mobile-menu-item:active {
+    background: var(--mobile-bg-secondary);
+    color: var(--mobile-text-primary);
+  }
+  
+  .mobile-menu-item i {
+    font-size: 20px;
+    width: 20px;
+    color: var(--mobile-text-secondary);
+  }
+  
+  .mobile-menu-danger {
+    color: #dc2626;
+  }
+  
+  .mobile-menu-danger i {
+    color: #dc2626;
+  }
+  
+  .mobile-language-selector {
+    padding: 0 4px;
+  }
+  </style>
+
+</body>
+</html>

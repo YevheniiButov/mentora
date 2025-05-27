@@ -1,0 +1,1240 @@
+{% extends "mobile_base.html" %}
+
+{% block title %}{{ t('test', g.lang)|default('Тест') }} - Dental Academy{% endblock %}
+{% block mobile_title %}{{ t('test', g.lang)|default('Тест') }} {{ test.title|truncate(20) }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+/* Mobile Test Specific Styles */
+.mobile-test-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-test-header {
+  background: var(--mobile-bg-primary);
+  border-bottom: 1px solid var(--mobile-border);
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.mobile-test-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mobile-test-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--mobile-text-secondary);
+}
+
+.mobile-test-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--mobile-text-primary);
+}
+
+.mobile-test-timer.warning {
+  color: #f59e0b;
+}
+
+.mobile-test-timer.danger {
+  color: #ef4444;
+  animation: mobile-pulse 1s infinite;
+}
+
+@keyframes mobile-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.mobile-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--mobile-bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mobile-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.mobile-test-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
+
+.mobile-question-card {
+  background: var(--mobile-bg-primary);
+  border-radius: 20px;
+  border: 1px solid var(--mobile-border);
+  overflow: hidden;
+  box-shadow: var(--mobile-shadow-md);
+  margin-bottom: 20px;
+}
+
+.mobile-question-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  text-align: center;
+}
+
+.mobile-question-number {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.mobile-question-title {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.mobile-question-content {
+  padding: 20px;
+}
+
+.mobile-question-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--mobile-text-primary);
+  margin-bottom: 20px;
+}
+
+.mobile-question-image {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: 12px;
+  margin: 16px auto;
+  display: block;
+  box-shadow: var(--mobile-shadow-sm);
+}
+
+.mobile-answers-container {
+  margin-top: 24px;
+}
+
+.mobile-answers-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--mobile-text-primary);
+  margin-bottom: 16px;
+}
+
+.mobile-answer-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-answer-option {
+  background: var(--mobile-bg-secondary);
+  border: 2px solid var(--mobile-border);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all var(--mobile-transition-fast);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-answer-option:active {
+  transform: scale(0.98);
+}
+
+.mobile-answer-option.selected {
+  border-color: var(--primary-color);
+  background: rgba(62, 205, 193, 0.1);
+}
+
+.mobile-answer-option.correct {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.mobile-answer-option.incorrect {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.mobile-answer-option.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.mobile-answer-marker {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--mobile-border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--mobile-transition-fast);
+}
+
+.mobile-answer-option.selected .mobile-answer-marker {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: white;
+}
+
+.mobile-answer-option.correct .mobile-answer-marker {
+  border-color: #22c55e;
+  background: #22c55e;
+  color: white;
+}
+
+.mobile-answer-option.incorrect .mobile-answer-marker {
+  border-color: #ef4444;
+  background: #ef4444;
+  color: white;
+}
+
+.mobile-answer-text {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--mobile-text-primary);
+  margin-top: 1px;
+}
+
+.mobile-answer-explanation {
+  background: var(--mobile-bg-primary);
+  border: 1px solid var(--mobile-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  display: none;
+}
+
+.mobile-answer-explanation.show {
+  display: block;
+  animation: mobile-slide-down 0.3s ease-out;
+}
+
+@keyframes mobile-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-explanation-title {
+  font-weight: 600;
+  color: var(--mobile-text-primary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-explanation-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--mobile-text-secondary);
+}
+
+.mobile-test-navigation {
+  background: var(--mobile-bg-primary);
+  border-top: 1px solid var(--mobile-border);
+  padding: 16px;
+  position: sticky;
+  bottom: 0;
+}
+
+.mobile-nav-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.mobile-test-btn {
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--mobile-transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.mobile-test-btn:active {
+  transform: scale(0.95);
+}
+
+.mobile-test-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.mobile-test-btn-previous {
+  background: var(--mobile-bg-secondary);
+  color: var(--mobile-text-primary);
+  border: 1px solid var(--mobile-border);
+}
+
+.mobile-test-btn-next {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  flex: 1;
+  box-shadow: var(--mobile-shadow-md);
+}
+
+.mobile-test-btn-finish {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  flex: 1;
+  box-shadow: var(--mobile-shadow-md);
+}
+
+.mobile-question-bookmarks {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mobile-border);
+}
+
+.mobile-bookmark-btn {
+  background: var(--mobile-bg-secondary);
+  border: 1px solid var(--mobile-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--mobile-transition-fast);
+  color: var(--mobile-text-secondary);
+}
+
+.mobile-bookmark-btn:active {
+  transform: scale(0.95);
+}
+
+.mobile-bookmark-btn.active {
+  background: rgba(62, 205, 193, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.mobile-flag-btn {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.mobile-flag-btn.active {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+/* Multiple choice specific styles */
+.mobile-multiple-choice .mobile-answer-marker {
+  border-radius: 4px;
+}
+
+/* True/False specific styles */
+.mobile-true-false .mobile-answer-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mobile-true-false .mobile-answer-option {
+  text-align: center;
+  justify-content: center;
+  min-height: 80px;
+}
+
+.mobile-true-option {
+  background: rgba(34, 197, 94, 0.05);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.mobile-false-option {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Drag and drop styles */
+.mobile-drag-drop .mobile-drop-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mobile-drop-zone {
+  min-height: 60px;
+  border: 2px dashed var(--mobile-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mobile-bg-secondary);
+  transition: all var(--mobile-transition-fast);
+}
+
+.mobile-drop-zone.drag-over {
+  border-color: var(--primary-color);
+  background: rgba(62, 205, 193, 0.1);
+}
+
+.mobile-draggable-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mobile-draggable-item {
+  background: var(--mobile-bg-primary);
+  border: 1px solid var(--mobile-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: grab;
+  transition: all var(--mobile-transition-fast);
+  user-select: none;
+}
+
+.mobile-draggable-item:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+  box-shadow: var(--mobile-shadow-lg);
+  z-index: 1000;
+}
+
+/* Loading and error states */
+.mobile-loading-question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--mobile-text-secondary);
+}
+
+.mobile-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--mobile-bg-tertiary);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: mobile-spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes mobile-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mobile-error-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.mobile-error-icon {
+  font-size: 48px;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.mobile-error-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--mobile-text-primary);
+  margin-bottom: 8px;
+}
+
+.mobile-error-message {
+  font-size: 14px;
+  color: var(--mobile-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.mobile-retry-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-answer-option,
+  .mobile-test-btn,
+  .mobile-progress-fill {
+    transition: none;
+  }
+  
+  .mobile-pulse {
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .mobile-answer-option {
+    border-width: 3px;
+  }
+  
+  .mobile-answer-option.selected {
+    border-width: 4px;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 360px) {
+  .mobile-question-content {
+    padding: 16px;
+  }
+  
+  .mobile-answer-option {
+    padding: 14px;
+  }
+  
+  .mobile-true-false .mobile-answer-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .mobile-question-header {
+  background: linear-gradient(135deg, #4c1d95, #5b21b6);
+}
+</style>
+{% endblock %}
+
+{% block mobile_content %}
+
+<div class="mobile-test-container">
+  <!-- Test Header with Progress -->
+  <div class="mobile-test-header">
+    <div class="mobile-test-progress">
+      <div class="mobile-test-info">
+        <i class="bi bi-file-earmark-text"></i>
+        <span>{{ current_question_index + 1 }} из {{ total_questions }}</span>
+      </div>
+      
+      <div class="mobile-test-timer" id="mobile-test-timer">
+        <i class="bi bi-clock"></i>
+        <span id="timer-display">{{ remaining_time_formatted }}</span>
+      </div>
+    </div>
+    
+    <div class="mobile-progress-bar">
+      <div class="mobile-progress-fill" style="width: {{ ((current_question_index + 1) / total_questions * 100) }}%"></div>
+    </div>
+  </div>
+
+  <!-- Test Content -->
+  <div class="mobile-test-content" id="mobile-test-content">
+    
+    {% if question %}
+    <!-- Question Card -->
+    <div class="mobile-question-card" id="mobile-question-card">
+      <div class="mobile-question-header">
+        <div class="mobile-question-number">
+          {{ t('question', g.lang)|default('Вопрос') }} {{ current_question_index + 1 }}
+        </div>
+        <h2 class="mobile-question-title">{{ question.category|default('Общие знания') }}</h2>
+      </div>
+      
+      <div class="mobile-question-content">
+        <div class="mobile-question-text">
+          {{ question.question_text|safe }}
+        </div>
+        
+        {% if question.image %}
+        <img src="{{ question.image }}" alt="Question image" class="mobile-question-image" loading="lazy">
+        {% endif %}
+        
+        <!-- Answers Container -->
+        <div class="mobile-answers-container">
+          <h3 class="mobile-answers-title">{{ t('choose_answer', g.lang)|default('Выберите ответ:') }}</h3>
+          
+          {% if question.question_type == 'multiple_choice' %}
+          <!-- Multiple Choice -->
+          <div class="mobile-answer-options mobile-multiple-choice" id="mobile-answer-options">
+            {% for option in question.options %}
+            <div class="mobile-answer-option" data-option-id="{{ option.id }}" data-is-correct="{{ option.is_correct }}">
+              <div class="mobile-answer-marker">
+                {% if question.multiple_answers %}
+                  <i class="bi bi-check" style="display: none;"></i>
+                {% else %}
+                  <span class="option-letter">{{ loop.index0 | char_from_index }}</span>
+                {% endif %}
+              </div>
+              <div class="mobile-answer-text">{{ option.text|safe }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          {% elif question.question_type == 'true_false' %}
+          <!-- True/False -->
+          <div class="mobile-answer-options mobile-true-false">
+            <div class="mobile-answer-option mobile-true-option" data-option-id="true" data-is-correct="{{ question.correct_answer == 'true' }}">
+              <div class="mobile-answer-marker">
+                <i class="bi bi-check-circle"></i>
+              </div>
+              <div class="mobile-answer-text">{{ t('true', g.lang)|default('Верно') }}</div>
+            </div>
+            <div class="mobile-answer-option mobile-false-option" data-option-id="false" data-is-correct="{{ question.correct_answer == 'false' }}">
+              <div class="mobile-answer-marker">
+                <i class="bi bi-x-circle"></i>
+              </div>
+              <div class="mobile-answer-text">{{ t('false', g.lang)|default('Неверно') }}</div>
+            </div>
+          </div>
+          
+          {% elif question.question_type == 'drag_drop' %}
+          <!-- Drag and Drop -->
+          <div class="mobile-drag-drop">
+            <div class="mobile-drop-zones">
+              {% for zone in question.drop_zones %}
+              <div class="mobile-drop-zone" data-zone-id="{{ zone.id }}">
+                <span class="drop-zone-label">{{ zone.label }}</span>
+              </div>
+              {% endfor %}
+            </div>
+            
+            <div class="mobile-draggable-items">
+              {% for item in question.draggable_items %}
+              <div class="mobile-draggable-item" data-item-id="{{ item.id }}" draggable="true">
+                {{ item.text }}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Answer Explanation (hidden initially) -->
+          <div class="mobile-answer-explanation" id="mobile-answer-explanation">
+            <div class="mobile-explanation-title">
+              <i class="bi bi-lightbulb"></i>
+              {{ t('explanation', g.lang)|default('Объяснение') }}
+            </div>
+            <div class="mobile-explanation-text" id="explanation-text">
+              {{ question.explanation|default('') }}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Question Actions -->
+        <div class="mobile-question-bookmarks">
+          <button class="mobile-bookmark-btn" id="bookmark-btn" data-question-id="{{ question.id }}">
+            <i class="bi bi-bookmark"></i>
+            {{ t('bookmark', g.lang)|default('Закладка') }}
+          </button>
+          
+          <button class="mobile-bookmark-btn mobile-flag-btn" id="flag-btn" data-question-id="{{ question.id }}">
+            <i class="bi bi-flag"></i>
+            {{ t('flag_for_review', g.lang)|default('Отметить') }}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    {% else %}
+    <!-- Loading State -->
+    <div class="mobile-loading-question">
+      <div class="mobile-loading-spinner"></div>
+      <p>{{ t('loading_question', g.lang)|default('Загрузка вопроса...') }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Navigation -->
+  <div class="mobile-test-navigation">
+    <div class="mobile-nav-buttons">
+      <button class="mobile-test-btn mobile-test-btn-previous" id="mobile-prev-btn" 
+              {% if current_question_index <= 0 %}disabled{% endif %}>
+        <i class="bi bi-chevron-left"></i>
+        {{ t('previous', g.lang)|default('Назад') }}
+      </button>
+      
+      {% if current_question_index >= total_questions - 1 %}
+      <button class="mobile-test-btn mobile-test-btn-finish" id="mobile-finish-btn">
+        <i class="bi bi-check-circle"></i>
+        {{ t('finish_test', g.lang)|default('Завершить') }}
+      </button>
+      {% else %}
+      <button class="mobile-test-btn mobile-test-btn-next" id="mobile-next-btn">
+        {{ t('next', g.lang)|default('Далее') }}
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block mobile_scripts %}
+<script>
+class MobileTestController {
+  constructor() {
+    this.currentQuestionId = {{ question.id if question else 0 }};
+    this.currentQuestionIndex = {{ current_question_index }};
+    this.totalQuestions = {{ total_questions }};
+    this.testId = {{ test.id }};
+    this.timeRemaining = {{ remaining_time }};
+    this.selectedAnswers = new Set();
+    this.answeredQuestions = new Set();
+    this.bookmarkedQuestions = new Set();
+    this.flaggedQuestions = new Set();
+    this.isAnswered = false;
+    
+    this.init();
+  }
+  
+  init() {
+    this.setupTimer();
+    this.setupAnswerHandlers();
+    this.setupNavigation();
+    this.setupBookmarks();
+    this.setupTouchInteractions();
+    this.loadSavedState();
+    
+    // Auto-save progress
+    this.saveInterval = setInterval(() => this.saveProgress(), 30000);
+  }
+  
+  setupTimer() {
+    const timerDisplay = document.getElementById('timer-display');
+    const timerContainer = document.getElementById('mobile-test-timer');
+    
+    this.timerInterval = setInterval(() => {
+      this.timeRemaining--;
+      
+      const minutes = Math.floor(this.timeRemaining / 60);
+      const seconds = this.timeRemaining % 60;
+      const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      if (timerDisplay) {
+        timerDisplay.textContent = timeString;
+      }
+      
+      // Warning states
+      if (this.timeRemaining <= 300) { // 5 minutes
+        timerContainer.classList.add('danger');
+      } else if (this.timeRemaining <= 600) { // 10 minutes
+        timerContainer.classList.add('warning');
+      }
+      
+      // Time up
+      if (this.timeRemaining <= 0) {
+        this.timeUp();
+      }
+    }, 1000);
+  }
+  
+  setupAnswerHandlers() {
+    const answerOptions = document.querySelectorAll('.mobile-answer-option');
+    
+    answerOptions.forEach(option => {
+      option.addEventListener('click', () => this.selectAnswer(option));
+    });
+    
+    // Setup drag and drop if applicable
+    this.setupDragDrop();
+  }
+  
+  selectAnswer(option) {
+    if (this.isAnswered || option.classList.contains('disabled')) {
+      return;
+    }
+    
+    const optionId = option.dataset.optionId;
+    const isMultiple = document.querySelector('.mobile-multiple-choice') && 
+                      document.querySelector('[data-multiple-answers="true"]');
+    
+    if (isMultiple) {
+      // Multiple choice - toggle selection
+      if (this.selectedAnswers.has(optionId)) {
+        this.selectedAnswers.delete(optionId);
+        option.classList.remove('selected');
+        option.querySelector('.mobile-answer-marker i').style.display = 'none';
+      } else {
+        this.selectedAnswers.add(optionId);
+        option.classList.add('selected');
+        option.querySelector('.mobile-answer-marker i').style.display = 'block';
+      }
+    } else {
+      // Single choice - clear others and select this one
+      document.querySelectorAll('.mobile-answer-option').forEach(opt => {
+        opt.classList.remove('selected');
+        const icon = opt.querySelector('.mobile-answer-marker i');
+        if (icon) icon.style.display = 'none';
+      });
+      
+      this.selectedAnswers.clear();
+      this.selectedAnswers.add(optionId);
+      option.classList.add('selected');
+      
+      const icon = option.querySelector('.mobile-answer-marker i');
+      if (icon) icon.style.display = 'block';
+    }
+    
+    // Enable next button if answer selected
+    this.updateNavigationState();
+    
+    // Auto-submit for true/false questions
+    if (document.querySelector('.mobile-true-false')) {
+      setTimeout(() => this.submitAnswer(), 500);
+    }
+  }
+  
+  setupDragDrop() {
+    const draggableItems = document.querySelectorAll('.mobile-draggable-item');
+    const dropZones = document.querySelectorAll('.mobile-drop-zone');
+    
+    draggableItems.forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', item.dataset.itemId);
+        item.classList.add('dragging');
+      });
+      
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+      });
+      
+      // Touch support for mobile
+      let startY, startX;
+      item.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        item.style.position = 'fixed';
+        item.style.zIndex = '1000';
+      });
+      
+      item.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        item.style.left = `${touch.clientX - startX}px`;
+        item.style.top = `${touch.clientY - startY}px`;
+      });
+      
+      item.addEventListener('touchend', (e) => {
+        const touch = e.changedTouches[0];
+        const dropZone = document.elementFromPoint(touch.clientX, touch.clientY);
+        
+        if (dropZone && dropZone.classList.contains('mobile-drop-zone')) {
+          this.handleDrop(dropZone, item.dataset.itemId);
+        }
+        
+        // Reset position
+        item.style.position = '';
+        item.style.zIndex = '';
+        item.style.left = '';
+        item.style.top = '';
+      });
+    });
+    
+    dropZones.forEach(zone => {
+      zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+      });
+      
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('drag-over');
+      });
+      
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const itemId = e.dataTransfer.getData('text/plain');
+        this.handleDrop(zone, itemId);
+        zone.classList.remove('drag-over');
+      });
+    });
+  }
+  
+  handleDrop(dropZone, itemId) {
+    const item = document.querySelector(`[data-item-id="${itemId}"]`);
+    if (item) {
+      dropZone.appendChild(item);
+      this.selectedAnswers.add(`${dropZone.dataset.zoneId}:${itemId}`);
+      this.updateNavigationState();
+    }
+  }
+  
+  setupNavigation() {
+    const prevBtn = document.getElementById('mobile-prev-btn');
+    const nextBtn = document.getElementById('mobile-next-btn');
+    const finishBtn = document.getElementById('mobile-finish-btn');
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => this.previousQuestion());
+    }
+    
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => this.nextQuestion());
+    }
+    
+    if (finishBtn) {
+      finishBtn.addEventListener('click', () => this.finishTest());
+    }
+  }
+  
+  setupBookmarks() {
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    const flagBtn = document.getElementById('flag-btn');
+    
+    if (bookmarkBtn) {
+      bookmarkBtn.addEventListener('click', () => this.toggleBookmark());
+    }
+    
+    if (flagBtn) {
+      flagBtn.addEventListener('click', () => this.toggleFlag());
+    }
+  }
+  
+  setupTouchInteractions() {
+    // Swipe gestures for navigation
+    let startX = 0;
+    let startY = 0;
+    const content = document.getElementById('mobile-test-content');
+    
+    content.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    content.addEventListener('touchend', (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const diffX = startX - endX;
+      const diffY = startY - endY;
+      
+      // Only trigger if horizontal swipe is more prominent
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+        if (diffX > 0 && this.currentQuestionIndex < this.totalQuestions - 1) {
+          // Swipe left - next question
+          this.nextQuestion();
+        } else if (diffX < 0 && this.currentQuestionIndex > 0) {
+          // Swipe right - previous question
+          this.previousQuestion();
+        }
+      }
+    }, { passive: true });
+  }
+  
+  submitAnswer() {
+    if (this.selectedAnswers.size === 0) {
+      if (window.mobileApp) {
+        window.mobileApp.showToast('Выберите ответ', 'warning');
+      }
+      return;
+    }
+    
+    this.isAnswered = true;
+    this.answeredQuestions.add(this.currentQuestionId);
+    
+    // Show correct/incorrect states
+    const answerOptions = document.querySelectorAll('.mobile-answer-option');
+    answerOptions.forEach(option => {
+      const isCorrect = option.dataset.isCorrect === 'true';
+      const isSelected = this.selectedAnswers.has(option.dataset.optionId);
+      
+      if (isCorrect) {
+        option.classList.add('correct');
+      } else if (isSelected) {
+        option.classList.add('incorrect');
+      }
+      
+      option.classList.add('disabled');
+    });
+    
+    // Show explanation
+    const explanation = document.getElementById('mobile-answer-explanation');
+    if (explanation) {
+      explanation.classList.add('show');
+    }
+    
+    // Save answer
+    this.saveAnswer();
+    
+    // Update navigation
+    this.updateNavigationState();
+  }
+  
+  nextQuestion() {
+    if (!this.isAnswered && this.selectedAnswers.size > 0) {
+      this.submitAnswer();
+    }
+    
+    if (this.currentQuestionIndex < this.totalQuestions - 1) {
+      this.navigateToQuestion(this.currentQuestionIndex + 1);
+    }
+  }
+  
+  previousQuestion() {
+    if (this.currentQuestionIndex > 0) {
+      this.navigateToQuestion(this.currentQuestionIndex - 1);
+    }
+  }
+  
+  navigateToQuestion(questionIndex) {
+    // Save current state
+    this.saveProgress();
+    
+    // Navigate to new question
+    const currentLang = '{{ g.lang }}';
+    const url = `/${currentLang}/test/${this.testId}/question/${questionIndex}`;
+    
+    // Show loading state
+    const content = document.getElementById('mobile-test-content');
+    if (content) {
+      content.style.opacity = '0.6';
+    }
+    
+    window.location.href = url;
+  }
+  
+  finishTest() {
+    if (!this.isAnswered && this.selectedAnswers.size > 0) {
+      this.submitAnswer();
+    }
+    
+    const unansweredCount = this.totalQuestions - this.answeredQuestions.size;
+    
+    if (unansweredCount > 0) {
+      const message = `У вас есть ${unansweredCount} неотвеченных вопросов. Завершить тест?`;
+      if (!confirm(message)) {
+        return;
+      }
+    }
+    
+    // Navigate to results
+    const currentLang = '{{ g.lang }}';
+    window.location.href = `/${currentLang}/test/${this.testId}/finish`;
+  }
+  
+  toggleBookmark() {
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    
+    if (this.bookmarkedQuestions.has(this.currentQuestionId)) {
+      this.bookmarkedQuestions.delete(this.currentQuestionId);
+      bookmarkBtn.classList.remove('active');
+    } else {
+      this.bookmarkedQuestions.add(this.currentQuestionId);
+      bookmarkBtn.classList.add('active');
+    }
+    
+    this.saveBookmarks();
+  }
+  
+  toggleFlag() {
+    const flagBtn = document.getElementById('flag-btn');
+    
+    if (this.flaggedQuestions.has(this.currentQuestionId)) {
+      this.flaggedQuestions.delete(this.currentQuestionId);
+      flagBtn.classList.remove('active');
+    } else {
+      this.flaggedQuestions.add(this.currentQuestionId);
+      flagBtn.classList.add('active');
+    }
+    
+    this.saveFlags();
+  }
+  
+  updateNavigationState() {
+    const nextBtn = document.getElementById('mobile-next-btn');
+    const finishBtn = document.getElementById('mobile-finish-btn');
+    
+    const hasAnswer = this.selectedAnswers.size > 0 || this.isAnswered;
+    
+    if (nextBtn) {
+      nextBtn.disabled = false; // Allow navigation without answering
+    }
+    
+    if (finishBtn) {
+      finishBtn.disabled = false;
+    }
+  }
+  
+  saveAnswer() {
+    const answerData = {
+      question_id: this.currentQuestionId,
+      selected_answers: Array.from(this.selectedAnswers),
+      timestamp: Date.now()
+    };
+    
+    fetch('/api/save-test-answer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify(answerData)
+    }).catch(error => {
+      // Save offline if network fails
+      this.saveOfflineAnswer(answerData);
+    });
+  }
+  
+  saveProgress() {
+    const progressData = {
+      test_id: this.testId,
+      current_question: this.currentQuestionIndex,
+      answered_questions: Array.from(this.answeredQuestions),
+      time_remaining: this.timeRemaining
+    };
+    
+    localStorage.setItem(`test_progress_${this.testId}`, JSON.stringify(progressData));
+  }
+  
+  saveBookmarks() {
+    localStorage.setItem(`test_bookmarks_${this.testId}`, JSON.stringify(Array.from(this.bookmarkedQuestions)));
+  }
+  
+  saveFlags() {
+    localStorage.setItem(`test_flags_${this.testId}`, JSON.stringify(Array.from(this.flaggedQuestions)));
+  }
+  
+  loadSavedState() {
+    // Load bookmarks
+    const savedBookmarks = localStorage.getItem(`test_bookmarks_${this.testId}`);
+    if (savedBookmarks) {
+      this.bookmarkedQuestions = new Set(JSON.parse(savedBookmarks));
+      if (this.bookmarkedQuestions.has(this.currentQuestionId)) {
+        document.getElementById('bookmark-btn')?.classList.add('active');
+      }
+    }
+    
+    // Load flags
+    const savedFlags = localStorage.getItem(`test_flags_${this.testId}`);
+    if (savedFlags) {
+      this.flaggedQuestions = new Set(JSON.parse(savedFlags));
+      if (this.flaggedQuestions.has(this.currentQuestionId)) {
+        document.getElementById('flag-btn')?.classList.add('active');
+      }
+    }
+  }
+  
+  saveOfflineAnswer(answerData) {
+    const offlineAnswers = JSON.parse(localStorage.getItem('offline_test_answers') || '[]');
+    offlineAnswers.push(answerData);
+    localStorage.setItem('offline_test_answers', JSON.stringify(offlineAnswers));
+  }
+  
+  timeUp() {
+    clearInterval(this.timerInterval);
+    
+    if (window.mobileApp) {
+      window.mobileApp.showToast('Время вышло!', 'warning');
+    }
+    
+    setTimeout(() => {
+      this.finishTest();
+    }, 2000);
+  }
+  
+  cleanup() {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.saveInterval) clearInterval(this.saveInterval);
+  }
+}
+
+// Initialize test controller
+document.addEventListener('DOMContentLoaded', function() {
+  window.testController = new MobileTestController();
+  
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    if (window.testController) {
+      window.testController.saveProgress();
+      window.testController.cleanup();
+    }
+  });
+  
+  // Handle visibility change
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && window.testController) {
+      window.testController.saveProgress();
+    }
+  });
+});
+
+// Custom filter for character from index
+if (typeof window.charFromIndex === 'undefined') {
+  window.charFromIndex = function(index) {
+    return String.fromCharCode(65 + index); // A, B, C, etc.
+  };
+}
+
+// Handle offline/online state
+window.addEventListener('offline', function() {
+  if (window.mobileApp) {
+    window.mobileApp.showToast('Оффлайн - ответы будут сохранены локально', 'warning');
+  }
+});
+
+window.addEventListener('online', function() {
+  if (window.mobileApp) {
+    window.mobileApp.showToast('Соединение восстановлено', 'success');
+  }
+  
+  // Sync offline answers
+  const offlineAnswers = JSON.parse(localStorage.getItem('offline_test_answers') || '[]');
+  if (offlineAnswers.length > 0) {
+    // Send offline answers to server
+    offlineAnswers.forEach(answerData => {
+      fetch('/api/save-test-answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(answerData)
+      });
+    });
+    
+    localStorage.removeItem('offline_test_answers');
+  }
+});
+</script>
+{% endblock %}

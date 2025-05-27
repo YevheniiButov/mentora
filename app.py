@@ -11,7 +11,8 @@ from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 from translations import get_translation
 from utils.subtopics import create_slug, update_lesson_subtopics, reorder_subtopic_lessons
-
+from mobile_integration import init_mobile_integration
+from utils.mobile_helpers import init_mobile_helpers
 
 # Import extensions
 from extensions import db, login_manager, bcrypt, babel, cache
@@ -286,6 +287,7 @@ def create_app(test_config=None):
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Увеличено время жизни сессии
     
+
     # Настройка поддержки прокси для правильных URL
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     
@@ -873,7 +875,10 @@ def create_app(test_config=None):
             logger.info("✅ Database tables created successfully")
         except Exception as e:
             logger.error(f"❌ Error creating database tables: {e}")
-    
+
+    init_mobile_integration(app)
+    init_mobile_helpers(app)
+
     return app
 
 # Создание экземпляра приложения

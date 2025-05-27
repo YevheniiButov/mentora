@@ -9,6 +9,7 @@ import os
 import json
 import random
 from datetime import datetime
+from mobile_integration import render_adaptive_template
 
 from models import db, User, Module, Lesson, UserProgress
 
@@ -27,7 +28,7 @@ def index():
 @main_bp.route('/<string:lang>/')
 @main_bp.route('/<string:lang>/home')
 def home(lang):
-    return render_template('index.html', title='Home')
+    return render_adaptive_template('index.html')
 
 @main_bp.route("/<string:lang>/profile")
 @login_required

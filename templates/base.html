@@ -4,9 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Become a Tandarts{% endblock %}</title>
+  <title>{% block title %}Dental Academy{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}Платформа для подготовки к BIG экзамену для стоматологов в Нидерландах.{% endblock %}">
-  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#3ECDC1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Dental Academy">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/icon-192.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+  <!-- Мобильные стили -->
+  {% if is_mobile_device %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+  {% endif %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-fixes.css') }}">
   <!-- Favicon -->
   <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" />
   
