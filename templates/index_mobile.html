@@ -1,0 +1,608 @@
+{% extends "mobile_base.html" %}
+
+{# --- SEO Meta Tags --- #}
+{% block title %}{{ t('seo_title', g.lang) }}{% endblock %}
+{% block meta_description %}{{ t('seo_description', g.lang) }}{% endblock %}
+
+{% block mobile_title %}{{ t('welcome', g.lang)|default('Добро пожаловать') }}{% endblock %}
+
+{% block mobile_header_actions %}
+{% if not current_user.is_authenticated %}
+<a href="{{ url_for('auth_bp.login', lang=g.lang) }}" class="mobile-header-action">
+  <i class="bi bi-person"></i>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+/* Mobile Home Page Specific Styles */
+.mobile-hero {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  padding: 2rem var(--mobile-padding);
+  text-align: center;
+  border-radius: 0 0 24px 24px;
+  margin: 0 calc(-1 * var(--mobile-padding)) 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: float-bg 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes float-bg {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-20px, -20px); }
+}
+
+.mobile-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.mobile-hero-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.mobile-hero-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.95;
+  margin-bottom: 2rem;
+  line-height: 1.4;
+}
+
+.mobile-hero-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+
+.mobile-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.mobile-stat {
+  text-align: center;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.mobile-stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.mobile-stat-label {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.mobile-features-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.mobile-feature-card {
+  background: var(--mobile-bg-primary);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid var(--mobile-border);
+  box-shadow: var(--mobile-shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.mobile-feature-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 12px;
+}
+
+.mobile-feature-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.mobile-feature-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--mobile-text-primary);
+  margin: 0;
+}
+
+.mobile-feature-description {
+  color: var(--mobile-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.mobile-feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mobile-tag {
+  background: var(--mobile-bg-tertiary);
+  color: var(--mobile-text-tertiary);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.mobile-benefits-section {
+  background: var(--mobile-bg-secondary);
+  margin: 2rem calc(-1 * var(--mobile-padding));
+  padding: 2rem var(--mobile-padding);
+}
+
+.mobile-section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.mobile-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--mobile-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.mobile-section-subtitle {
+  color: var(--mobile-text-secondary);
+  font-size: 0.9rem;
+}
+
+.mobile-benefits-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.mobile-benefit-card {
+  background: var(--mobile-bg-primary);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid var(--mobile-border);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.mobile-benefit-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.mobile-benefit-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--mobile-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.mobile-benefit-content p {
+  font-size: 0.85rem;
+  color: var(--mobile-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.mobile-cta-section {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  padding: 2rem var(--mobile-padding);
+  margin: 2rem calc(-1 * var(--mobile-padding)) 0;
+  text-align: center;
+}
+
+.mobile-cta-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.mobile-cta-description {
+  font-size: 1rem;
+  opacity: 0.95;
+  margin-bottom: 2rem;
+  line-height: 1.4;
+}
+
+.mobile-cta-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Специальные кнопки для главной страницы */
+.mobile-btn-hero {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.mobile-btn-hero:active {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.mobile-btn-cta-primary {
+  background: white;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.mobile-btn-cta-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Темная тема */
+[data-theme="dark"] .mobile-feature-card {
+  background: var(--mobile-bg-secondary);
+  border-color: var(--mobile-border);
+}
+
+[data-theme="dark"] .mobile-benefit-card {
+  background: var(--mobile-bg-secondary);
+  border-color: var(--mobile-border);
+}
+
+[data-theme="dark"] .mobile-tag {
+  background: var(--mobile-bg-primary);
+  color: var(--mobile-text-secondary);
+}
+</style>
+{% endblock %}
+
+{% block mobile_content %}
+
+{# === HERO SECTION === #}
+<section class="mobile-hero">
+  <div class="mobile-hero-content">
+    <h1 class="mobile-hero-title">
+      {{ t('successful_path_title', g.lang)|default('Твой путь к успеху в стоматологии') | safe }}
+    </h1>
+    
+    <p class="mobile-hero-subtitle">
+      {{ t('platform_description', g.lang)|default('Современная образовательная платформа для подготовки к экзамену BIG в Нидерландах.') }}
+    </p>
+    
+    <div class="mobile-hero-buttons">
+      {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="mobile-btn mobile-btn-hero mobile-btn-large">
+        <i class="bi bi-rocket-takeoff"></i>
+        {{ t('start_for_free', g.lang)|default('Начать бесплатно') }}
+      </a>
+      <a href="{{ url_for('main_bp.big_info', lang=g.lang) }}" class="mobile-btn mobile-btn-hero mobile-btn-large">
+        <i class="bi bi-info-circle"></i>
+        {{ t('learn_more', g.lang)|default('Узнать больше') }}
+      </a>
+      {% else %}
+      <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="mobile-btn mobile-btn-hero mobile-btn-large">
+        <i class="bi bi-play-circle"></i>
+        {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
+      </a>
+      {% endif %}
+    </div>
+    
+    <!-- Statistics -->
+    <div class="mobile-hero-stats">
+      <div class="mobile-stat">
+        <span class="mobile-stat-number">BIG</span>
+        <span class="mobile-stat-label">{{ t('exam_preparation', g.lang)|default('Подготовка') }}</span>
+      </div>
+      <div class="mobile-stat">
+        <span class="mobile-stat-number">8</span>
+        <span class="mobile-stat-label">{{ t('languages_supported', g.lang)|default('Языков') }}</span>
+      </div>
+      <div class="mobile-stat">
+        <span class="mobile-stat-number">24/7</span>
+        <span class="mobile-stat-label">{{ t('availability', g.lang)|default('Доступно') }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# === FEATURES SECTION === #}
+<section class="mobile-features-section">
+  <div class="mobile-section-header">
+    <h2 class="mobile-section-title">
+      {{ t('start_path_title', g.lang)|default('Начни свой путь к успеху') | safe }}
+    </h2>
+    <p class="mobile-section-subtitle">
+      {{ t('professional_platform', g.lang)|default('Профессиональная платформа для подготовки к экзаменам') }}
+    </p>
+  </div>
+  
+  <div class="mobile-features-grid">
+    <!-- Theory Card -->
+    <div class="mobile-feature-card">
+      <div class="mobile-feature-header">
+        <div class="mobile-feature-icon">
+          <i class="bi bi-lightbulb-fill"></i>
+        </div>
+        <h3 class="mobile-feature-title">{{ t('theory_title', g.lang)|default('Теория') }}</h3>
+      </div>
+      <p class="mobile-feature-description">
+        {{ t('theory_description', g.lang)|default('Структурированные модули по анатомии, физиологии и радиологии') }}
+      </p>
+      <div class="mobile-feature-tags">
+        <span class="mobile-tag">{{ t('anatomy', g.lang)|default('Анатомия') }}</span>
+        <span class="mobile-tag">{{ t('physiology', g.lang)|default('Физиология') }}</span>
+        <span class="mobile-tag">{{ t('radiology', g.lang)|default('Радиология') }}</span>
+      </div>
+    </div>
+    
+    <!-- Practice Card -->
+    <div class="mobile-feature-card">
+      <div class="mobile-feature-header">
+        <div class="mobile-feature-icon">
+          <i class="bi bi-chat-dots"></i>
+        </div>
+        <h3 class="mobile-feature-title">{{ t('practice_title', g.lang)|default('Практика') }}</h3>
+      </div>
+      <p class="mobile-feature-description">
+        {{ t('practice_description', g.lang)|default('Клинические случаи и симуляция работы с пациентами') }}
+      </p>
+      <div class="mobile-feature-tags">
+        <span class="mobile-tag">{{ t('case_studies', g.lang)|default('Клинические случаи') }}</span>
+        <span class="mobile-tag">{{ t('communication', g.lang)|default('Коммуникация') }}</span>
+        <span class="mobile-tag">{{ t('medical_dutch', g.lang)|default('Медицинский голландский') }}</span>
+      </div>
+    </div>
+    
+    <!-- Exam Card -->
+    <div class="mobile-feature-card">
+      <div class="mobile-feature-header">
+        <div class="mobile-feature-icon">
+          <i class="bi bi-award-fill"></i>
+        </div>
+        <h3 class="mobile-feature-title">{{ t('exam_title', g.lang)|default('Экзамен') }}</h3>
+      </div>
+      <p class="mobile-feature-description">
+        {{ t('exam_description', g.lang)|default('Подготовка к реальным экзаменам с анализом результатов') }}
+      </p>
+      <div class="mobile-feature-tags">
+        <span class="mobile-tag">{{ t('mock_exams', g.lang)|default('Пробные экзамены') }}</span>
+        <span class="mobile-tag">{{ t('analytics', g.lang)|default('Аналитика') }}</span>
+        <span class="mobile-tag">{{ t('strategy', g.lang)|default('Стратегия') }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# === BENEFITS SECTION === #}
+<section class="mobile-benefits-section">
+  <div class="mobile-section-header">
+    <h2 class="mobile-section-title">
+      {{ t('why_choose_us', g.lang)|default('Почему выбирают нас') | safe }}
+    </h2>
+    <p class="mobile-section-subtitle">
+      {{ t('comprehensive_approach', g.lang)|default('Комплексный подход к подготовке стоматологов') }}
+    </p>
+  </div>
+  
+  <div class="mobile-benefits-grid">
+    <div class="mobile-benefit-card">
+      <div class="mobile-benefit-icon">
+        <i class="bi bi-globe"></i>
+      </div>
+      <div class="mobile-benefit-content">
+        <h4>{{ t('multilingual_support', g.lang)|default('Многоязычность') }}</h4>
+        <p>{{ t('multilingual_description', g.lang)|default('Обучение на 8 языках для удобства студентов') }}</p>
+      </div>
+    </div>
+    
+    <div class="mobile-benefit-card">
+      <div class="mobile-benefit-icon">
+        <i class="bi bi-clock"></i>
+      </div>
+      <div class="mobile-benefit-content">
+        <h4>{{ t('flexible_schedule', g.lang)|default('Гибкий график') }}</h4>
+        <p>{{ t('flexible_description', g.lang)|default('Учитесь в удобное время в своем темпе') }}</p>
+      </div>
+    </div>
+    
+    <div class="mobile-benefit-card">
+      <div class="mobile-benefit-icon">
+        <i class="bi bi-shield-check"></i>
+      </div>
+      <div class="mobile-benefit-content">
+        <h4>{{ t('quality_assurance', g.lang)|default('Гарантия качества') }}</h4>
+        <p>{{ t('quality_description', g.lang)|default('Контент разработан экспертами в области стоматологии') }}</p>
+      </div>
+    </div>
+    
+    <div class="mobile-benefit-card">
+      <div class="mobile-benefit-icon">
+        <i class="bi bi-headset"></i>
+      </div>
+      <div class="mobile-benefit-content">
+        <h4>{{ t('support_247', g.lang)|default('Поддержка 24/7') }}</h4>
+        <p>{{ t('support_description', g.lang)|default('Круглосуточная поддержка пользователей') }}</p>
+      </div>
+    </div>
+    
+    <div class="mobile-benefit-card">
+      <div class="mobile-benefit-icon">
+        <i class="bi bi-journal-medical"></i>
+      </div>
+      <div class="mobile-benefit-content">
+        <h4>{{ t('structured_modules', g.lang)|default('Структурированные модули') }}</h4>
+        <p>{{ t('structured_modules_desc', g.lang)|default('Логически выстроенная программа обучения') }}</p>
+      </div>
+    </div>
+    
+    <div class="mobile-benefit-card">
+      <div class="mobile-benefit-icon">
+        <i class="bi bi-bar-chart-line"></i>
+      </div>
+      <div class="mobile-benefit-content">
+        <h4>{{ t('detailed_analytics', g.lang)|default('Подробная аналитика') }}</h4>
+        <p>{{ t('detailed_analytics_desc', g.lang)|default('Детальная статистика прогресса') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# === CALL TO ACTION SECTION === #}
+<section class="mobile-cta-section">
+  <h2 class="mobile-cta-title">
+    {{ t('ready_to_start', g.lang)|default('Готовы начать?') }}
+  </h2>
+  <p class="mobile-cta-description">
+    {{ t('join_thousands', g.lang)|default('Присоединяйтесь к студентам, которые готовятся к BIG экзамену с нашей платформой') }}
+  </p>
+  <div class="mobile-cta-buttons">
+    {% if not current_user.is_authenticated %}
+    <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="mobile-btn mobile-btn-cta-primary mobile-btn-large">
+      <i class="bi bi-rocket-takeoff"></i>
+      {{ t('start_now', g.lang)|default('Начать сейчас') }}
+    </a>
+    <a href="{{ url_for('main_bp.big_info', lang=g.lang) }}" class="mobile-btn mobile-btn-cta-secondary mobile-btn-large">
+      <i class="bi bi-info-circle"></i>
+      {{ t('learn_about_big', g.lang)|default('Узнать о BIG') }}
+    </a>
+    {% else %}
+    <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="mobile-btn mobile-btn-cta-primary mobile-btn-large">
+      <i class="bi bi-play-circle"></i>
+      {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
+    </a>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}
+
+{% block mobile_scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Плавная анимация появления карточек при скролле
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -20px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    // Анимируем карточки функций и преимуществ
+    const cards = document.querySelectorAll('.mobile-feature-card, .mobile-benefit-card');
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+        observer.observe(card);
+    });
+    
+    // Подсчёт статистики с анимацией
+    const stats = document.querySelectorAll('.mobile-stat-number');
+    stats.forEach(stat => {
+        const finalText = stat.textContent;
+        if (!isNaN(finalText)) {
+            const finalNumber = parseInt(finalText);
+            let currentNumber = 0;
+            const increment = finalNumber / 30;
+            
+            const counter = setInterval(() => {
+                currentNumber += increment;
+                if (currentNumber >= finalNumber) {
+                    stat.textContent = finalNumber;
+                    clearInterval(counter);
+                } else {
+                    stat.textContent = Math.floor(currentNumber);
+                }
+            }, 50);
+        }
+    });
+    
+    // Добавляем тактильную обратную связь для кнопок (если поддерживается)
+    if ('vibrate' in navigator) {
+        const buttons = document.querySelectorAll('.mobile-btn');
+        buttons.forEach(button => {
+            button.addEventListener('touchstart', () => {
+                navigator.vibrate(50);
+            });
+        });
+    }
+    
+    // Регистрация Service Worker только на мобильных устройствах
+    if ('serviceWorker' in navigator && window.innerWidth <= 768) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('SW registered: ', registration);
+                })
+                .catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+        });
+    }
+});
+</script>
+{% endblock %}
