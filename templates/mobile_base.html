@@ -5,272 +5,268 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   
+  <!-- SEO Meta Tags -->
+  <title>{% block title %}Dental Academy{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Professional dental training platform{% endblock %}">
+  <meta name="keywords" content="dental, training, education, BIG exam, Netherlands">
+  <meta name="author" content="Dental Academy">
+  
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#3ECDC1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Dental Academy">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/icon-192.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   
-  <title>{% block title %}Dental Academy{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Профессиональная подготовка стоматологов{% endblock %}">
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
   
-  <!-- Favicon -->
-  <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
+  <!-- Preload Critical Resources -->
+  <link rel="preload" href="{{ url_for('static', filename='css/mobile-app.css') }}" as="style">
+  <link rel="preload" href="{{ url_for('static', filename='js/mobile-app.js') }}" as="script">
   
-  <!-- Fonts optimized for mobile -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  
-  <!-- Core CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+  <!-- CSS Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-fixes.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
-  <!-- Page-specific styles -->
   {% block styles %}{% endblock %}
-  
-  <!-- Theme initialization -->
-  <script>
-    (function() {
-      const savedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
 </head>
-<body class="mobile-app">
 
-  <!-- Mobile App Container -->
-  <div class="mobile-app-container">
-    
-    <!-- Mobile Header -->
-    <header class="mobile-header">
-      <button class="mobile-header-action" id="mobile-back-btn" aria-label="Назад">
-        <i class="bi bi-arrow-left"></i>
-      </button>
-      
-      <h1 class="mobile-header-title">
-        {% block mobile_title %}Dental Academy{% endblock %}
-      </h1>
-      
-      <button class="mobile-header-action" id="mobile-menu-btn" aria-label="Меню">
-        <i class="bi bi-three-dots"></i>
-      </button>
-    </header>
-    
-    <!-- Mobile Content Area -->
-    <main class="mobile-content" id="mobile-main-content">
-      <!-- Mobile Flash Messages -->
-      <div id="mobile-flash-container" aria-live="polite" aria-atomic="true"></div>
-      
-      <!-- Page Content -->
-      {% block mobile_content %}{% endblock %}
-    </main>
-    
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav" aria-label="Главная навигация">
-      <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" 
-         class="mobile-nav-item {% if request.endpoint == 'learning_map_bp.learning_map' %}active{% endif %}"
-         aria-label="Обучение">
-        <i class="mobile-nav-icon bi bi-book"></i>
-        <span class="mobile-nav-label">{{ t('learning', g.lang)|default('Обучение') }}</span>
-      </a>
-      
-      <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=g.lang) }}" 
-         class="mobile-nav-item {% if request.endpoint == 'dashboard_bp.learning_dashboard' %}active{% endif %}"
-         aria-label="Прогресс">
-        <i class="mobile-nav-icon bi bi-graph-up"></i>
-        <span class="mobile-nav-label">{{ t('progress', g.lang)|default('Прогресс') }}</span>
-      </a>
-      
-      <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=g.lang) }}" 
-         class="mobile-nav-item {% if 'virtual_patient_bp' in request.endpoint %}active{% endif %}"
-         aria-label="Пациенты">
-        <i class="mobile-nav-icon bi bi-person-hearts"></i>
-        <span class="mobile-nav-label">{{ t('patients', g.lang)|default('Пациенты') }}</span>
-      </a>
-      
-      <a href="{{ url_for('tests_bp.test_dashboard', lang=g.lang) }}" 
-         class="mobile-nav-item {% if 'tests_bp' in request.endpoint %}active{% endif %}"
-         aria-label="Тесты">
-        <i class="mobile-nav-icon bi bi-clipboard-check"></i>
-        <span class="mobile-nav-label">{{ t('tests', g.lang)|default('Тесты') }}</span>
-        {% if user_has_pending_tests %}
-        <span class="mobile-nav-badge">!</span>
-        {% endif %}
-      </a>
-      
-      <a href="{{ url_for('main_bp.profile', lang=g.lang) }}" 
-         class="mobile-nav-item {% if request.endpoint == 'main_bp.profile' %}active{% endif %}"
-         aria-label="Профиль">
-        <i class="mobile-nav-icon bi bi-person-circle"></i>
-        <span class="mobile-nav-label">{{ t('profile', g.lang)|default('Профиль') }}</span>
-      </a>
-    </nav>
-  </div>
+<body data-theme="light" class="mobile-optimized">
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="mobile-sr-only">Skip to main content</a>
   
-  <!-- Mobile Modals and Overlays -->
-  <div id="mobile-modal-container"></div>
-  <div id="mobile-toast-container"></div>
-  
-  <!-- Mobile Menu Modal -->
-  <div class="mobile-modal-overlay" id="mobile-menu-modal" style="display: none;">
-    <div class="mobile-modal">
-      <div class="mobile-modal-header">
-        <h2 class="mobile-modal-title">Меню</h2>
-        <button class="mobile-modal-close" id="mobile-menu-close" aria-label="Закрыть меню">
-          <i class="bi bi-x"></i>
-        </button>
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <!-- Left Action -->
+    <div class="mobile-header-left">
+      {% block mobile_header_left %}
+      {% if current_user.is_authenticated %}
+      <button class="mobile-header-action" id="mobile-menu-toggle" aria-label="Open menu">
+        <i class="bi bi-list"></i>
+      </button>
+      {% else %}
+      <a href="{{ url_for('main_bp.index', lang=g.lang) }}" class="mobile-header-action" aria-label="Home">
+        <i class="bi bi-house"></i>
+      </a>
+      {% endif %}
+      {% endblock %}
+    </div>
+    
+    <!-- Title -->
+    <h1 class="mobile-header-title">
+      {% block mobile_title %}Dental Academy{% endblock %}
+    </h1>
+    
+    <!-- Right Actions -->
+    <div class="mobile-header-right">
+      {% block mobile_header_actions %}
+      <!-- Theme Toggle -->
+      <button class="mobile-header-action" id="mobile-theme-toggle" aria-label="Toggle theme">
+        <i class="bi bi-moon theme-icon"></i>
+      </button>
+      {% endblock %}
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content" class="mobile-content">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="mobile-flash-messages">
+      {% for category, message in messages %}
+      <div class="mobile-toast mobile-toast-{{ 'error' if category == 'danger' else category }} show">
+        <div class="mobile-toast-content">
+          <div class="mobile-toast-icon">
+            {% if category in ['success', 'info', 'warning', 'error', 'danger'] %}
+            <i class="bi bi-{% if category == 'success' %}check-circle{% elif category == 'info' %}info-circle{% elif category == 'warning' %}exclamation-triangle{% else %}x-circle{% endif %}"></i>
+            {% else %}
+            <i class="bi bi-info-circle"></i>
+            {% endif %}
+          </div>
+          <div class="mobile-toast-text">{{ message }}</div>
+        </div>
       </div>
-      <div class="mobile-modal-content">
-        <div class="mobile-menu-items">
-          
-          {% if current_user.is_authenticated %}
-          <div class="mobile-menu-section">
-            <h3 class="mobile-menu-section-title">Аккаунт</h3>
-            <a href="{{ url_for('main_bp.profile', lang=g.lang) }}" class="mobile-menu-item">
-              <i class="bi bi-person"></i>
-              <span>{{ t('profile', g.lang)|default('Профиль') }}</span>
-            </a>
-            <a href="{{ url_for('main_bp.settings', lang=g.lang) }}" class="mobile-menu-item">
-              <i class="bi bi-gear"></i>
-              <span>{{ t('settings', g.lang)|default('Настройки') }}</span>
-            </a>
-            <button class="mobile-menu-item" id="mobile-theme-toggle">
-              <i class="bi bi-moon theme-icon"></i>
-              <span class="theme-text">{{ t('dark_theme', g.lang)|default('Темная тема') }}</span>
-            </button>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    
+    <!-- Page Content -->
+    {% block mobile_content %}
+    <div class="mobile-loading">
+      <div class="mobile-spinner"></div>
+      Loading...
+    </div>
+    {% endblock %}
+  </main>
+
+  <!-- Mobile Navigation (Bottom) -->
+  {% if current_user.is_authenticated %}
+  <nav class="mobile-bottom-nav" aria-label="Main navigation">
+    <a href="{{ url_for('main_bp.index', lang=g.lang) }}" class="mobile-nav-item" aria-label="Home">
+      <i class="mobile-nav-icon bi bi-house"></i>
+      <span class="mobile-nav-label">{{ t('home', g.lang)|default('Home') }}</span>
+    </a>
+    
+    <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="mobile-nav-item active" aria-label="Learning">
+      <i class="mobile-nav-icon bi bi-book"></i>
+      <span class="mobile-nav-label">{{ t('learn', g.lang)|default('Learn') }}</span>
+    </a>
+    
+    <a href="{{ url_for('tests_bp.setup_test', lang=g.lang) }}" class="mobile-nav-item" aria-label="Tests">
+      <i class="mobile-nav-icon bi bi-clipboard-check"></i>
+      <span class="mobile-nav-label">{{ t('tests', g.lang)|default('Tests') }}</span>
+      {% if has_pending_tests %}
+      <span class="mobile-nav-badge">!</span>
+      {% endif %}
+    </a>
+    
+    <a href="{{ url_for('main_bp.profile', lang=g.lang) }}" class="mobile-nav-item" aria-label="Profile">
+      <i class="mobile-nav-icon bi bi-person"></i>
+      <span class="mobile-nav-label">{{ t('profile', g.lang)|default('Profile') }}</span>
+    </a>
+  </nav>
+  {% endif %}
+
+  <!-- Mobile Side Menu Overlay -->
+  {% if current_user.is_authenticated %}
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay">
+    <div class="mobile-menu">
+      <div class="mobile-menu-header">
+        <div class="mobile-menu-user">
+          <div class="mobile-menu-avatar">
+            {% if current_user.avatar %}
+            <img src="{{ current_user.avatar }}" alt="Avatar">
+            {% else %}
+            <i class="bi bi-person-circle"></i>
+            {% endif %}
           </div>
-          
-          <div class="mobile-menu-section">
-            <h3 class="mobile-menu-section-title">Помощь</h3>
-            <a href="{{ url_for('main_bp.help', lang=g.lang) }}" class="mobile-menu-item">
-              <i class="bi bi-question-circle"></i>
-              <span>{{ t('help', g.lang)|default('Помощь') }}</span>
-            </a>
-            <a href="{{ url_for('main_bp.contact', lang=g.lang) }}" class="mobile-menu-item">
-              <i class="bi bi-envelope"></i>
-              <span>{{ t('contact', g.lang)|default('Контакты') }}</span>
-            </a>
-          </div>
-          
-          <div class="mobile-menu-section">
-            <a href="{{ url_for('auth_bp.logout', lang=g.lang) }}" class="mobile-menu-item mobile-menu-danger">
-              <i class="bi bi-box-arrow-right"></i>
-              <span>{{ t('logout', g.lang)|default('Выйти') }}</span>
-            </a>
-          </div>
-          
-          {% else %}
-          
-          <div class="mobile-menu-section">
-            <a href="{{ url_for('auth_bp.login', lang=g.lang) }}" class="mobile-menu-item">
-              <i class="bi bi-box-arrow-in-right"></i>
-              <span>{{ t('login', g.lang)|default('Вход') }}</span>
-            </a>
-            <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="mobile-menu-item">
-              <i class="bi bi-person-plus"></i>
-              <span>{{ t('register', g.lang)|default('Регистрация') }}</span>
-            </a>
-          </div>
-          
-          {% endif %}
-          
-          <div class="mobile-menu-section">
-            <h3 class="mobile-menu-section-title">Язык</h3>
-            <div class="mobile-language-selector">
-              <select id="mobile-language-select" class="mobile-select">
-                <option value="en" {% if g.lang == 'en' %}selected{% endif %}>🇺🇸 English</option>
-                <option value="ru" {% if g.lang == 'ru' %}selected{% endif %}>🇷🇺 Русский</option>
-                <option value="nl" {% if g.lang == 'nl' %}selected{% endif %}>🇳🇱 Nederlands</option>
-                <option value="uk" {% if g.lang == 'uk' %}selected{% endif %}>🇺🇦 Українська</option>
-                <option value="es" {% if g.lang == 'es' %}selected{% endif %}>🇪🇸 Español</option>
-                <option value="pt" {% if g.lang == 'pt' %}selected{% endif %}>🇵🇹 Português</option>
-                <option value="tr" {% if g.lang == 'tr' %}selected{% endif %}>🇹🇷 Türkçe</option>
-                <option value="fa" {% if g.lang == 'fa' %}selected{% endif %}>🇮🇷 فارسی</option>
-              </select>
-            </div>
+          <div class="mobile-menu-user-info">
+            <div class="mobile-menu-username">{{ current_user.username or current_user.email }}</div>
+            <div class="mobile-menu-email">{{ current_user.email }}</div>
           </div>
         </div>
+        <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      
+      <div class="mobile-menu-content">
+        <!-- Learning Section -->
+        <div class="mobile-menu-section">
+          <div class="mobile-menu-section-title">{{ t('learning', g.lang)|default('Learning') }}</div>
+          <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-map"></i>
+            <span>{{ t('learning_map', g.lang)|default('Learning Map') }}</span>
+          </a>
+          <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-speedometer2"></i>
+            <span>{{ t('dashboard', g.lang)|default('Dashboard') }}</span>
+          </a>
+          <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-person-hearts"></i>
+            <span>{{ t('virtual_patients', g.lang)|default('Virtual Patients') }}</span>
+          </a>
+        </div>
+        
+        <!-- Tests Section -->
+        <div class="mobile-menu-section">
+          <div class="mobile-menu-section-title">{{ t('testing', g.lang)|default('Testing') }}</div>
+          <a href="{{ url_for('tests_bp.setup_test', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-clipboard-check"></i>
+            <span>{{ t('practice_tests', g.lang)|default('Practice Tests') }}</span>
+          </a>
+          <a href="{{ url_for('main_bp.learn', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-bar-chart"></i>
+            <span>{{ t('learn_more', g.lang)|default('Learn More') }}</span>
+          </a>
+        </div>
+        
+        <div class="mobile-menu-section">
+          <div class="mobile-menu-section-title">{{ t('account', g.lang)|default('Account') }}</div>
+          <a href="{{ url_for('main_bp.profile', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-person"></i>
+            <span>{{ t('profile', g.lang)|default('Profile') }}</span>
+          </a>
+          <a href="{{ url_for('main_bp.big_info', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-info-circle"></i>
+            <span>{{ t('about_big', g.lang)|default('About BIG') }}</span>
+          </a>
+          <button class="mobile-menu-item theme-toggle-inline" id="mobile-theme-toggle-menu">
+            <i class="bi bi-moon theme-icon"></i>
+            <span class="theme-text">{{ t('dark_theme', g.lang)|default('Dark Theme') }}</span>
+          </button>
+        </div>
+        
+        <!-- Support Section -->
+        <div class="mobile-menu-section">
+          <div class="mobile-menu-section-title">{{ t('support', g.lang)|default('Support') }}</div>
+          <a href="{{ url_for('main_bp.demo', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-play-circle"></i>
+            <span>{{ t('demo', g.lang)|default('Demo') }}</span>
+          </a>
+          <a href="{{ url_for('main_bp.subscribe', lang=g.lang) }}" class="mobile-menu-item">
+            <i class="bi bi-envelope-heart"></i>
+            <span>{{ t('subscribe', g.lang)|default('Subscribe') }}</span>
+          </a>
+        </div>
+      </div>
+      
+      <div class="mobile-menu-footer">
+        <a href="{{ url_for('auth_bp.logout', lang=g.lang) }}" class="mobile-menu-item mobile-menu-logout">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>{{ t('logout', g.lang)|default('Logout') }}</span>
+        </a>
       </div>
     </div>
   </div>
-  
-  <!-- Core JavaScript -->
+  {% endif %}
+
+  <!-- Loading Overlay -->
+  <div class="mobile-loading-overlay" id="mobile-loading" style="display: none;">
+    <div class="mobile-loading">
+      <div class="mobile-spinner"></div>
+      <div class="mobile-loading-text">{{ t('loading', g.lang)|default('Loading...') }}</div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="{{ url_for('static', filename='js/mobile-app.js') }}"></script>
   
-  <!-- Page-specific scripts -->
-  {% block mobile_scripts %}{% endblock %}
+  {% block mobile_scripts %}
+  <script>
+  // Initialize mobile app
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof MobileApp !== 'undefined') {
+      window.mobileApp = new MobileApp();
+    }
+    
+    // Auto-hide flash messages
+    setTimeout(() => {
+      const toasts = document.querySelectorAll('.mobile-toast');
+      toasts.forEach(toast => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      });
+    }, 5000);
+  });
+  </script>
+  {% endblock %}
 
-  <style>
-  /* Mobile Menu Styles */
-  .mobile-menu-items {
-    padding: 8px 0;
+  <!-- Service Worker Registration -->
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => console.log('SW registered:', registration))
+        .catch(error => console.log('SW registration failed:', error));
+    });
   }
-  
-  .mobile-menu-section {
-    margin-bottom: 24px;
-  }
-  
-  .mobile-menu-section:last-child {
-    margin-bottom: 0;
-  }
-  
-  .mobile-menu-section-title {
-    font-size: var(--mobile-text-sm);
-    font-weight: 600;
-    color: var(--mobile-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 8px 0;
-    padding: 0 4px;
-  }
-  
-  .mobile-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 4px;
-    border-radius: 12px;
-    color: var(--mobile-text-primary);
-    text-decoration: none;
-    transition: all var(--mobile-transition-fast);
-    border: none;
-    background: none;
-    width: 100%;
-    font-size: var(--mobile-text-base);
-    cursor: pointer;
-  }
-  
-  .mobile-menu-item:hover,
-  .mobile-menu-item:active {
-    background: var(--mobile-bg-secondary);
-    color: var(--mobile-text-primary);
-  }
-  
-  .mobile-menu-item i {
-    font-size: 20px;
-    width: 20px;
-    color: var(--mobile-text-secondary);
-  }
-  
-  .mobile-menu-danger {
-    color: #dc2626;
-  }
-  
-  .mobile-menu-danger i {
-    color: #dc2626;
-  }
-  
-  .mobile-language-selector {
-    padding: 0 4px;
-  }
-  </style>
-
+  </script>
 </body>
 </html>

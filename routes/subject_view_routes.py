@@ -141,41 +141,45 @@ def get_virtual_patients_for_subject(subject_object, user_id):
         current_app.logger.error(f"Ошибка в get_virtual_patients_for_subject для предмета ID {subject_object.id if subject_object else 'N/A'}: {e}", exc_info=True)
         return []
 
-# МАРШРУТ view_subject ИЗ ФРАГМЕНТА 2, ОБНОВЛЕННЫЙ ЛОГИКОЙ ИЗ ФРАГМЕНТА 1
+
 @subject_view_bp.route("/<int:subject_id>")
 @login_required
-def view_subject(lang, subject_id): # subject_id=None убрано, т.к. он обязателен для этого маршрута
+def view_subject(lang, subject_id):
     """Отображает страницу просмотра предмета с его модулями и виртуальными пациентами."""
     current_lang = g.lang
-    
+
+    def is_mobile_request():
+        user_agent = request.headers.get("User-Agent", "").lower()
+        return any(keyword in user_agent for keyword in ['iphone', 'android', 'mobile'])
+
     try:
         learning_paths = LearningPath.query.order_by(LearningPath.order).all()
         content_categories = ContentCategory.query.order_by(ContentCategory.order).all()
-        
+
         selected_subject = Subject.query.get_or_404(subject_id)
         subject_modules = Module.query.filter_by(subject_id=subject_id).order_by(Module.order).all()
-        
+
         for module in subject_modules:
             module_stats = get_module_stats(module.id, current_user.id)
             module.progress = module_stats.get("progress", 0)
             module.completed_lessons = module_stats.get("completed_lessons", 0)
             module.total_lessons = module_stats.get("total_lessons", 0)
-        
-        # ИНТЕГРАЦИЯ: Загружаем виртуальных пациентов
+
         virtual_patients = get_virtual_patients_for_subject(selected_subject, current_user.id)
-        
         stats = get_user_stats(current_user.id)
-        recommendations = get_user_recommendations(current_user.id) # Используем реализацию ниже
-        random_fact = get_random_fact(g.lang) # Используем реализацию ниже
-        
+        recommendations = get_user_recommendations(current_user.id)
+        random_fact = get_random_fact(g.lang)
+
+        template = "learning/subject_view_mobile.html" if is_mobile_request() else "learning/subject_view.html"
+
         return render_template(
-            "learning/subject_view.html",
-            title=selected_subject.name, # selected_subject точно будет из-за get_or_404
+            template,
+            title=selected_subject.name,
             learning_paths=learning_paths,
             content_categories=content_categories,
             selected_subject=selected_subject,
             subject_modules=subject_modules,
-            virtual_patients=virtual_patients,  # Передаем виртуальных пациентов
+            virtual_patients=virtual_patients,
             subjects=Subject.query.all(),
             user=current_user,
             has_subscription=current_user.has_subscription,
@@ -183,10 +187,11 @@ def view_subject(lang, subject_id): # subject_id=None убрано, т.к. он 
             recommendations=recommendations,
             random_fact=random_fact
         )
+
     except Exception as e:
         current_app.logger.error(f"Ошибка в view_subject (ID: {subject_id}): {e}", exc_info=True)
         flash(t("error_occurred_loading_data") + ": " + str(e), "danger")
-        return redirect(url_for('main_bp.index', lang=current_lang)) # Измените на подходящий fallback маршрут
+        return redirect(url_for('main_bp.index', lang=current_lang))
 
 # НОВЫЙ РОУТ ИЗ ФРАГМЕНТА 1
 @subject_view_bp.route("/virtual-patients") # Будет доступен по /<lang>/learning-map/subject/virtual-patients
