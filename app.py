@@ -267,7 +267,12 @@ def clear_imported_content():
 
 def create_app(test_config=None):
     """Создает и настраивает приложение Flask."""
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(
+        __name__,
+        static_folder="static",
+        static_url_path="/static",
+        instance_relative_config=True
+    )
     
     # Загрузка конфигурации
     if test_config is None:
