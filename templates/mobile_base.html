@@ -105,9 +105,10 @@
     {% endblock %}
   </main>
 
-  <!-- Mobile Navigation (Bottom) -->
-  {% if current_user.is_authenticated %}
+  <!-- Mobile Navigation (Bottom) - ПОКАЗЫВАЕМ ДЛЯ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ -->
   <nav class="mobile-bottom-nav" aria-label="Main navigation">
+    {% if current_user.is_authenticated %}
+    <!-- Навигация для авторизованных пользователей -->
     <a href="{{ url_for('main_bp.index', lang=g.lang) }}" class="mobile-nav-item" aria-label="Home">
       <i class="mobile-nav-icon bi bi-house"></i>
       <span class="mobile-nav-label">{{ t('home', g.lang)|default('Home') }}</span>
@@ -130,10 +131,32 @@
       <i class="mobile-nav-icon bi bi-person"></i>
       <span class="mobile-nav-label">{{ t('profile', g.lang)|default('Profile') }}</span>
     </a>
+    
+    {% else %}
+    <!-- Навигация для НЕавторизованных пользователей -->
+    <a href="{{ url_for('main_bp.index', lang=g.lang) }}" class="mobile-nav-item active" aria-label="Home">
+      <i class="mobile-nav-icon bi bi-house-fill"></i>
+      <span class="mobile-nav-label">{{ t('home', g.lang)|default('Home') }}</span>
+    </a>
+    
+    <a href="{{ url_for('main_bp.big_info', lang=g.lang) }}" class="mobile-nav-item" aria-label="BIG Info">
+      <i class="mobile-nav-icon bi bi-info-circle"></i>
+      <span class="mobile-nav-label">{{ t('info', g.lang)|default('BIG Info') }}</span>
+    </a>
+    
+    <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="mobile-nav-item" aria-label="Register">
+      <i class="mobile-nav-icon bi bi-person-plus"></i>
+      <span class="mobile-nav-label">{{ t('register', g.lang)|default('Sign Up') }}</span>
+    </a>
+    
+    <a href="{{ url_for('auth_bp.login', lang=g.lang) }}" class="mobile-nav-item" aria-label="Login">
+      <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+      <span class="mobile-nav-label">{{ t('login', g.lang)|default('Login') }}</span>
+    </a>
+    {% endif %}
   </nav>
-  {% endif %}
 
-  <!-- Mobile Side Menu Overlay -->
+  <!-- Mobile Side Menu Overlay - ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ -->
   {% if current_user.is_authenticated %}
   <div class="mobile-menu-overlay" id="mobile-menu-overlay">
     <div class="mobile-menu">
