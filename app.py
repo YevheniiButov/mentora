@@ -1,10 +1,11 @@
 # app.py
 
 import os
+import time
 import json
 import logging
 from datetime import datetime, timedelta
-from flask import Flask, render_template, redirect, url_for, g, request, session, jsonify
+from flask import Flask, flash, render_template, redirect, url_for, g, request, session, jsonify
 from flask_login import current_user
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
@@ -13,6 +14,7 @@ from translations import get_translation
 from utils.subtopics import create_slug, update_lesson_subtopics, reorder_subtopic_lessons
 from mobile_integration import init_mobile_integration
 from utils.mobile_helpers import init_mobile_helpers
+from flask import send_from_directory, Response
 
 # Import extensions
 from extensions import db, login_manager, bcrypt, babel, cache
@@ -945,6 +947,333 @@ def inject_gamification_data():
         get_user_xp=get_user_xp,
         get_user_progress_to_next_level=get_user_progress_to_next_level
     )
+# ===== SERVICE WORKER =====
+@app.route('/sw.js')
+def service_worker():
+    """Serve the Service Worker with proper headers"""
+    try:
+        # Try to serve the actual file
+        response = app.send_static_file('sw.js')
+        
+        # Set proper headers for Service Worker
+        response.headers['Content-Type'] = 'application/javascript'
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        response.headers['Service-Worker-Allowed'] = '/'
+        
+        return response
+    except Exception as e:
+        # Log error but still serve
+        app.logger.warning(f"Service Worker file not found: {e}")
+        
+        # Return a minimal working Service Worker
+        sw_content = '''
+// Minimal Service Worker for Dental Academy
+console.log('Service Worker: Loaded');
+
+self.addEventListener('install', function(event) {
+    console.log('Service Worker: Installing...');
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+    console.log('Service Worker: Activating...');
+    event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', function(event) {
+    // Let the browser handle all fetch requests
+    return;
+});
+        '''
+        
+        response = Response(sw_content, mimetype='application/javascript')
+        response.headers['Cache-Control'] = 'no-cache'
+        response.headers['Service-Worker-Allowed'] = '/'
+        
+        return response
+
+# ===== PWA MANIFEST =====
+@app.route('/manifest.json')
+def pwa_manifest():
+    """Serve the PWA manifest with proper headers"""
+    try:
+        # Try to serve the actual file
+        response = app.send_static_file('manifest.json')
+        
+        # Set proper headers for manifest
+        response.headers['Content-Type'] = 'application/manifest+json'
+        response.headers['Cache-Control'] = 'public, max-age=86400'  # Cache for 1 day
+        
+        return response
+    except Exception as e:
+        app.logger.warning(f"Manifest file not found: {e}")
+        
+        # Return a minimal working manifest
+        manifest_data = {
+            "name": "Dental Academy - Professional Training Platform",
+            "short_name": "Dental Academy",
+            "description": "Complete preparation for BIG dental examination in Netherlands",
+            "start_url": "/",
+            "scope": "/",
+            "display": "standalone",
+            "orientation": "portrait-primary",
+            "theme_color": "#3ECDC1",
+            "background_color": "#ffffff",
+            "lang": "en",
+            "icons": [
+                {
+                    "src": "/static/images/icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": "/static/images/icon-512.png", 
+                    "sizes": "512x512",
+                    "type": "image/png",
+                    "purpose": "any maskable"
+                }
+            ],
+            "categories": ["education", "medical", "training"],
+            "shortcuts": [
+                {
+                    "name": "Learning Map",
+                    "url": "/learning-map",
+                    "icons": [{"src": "/static/images/icon-192.png", "sizes": "192x192"}]
+                },
+                {
+                    "name": "Practice Tests", 
+                    "url": "/tests",
+                    "icons": [{"src": "/static/images/icon-192.png", "sizes": "192x192"}]
+                }
+            ]
+        }
+        
+        response = jsonify(manifest_data)
+        response.headers['Content-Type'] = 'application/manifest+json'
+        response.headers['Cache-Control'] = 'public, max-age=86400'
+        
+        return response
+
+# ===== OFFLINE PAGE =====
+@app.route('/offline')
+def offline_page():
+    """Serve offline fallback page"""
+    try:
+        # Try to serve offline.html if it exists
+        return render_template('offline.html')
+    except:
+        # Return a simple offline page
+        offline_html = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Academy - Offline</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: #374151;
+            padding: 1rem;
+        }
+        .offline-container {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 480px;
+            width: 100%;
+        }
+        .offline-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+        .offline-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #111827;
+        }
+        .offline-message {
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+        .retry-btn {
+            background: linear-gradient(135deg, #3ECDC1, #2BB6AC);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(62, 205, 193, 0.3);
+        }
+        .connection-status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #ef4444;
+        }
+        .status-indicator.online {
+            background: #10b981;
+        }
+        @media (max-width: 480px) {
+            .offline-container {
+                padding: 2rem 1.5rem;
+            }
+            .offline-title {
+                font-size: 1.5rem;
+            }
+            .offline-icon {
+                font-size: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📱</div>
+        <h1 class="offline-title">You're Offline</h1>
+        <p class="offline-message">
+            No internet connection detected. Some features may not be available, 
+            but you can still access cached content.
+        </p>
+        <a href="/" class="retry-btn" onclick="window.location.reload(); return false;">
+            🔄 Try Again
+        </a>
+        
+        <div class="connection-status">
+            <span class="status-indicator" id="connection-indicator"></span>
+            <span id="connection-text">Checking connection...</span>
+        </div>
+    </div>
+    
+    <script>
+        // Check online status
+        function updateConnectionStatus() {
+            const indicator = document.getElementById('connection-indicator');
+            const text = document.getElementById('connection-text');
+            
+            if (navigator.onLine) {
+                indicator.classList.add('online');
+                text.textContent = 'Connection restored! Click "Try Again" to reload.';
+            } else {
+                indicator.classList.remove('online');
+                text.textContent = 'Still offline. Please check your internet connection.';
+            }
+        }
+        
+        // Listen for connection changes
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Initial check
+        updateConnectionStatus();
+        
+        // Auto-reload when back online
+        window.addEventListener('online', () => {
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+        '''
+        
+        return Response(offline_html, mimetype='text/html')
+
+# ===== PWA INSTALL BANNER API =====
+@app.route('/api/pwa/install-status')
+def pwa_install_status():
+    """Check if PWA is installed (for analytics)"""
+    user_agent = request.headers.get('User-Agent', '')
+    
+    return jsonify({
+        'pwa_capable': True,
+        'installation_prompt_shown': False,  # Track this in session/db
+        'user_agent': user_agent,
+        'timestamp': int(time.time())
+    })
+
+# ===== ICON FALLBACKS =====
+@app.route('/static/images/icon-<int:size>.png')
+def serve_icon_fallback(size):
+    """Serve icon fallbacks if specific sizes don't exist"""
+    try:
+        # Try to serve the actual file
+        return send_from_directory('static/images', f'icon-{size}.png')
+    except:
+        # Return a simple SVG icon as fallback
+        svg_icon = f'''
+<svg width="{size}" height="{size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" rx="20" fill="#3ECDC1"/>
+    <text x="50" y="55" text-anchor="middle" fill="white" font-family="sans-serif" font-size="24" font-weight="bold">DA</text>
+    <circle cx="30" cy="75" r="3" fill="white" opacity="0.8"/>
+    <circle cx="50" cy="75" r="3" fill="white" opacity="0.8"/>
+    <circle cx="70" cy="75" r="3" fill="white" opacity="0.8"/>
+</svg>
+        '''
+        
+        response = Response(svg_icon, mimetype='image/svg+xml')
+        response.headers['Cache-Control'] = 'public, max-age=86400'
+        
+        return response
+
+# ===== PWA SHARE TARGET (если нужно) =====
+@app.route('/share-target', methods=['POST'])
+def pwa_share_target():
+    """Handle shared content from other apps"""
+    try:
+        title = request.form.get('title', '')
+        text = request.form.get('text', '')
+        url = request.form.get('url', '')
+        
+        # Handle shared files
+        files = request.files.getlist('files')
+        
+        # Process shared content
+        # You can save to database, redirect to appropriate page, etc.
+        
+        flash(f'Shared content received: {title}', 'success')
+        return redirect(url_for('main_bp.index'))
+        
+    except Exception as e:
+        app.logger.error(f"Share target error: {e}")
+        flash('Error processing shared content', 'error')
+        return redirect(url_for('main_bp.index'))
+
+
 if __name__ == '__main__':
     # Дополнительная отладочная информация при запуске
     print("\n" + "="*50)

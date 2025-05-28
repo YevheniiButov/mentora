@@ -10,6 +10,7 @@ class MobileApp {
         this.touchStartY = 0;
         this.touchStartX = 0;
         this.isScrolling = false;
+        this.deferredPrompt = null; // ✅ ИСПРАВЛЕНО: Перенесено в класс
         
         this.init();
     }
@@ -49,8 +50,14 @@ class MobileApp {
         
         // Theme toggle handlers
         const themeToggle = document.getElementById('mobile-theme-toggle');
+        const themeToggleMenu = document.getElementById('mobile-theme-toggle-menu'); // ✅ ДОБАВЛЕНО
+        
         if (themeToggle) {
             themeToggle.addEventListener('click', () => this.toggleTheme());
+        }
+        
+        if (themeToggleMenu) { // ✅ ДОБАВЛЕНО
+            themeToggleMenu.addEventListener('click', () => this.toggleTheme());
         }
         
         // Listen for system theme changes
@@ -80,18 +87,26 @@ class MobileApp {
         document.body.classList.add(`theme-${theme}`);
         
         // Update theme icon
-        const themeIcon = document.querySelector('.theme-icon');
-        const themeText = document.querySelector('.theme-text');
+        const themeIcons = document.querySelectorAll('.theme-icon'); // ✅ ИСПРАВЛЕНО: Все иконки
+        const themeTexts = document.querySelectorAll('.theme-text'); // ✅ ИСПРАВЛЕНО: Все тексты
         
-        if (themeIcon && themeText) {
+        themeIcons.forEach(themeIcon => {
             if (theme === 'dark') {
                 themeIcon.className = 'bi bi-sun theme-icon';
-                themeText.textContent = 'Светлая тема';
             } else {
                 themeIcon.className = 'bi bi-moon theme-icon';
-                themeText.textContent = 'Темная тема';
             }
-        }
+        });
+        
+        themeTexts.forEach(themeText => {
+            if (themeText) {
+                if (theme === 'dark') {
+                    themeText.textContent = 'Светлая тема';
+                } else {
+                    themeText.textContent = 'Темная тема';
+                }
+            }
+        });
         
         // Update meta theme-color for browser
         const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -108,8 +123,8 @@ class MobileApp {
             backBtn.addEventListener('click', () => this.handleBackNavigation());
         }
         
-        // Menu button
-        const menuBtn = document.getElementById('mobile-menu-btn');
+        // Menu button - ИСПРАВЛЕНО: Правильные ID
+        const menuBtn = document.getElementById('mobile-menu-toggle');
         if (menuBtn) {
             menuBtn.addEventListener('click', () => this.toggleMenu());
         }
@@ -120,8 +135,8 @@ class MobileApp {
             menuClose.addEventListener('click', () => this.closeMenu());
         }
         
-        // Menu overlay
-        const menuOverlay = document.getElementById('mobile-menu-modal');
+        // Menu overlay - ИСПРАВЛЕНО: Правильный ID
+        const menuOverlay = document.getElementById('mobile-menu-overlay');
         if (menuOverlay) {
             menuOverlay.addEventListener('click', (e) => {
                 if (e.target === menuOverlay) {
@@ -153,7 +168,7 @@ class MobileApp {
     }
     
     toggleMenu() {
-        const menuModal = document.getElementById('mobile-menu-modal');
+        const menuModal = document.getElementById('mobile-menu-overlay'); // ✅ ИСПРАВЛЕНО
         if (menuModal) {
             if (this.isMenuOpen) {
                 this.closeMenu();
@@ -164,11 +179,14 @@ class MobileApp {
     }
     
     openMenu() {
-        const menuModal = document.getElementById('mobile-menu-modal');
+        const menuModal = document.getElementById('mobile-menu-overlay'); // ✅ ИСПРАВЛЕНО
         if (menuModal) {
             menuModal.style.display = 'flex';
             requestAnimationFrame(() => {
-                menuModal.querySelector('.mobile-modal').classList.add('show');
+                const modal = menuModal.querySelector('.mobile-menu'); // ✅ ИСПРАВЛЕНО
+                if (modal) {
+                    modal.classList.add('show');
+                }
             });
             this.isMenuOpen = true;
             
@@ -184,10 +202,12 @@ class MobileApp {
     }
     
     closeMenu() {
-        const menuModal = document.getElementById('mobile-menu-modal');
+        const menuModal = document.getElementById('mobile-menu-overlay'); // ✅ ИСПРАВЛЕНО
         if (menuModal) {
-            const modal = menuModal.querySelector('.mobile-modal');
-            modal.classList.remove('show');
+            const modal = menuModal.querySelector('.mobile-menu'); // ✅ ИСПРАВЛЕНО
+            if (modal) {
+                modal.classList.remove('show');
+            }
             
             setTimeout(() => {
                 menuModal.style.display = 'none';
@@ -290,7 +310,7 @@ class MobileApp {
         let isPulling = false;
         const pullThreshold = 100;
         
-        const content = document.getElementById('mobile-main-content');
+        const content = document.getElementById('main-content'); // ✅ ИСПРАВЛЕНО
         if (!content) return;
         
         content.addEventListener('touchstart', (e) => {
@@ -312,8 +332,8 @@ class MobileApp {
             }
         }, { passive: true });
         
-        content.addEventListener('touchend', () => {
-            if (isPulling && (startY - event.changedTouches[0].clientY) < -pullThreshold) {
+        content.addEventListener('touchend', (e) => {
+            if (isPulling && startY && (e.changedTouches[0].clientY - startY) > pullThreshold) { // ✅ ИСПРАВЛЕНО
                 // Trigger refresh
                 this.refreshPage();
             }
@@ -340,24 +360,24 @@ class MobileApp {
         });
     }
     
-    // ===== PWA FEATURES =====
+    // ===== PWA FEATURES ===== ✅ ИСПРАВЛЕНО: Безопасная регистрация SW
     setupPWA() {
-        // Service Worker registration
+        // Service Worker registration - БЕЗОПАСНАЯ ВЕРСИЯ
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')
                 .then(registration => {
-                    console.log('SW registered:', registration);
+                    console.log('✅ SW registered:', registration);
                 })
                 .catch(error => {
-                    console.log('SW registration failed:', error);
+                    console.log('⚠️ SW registration failed (это нормально):', error);
+                    // Не показываем ошибку пользователю, это нормально
                 });
         }
         
-        // Install prompt
-        let deferredPrompt;
+        // Install prompt - ✅ ИСПРАВЛЕНО: Используем this.deferredPrompt
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            deferredPrompt = e;
+            this.deferredPrompt = e; // ✅ ИСПРАВЛЕНО: Сохраняем в свойство класса
             this.showInstallPrompt();
         });
         
@@ -386,13 +406,13 @@ class MobileApp {
         
         document.body.appendChild(installBanner);
         
-        // Handle install
+        // Handle install - ✅ ИСПРАВЛЕНО: Используем this.deferredPrompt
         document.getElementById('install-btn').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const result = await deferredPrompt.userChoice;
+            if (this.deferredPrompt) {
+                this.deferredPrompt.prompt();
+                const result = await this.deferredPrompt.userChoice;
                 console.log('Install result:', result);
-                deferredPrompt = null;
+                this.deferredPrompt = null;
             }
             installBanner.remove();
         });
@@ -419,7 +439,7 @@ class MobileApp {
     }
     
     setupFocusTraps() {
-        const modals = document.querySelectorAll('.mobile-modal');
+        const modals = document.querySelectorAll('.mobile-modal, .mobile-menu'); // ✅ ИСПРАВЛЕНО
         
         modals.forEach(modal => {
             modal.addEventListener('keydown', (e) => {
@@ -602,8 +622,10 @@ class MobileApp {
     }
     
     processServerFlashMessages() {
-        const serverMessages = document.querySelectorAll('.alert');
+        const serverMessages = document.querySelectorAll('.alert, .mobile-toast'); // ✅ ИСПРАВЛЕНО
         serverMessages.forEach(message => {
+            if (message.classList.contains('mobile-toast')) return; // Пропускаем наши тосты
+            
             const type = this.getMessageType(message.className);
             const text = message.querySelector('.flash-text')?.textContent || message.textContent;
             
@@ -625,16 +647,40 @@ class MobileApp {
         if (!document.getElementById('mobile-toast-container')) {
             const container = document.createElement('div');
             container.id = 'mobile-toast-container';
+            container.style.cssText = `
+                position: fixed;
+                top: 80px;
+                left: 16px;
+                right: 16px;
+                z-index: 10000;
+                pointer-events: none;
+            `;
             document.body.appendChild(container);
         }
     }
     
     showToast(message, type = 'info', duration = 4000) {
         const container = document.getElementById('mobile-toast-container');
-        if (!container) return;
+        if (!container) {
+            this.createFlashMessageContainer();
+            return this.showToast(message, type, duration);
+        }
         
         const toast = document.createElement('div');
         toast.className = `mobile-toast mobile-toast-${type}`;
+        toast.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        `;
         
         const icons = {
             success: 'bi-check-circle-fill',
@@ -643,12 +689,19 @@ class MobileApp {
             info: 'bi-info-circle-fill'
         };
         
+        const colors = {
+            success: '#10b981',
+            error: '#ef4444',
+            warning: '#f59e0b',
+            info: '#3b82f6'
+        };
+        
         toast.innerHTML = `
-            <div class="mobile-toast-content">
-                <div class="mobile-toast-icon">
-                    <i class="${icons[type]}"></i>
-                </div>
-                <div class="mobile-toast-text">${message}</div>
+            <div style="color: ${colors[type]}; font-size: 20px;">
+                <i class="${icons[type]}"></i>
+            </div>
+            <div style="flex: 1; color: #374151; font-size: 14px; line-height: 1.4;">
+                ${message}
             </div>
         `;
         
@@ -656,12 +709,12 @@ class MobileApp {
         
         // Show toast
         requestAnimationFrame(() => {
-            toast.classList.add('show');
+            toast.style.transform = 'translateX(0)';
         });
         
         // Auto hide
         setTimeout(() => {
-            toast.classList.remove('show');
+            toast.style.transform = 'translateX(100%)';
             setTimeout(() => {
                 if (toast.parentNode) {
                     toast.parentNode.removeChild(toast);
@@ -775,10 +828,14 @@ class MobileApp {
     }
 }
 
-// Initialize mobile app
-document.addEventListener('DOMContentLoaded', () => {
+// ✅ ИСПРАВЛЕНО: Убираем дублирование DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.mobileApp = new MobileApp();
+    });
+} else {
     window.mobileApp = new MobileApp();
-});
+}
 
 // Global utilities
 window.showMobileToast = (message, type, duration) => {

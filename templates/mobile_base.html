@@ -13,15 +13,16 @@
   
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#3ECDC1">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Dental Academy">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/icon-192.png') }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   
-  <!-- Favicons -->
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+  <!-- Убираем несуществующие favicons -->
+  <!-- <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}"> -->
   
   <!-- Preload Critical Resources -->
   <link rel="preload" href="{{ url_for('static', filename='css/mobile-app.css') }}" as="style">
@@ -281,15 +282,18 @@
   </script>
   {% endblock %}
 
-  <!-- Service Worker Registration -->
+  <!-- Service Worker Registration - ИСПРАВЛЕННАЯ ВЕРСИЯ -->
   <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => console.log('SW registered:', registration))
-        .catch(error => console.log('SW registration failed:', error));
-    });
-  }
+  // Убираем проблемную регистрацию Service Worker на время
+  // if ('serviceWorker' in navigator) {
+  //   window.addEventListener('load', () => {
+  //     navigator.serviceWorker.register('/sw.js')
+  //       .then(registration => console.log('SW registered:', registration))
+  //       .catch(error => console.log('SW registration failed:', error));
+  //   });
+  // }
+  
+  console.log('🎉 Mobile template loaded successfully!');
   </script>
 </body>
 </html>

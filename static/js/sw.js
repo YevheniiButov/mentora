@@ -4,21 +4,22 @@
  */
 
 const CACHE_NAME = 'dental-academy-v1.2.0';
-const OFFLINE_URL = '/offline.html';
+const OFFLINE_URL = '/offline'; // ✅ ИСПРАВЛЕНО: убрал .html
 
 // Files to cache for offline functionality
 const STATIC_CACHE_URLS = [
   '/',
-  '/offline.html',
+  '/offline', // ✅ ИСПРАВЛЕНО: убрал .html
   '/static/css/mobile-app.css',
   '/static/css/modern-theme.css',
   '/static/css/theme-fixes.css',
   '/static/js/mobile-app.js',
-  '/static/js/theme-system.js',
-  '/static/images/logo.png',
+  '/static/js/theme-system.js', // Если есть
+  '/static/images/logo.png', // Если есть
   '/static/images/icon-192.png',
   '/static/images/icon-512.png',
-  '/static/favicon.png',
+  '/static/favicon.png', // Если есть
+  '/manifest.json', // ✅ ДОБАВЛЕНО
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
   'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css'
 ];
@@ -56,7 +57,15 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('📁 Caching static assets...');
-        return cache.addAll(STATIC_CACHE_URLS);
+        // ✅ ИСПРАВЛЕНО: Кэшируем только существующие файлы
+        return Promise.allSettled(
+          STATIC_CACHE_URLS.map(url => 
+            cache.add(url).catch(error => {
+              console.warn(`⚠️ Failed to cache ${url}:`, error.message);
+              return null; // Продолжаем даже если один файл не загрузился
+            })
+          )
+        );
       })
       .then(() => {
         console.log('✅ Static assets cached successfully');
@@ -106,6 +115,11 @@ self.addEventListener('fetch', event => {
   
   // Skip chrome extensions and other protocols
   if (!url.protocol.startsWith('http')) {
+    return;
+  }
+  
+  // ✅ ДОБАВЛЕНО: Skip admin routes для безопасности
+  if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/auth/logout')) {
     return;
   }
   
@@ -278,15 +292,16 @@ async function handleFetchError(request, error) {
       return offlineResponse;
     }
     
-    // Fallback offline page if not cached
+    // ✅ УЛУЧШЕНО: Более красивая offline страница
     return new Response(`
       <!DOCTYPE html>
-      <html>
+      <html lang="ru">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Offline - Dental Academy</title>
         <style>
+          * { box-sizing: border-box; }
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
@@ -295,62 +310,118 @@ async function handleFetchError(request, error) {
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background: #f8fafc;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             color: #374151;
             text-align: center;
             padding: 20px;
           }
+          .offline-container {
+            background: white;
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+          }
           .offline-icon {
             font-size: 64px;
             margin-bottom: 20px;
-            opacity: 0.6;
+            opacity: 0.8;
           }
           .offline-title {
             font-size: 24px;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 12px;
+            color: #111827;
           }
           .offline-message {
             font-size: 16px;
-            line-height: 1.5;
+            line-height: 1.6;
             opacity: 0.8;
-            max-width: 400px;
+            margin-bottom: 24px;
           }
           .retry-btn {
-            margin-top: 24px;
             padding: 12px 24px;
-            background: #3ECDC1;
+            background: linear-gradient(135deg, #3ECDC1, #2BB6AC);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+          }
+          .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(62, 205, 193, 0.3);
+          }
+          .status { 
+            margin-top: 20px; 
+            padding: 12px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            font-size: 14px;
+          }
+          .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            margin-right: 8px;
+          }
+          .status-dot.online { background: #10b981; }
+          @media (max-width: 480px) {
+            .offline-container { padding: 2rem 1.5rem; }
+            .offline-title { font-size: 20px; }
           }
         </style>
       </head>
       <body>
-        <div class="offline-icon">📱</div>
-        <h1 class="offline-title">Вы офлайн</h1>
-        <p class="offline-message">
-          Проверьте подключение к интернету и попробуйте снова. 
-          Некоторые материалы могут быть доступны в автономном режиме.
-        </p>
-        <button class="retry-btn" onclick="window.location.reload()">
-          Попробовать снова
-        </button>
+        <div class="offline-container">
+          <div class="offline-icon">📱</div>
+          <h1 class="offline-title">Вы офлайн</h1>
+          <p class="offline-message">
+            Проверьте подключение к интернету. Некоторые материалы доступны без интернета.
+          </p>
+          <button class="retry-btn" onclick="window.location.reload()">
+            🔄 Попробовать снова
+          </button>
+          <div class="status">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-text">Проверка соединения...</span>
+          </div>
+        </div>
         
         <script>
-          // Auto-retry when online
+          function updateStatus() {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if (navigator.onLine) {
+              dot.classList.add('online');
+              text.textContent = 'Соединение восстановлено! Нажмите "Попробовать снова".';
+            } else {
+              dot.classList.remove('online');
+              text.textContent = 'Нет подключения к интернету.';
+            }
+          }
+          
+          window.addEventListener('online', updateStatus);
+          window.addEventListener('offline', updateStatus);
+          updateStatus();
+          
+          // Auto-reload when online
           window.addEventListener('online', () => {
-            window.location.reload();
+            setTimeout(() => window.location.reload(), 1000);
           });
         </script>
       </body>
       </html>
     `, {
       status: 200,
-      headers: { 'Content-Type': 'text/html' }
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
   }
   
@@ -369,6 +440,28 @@ async function handleFetchError(request, error) {
   // For other requests, throw the error
   throw error;
 }
+
+// ===== MESSAGE HANDLING ===== ✅ ДОБАВЛЕНО
+self.addEventListener('message', event => {
+  console.log('💬 Message received:', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'GET_VERSION') {
+    event.ports[0].postMessage({
+      type: 'VERSION',
+      version: CACHE_NAME
+    });
+  }
+  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    caches.delete(CACHE_NAME).then(() => {
+      event.ports[0].postMessage({ type: 'CACHE_CLEARED' });
+    });
+  }
+});
 
 // ===== PUSH NOTIFICATIONS =====
 
@@ -403,7 +496,8 @@ self.addEventListener('push', event => {
       }
     ],
     requireInteraction: false,
-    silent: false
+    silent: false,
+    vibrate: [100, 50, 100] // ✅ ДОБАВЛЕНО
   };
   
   event.waitUntil(
