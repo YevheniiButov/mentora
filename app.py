@@ -5,12 +5,12 @@ import time
 import json
 import logging
 from datetime import datetime, timedelta
-from flask import Flask, flash, render_template, redirect, url_for, g, request, session, jsonify
+from flask import Flask, flash, render_template, redirect, url_for, g, request, session, jsonify, current_app
 from flask_login import current_user
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
-from translations import get_translation
+from translations import get_translation, setup_translations
 from utils.subtopics import create_slug, update_lesson_subtopics, reorder_subtopic_lessons
 from mobile_integration import init_mobile_integration
 from utils.mobile_helpers import init_mobile_helpers
@@ -317,8 +317,8 @@ def create_app(test_config=None):
     def load_user(user_id):
         return db.session.get(User, int(user_id))    
     
-    # Добавляем функцию перевода в глобальное пространство имен Jinja2
-    app.jinja_env.globals.update(t=get_translation)
+    # Добавляем функции перевода в глобальное пространство имен Jinja2
+    setup_translations(app)
     
     # ОБЪЕДИНЕННЫЙ обработчик для языка и безопасности сессии
     @app.before_request
@@ -836,11 +836,18 @@ def create_app(test_config=None):
     # Установка глобальных контекстных переменных для шаблонов
     @app.context_processor
     def inject_global_vars():
+        def is_rtl_language(lang):
+            """Проверяет, является ли язык языком с письмом справа налево"""
+            rtl_languages = ['fa', 'ar', 'he']
+            return lang in rtl_languages
+        
         return dict(
             current_year=datetime.now().year,
             app_name="Become a Tandarts",
             supported_languages=SUPPORTED_LANGUAGES,
-            config=app.config
+            config=app.config,
+            is_rtl_language=is_rtl_language,
+            current_app=current_app
         )
     
     print(f"Registered blueprint: {subject_view_bp.name} with url_prefix: {subject_view_bp.url_prefix}")
