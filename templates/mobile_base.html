@@ -13,7 +13,7 @@
   
   <!-- Language alternates for SEO -->
   {% for lang_code in supported_languages %}
-  <link rel="alternate" hreflang="{{ lang_code }}" href="{{ url_for(request.endpoint, lang=lang_code, **request.view_args) if request.endpoint else url_for('main_bp.home', lang=lang_code) }}">
+  <link rel="alternate" hreflang="{{ lang_code }}" href="{{ url_for(request.endpoint, **dict(request.view_args, lang=lang_code)) if request.endpoint else url_for('main_bp.home', lang=lang_code) }}">
   {% endfor %}
   <link rel="alternate" hreflang="x-default" href="{{ url_for('main_bp.home', lang='nl') }}">
   
@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
   <!-- RTL Support -->
-  {% if is_rtl_language(current_language) %}
+  {% if current_language == 'fa' %}
   <style>
     body { direction: rtl; }
     .mobile-header { flex-direction: row-reverse; }
@@ -44,7 +44,7 @@
   {% block styles %}{% endblock %}
 </head>
 
-<body data-theme="light" class="mobile-optimized" dir="{{ 'rtl' if is_rtl_language(current_language) else 'ltr' }}">
+<body data-theme="light" class="mobile-optimized" dir="{{ 'rtl' if current_language == 'fa' else 'ltr' }}">
   <!-- Skip Link for Accessibility -->
   <a href="#main-content" class="mobile-sr-only">{{ t('skip_to_content') if t('skip_to_content') != 'skip_to_content' else 'Skip to main content' }}</a>
   
@@ -145,15 +145,14 @@
       <span class="mobile-nav-label">{{ t('home') }}</span>
     </a>
     
-    <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) if 'learning_map_bp' in current_app.blueprints else '#' }}" 
+    <a href="/{{ current_language }}/learning-map" 
        class="mobile-nav-item {{ 'active' if request.endpoint and 'learning' in request.endpoint else '' }}" 
        aria-label="{{ t('learning_map') }}">
       <i class="mobile-nav-icon bi bi-book{% if request.endpoint and 'learning' in request.endpoint %}-fill{% endif %}"></i>
       <span class="mobile-nav-label">{{ t('learning_map') if t('learning_map') != 'learning_map' else 'Learn' }}</span>
     </a>
     
-    <a href="{{ url_for('tests_bp.setup_test', lang=current_language) if 'tests_bp' in current_app.blueprints else '#' }}" 
-       class="mobile-nav-item {{ 'active' if request.endpoint and 'test' in request.endpoint else '' }}" 
+    <a href="/{{ current_language }}/tests/setup" class="mobile-nav-item {{ 'active' if request.endpoint and 'test' in request.endpoint else '' }}" 
        aria-label="{{ t('test') }}">
       <i class="mobile-nav-icon bi bi-clipboard-check{% if request.endpoint and 'test' in request.endpoint %}-fill{% endif %}"></i>
       <span class="mobile-nav-label">{{ t('test') if t('test') != 'test' else 'Tests' }}</span>
@@ -185,14 +184,14 @@
       <span class="mobile-nav-label">{{ t('about_big') if t('about_big') != 'about_big' else 'BIG Info' }}</span>
     </a>
     
-    <a href="{{ url_for('auth_bp.register', lang=current_language) if 'auth_bp' in current_app.blueprints else '#' }}" 
+    <a href="/{{ current_language }}/auth/register" 
        class="mobile-nav-item {{ 'active' if request.endpoint == 'auth_bp.register' else '' }}" 
        aria-label="{{ t('register') }}">
       <i class="mobile-nav-icon bi bi-person-plus{% if request.endpoint == 'auth_bp.register' %}-fill{% endif %}"></i>
       <span class="mobile-nav-label">{{ t('register') if t('register') != 'register' else 'Sign Up' }}</span>
     </a>
     
-    <a href="{{ url_for('auth_bp.login', lang=current_language) if 'auth_bp' in current_app.blueprints else '#' }}" 
+    <a href="/{{ current_language }}/auth/login" 
        class="mobile-nav-item {{ 'active' if request.endpoint == 'auth_bp.login' else '' }}" 
        aria-label="{{ t('login') }}">
       <i class="mobile-nav-icon bi bi-box-arrow-in-right{% if request.endpoint == 'auth_bp.login' %}-fill{% endif %}"></i>
@@ -228,15 +227,15 @@
         <!-- Learning Section -->
         <div class="mobile-menu-section">
           <div class="mobile-menu-section-title">{{ t('learning') if t('learning') != 'learning' else 'Learning' }}</div>
-          <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) if 'learning_map_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item">
+          <a href="/{{ current_language }}/learning-map" class="mobile-menu-item">
             <i class="bi bi-map"></i>
             <span>{{ t('learning_map') }}</span>
           </a>
-          <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=current_language) if 'dashboard_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item">
+          <a href="/{{ current_language }}/dashboard" class="mobile-menu-item">
             <i class="bi bi-speedometer2"></i>
             <span>{{ t('dashboard') }}</span>
           </a>
-          <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language) if 'virtual_patient_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item">
+          <a href="/{{ current_language }}/virtual-patient/scenarios" class="mobile-menu-item">
             <i class="bi bi-person-hearts"></i>
             <span>{{ t('virtual_patients') }}</span>
           </a>
@@ -245,7 +244,7 @@
         <!-- Tests Section -->
         <div class="mobile-menu-section">
           <div class="mobile-menu-section-title">{{ t('testing') if t('testing') != 'testing' else 'Testing' }}</div>
-          <a href="{{ url_for('tests_bp.setup_test', lang=current_language) if 'tests_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item">
+          <a href="/{{ current_language }}/tests/setup" class="mobile-menu-item">
             <i class="bi bi-clipboard-check"></i>
             <span>{{ t('practice_exams') if t('practice_exams') != 'practice_exams' else 'Practice Tests' }}</span>
           </a>
@@ -279,7 +278,7 @@
             <i class="bi bi-play-circle"></i>
             <span>{{ t('demo') }}</span>
           </a>
-          <a href="{{ url_for('main_bp.subscribe', lang=current_language) if hasattr(main_bp, 'subscribe') else '#' }}" class="mobile-menu-item">
+          <a href="/{{ current_language }}/subscribe" class="mobile-menu-item">
             <i class="bi bi-envelope-heart"></i>
             <span>{{ t('subscribe') if t('subscribe') != 'subscribe' else 'Subscribe' }}</span>
           </a>
@@ -287,7 +286,7 @@
       </div>
       
       <div class="mobile-menu-footer">
-        <a href="{{ url_for('auth_bp.logout', lang=current_language) if 'auth_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item mobile-menu-logout">
+        <a href="/{{ current_language }}/auth/logout" class="mobile-menu-item mobile-menu-logout">
           <i class="bi bi-box-arrow-right"></i>
           <span>{{ t('logout') }}</span>
         </a>
@@ -316,7 +315,7 @@
       isAuthenticated: {{ 'true' if current_user.is_authenticated else 'false' }},
       userId: {{ current_user.id if current_user.is_authenticated else 'null' }},
       csrfToken: '{{ csrf_token() }}',
-      isRTL: {{ 'true' if is_rtl_language(current_language) else 'false' }},
+      isRTL: {{ 'true' if current_language == 'fa' else 'false' }},
       translations: {
         loading: '{{ t("loading") }}',
         error: '{{ t("error") if t("error") != "error" else "Error" }}',
