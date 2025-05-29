@@ -1,0 +1,177 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Dental Academy - Cursor.ai Rules
+# Образовательная платформа для подготовки стоматологов
+
+## PROJECT OVERVIEW
+- Flask-based educational platform for dental professionals
+- Multi-language support (8 languages: en, nl, ru, uk, es, pt, tr, fa)
+- PWA mobile-first design with desktop support
+- Accessibility-focused (WCAG 2.1 AA compliance)
+- Educational modules, tests, virtual patients, and learning paths
+
+## ARCHITECTURE RULES
+
+### Flask Structure
+- Use Blueprint pattern with `_bp` suffix (main_bp, auth_bp, learning_map_bp, etc.)
+- Route decorators should include language parameter: `@bp.route('/<string:lang>/path')`
+- All routes must handle language context with `g.lang`
+- Use `@login_required` for protected routes
+- Import structure: extensions → models → routes → blueprints
+
+### File Naming Conventions
+- Blueprint files: `*_routes.py` (auth_routes.py, lesson_routes.py)
+- Templates: organized by feature in subfolders
+- CSS: feature-specific files in `static/css/` 
+- JavaScript: `static/js/` with descriptive names
+- Mobile templates: `*_mobile.html` suffix when needed
+
+### Template Standards
+- Extend appropriate base: `base.html` for desktop, `mobile_base.html` for mobile
+- Use device detection: check `is_mobile_device` context variable
+- Always include: `{% block title %}`, `{% block meta_description %}`
+- Language context: use `{{ g.lang }}` for current language
+- Translations: use `{{ t('key', g.lang) }}` function
+
+## CODING STANDARDS
+
+### Python/Flask
+- Use type hints where appropriate
+- Handle database sessions properly with try/except blocks
+- Use SQLAlchemy query patterns consistently
+- Flash messages: use categories ('success', 'error', 'warning', 'info')
+- Error handling: always include user-friendly error messages
+
+### HTML/Templates
+- Semantic HTML5 elements (nav, main, section, article, aside)
+- ARIA labels for accessibility: `aria-label`, `aria-describedby`, `role`
+- Mobile-first responsive design
+- Skip links for keyboard navigation: `<a href="#main-content" class="sr-only">`
+
+### CSS Rules
+- Use CSS custom properties (CSS variables) from `:root`
+- Mobile-first approach: base styles for mobile, `@media (min-width: 768px)` for desktop
+- BEM-like naming for components: `.mobile-card`, `.mobile-nav-item`
+- Theme support: `[data-theme="dark"]` selectors
+- Accessibility: `:focus-visible` styles, `@media (prefers-reduced-motion: reduce)`
+
+### JavaScript Standards
+- ES6+ syntax (const/let, arrow functions, classes)
+- Async/await for promises
+- Event delegation for dynamic content
+- No jQuery - use vanilla JavaScript
+- Mobile optimizations: touch events, passive listeners
+
+## COMPONENT PATTERNS
+
+### Mobile Navigation
+```html
+<nav class="mobile-bottom-nav">
+  <a href="{{ url_for('main_bp.home', lang=g.lang) }}" class="mobile-nav-item">
+    <i class="mobile-nav-icon bi bi-house"></i>
+    <span class="mobile-nav-label">{{ t('home') }}</span>
+  </a>
+</nav>
+```
+
+### Cards/Modules
+```html
+<div class="mobile-card" data-animate="fadeInUp">
+  <div class="card-header">
+    <h3 class="card-title">{{ title }}</h3>
+  </div>
+  <div class="card-content">{{ content }}</div>
+</div>
+```
+
+### Buttons
+```html
+<button class="mobile-btn mobile-btn-primary" aria-label="Descriptive label">
+  <i class="bi bi-icon" aria-hidden="true"></i>
+  {{ t('button_text') }}
+</button>
+```
+
+## ACCESSIBILITY REQUIREMENTS
+- All interactive elements must be keyboard accessible
+- Color contrast ratio minimum 4.5:1 (AA level)
+- Alt text for informative images, empty alt="" for decorative
+- Form labels properly associated with inputs
+- Focus indicators visible and high contrast
+- Screen reader announcements for dynamic content
+
+## INTERNATIONALIZATION
+- All user-facing text must use translation function: `{{ t('key', g.lang) }}`
+- No hardcoded English text in templates
+- RTL language support: check `is_rtl_language(g.lang)`
+- Date/number formatting should respect locale
+
+## PERFORMANCE RULES
+- Lazy load images: `loading="lazy"`
+- Minimize CSS/JS bundle sizes
+- Use CDN for external libraries
+- Implement proper caching headers
+- PWA optimizations: Service Worker, manifest.json
+
+## PWA/MOBILE SPECIFIC
+- Service Worker registration in mobile templates only
+- Touch-friendly UI: minimum 44px touch targets
+- Proper viewport meta tag: `width=device-width, initial-scale=1.0`
+- PWA manifest.json with proper icons and theme colors
+- Handle offline states gracefully
+
+## DATABASE PATTERNS
+- Use SQLAlchemy ORM consistently
+- Relationships: proper foreign keys and backref
+- Session management: db.session.commit() with error handling
+- Queries: use filter() and filter_by() appropriately
+- Avoid N+1 queries: use joinedload() or selectinload()
+
+## TESTING STANDARDS
+- Write accessibility tests with axe-core
+- Test mobile responsiveness
+- Validate HTML5 semantics
+- Check keyboard navigation paths
+- Test with screen readers when possible
+
+## SECURITY RULES
+- CSRF protection on all forms: `{{ csrf_token() }}`
+- Input validation and sanitization
+- Proper authentication checks
+- Secure headers and HTTPS in production
+- Rate limiting on API endpoints
+## ERROR HANDLING
+- Graceful degradation for JavaScript failures
+- User-friendly error messages
+- Proper HTTP status codes
+- Fallback content for failed AJAX requests
+- Mobile-specific error handling
+
+## CODE GENERATION PREFERENCES
+- Generate complete, working code (not snippets)
+- Include proper error handling
+- Add accessibility attributes by default
+- Use established project patterns and conventions
+- Include mobile-specific optimizations when relevant
+- Add comments for complex logic
+- Follow existing naming conventions exactly
+
+## EXAMPLES TO FOLLOW
+- Look at existing routes in routes/ directory for Flask patterns
+- Check mobile_base.html for mobile template structure
+- Reference mobile-app.css for styling conventions
+- Use existing JavaScript patterns from mobile-app.js
+
+## WHAT NOT TO DO
+- Don't use jQuery or other heavy libraries
+- Don't hardcode text strings
+- Don't ignore mobile optimizations
+- Don't skip accessibility attributes
+- Don't use deprecated HTML/CSS features
+- Don't create overly complex nested components
+- Don't use localStorage/sessionStorage in artifacts (not supported)
+
+Remember: This is an educational platform, so prioritize clarity, accessibility, and user experience for learners on all devices.
