@@ -232,11 +232,11 @@
             <i class="bi bi-map"></i>
             <span>{{ t('learning_map') }}</span>
           </a>
-          <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=current_language) if 'dashboard_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item">
+          <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=current_language) if 'dashboard_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item">
             <i class="bi bi-speedometer2"></i>
             <span>{{ t('dashboard') }}</span>
           </a>
-          <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language) if 'virtual_patient_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item">
+          <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language) if 'virtual_patient_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item">
             <i class="bi bi-person-hearts"></i>
             <span>{{ t('virtual_patients') }}</span>
           </a>
@@ -287,7 +287,7 @@
       </div>
       
       <div class="mobile-menu-footer">
-        <a href="{{ url_for('auth_bp.logout', lang=current_language) if 'auth_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item mobile-menu-logout">
+        <a href="{{ url_for('auth_bp.logout', lang=current_language) if 'auth_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item mobile-menu-logout">
           <i class="bi bi-box-arrow-right"></i>
           <span>{{ t('logout') }}</span>
         </a>
