@@ -47,6 +47,9 @@ class MobileTemplateManager:
         
         # Переопределяем render_template
         self.override_render_template(app)
+        
+        # Регистрируем новый шаблон
+        self.register_mobile_template('auth/change_password.html', 'auth/change_password_mobile.html')
     
     def register_mobile_template(self, desktop_template, mobile_template):
         """

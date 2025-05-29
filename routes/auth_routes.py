@@ -7,7 +7,7 @@ from flask_login import (
 )
 from extensions import db, bcrypt
 from models import User
-from forms import LoginForm, RegistrationForm # Предполагаем, что формы в корневом forms.py
+from forms import LoginForm, RegistrationForm, ChangePasswordForm # Предполагаем, что формы в корневом forms.py
 
 # Исправление 1: **name** должно быть __name__ (двойное подчеркивание)
 auth_bp = Blueprint("auth_bp", __name__, url_prefix='/<string:lang>')
@@ -133,3 +133,35 @@ def debug_auth(lang):
         'user_email': current_user.email if hasattr(current_user, 'email') else None
     }
     return jsonify(debug_info)
+
+@auth_bp.route("/change-password", methods=["GET", "POST"])
+@login_required
+def change_password(lang):
+    g.lang = lang
+    from forms import ChangePasswordForm
+    
+    form = ChangePasswordForm()
+    
+    if form.validate_on_submit():
+        # Проверяем текущий пароль
+        if bcrypt.check_password_hash(current_user.password_hash, form.current_password.data):
+            # Генерируем новый хеш пароля
+            hashed_password = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
+            
+            # Обновляем пароль пользователя
+            current_user.password_hash = hashed_password
+            db.session.commit()
+            
+            # Отправляем сообщение о успешной смене пароля
+            flash('Your password has been updated successfully!', 'success')
+            current_app.logger.info(f"Password changed for user {current_user.email}")
+            
+            # Повторная авторизация с новым паролем
+            logout_user()
+            flash('Please log in with your new password.', 'info')
+            return redirect(url_for('auth_bp.login', lang=lang))
+        else:
+            flash('Current password is incorrect.', 'danger')
+            current_app.logger.warning(f"Failed password change attempt for user {current_user.email}")
+    
+    return render_template("auth/change_password.html", form=form, title="Change Password")

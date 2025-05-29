@@ -364,14 +364,23 @@ class MobileApp {
     setupPWA() {
         // Service Worker registration - БЕЗОПАСНАЯ ВЕРСИЯ
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('✅ SW registered:', registration);
-                })
-                .catch(error => {
-                    console.log('⚠️ SW registration failed (это нормально):', error);
-                    // Не показываем ошибку пользователю, это нормально
-                });
+            // Проверяем, что мы на HTTPS или localhost
+            const isSecureContext = window.location.protocol === 'https:' || 
+                                   window.location.hostname === 'localhost' ||
+                                   window.location.hostname === '127.0.0.1';
+                               
+            if (isSecureContext) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('✅ SW registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('⚠️ SW registration failed (это нормально при разработке):', error);
+                        // Не показываем ошибку пользователю, это нормально при разработке
+                    });
+            } else {
+                console.log('⚠️ Service Worker требует HTTPS (кроме localhost)');
+            }
         }
         
         // Install prompt - ✅ ИСПРАВЛЕНО: Используем this.deferredPrompt

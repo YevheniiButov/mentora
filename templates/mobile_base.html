@@ -200,103 +200,92 @@
     {% endif %}
   </nav>
 
-  <!-- Mobile Side Menu Overlay - ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ -->
-  {% if current_user.is_authenticated %}
-  <div class="mobile-menu-overlay" id="mobile-menu-overlay">
+  <!-- Menu Overlay -->
+  <div id="mobile-menu-overlay" class="mobile-menu-overlay" style="display:none;">
     <div class="mobile-menu">
-      <div class="mobile-menu-header">
+      <div class="mobile-menu-content">
+        <button id="mobile-menu-close" class="mobile-menu-close" aria-label="{{ t('close_menu') if t('close_menu') != 'close_menu' else 'Close menu' }}">
+          <i class="bi bi-x-lg"></i>
+        </button>
+        
+        <!-- User Profile Section (if logged in) -->
+        {% if current_user.is_authenticated %}
         <div class="mobile-menu-user">
-          <div class="mobile-menu-avatar">
-            {% if current_user.avatar %}
-            <img src="{{ current_user.avatar }}" alt="Avatar">
+          <div class="mobile-menu-user-avatar">
+            {% if current_user.profile_image %}
+            <img src="{{ url_for('static', filename='uploads/profile/' + current_user.profile_image) }}" alt="{{ current_user.username }}">
             {% else %}
-            <i class="bi bi-person-circle"></i>
+            <div class="mobile-menu-user-initial">{{ current_user.username[0] | upper }}</div>
             {% endif %}
           </div>
           <div class="mobile-menu-user-info">
-            <div class="mobile-menu-username">{{ current_user.username or current_user.email }}</div>
-            <div class="mobile-menu-email">{{ current_user.email }}</div>
+            <h3>{{ current_user.username }}</h3>
+            <p>{{ current_user.email }}</p>
           </div>
         </div>
-        <button class="mobile-menu-close" id="mobile-menu-close" aria-label="{{ t('close') if t('close') != 'close' else 'Close menu' }}">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-      
-      <div class="mobile-menu-content">
-        <!-- Learning Section -->
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">{{ t('learning') if t('learning') != 'learning' else 'Learning' }}</div>
-          <a href="/{{ current_language }}/learning-map" class="mobile-menu-item">
+        {% endif %}
+        
+        <!-- Menu Items -->
+        <div class="mobile-menu-items">
+          <a href="{{ url_for('main_bp.home', lang=current_language) }}" class="mobile-menu-item">
+            <i class="bi bi-house"></i>
+            {{ t('home') }}
+          </a>
+          
+          {% if 'learning_map_bp' in current_app.blueprints %}
+          <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) }}" class="mobile-menu-item">
             <i class="bi bi-map"></i>
-            <span>{{ t('learning_map') }}</span>
+            {{ t('learning_map') if t('learning_map') != 'learning_map' else 'Learning Map' }}
           </a>
-          <a href="/{{ current_language }}/dashboard" class="mobile-menu-item">
+          {% endif %}
+          
+          {% if 'dashboard_bp' in current_app.blueprints %}
+          <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=current_language) }}" class="mobile-menu-item">
             <i class="bi bi-speedometer2"></i>
-            <span>{{ t('dashboard') }}</span>
+            {{ t('dashboard') if t('dashboard') != 'dashboard' else 'Dashboard' }}
           </a>
-          <a href="/{{ current_language }}/virtual-patient/scenarios" class="mobile-menu-item">
-            <i class="bi bi-person-hearts"></i>
-            <span>{{ t('virtual_patients') }}</span>
+          {% endif %}
+          
+          {% if current_user.is_authenticated %}
+          <a href="{{ url_for('auth_bp.change_password', lang=current_language) }}" class="mobile-menu-item">
+            <i class="bi bi-shield-lock"></i>
+            {{ t('change_password') if t('change_password') != 'change_password' else 'Change Password' }}
           </a>
-        </div>
-        
-        <!-- Tests Section -->
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">{{ t('testing') if t('testing') != 'testing' else 'Testing' }}</div>
-          <a href="/{{ current_language }}/tests/setup" class="mobile-menu-item">
-            <i class="bi bi-clipboard-check"></i>
-            <span>{{ t('practice_exams') if t('practice_exams') != 'practice_exams' else 'Practice Tests' }}</span>
+          
+          <a href="{{ url_for('auth_bp.logout', lang=current_language) }}" class="mobile-menu-item mobile-menu-item-danger">
+            <i class="bi bi-box-arrow-right"></i>
+            {{ t('logout') }}
           </a>
-          <a href="{{ url_for('main_bp.learn', lang=current_language) }}" class="mobile-menu-item">
-            <i class="bi bi-bar-chart"></i>
-            <span>{{ t('learn_more') }}</span>
+          {% else %}
+          <a href="{{ url_for('auth_bp.login', lang=current_language) }}" class="mobile-menu-item">
+            <i class="bi bi-box-arrow-in-right"></i>
+            {{ t('login') }}
           </a>
-        </div>
-        
-        <!-- Account Section -->
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">{{ t('account') if t('account') != 'account' else 'Account' }}</div>
-          <a href="{{ url_for('main_bp.profile', lang=current_language) }}" class="mobile-menu-item">
-            <i class="bi bi-person"></i>
-            <span>{{ t('profile') }}</span>
+          
+          <a href="{{ url_for('auth_bp.register', lang=current_language) }}" class="mobile-menu-item">
+            <i class="bi bi-person-plus"></i>
+            {{ t('register') }}
           </a>
-          <a href="{{ url_for('main_bp.big_info', lang=current_language) }}" class="mobile-menu-item">
-            <i class="bi bi-info-circle"></i>
-            <span>{{ t('about_big_exam') if t('about_big_exam') != 'about_big_exam' else 'About BIG' }}</span>
-          </a>
-          <button class="mobile-menu-item theme-toggle-inline" id="mobile-theme-toggle-menu">
+          {% endif %}
+          
+          <!-- Theme Toggle -->
+          <button id="mobile-theme-toggle-menu" class="mobile-menu-item mobile-menu-button">
             <i class="bi bi-moon theme-icon"></i>
-            <span class="theme-text">{{ t('toggle_theme') if t('toggle_theme') != 'toggle_theme' else 'Dark Theme' }}</span>
+            <span class="theme-text">{{ t('dark_mode') if t('dark_mode') != 'dark_mode' else 'Dark Mode' }}</span>
           </button>
         </div>
         
-        <!-- Support Section -->
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">{{ t('support') }}</div>
-          <a href="{{ url_for('main_bp.demo', lang=current_language) }}" class="mobile-menu-item">
-            <i class="bi bi-play-circle"></i>
-            <span>{{ t('demo') }}</span>
-          </a>
-          <a href="/{{ current_language }}/subscribe" class="mobile-menu-item">
-            <i class="bi bi-envelope-heart"></i>
-            <span>{{ t('subscribe') if t('subscribe') != 'subscribe' else 'Subscribe' }}</span>
-          </a>
+        <!-- App Info -->
+        <div class="mobile-menu-footer">
+          <p>{{ t('app_version') if t('app_version') != 'app_version' else 'Version' }}: 1.2.0</p>
+          <p>&copy; 2023-2025 Dental Academy</p>
         </div>
-      </div>
-      
-      <div class="mobile-menu-footer">
-        <a href="/{{ current_language }}/auth/logout" class="mobile-menu-item mobile-menu-logout">
-          <i class="bi bi-box-arrow-right"></i>
-          <span>{{ t('logout') }}</span>
-        </a>
       </div>
     </div>
   </div>
-  {% endif %}
 
   <!-- Loading Overlay -->
-  <div class="mobile-loading-overlay" id="mobile-loading" style="display: none;">
+  <div id="mobile-loading-overlay" class="mobile-loading-overlay" style="display:none;">
     <div class="mobile-loading">
       <div class="mobile-spinner"></div>
       <div class="mobile-loading-text">{{ t('loading') }}</div>
@@ -543,3 +532,5 @@
   }
 }
 </style>
+</body>
+</html>
