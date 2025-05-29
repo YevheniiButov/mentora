@@ -1,44 +1,52 @@
 <!DOCTYPE html>
-<html lang="{{ g.lang | default('en') }}">
+<html lang="{{ current_language | default('nl') }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   
   <!-- SEO Meta Tags -->
-  <title>{% block title %}Dental Academy{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Professional dental training platform{% endblock %}">
-  <meta name="keywords" content="dental, training, education, BIG exam, Netherlands">
+  <title>{% block title %}{{ t('app_title') }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ t('app_description') }}{% endblock %}">
+  <meta name="keywords" content="{{ t('seo_keywords') if t('seo_keywords') != 'seo_keywords' else 'dental, training, education, BIG exam, Netherlands' }}">
   <meta name="author" content="Dental Academy">
+  
+  <!-- Language alternates for SEO -->
+  {% for lang_code in supported_languages %}
+  <link rel="alternate" hreflang="{{ lang_code }}" href="{{ url_for(request.endpoint, lang=lang_code, **request.view_args) if request.endpoint else url_for('main_bp.home', lang=lang_code) }}">
+  {% endfor %}
+  <link rel="alternate" hreflang="x-default" href="{{ url_for('main_bp.home', lang='nl') }}">
   
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#3ECDC1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Dental Academy">
+  <meta name="apple-mobile-web-app-title" content="{{ t('app_title') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/icon-192.png') }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  
-  <!-- Убираем несуществующие favicons -->
-  <!-- <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}"> -->
-  
-  <!-- Preload Critical Resources -->
-  <link rel="preload" href="{{ url_for('static', filename='css/mobile-app.css') }}" as="style">
-  <link rel="preload" href="{{ url_for('static', filename='js/mobile-app.js') }}" as="script">
   
   <!-- CSS Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-fixes.css') }}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
+  <!-- RTL Support -->
+  {% if is_rtl_language(current_language) %}
+  <style>
+    body { direction: rtl; }
+    .mobile-header { flex-direction: row-reverse; }
+    .mobile-menu { right: auto; left: 0; }
+    .mobile-bottom-nav { direction: rtl; }
+  </style>
+  {% endif %}
+  
   {% block styles %}{% endblock %}
 </head>
 
-<body data-theme="light" class="mobile-optimized">
+<body data-theme="light" class="mobile-optimized" dir="{{ 'rtl' if is_rtl_language(current_language) else 'ltr' }}">
   <!-- Skip Link for Accessibility -->
-  <a href="#main-content" class="mobile-sr-only">Skip to main content</a>
+  <a href="#main-content" class="mobile-sr-only">{{ t('skip_to_content') if t('skip_to_content') != 'skip_to_content' else 'Skip to main content' }}</a>
   
   <!-- Mobile Header -->
   <header class="mobile-header">
@@ -46,11 +54,11 @@
     <div class="mobile-header-left">
       {% block mobile_header_left %}
       {% if current_user.is_authenticated %}
-      <button class="mobile-header-action" id="mobile-menu-toggle" aria-label="Open menu">
+      <button class="mobile-header-action" id="mobile-menu-toggle" aria-label="{{ t('open_menu') if t('open_menu') != 'open_menu' else 'Open menu' }}">
         <i class="bi bi-list"></i>
       </button>
       {% else %}
-      <a href="{{ url_for('main_bp.index', lang=g.lang) }}" class="mobile-header-action" aria-label="Home">
+      <a href="{{ url_for('main_bp.home', lang=current_language) }}" class="mobile-header-action" aria-label="{{ t('home') }}">
         <i class="bi bi-house"></i>
       </a>
       {% endif %}
@@ -59,14 +67,34 @@
     
     <!-- Title -->
     <h1 class="mobile-header-title">
-      {% block mobile_title %}Dental Academy{% endblock %}
+      {% block mobile_title %}{{ t('app_title') }}{% endblock %}
     </h1>
     
     <!-- Right Actions -->
     <div class="mobile-header-right">
       {% block mobile_header_actions %}
+      <!-- Language Selector -->
+      <div class="mobile-language-selector">
+        <button class="mobile-header-action" id="mobile-language-toggle" aria-label="{{ t('select_language') if t('select_language') != 'select_language' else 'Select language' }}">
+          <span class="fi fi-{{ get_country_code(current_language) }}"></span>
+        </button>
+        <div class="mobile-language-dropdown" id="mobile-language-dropdown">
+          {% for lang_code in supported_languages %}
+          <a href="{{ url_for('main_bp.set_language', lang=lang_code) }}" 
+             class="mobile-language-option {% if lang_code == current_language %}active{% endif %}"
+             data-lang="{{ lang_code }}">
+            <span class="fi fi-{{ get_country_code(lang_code) }}"></span>
+            <span class="mobile-language-name">{{ t('language_name_' + lang_code) if t('language_name_' + lang_code) != ('language_name_' + lang_code) else lang_code.upper() }}</span>
+            {% if lang_code == current_language %}
+            <i class="bi bi-check-lg"></i>
+            {% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
       <!-- Theme Toggle -->
-      <button class="mobile-header-action" id="mobile-theme-toggle" aria-label="Toggle theme">
+      <button class="mobile-header-action" id="mobile-theme-toggle" aria-label="{{ t('toggle_theme') if t('toggle_theme') != 'toggle_theme' else 'Toggle theme' }}">
         <i class="bi bi-moon theme-icon"></i>
       </button>
       {% endblock %}
@@ -101,58 +129,74 @@
     {% block mobile_content %}
     <div class="mobile-loading">
       <div class="mobile-spinner"></div>
-      Loading...
+      {{ t('loading') }}
     </div>
     {% endblock %}
   </main>
 
-  <!-- Mobile Navigation (Bottom) - ПОКАЗЫВАЕМ ДЛЯ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ -->
+  <!-- Mobile Navigation (Bottom) -->
   <nav class="mobile-bottom-nav" aria-label="Main navigation">
     {% if current_user.is_authenticated %}
     <!-- Навигация для авторизованных пользователей -->
-    <a href="{{ url_for('main_bp.index', lang=g.lang) }}" class="mobile-nav-item" aria-label="Home">
-      <i class="mobile-nav-icon bi bi-house"></i>
-      <span class="mobile-nav-label">{{ t('home', g.lang)|default('Home') }}</span>
+    <a href="{{ url_for('main_bp.home', lang=current_language) }}" 
+       class="mobile-nav-item {{ 'active' if request.endpoint == 'main_bp.home' else '' }}" 
+       aria-label="{{ t('home') }}">
+      <i class="mobile-nav-icon bi bi-house{% if request.endpoint == 'main_bp.home' %}-fill{% endif %}"></i>
+      <span class="mobile-nav-label">{{ t('home') }}</span>
     </a>
     
-    <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="mobile-nav-item active" aria-label="Learning">
-      <i class="mobile-nav-icon bi bi-book"></i>
-      <span class="mobile-nav-label">{{ t('learn', g.lang)|default('Learn') }}</span>
+    <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) if 'learning_map_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" 
+       class="mobile-nav-item {{ 'active' if request.endpoint and 'learning' in request.endpoint else '' }}" 
+       aria-label="{{ t('learning_map') }}">
+      <i class="mobile-nav-icon bi bi-book{% if request.endpoint and 'learning' in request.endpoint %}-fill{% endif %}"></i>
+      <span class="mobile-nav-label">{{ t('learning_map') if t('learning_map') != 'learning_map' else 'Learn' }}</span>
     </a>
     
-    <a href="{{ url_for('tests_bp.setup_test', lang=g.lang) }}" class="mobile-nav-item" aria-label="Tests">
-      <i class="mobile-nav-icon bi bi-clipboard-check"></i>
-      <span class="mobile-nav-label">{{ t('tests', g.lang)|default('Tests') }}</span>
+    <a href="{{ url_for('tests_bp.setup_test', lang=current_language) if 'tests_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" 
+       class="mobile-nav-item {{ 'active' if request.endpoint and 'test' in request.endpoint else '' }}" 
+       aria-label="{{ t('test') }}">
+      <i class="mobile-nav-icon bi bi-clipboard-check{% if request.endpoint and 'test' in request.endpoint %}-fill{% endif %}"></i>
+      <span class="mobile-nav-label">{{ t('test') if t('test') != 'test' else 'Tests' }}</span>
       {% if has_pending_tests %}
       <span class="mobile-nav-badge">!</span>
       {% endif %}
     </a>
     
-    <a href="{{ url_for('main_bp.profile', lang=g.lang) }}" class="mobile-nav-item" aria-label="Profile">
-      <i class="mobile-nav-icon bi bi-person"></i>
-      <span class="mobile-nav-label">{{ t('profile', g.lang)|default('Profile') }}</span>
+    <a href="{{ url_for('main_bp.profile', lang=current_language) }}" 
+       class="mobile-nav-item {{ 'active' if request.endpoint == 'main_bp.profile' else '' }}" 
+       aria-label="{{ t('profile') }}">
+      <i class="mobile-nav-icon bi bi-person{% if request.endpoint == 'main_bp.profile' %}-fill{% endif %}"></i>
+      <span class="mobile-nav-label">{{ t('profile') }}</span>
     </a>
     
     {% else %}
     <!-- Навигация для НЕавторизованных пользователей -->
-    <a href="{{ url_for('main_bp.index', lang=g.lang) }}" class="mobile-nav-item active" aria-label="Home">
-      <i class="mobile-nav-icon bi bi-house-fill"></i>
-      <span class="mobile-nav-label">{{ t('home', g.lang)|default('Home') }}</span>
+    <a href="{{ url_for('main_bp.home', lang=current_language) }}" 
+       class="mobile-nav-item {{ 'active' if request.endpoint == 'main_bp.home' else '' }}" 
+       aria-label="{{ t('home') }}">
+      <i class="mobile-nav-icon bi bi-house{% if request.endpoint == 'main_bp.home' %}-fill{% endif %}"></i>
+      <span class="mobile-nav-label">{{ t('home') }}</span>
     </a>
     
-    <a href="{{ url_for('main_bp.big_info', lang=g.lang) }}" class="mobile-nav-item" aria-label="BIG Info">
-      <i class="mobile-nav-icon bi bi-info-circle"></i>
-      <span class="mobile-nav-label">{{ t('info', g.lang)|default('BIG Info') }}</span>
+    <a href="{{ url_for('main_bp.big_info', lang=current_language) }}" 
+       class="mobile-nav-item {{ 'active' if request.endpoint == 'main_bp.big_info' else '' }}" 
+       aria-label="{{ t('about_big') }}">
+      <i class="mobile-nav-icon bi bi-info-circle{% if request.endpoint == 'main_bp.big_info' %}-fill{% endif %}"></i>
+      <span class="mobile-nav-label">{{ t('about_big') if t('about_big') != 'about_big' else 'BIG Info' }}</span>
     </a>
     
-    <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="mobile-nav-item" aria-label="Register">
-      <i class="mobile-nav-icon bi bi-person-plus"></i>
-      <span class="mobile-nav-label">{{ t('register', g.lang)|default('Sign Up') }}</span>
+    <a href="{{ url_for('auth_bp.register', lang=current_language) if 'auth_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" 
+       class="mobile-nav-item {{ 'active' if request.endpoint == 'auth_bp.register' else '' }}" 
+       aria-label="{{ t('register') }}">
+      <i class="mobile-nav-icon bi bi-person-plus{% if request.endpoint == 'auth_bp.register' %}-fill{% endif %}"></i>
+      <span class="mobile-nav-label">{{ t('register') if t('register') != 'register' else 'Sign Up' }}</span>
     </a>
     
-    <a href="{{ url_for('auth_bp.login', lang=g.lang) }}" class="mobile-nav-item" aria-label="Login">
-      <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
-      <span class="mobile-nav-label">{{ t('login', g.lang)|default('Login') }}</span>
+    <a href="{{ url_for('auth_bp.login', lang=current_language) if 'auth_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" 
+       class="mobile-nav-item {{ 'active' if request.endpoint == 'auth_bp.login' else '' }}" 
+       aria-label="{{ t('login') }}">
+      <i class="mobile-nav-icon bi bi-box-arrow-in-right{% if request.endpoint == 'auth_bp.login' %}-fill{% endif %}"></i>
+      <span class="mobile-nav-label">{{ t('login') }}</span>
     </a>
     {% endif %}
   </nav>
@@ -175,7 +219,7 @@
             <div class="mobile-menu-email">{{ current_user.email }}</div>
           </div>
         </div>
-        <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
+        <button class="mobile-menu-close" id="mobile-menu-close" aria-label="{{ t('close') if t('close') != 'close' else 'Close menu' }}">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -183,68 +227,69 @@
       <div class="mobile-menu-content">
         <!-- Learning Section -->
         <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">{{ t('learning', g.lang)|default('Learning') }}</div>
-          <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="mobile-menu-item">
+          <div class="mobile-menu-section-title">{{ t('learning') if t('learning') != 'learning' else 'Learning' }}</div>
+          <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) if 'learning_map_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item">
             <i class="bi bi-map"></i>
-            <span>{{ t('learning_map', g.lang)|default('Learning Map') }}</span>
+            <span>{{ t('learning_map') }}</span>
           </a>
-          <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=g.lang) }}" class="mobile-menu-item">
+          <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=current_language) if 'dashboard_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item">
             <i class="bi bi-speedometer2"></i>
-            <span>{{ t('dashboard', g.lang)|default('Dashboard') }}</span>
+            <span>{{ t('dashboard') }}</span>
           </a>
-          <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=g.lang) }}" class="mobile-menu-item">
+          <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language) if 'virtual_patient_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item">
             <i class="bi bi-person-hearts"></i>
-            <span>{{ t('virtual_patients', g.lang)|default('Virtual Patients') }}</span>
+            <span>{{ t('virtual_patients') }}</span>
           </a>
         </div>
         
         <!-- Tests Section -->
         <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">{{ t('testing', g.lang)|default('Testing') }}</div>
-          <a href="{{ url_for('tests_bp.setup_test', lang=g.lang) }}" class="mobile-menu-item">
+          <div class="mobile-menu-section-title">{{ t('testing') if t('testing') != 'testing' else 'Testing' }}</div>
+          <a href="{{ url_for('tests_bp.setup_test', lang=current_language) if 'tests_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item">
             <i class="bi bi-clipboard-check"></i>
-            <span>{{ t('practice_tests', g.lang)|default('Practice Tests') }}</span>
+            <span>{{ t('practice_exams') if t('practice_exams') != 'practice_exams' else 'Practice Tests' }}</span>
           </a>
-          <a href="{{ url_for('main_bp.learn', lang=g.lang) }}" class="mobile-menu-item">
+          <a href="{{ url_for('main_bp.learn', lang=current_language) }}" class="mobile-menu-item">
             <i class="bi bi-bar-chart"></i>
-            <span>{{ t('learn_more', g.lang)|default('Learn More') }}</span>
+            <span>{{ t('learn_more') }}</span>
           </a>
         </div>
         
+        <!-- Account Section -->
         <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">{{ t('account', g.lang)|default('Account') }}</div>
-          <a href="{{ url_for('main_bp.profile', lang=g.lang) }}" class="mobile-menu-item">
+          <div class="mobile-menu-section-title">{{ t('account') if t('account') != 'account' else 'Account' }}</div>
+          <a href="{{ url_for('main_bp.profile', lang=current_language) }}" class="mobile-menu-item">
             <i class="bi bi-person"></i>
-            <span>{{ t('profile', g.lang)|default('Profile') }}</span>
+            <span>{{ t('profile') }}</span>
           </a>
-          <a href="{{ url_for('main_bp.big_info', lang=g.lang) }}" class="mobile-menu-item">
+          <a href="{{ url_for('main_bp.big_info', lang=current_language) }}" class="mobile-menu-item">
             <i class="bi bi-info-circle"></i>
-            <span>{{ t('about_big', g.lang)|default('About BIG') }}</span>
+            <span>{{ t('about_big_exam') if t('about_big_exam') != 'about_big_exam' else 'About BIG' }}</span>
           </a>
           <button class="mobile-menu-item theme-toggle-inline" id="mobile-theme-toggle-menu">
             <i class="bi bi-moon theme-icon"></i>
-            <span class="theme-text">{{ t('dark_theme', g.lang)|default('Dark Theme') }}</span>
+            <span class="theme-text">{{ t('toggle_theme') if t('toggle_theme') != 'toggle_theme' else 'Dark Theme' }}</span>
           </button>
         </div>
         
         <!-- Support Section -->
         <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">{{ t('support', g.lang)|default('Support') }}</div>
-          <a href="{{ url_for('main_bp.demo', lang=g.lang) }}" class="mobile-menu-item">
+          <div class="mobile-menu-section-title">{{ t('support') }}</div>
+          <a href="{{ url_for('main_bp.demo', lang=current_language) }}" class="mobile-menu-item">
             <i class="bi bi-play-circle"></i>
-            <span>{{ t('demo', g.lang)|default('Demo') }}</span>
+            <span>{{ t('demo') }}</span>
           </a>
-          <a href="{{ url_for('main_bp.subscribe', lang=g.lang) }}" class="mobile-menu-item">
+          <a href="{{ url_for('main_bp.subscribe', lang=current_language) if hasattr(main_bp, 'subscribe') else '#' }}" class="mobile-menu-item">
             <i class="bi bi-envelope-heart"></i>
-            <span>{{ t('subscribe', g.lang)|default('Subscribe') }}</span>
+            <span>{{ t('subscribe') if t('subscribe') != 'subscribe' else 'Subscribe' }}</span>
           </a>
         </div>
       </div>
       
       <div class="mobile-menu-footer">
-        <a href="{{ url_for('auth_bp.logout', lang=g.lang) }}" class="mobile-menu-item mobile-menu-logout">
+        <a href="{{ url_for('auth_bp.logout', lang=current_language) if 'auth_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item mobile-menu-logout">
           <i class="bi bi-box-arrow-right"></i>
-          <span>{{ t('logout', g.lang)|default('Logout') }}</span>
+          <span>{{ t('logout') }}</span>
         </a>
       </div>
     </div>
@@ -255,12 +300,34 @@
   <div class="mobile-loading-overlay" id="mobile-loading" style="display: none;">
     <div class="mobile-loading">
       <div class="mobile-spinner"></div>
-      <div class="mobile-loading-text">{{ t('loading', g.lang)|default('Loading...') }}</div>
+      <div class="mobile-loading-text">{{ t('loading') }}</div>
     </div>
   </div>
 
   <!-- Scripts -->
   <script src="{{ url_for('static', filename='js/mobile-app.js') }}"></script>
+  
+  <!-- Global Config для JavaScript -->
+  <script>
+    // Конфигурация мобильного приложения
+    window.MobileConfig = {
+      currentLanguage: '{{ current_language }}',
+      supportedLanguages: {{ supported_languages | tojson }},
+      isAuthenticated: {{ 'true' if current_user.is_authenticated else 'false' }},
+      userId: {{ current_user.id if current_user.is_authenticated else 'null' }},
+      csrfToken: '{{ csrf_token() }}',
+      isRTL: {{ 'true' if is_rtl_language(current_language) else 'false' }},
+      translations: {
+        loading: '{{ t("loading") }}',
+        error: '{{ t("error") if t("error") != "error" else "Error" }}',
+        success: '{{ t("success") if t("success") != "success" else "Success" }}',
+        confirm: '{{ t("confirm") if t("confirm") != "confirm" else "Confirm" }}',
+        cancel: '{{ t("cancel") }}',
+        close: '{{ t("close") if t("close") != "close" else "Close" }}',
+        languageChanged: '{{ t("language_changed") if t("language_changed") != "language_changed" else "Language changed" }}'
+      }
+    };
+  </script>
   
   {% block mobile_scripts %}
   <script>
@@ -270,30 +337,226 @@
       window.mobileApp = new MobileApp();
     }
     
+    // Language selector functionality
+    const languageToggle = document.getElementById('mobile-language-toggle');
+    const languageDropdown = document.getElementById('mobile-language-dropdown');
+    
+    if (languageToggle && languageDropdown) {
+      languageToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        languageDropdown.classList.toggle('show');
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!languageToggle.contains(e.target) && !languageDropdown.contains(e.target)) {
+          languageDropdown.classList.remove('show');
+        }
+      });
+      
+      // Handle language selection
+      const languageOptions = languageDropdown.querySelectorAll('.mobile-language-option');
+      languageOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+          if (!this.classList.contains('active')) {
+            // Show loading state
+            this.style.opacity = '0.7';
+            this.style.pointerEvents = 'none';
+            
+            // Show loading message
+            if (window.mobileApp && window.mobileApp.showToast) {
+              window.mobileApp.showToast(window.MobileConfig.translations.languageChanged, 'info', 2000);
+            }
+          }
+        });
+      });
+    }
+    
     // Auto-hide flash messages
     setTimeout(() => {
       const toasts = document.querySelectorAll('.mobile-toast');
       toasts.forEach(toast => {
         toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.remove();
+          }
+        }, 300);
       });
     }, 5000);
   });
   </script>
   {% endblock %}
 
-  <!-- Service Worker Registration - ИСПРАВЛЕННАЯ ВЕРСИЯ -->
+  <!-- Service Worker Registration -->
   <script>
-  // Убираем проблемную регистрацию Service Worker на время
-  // if ('serviceWorker' in navigator) {
-  //   window.addEventListener('load', () => {
-  //     navigator.serviceWorker.register('/sw.js')
-  //       .then(registration => console.log('SW registered:', registration))
-  //       .catch(error => console.log('SW registration failed:', error));
-  //   });
-  // }
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => console.log('SW registered:', registration))
+        .catch(error => console.log('SW registration failed:', error));
+    });
+  }
   
-  console.log('🎉 Mobile template loaded successfully!');
+  console.log('🎉 Multilingual Mobile template loaded successfully!');
+  console.log('Current language:', window.MobileConfig.currentLanguage);
+  console.log('RTL mode:', window.MobileConfig.isRTL);
   </script>
 </body>
 </html>
+
+<style>
+/* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ МУЛЬТИЯЗЫЧНОСТИ ===== */
+
+/* Language Selector */
+.mobile-language-selector {
+  position: relative;
+}
+
+.mobile-language-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--mobile-bg-primary);
+  border: 1px solid var(--mobile-border);
+  border-radius: 12px;
+  box-shadow: var(--mobile-shadow-lg);
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all var(--mobile-transition-normal);
+}
+
+.mobile-language-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.mobile-language-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--mobile-text-primary);
+  text-decoration: none;
+  transition: all var(--mobile-transition-fast);
+  border-bottom: 1px solid var(--mobile-border);
+}
+
+.mobile-language-option:last-child {
+  border-bottom: none;
+}
+
+.mobile-language-option:hover,
+.mobile-language-option:active {
+  background: var(--mobile-bg-secondary);
+  color: var(--primary-color);
+}
+
+.mobile-language-option.active {
+  background: rgba(62, 205, 193, 0.1);
+  color: var(--primary-color);
+}
+
+.mobile-language-option .fi {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.mobile-language-name {
+  flex: 1;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.mobile-language-option .bi-check-lg {
+  color: var(--primary-color);
+  font-size: 14px;
+}
+
+/* RTL adjustments */
+[dir="rtl"] .mobile-language-dropdown {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .mobile-header-left {
+  order: 3;
+}
+
+[dir="rtl"] .mobile-header-right {
+  order: 1;
+}
+
+[dir="rtl"] .mobile-header-title {
+  order: 2;
+}
+
+[dir="rtl"] .mobile-menu {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .mobile-menu-content {
+  text-align: right;
+}
+
+/* Theme adjustments */
+[data-theme="dark"] .mobile-language-dropdown {
+  background: var(--mobile-bg-secondary);
+  border-color: var(--mobile-border);
+}
+
+[data-theme="dark"] .mobile-language-option:hover {
+  background: var(--mobile-bg-tertiary);
+}
+
+/* Flag icons fallback */
+.fi {
+  display: inline-block;
+  width: 20px;
+  height: 15px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 360px) {
+  .mobile-language-dropdown {
+    min-width: 180px;
+  }
+  
+  .mobile-language-name {
+    font-size: 13px;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-language-dropdown {
+    transition: none;
+  }
+  
+  .mobile-language-option {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .mobile-language-dropdown {
+    border-width: 2px;
+  }
+  
+  .mobile-language-option {
+    border-bottom-width: 2px;
+  }
+}
+</style>
