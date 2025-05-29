@@ -145,14 +145,14 @@
       <span class="mobile-nav-label">{{ t('home') }}</span>
     </a>
     
-    <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) if 'learning_map_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" 
+    <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) if 'learning_map_bp' in current_app.blueprints else '#' }}" 
        class="mobile-nav-item {{ 'active' if request.endpoint and 'learning' in request.endpoint else '' }}" 
        aria-label="{{ t('learning_map') }}">
       <i class="mobile-nav-icon bi bi-book{% if request.endpoint and 'learning' in request.endpoint %}-fill{% endif %}"></i>
       <span class="mobile-nav-label">{{ t('learning_map') if t('learning_map') != 'learning_map' else 'Learn' }}</span>
     </a>
     
-    <a href="{{ url_for('tests_bp.setup_test', lang=current_language) if 'tests_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" 
+    <a href="{{ url_for('tests_bp.setup_test', lang=current_language) if 'tests_bp' in current_app.blueprints else '#' }}" 
        class="mobile-nav-item {{ 'active' if request.endpoint and 'test' in request.endpoint else '' }}" 
        aria-label="{{ t('test') }}">
       <i class="mobile-nav-icon bi bi-clipboard-check{% if request.endpoint and 'test' in request.endpoint %}-fill{% endif %}"></i>
@@ -185,14 +185,14 @@
       <span class="mobile-nav-label">{{ t('about_big') if t('about_big') != 'about_big' else 'BIG Info' }}</span>
     </a>
     
-    <a href="{{ url_for('auth_bp.register', lang=current_language) if 'auth_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" 
+    <a href="{{ url_for('auth_bp.register', lang=current_language) if 'auth_bp' in current_app.blueprints else '#' }}" 
        class="mobile-nav-item {{ 'active' if request.endpoint == 'auth_bp.register' else '' }}" 
        aria-label="{{ t('register') }}">
       <i class="mobile-nav-icon bi bi-person-plus{% if request.endpoint == 'auth_bp.register' %}-fill{% endif %}"></i>
       <span class="mobile-nav-label">{{ t('register') if t('register') != 'register' else 'Sign Up' }}</span>
     </a>
     
-    <a href="{{ url_for('auth_bp.login', lang=current_language) if 'auth_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" 
+    <a href="{{ url_for('auth_bp.login', lang=current_language) if 'auth_bp' in current_app.blueprints else '#' }}" 
        class="mobile-nav-item {{ 'active' if request.endpoint == 'auth_bp.login' else '' }}" 
        aria-label="{{ t('login') }}">
       <i class="mobile-nav-icon bi bi-box-arrow-in-right{% if request.endpoint == 'auth_bp.login' %}-fill{% endif %}"></i>
@@ -228,7 +228,7 @@
         <!-- Learning Section -->
         <div class="mobile-menu-section">
           <div class="mobile-menu-section-title">{{ t('learning') if t('learning') != 'learning' else 'Learning' }}</div>
-          <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) if 'learning_map_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item">
+          <a href="{{ url_for('learning_map_bp.learning_map', lang=current_language) if 'learning_map_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item">
             <i class="bi bi-map"></i>
             <span>{{ t('learning_map') }}</span>
           </a>
@@ -245,7 +245,7 @@
         <!-- Tests Section -->
         <div class="mobile-menu-section">
           <div class="mobile-menu-section-title">{{ t('testing') if t('testing') != 'testing' else 'Testing' }}</div>
-          <a href="{{ url_for('tests_bp.setup_test', lang=current_language) if 'tests_bp' in [bp.name for bp in current_app.blueprints.values()] else '#' }}" class="mobile-menu-item">
+          <a href="{{ url_for('tests_bp.setup_test', lang=current_language) if 'tests_bp' in current_app.blueprints else '#' }}" class="mobile-menu-item">
             <i class="bi bi-clipboard-check"></i>
             <span>{{ t('practice_exams') if t('practice_exams') != 'practice_exams' else 'Practice Tests' }}</span>
           </a>
