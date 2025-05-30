@@ -319,7 +319,6 @@ def create_app(test_config=None):
     
     # Добавляем функции перевода в глобальное пространство имен Jinja2
     setup_translations(app)
-    
     # ОБЪЕДИНЕННЫЙ обработчик для языка и безопасности сессии
     @app.before_request
     def handle_language_and_redirect():
@@ -833,6 +832,19 @@ def create_app(test_config=None):
     app.register_blueprint(modules_bp)  
     app.register_blueprint(subject_view_bp)
 
+    # Инициализация мобильной интеграции
+    init_mobile_integration(app)
+    
+    # Регистрация дополнительных соответствий шаблонов
+    from mobile_integration import mobile_template_manager
+    
+    # Добавляем новые соответствия шаблонов
+    mobile_template_manager.register_mobile_template('index.html', 'welcome_mobile.html')
+    mobile_template_manager.register_mobile_template('big-info.html', 'big-info_mobile.html')
+    mobile_template_manager.register_mobile_template('demo.html', 'demo_mobile.html')
+    
+    print("✅ Mobile integration initialized with welcome screen")
+    
     # Установка глобальных контекстных переменных для шаблонов
     @app.context_processor
     def inject_global_vars():
@@ -889,9 +901,6 @@ def create_app(test_config=None):
             logger.info("✅ Database tables created successfully")
         except Exception as e:
             logger.error(f"❌ Error creating database tables: {e}")
-
-    init_mobile_integration(app)
-    init_mobile_helpers(app)
 
     return app
 

@@ -1,75 +1,45 @@
 # utils/mobile_detection.py
 """
-Mobile Device Detection Utilities for Dental Academy
-Автоматическое определение мобильных устройств и переключение на мобильные шаблоны
+Система определения мобильных устройств для Dental Academy
+Интеграция с существующей mobile_integration.py
 """
 
+from flask import request, g, session, current_app
 import re
-from flask import request, g, session
-from functools import wraps
-from user_agents import parse
-
 
 class MobileDetector:
-    """Класс для определения мобильных устройств и их характеристик"""
+    """Улучшенный детектор мобильных устройств"""
     
-    # Паттерны User-Agent для мобильных устройств
-    MOBILE_PATTERNS = [
-        r'Mobile', r'Android', r'iPhone', r'iPad', r'iPod',
-        r'BlackBerry', r'IEMobile', r'Opera Mini', r'Opera Mobi',
-        r'Windows Phone', r'Kindle', r'Silk', r'Mobile Safari'
-    ]
-    
-    # Паттерны для планшетов
-    TABLET_PATTERNS = [
-        r'iPad', r'Android(?!.*Mobile)', r'Tablet', r'Kindle',
-        r'Silk', r'PlayBook', r'Nexus 7', r'Nexus 10'
-    ]
-    
-    # Известные мобильные браузеры
-    MOBILE_BROWSERS = [
-        'Chrome Mobile', 'Safari Mobile', 'Firefox Mobile',
-        'Opera Mobile', 'UC Browser', 'Samsung Browser'
-    ]
-    
-    # Размеры экранов для определения устройств
-    MOBILE_SCREEN_WIDTHS = {
-        'small': 480,   # Маленькие телефоны (iPhone SE, и т.д.)
-        'medium': 768,  # Средние телефоны (iPhone, Samsung Galaxy)
-        'large': 1024,  # Планшеты и большие телефоны
-        'desktop': 1200 # Десктопы
-    }
-    
-    def __init__(self, user_agent_string=None, request_headers=None):
-        """
-        Инициализация детектора
-        
-        Args:
-            user_agent_string (str): Строка User-Agent
-            request_headers (dict): Заголовки запроса
-        """
-        self.user_agent_string = user_agent_string or ''
-        self.request_headers = request_headers or {}
-        self.parsed_ua = parse(self.user_agent_string) if self.user_agent_string else None
-        
-        # Кэшируем результаты
+    def __init__(self):
+        self.user_agent = request.headers.get('User-Agent', '') if request else ''
         self._is_mobile = None
         self._is_tablet = None
         self._device_type = None
-        self._screen_size = None
+        self._screen_size_category = None
     
     @property
     def is_mobile(self):
-        """Определяет, является ли устройство мобильным (телефон)"""
+        """Определяет, является ли устройство мобильным телефоном"""
         if self._is_mobile is None:
-            self._is_mobile = self._detect_mobile()
+            mobile_patterns = [
+                r'Mobile', r'Android.*Mobile', r'iPhone', r'iPod',
+                r'BlackBerry', r'IEMobile', r'Opera Mini', r'Mobile Safari',
+                r'Windows Phone', r'webOS'
+            ]
+            mobile_regex = re.compile('|'.join(mobile_patterns), re.IGNORECASE)
+            self._is_mobile = bool(mobile_regex.search(self.user_agent))
         return self._is_mobile
     
     @property
     def is_tablet(self):
         """Определяет, является ли устройство планшетом"""
         if self._is_tablet is None:
-            self._is_tablet = self._detect_tablet()
+            tablet_patterns = [
+                r'iPad', r'Android(?!.*Mobile)', r'Kindle', r'Silk',
+                r'PlayBook', r'Tablet'
+            ]
+            tablet_regex = re.compile('|'.join(tablet_patterns), re.IGNORECASE)
+            self._is_tablet = bool(tablet_regex.search(self.user_agent))
         return self._is_tablet
     
     @property
@@ -79,7 +49,7 @@ class MobileDetector:
     
     @property
     def device_type(self):
-        """Возвращает тип устройства: 'mobile', 'tablet', 'desktop'"""
+        """Возвращает тип устройства"""
         if self._device_type is None:
             if self.is_mobile:
                 self._device_type = 'mobile'
@@ -92,360 +62,192 @@ class MobileDetector:
     @property
     def screen_size_category(self):
         """Определяет категорию размера экрана"""
-        if self._screen_size is None:
-            self._screen_size = self._detect_screen_size()
-        return self._screen_size
-    
-    def _detect_mobile(self):
-        """Внутренний метод для определения мобильного устройства"""
-        if not self.user_agent_string:
-            return False
-        
-        # Используем библиотеку user-agents
-        if self.parsed_ua and self.parsed_ua.is_mobile:
-            return True
-        
-        # Дополнительная проверка по паттернам
-        mobile_pattern = '|'.join(self.MOBILE_PATTERNS)
-        if re.search(mobile_pattern, self.user_agent_string, re.IGNORECASE):
-            # Исключаем планшеты
-            tablet_pattern = '|'.join(self.TABLET_PATTERNS)
-            if not re.search(tablet_pattern, self.user_agent_string, re.IGNORECASE):
-                return True
-        
-        # Проверка заголовков
-        if self._check_mobile_headers():
-            return True
-        
-        return False
-    
-    def _detect_tablet(self):
-        """Внутренний метод для определения планшета"""
-        if not self.user_agent_string:
-            return False
-        
-        # Используем библиотеку user-agents
-        if self.parsed_ua and self.parsed_ua.is_tablet:
-            return True
-        
-        # Проверка по паттернам
-        tablet_pattern = '|'.join(self.TABLET_PATTERNS)
-        return bool(re.search(tablet_pattern, self.user_agent_string, re.IGNORECASE))
-    
-    def _detect_screen_size(self):
-        """Определяет категорию размера экрана на основе различных факторов"""
-        # Проверяем заголовки для ширины экрана
-        viewport_width = self._get_viewport_width()
-        
-        if viewport_width:
-            if viewport_width <= self.MOBILE_SCREEN_WIDTHS['small']:
-                return 'small'
-            elif viewport_width <= self.MOBILE_SCREEN_WIDTHS['medium']:
-                return 'medium'
-            elif viewport_width <= self.MOBILE_SCREEN_WIDTHS['large']:
-                return 'large'
+        if self._screen_size_category is None:
+            if self.is_mobile:
+                self._screen_size_category = 'small'
+            elif self.is_tablet:
+                self._screen_size_category = 'medium'
             else:
-                return 'desktop'
-        
-        # Fallback на основе типа устройства
-        if self.is_mobile:
-            return 'medium'  # По умолчанию средний размер для телефонов
-        elif self.is_tablet:
-            return 'large'   # Планшеты обычно большие
-        else:
-            return 'desktop'
+                self._screen_size_category = 'large'
+        return self._screen_size_category
     
-    def _check_mobile_headers(self):
-        """Проверяет специальные заголовки для мобильных устройств"""
-        mobile_headers = [
-            'HTTP_X_WAP_PROFILE',
-            'HTTP_X_WAP_CLIENTID',
-            'HTTP_WAP_CONNECTION',
-            'HTTP_PROFILE',
-            'HTTP_X_OPERAMINI_PHONE_UA',
-            'HTTP_X_NOKIA_GATEWAY_ID',
-            'HTTP_X_ORANGE_ID',
-            'HTTP_X_VODAFONE_3GPDPCONTEXT',
-            'HTTP_X_HUAWEI_USERID'
-        ]
+    def should_use_mobile_template(self):
+        """Определяет, следует ли использовать мобильный шаблон"""
+        # Проверяем принудительный режим из сессии
+        mobile_mode = session.get('mobile_mode', 'auto')
         
-        for header in mobile_headers:
-            if self.request_headers.get(header):
-                return True
-        
-        # Проверка заголовка Accept
-        accept = self.request_headers.get('HTTP_ACCEPT', '')
-        if 'wap' in accept.lower() or 'application/vnd.wap' in accept.lower():
+        if mobile_mode == 'force_mobile':
             return True
-        
-        return False
-    
-    def _get_viewport_width(self):
-        """Получает ширину viewport из заголовков (если доступно)"""
-        # Некоторые прокси и CDN добавляют информацию о размере экрана
-        viewport = self.request_headers.get('HTTP_VIEWPORT_WIDTH')
-        if viewport:
-            try:
-                return int(viewport)
-            except (ValueError, TypeError):
-                pass
-        
-        # Cloudflare может предоставлять информацию об устройстве
-        cf_device = self.request_headers.get('HTTP_CF_DEVICE_TYPE')
-        if cf_device:
-            device_widths = {
-                'mobile': 375,
-                'tablet': 768,
-                'desktop': 1200
-            }
-            return device_widths.get(cf_device.lower())
-        
-        return None
+        elif mobile_mode == 'force_desktop':
+            return False
+        else:
+            # Автоматическое определение
+            return self.is_mobile_device
     
     def get_device_info(self):
-        """Возвращает полную информацию об устройстве"""
-        device_info = {
+        """Возвращает подробную информацию об устройстве"""
+        return {
+            'user_agent': self.user_agent,
             'is_mobile': self.is_mobile,
             'is_tablet': self.is_tablet,
             'is_mobile_device': self.is_mobile_device,
             'device_type': self.device_type,
             'screen_size_category': self.screen_size_category,
-            'user_agent': self.user_agent_string
+            'should_use_mobile_template': self.should_use_mobile_template(),
+            'mobile_mode': session.get('mobile_mode', 'auto')
         }
-        
-        if self.parsed_ua:
-            device_info.update({
-                'browser_family': self.parsed_ua.browser.family,
-                'browser_version': self.parsed_ua.browser.version_string,
-                'os_family': self.parsed_ua.os.family,
-                'os_version': self.parsed_ua.os.version_string,
-                'device_family': self.parsed_ua.device.family,
-                'device_brand': self.parsed_ua.device.brand,
-                'device_model': self.parsed_ua.device.model
-            })
-        
-        return device_info
-    
-    def should_use_mobile_template(self, force_mobile=None):
-        """
-        Определяет, следует ли использовать мобильный шаблон
-        
-        Args:
-            force_mobile (bool): Принудительное включение/отключение мобильного режима
-        
-        Returns:
-            bool: True если нужно использовать мобильный шаблон
-        """
-        if force_mobile is not None:
-            return force_mobile
-        
-        # Проверяем настройки пользователя в сессии
-        user_preference = session.get('mobile_mode')
-        if user_preference == 'force_mobile':
-            return True
-        elif user_preference == 'force_desktop':
-            return False
-        
-        # Автоматическое определение
-        return self.is_mobile_device
 
+# Глобальный экземпляр детектора
+_mobile_detector = None
 
 def get_mobile_detector():
-    """Получает экземпляр MobileDetector для текущего запроса"""
-    if not hasattr(g, 'mobile_detector'):
-        user_agent = request.headers.get('User-Agent', '')
-        headers = dict(request.headers)
-        g.mobile_detector = MobileDetector(user_agent, headers)
+    """Возвращает экземпляр MobileDetector для текущего запроса"""
+    global _mobile_detector
+    if _mobile_detector is None or (request and _mobile_detector.user_agent != request.headers.get('User-Agent', '')):
+        _mobile_detector = MobileDetector()
+    return _mobile_detector
+
+def is_mobile_device(user_agent=None):
+    """
+    Простая функция для определения мобильного устройства
+    (для обратной совместимости)
+    """
+    if user_agent:
+        # Создаем временный детектор с переданным user-agent
+        temp_detector = MobileDetector()
+        temp_detector.user_agent = user_agent
+        return temp_detector.is_mobile_device
+    else:
+        return get_mobile_detector().is_mobile_device
+
+def mobile_optimized_render_template(template_name, **context):
+    """
+    Рендерит шаблон с мобильной оптимизацией
+    (интеграция с MobileTemplateManager)
+    """
+    from flask import render_template
     
-    return g.mobile_detector
-
-
-def is_mobile_request():
-    """Быстрая проверка, является ли текущий запрос мобильным"""
+    # Добавляем мобильную информацию в контекст
     detector = get_mobile_detector()
-    return detector.is_mobile_device
-
-
-def mobile_template(template_name):
-    """
-    Декоратор для автоматического выбора мобильного шаблона
+    mobile_context = {
+        'is_mobile': detector.is_mobile,
+        'is_tablet': detector.is_tablet,
+        'is_mobile_device': detector.is_mobile_device,
+        'device_type': detector.device_type,
+        'screen_size_category': detector.screen_size_category,
+        'device_info': detector.get_device_info()
+    }
     
-    Usage:
-        @mobile_template('learning/subject_view.html')
-        def view_function():
-            return render_template(...)
-    """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            detector = get_mobile_detector()
-            
-            if detector.should_use_mobile_template():
-                # Заменяем расширение на _mobile
-                mobile_template_name = template_name.replace('.html', '_mobile.html')
-                g.mobile_template_override = mobile_template_name
-            
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
-
+    context.update(mobile_context)
+    return render_template(template_name, **context)
 
 def setup_mobile_detection(app):
     """
-    Настраивает обнаружение мобильных устройств для Flask приложения
-    
-    Args:
-        app: Flask приложение
+    Настраивает систему определения мобильных устройств
+    (интеграция с Flask приложением)
     """
     
     @app.before_request
-    def detect_mobile_device():
-        """Определяет тип устройства перед каждым запросом"""
+    def detect_device():
+        """Middleware для определения устройства"""
         detector = get_mobile_detector()
-        
-        # Добавляем информацию об устройстве в g для использования в шаблонах
         g.is_mobile = detector.is_mobile
         g.is_tablet = detector.is_tablet
         g.is_mobile_device = detector.is_mobile_device
         g.device_type = detector.device_type
-        g.screen_size = detector.screen_size_category
-        g.device_info = detector.get_device_info()
+        g.screen_size_category = detector.screen_size_category
     
     @app.context_processor
     def inject_mobile_context():
-        """Добавляет мобильные переменные в контекст всех шаблонов"""
+        """Добавляет мобильный контекст в все шаблоны"""
         detector = get_mobile_detector()
         return {
             'is_mobile': detector.is_mobile,
             'is_tablet': detector.is_tablet,
             'is_mobile_device': detector.is_mobile_device,
             'device_type': detector.device_type,
-            'screen_size': detector.screen_size_category
+            'screen_size_category': detector.screen_size_category
         }
     
-    @app.route('/api/device-info')
-    def device_info_api():
-        """API эндпоинт для получения информации об устройстве"""
-        detector = get_mobile_detector()
-        return detector.get_device_info()
+    # Добавляем функции в Jinja2 (БЕЗ создания роутов - они уже есть в mobile_integration.py)
+    app.jinja_env.globals.update(
+        is_mobile_device=lambda: get_mobile_detector().is_mobile_device,
+        get_device_type=lambda: get_mobile_detector().device_type,
+        get_country_code=get_country_code,
+        is_rtl_language=is_rtl_language
+    )
     
-    @app.route('/api/toggle-mobile-mode')
-    def toggle_mobile_mode():
-        """API для переключения мобильного режима"""
-        mode = request.args.get('mode', 'auto')
-        
-        if mode in ['auto', 'force_mobile', 'force_desktop']:
-            session['mobile_mode'] = mode
-            return {'success': True, 'mode': mode}
-        
-        return {'success': False, 'error': 'Invalid mode'}, 400
+    app.logger.info("✅ Mobile detection system initialized")
 
+def get_country_code(lang_code):
+    """Возвращает код страны для флага"""
+    lang_to_country = {
+        'en': 'gb', 'nl': 'nl', 'ru': 'ru', 'uk': 'ua',
+        'es': 'es', 'pt': 'pt', 'tr': 'tr', 'fa': 'ir'
+    }
+    return lang_to_country.get(lang_code, lang_code)
 
-def mobile_optimized_render_template(template_name_or_list, **context):
-    """
-    Функция рендеринга шаблонов с автоматическим выбором мобильной версии
+def is_rtl_language(lang_code):
+    """Определяет RTL языки"""
+    rtl_languages = ['fa', 'ar', 'he', 'ur']
+    return lang_code in rtl_languages
+
+# Функции для статистики (используются в welcome экране)
+def get_user_stats():
+    """Получает статистику пользователя"""
+    from flask_login import current_user
     
-    Args:
-        template_name_or_list: Имя шаблона или список шаблонов
-        **context: Контекст для шаблона
-    
-    Returns:
-        Отрендеренный шаблон
-    """
-    from flask import render_template
-    
-    detector = get_mobile_detector()
-    
-    # Проверяем, есть ли принудительное переопределение шаблона
-    if hasattr(g, 'mobile_template_override'):
-        template_name_or_list = g.mobile_template_override
-    elif detector.should_use_mobile_template():
-        # Автоматически выбираем мобильную версию
-        if isinstance(template_name_or_list, str):
-            mobile_template = template_name_or_list.replace('.html', '_mobile.html')
+    user_data = {}
+    if current_user.is_authenticated:
+        try:
+            from models import UserProgress
+            user_progress = UserProgress.query.filter_by(user_id=current_user.id).all()
+            completed_lessons = len([p for p in user_progress if p.completed])
             
-            # Проверяем, существует ли мобильный шаблон
-            try:
-                from flask import current_app
-                current_app.jinja_env.get_template(mobile_template)
-                template_name_or_list = mobile_template
-            except:
-                # Если мобильный шаблон не найден, используем оригинальный
-                pass
+            user_data = {
+                'name': current_user.username or current_user.email.split('@')[0],
+                'email': current_user.email,
+                'completed_lessons': completed_lessons,
+                'total_progress': len(user_progress),
+                'level': min(completed_lessons // 10 + 1, 10),
+                'experience_points': completed_lessons * 10,
+                'next_level_progress': (completed_lessons % 10) * 10,
+                'streak_days': getattr(current_user, 'streak_days', 0),
+                'total_study_time': getattr(current_user, 'total_study_time', 0)
+            }
+        except Exception as e:
+            current_app.logger.warning(f"Error getting user stats: {e}")
+            user_data = {
+                'name': current_user.email.split('@')[0] if current_user.email else 'Student',
+                'email': current_user.email,
+                'completed_lessons': 0,
+                'level': 1,
+                'experience_points': 0,
+                'next_level_progress': 0,
+                'streak_days': 0,
+                'total_study_time': 0
+            }
     
-    # Добавляем мобильную информацию в контекст
-    context.update({
-        'is_mobile': detector.is_mobile,
-        'is_tablet': detector.is_tablet,
-        'is_mobile_device': detector.is_mobile_device,
-        'device_type': detector.device_type,
-        'screen_size': detector.screen_size_category,
-        'device_info': detector.get_device_info()
-    })
+    return user_data
+
+def get_app_stats():
+    """Получает общую статистику приложения"""
+    try:
+        from models import Module, Lesson, User
+        
+        stats = {
+            'total_modules': Module.query.count(),
+            'total_lessons': Lesson.query.count(),
+            'total_users': User.query.count(),
+            'supported_languages': len(current_app.config.get('SUPPORTED_LANGUAGES', []))
+        }
+    except Exception as e:
+        current_app.logger.warning(f"Error getting app stats: {e}")
+        stats = {
+            'total_modules': 50,
+            'total_lessons': 500,
+            'total_users': 1200,
+            'supported_languages': 8
+        }
     
-    return render_template(template_name_or_list, **context)
-
-
-# Алиас для удобства
-render_template_mobile = mobile_optimized_render_template
-
-
-def create_responsive_image_url(image_path, size_category=None):
-    """
-    Создает URL для адаптивного изображения на основе размера экрана
-    
-    Args:
-        image_path (str): Путь к оригинальному изображению
-        size_category (str): Категория размера ('small', 'medium', 'large', 'desktop')
-    
-    Returns:
-        str: URL адаптивного изображения
-    """
-    if not size_category:
-        detector = get_mobile_detector()
-        size_category = detector.screen_size_category
-    
-    # Определяем размеры для разных категорий
-    size_mappings = {
-        'small': '_small',    # Для маленьких экранов
-        'medium': '_medium',  # Для средних экранов
-        'large': '_large',    # Для больших экранов/планшетов
-        'desktop': ''         # Для десктопов используем оригинал
-    }
-    
-    suffix = size_mappings.get(size_category, '')
-    
-    if suffix:
-        # Вставляем суффикс перед расширением файла
-        name, ext = image_path.rsplit('.', 1)
-        return f"{name}{suffix}.{ext}"
-    
-    return image_path
-
-
-# Дополнительные утилитные функции
-
-def get_optimal_image_quality(device_type):
-    """Возвращает оптимальное качество изображения для типа устройства"""
-    quality_map = {
-        'mobile': 75,    # Более сжатые изображения для мобильных
-        'tablet': 85,    # Средние качество для планшетов
-        'desktop': 95    # Высокое качество для десктопов
-    }
-    return quality_map.get(device_type, 85)
-
-
-def should_preload_images(device_type):
-    """Определяет, следует ли предзагружать изображения"""
-    # На мобильных устройствах лучше не предзагружать из-за трафика
-    return device_type == 'desktop'
-
-
-def get_optimal_video_quality(device_type, connection_type='unknown'):
-    """Возвращает оптимальное качество видео"""
-    if device_type == 'mobile':
-        return '480p'
-    elif device_type == 'tablet':
-        return '720p'
-    else:
-        return '1080p'
+    return stats

@@ -1,0 +1,269 @@
+# Добавить эти импорты в начало routes/main_routes.py
+
+from mobile_integration import render_adaptive_template, mobile_template_manager
+from utils.mobile_detection import get_user_stats, get_app_stats, get_mobile_detector
+
+# Заменить существующий роут домашней страницы на этот:
+
+@main_bp.route('/<string:lang>/')
+@main_bp.route('/<string:lang>/index')
+@main_bp.route('/<string:lang>/home')
+def home(lang):
+    """
+    Адаптивная главная страница с автоматическим выбором шаблона
+    """
+    # Проверяем валидность языка
+    if lang not in current_app.config.get('SUPPORTED_LANGUAGES', ['en']):
+        lang = current_app.config.get('DEFAULT_LANGUAGE', 'en')
+    
+    # Устанавливаем язык в g
+    g.lang = lang
+    g.current_language = lang  # Для совместимости с mobile_base.html
+    
+    # Получаем статистику
+    stats = get_app_stats()
+    user_data = get_user_stats()
+    
+    # Получаем информацию об устройстве
+    detector = get_mobile_detector()
+    
+    # Отладочная информация
+    print(f"🏠 Home route called with lang: {lang}")
+    print(f"📱 Is mobile device: {detector.is_mobile_device}")
+    print(f"👤 User authenticated: {current_user.is_authenticated}")
+    
+    # Регистрируем соответствие шаблонов для главной страницы
+    mobile_template_manager.register_mobile_template('index.html', 'welcome_mobile.html')
+    
+    # Используем адаптивный рендеринг через существующую систему
+    return render_adaptive_template(
+        'index.html', 
+        stats=stats,
+        user_data=user_data,
+        current_language=lang,
+        supported_languages=current_app.config.get('SUPPORTED_LANGUAGES', []),
+        # Дополнительные переменные для mobile_base.html
+        has_pending_tests=False,  # TODO: реализовать логику проверки тестов
+        get_country_code=lambda code: {
+            'en': 'gb', 'nl': 'nl', 'ru': 'ru', 'uk': 'ua',
+            'es': 'es', 'pt': 'pt', 'tr': 'tr', 'fa': 'ir'
+        }.get(code, code)
+    )
+
+# Новый API роут для получения статистики
+@main_bp.route('/api/<string:lang>/welcome-stats')
+def api_welcome_stats(lang):
+    """
+    API endpoint для получения статистики для приветственного экрана
+    """
+    try:
+        stats = get_app_stats()
+        user_data = get_user_stats() if current_user.is_authenticated else None
+        
+        return jsonify({
+            'success': True,
+            'stats': stats,
+            'user_data': user_data,
+            'device_type': 'mobile' if is_mobile_device() else 'desktop'
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting welcome stats: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# Роут для принудительной мобильной версии (для тестирования)
+@main_bp.route('/<string:lang>/mobile-welcome')
+def mobile_welcome(lang):
+    """
+    Принудительно мобильная версия приветственного экрана
+    """
+    if lang not in current_app.config.get('SUPPORTED_LANGUAGES', ['en']):
+        lang = current_app.config.get('DEFAULT_LANGUAGE', 'en')
+    
+    g.lang = lang
+    g.current_language = lang
+    
+    stats = get_app_stats()
+    user_data = get_user_stats()
+    
+    # Принудительно используем мобильный шаблон
+    return render_template(
+        'welcome_mobile.html',
+        stats=stats,
+        user_data=user_data,
+        current_language=lang,
+        supported_languages=current_app.config.get('SUPPORTED_LANGUAGES', []),
+        has_pending_tests=False,
+        get_country_code=lambda code: {
+            'en': 'gb', 'nl': 'nl', 'ru': 'ru', 'uk': 'ua',
+            'es': 'es', 'pt': 'pt', 'tr': 'tr', 'fa': 'ir'
+        }.get(code, code)
+    )
+
+# Дополнительный роут для установки языка (если еще не существует)
+@main_bp.route('/set-language/<string:lang>')
+def set_language(lang):
+    """
+    Устанавливает язык и перенаправляет на главную страницу
+    """
+    if lang in current_app.config.get('SUPPORTED_LANGUAGES', ['en']):
+        session['lang'] = lang
+        flash(f'Language changed to {lang}', 'success')
+    
+    # Перенаправляем на главную страницу с новым языком
+    return redirect(url_for('main_bp.home', lang=lang))
+
+# Middleware для инициализации mobile detection (добавить в app.py)
+"""
+В app.py добавить:
+
+from mobile_detection import setup_mobile_detection, mobile_detection_middleware
+
+# После создания приложения
+setup_mobile_detection(app)
+mobile_detection_middleware(app)
+"""
+# В app.py добавить эти импорты после существующих:
+
+from mobile_integration import init_mobile_integration
+from utils.mobile_detection import setup_mobile_detection
+
+# В функции create_app() после регистрации Blueprint'ов добавить:
+
+def create_app(test_config=None):
+    # ... существующий код ...
+    
+    # ПОСЛЕ регистрации всех Blueprint'ов добавить:
+    
+    # Инициализация мобильной интеграции
+    init_mobile_integration(app)
+    
+    # Настройка определения мобильных устройств
+    setup_mobile_detection(app)
+    
+    # Регистрация дополнительных соответствий шаблонов
+    from mobile_integration import mobile_template_manager
+    
+    # Добавляем новые соответствия шаблонов
+    additional_mappings = {
+        'index.html': 'welcome_mobile.html',
+        'big-info.html': 'big-info_mobile.html',
+        'demo.html': 'demo_mobile.html',
+    }
+    
+    for desktop, mobile in additional_mappings.items():
+        mobile_template_manager.register_mobile_template(desktop, mobile)
+    
+    print("✅ Mobile integration and detection initialized")
+    
+    # ... остальной существующий код ...
+    
+    return 
+    
+    # 🔧 Чек-лист интеграции с существующей mobile_integration.py
+
+## ✅ ПРАВИЛЬНАЯ АРХИТЕКТУРА
+
+**НЕ СОЗДАВАТЬ** корневой `mobile_detection.py` - будет конфликт!
+
+**СОЗДАТЬ:**
+1. **utils/mobile_detection.py** - ✅ Создан (интеграция с существующей системой)
+2. **templates/welcome_mobile.html** - ✅ Обновлен для mobile_base.html  
+3. **static/css/welcome-mobile.css** - ✅ Создан
+4. **static/js/welcome-mobile.js** - ✅ Создан  
+5. **static/manifest.json** - ✅ Создан
+6. **static/sw.js** - ✅ Создан
+
+## 🔧 ИНТЕГРАЦИЯ С СУЩЕСТВУЮЩЕЙ СИСТЕМОЙ
+
+### 1. В app.py добавить:
+```python
+# После импортов
+from mobile_integration import init_mobile_integration
+from utils.mobile_detection import setup_mobile_detection
+
+# В функции create_app() ПОСЛЕ регистрации Blueprint'ов:
+init_mobile_integration(app)
+setup_mobile_detection(app)
+
+# Дополнительные соответствия шаблонов
+from mobile_integration import mobile_template_manager
+mobile_template_manager.register_mobile_template('index.html', 'welcome_mobile.html')
+```
+
+### 2. В routes/main_routes.py изменить импорты на:
+```python
+from mobile_integration import render_adaptive_template, mobile_template_manager
+from utils.mobile_detection import get_user_stats, get_app_stats, get_mobile_detector
+```
+
+### 3. Удалить старые файлы (если есть):
+- ~~`mobile_detection.py`~~ (в корне проекта)
+- ~~`index_mobile.html`~~ (если это старый файл)
+
+## 📱 ЛОГИКА РАБОТЫ С СУЩЕСТВУЮЩЕЙ СИСТЕМОЙ
+
+1. **mobile_integration.py** - главный менеджер шаблонов
+2. **utils/mobile_detection.py** - детектор устройств (как ожидает mobile_integration)
+3. **welcome_mobile.html** - новый красивый приветственный экран
+4. **mobile_base.html** - ваш существующий базовый мобильный шаблон
+
+## 🎯 ПРЕИМУЩЕСТВА ИНТЕГРАЦИИ
+
+✅ **Совместимость** - работает с вашей существующей системой
+✅ **Расширяемость** - добавляет новые функции без поломки старых
+✅ **Чистая архитектура** - использует правильные папки (utils/)
+✅ **API поддержка** - все API endpoints из mobile_integration.py работают
+✅ **Декораторы** - можно использовать @mobile_route, @force_mobile_template
+
+## 🧪 ТЕСТИРОВАНИЕ
+
+1. **Десктоп**: `http://localhost:5000/en/` → показывает index.html
+2. **Мобильный**: `http://localhost:5000/en/` → показывает welcome_mobile.html
+3. **API**: `http://localhost:5000/mobile-api/device-info` → информация об устройстве
+4. **Принудительно**: `http://localhost:5000/en/?mobile_mode=force_mobile` → всегда мобильная версия
+
+## 🎮 ДОПОЛНИТЕЛЬНЫЕ ВОЗМОЖНОСТИ
+
+Теперь доступны все функции из mobile_integration.py:
+
+```python
+# В роутах можно использовать
+@mobile_route('/my-page')
+@force_mobile_template('my_template.html')
+def my_page():
+    return render_adaptive_template('my_template.html')
+
+# В шаблонах доступны фильтры
+{{ image_path | mobile_image('small') }}
+{{ long_text | mobile_truncate(50) }}
+```
+
+## 🔧 НАСТРОЙКА РЕЖИМОВ
+
+Пользователи могут переключать режимы через API:
+```javascript
+// Принудительно мобильная версия
+fetch('/mobile-api/toggle-mode', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({mode: 'force_mobile'})
+});
+```
+
+## 🎨 КАСТОМИЗАЦИЯ
+
+- **Стили**: `static/css/welcome-mobile.css`
+- **Скрипты**: `static/js/welcome-mobile.js`  
+- **Соответствия шаблонов**: через `mobile_template_manager.register_mobile_template()`
+- **Устройства**: настройки в `utils/mobile_detection.py`
+
+## ⚠️ ВАЖНО
+
+- Существующая функциональность mobile_integration.py НЕ затрагивается
+- Все старые соответствия шаблонов продолжают работать  
+- Добавляется только новый welcome экран и улучшенная детекция
+- Совместимость с mobile_base.html сохранена

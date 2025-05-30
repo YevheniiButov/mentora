@@ -80,7 +80,7 @@
         </button>
         <div class="mobile-language-dropdown" id="mobile-language-dropdown">
           {% for lang_code in supported_languages %}
-          <a href="{{ url_for('main_bp.set_language', lang=lang_code) }}" 
+          <a href="{{ url_for('main_bp.set_language', lang=current_language, new_lang=lang_code) }}" 
              class="mobile-language-option {% if lang_code == current_language %}active{% endif %}"
              data-lang="{{ lang_code }}">
             <span class="fi fi-{{ get_country_code(lang_code) }}"></span>

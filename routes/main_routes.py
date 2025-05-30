@@ -9,7 +9,9 @@ import os
 import json
 import random
 from datetime import datetime
-from mobile_integration import render_adaptive_template
+from mobile_integration import render_adaptive_template, mobile_template_manager  
+from utils.mobile_detection import get_user_stats, get_app_stats, get_mobile_detector
+
 
 from models import db, User, Module, Lesson, UserProgress
 
@@ -26,9 +28,72 @@ def index():
     return redirect(url_for('.home', lang=lang_to_use))
 
 @main_bp.route('/<string:lang>/')
+@main_bp.route('/<string:lang>/index')
 @main_bp.route('/<string:lang>/home')
 def home(lang):
-    return render_adaptive_template('index.html')
+    """
+    Адаптивная главная страница с автоматическим выбором шаблона
+    """
+    # Проверяем валидность языка
+    if lang not in current_app.config.get('SUPPORTED_LANGUAGES', ['en']):
+        lang = current_app.config.get('DEFAULT_LANGUAGE', 'en')
+    
+    # Устанавливаем язык в g
+    g.lang = lang
+    g.current_language = lang  # Для совместимости с mobile_base.html
+    
+    # Получаем статистику
+    stats = get_app_stats()
+    user_data = get_user_stats()
+    
+    # Получаем информацию об устройстве
+    detector = get_mobile_detector()
+    
+    # Отладочная информация
+    print(f"🏠 Home route called with lang: {lang}")
+    print(f"📱 Is mobile device: {detector.is_mobile_device}")
+    print(f"👤 User authenticated: {current_user.is_authenticated}")
+    
+    # ВАЖНО: Используем адаптивный рендеринг через систему mobile_integration
+    return render_adaptive_template(
+        'index.html',  # ← ВАЖНО: указываем index.html, система сама выберет welcome_mobile.html для мобильных
+        stats=stats,
+        user_data=user_data,
+        current_language=lang,
+        supported_languages=current_app.config.get('SUPPORTED_LANGUAGES', []),
+        # Дополнительные переменные для mobile_base.html
+        has_pending_tests=False,
+        get_country_code=lambda code: {
+            'en': 'gb', 'nl': 'nl', 'ru': 'ru', 'uk': 'ua',
+            'es': 'es', 'pt': 'pt', 'tr': 'tr', 'fa': 'ir'
+        }.get(code, code)
+    )
+@main_bp.route('/<string:lang>/set_language/<string:new_lang>')
+def set_language(lang, new_lang):
+    """
+    Маршрут для переключения языка приложения
+    """
+    # Проверяем, что новый язык поддерживается
+    if new_lang not in current_app.config.get('SUPPORTED_LANGUAGES', ['en']):
+        new_lang = current_app.config.get('DEFAULT_LANGUAGE', 'en')
+    
+    # Обновляем язык в сессии
+    session['lang'] = new_lang
+    
+    # Получаем URL для возврата (referer)
+    referrer = request.referrer
+    
+    # Если referer есть и принадлежит нашему сайту, возвращаемся туда с новым языком
+    if referrer:
+        # Заменяем старый язык на новый в URL
+        parts = referrer.split('/')
+        for i, part in enumerate(parts):
+            if part in current_app.config.get('SUPPORTED_LANGUAGES', ['en']):
+                parts[i] = new_lang
+                return redirect('/'.join(parts))
+    
+    # Если referer не определен или не удалось обработать, перенаправляем на главную
+    return redirect(url_for('.home', lang=new_lang))
 
 @main_bp.route("/<string:lang>/profile")
 @login_required

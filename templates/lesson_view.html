@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} | Dental Academy{% endblock %}
+{% block meta_description %}Изучите урок "{{ lesson.title }}" - {{ lesson.description }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+  /* Стили для страницы урока */
+  .lesson-container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    background: var(--bg-card-contrast);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .lesson-header {
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border-light-contrast);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .lesson-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-tertiary-contrast);
+  }
+  
+  .lesson-breadcrumbs a {
+    color: var(--text-secondary-contrast);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  
+  .lesson-breadcrumbs a:hover {
+    color: var(--primary-color);
+  }
+  
+  .lesson-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-primary-contrast);
+    margin: 0.5rem 0;
+  }
+  
+  .lesson-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--text-tertiary-contrast);
+    font-size: 0.9rem;
+  }
+  
+  .lesson-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .lesson-content {
+    padding: 2rem 0;
+  }
+  
+  .lesson-content h2 {
+    font-size: 1.8rem;
+    margin: 2rem 0 1rem;
+    color: var(--text-primary-contrast);
+  }
+  
+  .lesson-content h3 {
+    font-size: 1.4rem;
+    margin: 1.5rem 0 1rem;
+    color: var(--text-primary-contrast);
+  }
+  
+  .lesson-content p {
+    margin-bottom: 1.2rem;
+    line-height: 1.6;
+    color: var(--text-primary-contrast);
+  }
+  
+  .lesson-content img {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    margin: 1.5rem 0;
+  }
+  
+  .lesson-content ul, .lesson-content ol {
+    margin: 1rem 0 1.5rem 1.5rem;
+  }
+  
+  .lesson-content li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .lesson-card {
+    background: var(--bg-secondary-contrast);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-left: 4px solid var(--primary-color);
+  }
+  
+  .lesson-card-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary-contrast);
+  }
+  
+  .lesson-navigation {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem 0;
+    border-top: 1px solid var(--border-light-contrast);
+  }
+  
+  .lesson-nav-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    color: var(--text-secondary-contrast);
+    background: var(--bg-tertiary-contrast);
+  }
+  
+  .lesson-nav-button:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+  
+  .lesson-nav-button.next {
+    flex-direction: row-reverse;
+  }
+  
+  .lesson-complete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    width: 100%;
+    margin: 2rem 0 1rem;
+  }
+  
+  .lesson-complete-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+  }
+  
+  .lesson-complete-button:active {
+    transform: translateY(0);
+  }
+  
+  .lesson-related {
+    margin-top: 3rem;
+  }
+  
+  .lesson-related-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary-contrast);
+  }
+  
+  .related-lessons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .related-lesson-card {
+    background: var(--bg-secondary-contrast);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    color: var(--text-primary-contrast);
+    border: 1px solid var(--border-light-contrast);
+  }
+  
+  .related-lesson-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+  }
+  
+  .related-lesson-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary-contrast);
+  }
+  
+  .related-lesson-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary-contrast);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-container">
+  <!-- Lesson Header -->
+  <div class="lesson-header">
+    <div class="lesson-breadcrumbs">
+      <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}">{{ t('learning_map') }}</a>
+      <i class="bi bi-chevron-right"></i>
+      <a href="{{ url_for('modules_bp.module_view', module_id=lesson.module.id, lang=g.lang) }}">{{ lesson.module.title }}</a>
+      <i class="bi bi-chevron-right"></i>
+      <span>{{ lesson.title }}</span>
+    </div>
+    
+    <h1 class="lesson-title">{{ lesson.title }}</h1>
+    
+    <div class="lesson-meta">
+      <div class="lesson-meta-item">
+        <i class="bi bi-clock"></i>
+        <span>{{ lesson.reading_time|default('10') }} {{ t('minutes') }}</span>
+      </div>
+      
+      <div class="lesson-meta-item">
+        <i class="bi bi-book"></i>
+        <span>{{ lesson.difficulty|default('Базовый') }}</span>
+      </div>
+      
+      {% if lesson.updated_at %}
+      <div class="lesson-meta-item">
+        <i class="bi bi-calendar"></i>
+        <span>{{ lesson.updated_at.strftime('%d.%m.%Y') }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <!-- Lesson Content -->
+  <div class="lesson-content">
+    {{ lesson.content|safe }}
+    
+    <!-- Important Info Card -->
+    <div class="lesson-card">
+      <div class="lesson-card-title">{{ t('important_info') }}</div>
+      <p>{{ lesson.important_info|default('Обратите внимание на ключевые моменты этого урока для лучшего понимания темы.')|safe }}</p>
+    </div>
+  </div>
+  
+  <!-- Mark as Complete Button -->
+  <button id="complete-lesson" class="lesson-complete-button">
+    <i class="bi bi-check-circle-fill"></i>
+    {{ t('mark_as_complete') }}
+  </button>
+  
+  <!-- Lesson Navigation -->
+  <div class="lesson-navigation">
+    {% if prev_lesson %}
+    <a href="{{ url_for('lesson_bp.lesson_view', lesson_id=prev_lesson.id, lang=g.lang) }}" class="lesson-nav-button prev">
+      <i class="bi bi-arrow-left"></i>
+      {{ t('previous_lesson') }}
+    </a>
+    {% else %}
+    <div></div>
+    {% endif %}
+    
+    {% if next_lesson %}
+    <a href="{{ url_for('lesson_bp.lesson_view', lesson_id=next_lesson.id, lang=g.lang) }}" class="lesson-nav-button next">
+      {{ t('next_lesson') }}
+      <i class="bi bi-arrow-right"></i>
+    </a>
+    {% endif %}
+  </div>
+  
+  <!-- Related Lessons -->
+  {% if related_lessons %}
+  <div class="lesson-related">
+    <h2 class="lesson-related-title">{{ t('related_lessons') }}</h2>
+    <div class="related-lessons">
+      {% for rel_lesson in related_lessons %}
+      <a href="{{ url_for('lesson_bp.lesson_view', lesson_id=rel_lesson.id, lang=g.lang) }}" class="related-lesson-card">
+        <div class="related-lesson-title">{{ rel_lesson.title }}</div>
+        <div class="related-lesson-desc">{{ rel_lesson.description }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- JavaScript for lesson completion -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const completeButton = document.getElementById('complete-lesson');
+  
+  if (completeButton) {
+    completeButton.addEventListener('click', function() {
+      // Show loading state
+      completeButton.innerHTML = '<i class="bi bi-hourglass-split"></i> {{ t("processing") }}';
+      completeButton.disabled = true;
+      
+      // Make API request to mark lesson as complete
+      fetch('/api/lessons/{{ lesson.id }}/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': '{{ csrf_token() }}'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update button appearance
+          completeButton.innerHTML = '<i class="bi bi-check-circle-fill"></i> {{ t("completed") }}';
+          completeButton.classList.add('completed');
+          
+          // Show success message
+          window.AppConfig.flashMessagesSystem.showMessage('success', data.message || '{{ t("lesson_completed") }}');
+          
+          // Redirect to next lesson if available
+          {% if next_lesson %}
+          setTimeout(() => {
+            window.location.href = '{{ url_for("lesson_bp.lesson_view", lesson_id=next_lesson.id, lang=g.lang) }}';
+          }, 2000);
+          {% endif %}
+        } else {
+          // Reset button on error
+          completeButton.innerHTML = '<i class="bi bi-check-circle-fill"></i> {{ t("mark_as_complete") }}';
+          completeButton.disabled = false;
+          
+          // Show error message
+          window.AppConfig.flashMessagesSystem.showMessage('error', data.message || '{{ t("error_completing_lesson") }}');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Reset button
+        completeButton.innerHTML = '<i class="bi bi-check-circle-fill"></i> {{ t("mark_as_complete") }}';
+        completeButton.disabled = false;
+        
+        // Show error message
+        window.AppConfig.flashMessagesSystem.showMessage('error', '{{ t("network_error") }}');
+      });
+    });
+  }
+});
+</script>
+{% endblock %} 

@@ -1,14 +1,13 @@
 {
   "name": "Dental Academy - Professional Training Platform",
   "short_name": "Dental Academy",
-  "description": "Complete preparation for BIG dental examination in Netherlands. Interactive learning, virtual patients, and comprehensive testing.",
-  "version": "1.2.0",
+  "description": "Complete preparation for BIG dental examination in Netherlands. Professional training platform for dentists.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#3ECDC1",
-  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "background_color": "#667eea",
   "lang": "en",
   "dir": "ltr",
   
@@ -20,14 +19,14 @@
       "purpose": "any"
     },
     {
-      "src": "/static/images/icon-96.png", 
+      "src": "/static/images/icon-96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "/static/images/icon-128.png",
-      "sizes": "128x128", 
+      "sizes": "128x128",
       "type": "image/png",
       "purpose": "any"
     },
@@ -47,7 +46,7 @@
       "src": "/static/images/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/static/images/icon-384.png",
@@ -68,31 +67,26 @@
       "src": "/static/images/screenshot-mobile-1.png",
       "sizes": "375x812",
       "type": "image/png",
-      "platform": "narrow",
-      "label": "Learning Map on Mobile"
+      "form_factor": "narrow",
+      "label": "Welcome screen with beautiful gradients and animations"
     },
     {
       "src": "/static/images/screenshot-mobile-2.png", 
       "sizes": "375x812",
       "type": "image/png",
-      "platform": "narrow",
-      "label": "Virtual Patient Interface"
+      "form_factor": "narrow",
+      "label": "Interactive learning modules with progress tracking"
     },
     {
       "src": "/static/images/screenshot-desktop-1.png",
-      "sizes": "1280x800",
+      "sizes": "1280x720",
       "type": "image/png", 
-      "platform": "wide",
-      "label": "Desktop Learning Dashboard"
+      "form_factor": "wide",
+      "label": "Comprehensive desktop learning experience"
     }
   ],
   
-  "categories": [
-    "education",
-    "medical",
-    "training",
-    "productivity"
-  ],
+  "categories": ["education", "medical", "training", "health"],
   
   "shortcuts": [
     {
@@ -103,61 +97,59 @@
       "icons": [
         {
           "src": "/static/images/shortcut-learn.png",
-          "sizes": "96x96"
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
     {
       "name": "Practice Tests",
-      "short_name": "Tests", 
+      "short_name": "Test",
       "description": "Take practice exams and assessments",
       "url": "/tests",
       "icons": [
         {
           "src": "/static/images/shortcut-test.png",
-          "sizes": "96x96"
+          "sizes": "96x96", 
+          "type": "image/png"
         }
       ]
     },
     {
       "name": "Virtual Patients",
       "short_name": "Patients",
-      "description": "Practice with virtual patient scenarios", 
+      "description": "Practice with virtual patient scenarios",
       "url": "/virtual-patient",
       "icons": [
         {
           "src": "/static/images/shortcut-patient.png",
-          "sizes": "96x96"
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
     {
       "name": "Profile",
-      "short_name": "Profile",
-      "description": "View your progress and settings",
-      "url": "/profile", 
+      "short_name": "Profile", 
+      "description": "View your progress and achievements",
+      "url": "/profile",
       "icons": [
         {
           "src": "/static/images/shortcut-profile.png",
-          "sizes": "96x96"
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     }
   ],
   
-  "related_applications": [
-    {
-      "platform": "webapp",
-      "url": "https://dentalacademy.onrender.com/manifest.json"
-    }
-  ],
-  
+  "related_applications": [],
   "prefer_related_applications": false,
   
   "protocol_handlers": [
     {
       "protocol": "web+dentalacademy",
-      "url": "/handle?type=%s"
+      "url": "/deep-link?target=%s"
     }
   ],
   
@@ -171,7 +163,9 @@
   
   "handle_links": "preferred",
   
-  "offline_enabled": true,
+  "display_override": ["window-controls-overlay", "minimal-ui", "standalone", "browser"],
+  
+  "id": "dental-academy-pwa",
   
   "share_target": {
     "action": "/share-target",
@@ -179,7 +173,7 @@
     "enctype": "multipart/form-data",
     "params": {
       "title": "title",
-      "text": "text", 
+      "text": "text",
       "url": "url",
       "files": [
         {

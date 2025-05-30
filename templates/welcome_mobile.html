@@ -1,0 +1,241 @@
+{% extends "mobile_base.html" %}
+
+{% block title %}{{ t('welcome_to_dental_academy') | default('Welcome to Dental Academy') }}{% endblock %}
+
+{% block mobile_title %}{{ t('welcome') | default('Welcome') }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/welcome-mobile.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block mobile_header_actions %}
+<!-- Install App Button (показывается если PWA можно установить) -->
+<button class="mobile-header-action" id="pwa-install-btn" style="display: none;" aria-label="Install App">
+  <i class="bi bi-download"></i>
+</button>
+{{ super() }}
+{% endblock %}
+
+{% block mobile_content %}
+    <!-- Hero Section -->
+    <div class="welcome-hero-section">
+        <!-- Animated Background -->
+        <div class="hero-background">
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+            <div class="particles-container" id="particlesContainer"></div>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="hero-content">
+            <!-- Welcome Card -->
+            <div class="welcome-card glass-card" data-animate="fadeInUp">
+                <div class="card-glow"></div>
+                {% if current_user.is_authenticated %}
+                <!-- Персонализированное приветствие -->
+                <div class="welcome-avatar">
+                    <div class="avatar-container">
+                        {% if current_user.profile_image %}
+                        <img src="{{ url_for('static', filename='uploads/profile/' + current_user.profile_image) }}" alt="{{ current_user.username }}">
+                        {% else %}
+                        <div class="avatar-placeholder">{{ (current_user.username or current_user.email)[0] | upper }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <h1 class="welcome-title">
+                    {{ t('welcome_back') | default('Welcome back') }}, {{ user_data.name if user_data else (current_user.username or current_user.email.split('@')[0]) }}! 👋
+                </h1>
+                <p class="welcome-subtitle">
+                    {{ t('continue_journey') | default('Ready to continue your dental learning journey?') }}
+                </p>
+                {% else %}
+                <!-- Общее приветствие -->
+                <div class="welcome-icon">
+                    <div class="icon-container">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                </div>
+                <h1 class="welcome-title">
+                    {{ t('welcome_title') | default('Welcome to Dental Academy') }}
+                </h1>
+                <p class="welcome-subtitle">
+                    {{ t('welcome_subtitle') | default('Your journey to dental excellence starts here. Prepare for BIG exam with confidence.') }}
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Feature Stats -->
+            <div class="stats-grid" data-animate="slideUp">
+                {% if current_user.is_authenticated %}
+                <!-- Персональная статистика -->
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-number" data-count="{{ user_data.completed_lessons if user_data else 0 }}">0</div>
+                    <div class="stat-label">{{ t('completed_lessons') | default('Completed') }}</div>
+                </div>
+                
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-number" data-count="{{ user_data.level if user_data else 1 }}">0</div>
+                    <div class="stat-label">{{ t('level') | default('Level') }}</div>
+                </div>
+                
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-number" data-count="{{ user_data.streak_days if user_data else 0 }}">0</div>
+                    <div class="stat-label">{{ t('streak_days') | default('Days') }}</div>
+                </div>
+                {% else %}
+                <!-- Общая статистика -->
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-number" data-count="{{ stats.total_lessons if stats else 500 }}">0</div>
+                    <div class="stat-label">{{ t('practice_questions') | default('Questions') }}</div>
+                </div>
+                
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-number" data-count="{{ stats.total_modules if stats else 50 }}">0</div>
+                    <div class="stat-label">{{ t('modules') | default('Modules') }}</div>
+                </div>
+                
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">🌍</div>
+                    <div class="stat-number" data-count="{{ stats.supported_languages if stats else 8 }}">0</div>
+                    <div class="stat-label">{{ t('languages') | default('Languages') }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons" data-animate="fadeInUp">
+                {% if current_user.is_authenticated %}
+                <a href="/{{ current_language }}/learning-map" class="btn-primary">
+                    <span>{{ t('continue_learning') | default('Continue Learning') }}</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="/{{ current_language }}/tests/setup" class="btn-secondary">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>{{ t('practice_test') | default('Practice Test') }}</span>
+                </a>
+                {% else %}
+                <a href="/{{ current_language }}/auth/register" class="btn-primary">
+                    <span>{{ t('get_started') | default('Get Started') }}</span>
+                    <i class="fas fa-rocket"></i>
+                </a>
+                <a href="/{{ current_language }}/auth/login" class="btn-secondary">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>{{ t('sign_in') | default('Sign In') }}</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Quick Features -->
+            <div class="quick-features" data-animate="fadeInUp">
+                <div class="feature-pill">
+                    <i class="bi bi-shield-check"></i>
+                    <span>{{ t('certified_content') | default('Certified Content') }}</span>
+                </div>
+                <div class="feature-pill">
+                    <i class="bi bi-clock"></i>
+                    <span>{{ t('flexible_learning') | default('Flexible Learning') }}</span>
+                </div>
+                <div class="feature-pill">
+                    <i class="bi bi-people"></i>
+                    <span>{{ t('expert_support') | default('Expert Support') }}</span>
+                </div>
+            </div>
+
+            <!-- Progress Ring (только для авторизованных) -->
+            {% if current_user.is_authenticated and user_data %}
+            <div class="progress-section" data-animate="fadeInUp">
+                <div class="progress-ring-container">
+                    <div class="progress-ring">
+                        <svg class="progress-svg" width="120" height="120">
+                            <circle class="progress-circle-bg" cx="60" cy="60" r="50"></circle>
+                            <circle class="progress-circle-fill" cx="60" cy="60" r="50" 
+                                    style="--progress: {{ user_data.next_level_progress if user_data else 0 }}%"></circle>
+                        </svg>
+                        <div class="progress-center">
+                            <div class="progress-level">{{ user_data.level if user_data else 1 }}</div>
+                            <div class="progress-label">{{ t('level') | default('Level') }}</div>
+                        </div>
+                    </div>
+                    <div class="progress-info">
+                        <h3>{{ t('your_progress') | default('Your Progress') }}</h3>
+                        <p>{{ user_data.next_level_progress if user_data else 0 }}% {{ t('to_next_level') | default('to next level') }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Debug Info (только в development) -->
+    {% if config.DEBUG %}
+    <div class="debug-mobile-indicator">
+        📱 Mobile: {{ device_type }} | Template: {{ current_template }}
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block mobile_scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/welcome-mobile.js') }}"></script>
+
+<!-- Enhanced Welcome Config -->
+<script>
+window.WelcomeConfig = {
+    currentLanguage: '{{ current_language }}',
+    supportedLanguages: {{ supported_languages | tojson }},
+    isAuthenticated: {{ 'true' if current_user.is_authenticated else 'false' }},
+    userId: {{ current_user.id if current_user.is_authenticated else 'null' }},
+    userLevel: {{ user_data.level if user_data else 1 }},
+    userProgress: {{ user_data.next_level_progress if user_data else 0 }},
+    translations: {
+        themeChanged: '{{ t("theme_changed") | default("Theme changed") }}',
+        languageChanged: '{{ t("language_changed") | default("Language changed") }}',
+        installPrompt: '{{ t("install_prompt") | default("Install this app for the best experience!") }}',
+        installSuccess: '{{ t("install_success") | default("App installed successfully!") }}',
+        welcome: '{{ t("welcome") | default("Welcome") }}',
+        loading: '{{ t("loading") | default("Loading...") }}'
+    }
+};
+
+// Initialize enhanced welcome app
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof WelcomeMobileApp !== 'undefined') {
+        window.welcomeApp = new WelcomeMobileApp();
+    }
+    
+    // PWA Install Button
+    const installBtn = document.getElementById('pwa-install-btn');
+    if (installBtn) {
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+            
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const result = await deferredPrompt.userChoice;
+                    if (result.outcome === 'accepted') {
+                        console.log('PWA installed');
+                        installBtn.style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
