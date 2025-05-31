@@ -1,0 +1,45 @@
+{% extends "mobile/base/mobile_base.html" %}
+
+<!-- 
+Этот файл служит промежуточным слоем между mobile_base.html и конкретными мобильными страницами.
+Здесь можно переопределить блоки для специфичных нужд мобильных страниц.
+-->
+
+{% block mobile_header %}
+<header class="mobile-header">
+    <div class="mobile-header-left">
+        {% block mobile_header_left %}
+        {% if current_user.is_authenticated %}
+        <button class="mobile-header-action" id="mobile-menu-toggle" aria-label="{{ t('open_menu') if t('open_menu') != 'open_menu' else 'Open menu' }}">
+            <i class="bi bi-list"></i>
+        </button>
+        {% else %}
+        <a href="{{ url_for('main_bp.home', lang=current_language) }}" class="mobile-header-action" aria-label="{{ t('home') }}">
+            <i class="bi bi-house"></i>
+        </a>
+        {% endif %}
+        {% endblock %}
+    </div>
+    
+    <h1 class="mobile-header-title">
+        {% block mobile_title %}{{ title or t('app_title') }}{% endblock %}
+    </h1>
+    
+    <div class="mobile-header-right">
+        {% block mobile_header_actions %}
+        <!-- Действия в правой части хедера -->
+        {% endblock %}
+    </div>
+</header>
+{% endblock %}
+
+{% block mobile_scripts %}
+    <!-- Базовые мобильные скрипты -->
+    <script src="{{ url_for('static', filename='js/mobile/mobile-config.js') }}"></script>
+    
+    <!-- Пользовательские скрипты для конкретных страниц -->
+    {% block page_scripts %}{% endblock %}
+{% endblock %}
+
+{# Мобильные компоненты для Dental Academy #}
+{# Вставьте сюда код мобильных компонентов #} 

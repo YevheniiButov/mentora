@@ -33,8 +33,9 @@ from routes.lesson_routes import lesson_bp
 from routes.tests_routes import tests_bp
 from routes.learning_map_routes import learning_map_bp
 from routes.dashboard_routes import dashboard_bp
-from routes.modules_routes import modules_bp 
+from routes.modules_routes import modules_bp
 from routes.subject_view_routes import subject_view_bp
+from routes.mobile_routes import mobile_bp
 
 # Настройка логирования
 logging.basicConfig(
@@ -831,6 +832,7 @@ def create_app(test_config=None):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(modules_bp)  
     app.register_blueprint(subject_view_bp)
+    app.register_blueprint(mobile_bp)
 
     # Инициализация мобильной интеграции
     init_mobile_integration(app)
@@ -839,7 +841,7 @@ def create_app(test_config=None):
     from mobile_integration import mobile_template_manager
     
     # Добавляем новые соответствия шаблонов
-    mobile_template_manager.register_mobile_template('index.html', 'welcome_mobile.html')
+    mobile_template_manager.register_mobile_template('index.html', 'mobile/learning/welcome_mobile.html')
     mobile_template_manager.register_mobile_template('big-info.html', 'big-info_mobile.html')
     mobile_template_manager.register_mobile_template('demo.html', 'demo_mobile.html')
     
@@ -853,12 +855,21 @@ def create_app(test_config=None):
             rtl_languages = ['fa', 'ar', 'he']
             return lang in rtl_languages
         
+        def get_country_code(lang_code):
+            """Возвращает код страны для флага"""
+            lang_to_country = {
+                'en': 'gb', 'nl': 'nl', 'ru': 'ru', 'uk': 'ua',
+                'es': 'es', 'pt': 'pt', 'tr': 'tr', 'fa': 'ir'
+            }
+            return lang_to_country.get(lang_code, lang_code)
+        
         return dict(
             current_year=datetime.now().year,
             app_name="Become a Tandarts",
             supported_languages=SUPPORTED_LANGUAGES,
             config=app.config,
             is_rtl_language=is_rtl_language,
+            get_country_code=get_country_code,
             current_app=current_app
         )
     
@@ -1342,4 +1353,4 @@ if __name__ == '__main__':
     print("   - flask show-modules    : Show all modules in database")
     print("="*50 + "\n")
     
-    app.run(debug=True)
+    app.run(debug=True, port=8080)

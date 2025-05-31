@@ -1,0 +1,1 @@
+# AI пакет для Dental Academy 

@@ -1,8 +1,10 @@
-{% extends "mobile_base.html" %}
+{% extends "mobile/base/mobile_base.html" %}
 
 {% block title %}{{ t('welcome_to_dental_academy') | default('Welcome to Dental Academy') }}{% endblock %}
 
-{% block mobile_title %}{{ t('dental_academy') | default('Dental Academy') }}{% endblock %}
+{% block mobile_title %}
+<img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 32px; width: auto; object-fit: contain;">
+{% endblock %}
 
 {% block styles %}
 {{ super() }}
@@ -148,6 +150,13 @@ body {
 .hero-logo i {
     font-size: 2.5rem;
     color: white;
+}
+
+.hero-logo img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
 }
 
 @keyframes pulse-glow {
@@ -709,7 +718,7 @@ body {
     <!-- Контент Hero -->
     <div class="hero-content">
         <div class="hero-logo">
-            <i class="bi bi-heart-pulse-fill"></i>
+            <img src="{{ url_for('static', filename='favicon.png') }}" alt="Favicon" style="width: 40px; height: 40px; object-fit: contain;">
         </div>
         
         <h1 class="hero-title">

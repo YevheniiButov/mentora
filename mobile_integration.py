@@ -51,7 +51,7 @@ class MobileTemplateManager:
         # Регистрируем новый шаблон
         self.register_mobile_template('auth/change_password.html', 'auth/change_password_mobile.html')
         self.register_mobile_template('lesson_view.html', 'lesson_view_mobile.html')
-        self.register_mobile_template('index.html', 'welcome-mobile.html')
+        self.register_mobile_template('index.html', 'mobile/learning/welcome_mobile.html')
     
     def register_mobile_template(self, desktop_template, mobile_template):
         """
@@ -371,7 +371,7 @@ def init_mobile_integration(app):
     # Регистрируем основные соответствия шаблонов
     template_mappings = {
         # Основные страницы
-        'index.html': 'welcome_mobile.html', 
+        'index.html': 'mobile/learning/welcome_mobile.html', 
         'learning/subject_view.html': 'learning/subject_view_mobile.html',
         'learning/lesson.html': 'learning/lesson_mobile.html',
         'learning/module.html': 'learning/module_mobile.html',

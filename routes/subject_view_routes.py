@@ -245,7 +245,7 @@ def view_subject(lang, subject_id):
                 subject.estimated_time = "2h"
                 subject.category = 'general'
 
-        template = "learning/subject_view_mobile.html" if is_mobile_request() else "learning/subject_view.html"
+        template = "mobile/learning/subject_view_mobile.html" if is_mobile_request() else "learning/subject_view.html"
         
         # Добавляем отладочную информацию о выбранном шаблоне
         current_app.logger.info(f"Selected template: {template}")
@@ -601,7 +601,7 @@ def mobile_test_no_auth(lang):
         'user_agent': user_agent,
         'device_info': device_info,
         'should_use_mobile': detector.should_use_mobile_template(),
-        'template_would_be': "learning/subject_view_mobile.html" if detector.is_mobile_device else "learning/subject_view.html",
+        'template_would_be': "mobile/learning/subject_view_mobile.html" if detector.is_mobile_device else "learning/subject_view.html",
         'url': request.url,
         'endpoint': request.endpoint
     }
@@ -629,7 +629,7 @@ def force_mobile_subject(lang, subject_id):
         recommendations = get_user_recommendations(current_user.id)
         random_fact = get_random_fact(g.lang)
 
-        template = "learning/subject_view_mobile.html"  # Принудительно мобильный шаблон
+        template = "mobile/learning/subject_view_mobile.html"  # Принудительно мобильный шаблон
         current_app.logger.info(f"Force using mobile template: {template}")
 
         return render_template(

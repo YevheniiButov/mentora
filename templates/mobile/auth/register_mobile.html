@@ -1,0 +1,1303 @@
+{% extends "mobile_base.html" %}
+
+{% block title %}{{ t('create_account') | default('Create Account') }} - Dental Academy{% endblock %}
+
+{% block mobile_title %}{{ t('create_account') | default('Create Account') }}{% endblock %}
+
+{% block mobile_header_left %}
+<a href="{{ url_for('main_bp.home', lang=current_language) }}" class="mobile-header-action">
+  <i class="bi bi-arrow-left"></i>
+</a>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+/* ===== СТИЛИ ДЛЯ МОБИЛЬНОЙ РЕГИСТРАЦИИ ===== */
+:root {
+    --register-gradient: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --input-focus: rgba(255, 255, 255, 1);
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+}
+
+body {
+    background: var(--register-gradient);
+    min-height: 100vh;
+}
+
+.register-container {
+    min-height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1rem;
+    position: relative;
+    overflow-y: auto;
+}
+
+/* Анимированный фон */
+.register-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.floating-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: floatUp 8s infinite linear;
+}
+
+.particle:nth-child(odd) {
+    animation-duration: 10s;
+}
+
+.particle:nth-child(even) {
+    animation-duration: 12s;
+}
+
+@keyframes floatUp {
+    from {
+        opacity: 0;
+        transform: translateY(100vh) rotate(0deg);
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-100px) rotate(360deg);
+    }
+}
+
+/* Генерация частиц */
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+.particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+.particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+.particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+.particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+.particle:nth-child(7) { left: 70%; animation-delay: 6s; }
+.particle:nth-child(8) { left: 80%; animation-delay: 7s; }
+.particle:nth-child(9) { left: 90%; animation-delay: 8s; }
+
+/* Основная карточка регистрации */
+.register-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 10;
+    animation: slideUpRegister 0.8s ease-out;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+}
+
+@keyframes slideUpRegister {
+    from {
+        opacity: 0;
+        transform: translateY(60px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.register-logo {
+    width: 64px;
+    height: 64px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+    }
+}
+
+.register-logo i {
+    font-size: 2rem;
+    color: white;
+}
+
+.register-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.5rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.register-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Форма */
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-group {
+    position: relative;
+    flex: 1;
+}
+
+.form-group.full-width {
+    flex: none;
+}
+
+.form-label {
+    display: block;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    background: var(--input-bg);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #374151;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.form-input:focus {
+    outline: none;
+    background: var(--input-focus);
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    transform: translateY(-2px);
+}
+
+.form-input.error {
+    border-color: var(--error-color);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.form-input.success {
+    border-color: var(--success-color);
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.form-input::placeholder {
+    color: #9ca3af;
+}
+
+.form-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 1.1rem;
+    margin-top: 1.25rem;
+    transition: color 0.3s ease;
+}
+
+.form-group:focus-within .form-icon {
+    color: var(--success-color);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin-top: 1.25rem;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: #374151;
+}
+
+/* Индикатор силы пароля */
+.password-strength {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.strength-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.25rem;
+}
+
+.strength-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-weak .strength-fill {
+    width: 33%;
+    background: var(--error-color);
+}
+
+.strength-medium .strength-fill {
+    width: 66%;
+    background: var(--warning-color);
+}
+
+.strength-strong .strength-fill {
+    width: 100%;
+    background: var(--success-color);
+}
+
+.strength-requirements {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.strength-requirement {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.25rem;
+}
+
+.strength-requirement.met {
+    color: rgba(34, 197, 94, 0.9);
+}
+
+.strength-requirement i {
+    font-size: 0.7rem;
+}
+
+/* Соглашения */
+.terms-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.terms-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--success-color);
+    border-radius: 4px;
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+}
+
+.terms-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.terms-text a {
+    color: white;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.terms-text a:hover {
+    color: var(--success-color);
+}
+
+/* Кнопки */
+.register-button {
+    width: 100%;
+    padding: 1rem;
+    background: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.register-button:hover {
+    background: #16a34a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+}
+
+.register-button:active {
+    transform: translateY(0);
+}
+
+.register-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.register-button.loading {
+    color: transparent;
+}
+
+.register-button.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Разделитель */
+.register-divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.register-divider::before,
+.register-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.register-divider span {
+    padding: 0 1rem;
+}
+
+/* Социальные кнопки */
+.social-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.social-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.social-button i {
+    font-size: 1.1rem;
+}
+
+/* Подвал */
+.register-footer {
+    text-align: center;
+    margin-top: 2rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.register-footer a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.register-footer a:hover {
+    color: var(--success-color);
+    text-decoration: underline;
+}
+
+/* Сообщения */
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.success-message {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #86efac;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.field-error {
+    color: #fca5a5;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    padding-left: 0.5rem;
+}
+
+/* Адаптивность */
+@media (max-width: 360px) {
+    .register-card {
+        padding: 1.5rem;
+        margin: 0.5rem;
+    }
+    
+    .register-title {
+        font-size: 1.5rem;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+    
+    .social-buttons {
+        flex-direction: column;
+    }
+}
+
+/* RTL поддержка */
+[dir="rtl"] .form-input {
+    padding: 1rem 3rem 1rem 1rem;
+}
+
+[dir="rtl"] .form-icon {
+    left: auto;
+    right: 1rem;
+}
+
+[dir="rtl"] .password-toggle {
+    right: auto;
+    left: 1rem;
+}
+
+/* Темная тема */
+[data-theme="dark"] .form-input {
+    background: rgba(31, 41, 55, 0.9);
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .form-input:focus {
+    background: rgba(31, 41, 55, 1);
+}
+
+[data-theme="dark"] .form-input::placeholder {
+    color: #6b7280;
+}
+
+/* Высокий контраст */
+@media (prefers-contrast: high) {
+    .register-card {
+        border-width: 2px;
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .form-input {
+        border-width: 2px;
+    }
+    
+    .register-button {
+        border: 2px solid var(--success-color);
+    }
+}
+
+/* Уменьшенная анимация */
+@media (prefers-reduced-motion: reduce) {
+    .register-card,
+    .register-logo {
+        animation: none;
+    }
+    
+    .particle {
+        animation: none;
+    }
+    
+    .form-input,
+    .register-button {
+        transition: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block mobile_content %}
+<div class="register-container">
+    <!-- Анимированный фон -->
+    <div class="register-background">
+        <div class="floating-particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+    
+    <!-- Карточка регистрации -->
+    <div class="register-card">
+        <!-- Заголовок -->
+        <div class="register-header">
+            <div class="register-logo">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <h1 class="register-title">{{ t('join_dental_academy') | default('Join Dental Academy') }}</h1>
+            <p class="register-subtitle">{{ t('register_subtitle') | default('Start your journey to dental excellence today') }}</p>
+        </div>
+        
+        <!-- Сообщения -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="{{ 'error-message' if category == 'error' else 'success-message' }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+        
+        <!-- Форма регистрации -->
+        <form class="register-form" method="POST" action="{{ url_for('auth_bp.register', lang=current_language) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <!-- Имя и фамилия -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name" class="form-label">
+                        {{ t('first_name') | default('First Name') }}
+                    </label>
+                    <div class="input-container">
+                        <i class="form-icon bi bi-person"></i>
+                        <input 
+                            type="text" 
+                            id="first_name" 
+                            name="first_name" 
+                            class="form-input" 
+                            placeholder="{{ t('first_name_placeholder') | default('Enter your first name') }}"
+                            required
+                            autocomplete="given-name"
+                            value="{{ request.form.get('first_name', '') }}"
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name" class="form-label">
+                        {{ t('last_name') | default('Last Name') }}
+                    </label>
+                    <div class="input-container">
+                        <i class="form-icon bi bi-person"></i>
+                        <input 
+                            type="text" 
+                            id="last_name" 
+                            name="last_name" 
+                            class="form-input" 
+                            placeholder="{{ t('last_name_placeholder') | default('Enter your last name') }}"
+                            required
+                            autocomplete="family-name"
+                            value="{{ request.form.get('last_name', '') }}"
+                        >
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email -->
+            <div class="form-group full-width">
+                <label for="email" class="form-label">
+                    {{ t('email') | default('Email Address') }}
+                </label>
+                <div class="input-container">
+                    <i class="form-icon bi bi-envelope"></i>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="{{ t('email_placeholder') | default('Enter your email') }}"
+                        required
+                        autocomplete="email"
+                        value="{{ request.form.get('email', '') }}"
+                    >
+                </div>
+            </div>
+            
+            <!-- Пароль -->
+            <div class="form-group full-width">
+                <label for="password" class="form-label">
+                    {{ t('password') | default('Password') }}
+                </label>
+                <div class="input-container">
+                    <i class="form-icon bi bi-lock"></i>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-input" 
+                        placeholder="{{ t('password_placeholder') | default('Create a secure password') }}"
+                        required
+                        autocomplete="new-password"
+                    >
+                    <button type="button" class="password-toggle" aria-label="{{ t('toggle_password') | default('Toggle password visibility') }}">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                
+                <!-- Индикатор силы пароля -->
+                <div class="password-strength" id="passwordStrength" style="display: none;">
+                    <div class="strength-label">{{ t('password_strength') | default('Password Strength') }}:</div>
+                    <div class="strength-bar">
+                        <div class="strength-fill"></div>
+                    </div>
+                    <div class="strength-requirements">
+                        <div class="strength-requirement" id="lengthReq">
+                            <i class="bi bi-x-circle"></i>
+                            <span>{{ t('min_8_chars') | default('At least 8 characters') }}</span>
+                        </div>
+                        <div class="strength-requirement" id="letterReq">
+                            <i class="bi bi-x-circle"></i>
+                            <span>{{ t('upper_lower_case') | default('Upper and lowercase letters') }}</span>
+                        </div>
+                        <div class="strength-requirement" id="numberReq">
+                            <i class="bi bi-x-circle"></i>
+                            <span>{{ t('number') | default('At least one number') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Подтверждение пароля -->
+            <div class="form-group full-width">
+                <label for="confirm_password" class="form-label">
+                    {{ t('confirm_password') | default('Confirm Password') }}
+                </label>
+                <div class="input-container">
+                    <i class="form-icon bi bi-lock-fill"></i>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        class="form-input" 
+                        placeholder="{{ t('confirm_password_placeholder') | default('Re-enter your password') }}"
+                        required
+                        autocomplete="new-password"
+                    >
+                    <button type="button" class="password-toggle" aria-label="{{ t('toggle_password') | default('Toggle password visibility') }}">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Соглашения -->
+            <div class="terms-group">
+                <input type="checkbox" id="terms" name="terms" class="terms-checkbox" required>
+                <div class="terms-text">
+                    {{ t('terms_agreement') | default('I agree to the') }} 
+                    <a href="{{ url_for('main_bp.terms', lang=current_language) }}" target="_blank">{{ t('terms_of_service') | default('Terms of Service') }}</a> 
+                    {{ t('and') | default('and') }} 
+                    <a href="{{ url_for('main_bp.privacy', lang=current_language) }}" target="_blank">{{ t('privacy_policy') | default('Privacy Policy') }}</a>
+                </div>
+            </div>
+            
+            <!-- Кнопка регистрации -->
+            <button type="submit" class="register-button" id="registerButton">
+                {{ t('create_account') | default('Create Account') }}
+            </button>
+        </form>
+        
+        <!-- Разделитель -->
+        <div class="register-divider">
+            <span>{{ t('or') | default('or') }}</span>
+        </div>
+        
+        <!-- Социальные кнопки -->
+        <div class="social-buttons">
+            <a href="{{ url_for('auth_bp.google_register', lang=current_language) }}" class="social-button">
+                <i class="bi bi-google"></i>
+                <span>Google</span>
+            </a>
+            <a href="{{ url_for('auth_bp.facebook_register', lang=current_language) }}" class="social-button">
+                <i class="bi bi-facebook"></i>
+                <span>Facebook</span>
+            </a>
+        </div>
+        
+        <!-- Подвал -->
+        <div class="register-footer">
+            {{ t('already_have_account') | default('Already have an account?') }}
+            <a href="{{ url_for('auth_bp.login', lang=current_language) }}">
+                {{ t('sign_in') | default('Sign in') }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block mobile_scripts %}
+{{ super() }}
+
+<script>
+// ===== МОБИЛЬНАЯ РЕГИСТРАЦИЯ =====
+class MobileRegisterController {
+    constructor() {
+        this.form = document.querySelector('.register-form');
+        this.firstNameInput = document.getElementById('first_name');
+        this.lastNameInput = document.getElementById('last_name');
+        this.emailInput = document.getElementById('email');
+        this.passwordInput = document.getElementById('password');
+        this.confirmPasswordInput = document.getElementById('confirm_password');
+        this.termsCheckbox = document.getElementById('terms');
+        this.registerButton = document.getElementById('registerButton');
+        this.passwordStrength = document.getElementById('passwordStrength');
+        
+        this.passwordToggles = document.querySelectorAll('.password-toggle');
+        
+        this.init();
+    }
+    
+    init() {
+        this.setupPasswordToggles();
+        this.setupPasswordStrength();
+        this.setupFormValidation();
+        this.setupFormSubmission();
+        this.setupInputEnhancements();
+        this.setupAccessibility();
+    }
+    
+    setupPasswordToggles() {
+        this.passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                const input = toggle.previousElementSibling;
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                
+                const icon = toggle.querySelector('i');
+                icon.className = `bi bi-${isPassword ? 'eye-slash' : 'eye'}`;
+                
+                toggle.setAttribute(
+                    'aria-label', 
+                    isPassword ? 'Hide password' : 'Show password'
+                );
+            });
+        });
+    }
+    
+    setupPasswordStrength() {
+        this.passwordInput.addEventListener('input', () => {
+            this.updatePasswordStrength();
+        });
+        
+        this.passwordInput.addEventListener('focus', () => {
+            this.passwordStrength.style.display = 'block';
+        });
+    }
+    
+    updatePasswordStrength() {
+        const password = this.passwordInput.value;
+        const lengthReq = document.getElementById('lengthReq');
+        const letterReq = document.getElementById('letterReq');
+        const numberReq = document.getElementById('numberReq');
+        const strengthBar = document.querySelector('.strength-bar');
+        
+        // Проверка требований
+        const hasLength = password.length >= 8;
+        const hasLetters = /[a-z]/.test(password) && /[A-Z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        
+        // Обновление индикаторов
+        this.updateRequirement(lengthReq, hasLength);
+        this.updateRequirement(letterReq, hasLetters);
+        this.updateRequirement(numberReq, hasNumber);
+        
+        // Определение силы пароля
+        const score = [hasLength, hasLetters, hasNumber].filter(Boolean).length;
+        
+        strengthBar.className = 'strength-bar';
+        if (score === 1) {
+            strengthBar.classList.add('strength-weak');
+        } else if (score === 2) {
+            strengthBar.classList.add('strength-medium');
+        } else if (score === 3) {
+            strengthBar.classList.add('strength-strong');
+        }
+    }
+    
+    updateRequirement(element, isMet) {
+        const icon = element.querySelector('i');
+        
+        if (isMet) {
+            element.classList.add('met');
+            icon.className = 'bi bi-check-circle-fill';
+        } else {
+            element.classList.remove('met');
+            icon.className = 'bi bi-x-circle';
+        }
+    }
+    
+    setupFormValidation() {
+        // Валидация в реальном времени
+        this.firstNameInput.addEventListener('blur', () => this.validateName(this.firstNameInput));
+        this.lastNameInput.addEventListener('blur', () => this.validateName(this.lastNameInput));
+        this.emailInput.addEventListener('blur', () => this.validateEmail());
+        this.passwordInput.addEventListener('blur', () => this.validatePassword());
+        this.confirmPasswordInput.addEventListener('blur', () => this.validatePasswordConfirm());
+        this.termsCheckbox.addEventListener('change', () => this.validateTerms());
+    }
+    
+    validateName(input) {
+        const name = input.value.trim();
+        
+        if (name.length === 0) {
+            this.showFieldError(input, 'This field is required');
+            return false;
+        } else if (name.length < 2) {
+            this.showFieldError(input, 'Name must be at least 2 characters');
+            return false;
+        } else if (!/^[a-zA-ZÀ-ÿĀ-žА-я\s'-]+$/.test(name)) {
+            this.showFieldError(input, 'Name contains invalid characters');
+            return false;
+        } else {
+            this.clearFieldError(input);
+            input.classList.add('success');
+            return true;
+        }
+    }
+    
+    validateEmail() {
+        const email = this.emailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (email.length === 0) {
+            this.showFieldError(this.emailInput, 'Email is required');
+            return false;
+        } else if (!emailRegex.test(email)) {
+            this.showFieldError(this.emailInput, 'Please enter a valid email address');
+            return false;
+        } else {
+            this.clearFieldError(this.emailInput);
+            this.emailInput.classList.add('success');
+            return true;
+        }
+    }
+    
+    validatePassword() {
+        const password = this.passwordInput.value;
+        
+        if (password.length === 0) {
+            this.showFieldError(this.passwordInput, 'Password is required');
+            return false;
+        } else if (password.length < 8) {
+            this.showFieldError(this.passwordInput, 'Password must be at least 8 characters');
+            return false;
+        } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+            this.showFieldError(this.passwordInput, 'Password must contain uppercase, lowercase, and number');
+            return false;
+        } else {
+            this.clearFieldError(this.passwordInput);
+            this.passwordInput.classList.add('success');
+            return true;
+        }
+    }
+    
+    validatePasswordConfirm() {
+        const password = this.passwordInput.value;
+        const confirmPassword = this.confirmPasswordInput.value;
+        
+        if (confirmPassword.length === 0) {
+            this.showFieldError(this.confirmPasswordInput, 'Please confirm your password');
+            return false;
+        } else if (password !== confirmPassword) {
+            this.showFieldError(this.confirmPasswordInput, 'Passwords do not match');
+            return false;
+        } else {
+            this.clearFieldError(this.confirmPasswordInput);
+            this.confirmPasswordInput.classList.add('success');
+            return true;
+        }
+    }
+    
+    validateTerms() {
+        if (!this.termsCheckbox.checked) {
+            this.showToast('Please accept the terms and conditions', 'error');
+            return false;
+        }
+        return true;
+    }
+    
+    showFieldError(field, message) {
+        this.clearFieldError(field);
+        
+        field.classList.remove('success');
+        field.classList.add('error');
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+        
+        field.parentElement.parentElement.appendChild(errorDiv);
+    }
+    
+    clearFieldError(field) {
+        field.classList.remove('error', 'success');
+        
+        const existingError = field.parentElement.parentElement.querySelector('.field-error');
+        if (existingError) {
+            existingError.remove();
+        }
+    }
+    
+    setupFormSubmission() {
+        this.form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleFormSubmit();
+        });
+    }
+    
+    async handleFormSubmit() {
+        // Валидация всей формы
+        const isFirstNameValid = this.validateName(this.firstNameInput);
+        const isLastNameValid = this.validateName(this.lastNameInput);
+        const isEmailValid = this.validateEmail();
+        const isPasswordValid = this.validatePassword();
+        const isPasswordConfirmValid = this.validatePasswordConfirm();
+        const isTermsValid = this.validateTerms();
+        
+        const isFormValid = isFirstNameValid && isLastNameValid && isEmailValid && 
+                           isPasswordValid && isPasswordConfirmValid && isTermsValid;
+        
+        if (!isFormValid) {
+            this.showToast('Please correct the errors above', 'error');
+            return;
+        }
+        
+        // Показываем состояние загрузки
+        this.setLoadingState(true);
+        
+        try {
+            // Собираем данные формы
+            const formData = new FormData(this.form);
+            
+            // Отправляем запрос
+            const response = await fetch(this.form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showToast('Account created successfully! Redirecting...', 'success');
+                
+                // Перенаправляем через небольшую задержку для UX
+                setTimeout(() => {
+                    window.location.href = result.redirect_url || '/';
+                }, 1500);
+                
+            } else {
+                this.showToast(result.message || 'Registration failed. Please try again.', 'error');
+                this.setLoadingState(false);
+                
+                // Показываем ошибки полей если есть
+                if (result.errors) {
+                    Object.keys(result.errors).forEach(fieldName => {
+                        const field = document.getElementById(fieldName);
+                        if (field) {
+                            this.showFieldError(field, result.errors[fieldName]);
+                        }
+                    });
+                }
+            }
+            
+        } catch (error) {
+            console.error('Registration error:', error);
+            this.showToast('Network error. Please check your connection.', 'error');
+            this.setLoadingState(false);
+        }
+    }
+    
+    setLoadingState(loading) {
+        this.registerButton.disabled = loading;
+        
+        if (loading) {
+            this.registerButton.classList.add('loading');
+        } else {
+            this.registerButton.classList.remove('loading');
+        }
+    }
+    
+    setupInputEnhancements() {
+        // Автофокус на первое поле при загрузке
+        setTimeout(() => {
+            if (this.firstNameInput && !this.firstNameInput.value) {
+                this.firstNameInput.focus();
+            }
+        }, 500);
+        
+        // Enter для перехода между полями
+        const inputs = [
+            this.firstNameInput, this.lastNameInput, this.emailInput, 
+            this.passwordInput, this.confirmPasswordInput
+        ];
+        
+        inputs.forEach((input, index) => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const nextInput = inputs[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    } else {
+                        this.termsCheckbox.focus();
+                    }
+                }
+            });
+        });
+        
+        // Анимации при фокусе
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', () => {
+                input.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+    }
+    
+    setupAccessibility() {
+        // Объявления для скринридеров
+        this.form.addEventListener('submit', () => {
+            this.announceToScreenReader('Creating your account, please wait...');
+        });
+        
+        // Клавиатурная навигация для чекбокса условий
+        this.termsCheckbox.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (this.termsCheckbox.checked) {
+                    this.registerButton.focus();
+                } else {
+                    this.termsCheckbox.checked = true;
+                    this.validateTerms();
+                }
+            }
+        });
+    }
+    
+    showToast(message, type = 'info') {
+        // Аналогично login_mobile_template
+        const existingToasts = document.querySelectorAll('.register-toast');
+        existingToasts.forEach(toast => toast.remove());
+        
+        const toast = document.createElement('div');
+        toast.className = `register-toast register-toast-${type}`;
+        toast.textContent = message;
+        
+        const colors = {
+            success: '#22c55e',
+            error: '#ef4444',
+            warning: '#f59e0b',
+            info: '#3b82f6'
+        };
+        
+        toast.style.cssText = `
+            position: fixed;
+            top: calc(var(--header-height) + 1rem);
+            left: 1rem;
+            right: 1rem;
+            background: ${colors[type] || colors.info};
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 500;
+            text-align: center;
+            z-index: 1000;
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        `;
+        
+        document.body.appendChild(toast);
+        
+        requestAnimationFrame(() => {
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+        });
+        
+        setTimeout(() => {
+            toast.style.transform = 'translateY(-100px)';
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 4000);
+    }
+    
+    announceToScreenReader(message) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('aria-atomic', 'true');
+        announcement.className = 'sr-only';
+        announcement.textContent = message;
+        
+        document.body.appendChild(announcement);
+        
+        setTimeout(() => {
+            document.body.removeChild(announcement);
+        }, 1000);
+    }
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', () => {
+    window.mobileRegister = new MobileRegisterController();
+    
+    // Обработка социальной регистрации
+    const socialButtons = document.querySelectorAll('.social-button');
+    socialButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            button.style.opacity = '0.7';
+            button.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                window.location.href = button.href;
+            }, 300);
+        });
+    });
+    
+    // Стили для screen reader
+    if (!document.getElementById('sr-only-styles')) {
+        const style = document.createElement('style');
+        style.id = 'sr-only-styles';
+        style.textContent = `
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+</script>
+{% endblock %}
