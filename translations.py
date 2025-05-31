@@ -288,7 +288,8 @@ translations = {
         'dental_academy': 'Dental Academy',
         'start_free_trial': 'Start Free Trial',
         'explore_platform': 'Explore Platform',
-        
+        'exam_title': 'BIG Exam Preparation',
+
         # Особенности платформы
         'why_choose_us': 'Why Choose Dental Academy?',
         'platform_benefits': 'Everything you need to succeed in Dutch dental practice',

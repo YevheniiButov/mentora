@@ -727,6 +727,446 @@
   background: rgba(0, 0, 0, 0.2);
   border-color: rgba(255, 255, 255, 0.1);
 }
+
+/* ===== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ FEATURE CARDS ===== */
+
+/* Основные feature cards в Features Section */
+.feature-card.modern-card {
+  background: rgba(255, 255, 255, 0.95);
+  /* Webkit префиксы для iOS */
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  /* iOS-совместимые transitions */
+  -webkit-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  /* iOS touch optimization */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.feature-card.modern-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  /* iOS совместимые transforms */
+  -webkit-transform: scaleX(0);
+  transform: scaleX(0);
+  -webkit-transition: -webkit-transform 0.4s ease;
+  transition: transform 0.4s ease;
+}
+
+.feature-card.modern-card:hover::before,
+.feature-card.modern-card:active::before {
+  -webkit-transform: scaleX(1);
+  transform: scaleX(1);
+}
+
+.feature-card.modern-card:hover,
+.feature-card.modern-card:active {
+  -webkit-transform: translateY(-8px);
+  transform: translateY(-8px);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+  border-color: rgba(62, 205, 193, 0.3);
+}
+
+.feature-card.modern-card.featured {
+  background: linear-gradient(135deg, rgba(62, 205, 193, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+  border: 2px solid rgba(62, 205, 193, 0.3);
+  -webkit-transform: scale(1.02);
+  transform: scale(1.02);
+}
+
+.feature-card.modern-card.featured:hover,
+.feature-card.modern-card.featured:active {
+  -webkit-transform: translateY(-8px) scale(1.02);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 30px 70px rgba(62, 205, 193, 0.2);
+}
+
+.featured-badge {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background: linear-gradient(135deg, #ff6b6b, #ffa726);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  /* iOS анимация */
+  -webkit-animation: badge-pulse 2s ease-in-out infinite;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@-webkit-keyframes badge-pulse {
+  0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+  50% { -webkit-transform: scale(1.05); transform: scale(1.05); }
+}
+
+@keyframes badge-pulse {
+  0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+  50% { -webkit-transform: scale(1.05); transform: scale(1.05); }
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  border-radius: 20px;
+  display: flex;
+  /* iOS flexbox prefixes */
+  display: -webkit-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  position: relative;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+}
+
+.feature-card:hover .feature-icon,
+.feature-card:active .feature-icon {
+  -webkit-transform: scale(1.1) rotate(5deg);
+  transform: scale(1.1) rotate(5deg);
+}
+
+.knowledge-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.communication-gradient {
+  background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
+  box-shadow: 0 10px 30px rgba(62, 205, 193, 0.3);
+}
+
+.workstation-gradient {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  box-shadow: 0 10px 30px rgba(252, 182, 159, 0.3);
+}
+
+.feature-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  -webkit-transition: color 0.3s ease;
+  transition: color 0.3s ease;
+}
+
+.feature-card:hover .feature-title,
+.feature-card:active .feature-title {
+  color: var(--primary-color);
+}
+
+.feature-description {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.feature-tags {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  -webkit-justify-content: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.tag {
+  background: linear-gradient(135deg, rgba(62, 205, 193, 0.1), rgba(102, 126, 234, 0.1));
+  color: var(--primary-color);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid rgba(62, 205, 193, 0.2);
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  /* iOS touch optimization */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tag:hover,
+.tag:active {
+  background: linear-gradient(135deg, rgba(62, 205, 193, 0.2), rgba(102, 126, 234, 0.2));
+  -webkit-transform: translateY(-2px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);
+}
+
+/* Benefit Cards с iOS оптимизацией */
+.benefit-card {
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  -webkit-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  /* iOS touch optimization */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+.benefit-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(62, 205, 193, 0.1), transparent);
+  -webkit-transition: left 0.6s ease;
+  transition: left 0.6s ease;
+}
+
+.benefit-card:hover::after,
+.benefit-card:active::after {
+  left: 100%;
+}
+
+.benefit-card:hover,
+.benefit-card:active {
+  -webkit-transform: translateY(-6px);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+  border-color: rgba(62, 205, 193, 0.3);
+}
+
+.benefit-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 18px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.8rem;
+  margin: 0 auto 1.5rem;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.benefit-card:hover .benefit-icon,
+.benefit-card:active .benefit-icon {
+  -webkit-transform: scale(1.15) rotate(-5deg);
+  transform: scale(1.15) rotate(-5deg);
+  box-shadow: 0 15px 35px rgba(62, 205, 193, 0.4);
+}
+
+.benefit-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+  -webkit-transition: color 0.3s ease;
+  transition: color 0.3s ease;
+}
+
+.benefit-card:hover .benefit-title,
+.benefit-card:active .benefit-title {
+  color: var(--primary-color);
+}
+
+.benefit-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  position: relative;
+  z-index: 2;
+  font-size: 0.95rem;
+}
+
+/* Hero Section Feature Cards для iOS */
+.app-showcase .feature-cards {
+  display: -webkit-grid;
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.app-showcase .feature-card {
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  /* iOS touch optimization */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-showcase .feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(62, 205, 193, 0.05), rgba(102, 126, 234, 0.05));
+  opacity: 0;
+  -webkit-transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease;
+}
+
+.app-showcase .feature-card:hover::before,
+.app-showcase .feature-card:active::before {
+  opacity: 1;
+}
+
+.app-showcase .feature-card:hover,
+.app-showcase .feature-card:active {
+  -webkit-transform: translateY(-3px);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  border-color: rgba(62, 205, 193, 0.4);
+}
+
+/* iOS специфичные анимации */
+@-webkit-keyframes slideInUp {
+  from {
+    opacity: 0;
+    -webkit-transform: translateY(30px);
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    -webkit-transform: translateY(30px);
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+.feature-card.modern-card,
+.benefit-card {
+  -webkit-animation: slideInUp 0.6s ease-out forwards;
+  animation: slideInUp 0.6s ease-out forwards;
+}
+
+/* iOS fallback для старых версий Safari */
+@supports not (backdrop-filter: blur(20px)) {
+  .feature-card.modern-card,
+  .benefit-card {
+    background: rgba(255, 255, 255, 0.98);
+  }
+  
+  .app-showcase .feature-card {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  
+  [data-theme="dark"] .feature-card.modern-card,
+  [data-theme="dark"] .benefit-card {
+    background: rgba(30, 41, 59, 0.98);
+  }
+}
+
+/* iOS специфичные медиа-запросы */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+  .feature-icon,
+  .benefit-icon {
+    /* Оптимизация для retina дисплеев */
+    -webkit-font-smoothing: antialiased;
+    font-smooth: always;
+  }
+}
+
+/* iPhone безопасная зона */
+@supports (padding: max(0px)) {
+  .feature-card.modern-card,
+  .benefit-card {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+  }
+}
+
+/* iOS адаптивность для мобильных */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  .feature-card.modern-card,
+  .benefit-card {
+    padding: 2rem 1.5rem;
+    /* Улучшенная производительность на iOS */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  .feature-icon,
+  .benefit-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    /* GPU ускорение */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  .feature-title,
+  .benefit-title {
+    font-size: 1.2rem;
+  }
+  
+  .feature-tags {
+    gap: 0.3rem;
+  }
+  
+  .tag {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.8rem;
+  }
+}
 </style>
 
 {% endblock %}

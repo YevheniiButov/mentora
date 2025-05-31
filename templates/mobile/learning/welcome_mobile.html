@@ -5,25 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dental Academy - Professional Training Platform</title>
     
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#3ECDC1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dental Academy">
+    <link rel="apple-touch-icon" href="/static/images/icon-152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/images/icon-72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/static/images/icon-96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/static/images/icon-128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/images/icon-144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/images/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/static/images/icon-192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="/static/images/icon-384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/static/images/icon-512.png">
+    
+    <!-- Windows/Edge -->
+    <meta name="msapplication-TileColor" content="#3ECDC1">
+    <meta name="msapplication-TileImage" content="/static/images/icon-144.png">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/images/icon-512.png">
+    
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <style>
+
+<style>
         /* ===== СОВРЕМЕННЫЕ ПЕРЕМЕННЫЕ ===== */
-        :root {
-            --primary: #3ECDC1;
-            --primary-dark: #2BB6AC;
-            --secondary: #667eea;
-            --accent: #764ba2;
-            --success: #4ade80;
-            --warning: #facc15;
-            --error: #ef4444;
-            
-            --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);
-            --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-            --shadow-soft: 0 10px 40px rgba(0,0,0,0.1);
-            --shadow-strong: 0 20px 60px rgba(0,0,0,0.15);
+:root {
+    --primary: #3ECDC1;
+    --primary-dark: #2BB6AC;
+    --secondary: #667eea;
+    --accent: #764ba2;
+    --success: #4ade80;
+    --warning: #facc15;
+    --error: #ef4444;
+    
+    --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);
+    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    --shadow-soft: 0 10px 40px rgba(0,0,0,0.1);
+    --shadow-strong: 0 20px 60px rgba(0,0,0,0.15);
             
             --header-height: 70px;
             --nav-height: 70px;
@@ -34,6 +59,9 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            /* iOS touch optimization */
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
         }
 
         body {
@@ -42,9 +70,13 @@
             min-height: 100vh;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            /* iOS безопасная зона */
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
 
-        /* ===== HEADER ===== */
+        /* ===== HEADER с новыми элементами ===== */
         .mobile-header {
             position: fixed;
             top: 0;
@@ -52,27 +84,49 @@
             right: 0;
             height: var(--header-height);
             background: rgba(255,255,255,0.1);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255,255,255,0.2);
             z-index: 1000;
+            display: -webkit-flex;
             display: flex;
+            -webkit-align-items: center;
             align-items: center;
-            justify-content: center;
-            padding: 0 1rem;
+            -webkit-justify-content: space-between;
+            justify-content: space-between;
+            padding: 0 max(1rem, env(safe-area-inset-left)) 0 max(1rem, env(safe-area-inset-right));
+        }
+
+        .header-left,
+        .header-right {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .header-logo {
+            display: -webkit-flex;
             display: flex;
+            -webkit-align-items: center;
             align-items: center;
             gap: 0.75rem;
             color: white;
             text-decoration: none;
+            position: absolute;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
         }
 
         .header-logo .main-logo {
-            width: 206px;
-            height: 206px;
+            width: 56px;
+            height: 56px;
             object-fit: contain;
+            /* iOS GPU ускорение */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
         }
 
         .logo-icon {
@@ -92,283 +146,520 @@
             letter-spacing: -0.02em;
         }
 
-        .theme-toggle {
-            position: absolute;
-            right: 1rem;
+        /* ===== LANGUAGE SELECTOR ===== */
+        .language-selector {
+            position: relative;
+        }
+
+        .language-toggle {
             background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 0.5rem 0.75rem;
+            color: white;
+            cursor: pointer;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            -webkit-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+            min-width: 70px;
+        }
+
+        .language-toggle:hover,
+        .language-toggle:active {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.4);
+            -webkit-transform: scale(1.05);
+            transform: scale(1.05);
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            padding: 0.5rem;
+            min-width: 180px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            opacity: 0;
+            visibility: hidden;
+            -webkit-transform: translateY(-10px);
+            transform: translateY(-10px);
+            -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001;
+        }
+
+        .language-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            -webkit-transform: translateY(0);
+            transform: translateY(0);
+        }
+
+        .lang-option {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            -webkit-transition: all 0.2s ease;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .lang-option:hover,
+        .lang-option:active {
+            background: rgba(62, 205, 193, 0.1);
+            color: #3ECDC1;
+            -webkit-transform: translateX(4px);
+            transform: translateX(4px);
+        }
+
+        .lang-option .flag {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* ===== PWA INSTALL BUTTON ===== */
+        .pwa-install-btn {
+            background: linear-gradient(135deg, #3ECDC1, #44A08D);
             border: none;
             width: 40px;
             height: 40px;
-            border-radius: 50%;
+            border-radius: 12px;
             color: white;
             cursor: pointer;
+            display: -webkit-flex;
             display: flex;
+            -webkit-align-items: center;
             align-items: center;
+            -webkit-justify-content: center;
             justify-content: center;
+            font-size: 1.1rem;
+            -webkit-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(62, 205, 193, 0.3);
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .pwa-install-btn:hover,
+        .pwa-install-btn:active {
+            -webkit-transform: scale(1.1) translateY(-2px);
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
+        }
+
+        .pwa-install-btn::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            -webkit-animation: pulse-dot 2s ease-in-out infinite;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @-webkit-keyframes pulse-dot {
+            0%, 100% { 
+                -webkit-transform: scale(1);
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                -webkit-transform: scale(1.3);
+                transform: scale(1.3);
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { 
+                -webkit-transform: scale(1);
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                -webkit-transform: scale(1.3);
+                transform: scale(1.3);
+                opacity: 0.7;
+            }
+        }
+
+        .theme-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+            -webkit-transition: all 0.3s ease;
             transition: all 0.3s ease;
         }
 
-        .theme-toggle:hover {
+        .theme-toggle:hover,
+        .theme-toggle:active {
             background: rgba(255,255,255,0.2);
+            -webkit-transform: scale(1.1);
             transform: scale(1.1);
         }
 
         /* ===== HERO SECTION ===== */
-        .hero-section {
-            position: relative;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: calc(var(--header-height) + 2rem) 1rem calc(var(--nav-height) + 2rem);
-            overflow: hidden;
-        }
+.hero-section {
+    position: relative;
+    min-height: 100vh;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+    text-align: center;
+    padding: calc(var(--header-height) + env(safe-area-inset-top) + 2rem) max(1rem, env(safe-area-inset-left)) calc(var(--nav-height) + env(safe-area-inset-bottom) + 2rem) max(1rem, env(safe-area-inset-right));
+    overflow: hidden;
+}
 
-        /* Анимированный фон */
-        .floating-orbs {
-            position: absolute;
-            width: 100%;
-            height: 100%;
+/* Анимированный фон */
+.floating-orbs {
+    position: absolute;
+    width: 100%;
+    height: 100%;
             pointer-events: none;
             z-index: 1;
-        }
+}
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            animation: float 20s infinite linear;
-        }
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    -webkit-animation: float 20s infinite linear;
+    animation: float 20s infinite linear;
+    /* GPU ускорение */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+}
 
-        .orb:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
+.orb:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
 
-        .orb:nth-child(2) {
-            width: 120px;
-            height: 120px;
-            top: 60%;
-            right: 10%;
-            animation-delay: -5s;
-        }
+.orb:nth-child(2) {
+    width: 120px;
+    height: 120px;
+    top: 60%;
+    right: 10%;
+    animation-delay: -5s;
+}
 
-        .orb:nth-child(3) {
-            width: 60px;
-            height: 60px;
-            top: 80%;
-            left: 70%;
-            animation-delay: -10s;
-        }
+.orb:nth-child(3) {
+    width: 60px;
+    height: 60px;
+    top: 80%;
+    left: 70%;
+    animation-delay: -10s;
+}
 
-        @keyframes float {
-            from {
-                transform: translateY(100vh) rotate(0deg);
-            }
-            to {
-                transform: translateY(-100px) rotate(360deg);
-            }
-        }
+@-webkit-keyframes float {
+    from {
+        -webkit-transform: translateY(100vh) rotate(0deg);
+        transform: translateY(100vh) rotate(0deg);
+    }
+    to {
+        -webkit-transform: translateY(-100px) rotate(360deg);
+        transform: translateY(-100px) rotate(360deg);
+    }
+}
+
+@keyframes float {
+    from {
+        -webkit-transform: translateY(100vh) rotate(0deg);
+        transform: translateY(100vh) rotate(0deg);
+    }
+    to {
+        -webkit-transform: translateY(-100px) rotate(360deg);
+        transform: translateY(-100px) rotate(360deg);
+    }
+}
 
         /* Hero контент */
-        .hero-content {
-            position: relative;
-            z-index: 10;
+.hero-content {
+    position: relative;
+    z-index: 10;
             max-width: 350px;
             width: 100%;
-        }
+}
 
-        .hero-logo {
+.hero-logo {
             width: 70px;
             height: 70px;
             margin: 0 auto 2rem;
             background: rgba(255,255,255,0.15);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: pulse-glow 3s ease-in-out infinite;
-            font-size: 2.5rem;
-            overflow: hidden;
-        }
+    border-radius: 20px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    -webkit-animation: pulse-glow 3s ease-in-out infinite;
+    animation: pulse-glow 3s ease-in-out infinite;
+    font-size: 2.5rem;
+    overflow: hidden;
+    /* GPU ускорение */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
 
-        .hero-logo .hero-logo-img {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-        }
+.hero-logo .hero-logo-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
 
-        @keyframes pulse-glow {
-            0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(255,255,255,0.3);
-            }
-            50% {
-                transform: scale(1.05);
-                box-shadow: 0 0 0 20px rgba(255,255,255,0);
-            }
-        }
+@-webkit-keyframes pulse-glow {
+    0%, 100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255,255,255,0.3);
+    }
+    50% {
+        -webkit-transform: scale(1.05);
+        transform: scale(1.05);
+        box-shadow: 0 0 0 20px rgba(255,255,255,0);
+    }
+}
 
-        .hero-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: white;
+@keyframes pulse-glow {
+    0%, 100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255,255,255,0.3);
+    }
+    50% {
+        -webkit-transform: scale(1.05);
+        transform: scale(1.05);
+        box-shadow: 0 0 0 20px rgba(255,255,255,0);
+    }
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
             margin: 0 0 1rem;
             line-height: 1.1;
             text-shadow: 0 4px 20px rgba(0,0,0,0.3);
             letter-spacing: -0.02em;
-        }
+}
 
-        .hero-subtitle {
-            font-size: 1.1rem;
+.hero-subtitle {
+    font-size: 1.1rem;
             font-weight: 400;
-            color: rgba(255,255,255,0.9);
+    color: rgba(255,255,255,0.9);
             margin: 0 0 2.5rem;
-            line-height: 1.5;
+    line-height: 1.5;
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
+}
 
-        /* ===== CTA КНОПКИ ===== */
-        .hero-cta {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            width: 100%;
-            margin-bottom: 2rem;
-        }
+/* ===== CTA КНОПКИ ===== */
+.hero-cta {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 2rem;
+}
 
-        .cta-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            font-weight: 600;
-            font-size: 1rem;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            min-height: 56px;
-        }
+.cta-button {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-height: 56px;
+    /* iOS touch optimization */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
 
-        .cta-primary {
-            background: rgba(255,255,255,0.95);
+.cta-primary {
+    background: rgba(255,255,255,0.95);
             color: #374151;
-            box-shadow: var(--shadow-soft);
-        }
+    box-shadow: var(--shadow-soft);
+}
 
-        .cta-primary:hover {
-            background: white;
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-strong);
-        }
+.cta-primary:hover,
+.cta-primary:active {
+    background: white;
+    -webkit-transform: translateY(-3px);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-strong);
+}
 
-        .cta-secondary {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 2px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(10px);
-        }
+.cta-secondary {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px);
+}
 
-        .cta-secondary:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.5);
-            transform: translateY(-2px);
-        }
+.cta-secondary:hover,
+.cta-secondary:active {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.5);
+    -webkit-transform: translateY(-2px);
+    transform: translateY(-2px);
+}
 
-        /* Ripple эффект */
-        .cta-button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.5);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
+/* Ripple эффект */
+.cta-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    -webkit-transition: width 0.6s, height 0.6s;
+    transition: width 0.6s, height 0.6s;
+}
 
-        .cta-button:active::before {
-            width: 300px;
-            height: 300px;
-        }
+.cta-button:active::before {
+    width: 300px;
+    height: 300px;
+}
 
         /* ===== FEATURES PREVIEW ===== */
         .features-preview {
-            background: white;
+    background: white;
             margin-top: 4rem;
-            padding: 2rem 1rem;
+            padding: 2rem max(1rem, env(safe-area-inset-left)) 2rem max(1rem, env(safe-area-inset-right));
             border-radius: 24px 24px 0 0;
-            position: relative;
+    position: relative;
             z-index: 10;
-        }
+}
 
         .features-title {
-            text-align: center;
+    text-align: center;
             font-size: 1.5rem;
-            font-weight: 700;
-            color: #1f2937;
+    font-weight: 700;
+    color: #1f2937;
             margin-bottom: 1.5rem;
-        }
+}
 
-        .features-grid {
-            display: grid;
+.features-grid {
+    display: -webkit-grid;
+    display: grid;
             gap: 1rem;
             margin-bottom: 2rem;
-        }
+}
 
-        .feature-card {
+.feature-card {
             background: #f8fafc;
             border-radius: 16px;
             padding: 1.5rem;
             text-align: center;
+            -webkit-transition: all 0.3s ease;
             transition: all 0.3s ease;
             border: 1px solid #e2e8f0;
-        }
+            /* iOS touch optimization */
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+}
 
-        .feature-card:hover {
+.feature-card:hover,
+.feature-card:active {
+            -webkit-transform: translateY(-4px);
             transform: translateY(-4px);
             box-shadow: var(--shadow-soft);
-        }
+}
 
-        .feature-icon {
+.feature-icon {
             width: 48px;
             height: 48px;
             margin: 0 auto 1rem;
             background: var(--gradient-hero);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-        }
+    border-radius: 12px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
 
-        .feature-title {
+.feature-title {
             font-size: 1rem;
-            font-weight: 600;
-            color: #1f2937;
+    font-weight: 600;
+    color: #1f2937;
             margin-bottom: 0.5rem;
-        }
+}
 
-        .feature-description {
+.feature-description {
             font-size: 0.85rem;
-            color: #6b7280;
-            line-height: 1.4;
+    color: #6b7280;
+    line-height: 1.4;
         }
 
         /* ===== BOTTOM NAVIGATION ===== */
@@ -377,37 +668,51 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: var(--nav-height);
+            height: calc(var(--nav-height) + env(safe-area-inset-bottom));
             background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border-top: 1px solid rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+            -webkit-justify-content: space-around;
             justify-content: space-around;
             z-index: 1000;
-            padding: 0.5rem;
+            padding: 0.5rem max(0.5rem, env(safe-area-inset-left)) env(safe-area-inset-bottom) max(0.5rem, env(safe-area-inset-right));
         }
 
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
             padding: 0.5rem;
             border-radius: 12px;
             text-decoration: none;
             color: #6b7280;
+            -webkit-transition: all 0.3s ease;
             transition: all 0.3s ease;
             position: relative;
             min-width: 64px;
-        }
+            /* iOS touch optimization */
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+}
 
         .nav-item.active {
             color: var(--primary);
             background: rgba(62, 205, 193, 0.1);
         }
 
-        .nav-item:hover {
+        .nav-item:hover,
+        .nav-item:active {
+            -webkit-transform: translateY(-2px);
             transform: translateY(-2px);
         }
 
@@ -418,13 +723,14 @@
         }
 
         .nav-item.active .nav-icon {
+            -webkit-transform: scale(1.1);
             transform: scale(1.1);
         }
 
         .nav-label {
             font-size: 0.7rem;
             font-weight: 500;
-            text-align: center;
+    text-align: center;
         }
 
         /* ===== ТЕМНАЯ ТЕМА ===== */
@@ -461,13 +767,13 @@
         /* ===== АНИМАЦИИ ===== */
         @keyframes slideUp {
             from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
+    opacity: 0;
+    transform: translateY(30px);
+}
             to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+    opacity: 1;
+    transform: translateY(0);
+}
         }
 
         .hero-content {
@@ -482,7 +788,42 @@
         .feature-card:nth-child(3) { animation-delay: 0.2s; }
         .feature-card:nth-child(4) { animation-delay: 0.3s; }
 
-        /* ===== АДАПТИВНОСТЬ ===== */
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+            .cta-button {
+                padding: 0.875rem 1.25rem;
+                font-size: 0.95rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+    }
+}
+
+        /* ===== iOS/SAFARI ОПТИМИЗАЦИЯ ДЛЯ МОБИЛЬНОЙ ВЕРСИИ ===== */
+        
+        /* iOS специфичные медиа-запросы */
+        @media screen and (-webkit-min-device-pixel-ratio: 2) {
+            .hero-title,
+            .hero-subtitle,
+            .feature-title {
+                -webkit-font-smoothing: antialiased;
+                font-smooth: always;
+            }
+        }
+
+        /* iPhone адаптивность */
         @media (max-width: 360px) {
             .hero-title {
                 font-size: 2rem;
@@ -495,138 +836,502 @@
             .cta-button {
                 padding: 0.875rem 1.25rem;
                 font-size: 0.95rem;
+                /* GPU ускорение на малых экранах */
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                will-change: transform;
             }
         }
 
+        /* iPad и большие iPhone */
         @media (min-width: 768px) {
             .features-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1.5rem;
             }
         }
-    </style>
+
+        /* ===== АНИМАЦИИ с iOS оптимизацией ===== */
+        @-webkit-keyframes slideUp {
+            from {
+                opacity: 0;
+                -webkit-transform: translateY(30px);
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                -webkit-transform: translateY(30px);
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+            }
+        }
+
+        .hero-content {
+            -webkit-animation: slideUp 0.8s ease-out;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .feature-card {
+            -webkit-animation: slideUp 0.6s ease-out;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        /* ===== iOS FALLBACKS ===== */
+        
+        /* Fallback для старых версий Safari без backdrop-filter */
+        @supports not (backdrop-filter: blur(20px)) {
+            .mobile-header {
+                background: rgba(255,255,255,0.95);
+            }
+            
+            .hero-logo {
+                background: rgba(255,255,255,0.9);
+            }
+            
+            .mobile-bottom-nav {
+                background: rgba(255,255,255,0.98);
+            }
+            
+            .orb {
+                background: rgba(255,255,255,0.15);
+            }
+        }
+
+        /* ===== ТЕМНАЯ ТЕМА с iOS поддержкой ===== */
+        [data-theme="dark"] {
+            --gradient-hero: linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%);
+        }
+
+        [data-theme="dark"] .features-preview {
+            background: #1f2937;
+        }
+
+        [data-theme="dark"] .features-title {
+            color: #f9fafb;
+        }
+
+        [data-theme="dark"] .feature-card {
+            background: #374151;
+            border-color: #4b5563;
+        }
+
+        [data-theme="dark"] .feature-title {
+            color: #f9fafb;
+        }
+
+        [data-theme="dark"] .feature-description {
+            color: #d1d5db;
+        }
+
+        [data-theme="dark"] .mobile-bottom-nav {
+            background: rgba(31, 41, 55, 0.95);
+            border-top-color: rgba(255,255,255,0.1);
+        }
+
+        /* Fallback для темной темы без backdrop-filter */
+        @supports not (backdrop-filter: blur(20px)) {
+            [data-theme="dark"] .mobile-header {
+                background: rgba(31, 41, 55, 0.95);
+            }
+            
+            [data-theme="dark"] .hero-logo {
+                background: rgba(31, 41, 55, 0.9);
+            }
+            
+            [data-theme="dark"] .mobile-bottom-nav {
+                background: rgba(31, 41, 55, 0.98);
+            }
+        }
+
+        /* ===== PWA NOTIFICATIONS ===== */
+        .pwa-notification {
+            position: fixed;
+            top: calc(var(--header-height) + 1rem);
+            left: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            padding: 1rem;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: flex-start;
+            align-items: flex-start;
+            gap: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            z-index: 1002;
+            -webkit-animation: slideInNotification 0.3s ease-out;
+            animation: slideInNotification 0.3s ease-out;
+        }
+
+        .pwa-notification.success {
+            border-left: 4px solid #4ade80;
+        }
+
+        .pwa-notification.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .pwa-notification.info {
+            border-left: 4px solid #3ECDC1;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-content h4 {
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .notification-content p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-justify-content: center;
+            justify-content: center;
+            border-radius: 50%;
+            -webkit-transition: all 0.2s ease;
+            transition: all 0.2s ease;
+        }
+
+        .notification-close:hover {
+            background: rgba(0,0,0,0.1);
+            color: #374151;
+        }
+
+        /* ===== ДОПОЛНИТЕЛЬНЫЕ АНИМАЦИИ ===== */
+        @-webkit-keyframes slideInNotification {
+            from {
+                opacity: 0;
+                -webkit-transform: translateY(-20px);
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInNotification {
+            from {
+                opacity: 0;
+                -webkit-transform: translateY(-20px);
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+            }
+        }
+
+        @-webkit-keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+            }
+            40% {
+                -webkit-transform: translateY(-10px);
+                transform: translateY(-10px);
+            }
+            60% {
+                -webkit-transform: translateY(-5px);
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                -webkit-transform: translateY(0);
+                transform: translateY(0);
+            }
+            40% {
+                -webkit-transform: translateY(-10px);
+                transform: translateY(-10px);
+            }
+            60% {
+                -webkit-transform: translateY(-5px);
+                transform: translateY(-5px);
+            }
+        }
+
+        @-webkit-keyframes spinning {
+            from {
+                -webkit-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+            to {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spinning {
+            from {
+                -webkit-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+            to {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinning {
+            -webkit-animation: spinning 1s linear infinite;
+            animation: spinning 1s linear infinite;
+        }
+
+        /* ===== ТЕМНАЯ ТЕМА для новых элементов ===== */
+        [data-theme="dark"] .language-dropdown {
+            background: rgba(31, 41, 55, 0.95);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        [data-theme="dark"] .lang-option {
+            color: #f9fafb;
+        }
+
+        [data-theme="dark"] .lang-option:hover,
+        [data-theme="dark"] .lang-option:active {
+            background: rgba(62, 205, 193, 0.2);
+            color: #3ECDC1;
+        }
+
+        [data-theme="dark"] .pwa-notification {
+            background: rgba(31, 41, 55, 0.95);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        [data-theme="dark"] .notification-content h4 {
+            color: #f9fafb;
+        }
+
+        [data-theme="dark"] .notification-content p {
+            color: #d1d5db;
+        }
+
+        [data-theme="dark"] .notification-close {
+            color: #9ca3af;
+        }
+
+        [data-theme="dark"] .notification-close:hover {
+            background: rgba(255,255,255,0.1);
+            color: #f3f4f6;
+        }
+</style>
 </head>
 <body>
     <!-- Header -->
     <header class="mobile-header">
+        <!-- Language Selector -->
+        <div class="header-left">
+            <div class="language-selector">
+                <button class="language-toggle" id="languageToggle">
+                    <i class="bi bi-globe"></i>
+                    <span class="current-lang">EN</span>
+                </button>
+                <div class="language-dropdown" id="languageDropdown">
+                    <a href="/en/home" class="lang-option" data-lang="en">
+                        <span class="flag">🇺🇸</span>
+                        <span>English</span>
+                    </a>
+                    <a href="/ru/home" class="lang-option" data-lang="ru">
+                        <span class="flag">🇷🇺</span>
+                        <span>Русский</span>
+                    </a>
+                    <a href="/nl/home" class="lang-option" data-lang="nl">
+                        <span class="flag">🇳🇱</span>
+                        <span>Nederlands</span>
+                    </a>
+                    <a href="/uk/home" class="lang-option" data-lang="uk">
+                        <span class="flag">🇺🇦</span>
+                        <span>Українська</span>
+                    </a>
+                    <a href="/es/home" class="lang-option" data-lang="es">
+                        <span class="flag">🇪🇸</span>
+                        <span>Español</span>
+                    </a>
+                    <a href="/pt/home" class="lang-option" data-lang="pt">
+                        <span class="flag">🇵🇹</span>
+                        <span>Português</span>
+                    </a>
+                    <a href="/tr/home" class="lang-option" data-lang="tr">
+                        <span class="flag">🇹🇷</span>
+                        <span>Türkçe</span>
+                    </a>
+                    <a href="/fa/home" class="lang-option" data-lang="fa">
+                        <span class="flag">🇮🇷</span>
+                        <span>فارسی</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logo -->
         <a href="/en/home" class="header-logo">
             <img src="/static/images/logo.png" alt="Dental Academy" class="main-logo">
         </a>
-        <button class="theme-toggle" id="themeToggle">
-            <i class="bi bi-moon"></i>
-        </button>
+
+        <!-- Right Actions -->
+        <div class="header-right">
+            <!-- PWA Install Button -->
+            <button class="pwa-install-btn" id="pwaInstallBtn" style="display: none;">
+                <i class="bi bi-download"></i>
+            </button>
+            
+            <!-- Theme Toggle -->
+            <button class="theme-toggle" id="themeToggle">
+                <i class="bi bi-moon"></i>
+            </button>
+        </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="hero-section">
-        <!-- Анимированный фон -->
+<section class="hero-section">
+    <!-- Анимированный фон -->
         <div class="floating-orbs">
             <div class="orb"></div>
             <div class="orb"></div>
             <div class="orb"></div>
+    </div>
+    
+    <!-- Контент Hero -->
+    <div class="hero-content">
+        <div class="hero-logo">
+                <img src="/static/favicon.png" alt="Dental Academy" class="hero-logo-img">
         </div>
         
-        <!-- Контент Hero -->
-        <div class="hero-content">
-            <div class="hero-logo">
-                <img src="/static/favicon.png" alt="Dental Academy" class="hero-logo-img">
-            </div>
-            
-            <h1 class="hero-title">
+        <h1 class="hero-title">
                 Become a Tandarts
-            </h1>
-            
-            <p class="hero-subtitle">
+        </h1>
+        
+        <p class="hero-subtitle">
                 Master dental skills. Pass BIG exam. Transform your career in Netherlands.
-            </p>
-            
-            <div class="hero-cta">
+        </p>
+        
+        <div class="hero-cta">
                 <a href="/en/mobile/auth/register" class="cta-button cta-primary">
-                    <i class="bi bi-rocket-takeoff"></i>
+                <i class="bi bi-rocket-takeoff"></i>
                     <span>Start Free Trial</span>
-                </a>
-                
+            </a>
+            
                 <a href="/en/mobile/subjects" class="cta-button cta-secondary">
-                    <i class="bi bi-play-circle"></i>
+                <i class="bi bi-play-circle"></i>
                     <span>Explore Platform</span>
-                </a>
-            </div>
+            </a>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Features Preview -->
     <section class="features-preview">
         <h2 class="features-title">Why Choose Dental Academy?</h2>
-        
-        <div class="features-grid">
+    
+    <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon">
-                    <i class="bi bi-mortarboard-fill"></i>
-                </div>
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
                 <h3 class="feature-title">Expert Content</h3>
                 <p class="feature-description">Curated by Dutch dental professionals for BIG exam success</p>
-            </div>
-            
+        </div>
+        
             <div class="feature-card">
                 <div class="feature-icon">
-                    <i class="bi bi-person-workspace"></i>
-                </div>
+                <i class="bi bi-person-workspace"></i>
+            </div>
                 <h3 class="feature-title">Virtual Patients</h3>
                 <p class="feature-description">Practice with realistic patient scenarios and case studies</p>
-            </div>
-            
+        </div>
+        
             <div class="feature-card">
                 <div class="feature-icon">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
                 <h3 class="feature-title">Adaptive Learning</h3>
                 <p class="feature-description">AI-powered system adapts to your learning pace and style</p>
-            </div>
-            
+        </div>
+        
             <div class="feature-card">
                 <div class="feature-icon">
-                    <i class="bi bi-globe2"></i>
-                </div>
+                <i class="bi bi-globe2"></i>
+            </div>
                 <h3 class="feature-title">8 Languages</h3>
                 <p class="feature-description">Study in your native language, master Dutch terminology</p>
-            </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Bottom Navigation -->
     <nav class="mobile-bottom-nav">
         <a href="/en/home" class="nav-item active">
             <div class="nav-icon">
                 <i class="bi bi-house-fill"></i>
-            </div>
+    </div>
             <span class="nav-label">Home</span>
         </a>
         <a href="/en/big-info" class="nav-item">
             <div class="nav-icon">
                 <i class="bi bi-info-circle"></i>
-            </div>
+        </div>
             <span class="nav-label">About BIG</span>
         </a>
         <a href="/en/mobile/auth/register" class="nav-item">
             <div class="nav-icon">
                 <i class="bi bi-person-plus"></i>
-            </div>
+        </div>
             <span class="nav-label">Register</span>
         </a>
         <a href="/en/mobile/auth/login" class="nav-item">
             <div class="nav-icon">
                 <i class="bi bi-box-arrow-in-right"></i>
-            </div>
+    </div>
             <span class="nav-label">Login</span>
         </a>
     </nav>
 
     <!-- JavaScript -->
-    <script>
-        // ===== MODERN MOBILE EXPERIENCE =====
+<script>
+        // ===== РАСШИРЕННАЯ МОБИЛЬНАЯ ФУНКЦИОНАЛЬНОСТЬ =====
         class MobileDentalAcademy {
             constructor() {
                 this.currentTheme = 'light';
+                this.deferredPrompt = null;
+                this.currentLang = 'en';
                 this.init();
             }
             
@@ -637,6 +1342,8 @@
                 this.setupNavigation();
                 this.setupRippleEffects();
                 this.setupScrollEffects();
+                this.setupLanguageSelector();
+                this.setupPWA();
                 
                 console.log('✅ Dental Academy Mobile - Ready!');
             }
@@ -659,6 +1366,163 @@
                 
                 const themeIcon = document.querySelector('#themeToggle i');
                 themeIcon.className = theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+            }
+            
+            setupLanguageSelector() {
+                const languageToggle = document.getElementById('languageToggle');
+                const languageDropdown = document.getElementById('languageDropdown');
+                const currentLangSpan = document.querySelector('.current-lang');
+                
+                // Получаем текущий язык из URL
+                const path = window.location.pathname;
+                const langMatch = path.match(/^\/([a-z]{2})\//);
+                if (langMatch) {
+                    this.currentLang = langMatch[1];
+                    currentLangSpan.textContent = this.currentLang.toUpperCase();
+                }
+                
+                // Toggle dropdown
+                languageToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    languageDropdown.classList.toggle('show');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.language-selector')) {
+                        languageDropdown.classList.remove('show');
+                    }
+                });
+                
+                // Handle language selection
+                const langOptions = document.querySelectorAll('.lang-option');
+                langOptions.forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const selectedLang = option.dataset.lang;
+                        
+                        // Show loading state
+                        languageToggle.innerHTML = '<i class="bi bi-arrow-clockwise"></i><span>...</span>';
+                        
+                        // Simulate loading and redirect
+                        setTimeout(() => {
+                            window.location.href = option.href;
+                        }, 500);
+                    });
+                });
+            }
+            
+            setupPWA() {
+                const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+                
+                // Listen for the beforeinstallprompt event
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    console.log('PWA install prompt available');
+                    e.preventDefault();
+                    this.deferredPrompt = e;
+                    pwaInstallBtn.style.display = 'flex';
+                    
+                    // Add bounce animation
+                    pwaInstallBtn.style.animation = 'bounce 1s ease-in-out 3';
+                });
+                
+                // Handle PWA install button click
+                pwaInstallBtn.addEventListener('click', async () => {
+                    if (!this.deferredPrompt) {
+                        this.showPWAFallback();
+                        return;
+                    }
+                    
+                    // Show loading state
+                    pwaInstallBtn.innerHTML = '<i class="bi bi-arrow-clockwise spinning"></i>';
+                    
+                    try {
+                        const choiceResult = await this.deferredPrompt.prompt();
+                        console.log('PWA install choice:', choiceResult.outcome);
+                        
+                        if (choiceResult.outcome === 'accepted') {
+                            this.showPWASuccess();
+                        } else {
+                            this.showPWADismissed();
+                        }
+                    } catch (error) {
+                        console.error('PWA install error:', error);
+                        this.showPWAError();
+                    }
+                    
+                    this.deferredPrompt = null;
+                    pwaInstallBtn.style.display = 'none';
+                });
+                
+                // Check if app is already installed
+                window.addEventListener('appinstalled', () => {
+                    console.log('PWA installed successfully');
+                    pwaInstallBtn.style.display = 'none';
+                    this.showPWASuccess();
+                });
+                
+                // Show install button for iOS users
+                if (this.isIOS() && !this.isInStandaloneMode()) {
+                    setTimeout(() => {
+                        if (pwaInstallBtn.style.display === 'none') {
+                            pwaInstallBtn.style.display = 'flex';
+                            pwaInstallBtn.innerHTML = '<i class="bi bi-plus-square"></i>';
+                        }
+                    }, 3000);
+                }
+            }
+            
+            isIOS() {
+                return /iPad|iPhone|iPod/.test(navigator.userAgent);
+            }
+            
+            isInStandaloneMode() {
+                return window.matchMedia('(display-mode: standalone)').matches || 
+                       window.navigator.standalone === true;
+            }
+            
+            showPWAFallback() {
+                const instructions = this.isIOS() ? 
+                    'Tap Share button and select "Add to Home Screen"' :
+                    'Open browser menu and select "Add to Home Screen"';
+                    
+                this.showNotification('📱 Install App', instructions, 'info');
+            }
+            
+            showPWASuccess() {
+                this.showNotification('✅ Success!', 'App installed successfully', 'success');
+            }
+            
+            showPWADismissed() {
+                this.showNotification('ℹ️ No Problem', 'You can install later from browser menu', 'info');
+            }
+            
+            showPWAError() {
+                this.showNotification('❌ Error', 'Installation failed. Please try again.', 'error');
+            }
+            
+            showNotification(title, message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `pwa-notification ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-content">
+                        <h4>${title}</h4>
+                        <p>${message}</p>
+                    </div>
+                    <button class="notification-close">&times;</button>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+                
+                // Manual close
+                notification.querySelector('.notification-close').addEventListener('click', () => {
+                    notification.remove();
+                });
             }
             
             setupNavigation() {
@@ -735,23 +1599,23 @@
         
         // Добавляем стили для анимации ripple
         if (!document.getElementById('ripple-styles')) {
-            const style = document.createElement('style');
+    const style = document.createElement('style');
             style.id = 'ripple-styles';
-            style.textContent = `
+    style.textContent = `
                 @keyframes ripple-expand {
-                    to {
-                        transform: scale(4);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
         }
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             new MobileDentalAcademy();
         });
-    </script>
+</script>
 </body>
 </html>
