@@ -1,1163 +1,757 @@
-{% extends "mobile/base/mobile_base.html" %}
-
-{% block title %}{{ t('welcome_to_dental_academy') | default('Welcome to Dental Academy') }}{% endblock %}
-
-{% block mobile_title %}
-<img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="height: 32px; width: auto; object-fit: contain;">
-{% endblock %}
-
-{% block styles %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/welcome-mobile.css') }}">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-<style>
-/* ===== СОВРЕМЕННЫЕ СТИЛИ ДЛЯ МОБИЛЬНОЙ WELCOME СТРАНИЦЫ ===== */
-
-:root {
-    /* Основные цвета */
-    --primary: #3ECDC1;
-    --primary-light: #6BDDD6;
-    --primary-dark: #2BB6AC;
-    --secondary: #667eea;
-    --accent: #764ba2;
-    --success: #4ade80;
-    --warning: #facc15;
-    --error: #ef4444;
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Academy - Professional Training Platform</title>
     
-    /* Градиенты */
-    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-success: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-    --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);
-    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
-    /* Тени */
-    --shadow-soft: 0 10px 40px rgba(0,0,0,0.1);
-    --shadow-strong: 0 20px 60px rgba(0,0,0,0.15);
-    --shadow-colored: 0 10px 30px rgba(102, 126, 234, 0.3);
-    
-    /* Размеры */
-    --header-height: 60px;
-    --bottom-nav-height: 70px;
-    --container-padding: 16px;
-    
-    /* Анимации */
-    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--gradient-hero);
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-/* ===== HERO СЕКЦИЯ ===== */
-.hero-section {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: calc(var(--header-height) + 20px) var(--container-padding) var(--bottom-nav-height);
-    overflow: hidden;
-}
-
-/* Анимированный фон */
-.hero-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1;
-}
-
-.floating-orbs {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-.orb {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    animation: float 20s infinite linear;
-}
-
-.orb:nth-child(1) {
-    width: 80px;
-    height: 80px;
-    top: 20%;
-    left: 10%;
-    animation-delay: 0s;
-}
-
-.orb:nth-child(2) {
-    width: 120px;
-    height: 120px;
-    top: 60%;
-    right: 10%;
-    animation-delay: -5s;
-}
-
-.orb:nth-child(3) {
-    width: 60px;
-    height: 60px;
-    top: 80%;
-    left: 70%;
-    animation-delay: -10s;
-}
-
-@keyframes float {
-    from {
-        transform: translateY(100vh) rotate(0deg);
-    }
-    to {
-        transform: translateY(-100px) rotate(360deg);
-    }
-}
-
-/* Контент hero */
-.hero-content {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    flex: 1;
-    justify-content: center;
-    gap: 30px;
-}
-
-.hero-logo {
-    width: 80px;
-    height: 80px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(20px);
-    box-shadow: var(--shadow-soft);
-    animation: pulse-glow 3s ease-in-out infinite;
-}
-
-.hero-logo i {
-    font-size: 2.5rem;
-    color: white;
-}
-
-.hero-logo img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    filter: brightness(0) invert(1);
-}
-
-@keyframes pulse-glow {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255,255,255,0.4);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 0 20px rgba(255,255,255,0);
-    }
-}
-
-.hero-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: white;
-    margin: 0;
-    line-height: 1.2;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
-    animation: slideUp 1s var(--ease-bounce) 0.2s both;
-}
-
-.hero-subtitle {
-    font-size: 1.1rem;
-    color: rgba(255,255,255,0.9);
-    margin: 0;
-    line-height: 1.5;
-    max-width: 300px;
-    animation: slideUp 1s var(--ease-bounce) 0.4s both;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ===== CTA КНОПКИ ===== */
-.hero-cta {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    max-width: 280px;
-    animation: slideUp 1s var(--ease-bounce) 0.6s both;
-}
-
-.cta-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 16px 24px;
-    border-radius: 16px;
-    font-weight: 600;
-    font-size: 1rem;
-    text-decoration: none;
-    transition: all 0.3s var(--ease-smooth);
-    position: relative;
-    overflow: hidden;
-    border: none;
-    cursor: pointer;
-}
-
-.cta-primary {
-    background: rgba(255,255,255,0.95);
-    color: var(--secondary);
-    box-shadow: var(--shadow-soft);
-}
-
-.cta-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-strong);
-    background: white;
-}
-
-.cta-secondary {
-    background: rgba(255,255,255,0.1);
-    color: white;
-    border: 2px solid rgba(255,255,255,0.3);
-    backdrop-filter: blur(10px);
-}
-
-.cta-secondary:hover {
-    background: rgba(255,255,255,0.2);
-    border-color: rgba(255,255,255,0.5);
-    transform: translateY(-2px);
-}
-
-/* Ripple эффект */
-.cta-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.5);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.cta-button:active::before {
-    width: 300px;
-    height: 300px;
-}
-
-/* ===== ОСОБЕННОСТИ ПЛАТФОРМЫ ===== */
-.features-section {
-    padding: 40px var(--container-padding);
-    background: white;
-    position: relative;
-}
-
-.section-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.section-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 8px;
-}
-
-.section-subtitle {
-    color: #6b7280;
-    font-size: 1rem;
-    margin: 0;
-}
-
-.features-grid {
-    display: grid;
-    gap: 20px;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.feature-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: var(--shadow-soft);
-    transition: all 0.3s var(--ease-smooth);
-    border: 1px solid #f3f4f6;
-}
-
-.feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-strong);
-}
-
-.feature-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: white;
-    margin-bottom: 16px;
-}
-
-.feature-icon.blue {
-    background: var(--gradient-primary);
-}
-
-.feature-icon.green {
-    background: var(--gradient-success);
-}
-
-.feature-icon.orange {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-}
-
-.feature-icon.purple {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-}
-
-.feature-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0 0 8px;
-}
-
-.feature-description {
-    color: #6b7280;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    margin: 0;
-}
-
-/* ===== СТАТИСТИКА ===== */
-.stats-section {
-    padding: 40px var(--container-padding);
-    background: #f8fafc;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    max-width: 300px;
-    margin: 0 auto;
-}
-
-.stat-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: var(--shadow-soft);
-    transition: transform 0.3s var(--ease-smooth);
-}
-
-.stat-card:hover {
-    transform: scale(1.05);
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--primary);
-    margin: 0 0 4px;
-    animation: countUp 2s ease-out;
-}
-
-.stat-label {
-    font-size: 0.85rem;
-    color: #6b7280;
-    font-weight: 500;
-    margin: 0;
-}
-
-@keyframes countUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ===== ОТЗЫВЫ ===== */
-.testimonials-section {
-    padding: 40px var(--container-padding);
-    background: white;
-}
-
-.testimonial-slider {
-    max-width: 350px;
-    margin: 0 auto;
-    position: relative;
-}
-
-.testimonial-card {
-    background: #f8fafc;
-    border-radius: 20px;
-    padding: 24px;
-    margin: 0 10px;
-    text-align: center;
-    border-left: 4px solid var(--primary);
-}
-
-.testimonial-text {
-    font-style: italic;
-    color: #374151;
-    margin: 0 0 16px;
-    line-height: 1.5;
-}
-
-.testimonial-author {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-}
-
-.author-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--gradient-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 600;
-}
-
-.author-info {
-    text-align: left;
-}
-
-.author-name {
-    font-weight: 600;
-    color: #1f2937;
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-.author-role {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin: 0;
-}
-
-/* ===== ФИНАЛЬНЫЙ CTA ===== */
-.final-cta-section {
-    padding: 50px var(--container-padding);
-    background: var(--gradient-hero);
-    position: relative;
-    overflow: hidden;
-}
-
-.final-cta-content {
-    text-align: center;
-    position: relative;
-    z-index: 10;
-}
-
-.final-cta-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 12px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-.final-cta-subtitle {
-    color: rgba(255,255,255,0.9);
-    margin: 0 0 30px;
-    font-size: 1rem;
-    line-height: 1.5;
-}
-
-.final-cta-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 18px 30px;
-    background: white;
-    color: var(--secondary);
-    border-radius: 50px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-decoration: none;
-    box-shadow: var(--shadow-strong);
-    transition: all 0.3s var(--ease-smooth);
-    position: relative;
-    overflow: hidden;
-}
-
-.final-cta-button:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-}
-
-.final-cta-button i {
-    font-size: 1.2rem;
-    transition: transform 0.3s var(--ease-smooth);
-}
-
-.final-cta-button:hover i {
-    transform: translateX(3px);
-}
-
-/* ===== АНИМАЦИИ ПОЯВЛЕНИЯ ===== */
-.fade-in-up {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.6s var(--ease-smooth);
-}
-
-.fade-in-up.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.fade-in-left {
-    opacity: 0;
-    transform: translateX(-30px);
-    transition: all 0.6s var(--ease-smooth);
-}
-
-.fade-in-left.visible {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.fade-in-right {
-    opacity: 0;
-    transform: translateX(30px);
-    transition: all 0.6s var(--ease-smooth);
-}
-
-.fade-in-right.visible {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-/* ===== ЯЗЫКОВЫЕ АДАПТАЦИИ ===== */
-[dir="rtl"] .hero-content {
-    text-align: right;
-}
-
-[dir="rtl"] .author-info {
-    text-align: right;
-}
-
-[dir="rtl"] .final-cta-button i {
-    transform: scaleX(-1);
-}
-
-[dir="rtl"] .final-cta-button:hover i {
-    transform: scaleX(-1) translateX(-3px);
-}
-
-/* ===== АДАПТИВНОСТЬ ===== */
-@media (max-width: 360px) {
-    .hero-title {
-        font-size: 2rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
-    }
-    
-    .final-cta-title {
-        font-size: 1.5rem;
-    }
-}
-
-@media (min-width: 768px) {
-    .features-grid {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 600px;
-        gap: 24px;
-    }
-    
-    .stats-grid {
-        grid-template-columns: repeat(4, 1fr);
-        max-width: 600px;
-        gap: 20px;
-    }
-}
-
-/* ===== МОДАЛЬНЫЕ ОКНА И ВСПЛЫВАЮЩИЕ ЭЛЕМЕНТЫ ===== */
-.quick-tip {
-    position: fixed;
-    bottom: 100px;
-    right: 20px;
-    background: white;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: var(--shadow-strong);
-    max-width: 250px;
-    z-index: 1000;
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.3s var(--ease-smooth);
-}
-
-.quick-tip.show {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.quick-tip-close {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: #6b7280;
-    cursor: pointer;
-}
-
-.quick-tip-text {
-    font-size: 0.85rem;
-    color: #374151;
-    margin: 0;
-    padding-right: 20px;
-}
-
-/* ===== LOADING АНИМАЦИИ ===== */
-.shimmer {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
-}
-</style>
-{% endblock %}
-
-{% block mobile_header_actions %}
-<!-- Язык и тема в хедере -->
-<div class="mobile-language-selector">
-    <button class="mobile-header-action" id="mobile-language-toggle" aria-label="{{ t('select_language') }}">
-        <span class="fi fi-{{ get_country_code(current_language) }}"></span>
-    </button>
-    <div class="mobile-language-dropdown" id="mobile-language-dropdown">
-        {% for lang_code in supported_languages %}
-        <a href="{{ url_for('main_bp.set_language', lang=current_language, new_lang=lang_code) }}" 
-           class="mobile-language-option {% if lang_code == current_language %}active{% endif %}"
-           data-lang="{{ lang_code }}">
-            <span class="fi fi-{{ get_country_code(lang_code) }}"></span>
-            <span class="mobile-language-name">{{ t('language_name_' + lang_code) }}</span>
-            {% if lang_code == current_language %}
-            <i class="bi bi-check-lg"></i>
-            {% endif %}
+    <style>
+        /* ===== СОВРЕМЕННЫЕ ПЕРЕМЕННЫЕ ===== */
+        :root {
+            --primary: #3ECDC1;
+            --primary-dark: #2BB6AC;
+            --secondary: #667eea;
+            --accent: #764ba2;
+            --success: #4ade80;
+            --warning: #facc15;
+            --error: #ef4444;
+            
+            --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);
+            --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            --shadow-soft: 0 10px 40px rgba(0,0,0,0.1);
+            --shadow-strong: 0 20px 60px rgba(0,0,0,0.15);
+            
+            --header-height: 70px;
+            --nav-height: 70px;
+        }
+
+        /* ===== БАЗОВЫЕ СТИЛИ ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gradient-hero);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== HEADER ===== */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1rem;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .header-logo .main-logo {
+            width: 206px;
+            height: 206px;
+            object-fit: contain;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .logo-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            right: 1rem;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: calc(var(--header-height) + 2rem) 1rem calc(var(--nav-height) + 2rem);
+            overflow: hidden;
+        }
+
+        /* Анимированный фон */
+        .floating-orbs {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            animation: float 20s infinite linear;
+        }
+
+        .orb:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .orb:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+
+        .orb:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 70%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            to {
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+
+        /* Hero контент */
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 350px;
+            width: 100%;
+        }
+
+        .hero-logo {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 2rem;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: pulse-glow 3s ease-in-out infinite;
+            font-size: 2.5rem;
+            overflow: hidden;
+        }
+
+        .hero-logo .hero-logo-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255,255,255,0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(255,255,255,0);
+            }
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 1rem;
+            line-height: 1.1;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            letter-spacing: -0.02em;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: rgba(255,255,255,0.9);
+            margin: 0 0 2.5rem;
+            line-height: 1.5;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* ===== CTA КНОПКИ ===== */
+        .hero-cta {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .cta-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-height: 56px;
+        }
+
+        .cta-primary {
+            background: rgba(255,255,255,0.95);
+            color: #374151;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .cta-primary:hover {
+            background: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .cta-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .cta-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Ripple эффект */
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .cta-button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* ===== FEATURES PREVIEW ===== */
+        .features-preview {
+            background: white;
+            margin-top: 4rem;
+            padding: 2rem 1rem;
+            border-radius: 24px 24px 0 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+
+        .features-grid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            background: var(--gradient-hero);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .feature-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            font-size: 0.85rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        /* ===== BOTTOM NAVIGATION ===== */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 1000;
+            padding: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #6b7280;
+            transition: all 0.3s ease;
+            position: relative;
+            min-width: 64px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(62, 205, 193, 0.1);
+        }
+
+        .nav-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* ===== ТЕМНАЯ ТЕМА ===== */
+        [data-theme="dark"] {
+            --gradient-hero: linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%);
+        }
+
+        [data-theme="dark"] .features-preview {
+            background: #1f2937;
+        }
+
+        [data-theme="dark"] .features-title {
+            color: #f9fafb;
+        }
+
+        [data-theme="dark"] .feature-card {
+            background: #374151;
+            border-color: #4b5563;
+        }
+
+        [data-theme="dark"] .feature-title {
+            color: #f9fafb;
+        }
+
+        [data-theme="dark"] .feature-description {
+            color: #d1d5db;
+        }
+
+        [data-theme="dark"] .mobile-bottom-nav {
+            background: rgba(31, 41, 55, 0.95);
+            border-top-color: rgba(255,255,255,0.1);
+        }
+
+        /* ===== АНИМАЦИИ ===== */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-content {
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .feature-card {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .feature-card:nth-child(2) { animation-delay: 0.1s; }
+        .feature-card:nth-child(3) { animation-delay: 0.2s; }
+        .feature-card:nth-child(4) { animation-delay: 0.3s; }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 360px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .cta-button {
+                padding: 0.875rem 1.25rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="mobile-header">
+        <a href="/en/home" class="header-logo">
+            <img src="/static/images/logo.png" alt="Dental Academy" class="main-logo">
         </a>
-        {% endfor %}
-    </div>
-</div>
+        <button class="theme-toggle" id="themeToggle">
+            <i class="bi bi-moon"></i>
+        </button>
+    </header>
 
-<button class="mobile-header-action" id="mobile-theme-toggle" aria-label="{{ t('toggle_theme') }}">
-    <i class="bi bi-moon theme-icon"></i>
-</button>
-{% endblock %}
-
-{% block mobile_content %}
-<!-- Hero секция -->
-<section class="hero-section">
-    <!-- Анимированный фон -->
-    <div class="hero-background">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <!-- Анимированный фон -->
         <div class="floating-orbs">
             <div class="orb"></div>
             <div class="orb"></div>
             <div class="orb"></div>
         </div>
-    </div>
-    
-    <!-- Контент Hero -->
-    <div class="hero-content">
-        <div class="hero-logo">
-            <img src="{{ url_for('static', filename='favicon.png') }}" alt="Favicon" style="width: 40px; height: 40px; object-fit: contain;">
-        </div>
         
-        <h1 class="hero-title">
-            {{ t('welcome_hero_title') | default('Become a Tandarts') }}
-        </h1>
-        
-        <p class="hero-subtitle">
-            {{ t('welcome_hero_subtitle') | default('Master dental skills. Pass BIG exam. Transform your career in Netherlands.') }}
-        </p>
-        
-        <div class="hero-cta">
-            <a href="/{{ current_language }}/auth/register" class="cta-button cta-primary">
-                <i class="bi bi-rocket-takeoff"></i>
-                <span>{{ t('start_free_trial') | default('Start Free Trial') }}</span>
-            </a>
+        <!-- Контент Hero -->
+        <div class="hero-content">
+            <div class="hero-logo">
+                <img src="/static/favicon.png" alt="Dental Academy" class="hero-logo-img">
+            </div>
             
-            <a href="#features" class="cta-button cta-secondary">
-                <i class="bi bi-play-circle"></i>
-                <span>{{ t('explore_platform') | default('Explore Platform') }}</span>
-            </a>
+            <h1 class="hero-title">
+                Become a Tandarts
+            </h1>
+            
+            <p class="hero-subtitle">
+                Master dental skills. Pass BIG exam. Transform your career in Netherlands.
+            </p>
+            
+            <div class="hero-cta">
+                <a href="/en/mobile/auth/register" class="cta-button cta-primary">
+                    <i class="bi bi-rocket-takeoff"></i>
+                    <span>Start Free Trial</span>
+                </a>
+                
+                <a href="/en/mobile/subjects" class="cta-button cta-secondary">
+                    <i class="bi bi-play-circle"></i>
+                    <span>Explore Platform</span>
+                </a>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Особенности платформы -->
-<section id="features" class="features-section">
-    <div class="section-header fade-in-up">
-        <h2 class="section-title">
-            {{ t('why_choose_us') | default('Why Choose Dental Academy?') }}
-        </h2>
-        <p class="section-subtitle">
-            {{ t('platform_benefits') | default('Everything you need to succeed in Dutch dental practice') }}
-        </p>
-    </div>
-    
-    <div class="features-grid">
-        <div class="feature-card fade-in-left">
-            <div class="feature-icon blue">
-                <i class="bi bi-mortarboard-fill"></i>
-            </div>
-            <h3 class="feature-title">{{ t('expert_content') | default('Expert Content') }}</h3>
-            <p class="feature-description">
-                {{ t('expert_content_desc') | default('Curated by Dutch dental professionals for BIG exam success') }}
-            </p>
-        </div>
+    <!-- Features Preview -->
+    <section class="features-preview">
+        <h2 class="features-title">Why Choose Dental Academy?</h2>
         
-        <div class="feature-card fade-in-right">
-            <div class="feature-icon green">
-                <i class="bi bi-person-workspace"></i>
-            </div>
-            <h3 class="feature-title">{{ t('virtual_patients') | default('Virtual Patients') }}</h3>
-            <p class="feature-description">
-                {{ t('virtual_patients_desc') | default('Practice with realistic patient scenarios and case studies') }}
-            </p>
-        </div>
-        
-        <div class="feature-card fade-in-left">
-            <div class="feature-icon orange">
-                <i class="bi bi-graph-up-arrow"></i>
-            </div>
-            <h3 class="feature-title">{{ t('adaptive_learning') | default('Adaptive Learning') }}</h3>
-            <p class="feature-description">
-                {{ t('adaptive_learning_desc') | default('AI-powered system adapts to your learning pace and style') }}
-            </p>
-        </div>
-        
-        <div class="feature-card fade-in-right">
-            <div class="feature-icon purple">
-                <i class="bi bi-globe2"></i>
-            </div>
-            <h3 class="feature-title">{{ t('multilingual') | default('8 Languages') }}</h3>
-            <p class="feature-description">
-                {{ t('multilingual_desc') | default('Study in your native language, master Dutch terminology') }}
-            </p>
-        </div>
-    </div>
-</section>
-
-<!-- Статистика -->
-<section class="stats-section">
-    <div class="section-header fade-in-up">
-        <h2 class="section-title">
-            {{ t('platform_stats') | default('Join Thousands of Successful Students') }}
-        </h2>
-    </div>
-    
-    <div class="stats-grid">
-        <div class="stat-card fade-in-up" style="animation-delay: 0.1s">
-            <div class="stat-number" data-count="5000">0</div>
-            <p class="stat-label">{{ t('active_students') | default('Active Students') }}</p>
-        </div>
-        
-        <div class="stat-card fade-in-up" style="animation-delay: 0.2s">
-            <div class="stat-number" data-count="89">0</div>
-            <p class="stat-label">{{ t('success_rate') | default('Success Rate %') }}</p>
-        </div>
-        
-        <div class="stat-card fade-in-up" style="animation-delay: 0.3s">
-            <div class="stat-number" data-count="500">0</div>
-            <p class="stat-label">{{ t('practice_questions') | default('Practice Questions') }}</p>
-        </div>
-        
-        <div class="stat-card fade-in-up" style="animation-delay: 0.4s">
-            <div class="stat-number" data-count="8">0</div>
-            <p class="stat-label">{{ t('languages') | default('Languages') }}</p>
-        </div>
-    </div>
-</section>
-
-<!-- Отзывы -->
-<section class="testimonials-section">
-    <div class="section-header fade-in-up">
-        <h2 class="section-title">
-            {{ t('student_success') | default('Student Success Stories') }}
-        </h2>
-    </div>
-    
-    <div class="testimonial-slider fade-in-up">
-        <div class="testimonial-card">
-            <p class="testimonial-text">
-                "{{ t('testimonial_1') | default('Dental Academy helped me pass BIG exam on first attempt. The virtual patients were incredibly realistic!') }}"
-            </p>
-            <div class="testimonial-author">
-                <div class="author-avatar">AM</div>
-                <div class="author-info">
-                    <p class="author-name">{{ t('testimonial_author_1') | default('Anna Martinez') }}</p>
-                    <p class="author-role">{{ t('dentist_amsterdam') | default('Dentist, Amsterdam') }}</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-mortarboard-fill"></i>
                 </div>
+                <h3 class="feature-title">Expert Content</h3>
+                <p class="feature-description">Curated by Dutch dental professionals for BIG exam success</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-person-workspace"></i>
+                </div>
+                <h3 class="feature-title">Virtual Patients</h3>
+                <p class="feature-description">Practice with realistic patient scenarios and case studies</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <h3 class="feature-title">Adaptive Learning</h3>
+                <p class="feature-description">AI-powered system adapts to your learning pace and style</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-globe2"></i>
+                </div>
+                <h3 class="feature-title">8 Languages</h3>
+                <p class="feature-description">Study in your native language, master Dutch terminology</p>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Финальный призыв к действию -->
-<section class="final-cta-section">
-    <div class="final-cta-content fade-in-up">
-        <h2 class="final-cta-title">
-            {{ t('ready_to_start') | default('Ready to Start Your Journey?') }}
-        </h2>
-        <p class="final-cta-subtitle">
-            {{ t('join_thousands_desc') | default('Join thousands of dental professionals who trust our platform for BIG exam preparation') }}
-        </p>
-        
-        <a href="/{{ current_language }}/auth/register" class="final-cta-button">
-            <span>{{ t('get_started_free') | default('Get Started Free') }}</span>
-            <i class="bi bi-arrow-right"></i>
+    <!-- Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <a href="/en/home" class="nav-item active">
+            <div class="nav-icon">
+                <i class="bi bi-house-fill"></i>
+            </div>
+            <span class="nav-label">Home</span>
         </a>
-    </div>
-</section>
+        <a href="/en/big-info" class="nav-item">
+            <div class="nav-icon">
+                <i class="bi bi-info-circle"></i>
+            </div>
+            <span class="nav-label">About BIG</span>
+        </a>
+        <a href="/en/mobile/auth/register" class="nav-item">
+            <div class="nav-icon">
+                <i class="bi bi-person-plus"></i>
+            </div>
+            <span class="nav-label">Register</span>
+        </a>
+        <a href="/en/mobile/auth/login" class="nav-item">
+            <div class="nav-icon">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </div>
+            <span class="nav-label">Login</span>
+        </a>
+    </nav>
 
-<!-- Быстрые подсказки -->
-<div class="quick-tip" id="quickTip">
-    <button class="quick-tip-close" onclick="closeQuickTip()">&times;</button>
-    <p class="quick-tip-text">
-        {{ t('quick_tip_mobile') | default('💡 Tip: Add this app to your home screen for the best experience!') }}
-    </p>
-</div>
-{% endblock %}
-
-{% block mobile_scripts %}
-{{ super() }}
-
-<script>
-// ===== СОВРЕМЕННАЯ WELCOME МОБИЛЬНАЯ ЛОГИКА =====
-class WelcomeMobileExperience {
-    constructor() {
-        this.isVisible = false;
-        this.animationObserver = null;
-        this.init();
-    }
-    
-    init() {
-        console.log('🚀 Initializing Welcome Mobile Experience...');
-        
-        this.setupAnimations();
-        this.setupCounters();
-        this.setupQuickTips();
-        this.setupScrollEffects();
-        this.setupCTATracking();
-        
-        // Показать быструю подсказку через 3 секунды
-        setTimeout(() => this.showQuickTip(), 3000);
-        
-        console.log('✅ Welcome Mobile Experience initialized');
-    }
-    
-    setupAnimations() {
-        // Настройка Intersection Observer для анимаций
-        this.animationObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    this.animationObserver.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        });
-        
-        // Наблюдаем за элементами с анимациями
-        document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right').forEach(el => {
-            this.animationObserver.observe(el);
-        });
-    }
-    
-    setupCounters() {
-        const counters = document.querySelectorAll('[data-count]');
-        
-        const counterObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    this.animateCounter(entry.target);
-                    counterObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.5 });
-        
-        counters.forEach(counter => counterObserver.observe(counter));
-    }
-    
-    animateCounter(element) {
-        const target = parseInt(element.dataset.count);
-        const duration = 2000;
-        const start = Date.now();
-        
-        const updateCounter = () => {
-            const now = Date.now();
-            const progress = Math.min((now - start) / duration, 1);
-            
-            // Easing function (ease out cubic)
-            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-            const current = Math.floor(easeOutCubic * target);
-            
-            element.textContent = current.toLocaleString();
-            
-            if (progress < 1) {
-                requestAnimationFrame(updateCounter);
-            } else {
-                // Добавляем символы для специальных метрик
-                if (element.parentElement.querySelector('.stat-label').textContent.includes('%')) {
-                    element.textContent = target + '%';
-                } else if (element.parentElement.querySelector('.stat-label').textContent.includes('K')) {
-                    element.textContent = (target/1000).toFixed(1) + 'K';
-                }
+    <!-- JavaScript -->
+    <script>
+        // ===== MODERN MOBILE EXPERIENCE =====
+        class MobileDentalAcademy {
+            constructor() {
+                this.currentTheme = 'light';
+                this.init();
             }
-        };
-        
-        updateCounter();
-    }
-    
-    setupQuickTips() {
-        // Управление быстрыми подсказками
-        window.showQuickTip = () => {
-            const tip = document.getElementById('quickTip');
-            if (tip && !localStorage.getItem('quickTipShown')) {
-                tip.classList.add('show');
-            }
-        };
-        
-        window.closeQuickTip = () => {
-            const tip = document.getElementById('quickTip');
-            if (tip) {
-                tip.classList.remove('show');
-                localStorage.setItem('quickTipShown', 'true');
-            }
-        };
-    }
-    
-    showQuickTip() {
-        if (!localStorage.getItem('quickTipShown') && !window.matchMedia('(display-mode: standalone)').matches) {
-            window.showQuickTip();
-        }
-    }
-    
-    setupScrollEffects() {
-        let ticking = false;
-        
-        const updateScrollEffects = () => {
-            const scrolled = window.pageYOffset;
-            const rate = scrolled * -0.5;
             
-            // Параллакс для орбов
-            const orbs = document.querySelectorAll('.orb');
-            orbs.forEach((orb, index) => {
-                const speed = 0.5 + (index * 0.2);
-                orb.style.transform = `translateY(${rate * speed}px)`;
-            });
-            
-            ticking = false;
-        };
-        
-        window.addEventListener('scroll', () => {
-            if (!ticking) {
-                requestAnimationFrame(updateScrollEffects);
-                ticking = true;
-            }
-        }, { passive: true });
-    }
-    
-    setupCTATracking() {
-        // Отслеживание кликов по CTA кнопкам
-        document.querySelectorAll('.cta-button, .final-cta-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const buttonText = button.querySelector('span').textContent;
-                console.log(`🎯 CTA Clicked: ${buttonText}`);
+            init() {
+                console.log('🚀 Dental Academy Mobile - Loading...');
                 
-                // Добавляем визуальный эффект
-                this.addClickEffect(button, e);
+                this.setupThemeToggle();
+                this.setupNavigation();
+                this.setupRippleEffects();
+                this.setupScrollEffects();
                 
-                // Можно добавить аналитику
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'cta_click', {
-                        'button_text': buttonText,
-                        'section': this.getButtonSection(button)
+                console.log('✅ Dental Academy Mobile - Ready!');
+            }
+            
+            setupThemeToggle() {
+                const themeToggle = document.getElementById('themeToggle');
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                this.applyTheme(savedTheme);
+                
+                themeToggle.addEventListener('click', () => {
+                    this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+                    this.applyTheme(this.currentTheme);
+                    localStorage.setItem('theme', this.currentTheme);
+                });
+            }
+            
+            applyTheme(theme) {
+                this.currentTheme = theme;
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                const themeIcon = document.querySelector('#themeToggle i');
+                themeIcon.className = theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+            }
+            
+            setupNavigation() {
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        // Удаляем активное состояние у всех
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        // Добавляем активное состояние к кликнутому
+                        item.classList.add('active');
+                        
+                        console.log('Navigation:', item.href);
                     });
-                }
-            });
-        });
-    }
-    
-    addClickEffect(button, event) {
-        const circle = document.createElement('div');
-        const rect = button.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        const x = event.clientX - rect.left - size / 2;
-        const y = event.clientY - rect.top - size / 2;
-        
-        circle.style.cssText = `
-            position: absolute;
-            width: ${size}px;
-            height: ${size}px;
-            left: ${x}px;
-            top: ${y}px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-            pointer-events: none;
-            z-index: 1000;
-        `;
-        
-        button.style.position = 'relative';
-        button.style.overflow = 'hidden';
-        button.appendChild(circle);
-        
-        setTimeout(() => circle.remove(), 600);
-    }
-    
-    getButtonSection(button) {
-        const section = button.closest('section');
-        if (section.classList.contains('hero-section')) return 'hero';
-        if (section.classList.contains('final-cta-section')) return 'final-cta';
-        return 'unknown';
-    }
-}
-
-// Инициализация при загрузке DOM
-document.addEventListener('DOMContentLoaded', () => {
-    window.welcomeMobile = new WelcomeMobileExperience();
-    
-    // Настройка языкового переключателя
-    const languageToggle = document.getElementById('mobile-language-toggle');
-    const languageDropdown = document.getElementById('mobile-language-dropdown');
-    
-    if (languageToggle && languageDropdown) {
-        languageToggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            languageDropdown.classList.toggle('show');
-        });
-        
-        // Закрытие при клике вне
-        document.addEventListener('click', (e) => {
-            if (!languageToggle.contains(e.target) && !languageDropdown.contains(e.target)) {
-                languageDropdown.classList.remove('show');
+                });
             }
-        });
-    }
-    
-    // Обработка смены языка
-    document.querySelectorAll('.mobile-language-option').forEach(option => {
-        option.addEventListener('click', function(e) {
-            if (!this.classList.contains('active')) {
-                // Показываем индикатор загрузки
-                this.style.opacity = '0.7';
-                this.style.pointerEvents = 'none';
+            
+            setupRippleEffects() {
+                document.querySelectorAll('.cta-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const ripple = document.createElement('div');
+                        const rect = button.getBoundingClientRect();
+                        const size = Math.max(rect.width, rect.height);
+                        const x = e.clientX - rect.left - size / 2;
+                        const y = e.clientY - rect.top - size / 2;
+                        
+                        ripple.style.cssText = `
+                            position: absolute;
+                            width: ${size}px;
+                            height: ${size}px;
+                            left: ${x}px;
+                            top: ${y}px;
+                            background: rgba(255, 255, 255, 0.5);
+                            border-radius: 50%;
+                            transform: scale(0);
+                            animation: ripple-expand 0.6s ease-out;
+                            pointer-events: none;
+                            z-index: 1000;
+                        `;
+                        
+                        button.style.position = 'relative';
+                        button.style.overflow = 'hidden';
+                        button.appendChild(ripple);
+                        
+                        setTimeout(() => ripple.remove(), 600);
+                    });
+                });
+            }
+            
+            setupScrollEffects() {
+                let ticking = false;
                 
-                // Добавляем анимацию загрузки
-                const loader = document.createElement('i');
-                loader.className = 'bi bi-arrow-clockwise';
-                loader.style.animation = 'spin 1s linear infinite';
-                this.appendChild(loader);
-            }
-        });
-    });
-    
-    // Добавляем стили для анимации загрузки
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
+                const updateScrollEffects = () => {
+                    const scrolled = window.pageYOffset;
+                    const rate = scrolled * -0.5;
+                    
+                    // Параллакс для орбов
+                    const orbs = document.querySelectorAll('.orb');
+                    orbs.forEach((orb, index) => {
+                        const speed = 0.5 + (index * 0.2);
+                        orb.style.transform = `translateY(${rate * speed}px)`;
+                    });
+                    
+                    ticking = false;
+                };
+                
+                window.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        requestAnimationFrame(updateScrollEffects);
+                        ticking = true;
+                    }
+                }, { passive: true });
             }
         }
         
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        // Добавляем стили для анимации ripple
+        if (!document.getElementById('ripple-styles')) {
+            const style = document.createElement('style');
+            style.id = 'ripple-styles';
+            style.textContent = `
+                @keyframes ripple-expand {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
         }
-    `;
-    document.head.appendChild(style);
-});
-
-// Глобальные функции для совместимости
-window.WelcomeMobileExperience = WelcomeMobileExperience;
-</script>
-
-<!-- Enhanced Welcome Config для полной интеграции -->
-<script>
-window.WelcomeConfig = {
-    currentLanguage: '{{ current_language }}',
-    supportedLanguages: {{ supported_languages | tojson }},
-    translations: {
-        themeChanged: '{{ t("theme_changed") | default("Theme changed") }}',
-        languageChanged: '{{ t("language_changed") | default("Language changed") }}',
-        installPrompt: '{{ t("install_prompt") | default("Install this app for the best experience!") }}',
-        installSuccess: '{{ t("install_success") | default("App installed successfully!") }}',
-        welcome: '{{ t("welcome") | default("Welcome") }}',
-        loading: '{{ t("loading") | default("Loading...") }}',
-        networkError: '{{ t("network_error") | default("Network error") }}',
-        tryAgain: '{{ t("try_again") | default("Try again") }}'
-    },
-    features: {
-        pushNotifications: true,
-        analytics: true,
-        offlineMode: true
-    }
-};
-</script>
-{% endblock %}
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileDentalAcademy();
+        });
+    </script>
+</body>
+</html>

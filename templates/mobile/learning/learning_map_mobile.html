@@ -1,2 +1,83 @@
-{# Мобильная карта обучения #}
-{# Вставьте сюда код мобильной карты обучения #} 
+{% extends "mobile/base/mobile_base.html" %}
+
+{% block title %}Explore Subjects - Dental Academy{% endblock %}
+
+{% block mobile_title %}Explore Subjects{% endblock %}
+
+{% block mobile_header_left %}
+<a href="/en/home" class="mobile-header-action">
+  <i class="bi bi-arrow-left"></i>
+</a>
+{% endblock %}
+
+{% block mobile_content %}
+<div style="padding: calc(var(--header-height) + 1rem) 1rem calc(var(--nav-height) + 1rem); min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);">
+    
+    <!-- Статистика -->
+    {% if user_stats %}
+    <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+            <div style="text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: #3ECDC1;">{{ user_stats.total_progress or 0 }}%</div>
+                <div style="font-size: 0.8rem; color: #6b7280;">Progress</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: #3ECDC1;">{{ user_stats.total_subjects or 0 }}</div>
+                <div style="font-size: 0.8rem; color: #6b7280;">Subjects</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Предметы -->
+    {% if subjects %}
+    <h2 style="color: white; font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+        Available Subjects
+    </h2>
+    
+    <div style="display: grid; gap: 1rem;">
+        {% for subject in subjects %}
+        <div style="background: rgba(255,255,255,0.95); border-radius: 16px; padding: 1.25rem; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #667eea, #3ECDC1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; color: white;">
+                    <i class="bi bi-book"></i>
+                </div>
+                <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin: 0;">{{ subject.name }}</h3>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #6b7280; margin-bottom: 0.75rem;">
+                <span>{{ subject.total_lessons or 0 }} lessons</span>
+                <span>{{ subject.estimated_time | default('2h') }}</span>
+            </div>
+            
+            <div style="height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem;">
+                <div style="height: 100%; background: #3ECDC1; border-radius: 3px; width: {{ subject.progress_percentage or 0 }}%;"></div>
+            </div>
+            
+            {% if subject.description %}
+            <p style="font-size: 0.85rem; color: #6b7280; margin: 0;">{{ subject.description }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Призыв к регистрации -->
+    {% if show_auth_prompt %}
+    <div style="background: rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; text-align: center; margin-top: 2rem; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);">
+        <h3 style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Start Learning Today!</h3>
+        <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 1rem;">Register to track your progress and unlock all features</p>
+        
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="/en/mobile/auth/register" style="flex: 1; padding: 0.75rem; border-radius: 12px; background: #3ECDC1; color: white; text-decoration: none; font-weight: 600; font-size: 0.9rem; text-align: center;">
+                Get Started
+            </a>
+            <a href="/en/mobile/auth/login" style="flex: 1; padding: 0.75rem; border-radius: 12px; background: rgba(255,255,255,0.1); color: white; text-decoration: none; font-weight: 600; font-size: 0.9rem; text-align: center; border: 1px solid rgba(255,255,255,0.3);">
+                Sign In
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+</div>
+{% endblock %} 

@@ -69,8 +69,8 @@ def welcome(lang):
 def login(lang):
     """Мобильная страница входа."""
     return render_template(
-        'auth/login_mobile.html',
-        title=t('login', lang=lang),
+        'mobile/auth/login_mobile.html',
+        title='Login',
         current_language=lang
     )
 
@@ -78,12 +78,68 @@ def login(lang):
 def register(lang):
     """Мобильная страница регистрации."""
     return render_template(
-        'auth/register_mobile.html',
-        title=t('register', lang=lang),
+        'mobile/auth/register_mobile.html',
+        title='Register',
         current_language=lang
     )
 
 # Обучение
+@mobile_bp.route('/subjects')
+def subjects_view(lang):
+    """Публичная мобильная страница просмотра предметов."""
+    try:
+        # Получаем пути обучения
+        learning_paths = LearningPath.query.order_by(LearningPath.order).all()
+        
+        # Получаем все предметы без прогресса (публичный доступ)
+        subjects = Subject.query.all()
+        for subject in subjects:
+            try:
+                subject_modules = Module.query.filter_by(subject_id=subject.id).all()
+                total_lessons = sum(len(getattr(module, 'lessons', [])) for module in subject_modules)
+                
+                # Для неавторизованных пользователей прогресс всегда 0
+                subject.progress_percentage = 0
+                subject.total_lessons = total_lessons
+                subject.completed_lessons = 0
+                subject.is_completed = False
+                subject.estimated_time = f"{max(1, total_lessons // 10)}h"
+                
+                if not hasattr(subject, 'category') or not subject.category:
+                    subject.category = 'general'
+                    
+            except Exception as e:
+                current_app.logger.error(f"Error calculating info for subject {subject.id}: {e}")
+                subject.progress_percentage = 0
+                subject.total_lessons = 0
+                subject.completed_lessons = 0
+                subject.is_completed = False
+                subject.estimated_time = "2h"
+                subject.category = 'general'
+        
+        # Статистика для неавторизованных пользователей
+        user_stats = {
+            'total_progress': 0,
+            'completed_subjects': 0,
+            'total_subjects': len(subjects),
+            'current_streak': 0
+        }
+        
+        return render_template(
+            'mobile/learning/learning_map_mobile.html',
+            title='Explore Subjects',
+            learning_paths=learning_paths,
+            subjects=subjects,
+            user_stats=user_stats,
+            current_language=lang,
+            show_auth_prompt=True  # Показывать призыв к регистрации
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in mobile subjects_view: {e}", exc_info=True)
+        flash("Error loading subjects", "danger")
+        return redirect(url_for('mobile.welcome', lang=lang))
+
 @mobile_bp.route('/learning')
 @login_required
 def learning_map(lang):

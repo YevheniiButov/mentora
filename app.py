@@ -1353,4 +1353,4 @@ if __name__ == '__main__':
     print("   - flask show-modules    : Show all modules in database")
     print("="*50 + "\n")
     
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=8081)

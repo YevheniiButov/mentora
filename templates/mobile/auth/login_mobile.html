@@ -1,509 +1,494 @@
-{% extends "mobile_base.html" %}
-
-{% block title %}{{ t('sign_in') | default('Sign In') }} - Dental Academy{% endblock %}
-
-{% block mobile_title %}{{ t('sign_in') | default('Sign In') }}{% endblock %}
-
-{% block mobile_header_left %}
-<a href="{{ url_for('main_bp.home', lang=current_language) }}" class="mobile-header-action">
-  <i class="bi bi-arrow-left"></i>
-</a>
-{% endblock %}
-
-{% block styles %}
-{{ super() }}
-<style>
-/* ===== СТИЛИ ДЛЯ МОБИЛЬНОЙ АВТОРИЗАЦИИ ===== */
-:root {
-    --auth-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);
-    --glass-bg: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --input-bg: rgba(255, 255, 255, 0.9);
-    --input-focus: rgba(255, 255, 255, 1);
-}
-
-body {
-    background: var(--auth-gradient);
-    min-height: 100vh;
-}
-
-.auth-container {
-    min-height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 1rem;
-    position: relative;
-}
-
-/* Анимированный фон */
-.auth-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    z-index: 1;
-}
-
-.floating-shapes {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-.shape {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    animation: float 15s infinite ease-in-out;
-}
-
-.shape:nth-child(1) {
-    width: 100px;
-    height: 100px;
-    top: 10%;
-    left: 10%;
-    animation-delay: 0s;
-}
-
-.shape:nth-child(2) {
-    width: 150px;
-    height: 150px;
-    top: 70%;
-    right: 10%;
-    animation-delay: -5s;
-}
-
-.shape:nth-child(3) {
-    width: 80px;
-    height: 80px;
-    top: 50%;
-    left: 80%;
-    animation-delay: -10s;
-}
-
-@keyframes float {
-    0%, 100% {
-        transform: translateY(0px) rotate(0deg);
-    }
-    50% {
-        transform: translateY(-20px) rotate(180deg);
-    }
-}
-
-/* Основная карточка авторизации */
-.auth-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 10;
-    animation: slideUp 0.6s ease-out;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.auth-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.auth-logo {
-    width: 64px;
-    height: 64px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.auth-logo i {
-    font-size: 2rem;
-    color: white;
-}
-
-.auth-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 0.5rem;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.auth-subtitle {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 1rem;
-    margin: 0;
-}
-
-/* Форма */
-.auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.form-group {
-    position: relative;
-}
-
-.form-label {
-    display: block;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
-}
-
-.form-input {
-    width: 100%;
-    padding: 1rem 1rem 1rem 3rem;
-    background: var(--input-bg);
-    border: 2px solid transparent;
-    border-radius: 12px;
-    font-size: 1rem;
-    color: #374151;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.form-input:focus {
-    outline: none;
-    background: var(--input-focus);
-    border-color: #3ECDC1;
-    box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.2);
-    transform: translateY(-2px);
-}
-
-.form-input::placeholder {
-    color: #9ca3af;
-}
-
-.form-icon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #6b7280;
-    font-size: 1.1rem;
-    margin-top: 1.25rem;
-}
-
-.password-toggle {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #6b7280;
-    cursor: pointer;
-    font-size: 1.1rem;
-    margin-top: 1.25rem;
-    padding: 0.25rem;
-    border-radius: 4px;
-    transition: color 0.3s ease;
-}
-
-.password-toggle:hover {
-    color: #374151;
-}
-
-/* Дополнительные опции */
-.auth-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 1rem 0;
-}
-
-.remember-me {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
-}
-
-.remember-checkbox {
-    width: 18px;
-    height: 18px;
-    accent-color: #3ECDC1;
-    border-radius: 4px;
-}
-
-.forgot-link {
-    color: rgba(255, 255, 255, 0.9);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.forgot-link:hover {
-    color: white;
-    text-decoration: underline;
-}
-
-/* Кнопки */
-.auth-button {
-    width: 100%;
-    padding: 1rem;
-    background: #3ECDC1;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    margin-top: 0.5rem;
-}
-
-.auth-button:hover {
-    background: #32a39a;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(62, 205, 193, 0.3);
-}
-
-.auth-button:active {
-    transform: translateY(0);
-}
-
-.auth-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.auth-button.loading {
-    color: transparent;
-}
-
-.auth-button.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top: 2px solid white;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
-/* Разделитель */
-.auth-divider {
-    display: flex;
-    align-items: center;
-    margin: 1.5rem 0;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.auth-divider span {
-    padding: 0 1rem;
-}
-
-/* Социальные кнопки */
-.social-buttons {
-    display: flex;
-    gap: 1rem;
-}
-
-.social-button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.social-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-.social-button i {
-    font-size: 1.1rem;
-}
-
-/* Подвал */
-.auth-footer {
-    text-align: center;
-    margin-top: 2rem;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
-}
-
-.auth-footer a {
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-
-.auth-footer a:hover {
-    color: #3ECDC1;
-    text-decoration: underline;
-}
-
-/* Сообщения об ошибках */
-.error-message {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
-    padding: 0.75rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    backdrop-filter: blur(10px);
-}
-
-.success-message {
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #86efac;
-    padding: 0.75rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    backdrop-filter: blur(10px);
-}
-
-/* Адаптивность */
-@media (max-width: 360px) {
-    .auth-card {
-        padding: 1.5rem;
-        margin: 1rem;
-    }
+<!-- login_mobile.html - Современная страница входа -->
+<!DOCTYPE html>
+<html lang="{{ current_language or 'en' }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('login') | default('Login') }} - Dental Academy</title>
     
-    .auth-title {
-        font-size: 1.5rem;
-    }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
-    .social-buttons {
-        flex-direction: column;
-    }
-}
+    <style>
+        :root {
+            --primary: #3ECDC1;
+            --primary-dark: #2BB6AC;
+            --secondary: #667eea;
+            --accent: #764ba2;
+            --error: #ef4444;
+            --success: #22c55e;
+            --gradient-auth: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);
+            --glass-bg: rgba(255,255,255,0.1);
+            --glass-border: rgba(255,255,255,0.2);
+            --input-bg: rgba(255,255,255,0.9);
+            --shadow-soft: 0 10px 40px rgba(0,0,0,0.1);
+            --shadow-strong: 0 20px 60px rgba(0,0,0,0.15);
+        }
 
-/* RTL поддержка */
-[dir="rtl"] .form-input {
-    padding: 1rem 3rem 1rem 1rem;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-[dir="rtl"] .form-icon {
-    left: auto;
-    right: 1rem;
-}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gradient-auth);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
 
-[dir="rtl"] .password-toggle {
-    right: auto;
-    left: 1rem;
-}
+        /* Анимированный фон */
+        .auth-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            z-index: 1;
+        }
 
-/* Темная тема */
-[data-theme="dark"] .form-input {
-    background: rgba(31, 41, 55, 0.9);
-    color: #f9fafb;
-}
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
 
-[data-theme="dark"] .form-input:focus {
-    background: rgba(31, 41, 55, 1);
-}
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            animation: float-auth 15s infinite ease-in-out;
+        }
 
-[data-theme="dark"] .form-input::placeholder {
-    color: #6b7280;
-}
+        .shape:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
 
-/* Высокий контраст */
-@media (prefers-contrast: high) {
-    .auth-card {
-        border-width: 2px;
-        background: rgba(255, 255, 255, 0.15);
-    }
-    
-    .form-input {
-        border-width: 2px;
-    }
-    
-    .auth-button {
-        border: 2px solid #3ECDC1;
-    }
-}
+        .shape:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 70%;
+            right: 10%;
+            animation-delay: -5s;
+        }
 
-/* Уменьшенная анимация */
-@media (prefers-reduced-motion: reduce) {
-    .auth-card {
-        animation: none;
-    }
-    
-    .shape {
-        animation: none;
-    }
-    
-    .form-input {
-        transition: none;
-    }
-    
-    .auth-button {
-        transition: none;
-    }
-}
-</style>
-{% endblock %}
+        .shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            top: 50%;
+            left: 80%;
+            animation-delay: -10s;
+        }
 
-{% block mobile_content %}
-<div class="auth-container">
+        @keyframes float-auth {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* Карточка авторизации */
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 400px;
+            animation: slideUpAuth 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .auth-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: var(--shadow-strong);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+
+        @keyframes slideUpAuth {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Заголовок */
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo {
+            width: 64px;
+            height: 64px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 2rem;
+            animation: pulse-logo 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-logo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .auth-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin: 0 0 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .auth-subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 1rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Форма */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #374151;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input:focus {
+            outline: none;
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-input.error {
+            border-color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .form-input.success {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .form-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .form-input:focus + .form-icon {
+            color: var(--primary);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #374151;
+        }
+
+        /* Опции */
+        .auth-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.9rem;
+        }
+
+        .remember-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            border-radius: 4px;
+        }
+
+        .forgot-link {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        /* Кнопки */
+        .auth-button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .auth-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(62, 205, 193, 0.3);
+        }
+
+        .auth-button:active {
+            transform: translateY(0);
+        }
+
+        .auth-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-button.loading {
+            color: transparent;
+        }
+
+        .auth-button.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Разделитель */
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .auth-divider span {
+            padding: 0 1rem;
+        }
+
+        /* Социальные кнопки */
+        .social-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .social-button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .social-button i {
+            font-size: 1.1rem;
+        }
+
+        /* Подвал */
+        .auth-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+
+        .auth-footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .auth-footer a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* Сообщения об ошибках */
+        .field-error {
+            color: #fca5a5;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            padding-left: 0.5rem;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 360px) {
+            .auth-card {
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+            
+            .auth-title {
+                font-size: 1.5rem;
+            }
+            
+            .social-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Темная тема */
+        [data-theme="dark"] .form-input {
+            background: rgba(31, 41, 55, 0.9);
+            color: #f9fafb;
+        }
+
+        [data-theme="dark"] .form-input:focus {
+            background: rgba(31, 41, 55, 1);
+        }
+
+        [data-theme="dark"] .form-input::placeholder {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
     <!-- Анимированный фон -->
     <div class="auth-background">
         <div class="floating-shapes">
@@ -512,449 +497,280 @@ body {
             <div class="shape"></div>
         </div>
     </div>
-    
-    <!-- Карточка авторизации -->
-    <div class="auth-card">
-        <!-- Заголовок -->
-        <div class="auth-header">
-            <div class="auth-logo">
-                <i class="bi bi-heart-pulse-fill"></i>
-            </div>
-            <h1 class="auth-title">{{ t('welcome_back') | default('Welcome Back') }}</h1>
-            <p class="auth-subtitle">{{ t('sign_in_subtitle') | default('Sign in to continue your dental journey') }}</p>
-        </div>
-        
-        <!-- Сообщения -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-            <div class="{{ 'error-message' if category == 'error' else 'success-message' }}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
-        {% endwith %}
-        
-        <!-- Форма авторизации -->
-        <form class="auth-form" method="POST" action="{{ url_for('auth_bp.login', lang=current_language) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            
-            <!-- Email -->
-            <div class="form-group">
-                <label for="email" class="form-label">
-                    {{ t('email') | default('Email Address') }}
-                </label>
-                <div class="input-container">
-                    <i class="form-icon bi bi-envelope"></i>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        class="form-input" 
-                        placeholder="{{ t('email_placeholder') | default('Enter your email') }}"
-                        required
-                        autocomplete="email"
-                        value="{{ request.form.get('email', '') }}"
-                    >
+
+    <!-- Контейнер авторизации -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Заголовок -->
+            <div class="auth-header">
+                <div class="auth-logo">
+                    🔐
                 </div>
+                <h1 class="auth-title">
+                    {{ t('welcome_back') | default('Welcome Back') }}
+                </h1>
+                <p class="auth-subtitle">
+                    {{ t('login_subtitle') | default('Sign in to continue your dental journey') }}
+                </p>
             </div>
-            
-            <!-- Пароль -->
-            <div class="form-group">
-                <label for="password" class="form-label">
-                    {{ t('password') | default('Password') }}
-                </label>
-                <div class="input-container">
-                    <i class="form-icon bi bi-lock"></i>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        class="form-input" 
-                        placeholder="{{ t('password_placeholder') | default('Enter your password') }}"
-                        required
-                        autocomplete="current-password"
-                    >
-                    <button type="button" class="password-toggle" aria-label="{{ t('toggle_password') | default('Toggle password visibility') }}">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
+
+            <!-- Сообщения об ошибках -->
+            {% if error %}
+            <div class="error-message">
+                {{ error }}
             </div>
-            
-            <!-- Дополнительные опции -->
-            <div class="auth-options">
-                <label class="remember-me">
-                    <input type="checkbox" name="remember_me" class="remember-checkbox">
-                    <span>{{ t('remember_me') | default('Remember me') }}</span>
-                </label>
+            {% endif %}
+
+            {% if success %}
+            <div class="success-message">
+                {{ success }}
+            </div>
+            {% endif %}
+
+            <!-- Форма входа -->
+            <form class="auth-form" id="loginForm" method="POST">
+                {{ csrf_token() if csrf_token }}
                 
-                <a href="{{ url_for('auth_bp.forgot_password', lang=current_language) }}" class="forgot-link">
-                    {{ t('forgot_password') | default('Forgot password?') }}
+                <div class="form-group">
+                    <label for="email" class="form-label">{{ t('email') | default('Email') }}</label>
+                    <div class="form-input-wrapper">
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email"
+                            class="form-input" 
+                            placeholder="{{ t('enter_email') | default('Enter your email') }}"
+                            required
+                            value="{{ request.form.email if request.form.email }}"
+                        >
+                        <i class="form-icon bi bi-envelope"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">{{ t('password') | default('Password') }}</label>
+                    <div class="form-input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password"
+                            class="form-input" 
+                            placeholder="{{ t('enter_password') | default('Enter your password') }}"
+                            required
+                        >
+                        <i class="form-icon bi bi-lock"></i>
+                        <button type="button" class="password-toggle" aria-label="{{ t('toggle_password') | default('Toggle password visibility') }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Опции -->
+                <div class="auth-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember_me" class="remember-checkbox">
+                        <span>{{ t('remember_me') | default('Remember me') }}</span>
+                    </label>
+                    <a href="{{ url_for('auth_bp.change_password', lang=current_language or 'en') }}" class="forgot-link">
+                        {{ t('forgot_password') | default('Forgot password?') }}
+                    </a>
+                </div>
+
+                <!-- Кнопка входа -->
+                <button type="submit" class="auth-button" id="loginButton">
+                    {{ t('sign_in') | default('Sign In') }}
+                </button>
+            </form>
+
+            <!-- Разделитель -->
+            <div class="auth-divider">
+                <span>{{ t('or_continue_with') | default('Or continue with') }}</span>
+            </div>
+
+            <!-- Социальные кнопки -->
+            <div class="social-buttons">
+                <a href="{{ url_for('auth_bp.debug_auth', provider='google', lang=current_language or 'en') }}" class="social-button">
+                    <i class="bi bi-google"></i>
+                    <span>Google</span>
+                </a>
+                <a href="{{ url_for('auth_bp.debug_auth', provider='microsoft', lang=current_language or 'en') }}" class="social-button">
+                    <i class="bi bi-microsoft"></i>
+                    <span>Microsoft</span>
                 </a>
             </div>
-            
-            <!-- Кнопка входа -->
-            <button type="submit" class="auth-button" id="loginButton">
-                {{ t('sign_in') | default('Sign In') }}
-            </button>
-        </form>
-        
-        <!-- Разделитель -->
-        <div class="auth-divider">
-            <span>{{ t('or') | default('or') }}</span>
-        </div>
-        
-        <!-- Социальные кнопки -->
-        <div class="social-buttons">
-            <a href="{{ url_for('auth_bp.google_login', lang=current_language) }}" class="social-button">
-                <i class="bi bi-google"></i>
-                <span>Google</span>
-            </a>
-            <a href="{{ url_for('auth_bp.facebook_login', lang=current_language) }}" class="social-button">
-                <i class="bi bi-facebook"></i>
-                <span>Facebook</span>
-            </a>
-        </div>
-        
-        <!-- Подвал -->
-        <div class="auth-footer">
-            {{ t('no_account') | default("Don't have an account?") }}
-            <a href="{{ url_for('auth_bp.register', lang=current_language) }}">
-                {{ t('sign_up') | default('Sign up') }}
-            </a>
+
+            <!-- Подвал -->
+            <div class="auth-footer">
+                {{ t('dont_have_account') | default("Don't have an account?") }}
+                <a href="{{ url_for('auth_bp.register', lang=current_language or 'en') }}">
+                    {{ t('sign_up') | default('Sign up') }}
+                </a>
+            </div>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block mobile_scripts %}
-{{ super() }}
+    <script>
+        // Современная логика авторизации
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginForm');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const passwordToggle = document.querySelector('.password-toggle');
+            const loginButton = document.getElementById('loginButton');
 
-<script>
-// ===== МОБИЛЬНАЯ АВТОРИЗАЦИЯ =====
-class MobileAuthController {
-    constructor() {
-        this.form = document.querySelector('.auth-form');
-        this.emailInput = document.getElementById('email');
-        this.passwordInput = document.getElementById('password');
-        this.passwordToggle = document.querySelector('.password-toggle');
-        this.loginButton = document.getElementById('loginButton');
-        
-        this.init();
-    }
-    
-    init() {
-        this.setupPasswordToggle();
-        this.setupFormValidation();
-        this.setupFormSubmission();
-        this.setupInputEnhancements();
-        this.setupAccessibility();
-    }
-    
-    setupPasswordToggle() {
-        if (this.passwordToggle) {
-            this.passwordToggle.addEventListener('click', () => {
-                const isPassword = this.passwordInput.type === 'password';
-                this.passwordInput.type = isPassword ? 'text' : 'password';
+            // Переключение видимости пароля
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
                 
-                const icon = this.passwordToggle.querySelector('i');
-                icon.className = `bi bi-${isPassword ? 'eye-slash' : 'eye'}`;
-                
-                // Accessibility
-                this.passwordToggle.setAttribute(
-                    'aria-label', 
-                    isPassword ? 'Hide password' : 'Show password'
-                );
+                const icon = this.querySelector('i');
+                icon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
             });
-        }
-    }
-    
-    setupFormValidation() {
-        // Валидация email в реальном времени
-        this.emailInput.addEventListener('blur', () => {
-            this.validateEmail();
-        });
-        
-        // Валидация пароля
-        this.passwordInput.addEventListener('input', () => {
-            this.validatePassword();
-        });
-    }
-    
-    validateEmail() {
-        const email = this.emailInput.value.trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        if (email && !emailRegex.test(email)) {
-            this.showFieldError(this.emailInput, 'Please enter a valid email address');
-            return false;
-        } else {
-            this.clearFieldError(this.emailInput);
-            return true;
-        }
-    }
-    
-    validatePassword() {
-        const password = this.passwordInput.value;
-        
-        if (password.length > 0 && password.length < 6) {
-            this.showFieldError(this.passwordInput, 'Password must be at least 6 characters');
-            return false;
-        } else {
-            this.clearFieldError(this.passwordInput);
-            return true;
-        }
-    }
-    
-    showFieldError(field, message) {
-        this.clearFieldError(field);
-        
-        field.style.borderColor = '#ef4444';
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'field-error';
-        errorDiv.textContent = message;
-        errorDiv.style.cssText = `
-            color: #fca5a5;
-            font-size: 0.8rem;
-            margin-top: 0.25rem;
-            padding-left: 0.5rem;
-        `;
-        
-        field.parentElement.appendChild(errorDiv);
-    }
-    
-    clearFieldError(field) {
-        field.style.borderColor = 'transparent';
-        
-        const existingError = field.parentElement.querySelector('.field-error');
-        if (existingError) {
-            existingError.remove();
-        }
-    }
-    
-    setupFormSubmission() {
-        this.form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleFormSubmit();
-        });
-    }
-    
-    async handleFormSubmit() {
-        // Валидация формы
-        const isEmailValid = this.validateEmail();
-        const isPasswordValid = this.validatePassword();
-        
-        if (!isEmailValid || !isPasswordValid) {
-            this.showToast('Please correct the errors above', 'error');
-            return;
-        }
-        
-        // Показываем состояние загрузки
-        this.setLoadingState(true);
-        
-        try {
-            // Собираем данные формы
-            const formData = new FormData(this.form);
-            
-            // Отправляем запрос
-            const response = await fetch(this.form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+
+            // Валидация в реальном времени
+            emailInput.addEventListener('blur', validateEmail);
+            passwordInput.addEventListener('blur', validatePassword);
+
+            function validateEmail() {
+                const email = emailInput.value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                clearFieldError(emailInput);
+                
+                if (!email) {
+                    showFieldError(emailInput, '{{ t("email_required") | default("Email is required") }}');
+                    return false;
+                } else if (!emailRegex.test(email)) {
+                    showFieldError(emailInput, '{{ t("invalid_email") | default("Please enter a valid email") }}');
+                    return false;
                 }
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                this.showToast('Login successful! Redirecting...', 'success');
                 
-                // Перенаправляем через небольшую задержку для UX
-                setTimeout(() => {
-                    window.location.href = result.redirect_url || '/';
-                }, 1000);
+                emailInput.classList.add('success');
+                return true;
+            }
+
+            function validatePassword() {
+                const password = passwordInput.value;
                 
-            } else {
-                this.showToast(result.message || 'Login failed. Please try again.', 'error');
-                this.setLoadingState(false);
+                clearFieldError(passwordInput);
+                
+                if (!password) {
+                    showFieldError(passwordInput, '{{ t("password_required") | default("Password is required") }}');
+                    return false;
+                } else if (password.length < 6) {
+                    showFieldError(passwordInput, '{{ t("password_min_length") | default("Password must be at least 6 characters") }}');
+                    return false;
+                }
+                
+                passwordInput.classList.add('success');
+                return true;
             }
-            
-        } catch (error) {
-            console.error('Login error:', error);
-            this.showToast('Network error. Please check your connection.', 'error');
-            this.setLoadingState(false);
-        }
-    }
-    
-    setLoadingState(loading) {
-        this.loginButton.disabled = loading;
-        
-        if (loading) {
-            this.loginButton.classList.add('loading');
-        } else {
-            this.loginButton.classList.remove('loading');
-        }
-    }
-    
-    setupInputEnhancements() {
-        // Автофокус на первое поле при загрузке
-        setTimeout(() => {
-            if (this.emailInput && !this.emailInput.value) {
-                this.emailInput.focus();
+
+            function showFieldError(field, message) {
+                field.classList.add('error');
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'field-error';
+                errorDiv.textContent = message;
+                
+                const group = field.closest('.form-group');
+                group.appendChild(errorDiv);
             }
-        }, 500);
-        
-        // Enter для перехода между полями
-        this.emailInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+
+            function clearFieldError(field) {
+                field.classList.remove('error', 'success');
+                
+                const group = field.closest('.form-group');
+                const existingError = group.querySelector('.field-error');
+                if (existingError) {
+                    existingError.remove();
+                }
+            }
+
+            // Обработка отправки формы
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                this.passwordInput.focus();
-            }
-        });
-        
-        // Анимации при фокусе
-        [this.emailInput, this.passwordInput].forEach(input => {
-            input.addEventListener('focus', () => {
-                input.parentElement.style.transform = 'translateY(-2px)';
-            });
-            
-            input.addEventListener('blur', () => {
-                input.parentElement.style.transform = 'translateY(0)';
-            });
-        });
-    }
-    
-    setupAccessibility() {
-        // Объявления для скринридеров
-        this.form.addEventListener('submit', () => {
-            this.announceToScreenReader('Signing in, please wait...');
-        });
-        
-        // Клавиатурная навигация для социальных кнопок
-        const socialButtons = document.querySelectorAll('.social-button');
-        socialButtons.forEach(button => {
-            button.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    button.click();
+                
+                const isEmailValid = validateEmail();
+                const isPasswordValid = validatePassword();
+                
+                if (!isEmailValid || !isPasswordValid) {
+                    return;
+                }
+                
+                // Показываем состояние загрузки
+                loginButton.classList.add('loading');
+                loginButton.disabled = true;
+                
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch(form.action || window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showToast('{{ t("login_success") | default("Login successful! Redirecting...") }}', 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = result.redirect_url || '/dashboard';
+                        }, 1000);
+                    } else {
+                        showToast(result.message || '{{ t("login_failed") | default("Login failed. Please try again.") }}', 'error');
+                        loginButton.classList.remove('loading');
+                        loginButton.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showToast('{{ t("network_error") | default("Network error. Please check your connection.") }}', 'error');
+                    loginButton.classList.remove('loading');
+                    loginButton.disabled = false;
                 }
             });
-        });
-    }
-    
-    showToast(message, type = 'info') {
-        // Удаляем существующие уведомления
-        const existingToasts = document.querySelectorAll('.auth-toast');
-        existingToasts.forEach(toast => toast.remove());
-        
-        // Создаем новое уведомление
-        const toast = document.createElement('div');
-        toast.className = `auth-toast auth-toast-${type}`;
-        toast.textContent = message;
-        
-        // Стили
-        const colors = {
-            success: '#22c55e',
-            error: '#ef4444',
-            warning: '#f59e0b',
-            info: '#3b82f6'
-        };
-        
-        toast.style.cssText = `
-            position: fixed;
-            top: calc(var(--header-height) + 1rem);
-            left: 1rem;
-            right: 1rem;
-            background: ${colors[type] || colors.info};
-            color: white;
-            padding: 1rem;
-            border-radius: 12px;
-            font-weight: 500;
-            text-align: center;
-            z-index: 1000;
-            transform: translateY(-100px);
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-        `;
-        
-        document.body.appendChild(toast);
-        
-        // Анимация появления
-        requestAnimationFrame(() => {
-            toast.style.transform = 'translateY(0)';
-            toast.style.opacity = '1';
-        });
-        
-        // Автоматическое скрытие
-        setTimeout(() => {
-            toast.style.transform = 'translateY(-100px)';
-            toast.style.opacity = '0';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            }, 300);
-        }, 3000);
-    }
-    
-    announceToScreenReader(message) {
-        const announcement = document.createElement('div');
-        announcement.setAttribute('aria-live', 'polite');
-        announcement.setAttribute('aria-atomic', 'true');
-        announcement.className = 'sr-only';
-        announcement.textContent = message;
-        
-        document.body.appendChild(announcement);
-        
-        setTimeout(() => {
-            document.body.removeChild(announcement);
-        }, 1000);
-    }
-}
 
-// Инициализация
-document.addEventListener('DOMContentLoaded', () => {
-    window.mobileAuth = new MobileAuthController();
-    
-    // Обработка социальной авторизации
-    const socialButtons = document.querySelectorAll('.social-button');
-    socialButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            // Показываем индикатор загрузки
-            button.style.opacity = '0.7';
-            button.style.pointerEvents = 'none';
-            
-            // Перенаправляем на авторизацию
-            setTimeout(() => {
-                window.location.href = button.href;
-            }, 300);
-        });
-    });
-    
-    // Стили для screen reader
-    if (!document.getElementById('sr-only-styles')) {
-        const style = document.createElement('style');
-        style.id = 'sr-only-styles';
-        style.textContent = `
-            .sr-only {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                white-space: nowrap;
-                border: 0;
+            function showToast(message, type = 'info') {
+                // Простое уведомление
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 1rem;
+                    right: 1rem;
+                    background: ${type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                    color: white;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    z-index: 1000;
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                `;
+                toast.textContent = message;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(0)';
+                }, 100);
+                
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
             }
-        `;
-        document.head.appendChild(style);
-    }
-});
-</script>
-{% endblock %}
+
+            // Автофокус на первое поле
+            setTimeout(() => {
+                if (!emailInput.value) {
+                    emailInput.focus();
+                }
+            }, 500);
+
+            console.log('🔐 Modern Login Page - Ready!');
+        });
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-{% extends "mobile_base.html" %}
+{% extends "mobile/base/mobile_base.html" %}
 
 {% block title %}{{ t('create_account') | default('Create Account') }} - Dental Academy{% endblock %}
 
@@ -798,9 +798,9 @@ body {
                 <input type="checkbox" id="terms" name="terms" class="terms-checkbox" required>
                 <div class="terms-text">
                     {{ t('terms_agreement') | default('I agree to the') }} 
-                    <a href="{{ url_for('main_bp.terms', lang=current_language) }}" target="_blank">{{ t('terms_of_service') | default('Terms of Service') }}</a> 
+                    <a href="#" target="_blank">{{ t('terms_of_service') | default('Terms of Service') }}</a> 
                     {{ t('and') | default('and') }} 
-                    <a href="{{ url_for('main_bp.privacy', lang=current_language) }}" target="_blank">{{ t('privacy_policy') | default('Privacy Policy') }}</a>
+                    <a href="#" target="_blank">{{ t('privacy_policy') | default('Privacy Policy') }}</a>
                 </div>
             </div>
             
@@ -817,20 +817,20 @@ body {
         
         <!-- Социальные кнопки -->
         <div class="social-buttons">
-            <a href="{{ url_for('auth_bp.google_register', lang=current_language) }}" class="social-button">
+            <a href="#" class="social-button">
                 <i class="bi bi-google"></i>
-                <span>Google</span>
+                <span>{{ t('sign_up_with_google') | default('Continue with Google') }}</span>
             </a>
-            <a href="{{ url_for('auth_bp.facebook_register', lang=current_language) }}" class="social-button">
+            <a href="#" class="social-button">
                 <i class="bi bi-facebook"></i>
-                <span>Facebook</span>
+                <span>{{ t('sign_up_with_facebook') | default('Continue with Facebook') }}</span>
             </a>
         </div>
         
-        <!-- Подвал -->
-        <div class="register-footer">
-            {{ t('already_have_account') | default('Already have an account?') }}
-            <a href="{{ url_for('auth_bp.login', lang=current_language) }}">
+        <!-- Уже есть аккаунт -->
+        <div class="auth-footer">
+            {{ t('have_account') | default('Already have an account?') }}
+            <a href="/en/mobile/auth/login">
                 {{ t('sign_in') | default('Sign in') }}
             </a>
         </div>
