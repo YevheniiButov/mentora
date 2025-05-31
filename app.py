@@ -862,6 +862,53 @@ def create_app(test_config=None):
             current_app=current_app
         )
     
+    # Функции для отображения геймификации в шаблонах
+    @app.context_processor
+    def inject_gamification_data():
+        """Добавляет данные геймификации в контекст всех шаблонов"""
+        
+        def get_user_level():
+            if current_user.is_authenticated:
+                try:
+                    from utils.gamification_engine import GamificationEngine
+                    from extensions import db
+                    gamification = GamificationEngine(db.session)
+                    stats = gamification.get_or_create_user_stats(current_user.id)
+                    return stats.current_level
+                except:
+                    return 1
+            return 1
+        
+        def get_user_xp():
+            if current_user.is_authenticated:
+                try:
+                    from utils.gamification_engine import GamificationEngine
+                    from extensions import db
+                    gamification = GamificationEngine(db.session)
+                    stats = gamification.get_or_create_user_stats(current_user.id)
+                    return stats.total_experience_points
+                except:
+                    return 0
+            return 0
+        
+        def get_user_progress_to_next_level():
+            if current_user.is_authenticated:
+                try:
+                    from utils.gamification_engine import GamificationEngine
+                    from extensions import db
+                    gamification = GamificationEngine(db.session)
+                    stats = gamification.get_or_create_user_stats(current_user.id)
+                    return stats.points_to_next_level
+                except:
+                    return 100
+            return 100
+        
+        return dict(
+            get_user_level=get_user_level,
+            get_user_xp=get_user_xp,
+            get_user_progress_to_next_level=get_user_progress_to_next_level
+        )
+
     print(f"Registered blueprint: {subject_view_bp.name} with url_prefix: {subject_view_bp.url_prefix}")
 
     @app.route('/routes')
@@ -917,52 +964,7 @@ def fromjson_filter_global(value):
         return json.loads(value)
     except (json.JSONDecodeError, TypeError):
         return {}
-# Функции для отображения геймификации в шаблонах
-@app.context_processor
-def inject_gamification_data():
-    """Добавляет данные геймификации в контекст всех шаблонов"""
-    
-    def get_user_level():
-        if current_user.is_authenticated:
-            try:
-                from utils.gamification_engine import GamificationEngine
-                from extensions import db
-                gamification = GamificationEngine(db.session)
-                stats = gamification.get_or_create_user_stats(current_user.id)
-                return stats.current_level
-            except:
-                return 1
-        return 1
-    
-    def get_user_xp():
-        if current_user.is_authenticated:
-            try:
-                from utils.gamification_engine import GamificationEngine
-                from extensions import db
-                gamification = GamificationEngine(db.session)
-                stats = gamification.get_or_create_user_stats(current_user.id)
-                return stats.total_experience_points
-            except:
-                return 0
-        return 0
-    
-    def get_user_progress_to_next_level():
-        if current_user.is_authenticated:
-            try:
-                from utils.gamification_engine import GamificationEngine
-                from extensions import db
-                gamification = GamificationEngine(db.session)
-                stats = gamification.get_or_create_user_stats(current_user.id)
-                return stats.points_to_next_level
-            except:
-                return 100
-        return 100
-    
-    return dict(
-        get_user_level=get_user_level,
-        get_user_xp=get_user_xp,
-        get_user_progress_to_next_level=get_user_progress_to_next_level
-    )
+
 # ===== SERVICE WORKER =====
 @app.route('/sw.js')
 def service_worker():

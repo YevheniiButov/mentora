@@ -2,7 +2,7 @@
 import json
 import random
 import os # Добавлен импорт os
-from flask import Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app
+from flask import Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app, jsonify
 from flask_login import login_required, current_user
 from models import (
     db, Subject, Module, UserProgress, Lesson, ContentCategory,
@@ -27,15 +27,33 @@ DEFAULT_LANGUAGE = 'en'
 @subject_view_bp.before_request
 def before_request_subject_view():
     """Извлекает и валидирует язык из URL."""
-    lang_from_url = request.view_args.get('lang') if request.view_args else None
-    if lang_from_url and lang_from_url in SUPPORTED_LANGUAGES:
-        g.lang = lang_from_url
-    else:
-        g.lang = session.get('lang') \
-                 or request.accept_languages.best_match(SUPPORTED_LANGUAGES) \
-                 or DEFAULT_LANGUAGE
-    if session.get('lang') != g.lang:
-        session['lang'] = g.lang
+    try:
+        current_app.logger.info(f"=== before_request_subject_view called ===")
+        current_app.logger.info(f"Request URL: {request.url}")
+        current_app.logger.info(f"Request path: {request.path}")
+        current_app.logger.info(f"View args: {request.view_args}")
+        
+        lang_from_url = request.view_args.get('lang') if request.view_args else None
+        current_app.logger.info(f"Language from URL: {lang_from_url}")
+        
+        if lang_from_url and lang_from_url in SUPPORTED_LANGUAGES:
+            g.lang = lang_from_url
+        else:
+            g.lang = session.get('lang') \
+                     or request.accept_languages.best_match(SUPPORTED_LANGUAGES) \
+                     or DEFAULT_LANGUAGE
+        
+        current_app.logger.info(f"Final language: {g.lang}")
+        
+        if session.get('lang') != g.lang:
+            session['lang'] = g.lang
+            
+        current_app.logger.info(f"=== before_request_subject_view completed successfully ===")
+            
+    except Exception as e:
+        current_app.logger.error(f"Error in before_request_subject_view: {e}", exc_info=True)
+        # Не блокируем запрос, устанавливаем язык по умолчанию
+        g.lang = DEFAULT_LANGUAGE
 
 @subject_view_bp.context_processor
 def inject_lang_subject_view():
@@ -147,10 +165,25 @@ def get_virtual_patients_for_subject(subject_object, user_id):
 def view_subject(lang, subject_id):
     """Отображает страницу просмотра предмета с его модулями и виртуальными пациентами."""
     current_lang = g.lang
+    
+    # Логируем сразу в начале функции
+    current_app.logger.info(f"=== view_subject called with lang={lang}, subject_id={subject_id} ===")
+    current_app.logger.info(f"Request URL: {request.url}")
+    current_app.logger.info(f"Request endpoint: {request.endpoint}")
 
     def is_mobile_request():
-        user_agent = request.headers.get("User-Agent", "").lower()
-        return any(keyword in user_agent for keyword in ['iphone', 'android', 'mobile'])
+        # Используем имеющуюся систему определения мобильных устройств
+        from utils.mobile_detection import get_mobile_detector
+        detector = get_mobile_detector()
+        is_mobile = detector.is_mobile_device
+        
+        # Добавляем отладочную информацию
+        user_agent = request.headers.get('User-Agent', 'No User-Agent')
+        current_app.logger.info(f"Mobile detection - User-Agent: {user_agent}")
+        current_app.logger.info(f"Mobile detection - is_mobile_device: {is_mobile}")
+        current_app.logger.info(f"Mobile detection - device_type: {detector.device_type}")
+        
+        return is_mobile
 
     try:
         learning_paths = LearningPath.query.order_by(LearningPath.order).all()
@@ -159,6 +192,7 @@ def view_subject(lang, subject_id):
         selected_subject = Subject.query.get_or_404(subject_id)
         subject_modules = Module.query.filter_by(subject_id=subject_id).order_by(Module.order).all()
 
+        # Обрабатываем модули текущего предмета
         for module in subject_modules:
             module_stats = get_module_stats(module.id, current_user.id)
             module.progress = module_stats.get("progress", 0)
@@ -170,7 +204,51 @@ def view_subject(lang, subject_id):
         recommendations = get_user_recommendations(current_user.id)
         random_fact = get_random_fact(g.lang)
 
+        # Получаем все предметы и добавляем к ним данные о прогрессе
+        all_subjects = Subject.query.all()
+        for subject in all_subjects:
+            try:
+                # Получаем все модули предмета
+                subject_modules = Module.query.filter_by(subject_id=subject.id).all()
+                total_lessons = 0
+                completed_lessons = 0
+                
+                for module in subject_modules:
+                    module_stats = get_module_stats(module.id, current_user.id)
+                    total_lessons += module_stats.get("total_lessons", 0)
+                    completed_lessons += module_stats.get("completed_lessons", 0)
+                
+                # Вычисляем прогресс предмета
+                if total_lessons > 0:
+                    progress_percentage = int((completed_lessons / total_lessons) * 100)
+                else:
+                    progress_percentage = 0
+                
+                # Добавляем вычисленные данные к объекту предмета
+                subject.progress_percentage = progress_percentage
+                subject.total_lessons = total_lessons
+                subject.completed_lessons = completed_lessons
+                subject.is_completed = progress_percentage == 100
+                subject.estimated_time = f"{max(1, total_lessons // 10)}h"  # Примерная оценка времени
+                
+                # Добавляем категорию по умолчанию если её нет
+                if not hasattr(subject, 'category') or not subject.category:
+                    subject.category = 'general'
+                    
+            except Exception as e:
+                current_app.logger.error(f"Error calculating progress for subject {subject.id}: {e}")
+                # Устанавливаем значения по умолчанию при ошибке
+                subject.progress_percentage = 0
+                subject.total_lessons = 0
+                subject.completed_lessons = 0
+                subject.is_completed = False
+                subject.estimated_time = "2h"
+                subject.category = 'general'
+
         template = "learning/subject_view_mobile.html" if is_mobile_request() else "learning/subject_view.html"
+        
+        # Добавляем отладочную информацию о выбранном шаблоне
+        current_app.logger.info(f"Selected template: {template}")
 
         return render_template(
             template,
@@ -180,12 +258,16 @@ def view_subject(lang, subject_id):
             selected_subject=selected_subject,
             subject_modules=subject_modules,
             virtual_patients=virtual_patients,
-            subjects=Subject.query.all(),
+            subjects=all_subjects,  # Используем обработанный список предметов
             user=current_user,
             has_subscription=current_user.has_subscription,
             stats=stats,
             recommendations=recommendations,
-            random_fact=random_fact
+            random_fact=random_fact,
+            # Добавляем данные для мобильного шаблона
+            current_language=g.lang,
+            user_stats=stats,
+            supported_languages=SUPPORTED_LANGUAGES
         )
 
     except Exception as e:
@@ -497,3 +579,80 @@ def view_category(lang, category_id):
         current_app.logger.error(f"Ошибка в view_category (ID: {category_id}): {e}", exc_info=True)
         flash(t("error_loading_category_data"), "danger")
         return redirect(url_for('.learning_hierarchy_view', lang=lang))
+
+# Простой тестовый маршрут для проверки работы Blueprint
+@subject_view_bp.route("/test")
+def simple_test(lang):
+    """Простой тест для проверки работы Blueprint."""
+    return f"Blueprint works! Language: {lang}, URL: {request.url}"
+
+# Тестовый маршрут для проверки определения мобильных устройств (без @login_required)
+@subject_view_bp.route("/mobile-test-no-auth")
+def mobile_test_no_auth(lang):
+    """Тестовый маршрут для проверки определения мобильных устройств без авторизации."""
+    from utils.mobile_detection import get_mobile_detector
+    
+    detector = get_mobile_detector()
+    device_info = detector.get_device_info()
+    
+    user_agent = request.headers.get('User-Agent', 'No User-Agent')
+    
+    test_info = {
+        'user_agent': user_agent,
+        'device_info': device_info,
+        'should_use_mobile': detector.should_use_mobile_template(),
+        'template_would_be': "learning/subject_view_mobile.html" if detector.is_mobile_device else "learning/subject_view.html",
+        'url': request.url,
+        'endpoint': request.endpoint
+    }
+    
+    return jsonify(test_info)
+
+# Тестовый маршрут для принудительного использования мобильного шаблона
+@subject_view_bp.route("/force-mobile/<int:subject_id>")
+@login_required
+def force_mobile_subject(lang, subject_id):
+    """Принудительно загружает мобильную версию страницы предмета."""
+    current_lang = g.lang
+    
+    current_app.logger.info(f"=== force_mobile_subject called with lang={lang}, subject_id={subject_id} ===")
+
+    try:
+        learning_paths = LearningPath.query.order_by(LearningPath.order).all()
+        content_categories = ContentCategory.query.order_by(ContentCategory.order).all()
+
+        selected_subject = Subject.query.get_or_404(subject_id)
+        subject_modules = Module.query.filter_by(subject_id=subject_id).order_by(Module.order).all()
+
+        virtual_patients = get_virtual_patients_for_subject(selected_subject, current_user.id)
+        stats = get_user_stats(current_user.id)
+        recommendations = get_user_recommendations(current_user.id)
+        random_fact = get_random_fact(g.lang)
+
+        template = "learning/subject_view_mobile.html"  # Принудительно мобильный шаблон
+        current_app.logger.info(f"Force using mobile template: {template}")
+
+        return render_template(
+            template,
+            title=selected_subject.name,
+            learning_paths=learning_paths,
+            content_categories=content_categories,
+            selected_subject=selected_subject,
+            subject_modules=subject_modules,
+            virtual_patients=virtual_patients,
+            subjects=Subject.query.all(),
+            user=current_user,
+            has_subscription=current_user.has_subscription,
+            stats=stats,
+            recommendations=recommendations,
+            random_fact=random_fact,
+            # Добавляем данные для мобильного шаблона
+            current_language=g.lang,
+            user_stats=stats,
+            supported_languages=SUPPORTED_LANGUAGES
+        )
+
+    except Exception as e:
+        current_app.logger.error(f"Ошибка в force_mobile_subject (ID: {subject_id}): {e}", exc_info=True)
+        flash(t("error_occurred_loading_data") + ": " + str(e), "danger")
+        return redirect(url_for('main_bp.index', lang=current_lang))

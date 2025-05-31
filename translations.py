@@ -282,6 +282,67 @@ translations = {
         'community_learning_desc': 'Active community of students and experts for knowledge exchange',
         'join_thousands': 'Join thousands of students preparing for the BIG exam with our platform',
         'start_now': 'Start Now',
+                # Hero секция
+        'welcome_hero_title': 'Become a Tandarts',
+        'welcome_hero_subtitle': 'Master dental skills. Pass BIG exam. Transform your career in Netherlands.',
+        'dental_academy': 'Dental Academy',
+        'start_free_trial': 'Start Free Trial',
+        'explore_platform': 'Explore Platform',
+        
+        # Особенности платформы
+        'why_choose_us': 'Why Choose Dental Academy?',
+        'platform_benefits': 'Everything you need to succeed in Dutch dental practice',
+        'expert_content': 'Expert Content',
+        'expert_content_desc': 'Curated by Dutch dental professionals for BIG exam success',
+        'virtual_patients': 'Virtual Patients', 
+        'virtual_patients_desc': 'Practice with realistic patient scenarios and case studies',
+        'adaptive_learning': 'Adaptive Learning',
+        'adaptive_learning_desc': 'AI-powered system adapts to your learning pace and style',
+        'multilingual': '8 Languages',
+        'multilingual_desc': 'Study in your native language, master Dutch terminology',
+        
+        # Статистика
+        'platform_stats': 'Join Thousands of Successful Students',
+        'active_students': 'Active Students',
+        'success_rate': 'Success Rate %',
+        'practice_questions': 'Practice Questions',
+        'languages': 'Languages',
+        
+        # Отзывы
+        'student_success': 'Student Success Stories',
+        'testimonial_1': 'Dental Academy helped me pass BIG exam on first attempt. The virtual patients were incredibly realistic!',
+        'testimonial_author_1': 'Anna Martinez',
+        'dentist_amsterdam': 'Dentist, Amsterdam',
+        
+        # Финальный CTA
+        'ready_to_start': 'Ready to Start Your Journey?',
+        'join_thousands_desc': 'Join thousands of dental professionals who trust our platform for BIG exam preparation',
+        'get_started_free': 'Get Started Free',
+        
+        # Быстрые подсказки
+        'quick_tip_mobile': '💡 Tip: Add this app to your home screen for the best experience!',
+        
+        # Языки
+        'language_name_en': 'English',
+        'language_name_nl': 'Nederlands', 
+        'language_name_ru': 'Русский',
+        'language_name_uk': 'Українська',
+        'language_name_es': 'Español',
+        'language_name_pt': 'Português',
+        'language_name_tr': 'Türkçe',
+        'language_name_fa': 'فارسی',
+        
+        # UI элементы
+        'select_language': 'Select Language',
+        'toggle_theme': 'Toggle Theme',
+        'theme_changed': 'Theme changed',
+        'language_changed': 'Language changed successfully',
+        'install_prompt': 'Install this app for the best experience!',
+        'install_success': 'App installed successfully!',
+        'network_error': 'Network error occurred',
+        'try_again': 'Try again',
+        'loading': 'Loading...',
+
     },
 
     'ru': {
@@ -557,6 +618,66 @@ translations = {
         'community_learning_desc': 'Активное сообщество студентов и экспертов для обмена знаниями',
         'join_thousands': 'Присоединяйтесь к студентам, которые готовятся к BIG экзамену с нашей платформой',
         'start_now': 'Начать сейчас',
+                # Hero секция
+        'welcome_hero_title': 'Станьте Стоматологом',
+        'welcome_hero_subtitle': 'Освойте стоматологические навыки. Сдайте экзамен BIG. Преобразите свою карьеру в Нидерландах.',
+        'dental_academy': 'Dental Academy',
+        'start_free_trial': 'Начать Бесплатно',
+        'explore_platform': 'Изучить Платформу',
+        
+        # Особенности платформы
+        'why_choose_us': 'Почему выбирают Dental Academy?',
+        'platform_benefits': 'Всё необходимое для успеха в голландской стоматологической практике',
+        'expert_content': 'Экспертный Контент',
+        'expert_content_desc': 'Создан голландскими стоматологами для успешной сдачи экзамена BIG',
+        'virtual_patients': 'Виртуальные Пациенты',
+        'virtual_patients_desc': 'Практикуйтесь с реалистичными сценариями пациентов и клиническими случаями',
+        'adaptive_learning': 'Адаптивное Обучение',
+        'adaptive_learning_desc': 'ИИ-система адаптируется к вашему темпу и стилю обучения',
+        'multilingual': '8 Языков',
+        'multilingual_desc': 'Изучайте на родном языке, осваивайте голландскую терминологию',
+        
+        # Статистика
+        'platform_stats': 'Присоединяйтесь к тысячам успешных студентов',
+        'active_students': 'Активных Студентов',
+        'success_rate': 'Процент Успеха %',
+        'practice_questions': 'Практических Вопросов',
+        'languages': 'Языков',
+        
+        # Отзывы
+        'student_success': 'Истории Успеха Студентов',
+        'testimonial_1': 'Dental Academy помогла мне сдать экзамен BIG с первой попытки. Виртуальные пациенты были невероятно реалистичными!',
+        'testimonial_author_1': 'Анна Мартинес',
+        'dentist_amsterdam': 'Стоматолог, Амстердам',
+        
+        # Финальный CTA
+        'ready_to_start': 'Готовы Начать Своё Путешествие?',
+        'join_thousands_desc': 'Присоединяйтесь к тысячам стоматологов, которые доверяют нашей платформе подготовку к экзамену BIG',
+        'get_started_free': 'Начать Бесплатно',
+        
+        # Быстрые подсказки
+        'quick_tip_mobile': '💡 Совет: Добавьте это приложение на главный экран для лучшего опыта!',
+        
+        # Языки
+        'language_name_en': 'English',
+        'language_name_nl': 'Nederlands',
+        'language_name_ru': 'Русский',
+        'language_name_uk': 'Українська',
+        'language_name_es': 'Español', 
+        'language_name_pt': 'Português',
+        'language_name_tr': 'Türkçe',
+        'language_name_fa': 'فارسی',
+        
+        # UI элементы
+        'select_language': 'Выбрать Язык',
+        'toggle_theme': 'Переключить Тему',
+        'theme_changed': 'Тема изменена',
+        'language_changed': 'Язык успешно изменён',
+        'install_prompt': 'Установите это приложение для лучшего опыта!',
+        'install_success': 'Приложение успешно установлено!',
+        'network_error': 'Произошла ошибка сети',
+        'try_again': 'Попробовать снова',
+        'loading': 'Загрузка...',
     },
 
     'nl': {
@@ -836,6 +957,66 @@ translations = {
         'community_learning_desc': 'Actieve gemeenschap van studenten en experts voor kennisuitwisseling',
         'join_thousands': 'Sluit je aan bij duizenden studenten die zich voorbereiden op het BIG-examen met ons platform',
         'start_now': 'Nu starten',
+                # Hero секция
+        'welcome_hero_title': 'Word een Tandarts',
+        'welcome_hero_subtitle': 'Beheers tandheelkundige vaardigheden. Slaag voor het BIG-examen. Transformeer je carrière in Nederland.',
+        'dental_academy': 'Dental Academy',
+        'start_free_trial': 'Start Gratis Proefperiode',
+        'explore_platform': 'Verken Platform',
+        
+        # Особенности платформы
+        'why_choose_us': 'Waarom Kiezen voor Dental Academy?',
+        'platform_benefits': 'Alles wat je nodig hebt om te slagen in de Nederlandse tandheelkundige praktijk',
+        'expert_content': 'Expertinhoud',
+        'expert_content_desc': 'Samengesteld door Nederlandse tandheelkundige professionals voor BIG-examensucces',
+        'virtual_patients': 'Virtuele Patiënten',
+        'virtual_patients_desc': 'Oefen met realistische patiëntscenario\'s en casestudies',
+        'adaptive_learning': 'Adaptief Leren',
+        'adaptive_learning_desc': 'AI-gestuurd systeem past zich aan jouw leertempo en -stijl aan',
+        'multilingual': '8 Talen',
+        'multilingual_desc': 'Studeer in je moedertaal, beheers Nederlandse terminologie',
+        
+        # Статистика
+        'platform_stats': 'Sluit je aan bij duizenden succesvolle studenten',
+        'active_students': 'Actieve Studenten',
+        'success_rate': 'Slagingspercentage %',
+        'practice_questions': 'Oefenvragen',
+        'languages': 'Talen',
+        
+        # Отзывы
+        'student_success': 'Succesverhalen van Studenten',
+        'testimonial_1': 'Dental Academy hielp me het BIG-examen in één keer te halen. De virtuele patiënten waren ongelooflijk realistisch!',
+        'testimonial_author_1': 'Anna Martinez',
+        'dentist_amsterdam': 'Tandarts, Amsterdam',
+        
+        # Финальный CTA
+        'ready_to_start': 'Klaar om je Reis te Beginnen?',
+        'join_thousands_desc': 'Sluit je aan bij duizenden tandheelkundige professionals die ons platform vertrouwen voor BIG-examenvoorbereiding',
+        'get_started_free': 'Start Gratis',
+        
+        # Быстрые подсказки
+        'quick_tip_mobile': '💡 Tip: Voeg deze app toe aan je startscherm voor de beste ervaring!',
+        
+        # Языки
+        'language_name_en': 'English',
+        'language_name_nl': 'Nederlands',
+        'language_name_ru': 'Русский',
+        'language_name_uk': 'Українська', 
+        'language_name_es': 'Español',
+        'language_name_pt': 'Português',
+        'language_name_tr': 'Türkçe',
+        'language_name_fa': 'فارسی',
+        
+        # UI элементы
+        'select_language': 'Selecteer Taal',
+        'toggle_theme': 'Wissel Thema',
+        'theme_changed': 'Thema gewijzigd',
+        'language_changed': 'Taal succesvol gewijzigd',
+        'install_prompt': 'Installeer deze app voor de beste ervaring!',
+        'install_success': 'App succesvol geïnstalleerd!',
+        'network_error': 'Netwerkfout opgetreden',
+        'try_again': 'Probeer opnieuw',
+        'loading': 'Laden...',
     },
 
     'es': {
@@ -1106,6 +1287,66 @@ translations = {
         'community_learning_desc': 'Comunidad activa de estudiantes y expertos para el intercambio de conocimientos',
         'join_thousands': 'Únete a miles de estudiantes que se preparan para el examen BIG con nuestra plataforma',
         'start_now': 'Empezar ahora',
+                # Hero секция
+        'welcome_hero_title': 'Conviértete en Dentista',
+        'welcome_hero_subtitle': 'Domina las habilidades dentales. Aprueba el examen BIG. Transforma tu carrera en los Países Bajos.',
+        'dental_academy': 'Dental Academy',
+        'start_free_trial': 'Comenzar Prueba Gratuita',
+        'explore_platform': 'Explorar Plataforma',
+        
+        # Особенности платформы
+        'why_choose_us': '¿Por qué elegir Dental Academy?',
+        'platform_benefits': 'Todo lo que necesitas para tener éxito en la práctica dental holandesa',
+        'expert_content': 'Contenido Experto',
+        'expert_content_desc': 'Curado por profesionales dentales holandeses para el éxito en el examen BIG',
+        'virtual_patients': 'Pacientes Virtuales',
+        'virtual_patients_desc': 'Practica con escenarios realistas de pacientes y estudios de casos',
+        'adaptive_learning': 'Aprendizaje Adaptativo',
+        'adaptive_learning_desc': 'Sistema impulsado por IA que se adapta a tu ritmo y estilo de aprendizaje',
+        'multilingual': '8 Idiomas',
+        'multilingual_desc': 'Estudia en tu idioma nativo, domina la terminología holandesa',
+        
+        # Статистика
+        'platform_stats': 'Únete a miles de estudiantes exitosos',
+        'active_students': 'Estudiantes Activos',
+        'success_rate': 'Tasa de Éxito %',
+        'practice_questions': 'Preguntas de Práctica',
+        'languages': 'Idiomas',
+        
+        # Отзывы
+        'student_success': 'Historias de Éxito de Estudiantes',
+        'testimonial_1': '¡Dental Academy me ayudó a aprobar el examen BIG en el primer intento. Los pacientes virtuales fueron increíblemente realistas!',
+        'testimonial_author_1': 'Anna Martínez',
+        'dentist_amsterdam': 'Dentista, Ámsterdam',
+        
+        # Финальный CTA
+        'ready_to_start': '¿Listo para Comenzar tu Viaje?',
+        'join_thousands_desc': 'Únete a miles de profesionales dentales que confían en nuestra plataforma para la preparación del examen BIG',
+        'get_started_free': 'Comenzar Gratis',
+        
+        # Быстрые подсказки
+        'quick_tip_mobile': '💡 Consejo: ¡Añade esta app a tu pantalla de inicio para la mejor experiencia!',
+        
+        # Языки
+        'language_name_en': 'English',
+        'language_name_nl': 'Nederlands',
+        'language_name_ru': 'Русский',
+        'language_name_uk': 'Українська',
+        'language_name_es': 'Español',
+        'language_name_pt': 'Português',
+        'language_name_tr': 'Türkçe',
+        'language_name_fa': 'فارسی',
+        
+        # UI элементы
+        'select_language': 'Seleccionar Idioma',
+        'toggle_theme': 'Cambiar Tema',
+        'theme_changed': 'Tema cambiado',
+        'language_changed': 'Idioma cambiado exitosamente',
+        'install_prompt': '¡Instala esta app para la mejor experiencia!',
+        'install_success': '¡App instalada exitosamente!',
+        'network_error': 'Error de red ocurrido',
+        'try_again': 'Intentar de nuevo',
+        'loading': 'Cargando...',
     },
 
     'pt': {
@@ -1376,6 +1617,66 @@ translations = {
         'community_learning_desc': 'Comunidade ativa de estudantes e especialistas para troca de conhecimentos',
         'join_thousands': 'Junte-se a milhares de estudantes que se preparam para o exame BIG com nossa plataforma',
         'start_now': 'Começar agora',
+                # Hero секция
+        'welcome_hero_title': 'Torne-se um Dentista',
+        'welcome_hero_subtitle': 'Domine habilidades dentárias. Passe no exame BIG. Transforme sua carreira na Holanda.',
+        'dental_academy': 'Dental Academy',
+        'start_free_trial': 'Começar Teste Gratuito',
+        'explore_platform': 'Explorar Plataforma',
+        
+        # Особенности платформы
+        'why_choose_us': 'Por que escolher a Dental Academy?',
+        'platform_benefits': 'Tudo que você precisa para ter sucesso na prática dentária holandesa',
+        'expert_content': 'Conteúdo Especializado',
+        'expert_content_desc': 'Curado por profissionais dentários holandeses para o sucesso no exame BIG',
+        'virtual_patients': 'Pacientes Virtuais',
+        'virtual_patients_desc': 'Pratique com cenários realistas de pacientes e estudos de caso',
+        'adaptive_learning': 'Aprendizagem Adaptativa',
+        'adaptive_learning_desc': 'Sistema alimentado por IA que se adapta ao seu ritmo e estilo de aprendizagem',
+        'multilingual': '8 Idiomas',
+        'multilingual_desc': 'Estude em seu idioma nativo, domine a terminologia holandesa',
+        
+        # Статистика
+        'platform_stats': 'Junte-se a milhares de estudantes bem-sucedidos',
+        'active_students': 'Estudantes Ativos',
+        'success_rate': 'Taxa de Sucesso %',
+        'practice_questions': 'Questões de Prática',
+        'languages': 'Idiomas',
+        
+        # Отзывы
+        'student_success': 'Histórias de Sucesso de Estudantes',
+        'testimonial_1': 'A Dental Academy me ajudou a passar no exame BIG na primeira tentativa. Os pacientes virtuais foram incrivelmente realistas!',
+        'testimonial_author_1': 'Anna Martinez',
+        'dentist_amsterdam': 'Dentista, Amsterdam',
+        
+        # Финальный CTA
+        'ready_to_start': 'Pronto para Começar sua Jornada?',
+        'join_thousands_desc': 'Junte-se a milhares de profissionais dentários que confiam em nossa plataforma para preparação do exame BIG',
+        'get_started_free': 'Começar Gratuitamente',
+        
+        # Быстрые подсказки
+        'quick_tip_mobile': '💡 Dica: Adicione este app à sua tela inicial para a melhor experiência!',
+        
+        # Языки
+        'language_name_en': 'English',
+        'language_name_nl': 'Nederlands',
+        'language_name_ru': 'Русский',
+        'language_name_uk': 'Українська',
+        'language_name_es': 'Español',
+        'language_name_pt': 'Português',
+        'language_name_tr': 'Türkçe',
+        'language_name_fa': 'فارسی',
+        
+        # UI элементы
+        'select_language': 'Selecionar Idioma',
+        'toggle_theme': 'Alternar Tema',
+        'theme_changed': 'Tema alterado',
+        'language_changed': 'Idioma alterado com sucesso',
+        'install_prompt': 'Instale este app para a melhor experiência!',
+        'install_success': 'App instalado com sucesso!',
+        'network_error': 'Erro de rede ocorreu',
+        'try_again': 'Tentar novamente',
+        'loading': 'Carregando...',
     },
 
     'uk': {
@@ -1646,6 +1947,66 @@ translations = {
         'community_learning_desc': 'Активна спільнота студентів та експертів для обміну знаннями',
         'join_thousands': 'Приєднуйтесь до тисяч студентів, які готуються до BIG іспиту з нашою платформою',
         'start_now': 'Почати зараз',
+                # Hero секция
+        'welcome_hero_title': 'Станьте Стоматологом',
+        'welcome_hero_subtitle': 'Освойте стоматологічні навички. Здайте іспит BIG. Перетворіть свою кар\'єру в Нідерландах.',
+        'dental_academy': 'Dental Academy',
+        'start_free_trial': 'Почати Безкоштовно',
+        'explore_platform': 'Вивчити Платформу',
+        
+        # Особенности платформы
+        'why_choose_us': 'Чому обирають Dental Academy?',
+        'platform_benefits': 'Все необхідне для успіху в голландській стоматологічній практиці',
+        'expert_content': 'Експертний Контент',
+        'expert_content_desc': 'Створений голландськими стоматологами для успішного складання іспиту BIG',
+        'virtual_patients': 'Віртуальні Пацієнти',
+        'virtual_patients_desc': 'Практикуйтеся з реалістичними сценаріями пацієнтів та клінічними випадками',
+        'adaptive_learning': 'Адаптивне Навчання',
+        'adaptive_learning_desc': 'ШІ-система адаптується до вашого темпу та стилю навчання',
+        'multilingual': '8 Мов',
+        'multilingual_desc': 'Вивчайте рідною мовою, освоюйте голландську термінологію',
+        
+        # Статистика
+        'platform_stats': 'Приєднуйтесь до тисяч успішних студентів',
+        'active_students': 'Активних Студентів',
+        'success_rate': 'Відсоток Успіху %',
+        'practice_questions': 'Практичних Питань',
+        'languages': 'Мов',
+        
+        # Отзывы
+        'student_success': 'Історії Успіху Студентів',
+        'testimonial_1': 'Dental Academy допомогла мені здати іспит BIG з першої спроби. Віртуальні пацієнти були неймовірно реалістичними!',
+        'testimonial_author_1': 'Анна Мартінес',
+        'dentist_amsterdam': 'Стоматолог, Амстердам',
+        
+        # Финальный CTA
+        'ready_to_start': 'Готові Розпочати Свою Подорож?',
+        'join_thousands_desc': 'Приєднуйтесь до тисяч стоматологів, які довіряють нашій платформі підготовку до іспиту BIG',
+        'get_started_free': 'Почати Безкоштовно',
+        
+        # Быстрые подсказки
+        'quick_tip_mobile': '💡 Порада: Додайте цей додаток на головний екран для кращого досвіду!',
+        
+        # Языки
+        'language_name_en': 'English',
+        'language_name_nl': 'Nederlands',
+        'language_name_ru': 'Русский',
+        'language_name_uk': 'Українська',
+        'language_name_es': 'Español',
+        'language_name_pt': 'Português',
+        'language_name_tr': 'Türkçe',
+        'language_name_fa': 'فارسی',
+        
+        # UI элементы
+        'select_language': 'Обрати Мову',
+        'toggle_theme': 'Перемкнути Тему',
+        'theme_changed': 'Тему змінено',
+        'language_changed': 'Мову успішно змінено',
+        'install_prompt': 'Встановіть цей додаток для кращого досвіду!',
+        'install_success': 'Додаток успішно встановлено!',
+        'network_error': 'Сталася помилка мережі',
+        'try_again': 'Спробувати знову',
+        'loading': 'Завантаження...',
     },
 
     'fa': {
@@ -1916,6 +2277,66 @@ translations = {
         'community_learning_desc': 'جامعه فعال از دانشجویان و کارشناسان برای تبادل دانش',
         'join_thousands': 'به هزاران دانشجویی که با پلتفرم ما برای آزمون BIG آماده می شوند بپیوندید',
         'start_now': 'اکنون شروع کنید',
+                # Hero секция
+        'welcome_hero_title': 'دندانپزشک شوید',
+        'welcome_hero_subtitle': 'مهارت‌های دندانپزشکی را فرا بگیرید. آزمون BIG را قبول شوید. شغل خود را در هلند متحول کنید.',
+        'dental_academy': 'آکادمی دندانپزشکی',
+        'start_free_trial': 'شروع آزمایش رایگان',
+        'explore_platform': 'کاوش پلتفرم',
+        
+        # Особенности платформы
+        'why_choose_us': 'چرا آکادمی دندانپزشکی را انتخاب کنیم؟',
+        'platform_benefits': 'همه آنچه برای موفقیت در طب دندان هلندی نیاز دارید',
+        'expert_content': 'محتوای متخصصین',
+        'expert_content_desc': 'توسط متخصصان دندانپزشکی هلندی برای موفقیت در آزمون BIG تهیه شده',
+        'virtual_patients': 'بیماران مجازی',
+        'virtual_patients_desc': 'با سناریوهای واقعی بیماران و مطالعات موردی تمرین کنید',
+        'adaptive_learning': 'یادگیری تطبیقی',
+        'adaptive_learning_desc': 'سیستم هوش مصنوعی با سرعت و سبک یادگیری شما سازگار می‌شود',
+        'multilingual': '۸ زبان',
+        'multilingual_desc': 'به زبان مادری خود مطالعه کنید، اصطلاحات هلندی را فرا بگیرید',
+        
+        # Статистика
+        'platform_stats': 'به هزاران دانشجوی موفق بپیوندید',
+        'active_students': 'دانشجویان فعال',
+        'success_rate': 'نرخ موفقیت %',
+        'practice_questions': 'سؤالات تمرینی',
+        'languages': 'زبان‌ها',
+        
+        # Отзывы
+        'student_success': 'داستان‌های موفقیت دانشجویان',
+        'testimonial_1': 'آکادمی دندانپزشکی به من کمک کرد تا آزمون BIG را در اولین تلاش قبول شوم. بیماران مجازی به طرز باورنکردنی واقعی بودند!',
+        'testimonial_author_1': 'آنا مارتینز',
+        'dentist_amsterdam': 'دندانپزشک، آمستردام',
+        
+        # Финальный CTA
+        'ready_to_start': 'آماده شروع سفر خود هستید؟',
+        'join_thousands_desc': 'به هزاران متخصص دندانپزشکی بپیوندید که برای آمادگی آزمون BIG به پلتفرم ما اعتماد دارند',
+        'get_started_free': 'شروع رایگان',
+        
+        # Быстрые подсказки
+        'quick_tip_mobile': '💡 نکته: برای بهترین تجربه این اپ را به صفحه اصلی خود اضافه کنید!',
+        
+        # Языки
+        'language_name_en': 'English',
+        'language_name_nl': 'Nederlands',
+        'language_name_ru': 'Русский',
+        'language_name_uk': 'Українська',
+        'language_name_es': 'Español',
+        'language_name_pt': 'Português',
+        'language_name_tr': 'Türkçe',
+        'language_name_fa': 'فارسی',
+        
+        # UI элементы
+        'select_language': 'انتخاب زبان',
+        'toggle_theme': 'تغییر تم',
+        'theme_changed': 'تم تغییر کرد',
+        'language_changed': 'زبان با موفقیت تغییر کرد',
+        'install_prompt': 'برای بهترین تجربه این اپ را نصب کنید!',
+        'install_success': 'اپ با موفقیت نصب شد!',
+        'network_error': 'خطای شبکه رخ داد',
+        'try_again': 'دوباره تلاش کنید',
+        'loading': 'در حال بارگذاری...',
     },
 
     'tr': {
@@ -2186,6 +2607,66 @@ translations = {
         'community_learning_desc': 'Bilgi alışverişi için aktif öğrenci ve uzman topluluğu',
         'join_thousands': 'Platformumuzla BIG sınavına hazırlanan binlerce öğrenciye katılın',
         'start_now': 'Şimdi Başla',
+                # Hero секция
+        'welcome_hero_title': 'Diş Hekimi Olun',
+        'welcome_hero_subtitle': 'Diş hekimliği becerilerinde ustalaşın. BIG sınavını geçin. Hollanda\'da kariyerinizi dönüştürün.',
+        'dental_academy': 'Dental Academy',
+        'start_free_trial': 'Ücretsiz Deneme Başlat',
+        'explore_platform': 'Platformu Keşfet',
+        
+        # Особенности платформы
+        'why_choose_us': 'Neden Dental Academy\'yi Seçmelisiniz?',
+        'platform_benefits': 'Hollanda diş hekimliği pratiğinde başarılı olmak için ihtiyacınız olan her şey',
+        'expert_content': 'Uzman İçeriği',
+        'expert_content_desc': 'BIG sınav başarısı için Hollandalı diş hekimliği uzmanları tarafından düzenlenmiştir',
+        'virtual_patients': 'Sanal Hastalar',
+        'virtual_patients_desc': 'Gerçekçi hasta senaryoları ve vaka çalışmaları ile pratik yapın',
+        'adaptive_learning': 'Uyarlamalı Öğrenme',
+        'adaptive_learning_desc': 'AI destekli sistem öğrenme hızınıza ve tarzınıza uyum sağlar',
+        'multilingual': '8 Dil',
+        'multilingual_desc': 'Ana dilinizde çalışın, Hollandaca terminolojiyi öğrenin',
+        
+        # Статистика
+        'platform_stats': 'Binlerce başarılı öğrenciye katılın',
+        'active_students': 'Aktif Öğrenci',
+        'success_rate': 'Başarı Oranı %',
+        'practice_questions': 'Pratik Sorular',
+        'languages': 'Dil',
+        
+        # Отзывы
+        'student_success': 'Öğrenci Başarı Hikayeleri',
+        'testimonial_1': 'Dental Academy BIG sınavını ilk denemede geçmeme yardımcı oldu. Sanal hastalar inanılmaz derecede gerçekçiydi!',
+        'testimonial_author_1': 'Anna Martinez',
+        'dentist_amsterdam': 'Diş Hekimi, Amsterdam',
+        
+        # Финальный CTA
+        'ready_to_start': 'Yolculuğunuza Başlamaya Hazır mısınız?',
+        'join_thousands_desc': 'BIG sınav hazırlığı için platformumuza güvenen binlerce diş hekimine katılın',
+        'get_started_free': 'Ücretsiz Başlayın',
+        
+        # Быстрые подсказки
+        'quick_tip_mobile': '💡 İpucu: En iyi deneyim için bu uygulamayı ana ekranınıza ekleyin!',
+        
+        # Языки
+        'language_name_en': 'English',
+        'language_name_nl': 'Nederlands',
+        'language_name_ru': 'Русский',
+        'language_name_uk': 'Українська',
+        'language_name_es': 'Español',
+        'language_name_pt': 'Português',
+        'language_name_tr': 'Türkçe',
+        'language_name_fa': 'فارسی',
+        
+        # UI элементы
+        'select_language': 'Dil Seç',
+        'toggle_theme': 'Tema Değiştir',
+        'theme_changed': 'Tema değiştirildi',
+        'language_changed': 'Dil başarıyla değiştirildi',
+        'install_prompt': 'En iyi deneyim için bu uygulamayı yükleyin!',
+        'install_success': 'Uygulama başarıyla yüklendi!',
+        'network_error': 'Ağ hatası oluştu',
+        'try_again': 'Tekrar dene',
+        'loading': 'Yükleniyor...',
     }
 }
 
@@ -2252,6 +2733,61 @@ def is_rtl_language(lang):
     rtl_languages = ['fa', 'ar', 'he']
     return lang in rtl_languages
 
+def get_country_code(lang_code):
+    """
+    Возвращает код страны для флага по коду языка
+    
+    Args:
+        lang_code (str): Код языка
+        
+    Returns:
+        str: Код страны для отображения флага
+    """
+    country_mapping = {
+        'en': 'gb',
+        'nl': 'nl',
+        'ru': 'ru',
+        'uk': 'ua',
+        'es': 'es',
+        'pt': 'pt',
+        'tr': 'tr',
+        'fa': 'ir'
+    }
+    return country_mapping.get(lang_code, 'gb')
+
+def get_language_direction(lang_code):
+    """
+    Возвращает направление текста для языка (rtl или ltr)
+    
+    Args:
+        lang_code (str): Код языка
+        
+    Returns:
+        str: 'rtl' для языков с письмом справа налево, 'ltr' для остальных
+    """
+    return 'rtl' if is_rtl_language(lang_code) else 'ltr'
+
+def merge_welcome_translations(main_translations, welcome_translations):
+    """
+    Объединяет переводы welcome страницы с основными переводами
+    
+    Args:
+        main_translations (dict): Основной словарь переводов
+        welcome_translations (dict): Словарь переводов welcome страницы
+        
+    Returns:
+        dict: Объединенный словарь переводов
+    """
+    result = main_translations.copy()
+    
+    for lang_code, translations in welcome_translations.items():
+        if lang_code in result:
+            result[lang_code].update(translations)
+        else:
+            result[lang_code] = translations
+    
+    return result
+
 def validate_translation_completeness():
     """Проверяет полноту переводов для всех языков"""
     base_keys = set(translations['en'].keys())
@@ -2308,7 +2844,9 @@ def setup_translations(app):
     app.jinja_env.globals.update({
         'get_available_languages': get_available_languages,
         'get_language_names': get_language_names,
-        'is_rtl_language': is_rtl_language
+        'is_rtl_language': is_rtl_language,
+        'get_country_code': get_country_code,
+        'get_language_direction': get_language_direction
     })
 
     return translate
