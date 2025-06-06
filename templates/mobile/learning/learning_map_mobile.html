@@ -1,83 +1,651 @@
-{% extends "mobile/base/mobile_base.html" %}
-
-{% block title %}Explore Subjects - Dental Academy{% endblock %}
-
-{% block mobile_title %}Explore Subjects{% endblock %}
-
-{% block mobile_header_left %}
-<a href="/en/home" class="mobile-header-action">
-  <i class="bi bi-arrow-left"></i>
-</a>
-{% endblock %}
-
-{% block mobile_content %}
-<div style="padding: calc(var(--header-height) + 1rem) 1rem calc(var(--nav-height) + 1rem); min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);">
+<!DOCTYPE html>
+<html lang="{{ current_language }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Dental Academy</title>
     
-    <!-- Статистика -->
-    {% if user_stats %}
-    <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-            <div style="text-align: center;">
-                <div style="font-size: 1.5rem; font-weight: 700; color: #3ECDC1;">{{ user_stats.total_progress or 0 }}%</div>
-                <div style="font-size: 0.8rem; color: #6b7280;">Progress</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: 1.5rem; font-weight: 700; color: #3ECDC1;">{{ user_stats.total_subjects or 0 }}</div>
-                <div style="font-size: 0.8rem; color: #6b7280;">Subjects</div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#3ECDC1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dental Academy">
     
-    <!-- Предметы -->
-    {% if subjects %}
-    <h2 style="color: white; font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-        Available Subjects
-    </h2>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
-    <div style="display: grid; gap: 1rem;">
-        {% for subject in subjects %}
-        <div style="background: rgba(255,255,255,0.95); border-radius: 16px; padding: 1.25rem; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-            <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #667eea, #3ECDC1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; color: white;">
-                    <i class="bi bi-book"></i>
-                </div>
-                <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin: 0;">{{ subject.name }}</h3>
-            </div>
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/mobile/mobile-app.css">
+    
+    <style>
+        /* ===== LEARNING MAP SPECIFIC STYLES ===== */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+        }
+
+        .header-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+
+        .header-action {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .main-content {
+            padding: calc(var(--header-height) + 1rem) 1rem calc(var(--nav-height) + 1rem);
+            min-height: 100vh;
+        }
+
+        /* ===== USER STATS SECTION ===== */
+        .user-stats-section {
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* ===== LEARNING PATHS SECTION ===== */
+        .learning-paths-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .path-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .path-card:hover,
+        .path-card:active {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-strong);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .path-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .path-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .path-info {
+            flex: 1;
+        }
+
+        .path-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .path-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+        }
+
+        /* ===== SUBJECTS GRID ===== */
+        .subjects-section {
+            margin-bottom: 2rem;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .subject-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subject-card:hover,
+        .subject-card:active {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-strong);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .subject-card.completed {
+            border-color: rgba(76, 222, 128, 0.4);
+            background: linear-gradient(145deg, rgba(76, 222, 128, 0.1), rgba(76, 222, 128, 0.05));
+        }
+
+        .subject-card.in-progress {
+            border-color: rgba(251, 191, 36, 0.4);
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
+        }
+
+        .subject-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .subject-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .subject-info {
+            flex: 1;
+        }
+
+        .subject-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .subject-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-item {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .subject-progress {
+            margin-top: 1rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+        }
+
+        .progress-percentage {
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* ===== BOTTOM NAVIGATION ===== */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 env(safe-area-inset-left) env(safe-area-inset-bottom) env(safe-area-inset-right);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: rgba(102, 126, 234, 0.6);
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(62, 205, 193, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        /* ===== FLOATING ACTION BUTTON ===== */
+        .fab {
+            position: fixed;
+            bottom: calc(var(--nav-height) + 1rem);
+            right: 1rem;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .fab:hover,
+        .fab:active {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 12px 35px rgba(62, 205, 193, 0.5);
+        }
+
+        /* ===== ANIMATIONS ===== */
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .fade-in-up:nth-child(2) { animation-delay: 0.1s; }
+        .fade-in-up:nth-child(3) { animation-delay: 0.2s; }
+        .fade-in-up:nth-child(4) { animation-delay: 0.3s; }
+        .fade-in-up:nth-child(5) { animation-delay: 0.4s; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
             
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #6b7280; margin-bottom: 0.75rem;">
-                <span>{{ subject.total_lessons or 0 }} lessons</span>
-                <span>{{ subject.estimated_time | default('2h') }}</span>
-            </div>
-            
-            <div style="height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem;">
-                <div style="height: 100%; background: #3ECDC1; border-radius: 3px; width: {{ subject.progress_percentage or 0 }}%;"></div>
-            </div>
-            
-            {% if subject.description %}
-            <p style="font-size: 0.85rem; color: #6b7280; margin: 0;">{{ subject.description }}</p>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    
-    <!-- Призыв к регистрации -->
-    {% if show_auth_prompt %}
-    <div style="background: rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; text-align: center; margin-top: 2rem; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);">
-        <h3 style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Start Learning Today!</h3>
-        <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 1rem;">Register to track your progress and unlock all features</p>
+            .subjects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ===== ТЕМНАЯ ТЕМА ===== */
+        [data-theme="dark"] .mobile-bottom-nav {
+            background: rgba(31, 41, 55, 0.95);
+        }
+
+        [data-theme="dark"] .nav-item {
+            color: rgba(156, 163, 175, 0.8);
+        }
+
+        [data-theme="dark"] .nav-item.active {
+            color: var(--primary);
+            background: rgba(62, 205, 193, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="mobile-header">
+        <button class="header-action" onclick="history.back()">
+            <i class="bi bi-arrow-left"></i>
+        </button>
         
-        <div style="display: flex; gap: 0.75rem;">
-            <a href="/en/mobile/auth/register" style="flex: 1; padding: 0.75rem; border-radius: 12px; background: #3ECDC1; color: white; text-decoration: none; font-weight: 600; font-size: 0.9rem; text-align: center;">
-                Get Started
-            </a>
-            <a href="/en/mobile/auth/login" style="flex: 1; padding: 0.75rem; border-radius: 12px; background: rgba(255,255,255,0.1); color: white; text-decoration: none; font-weight: 600; font-size: 0.9rem; text-align: center; border: 1px solid rgba(255,255,255,0.3);">
-                Sign In
-            </a>
-        </div>
-    </div>
+        <h1 class="header-title">{{ title }}</h1>
+        
+        <button class="header-action" onclick="toggleSearch()">
+            <i class="bi bi-search"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- User Stats Section -->
+        <section class="user-stats-section fade-in-up">
+            <div class="welcome-text">
+                <h2 class="welcome-title">
+                    {% if current_user.is_authenticated %}
+                        Привет, {{ current_user.first_name or 'Студент' }}! 👋
+                    {% else %}
+                        Добро пожаловать! 👋
+                    {% endif %}
+                </h2>
+                <p class="welcome-subtitle">Продолжай изучать стоматологию</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">{{ user_stats.total_progress or 0 }}%</span>
+                    <span class="stat-label">Общий прогресс</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ user_stats.completed_subjects or 0 }}</span>
+                    <span class="stat-label">Завершено предметов</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ user_stats.current_streak or 0 }}</span>
+                    <span class="stat-label">Дней подряд</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ subjects|length }}</span>
+                    <span class="stat-label">Всего предметов</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Section (Hidden by default) -->
+        <section class="mobile-search-section" id="searchSection" style="display: none;">
+            <div style="position: relative;">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" class="mobile-search-input" placeholder="Поиск предметов..." id="searchInput">
+            </div>
+            
+            <div class="mobile-filter-chips">
+                <button class="filter-chip active" data-filter="all">Все</button>
+                <button class="filter-chip" data-filter="anatomy">Анатомия</button>
+                <button class="filter-chip" data-filter="therapy">Терапия</button>
+                <button class="filter-chip" data-filter="surgery">Хирургия</button>
+                <button class="filter-chip" data-filter="orthodontics">Ортодонтия</button>
+            </div>
+        </section>
+
+        <!-- Learning Paths Section -->
+        {% if learning_paths %}
+        <section class="learning-paths-section fade-in-up">
+            <h3 class="section-title">
+                <i class="bi bi-map"></i>
+                Пути обучения BIG
+            </h3>
+            
+            {% for path in learning_paths %}
+            <div class="path-card" data-href="/{{ current_language }}/learning-path/{{ path.id }}">
+                <div class="path-header">
+                    <div class="path-icon">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <div class="path-info">
+                        <h4 class="path-title">{{ path.name }}</h4>
+                        <p class="path-description">{{ path.description[:50] }}...</p>
+                    </div>
+                </div>
+                
+                <div class="mobile-progress-bar">
+                    <div class="mobile-progress-fill" data-progress="0" style="width: 0%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Subjects Section -->
+        <section class="subjects-section fade-in-up">
+            <h3 class="section-title">
+                <i class="bi bi-book"></i>
+                Предметы
+            </h3>
+            
+            <div class="subjects-grid">
+                {% for subject in subjects %}
+                <div class="subject-card mobile-card 
+                    {% if subject.is_completed %}completed
+                    {% elif subject.progress_percentage > 0 %}in-progress
+                    {% endif %}"
+                    data-href="/{{ current_language }}/mobile/subject/{{ subject.id }}"
+                    data-searchable="true"
+                    data-category="{{ subject.category or 'general' }}">
+                    
+                    <div class="subject-header">
+                        <div class="subject-icon">
+                            {% if subject.category == 'anatomy' %}
+                                <i class="bi bi-person"></i>
+                            {% elif subject.category == 'therapy' %}
+                                <i class="bi bi-heart-pulse"></i>
+                            {% elif subject.category == 'surgery' %}
+                                <i class="bi bi-scissors"></i>
+                            {% elif subject.category == 'orthodontics' %}
+                                <i class="bi bi-grid-3x3"></i>
+                            {% else %}
+                                <i class="bi bi-book"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="subject-info">
+                            <h4 class="subject-title">{{ subject.name }}</h4>
+                            
+                            <div class="subject-meta">
+                                <span class="meta-item">
+                                    <i class="bi bi-file-text"></i>
+                                    {{ subject.total_lessons or 0 }} уроков
+                                </span>
+                                <span class="meta-item">
+                                    <i class="bi bi-clock"></i>
+                                    {{ subject.estimated_time or '2h' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="subject-progress">
+                        <div class="progress-header">
+                            <span class="progress-label">Прогресс</span>
+                            <span class="progress-percentage">{{ subject.progress_percentage or 0 }}%</span>
+                        </div>
+                        <div class="mobile-progress-bar">
+                            <div class="mobile-progress-fill" 
+                                data-progress="{{ subject.progress_percentage or 0 }}" 
+                                style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        {% if not current_user.is_authenticated and show_auth_prompt %}
+        <!-- Auth Prompt for Non-authenticated Users -->
+        <section class="auth-prompt-section fade-in-up" style="margin-top: 2rem;">
+            <div class="mobile-card" style="text-align: center; padding: 2rem;">
+                <h3 style="color: white; margin-bottom: 1rem;">🚀 Начни обучение</h3>
+                <p style="color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;">
+                    Зарегистрируйся, чтобы отслеживать прогресс и получить доступ ко всем функциям
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <a href="/{{ current_language }}/auth/register" class="mobile-action-button">
+                        <i class="bi bi-person-plus"></i>
+                        Регистрация
+                    </a>
+                    <a href="/{{ current_language }}/auth/login" class="mobile-action-button secondary">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Вход
+                    </a>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    <!-- Floating Action Button -->
+    {% if current_user.is_authenticated %}
+    <button class="fab" onclick="openAIAssistant()">
+        <i class="bi bi-robot"></i>
+    </button>
     {% endif %}
-    
-</div>
-{% endblock %} 
+
+    <!-- Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <a href="/{{ current_language }}/mobile/welcome" class="nav-item">
+            <i class="bi bi-house"></i>
+            <span>Главная</span>
+        </a>
+        <a href="/{{ current_language }}/mobile/learning" class="nav-item active">
+            <i class="bi bi-book"></i>
+            <span>Обучение</span>
+        </a>
+        <a href="/{{ current_language }}/mobile/tests" class="nav-item">
+            <i class="bi bi-clipboard-check"></i>
+            <span>Тесты</span>
+        </a>
+        <a href="/{{ current_language }}/virtual-patient" class="nav-item">
+            <i class="bi bi-person-heart"></i>
+            <span>Пациенты</span>
+        </a>
+        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
+            <i class="fas fa-robot"></i>
+            <span>AI</span>
+        </a>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="/static/js/mobile/mobile-app.js"></script>
+    <script>
+        // Learning Map specific functionality
+        function toggleSearch() {
+            const searchSection = document.getElementById('searchSection');
+            const searchInput = document.getElementById('searchInput');
+            
+            if (searchSection.style.display === 'none') {
+                searchSection.style.display = 'block';
+                searchSection.classList.add('fade-in-up');
+                setTimeout(() => searchInput.focus(), 300);
+            } else {
+                searchSection.style.display = 'none';
+            }
+        }
+
+        function openAIAssistant() {
+            // Сохраняем контекст карты обучения для AI
+            sessionStorage.setItem('aiContext', JSON.stringify({
+                type: 'learning_map',
+                context: 'Пользователь просматривает карту обучения'
+            }));
+            
+            window.location.href = '{{ url_for("ai.ai_chat", lang=current_language) }}';
+        }
+
+        // Initialize progress bars animation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate progress bars when page loads
+            setTimeout(() => {
+                document.querySelectorAll('.mobile-progress-fill').forEach(bar => {
+                    const progress = bar.dataset.progress;
+                    bar.style.width = progress + '%';
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

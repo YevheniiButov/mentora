@@ -10,6 +10,7 @@ from models import db, LearningPath, Subject, Module, Lesson, UserProgress, Test
 from sqlalchemy import func
 import json
 import os
+import subprocess
 from datetime import datetime
 from translations import get_translation as t  # предполагаем, что функция называется get_translation
 # Создаем Blueprint для карты обучения
@@ -1057,4 +1058,288 @@ def view_path(lang, path_id):
         current_app.logger.error(f"Ошибка при отображении пути {path_id}: {str(e)}", exc_info=True)
         flash(f"Ошибка при загрузке данных: {str(e)}", "danger")
         return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+    
+@learning_map_bp.route("/debug/post-rollback-check")
+@login_required
+def post_rollback_check(lang):
+    """Диагностика после отката"""
+    try:
+        html = ["<h1>🔍 Диагностика после отката</h1>"]
+        
+        # 1. Проверяем Git состояние
+        try:
+            # Текущий коммит
+            result = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True)
+            current_commit = result.stdout.strip()[:8]
+            
+            # Текущая ветка
+            result = subprocess.run(['git', 'branch', '--show-current'], capture_output=True, text=True)
+            current_branch = result.stdout.strip()
+            
+            # Последний коммит
+            result = subprocess.run(['git', 'log', '-1', '--oneline'], capture_output=True, text=True)
+            last_commit = result.stdout.strip()
+            
+            html.append(f"""
+            <h2>1. Git состояние</h2>
+            <ul>
+                <li><strong>Текущая ветка:</strong> {current_branch}</li>
+                <li><strong>Текущий коммит:</strong> {current_commit}</li>
+                <li><strong>Последний коммит:</strong> {last_commit}</li>
+            </ul>
+            """)
+        except Exception as e:
+            html.append(f"<h2>1. Git состояние</h2><p style='color:red'>Ошибка получения Git информации: {e}</p>")
+        
+        # 2. Проверяем базу данных
+        html.append("<h2>2. Состояние базы данных</h2>")
+        
+        paths = LearningPath.query.all()
+        subjects = Subject.query.all()
+        modules = Module.query.all()
+        lessons = Lesson.query.all()
+        
+        html.append(f"""
+        <table border='1' style='border-collapse: collapse;'>
+            <tr><th>Таблица</th><th>Количество записей</th></tr>
+            <tr><td>LearningPath</td><td>{len(paths)}</td></tr>
+            <tr><td>Subject</td><td>{len(subjects)}</td></tr>
+            <tr><td>Module</td><td>{len(modules)}</td></tr>
+            <tr><td>Lesson</td><td>{len(lessons)}</td></tr>
+        </table>
+        """)
+        
+        # 3. Детальная проверка структуры
+        html.append("<h2>3. Структура данных</h2>")
+        
+        if not paths:
+            html.append("<p style='color:red;'>❌ <strong>ПРОБЛЕМА: Нет путей обучения!</strong></p>")
+        elif not subjects:
+            html.append("<p style='color:red;'>❌ <strong>ПРОБЛЕМА: Нет предметов!</strong></p>")
+        elif not modules:
+            html.append("<p style='color:red;'>❌ <strong>ПРОБЛЕМА: Нет модулей!</strong></p>")
+        elif not lessons:
+            html.append("<p style='color:red;'>❌ <strong>ПРОБЛЕМА: Нет уроков!</strong></p>")
+        else:
+            html.append("<p style='color:green;'>✅ Все таблицы содержат данные</p>")
+            
+            # Детальная структура
+            for path in paths[:3]:  # Показываем первые 3 пути
+                path_subjects = Subject.query.filter_by(learning_path_id=path.id).all()
+                html.append(f"<h4>Path: {path.name} ({len(path_subjects)} предметов)</h4>")
+                
+                if path_subjects:
+                    html.append("<ul>")
+                    for subject in path_subjects[:3]:  # Первые 3 предмета
+                        subject_modules = Module.query.filter_by(subject_id=subject.id).all()
+                        html.append(f"<li>{subject.name} ({len(subject_modules)} модулей)")
+                        
+                        if subject_modules:
+                            html.append("<ul>")
+                            for module in subject_modules[:2]:  # Первые 2 модуля
+                                module_lessons = Lesson.query.filter_by(module_id=module.id).all()
+                                html.append(f"<li>{module.title} ({len(module_lessons)} уроков)</li>")
+                            html.append("</ul>")
+                        html.append("</li>")
+                    html.append("</ul>")
+        
+        # 4. Проверяем файл базы данных
+        html.append("<h2>4. Файл базы данных</h2>")
+        
+        db_files = []
+        for filename in ['database.db', 'app.db', 'dental_academy.db', 'instance/database.db']:
+            if os.path.exists(filename):
+                size = os.path.getsize(filename)
+                db_files.append(f"{filename} ({size} bytes)")
+        
+        if db_files:
+            html.append("<ul>")
+            for db_file in db_files:
+                html.append(f"<li>{db_file}</li>")
+            html.append("</ul>")
+        else:
+            html.append("<p style='color:red;'>❌ Файлы базы данных не найдены!</p>")
+        
+        # 5. Проверяем конфигурацию
+        html.append("<h2>5. Конфигурация Flask</h2>")
+        html.append(f"""
+        <ul>
+            <li><strong>DATABASE_URL:</strong> {current_app.config.get('SQLALCHEMY_DATABASE_URI', 'Не установлен')}</li>
+            <li><strong>DEBUG:</strong> {current_app.config.get('DEBUG', False)}</li>
+            <li><strong>ENV:</strong> {current_app.config.get('ENV', 'Не установлен')}</li>
+        </ul>
+        """)
+        
+        # 6. Действия для исправления
+        html.append("<h2>6. Возможные решения</h2>")
+        html.append(f"""
+        <ul>
+            <li><a href="{url_for('learning_map_bp.recreate_database', lang=lang)}" style="color: red;">🗑️ Пересоздать базу данных</a> (удалит все данные!)</li>
+            <li><a href="{url_for('learning_map_bp.create_sample_data', lang=lang)}" style="color: green;">➕ Создать тестовые данные</a></li>
+            <li><a href="{url_for('learning_map_bp.import_github_data', lang=lang)}" style="color: blue;">📥 Импортировать данные из GitHub</a></li>
+        </ul>
+        """)
+        
+        return "".join(html)
+        
+    except Exception as e:
+        import traceback
+        return f"<h1>❌ Ошибка диагностики</h1><p>{str(e)}</p><pre>{traceback.format_exc()}</pre>"
+
+@learning_map_bp.route("/debug/recreate-database")
+@login_required
+def recreate_database(lang):
+    """ОПАСНО: Пересоздает базу данных"""
+    try:
+        # Удаляем все таблицы
+        db.drop_all()
+        
+        # Создаем заново
+        db.create_all()
+        
+        flash("⚠️ База данных пересоздана! Все данные удалены.", "warning")
+        return redirect(url_for('learning_map_bp.create_sample_data', lang=lang))
+        
+    except Exception as e:
+        flash(f"❌ Ошибка пересоздания БД: {str(e)}", "danger")
+        return redirect(url_for('learning_map_bp.post_rollback_check', lang=lang))
+
+@learning_map_bp.route("/debug/create-sample-data")
+@login_required
+def create_sample_data(lang):
+    """Создает тестовые данные для проверки"""
+    try:
+        # Проверяем, есть ли уже данные
+        if LearningPath.query.first():
+            flash("⚠️ Данные уже существуют. Создание отменено.", "warning")
+            return redirect(url_for('learning_map_bp.post_rollback_check', lang=lang))
+        
+        # Создаем тестовые данные
+        # Learning Paths
+        path1 = LearningPath(name="Theory (MCQ)", description="Multiple choice questions", order=1, is_active=True)
+        path2 = LearningPath(name="Виртуальные пациенты", description="Virtual patient cases", order=2, is_active=True)
+        
+        db.session.add_all([path1, path2])
+        db.session.flush()
+        
+        # Subjects
+        subject1 = Subject(name="THK I: Cariology/Endo/Perio/Pedo", description="Basic dental subjects", learning_path_id=path1.id, order=1)
+        subject2 = Subject(name="THK II: Prostho/Surgery/Ortho", description="Advanced dental subjects", learning_path_id=path1.id, order=2)
+        
+        db.session.add_all([subject1, subject2])
+        db.session.flush()
+        
+        # Modules
+        module1 = Module(title="Основы кариологии", description="Изучение кариеса", subject_id=subject1.id, order=1)
+        module2 = Module(title="Эндодонтия", description="Лечение корневых каналов", subject_id=subject1.id, order=2)
+        module3 = Module(title="Ортопедия", description="Протезирование", subject_id=subject2.id, order=1)
+        
+        db.session.add_all([module1, module2, module3])
+        db.session.flush()
+        
+        # Lessons
+        lesson1 = Lesson(title="Урок 1: Что такое кариес", content="Основы понимания кариеса", module_id=module1.id, order=1)
+        lesson2 = Lesson(title="Урок 2: Стадии кариеса", content="Развитие кариозного процесса", module_id=module1.id, order=2)
+        lesson3 = Lesson(title="Урок 1: Анатомия корневых каналов", content="Строение корней", module_id=module2.id, order=1)
+        
+        db.session.add_all([lesson1, lesson2, lesson3])
+        db.session.commit()
+        
+        flash("✅ Тестовые данные успешно созданы!", "success")
+        return redirect(url_for('learning_map_bp.post_rollback_check', lang=lang))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f"❌ Ошибка создания тестовых данных: {str(e)}", "danger")
+        return redirect(url_for('learning_map_bp.post_rollback_check', lang=lang))
+
+@learning_map_bp.route("/debug/import-github-data")
+@login_required
+def import_github_data(lang):
+    """Заглушка для импорта данных из GitHub"""
+    flash("📥 Функция импорта данных из GitHub пока не реализована.", "info")
+    return redirect(url_for('learning_map_bp.post_rollback_check', lang=lang))
+
+@learning_map_bp.route("/debug/test-caries")
+@login_required
+def test_caries(lang):
+    """Тест отображения Caries"""
+    try:
+        # Находим Caries
+        caries_subject = Subject.query.filter_by(name="Caries").first()
+        
+        if not caries_subject:
+            return "<h1>❌ Предмет Caries не найден!</h1>"
+        
+        # Получаем модули Caries
+        caries_modules = Module.query.filter_by(subject_id=caries_subject.id).all()
+        
+        # Получаем уроки первого модуля
+        first_module = caries_modules[0] if caries_modules else None
+        lessons = Lesson.query.filter_by(module_id=first_module.id).all() if first_module else []
+        
+        html = f"""
+        <h1>🧪 Тест Caries</h1>
+        
+        <h2>Предмет Caries</h2>
+        <p><strong>ID:</strong> {caries_subject.id}</p>
+        <p><strong>Name:</strong> {caries_subject.name}</p>
+        <p><strong>Learning Path ID:</strong> {caries_subject.learning_path_id}</p>
+        
+        <h2>Модули ({len(caries_modules)})</h2>
+        """
+        
+        if caries_modules:
+            for module in caries_modules:
+                module_lessons = Lesson.query.filter_by(module_id=module.id).all()
+                html += f"""
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                    <h3>{module.title}</h3>
+                    <p><strong>ID:</strong> {module.id}</p>
+                    <p><strong>Уроков:</strong> {len(module_lessons)}</p>
+                    <p><strong>Описание:</strong> {getattr(module, 'description', 'Нет описания')}</p>
+                    
+                    <h4>Первые 5 уроков:</h4>
+                    <ul>
+                """
+                
+                for lesson in module_lessons[:5]:
+                    html += f"<li>{lesson.title}</li>"
+                
+                html += "</ul></div>"
+        else:
+            html += "<p style='color: red;'>❌ Нет модулей!</p>"
+        
+        # Тест прямой ссылки
+        if caries_subject:
+            html += f"""
+            <h2>Прямая ссылка</h2>
+            <p><a href="{url_for('subject_view_bp.view_subject', lang=lang, subject_id=caries_subject.id)}" 
+                  style="background: green; color: white; padding: 10px; text-decoration: none;">
+                🎯 Открыть Caries напрямую
+            </a></p>
+            """
+        
+        # Тест через карту обучения
+        html += f"""
+        <h2>Через карту обучения</h2>
+        <p><a href="{url_for('learning_map_bp.learning_map', lang=lang)}" 
+              style="background: blue; color: white; padding: 10px; text-decoration: none;">
+            🗺️ Открыть карту обучения
+        </a></p>
+        
+        <h3>Инструкции:</h3>
+        <ol>
+            <li>Кликните на <strong>"Exams"</strong> в левом меню</li>
+            <li>Найдите <strong>"Caries"</strong> в списке предметов</li>
+            <li>Кликните на <strong>"Caries"</strong></li>
+            <li>Должен появиться модуль с 19 уроками</li>
+        </ol>
+        """
+        
+        return html
+        
+    except Exception as e:
+        import traceback
+        return f"<h1>❌ Ошибка теста</h1><p>{str(e)}</p><pre>{traceback.format_exc()}</pre>"
     

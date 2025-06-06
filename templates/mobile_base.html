@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="{{ current_language or 'en' }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dental Academy - Professional Training Platform{% endblock %}</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#3ECDC1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dental Academy">
+    <link rel="apple-touch-icon" href="/static/images/icon-152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/images/icon-72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/static/images/icon-96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/static/images/icon-128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/images/icon-144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/images/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/static/images/icon-192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="/static/images/icon-384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/static/images/icon-512.png">
+    
+    <!-- Windows/Edge -->
+    <meta name="msapplication-TileColor" content="#3ECDC1">
+    <meta name="msapplication-TileImage" content="/static/images/icon-144.png">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/images/icon-512.png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Mobile CSS -->
+    <link rel="stylesheet" href="/static/css/mobile/mobile-app.css">
+    
+    <!-- Page-specific styles -->
+    {% block extra_head %}{% endblock %}
+
+    <style>
+        /* ===== БАЗОВЫЕ МОБИЛЬНЫЕ СТИЛИ ===== */
+        :root {
+            --primary: #3ECDC1;
+            --primary-dark: #2BB6AC;
+            --secondary: #667eea;
+            --accent: #764ba2;
+            --success: #4ade80;
+            --warning: #facc15;
+            --error: #ef4444;
+            
+            --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);
+            --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            --shadow-soft: 0 10px 40px rgba(0,0,0,0.1);
+            --shadow-strong: 0 20px 60px rgba(0,0,0,0.15);
+                        
+            --header-height: 70px;
+            --nav-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gradient-hero);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(255,255,255,0.1);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 max(1rem, env(safe-area-inset-left)) 0 max(1rem, env(safe-area-inset-right));
+        }
+
+        .header-left,
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+            text-decoration: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .header-logo .main-logo {
+            width: 156px;
+            height: 56px;
+            object-fit: contain;
+        }
+
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 env(safe-area-inset-left) env(safe-area-inset-bottom) env(safe-area-inset-right);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .main-content {
+            padding-top: var(--header-height);
+            padding-bottom: var(--nav-height);
+            min-height: 100vh;
+        }
+
+        /* Language Selector */
+        .language-selector {
+            position: relative;
+        }
+
+        .language-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 0.5rem 0.75rem;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 70px;
+        }
+
+        .language-toggle:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .theme-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Page-specific styles go here */
+        {% block page_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <!-- Mobile Header -->
+    {% block header %}
+    <header class="mobile-header">
+        <!-- Language Selector -->
+        <div class="header-left">
+            {% block header_left %}
+            <div class="language-selector">
+                <button class="language-toggle" id="languageToggle">
+                    <i class="bi bi-globe"></i>
+                    <span class="current-lang">{{ current_language.upper() or 'EN' }}</span>
+                </button>
+            </div>
+            {% endblock %}
+        </div>
+
+        <!-- Logo -->
+        {% block header_logo %}
+        <a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="header-logo">
+            <img src="/static/images/logo.png" alt="Dental Academy" class="main-logo">
+        </a>
+        {% endblock %}
+
+        <!-- Right Actions -->
+        <div class="header-right">
+            {% block header_right %}
+            <!-- Theme Toggle -->
+            <button class="theme-toggle" id="themeToggle">
+                <i class="bi bi-moon"></i>
+            </button>
+            {% endblock %}
+        </div>
+    </header>
+    {% endblock %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bottom Navigation -->
+    {% block bottom_nav %}
+    <nav class="mobile-bottom-nav">
+        {% block nav_items %}
+        <a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+            <i class="bi bi-house"></i>
+            <span>Главная</span>
+        </a>
+        <a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+            <i class="bi bi-book"></i>
+            <span>Обучение</span>
+        </a>
+        <a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item">
+            <i class="bi bi-clipboard-check"></i>
+            <span>Тесты</span>
+        </a>
+        <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item">
+            <i class="bi bi-person-heart"></i>
+            <span>Пациенты</span>
+        </a>
+        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
+            <i class="fas fa-robot"></i>
+            <span>AI</span>
+        </a>
+        {% endblock %}
+    </nav>
+    {% endblock %}
+
+    <!-- JavaScript -->
+    <script src="/static/js/mobile/mobile-app.js"></script>
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // Базовая инициализация мобильного приложения
+        class MobileBaseApp {
+            constructor() {
+                this.currentTheme = localStorage.getItem('theme') || 'light';
+                this.init();
+            }
+            
+            init() {
+                this.setupThemeToggle();
+                this.setupNavigation();
+                this.applyTheme(this.currentTheme);
+                console.log('✅ Mobile Base App - Ready!');
+            }
+            
+            setupThemeToggle() {
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.addEventListener('click', () => {
+                        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+                        this.applyTheme(this.currentTheme);
+                        localStorage.setItem('theme', this.currentTheme);
+                    });
+                }
+            }
+            
+            applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                const themeIcon = document.querySelector('#themeToggle i');
+                if (themeIcon) {
+                    themeIcon.className = theme === 'light' ? 'bi bi-moon' : 'bi bi-sun';
+                }
+            }
+            
+            setupNavigation() {
+                const navItems = document.querySelectorAll('.nav-item');
+                const currentPath = window.location.pathname;
+                
+                navItems.forEach(item => {
+                    if (item.href && currentPath.includes(item.getAttribute('href'))) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            new MobileBaseApp();
+        });
+    </script>
+</body>
+</html> 

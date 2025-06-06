@@ -2,7 +2,7 @@
 
 from flask import (
     Blueprint, render_template, g, request, current_app, session,
-    redirect, url_for, flash, jsonify
+    redirect, url_for, flash, jsonify, abort
 )
 from flask_login import login_required, current_user
 import os
@@ -68,6 +68,7 @@ def home(lang):
             'es': 'es', 'pt': 'pt', 'tr': 'tr', 'fa': 'ir'
         }.get(code, code)
     )
+
 @main_bp.route('/<string:lang>/set_language/<string:new_lang>')
 def set_language(lang, new_lang):
     """
@@ -292,3 +293,14 @@ def save_profile(lang):
         db.session.rollback()
         current_app.logger.error(f"Error saving profile: {str(e)}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500
+
+# Тестовые роуты для проверки ошибок
+@main_bp.route('/<string:lang>/test-404')
+def test_404(lang):
+    """Тестовый роут для проверки страницы 404."""
+    abort(404)
+
+@main_bp.route('/<string:lang>/test-500')
+def test_500(lang):
+    """Тестовый роут для проверки страницы 500."""
+    abort(500)

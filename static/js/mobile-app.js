@@ -1,95 +1,38 @@
-// Mobile App Core JavaScript
-// Базовая функциональность для мобильного приложения
+/**
+ * Enhanced Mobile App Navigation System
+ * Dental Academy Mobile Application
+ */
 
 class MobileApp {
     constructor() {
-        this.isInitialized = false;
-        this.config = window.MobileConfig || {};
+        this.isMenuOpen = false;
+        this.isLanguageDropdownOpen = false;
+        this.currentTheme = 'light';
+        this.offlineMode = false;
+        
         this.init();
     }
-
+    
     init() {
-        console.log('🚀 Initializing Mobile App...');
-        
         this.setupEventListeners();
-        this.setupNavigationHandlers();
-        this.setupThemeToggle();
-        this.setupToastSystem();
-        this.setupMenuHandlers();
-        
-        this.isInitialized = true;
-        console.log('✅ Mobile App initialized successfully');
+        this.setupTheme();
+        this.setupServiceWorker();
+        this.setupVibration();
     }
-
+    
+    /**
+     * Настройка обработчиков событий
+     */
     setupEventListeners() {
-        // Обработчики базовых событий
-        document.addEventListener('DOMContentLoaded', () => {
-            this.onDOMReady();
-        });
-
-        // Обработка изменения ориентации
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => this.handleOrientationChange(), 100);
-        });
-
-        // Обработка back button
-        window.addEventListener('popstate', (event) => {
-            this.handleBackButton(event);
-        });
-    }
-
-    onDOMReady() {
-        // Инициализация после загрузки DOM
-        this.updateConnectionStatus();
-        this.setupSwipeGestures();
-        this.initLazyLoading();
-    }
-
-    setupNavigationHandlers() {
-        // Мобильная навигация
-        const navItems = document.querySelectorAll('.mobile-nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                this.handleNavigation(e, item);
-            });
-        });
-    }
-
-    setupThemeToggle() {
-        const themeButtons = document.querySelectorAll('#mobile-theme-toggle, #mobile-theme-toggle-menu');
-        
-        themeButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                this.toggleTheme();
-            });
-        });
-
-        // Устанавливаем начальную тему
-        this.updateThemeIcons();
-    }
-
-    setupToastSystem() {
-        // Система уведомлений
-        this.toastContainer = this.createToastContainer();
-    }
-
-    setupMenuHandlers() {
+        // Боковое меню
         const menuToggle = document.getElementById('mobile-menu-toggle');
-        const menuClose = document.getElementById('mobile-menu-close');
         const menuOverlay = document.getElementById('mobile-menu-overlay');
-
+        const menuClose = document.getElementById('mobile-menu-close');
+        
         if (menuToggle) {
-            menuToggle.addEventListener('click', () => {
-                this.openMenu();
-            });
+            menuToggle.addEventListener('click', () => this.toggleMenu());
         }
-
-        if (menuClose) {
-            menuClose.addEventListener('click', () => {
-                this.closeMenu();
-            });
-        }
-
+        
         if (menuOverlay) {
             menuOverlay.addEventListener('click', (e) => {
                 if (e.target === menuOverlay) {
@@ -97,94 +40,310 @@ class MobileApp {
                 }
             });
         }
-    }
-
-    // Навигация
-    handleNavigation(event, item) {
-        // Добавляем визуальный feedback
-        item.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            item.style.transform = '';
-        }, 150);
-
-        // Обновляем активные состояния
-        document.querySelectorAll('.mobile-nav-item').forEach(nav => {
-            nav.classList.remove('active');
-        });
-        item.classList.add('active');
-    }
-
-    // Управление темой
-    toggleTheme() {
-        const body = document.body;
-        const currentTheme = body.getAttribute('data-theme') || 'light';
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         
-        body.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
+        if (menuClose) {
+            menuClose.addEventListener('click', () => this.closeMenu());
+        }
         
-        this.updateThemeIcons();
-        this.showToast(this.config.translations?.themeChanged || 'Theme changed', 'info');
-    }
-
-    updateThemeIcons() {
-        const themeIcons = document.querySelectorAll('.theme-icon');
-        const themeTexts = document.querySelectorAll('.theme-text');
-        const currentTheme = document.body.getAttribute('data-theme') || 'light';
+        // Языковой селектор
+        const langToggle = document.getElementById('mobile-language-toggle');
+        const langDropdown = document.getElementById('mobile-language-dropdown');
         
-        themeIcons.forEach(icon => {
-            icon.className = currentTheme === 'light' ? 'bi bi-moon theme-icon' : 'bi bi-sun theme-icon';
+        if (langToggle) {
+            langToggle.addEventListener('click', () => this.toggleLanguageDropdown());
+        }
+        
+        // Закрытие языкового меню при клике вне его
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.mobile-language-selector')) {
+                this.closeLanguageDropdown();
+            }
         });
-
-        themeTexts.forEach(text => {
-            text.textContent = currentTheme === 'light' ? 'Dark Mode' : 'Light Mode';
-        });
+        
+        // Переключатель темы (в хедере)
+        const themeToggle = document.getElementById('mobile-theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => this.toggleTheme());
+        }
+        
+        // Переключатель темы (в меню)
+        const themeToggleMenu = document.getElementById('mobile-theme-toggle-menu');
+        if (themeToggleMenu) {
+            themeToggleMenu.addEventListener('click', () => this.toggleTheme());
+        }
+        
+        // Оффлайн режим
+        const offlineToggle = document.getElementById('mobile-offline-mode');
+        if (offlineToggle) {
+            offlineToggle.addEventListener('click', () => this.toggleOfflineMode());
+        }
+        
+        // Haptic feedback для всех кнопок
+        this.setupHapticFeedback();
+        
+        // Обработка свайпов
+        this.setupSwipeGestures();
+        
+        // Обработка состояния сети
+        this.setupNetworkStatus();
     }
-
-    // Меню
+    
+    /**
+     * Управление боковым меню
+     */
+    toggleMenu() {
+        if (this.isMenuOpen) {
+            this.closeMenu();
+        } else {
+            this.openMenu();
+        }
+    }
+    
     openMenu() {
         const overlay = document.getElementById('mobile-menu-overlay');
         if (overlay) {
-            overlay.style.display = 'flex';
-            setTimeout(() => {
-                overlay.classList.add('show');
-            }, 10);
+            overlay.style.display = 'block';
+            // Force reflow
+            overlay.offsetHeight;
+            overlay.classList.add('show');
+            this.isMenuOpen = true;
+            
+            // Блокируем скролл страницы
+            document.body.style.overflow = 'hidden';
+            
+            this.vibrate(10); // Легкая вибрация
         }
     }
-
+    
     closeMenu() {
         const overlay = document.getElementById('mobile-menu-overlay');
         if (overlay) {
             overlay.classList.remove('show');
+            this.isMenuOpen = false;
+            
+            // Восстанавливаем скролл
+            document.body.style.overflow = '';
+            
             setTimeout(() => {
                 overlay.style.display = 'none';
-            }, 300);
+            }, 200);
         }
     }
-
-    // Toast уведомления
-    createToastContainer() {
-        let container = document.getElementById('mobile-toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'mobile-toast-container';
-            container.className = 'mobile-toast-container';
-            container.style.cssText = `
-                position: fixed;
-                top: 80px;
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 10000;
-                pointer-events: none;
-            `;
-            document.body.appendChild(container);
+    
+    /**
+     * Управление языковым селектором
+     */
+    toggleLanguageDropdown() {
+        if (this.isLanguageDropdownOpen) {
+            this.closeLanguageDropdown();
+        } else {
+            this.openLanguageDropdown();
         }
-        return container;
     }
-
+    
+    openLanguageDropdown() {
+        const dropdown = document.getElementById('mobile-language-dropdown');
+        if (dropdown) {
+            dropdown.classList.add('show');
+            this.isLanguageDropdownOpen = true;
+            this.vibrate(5);
+        }
+    }
+    
+    closeLanguageDropdown() {
+        const dropdown = document.getElementById('mobile-language-dropdown');
+        if (dropdown) {
+            dropdown.classList.remove('show');
+            this.isLanguageDropdownOpen = false;
+        }
+    }
+    
+    /**
+     * Управление темой
+     */
+    setupTheme() {
+        // Получаем сохраненную тему
+        const savedTheme = localStorage.getItem('mobile-theme') || 'light';
+        this.setTheme(savedTheme);
+    }
+    
+    toggleTheme() {
+        const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+        this.setTheme(newTheme);
+        this.vibrate(10);
+    }
+    
+    setTheme(theme) {
+        this.currentTheme = theme;
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('mobile-theme', theme);
+        
+        // Обновляем иконки переключателя темы
+        const themeIcons = document.querySelectorAll('.theme-icon');
+        const themeIndicator = document.getElementById('theme-indicator');
+        
+        themeIcons.forEach(icon => {
+            if (theme === 'dark') {
+                icon.className = 'bi bi-sun theme-icon';
+            } else {
+                icon.className = 'bi bi-moon theme-icon';
+            }
+        });
+        
+        if (themeIndicator) {
+            themeIndicator.textContent = theme === 'dark' ? 'Dark' : 'Light';
+        }
+        
+        // Обновляем цвет статус-бара
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+            metaTheme.content = theme === 'dark' ? '#111827' : '#3ECDC1';
+        }
+    }
+    
+    /**
+     * Управление оффлайн режимом
+     */
+    toggleOfflineMode() {
+        this.offlineMode = !this.offlineMode;
+        const status = document.querySelector('.mobile-offline-status');
+        
+        if (status) {
+            status.textContent = this.offlineMode ? 'On' : 'Off';
+            status.style.background = this.offlineMode ? '#10b981' : '#6b7280';
+        }
+        
+        // Здесь можно добавить логику кэширования контента
+        if (this.offlineMode) {
+            this.cacheImportantContent();
+        }
+        
+        this.vibrate(15);
+    }
+    
+    /**
+     * Кэширование контента для оффлайн режима
+     */
+    async cacheImportantContent() {
+        try {
+            if ('caches' in window) {
+                const cache = await caches.open('dental-academy-v1');
+                const urlsToCache = [
+                    '/',
+                    '/static/css/mobile/mobile-base.css',
+                    '/static/js/mobile-app.js',
+                    '/static/images/logo.png'
+                ];
+                
+                await cache.addAll(urlsToCache);
+                console.log('Content cached for offline use');
+            }
+        } catch (error) {
+            console.error('Error caching content:', error);
+        }
+    }
+    
+    /**
+     * Настройка Service Worker для PWA
+     */
+    setupServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/js/service-worker.js')
+                .then(registration => {
+                    console.log('SW registered:', registration);
+                })
+                .catch(error => {
+                    console.log('SW registration failed:', error);
+                });
+        }
+    }
+    
+    /**
+     * Настройка haptic feedback
+     */
+    setupHapticFeedback() {
+        const hapticElements = document.querySelectorAll(
+            '.mobile-nav-item, .mobile-header-action, .mobile-btn, .mobile-menu-item'
+        );
+        
+        hapticElements.forEach(element => {
+            element.addEventListener('touchstart', () => {
+                this.vibrate(5);
+            });
+        });
+    }
+    
+    /**
+     * Настройка свайп-жестов
+     */
+    setupSwipeGestures() {
+        let startX = 0;
+        let startY = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            if (!startX || !startY) return;
+            
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            
+            // Swipe right to open menu (from left edge)
+            if (deltaX > 100 && Math.abs(deltaY) < 100 && startX < 50) {
+                this.openMenu();
+            }
+            
+            // Swipe left to close menu
+            if (deltaX < -100 && Math.abs(deltaY) < 100 && this.isMenuOpen) {
+                this.closeMenu();
+            }
+        });
+    }
+    
+    /**
+     * Мониторинг состояния сети
+     */
+    setupNetworkStatus() {
+        const updateNetworkStatus = () => {
+            const indicator = document.querySelector('.mobile-network-indicator');
+            if (indicator) {
+                if (navigator.onLine) {
+                    indicator.className = 'mobile-network-indicator online';
+                    indicator.textContent = 'Online';
+                } else {
+                    indicator.className = 'mobile-network-indicator offline';
+                    indicator.textContent = 'Offline';
+                }
+            }
+        };
+        
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        updateNetworkStatus();
+    }
+    
+    /**
+     * Вибрация (если поддерживается)
+     */
+    vibrate(duration = 10) {
+        if ('vibrate' in navigator) {
+            navigator.vibrate(duration);
+        }
+    }
+    
+    /**
+     * Показ уведомлений
+     */
     showToast(message, type = 'info', duration = 3000) {
         const toast = document.createElement('div');
-        toast.className = `mobile-toast mobile-toast-${type}`;
+        toast.className = `mobile-toast mobile-toast-${type} show`;
+        
         toast.innerHTML = `
             <div class="mobile-toast-content">
                 <div class="mobile-toast-icon">
@@ -194,174 +353,60 @@ class MobileApp {
             </div>
         `;
         
-        toast.style.cssText = `
-            background: white;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            max-width: 300px;
-            pointer-events: auto;
-            transform: translateY(-20px);
-            opacity: 0;
-            transition: all 0.3s ease;
-        `;
-
-        this.toastContainer.appendChild(toast);
-
-        // Анимация появления
+        const container = document.querySelector('.mobile-flash-messages') || document.body;
+        container.appendChild(toast);
+        
         setTimeout(() => {
-            toast.style.transform = 'translateY(0)';
-            toast.style.opacity = '1';
-        }, 100);
-
-        // Удаление
-        setTimeout(() => {
-            toast.style.transform = 'translateY(-20px)';
-            toast.style.opacity = '0';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            }, 300);
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
         }, duration);
     }
-
+    
     getToastIcon(type) {
         const icons = {
-            'success': 'check-circle-fill',
-            'error': 'x-circle-fill',
-            'warning': 'exclamation-triangle-fill',
-            'info': 'info-circle-fill'
+            success: 'check-circle',
+            error: 'x-circle',
+            warning: 'exclamation-triangle',
+            info: 'info-circle'
         };
-        return icons[type] || 'info-circle-fill';
+        return icons[type] || 'info-circle';
     }
-
-    // Утилиты
-    handleOrientationChange() {
-        // Обработка изменения ориентации
-        const overlay = document.getElementById('mobile-loading-overlay');
-        if (overlay) {
-            overlay.style.display = 'none';
-        }
-    }
-
-    handleBackButton(event) {
-        // Обработка кнопки назад
-        const overlay = document.getElementById('mobile-menu-overlay');
-        if (overlay && overlay.classList.contains('show')) {
-            event.preventDefault();
-            this.closeMenu();
-        }
-    }
-
-    updateConnectionStatus() {
-        // Проверка подключения к интернету
-        const updateStatus = () => {
-            if (navigator.onLine) {
-                this.hideConnectionError();
-            } else {
-                this.showConnectionError();
-            }
-        };
-
-        window.addEventListener('online', updateStatus);
-        window.addEventListener('offline', updateStatus);
-        updateStatus();
-    }
-
-    showConnectionError() {
-        this.showToast('Connection lost. Some features may not work.', 'warning', 5000);
-    }
-
-    hideConnectionError() {
-        this.showToast('Connection restored', 'success', 2000);
-    }
-
-    setupSwipeGestures() {
-        // Базовые свайп жесты (если понадобятся в будущем)
-        let startX, startY;
-
-        document.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-        });
-
-        document.addEventListener('touchend', (e) => {
-            if (!startX || !startY) return;
-
-            const endX = e.changedTouches[0].clientX;
-            const endY = e.changedTouches[0].clientY;
-            const diffX = startX - endX;
-            const diffY = startY - endY;
-
-            // Обработка свайпов (можно расширить в будущем)
-            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-                if (diffX > 0) {
-                    // Свайп влево
-                } else {
-                    // Свайп вправо
-                }
-            }
-        });
-    }
-
-    initLazyLoading() {
-        // Ленивая загрузка изображений
-        const images = document.querySelectorAll('img[data-src]');
-        
-        if ('IntersectionObserver' in window) {
-            const imageObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        imageObserver.unobserve(img);
-                    }
-                });
-            });
-
-            images.forEach(img => imageObserver.observe(img));
-        } else {
-            // Fallback для старых браузеров
-            images.forEach(img => {
-                img.src = img.dataset.src;
-                img.removeAttribute('data-src');
-            });
-        }
-    }
-
-    // Публичные методы
-    loading(show = true) {
-        const overlay = document.getElementById('mobile-loading-overlay');
-        if (overlay) {
-            overlay.style.display = show ? 'flex' : 'none';
-        }
-    }
-
-    refreshPage() {
-        window.location.reload();
-    }
-}
-
-// Инициализация при загрузке
-if (typeof window !== 'undefined') {
-    window.MobileApp = MobileApp;
     
-    // Автоинициализация
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            window.mobileApp = new MobileApp();
-        });
-    } else {
-        window.mobileApp = new MobileApp();
+    /**
+     * Утилиты для навигации
+     */
+    navigateTo(url) {
+        // Добавляем loading индикатор
+        this.showLoading();
+        window.location.href = url;
+    }
+    
+    showLoading() {
+        const loader = document.querySelector('.mobile-loading');
+        if (loader) {
+            loader.style.display = 'flex';
+        }
+    }
+    
+    hideLoading() {
+        const loader = document.querySelector('.mobile-loading');
+        if (loader) {
+            loader.style.display = 'none';
+        }
     }
 }
 
-// Экспорт для модульных систем
+// Инициализация приложения
+document.addEventListener('DOMContentLoaded', () => {
+    window.mobileApp = new MobileApp();
+    
+    // Скрываем loader при загрузке
+    setTimeout(() => {
+        window.mobileApp.hideLoading();
+    }, 500);
+});
+
+// Экспорт для использования в других скриптах
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MobileApp;
 } 

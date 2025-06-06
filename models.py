@@ -886,3 +886,196 @@ class GamificationEngine:
         
         for rank, entry in enumerate(entries, 1):
             entry.rank = rank    
+
+# ===== RAG SYSTEM MODELS =====
+
+class UserAPIKey(db.Model):
+    """Пользовательские API ключи для AI провайдеров с шифрованием"""
+    __tablename__ = 'user_api_keys'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    provider = db.Column(db.String(50), nullable=False, index=True)  # groq, deepseek, openai
+    encrypted_api_key = db.Column(db.Text, nullable=False)  # Зашифрованный API ключ
+    key_name = db.Column(db.String(100), nullable=True)  # Пользовательское имя ключа
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    
+    # Статистика использования
+    tokens_used_today = db.Column(db.Integer, default=0)
+    total_tokens_used = db.Column(db.Integer, default=0)
+    last_used_at = db.Column(db.DateTime, nullable=True)
+    daily_limit_reset = db.Column(db.Date, default=datetime.utcnow().date())
+    
+    # Метаданные
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Отношения
+    user = db.relationship('User', backref=db.backref('api_keys', lazy='dynamic', cascade='all, delete-orphan'))
+    
+    # Уникальный индекс: один ключ на провайдера на пользователя
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'provider', name='uc_user_provider_key'),
+        db.Index('idx_user_api_keys_active', 'user_id', 'is_active'),
+        db.Index('idx_user_api_keys_provider', 'provider', 'is_active'),
+    )
+    
+    def reset_daily_usage_if_needed(self):
+        """Сбрасывает дневное использование если прошел день"""
+        today = datetime.utcnow().date()
+        if self.daily_limit_reset < today:
+            self.tokens_used_today = 0
+            self.daily_limit_reset = today
+            db.session.commit()
+    
+    def add_token_usage(self, tokens_used: int):
+        """Добавляет использованные токены к статистике"""
+        self.reset_daily_usage_if_needed()
+        self.tokens_used_today += tokens_used
+        self.total_tokens_used += tokens_used
+        self.last_used_at = datetime.utcnow()
+        db.session.commit()
+    
+    def __repr__(self):
+        return f'<UserAPIKey {self.user_id}:{self.provider}>'
+
+
+class AIConversation(db.Model):
+    """История разговоров с AI ассистентом"""
+    __tablename__ = 'ai_conversations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    
+    # Контент разговора
+    user_message = db.Column(db.Text, nullable=False)
+    ai_response = db.Column(db.Text, nullable=False)
+    
+    # Метаданные AI запроса
+    provider = db.Column(db.String(50), nullable=False, index=True)  # groq, deepseek, openai
+    model_used = db.Column(db.String(100), nullable=True)
+    tokens_used = db.Column(db.Integer, default=0)
+    response_time_ms = db.Column(db.Integer, nullable=True)
+    
+    # RAG контекст
+    rag_sources = db.Column(db.JSON, nullable=True)  # Источники для RAG
+    context_used = db.Column(db.Text, nullable=True)  # Использованный контекст
+    
+    # Пользовательские оценки
+    user_rating = db.Column(db.Integer, nullable=True)  # 1-5 звезд
+    user_feedback = db.Column(db.Text, nullable=True)
+    
+    # Метаданные
+    language = db.Column(db.String(5), default='en', index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    
+    # Отношения
+    user = db.relationship('User', backref=db.backref('ai_conversations', lazy='dynamic', cascade='all, delete-orphan'))
+    
+    # Индексы для поиска
+    __table_args__ = (
+        db.Index('idx_ai_conversations_user_date', 'user_id', 'created_at'),
+        db.Index('idx_ai_conversations_provider', 'provider', 'created_at'),
+        db.Index('idx_ai_conversations_language', 'language', 'created_at'),
+    )
+    
+    def __repr__(self):
+        return f'<AIConversation {self.id}: {self.user_id}>'
+
+
+class ContentEmbedding(db.Model):
+    """Векторные представления образовательного контента для RAG"""
+    __tablename__ = 'content_embeddings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Ссылки на контент
+    content_type = db.Column(db.String(50), nullable=False, index=True)  # lesson, question, module, virtual_patient
+    content_id = db.Column(db.Integer, nullable=False, index=True)  # ID соответствующего объекта
+    
+    # Текстовые данные
+    text_chunk = db.Column(db.Text, nullable=False)  # Чанк текста
+    chunk_index = db.Column(db.Integer, default=0)  # Порядковый номер чанка
+    title = db.Column(db.String(500), nullable=True)  # Заголовок для отображения
+    
+    # Векторное представление
+    embedding_vector = db.Column(db.JSON, nullable=False)  # Векторное представление
+    vector_model = db.Column(db.String(100), default='all-MiniLM-L6-v2')  # Модель для создания векторов
+    
+    # Метаданные для фильтрации
+    language = db.Column(db.String(5), default='en', index=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=True, index=True)
+    module_id = db.Column(db.Integer, db.ForeignKey('module.id'), nullable=True, index=True)
+    difficulty_level = db.Column(db.String(20), nullable=True, index=True)  # beginner, intermediate, advanced
+    
+    # Версионирование и качество
+    content_hash = db.Column(db.String(64), nullable=False, index=True)  # MD5 хэш исходного контента
+    embedding_quality_score = db.Column(db.Float, nullable=True)  # Оценка качества эмбеддинга
+    
+    # Метаданные
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Отношения
+    subject = db.relationship('Subject', backref=db.backref('content_embeddings', lazy='dynamic'))
+    module = db.relationship('Module', backref=db.backref('content_embeddings', lazy='dynamic'))
+    
+    # Композитные индексы для эффективного поиска
+    __table_args__ = (
+        db.UniqueConstraint('content_type', 'content_id', 'chunk_index', 'language', name='uc_content_chunk_lang'),
+        db.Index('idx_embeddings_content', 'content_type', 'content_id'),
+        db.Index('idx_embeddings_search', 'language', 'subject_id', 'difficulty_level'),
+        db.Index('idx_embeddings_hash', 'content_hash'),
+    )
+    
+    def __repr__(self):
+        return f'<ContentEmbedding {self.content_type}:{self.content_id}:{self.chunk_index}>'
+
+
+class RAGCache(db.Model):
+    """Кэш для RAG запросов и результатов"""
+    __tablename__ = 'rag_cache'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Ключ запроса
+    query_hash = db.Column(db.String(64), unique=True, nullable=False, index=True)  # MD5 хэш запроса
+    query_text = db.Column(db.Text, nullable=False)  # Исходный текст запроса
+    
+    # Параметры поиска
+    language = db.Column(db.String(5), default='en', index=True)
+    content_filters = db.Column(db.JSON, nullable=True)  # Фильтры (subject_id, difficulty, etc.)
+    
+    # Результаты поиска
+    search_results = db.Column(db.JSON, nullable=False)  # Найденные релевантные чанки
+    context_text = db.Column(db.Text, nullable=True)  # Сгенерированный контекст
+    relevance_scores = db.Column(db.JSON, nullable=True)  # Оценки релевантности
+    
+    # Статистика использования
+    hit_count = db.Column(db.Integer, default=1)
+    last_used_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    
+    # Метаданные
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = db.Column(db.DateTime, nullable=True, index=True)  # TTL кэша
+    
+    # Индексы
+    __table_args__ = (
+        db.Index('idx_rag_cache_language', 'language', 'last_used_at'),
+        db.Index('idx_rag_cache_expires', 'expires_at'),
+    )
+    
+    def is_expired(self) -> bool:
+        """Проверяет, истек ли кэш"""
+        if self.expires_at is None:
+            return False
+        return datetime.utcnow() > self.expires_at
+    
+    def touch(self):
+        """Обновляет время последнего использования и счетчик попаданий"""
+        self.hit_count += 1
+        self.last_used_at = datetime.utcnow()
+        db.session.commit()
+    
+    def __repr__(self):
+        return f'<RAGCache {self.query_hash[:8]}... ({self.hit_count} hits)>'    

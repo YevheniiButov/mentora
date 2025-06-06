@@ -9,6 +9,8 @@ from flask_login import login_required, current_user
 from models import db, VirtualPatientScenario, VirtualPatientAttempt, Achievement, UserAchievement
 import json
 from datetime import datetime, timezone, timedelta # Добавлен timedelta, если он используется для started_at fallback
+import random
+from utils.mobile_detection import get_mobile_detector
 
 # Определение Blueprint
 virtual_patient_bp = Blueprint(
@@ -279,6 +281,13 @@ def generate_recommendations(history, current_score, max_score):
         })
     return recommendations
 
+def get_template_for_device(desktop_template, mobile_template):
+    """Возвращает подходящий шаблон для устройства."""
+    detector = get_mobile_detector()
+    if detector.is_mobile_device:
+        return mobile_template
+    return desktop_template
+
 # --- Маршруты ---
 
 @virtual_patient_bp.route("/") # Список сценариев
@@ -312,7 +321,14 @@ def scenarios_list(lang):
             'attempts_count': attempts_count,
             'best_attempt_id': best_attempt_id_for_results
         }
-    return render_template("virtual_patient/scenarios_list.html", scenarios=all_scenarios, title=_("Virtual Patient Scenarios"))
+    
+    # Выбираем шаблон в зависимости от устройства
+    template = get_template_for_device(
+        "virtual_patient/scenarios_list.html", 
+        "mobile/virtual_patient/virtual_patient_mobile_list.html"
+    )
+    
+    return render_template(template, scenarios=all_scenarios, title=_("Virtual Patient Scenarios"))
 
 @virtual_patient_bp.route("/<int:scenario_id>/start") # Запуск сценария
 @login_required
@@ -396,8 +412,17 @@ def interact(lang, attempt_id):
         'contraindications': current_node.get('contraindications', [])
     }
     
-    return render_template(
+    # Выбираем шаблон в зависимости от устройства
+    template = get_template_for_device(
         "virtual_patient/interact.html",
+        "mobile/virtual_patient/virtual_patient_mobile_interact.html"
+    )
+    
+    # Сохраняем attempt_id в сессию для мобильной версии
+    session['current_attempt_id'] = attempt.id
+    
+    return render_template(
+        template,
         scenario_model_obj=scenario_model,
         attempt=attempt,
         scenario_data_for_lang=scenario_data_for_lang, 
@@ -406,7 +431,8 @@ def interact(lang, attempt_id):
         history=history,
         is_final=is_final,
         dentist_notes=dentist_notes,
-        clinical_context=clinical_context
+        clinical_context=clinical_context,
+        current_language=getattr(g, 'lang', DEFAULT_LANGUAGE)
     )
 
 # !! ВАЖНО: Убедитесь, что у вас только ОДНА функция results !!
@@ -480,68 +506,101 @@ def results(lang, attempt_id): # Это единственная функция 
             'scenarios_completed': stats.total_scenarios_completed,
             'average_score': stats.average_score_percentage
         }
-    except Exception as e:
-        current_app.logger.error(f"Error getting gamification data: {e}")
+
+    except ImportError:
+        current_app.logger.warning("Gamification engine not available")
         gamification_data = {
             'current_level': 1,
             'total_xp': 0,
             'points_to_next_level': 100,
-            'scenarios_completed': 0,
-            'average_score': 0
+            'scenarios_completed': 1,
+            'average_score': percentage_score
         }
-    # === КОНЕЦ ДОБАВЛЕНИЯ (Шаг 7.1) ===
+    except Exception as e:
+        current_app.logger.error(f"Error loading gamification data: {e}")
+        gamification_data = {
+            'current_level': 1,
+            'total_xp': 0,
+            'points_to_next_level': 100,
+            'scenarios_completed': 1,
+            'average_score': percentage_score
+        }
+
+    # Выбираем шаблон в зависимости от устройства
+    template = get_template_for_device(
+        "virtual_patient/results.html",
+        "mobile/virtual_patient/virtual_patient_mobile_results.html"
+    )
 
     return render_template(
-        "virtual_patient/results.html",
+        template,
         attempt=attempt,
-        scenario=scenario_model,  
-        # scenario_model_obj=scenario_model, # Это дублирует 'scenario', можно убрать если не используется иначе
+        scenario_model=scenario_model,
         scenario_data_for_lang=scenario_data_for_lang,
         global_patient_info=global_patient_info,
         history=history,
         result_display=result_display,
-        title=_("Scenario Results"),
-        # Существующие функции аналитики
+        gamification_data=gamification_data,
         calculate_empathy_score=calculate_empathy_score,
         calculate_clinical_score=calculate_clinical_score,
         calculate_communication_score=calculate_communication_score,
-        calculate_efficiency_score=calculate_efficiency_score,
-        calculate_decision_quality_score=calculate_decision_quality_score,
-        generate_recommendations=generate_recommendations,
-        # Новые добавления для геймификации (Шаги 7.1 и 7.3)
-        gamification_data=gamification_data,
         calculate_base_experience_points=calculate_base_experience_points
     )
 
 @virtual_patient_bp.route("/api/select_option", methods=["POST"])
 @login_required
 def select_option(lang):
-    data = request.get_json()
-    attempt_id = data.get("attempt_id")
-    option_index = data.get("option_index")
+    # Проверяем тип запроса - JSON или FormData
+    if request.is_json:
+        data = request.get_json()
+        attempt_id = data.get("attempt_id")
+        option_index = data.get("option_index")
+    else:
+        # FormData для мобильной версии
+        attempt_id = session.get('current_attempt_id')  # Получаем из сессии
+        option_index = request.form.get("selected_option")
 
     if not attempt_id or option_index is None:
-        return jsonify({"status": "error", "message": "Missing required data"}), 400
+        if request.is_json:
+            return jsonify({"status": "error", "message": "Missing required data"}), 400
+        else:
+            flash(_("Missing required data"), "error")
+            return redirect(url_for('.scenarios_list', lang=lang))
 
     try:
         attempt_id = int(attempt_id)
         option_index = int(option_index)
     except ValueError:
-        return jsonify({"status": "error", "message": "Invalid data format"}), 400
+        if request.is_json:
+            return jsonify({"status": "error", "message": "Invalid data format"}), 400
+        else:
+            flash(_("Invalid data format"), "error")
+            return redirect(url_for('.scenarios_list', lang=lang))
 
     attempt = VirtualPatientAttempt.query.get_or_404(attempt_id)
     if attempt.user_id != current_user.id:
-        return jsonify({"status": "error", "message": "Access denied"}), 403
+        if request.is_json:
+            return jsonify({"status": "error", "message": "Access denied"}), 403
+        else:
+            flash(_("Access denied"), "error")
+            return redirect(url_for('.scenarios_list', lang=lang))
 
     if attempt.completed:
-        return jsonify({"status": "error", "message": "Attempt already completed"}), 400
+        if request.is_json:
+            return jsonify({"status": "error", "message": "Attempt already completed"}), 400
+        else:
+            return redirect(url_for('.results', lang=lang, attempt_id=attempt.id))
 
     scenario_model = attempt.scenario
     try:
         history = json.loads(attempt.dialogue_history) if attempt.dialogue_history else {"nodes": ["start"], "score": 0, "decisions": []}
         current_node_id = history.get("nodes", ["start"])[-1]
     except (json.JSONDecodeError, KeyError):
-        return jsonify({"status": "error", "message": "Error parsing dialogue history"}), 500
+        if request.is_json:
+            return jsonify({"status": "error", "message": "Error parsing dialogue history"}), 500
+        else:
+            flash(_("Error parsing dialogue history"), "error")
+            return redirect(url_for('.scenarios_list', lang=lang))
 
     scenario_data_for_lang = {}
     try:
@@ -562,7 +621,11 @@ def select_option(lang):
     current_node = find_current_node(scenario_data_for_lang, current_node_id, history)
 
     if not current_node or 'options' not in current_node or option_index >= len(current_node["options"]):
-        return jsonify({"status": "error", "message": "Invalid option or node structure"}), 400
+        if request.is_json:
+            return jsonify({"status": "error", "message": "Invalid option or node structure"}), 400
+        else:
+            flash(_("Invalid option or node structure"), "error")
+            return redirect(url_for('.scenarios_list', lang=lang))
 
     selected_option = current_node["options"][option_index]
     score_change = selected_option.get("score", 0)
@@ -613,17 +676,23 @@ def select_option(lang):
         except Exception as e:
             current_app.logger.error(f"Ошибка геймификации в select_option: {e}", exc_info=True)
 
-
     db.session.commit()
 
-    return jsonify({
-        "status": "success",
-        "score": attempt.score,
-        "score_change": score_change,
-        "is_final": is_final,
-        "next_url": url_for('.results', lang=lang, attempt_id=attempt.id) if is_final else None,
-        "feedback_text": selected_option.get("feedback")
-    })
+    if request.is_json:
+        return jsonify({
+            "status": "success",
+            "score": attempt.score,
+            "score_change": score_change,
+            "is_final": is_final,
+            "next_url": url_for('.results', lang=lang, attempt_id=attempt.id) if is_final else None,
+            "feedback_text": selected_option.get("feedback")
+        })
+    else:
+        # Для мобильной версии - перенаправляем на следующую страницу
+        if is_final:
+            return redirect(url_for('.results', lang=lang, attempt_id=attempt.id))
+        else:
+            return redirect(url_for('.interact', lang=lang, attempt_id=attempt.id))
 
 @virtual_patient_bp.route("/achievements")
 @login_required

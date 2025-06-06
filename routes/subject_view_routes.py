@@ -209,11 +209,11 @@ def view_subject(lang, subject_id):
         for subject in all_subjects:
             try:
                 # Получаем все модули предмета
-                subject_modules = Module.query.filter_by(subject_id=subject.id).all()
+                current_subject_modules = Module.query.filter_by(subject_id=subject.id).all()
                 total_lessons = 0
                 completed_lessons = 0
                 
-                for module in subject_modules:
+                for module in current_subject_modules:
                     module_stats = get_module_stats(module.id, current_user.id)
                     total_lessons += module_stats.get("total_lessons", 0)
                     completed_lessons += module_stats.get("completed_lessons", 0)
@@ -656,3 +656,128 @@ def force_mobile_subject(lang, subject_id):
         current_app.logger.error(f"Ошибка в force_mobile_subject (ID: {subject_id}): {e}", exc_info=True)
         flash(t("error_occurred_loading_data") + ": " + str(e), "danger")
         return redirect(url_for('main_bp.index', lang=current_lang))
+
+# Добавьте этот отладочный маршрут в subject_view_routes.py
+
+@subject_view_bp.route("/debug/<int:subject_id>")
+@login_required
+def debug_view_subject(lang, subject_id):
+    """Отладка загрузки данных для view_subject"""
+    try:
+        html = [f"<h1>🔍 Отладка view_subject для ID: {subject_id}</h1>"]
+        
+        # 1. Проверяем предмет
+        selected_subject = Subject.query.get(subject_id)
+        if not selected_subject:
+            return f"<h1>❌ Subject с ID {subject_id} не найден!</h1>"
+        
+        html.append(f"""
+        <h2>1. Предмет</h2>
+        <ul>
+            <li><strong>ID:</strong> {selected_subject.id}</li>
+            <li><strong>Название:</strong> {selected_subject.name}</li>
+            <li><strong>Learning Path ID:</strong> {selected_subject.learning_path_id}</li>
+            <li><strong>Описание:</strong> {getattr(selected_subject, 'description', 'Нет описания')}</li>
+        </ul>
+        """)
+        
+        # 2. Проверяем загрузку модулей
+        html.append("<h2>2. Загрузка модулей</h2>")
+        
+        # Точно такой же запрос как в view_subject
+        subject_modules = Module.query.filter_by(subject_id=subject_id).order_by(Module.order).all()
+        
+        html.append(f"<p><strong>Найдено модулей:</strong> {len(subject_modules)}</p>")
+        
+        if subject_modules:
+            html.append("<h3>Детали модулей:</h3>")
+            for i, module in enumerate(subject_modules):
+                # Получаем статистику модуля
+                try:
+                    module_stats = get_module_stats(module.id, current_user.id)
+                    
+                    html.append(f"""
+                    <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                        <h4>Модуль {i+1}: {module.title}</h4>
+                        <ul>
+                            <li><strong>ID:</strong> {module.id}</li>
+                            <li><strong>Title:</strong> {module.title}</li>
+                            <li><strong>Order:</strong> {getattr(module, 'order', 'Не установлен')}</li>
+                            <li><strong>Subject ID:</strong> {module.subject_id}</li>
+                            <li><strong>Description:</strong> {getattr(module, 'description', 'Нет описания')}</li>
+                            <li><strong>Is Premium:</strong> {getattr(module, 'is_premium', False)}</li>
+                        </ul>
+                        
+                        <h5>Статистика модуля:</h5>
+                        <ul>
+                            <li><strong>Progress:</strong> {module_stats.get('progress', 0)}%</li>
+                            <li><strong>Completed Lessons:</strong> {module_stats.get('completed_lessons', 0)}</li>
+                            <li><strong>Total Lessons:</strong> {module_stats.get('total_lessons', 0)}</li>
+                        </ul>
+                        
+                        <h5>Уроки в модуле:</h5>
+                        <ul>
+                    """)
+                    
+                    module_lessons = Lesson.query.filter_by(module_id=module.id).all()
+                    for lesson in module_lessons[:5]:  # Показываем первые 5
+                        html.append(f"<li>{lesson.title}</li>")
+                    
+                    if len(module_lessons) > 5:
+                        html.append(f"<li>... и еще {len(module_lessons) - 5} уроков</li>")
+                    
+                    html.append("</ul></div>")
+                    
+                except Exception as e:
+                    html.append(f"<p style='color: red;'>Ошибка получения статистики модуля: {e}</p>")
+        else:
+            html.append("<p style='color: red;'>❌ <strong>ПРОБЛЕМА: Модули не найдены!</strong></p>")
+            
+            # Проверяем есть ли модули в БД для этого предмета
+            all_modules = Module.query.all()
+            html.append(f"<p>Всего модулей в БД: {len(all_modules)}</p>")
+            
+            if all_modules:
+                html.append("<h4>Все модули в БД:</h4><ul>")
+                for module in all_modules:
+                    html.append(f"<li>ID: {module.id}, Title: {module.title}, Subject ID: {module.subject_id}</li>")
+                html.append("</ul>")
+                
+                # Проверяем есть ли модули с правильным subject_id
+                matching_modules = [m for m in all_modules if m.subject_id == subject_id]
+                html.append(f"<p style='color: blue;'>Модулей с subject_id={subject_id}: {len(matching_modules)}</p>")
+        
+        # 3. Тест шаблона
+        html.append("<h2>3. Тест передачи данных в шаблон</h2>")
+        
+        template_data = {
+            'selected_subject': selected_subject,
+            'subject_modules': subject_modules,
+            'user': current_user,
+            'has_subscription': current_user.has_subscription
+        }
+        
+        html.append(f"""
+        <h4>Данные для шаблона:</h4>
+        <ul>
+            <li><strong>selected_subject:</strong> {template_data['selected_subject'].name if template_data['selected_subject'] else 'None'}</li>
+            <li><strong>subject_modules:</strong> {len(template_data['subject_modules'])} модулей</li>
+            <li><strong>user:</strong> {template_data['user'].username if template_data['user'] else 'None'}</li>
+            <li><strong>has_subscription:</strong> {template_data['has_subscription']}</li>
+        </ul>
+        """)
+        
+        # 4. Ссылки для тестирования
+        html.append(f"""
+        <h2>4. Тестирование</h2>
+        <p><a href="{url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_id)}" 
+              style="background: blue; color: white; padding: 10px; text-decoration: none;">
+            🎯 Открыть оригинальную страницу предмета
+        </a></p>
+        """)
+        
+        return "".join(html)
+        
+    except Exception as e:
+        import traceback
+        return f"<h1>❌ Ошибка отладки</h1><p>{str(e)}</p><pre>{traceback.format_exc()}</pre>"    

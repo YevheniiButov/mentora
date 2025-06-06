@@ -1,0 +1,323 @@
+/* ===== DENTAL ACADEMY MOBILE APP STYLES ===== */
+/* Базовые стили для всех мобильных страниц */
+
+:root {
+    --primary: #3ECDC1;
+    --primary-dark: #2BB6AC;
+    --secondary: #667eea;
+    --accent: #764ba2;
+    --success: #4ade80;
+    --warning: #facc15;
+    --error: #ef4444;
+    
+    --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3ECDC1 100%);
+    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    --shadow-soft: 0 10px 40px rgba(0,0,0,0.1);
+    --shadow-strong: 0 20px 60px rgba(0,0,0,0.15);
+    
+    --header-height: 70px;
+    --nav-height: 70px;
+    --border-radius: 16px;
+    --border-radius-small: 12px;
+}
+
+/* ===== БАЗОВЫЕ СТИЛИ ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--gradient-hero);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* ===== МОБИЛЬНЫЕ КАРТОЧКИ ===== */
+.mobile-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.mobile-card:hover,
+.mobile-card:active {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-strong);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.mobile-card.subject-card {
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+.mobile-card.completed {
+    border-color: rgba(76, 222, 128, 0.4);
+    background: linear-gradient(145deg, rgba(76, 222, 128, 0.1), rgba(76, 222, 128, 0.05));
+}
+
+.mobile-card.in-progress {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: linear-gradient(145deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
+}
+
+.mobile-card.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ===== ПРОГРЕСС БАРЫ ===== */
+.mobile-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.mobile-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    border-radius: 4px;
+    transition: width 0.8s ease-out;
+    position: relative;
+}
+
+.mobile-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* ===== СТАТИСТИКА ВИДЖЕТЫ ===== */
+.mobile-stats-widget {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.stat-item {
+    flex: 1;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-small);
+    padding: 1rem 0.5rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 0.25rem;
+}
+
+/* ===== КНОПКИ ===== */
+.mobile-action-button {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border: none;
+    border-radius: var(--border-radius-small);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    min-height: 44px;
+}
+
+.mobile-action-button:hover,
+.mobile-action-button:active {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
+}
+
+.mobile-action-button.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mobile-action-button.danger {
+    background: linear-gradient(135deg, var(--error), #dc2626);
+}
+
+/* ===== НАВИГАЦИОННЫЕ ТАБЫ ===== */
+.mobile-nav-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-small);
+    padding: 0.25rem;
+    margin: 1rem 0;
+}
+
+.nav-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    padding: 0.75rem;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.nav-tab.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ===== ПОИСК И ФИЛЬТРЫ ===== */
+.mobile-search-section {
+    margin: 1rem 0;
+}
+
+.mobile-search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-small);
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    color: white;
+    font-size: 1rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+}
+
+.mobile-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.1rem;
+}
+
+.mobile-filter-chips {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    color: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.filter-chip.active {
+    background: rgba(62, 205, 193, 0.3);
+    border-color: var(--primary);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 360px) {
+    .mobile-card {
+        padding: 1rem;
+    }
+    
+    .mobile-stats-widget {
+        gap: 0.5rem;
+    }
+    
+    .stat-item {
+        padding: 0.75rem 0.25rem;
+    }
+    
+    .mobile-action-button {
+        padding: 0.625rem 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* ===== ТЕМНАЯ ТЕМА ===== */
+[data-theme="dark"] {
+    --gradient-hero: linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%);
+}
+
+[data-theme="dark"] .mobile-card {
+    background: rgba(31, 41, 55, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .mobile-search-input {
+    background: rgba(31, 41, 55, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== АНИМАЦИИ ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.fade-in-up:nth-child(2) { animation-delay: 0.1s; }
+.fade-in-up:nth-child(3) { animation-delay: 0.2s; }
+.fade-in-up:nth-child(4) { animation-delay: 0.3s; }
+.fade-in-up:nth-child(5) { animation-delay: 0.4s; } 

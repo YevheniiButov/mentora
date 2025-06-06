@@ -29,13 +29,14 @@ from routes.admin_routes import admin_bp
 from routes.forum_routes import forum_bp
 from routes.virtual_patient_routes import virtual_patient_bp
 from routes.api_routes import api_bp
-from routes.lesson_routes import lesson_bp
+from routes.learn_bp import lesson_bp as learning_bp
 from routes.tests_routes import tests_bp
 from routes.learning_map_routes import learning_map_bp
 from routes.dashboard_routes import dashboard_bp
 from routes.modules_routes import modules_bp
 from routes.subject_view_routes import subject_view_bp
 from routes.mobile_routes import mobile_bp
+from routes.ai_routes import ai_bp
 
 # Настройка логирования
 logging.basicConfig(
@@ -662,177 +663,72 @@ def create_app(test_config=None):
         print(f"\n🎉 Total updated lessons: {total_updated}")
     
     @app.cli.command()
-    def update_subtopics():
-        """Обновляет поля subtopic и subtopic_slug у всех уроков"""
-        print("🔄 Updating subtopics in all lessons...")
-        
-        # Импортируем необходимые функции
-        import re
-        import json
-        
-        def create_slug(text):
-            """Создаёт унифицированный слаг из текста"""
-            if not text:
-                return ""
-            return re.sub(r'[^a-z0-9]+', '_', text.lower()).strip('_')
-        
-        # Получаем все уроки
-        lessons = Lesson.query.all()
-        stats = {
-            'total': len(lessons),
-            'updated': 0,
-            'skipped': 0,
-            'errors': 0,
-            'subtopics': {}
-        }
-        
-        # Словарь для определения порядка внутри подтем
-        subtopic_counters = {}
-        
-        for lesson in lessons:
-            try:
-                # Извлекаем module_title из контента
-                if not lesson.content:
-                    print(f"⚠️ Lesson {lesson.id} has no content")
-                    stats['skipped'] += 1
-                    continue
-                    
-                content_data = json.loads(lesson.content)
-                module_title = None
-                
-                # Проверяем различные структуры данных
-                if 'module_title' in content_data:
-                    module_title = content_data.get('module_title')
-                elif 'type' in content_data and content_data.get('type') in ['learning', 'test']:
-                    module_title = content_data.get('module_title')
-                elif 'cards' in content_data and content_data['cards']:
-                    for card in content_data['cards']:
-                        if 'module_title' in card:
-                            module_title = card.get('module_title')
-                            break
-                elif 'questions' in content_data and content_data['questions']:
-                    for question in content_data['questions']:
-                        if 'module_title' in question:
-                            module_title = question.get('module_title')
-                            break
-                
-                if not module_title:
-                    print(f"⚠️ Lesson {lesson.id} has no module_title")
-                    stats['skipped'] += 1
-                    continue
-                    
-                # Формируем слаг
-                slug = create_slug(module_title)
-                
-                # Определяем порядок внутри подтемы
-                if slug not in subtopic_counters:
-                    subtopic_counters[slug] = 0
-                subtopic_counters[slug] += 1
-                
-                # Обновляем поля
-                lesson.subtopic = module_title
-                lesson.subtopic_slug = slug
-                lesson.subtopic_order = subtopic_counters[slug]
-                
-                # Обновляем статистику
-                stats['updated'] += 1
-                if slug not in stats['subtopics']:
-                    stats['subtopics'][slug] = {
-                        'name': module_title,
-                        'count': 0
-                    }
-                stats['subtopics'][slug]['count'] += 1
-                    
-            except Exception as e:
-                print(f"❌ Error updating lesson {lesson.id}: {e}")
-                stats['errors'] += 1
-        
-        # Сохраняем изменения
-        db.session.commit()
-        
-        print(f"✅ Updated {stats['updated']} of {stats['total']} lessons with subtopic information")
-        print(f"⚠️ Skipped: {stats['skipped']} | ❌ Errors: {stats['errors']}")
-        
-        print("\n📊 Found subtopics:")
-        for slug, data in stats['subtopics'].items():
-            print(f"   - '{data['name']}' ({slug}): {data['count']} lessons")
-            
-    @app.cli.command()
     def reorder_subtopics():
-        """Переупорядочивает уроки в подтемах, чередуя карточки и тесты"""
-        print("🔄 Reordering lessons in all subtopics...")
+        """Переупорядочивает уроки в определенной подтеме"""
+        from utils.subtopics import reorder_subtopic_lessons
         
-        # Получаем все уникальные подтемы с уроками
+        print("📋 Available subtopics:")
         subtopics = db.session.query(
             Lesson.subtopic,
-            Lesson.subtopic_slug
+            Lesson.subtopic_slug,
+            db.func.count(Lesson.id).label('total_lessons')
         ).filter(
-            Lesson.subtopic.isnot(None),
-            Lesson.subtopic_slug.isnot(None)
-        ).distinct().all()
+            Lesson.subtopic.isnot(None)
+        ).group_by(
+            Lesson.subtopic,
+            Lesson.subtopic_slug
+        ).all()
         
-        total_updated = 0
+        for i, (name, slug, count) in enumerate(subtopics, 1):
+            print(f"{i:2}. {name} ({slug}) - {count} lessons")
         
-        for subtopic_name, subtopic_slug in subtopics:
-            print(f"   - Reordering subtopic: '{subtopic_name}'")
+        choice = input("\nChoose subtopic number (or 'q' to quit): ").strip()
+        
+        if choice.lower() == 'q':
+            print("❌ Operation cancelled")
+            return
             
-            # Получаем все уроки подтемы
-            lessons = Lesson.query.filter_by(
-                subtopic_slug=subtopic_slug
-            ).all()
-            
-            # Разделяем на карточки и тесты
-            learning_cards = [l for l in lessons if l.content_type == 'learning_card']
-            tests = [l for l in lessons if l.content_type in ['quiz', 'test_question']]
-            
-            # Сортируем по имеющемуся порядку
-            learning_cards.sort(key=lambda x: x.order or 0)
-            tests.sort(key=lambda x: x.order or 0)
-            
-            # Чередуем карточки и тесты (2 карточки, 1 тест)
-            new_order = []
-            cards_index = 0
-            tests_index = 0
-            
-            # Берем по 2 карточки, затем 1 тест
-            while cards_index < len(learning_cards) or tests_index < len(tests):
-                # Добавляем до 2 карточек
-                for _ in range(2):
-                    if cards_index < len(learning_cards):
-                        new_order.append(learning_cards[cards_index])
-                        cards_index += 1
+        try:
+            index = int(choice) - 1
+            if 0 <= index < len(subtopics):
+                selected_name, selected_slug, _ = subtopics[index]
+                print(f"\n🔄 Reordering subtopic: {selected_name}")
                 
-                # Добавляем 1 тест
-                if tests_index < len(tests):
-                    new_order.append(tests[tests_index])
-                    tests_index += 1
-            
-            # Обновляем порядок
-            for i, lesson in enumerate(new_order):
-                lesson.subtopic_order = i + 1
-                total_updated += 1
-            
-            print(f"     ✅ Updated {len(new_order)} lessons")
-        
-        # Сохраняем изменения
-        db.session.commit()
-        
-        print(f"\n🎉 Total updated lessons: {total_updated}")
+                result = reorder_subtopic_lessons(selected_slug)
+                
+                if result['success']:
+                    print(f"✅ Successfully reordered {result['reordered_count']} lessons")
+                    if result['warnings']:
+                        print("\n⚠️ Warnings:")
+                        for warning in result['warnings']:
+                            print(f"   - {warning}")
+                else:
+                    print(f"❌ Error: {result['error']}")
+            else:
+                print("❌ Invalid choice")
+        except ValueError:
+            print("❌ Please enter a valid number")
 
-    # Регистрация Blueprint'ов
-    app.register_blueprint(main_bp)
+    # Регистрация остальных маршрутов
     app.register_blueprint(auth_bp)
-    app.register_blueprint(virtual_patient_bp)
-    app.register_blueprint(lesson_bp)
-    app.register_blueprint(forum_bp)  
+    app.register_blueprint(main_bp)
+    
+    # Условная регистрация blueprint'ов
+    if learning_bp:
+        app.register_blueprint(learning_bp)
+    
     app.register_blueprint(admin_bp)
-    app.register_blueprint(api_bp)
-    app.register_blueprint(tests_bp, url_prefix='/<string:lang>/tests')
+    app.register_blueprint(forum_bp)
+    
+    app.register_blueprint(tests_bp)
     app.register_blueprint(learning_map_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(modules_bp)  
     app.register_blueprint(subject_view_bp)
     app.register_blueprint(mobile_bp)
+    app.register_blueprint(ai_bp)
+    app.register_blueprint(virtual_patient_bp)
+    app.register_blueprint(api_bp)
 
     # Инициализация мобильной интеграции
     init_mobile_integration(app)
@@ -936,13 +832,34 @@ def create_app(test_config=None):
     # Страница 404
     @app.errorhandler(404)
     def page_not_found(e):
-        return render_template('404.html'), 404
+        from utils.mobile_detection import get_mobile_detector
+        detector = get_mobile_detector()
+        
+        # Получаем язык из g или сессии
+        lang = getattr(g, 'lang', session.get('lang', app.config.get('DEFAULT_LANGUAGE', 'en')))
+        g.current_language = lang  # Для совместимости с шаблонами
+        
+        if detector.is_mobile_device:
+            return render_template('mobile/404.html', current_language=lang), 404
+        else:
+            return render_template('404.html', current_language=lang), 404
     
     # Страница 500
     @app.errorhandler(500)
     def internal_error(e):
+        from utils.mobile_detection import get_mobile_detector
+        detector = get_mobile_detector()
+        
+        # Получаем язык из g или сессии
+        lang = getattr(g, 'lang', session.get('lang', app.config.get('DEFAULT_LANGUAGE', 'en')))
+        g.current_language = lang  # Для совместимости с шаблонами
+        
         db.session.rollback()
-        return render_template('500.html'), 500
+        
+        if detector.is_mobile_device:
+            return render_template('mobile/500.html', current_language=lang), 500
+        else:
+            return render_template('500.html', current_language=lang), 500
     
     # Редирект на страницу с языком по умолчанию из корня
     @app.route('/')
@@ -959,6 +876,14 @@ def create_app(test_config=None):
             logger.info("✅ Database tables created successfully")
         except Exception as e:
             logger.error(f"❌ Error creating database tables: {e}")
+
+    print("="*50)
+    print("🌐 Starting Flask development server...")
+    print("💡 Available CLI commands:")
+    print("   - flask import-content  : Import JSON files to database")
+    print("   - flask clear-content   : Clear all imported content")
+    print("   - flask show-modules    : Show all modules in database")
+    print("="*50 + "\n")
 
     return app
 

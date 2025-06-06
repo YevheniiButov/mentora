@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    
+    <title>{% if current_language == 'ru' %}Результаты{% elif current_language == 'nl' %}Resultaten{% else %}Results{% endif %} - {{ scenario_model_obj.title }} - Dental Academy</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .mobile-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 100%;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .header-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            flex: 1;
+            text-align: center;
+            margin: 0 1rem;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .patient-summary {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .patient-avatar-result {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .patient-avatar-result::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .completion-icon {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            border: 3px solid white;
+            animation: successPulse 2s infinite;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .score-circle-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .score-circle {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .score-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 10;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dasharray 2s ease-in-out;
+        }
+
+        .progress-bar.excellent {
+            stroke: url(#gradientExcellent);
+        }
+
+        .progress-bar.good {
+            stroke: url(#gradientGood);
+        }
+
+        .progress-bar.needs-improvement {
+            stroke: url(#gradientWarning);
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .metric-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .performance-breakdown {
+            margin: 2rem 0;
+        }
+
+        .performance-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .competency-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .competency-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .competency-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .competency-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .competency-icon.empathy {
+            background: linear-gradient(135deg, #ff6b9d, #ff8a80);
+        }
+
+        .competency-icon.clinical {
+            background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+        }
+
+        .competency-icon.communication {
+            background: linear-gradient(135deg, #81c784, #66bb6a);
+        }
+
+        .competency-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .competency-score {
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+
+        .decision-timeline {
+            margin: 2rem 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .timeline-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-score {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .timeline-score.positive {
+            color: #4caf50;
+        }
+
+        .timeline-score.negative {
+            color: #f44336;
+        }
+
+        .xp-rewards {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 193, 7, 0.2));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .xp-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .xp-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+
+        .level-progress {
+            margin-top: 1rem;
+        }
+
+        .level-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .level-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            transition: width 2s ease;
+        }
+
+        .level-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.retry {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+        }
+
+        .celebration-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .particle {
+            position: absolute;
+            font-size: 1.5rem;
+            animation: float 3s ease-out forwards;
+        }
+
+        @keyframes float {
+            0% {
+                opacity: 1;
+                transform: translateY(100vh) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px) rotate(360deg);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .glass-card {
+                padding: 1.5rem;
+            }
+            
+            .score-circle {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .score-value {
+                font-size: 2rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Celebration Particles -->
+    <div class="celebration-particles" id="particles"></div>
+
+    <!-- SVG Gradients -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <linearGradient id="gradientExcellent" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#ffd700;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#ffed4e;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="gradientGood" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#28a745;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#20c997;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="gradientWarning" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#ffc107;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#fd7e14;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="header-content">
+            <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language) }}" class="back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="header-title">
+                {% if current_language == 'ru' %}Результаты
+                {% elif current_language == 'nl' %}Resultaten
+                {% else %}Results
+                {% endif %}
+            </h1>
+            <div style="width: 44px;"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% set percentage = (attempt.score / scenario_model.max_score * 100) | int if scenario_model.max_score > 0 else 0 %}
+        {% set performance_level = 'excellent' if percentage >= 80 else ('good' if percentage >= 60 else 'needs-improvement') %}
+
+        <!-- Patient Summary -->
+        <div class="glass-card fade-in">
+            <div class="patient-summary">
+                <div class="patient-avatar-result">
+                    {% if scenario_model.title %}
+                        {{ scenario_model.title[0] }}
+                    {% else %}
+                        👤
+                    {% endif %}
+                    <div class="completion-icon">
+                        <i class="bi bi-check"></i>
+                    </div>
+                </div>
+                <h2 style="margin-bottom: 0.5rem;">
+                    {% if current_language == 'ru' %}Консультация завершена
+                    {% elif current_language == 'nl' %}Consultatie voltooid
+                    {% else %}Consultation Complete
+                    {% endif %}
+                </h2>
+                <p style="opacity: 0.9;">{{ scenario_data_for_lang.get('patient_info', {}).get('name', scenario_model.title) }}</p>
+            </div>
+
+            <!-- Score Circle -->
+            <div class="score-circle-container delay-1 fade-in">
+                <div class="score-circle">
+                    <svg>
+                        <circle class="progress-bg" cx="90" cy="90" r="80"></circle>
+                        <circle class="progress-bar {{ performance_level }}" cx="90" cy="90" r="80" 
+                                stroke-dasharray="0 502.4" id="progressCircle"></circle>
+                    </svg>
+                    <div class="score-text">
+                        <div class="score-value" id="scoreValue">0</div>
+                        <div class="score-label">
+                            {% if current_language == 'ru' %}из {{ scenario_model.max_score }}
+                            {% elif current_language == 'nl' %}van {{ scenario_model.max_score }}
+                            {% else %}of {{ scenario_model.max_score }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Message -->
+            <div style="text-align: center; margin: 1.5rem 0;">
+                {% if performance_level == 'excellent' %}
+                    <h3 style="color: #ffd700; margin-bottom: 0.5rem;">
+                        {% if current_language == 'ru' %}🏆 Превосходно!
+                        {% elif current_language == 'nl' %}🏆 Uitstekend!
+                        {% else %}🏆 Excellent!
+                        {% endif %}
+                    </h3>
+                    <p>
+                        {% if current_language == 'ru' %}
+                        Вы продемонстрировали отличные клинические навыки и профессиональный подход к пациенту.
+                        {% elif current_language == 'nl' %}
+                        Je hebt uitstekende klinische vaardigheden en een professionele benadering van de patiënt getoond.
+                        {% else %}
+                        You demonstrated excellent clinical skills and professional patient approach.
+                        {% endif %}
+                    </p>
+                {% elif performance_level == 'good' %}
+                    <h3 style="color: #28a745; margin-bottom: 0.5rem;">
+                        {% if current_language == 'ru' %}👍 Хорошо!
+                        {% elif current_language == 'nl' %}👍 Goed gedaan!
+                        {% else %}👍 Well Done!
+                        {% endif %}
+                    </h3>
+                    <p>
+                        {% if current_language == 'ru' %}
+                        Вы справились с большинством клинических ситуаций. Есть возможности для улучшения.
+                        {% elif current_language == 'nl' %}
+                        Je hebt de meeste klinische situaties goed aangepakt. Er zijn mogelijkheden voor verbetering.
+                        {% else %}
+                        You handled most clinical situations well. There are opportunities for improvement.
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <h3 style="color: #ffc107; margin-bottom: 0.5rem;">
+                        {% if current_language == 'ru' %}💪 Можно лучше
+                        {% elif current_language == 'nl' %}💪 Kan beter
+                        {% else %}💪 Needs Improvement
+                        {% endif %}
+                    </h3>
+                    <p>
+                        {% if current_language == 'ru' %}
+                        Рекомендуем повторить материал и попробовать снова. Практика поможет улучшить навыки!
+                        {% elif current_language == 'nl' %}
+                        We raden aan het materiaal te herhalen en het opnieuw te proberen. Oefening helpt vaardigheden te verbeteren!
+                        {% else %}
+                        We recommend reviewing the material and trying again. Practice will help improve skills!
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid delay-2 fade-in">
+            <div class="metric-card">
+                <div class="metric-icon">📊</div>
+                <div class="metric-value">{{ percentage }}%</div>
+                <div class="metric-label">
+                    {% if current_language == 'ru' %}Точность
+                    {% elif current_language == 'nl' %}Nauwkeurigheid
+                    {% else %}Accuracy
+                    {% endif %}
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">⏱️</div>
+                <div class="metric-value">{{ history.decisions|length }}</div>
+                <div class="metric-label">
+                    {% if current_language == 'ru' %}Решений
+                    {% elif current_language == 'nl' %}Beslissingen
+                    {% else %}Decisions
+                    {% endif %}
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🎯</div>
+                <div class="metric-value">{{ attempt.score }}</div>
+                <div class="metric-label">
+                    {% if current_language == 'ru' %}Баллы
+                    {% elif current_language == 'nl' %}Punten
+                    {% else %}Points
+                    {% endif %}
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">⭐</div>
+                <div class="metric-value">{{ gamification_data.current_level if gamification_data else 1 }}</div>
+                <div class="metric-label">
+                    {% if current_language == 'ru' %}Уровень
+                    {% elif current_language == 'nl' %}Niveau
+                    {% else %}Level
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Breakdown -->
+        <div class="glass-card delay-3 fade-in">
+            <div class="performance-title">
+                {% if current_language == 'ru' %}Анализ компетенций
+                {% elif current_language == 'nl' %}Competentie-analyse
+                {% else %}Competency Analysis
+                {% endif %}
+            </div>
+            
+            <div class="competency-item">
+                <div class="competency-info">
+                    <div class="competency-icon empathy">❤️</div>
+                    <div class="competency-name">
+                        {% if current_language == 'ru' %}Эмпатия
+                        {% elif current_language == 'nl' %}Empathie
+                        {% else %}Empathy
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="competency-score">{{ calculate_empathy_score(history) }}</div>
+            </div>
+            
+            <div class="competency-item">
+                <div class="competency-info">
+                    <div class="competency-icon clinical">🔬</div>
+                    <div class="competency-name">
+                        {% if current_language == 'ru' %}Клинические навыки
+                        {% elif current_language == 'nl' %}Klinische vaardigheden
+                        {% else %}Clinical Skills
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="competency-score">{{ calculate_clinical_score(history) }}</div>
+            </div>
+            
+            <div class="competency-item">
+                <div class="competency-info">
+                    <div class="competency-icon communication">💬</div>
+                    <div class="competency-name">
+                        {% if current_language == 'ru' %}Коммуникация
+                        {% elif current_language == 'nl' %}Communicatie
+                        {% else %}Communication
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="competency-score">{{ calculate_communication_score(history) }}</div>
+            </div>
+        </div>
+
+        <!-- XP Rewards -->
+        {% if gamification_data %}
+        <div class="xp-rewards delay-4 fade-in">
+            <div class="xp-icon">🎉</div>
+            <div class="xp-amount">+{{ calculate_base_experience_points(percentage) }} XP</div>
+            <div>
+                {% if current_language == 'ru' %}Опыт получен!
+                {% elif current_language == 'nl' %}Ervaring opgedaan!
+                {% else %}Experience Gained!
+                {% endif %}
+            </div>
+            
+            <div class="level-progress">
+                <div class="level-bar">
+                    {% set progress_percentage = ((gamification_data.total_xp % 250) / 250 * 100) | int %}
+                    <div class="level-fill" style="width: 0%;" data-width="{{ progress_percentage }}%"></div>
+                </div>
+                <div class="level-text">
+                    {% if current_language == 'ru' %}
+                    Уровень {{ gamification_data.current_level }} • До следующего: {{ gamification_data.points_to_next_level }} XP
+                    {% elif current_language == 'nl' %}
+                    Niveau {{ gamification_data.current_level }} • Tot volgende: {{ gamification_data.points_to_next_level }} XP
+                    {% else %}
+                    Level {{ gamification_data.current_level }} • To next: {{ gamification_data.points_to_next_level }} XP
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Decision Timeline -->
+        <div class="glass-card delay-3 fade-in">
+            <div class="performance-title">
+                {% if current_language == 'ru' %}Принятые решения
+                {% elif current_language == 'nl' %}Genomen beslissingen
+                {% else %}Decisions Made
+                {% endif %}
+            </div>
+            
+            <div class="decision-timeline">
+                {% for decision in history.decisions %}
+                <div class="timeline-item">
+                    <div class="timeline-number">{{ loop.index }}</div>
+                    <div class="timeline-content">
+                        <div class="timeline-text">{{ decision.option_text }}</div>
+                        <div class="timeline-score {% if decision.score_awarded > 0 %}positive{% elif decision.score_awarded < 0 %}negative{% endif %}">
+                            {% if decision.score_awarded > 0 %}+{% endif %}{{ decision.score_awarded }} 
+                            {% if current_language == 'ru' %}баллов
+                            {% elif current_language == 'nl' %}punten
+                            {% else %}points
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons delay-4 fade-in">
+            <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language) }}" class="action-btn">
+                <i class="bi bi-list-ul"></i>
+                {% if current_language == 'ru' %}Другие пациенты
+                {% elif current_language == 'nl' %}Andere patiënten
+                {% else %}Other Patients
+                {% endif %}
+            </a>
+            
+            {% if percentage < 80 %}
+            <a href="{{ url_for('virtual_patient_bp.start_scenario', lang=current_language, scenario_id=scenario_model.id) }}" class="action-btn retry">
+                <i class="bi bi-arrow-repeat"></i>
+                {% if current_language == 'ru' %}Попробовать снова
+                {% elif current_language == 'nl' %}Probeer opnieuw
+                {% else %}Try Again
+                {% endif %}
+            </a>
+            {% endif %}
+            
+            <a href="{{ url_for('mobile.learning_map', lang=current_language) }}" class="action-btn secondary">
+                <i class="bi bi-map"></i>
+                {% if current_language == 'ru' %}Карта обучения
+                {% elif current_language == 'nl' %}Leerkaart
+                {% else %}Learning Map
+                {% endif %}
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Touch handling improvements
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        
+        // Prevent double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Animate elements on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const percentage = {{ percentage }};
+            const finalScore = {{ attempt.score }};
+            
+            // Animate score circle
+            setTimeout(() => {
+                const circle = document.getElementById('progressCircle');
+                const scoreValue = document.getElementById('scoreValue');
+                const circumference = 2 * Math.PI * 80;
+                
+                // Animate circle
+                const offset = circumference - (percentage / 100) * circumference;
+                circle.style.strokeDasharray = `${circumference - offset} ${circumference}`;
+                
+                // Animate score counter
+                let currentScore = 0;
+                const interval = setInterval(() => {
+                    currentScore++;
+                    scoreValue.textContent = currentScore;
+                    
+                    if (currentScore >= finalScore) {
+                        clearInterval(interval);
+                    }
+                }, 30);
+            }, 500);
+
+            // Animate XP progress bar
+            const levelFill = document.querySelector('.level-fill');
+            if (levelFill) {
+                setTimeout(() => {
+                    const targetWidth = levelFill.dataset.width;
+                    levelFill.style.width = targetWidth;
+                }, 1000);
+            }
+
+            // Create celebration particles for excellent performance
+            {% if performance_level == 'excellent' %}
+            setTimeout(() => {
+                createCelebrationParticles();
+            }, 1500);
+            {% endif %}
+
+            // Add haptic feedback
+            if (navigator.vibrate && {{ percentage }} >= 80) {
+                navigator.vibrate([200, 100, 200]);
+            }
+        });
+
+        function createCelebrationParticles() {
+            const container = document.getElementById('particles');
+            const emojis = ['🎉', '⭐', '🏆', '👏', '💯', '🎊'];
+            
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 4000);
+                }, i * 100);
+            }
+        }
+
+        // Animate timeline items on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateX(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(-30px)';
+            item.style.transition = 'all 0.5s ease-out';
+            observer.observe(item);
+        });
+    </script>
+</body>
+</html> 

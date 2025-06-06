@@ -3,7 +3,9 @@ from flask import (
     Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app
 )
 from flask_login import login_required, current_user
-from models import db, Question, UserProgress, ContentCategory
+from models import db, Question, UserProgress, ContentCategory, QuestionCategory
+import random
+from utils.mobile_detection import get_mobile_detector
 
 # Имя блюпринта изменено на "tests" (без "_bp")
 tests_bp = Blueprint("tests_bp", __name__, url_prefix="/<string:lang>/tests")
@@ -35,7 +37,14 @@ def before_request_tests():
 def inject_lang_tests():
     """Добавляет lang в контекст шаблонов этого блюпринта."""
     lang = getattr(g, 'lang', session.get('lang', DEFAULT_LANGUAGE))
-    return dict(lang=lang)
+    return dict(lang=lang, current_language=lang)
+
+def get_template_for_device(desktop_template, mobile_template):
+    """Возвращает подходящий шаблон для устройства."""
+    detector = get_mobile_detector()
+    if detector.is_mobile_device:
+        return mobile_template
+    return desktop_template
 
 # --- Страница НАСТРОЙКИ теста ---
 @tests_bp.route("/", methods=['GET'])
@@ -43,8 +52,10 @@ def inject_lang_tests():
 def setup_test(lang):
     current_lang = g.lang
     try:
-        # Получаем категории динамически из БД
-        distinct_categories = db.session.query(Question.category).distinct().all()
+        # Получаем категории динамически из БД через джойн
+        distinct_categories = db.session.query(QuestionCategory.name).join(
+            Question, Question.category_id == QuestionCategory.id
+        ).distinct().all()
         categories = sorted([cat[0] for cat in distinct_categories if cat[0]])
         if not categories:  # Если категории в БД не найдены, используем заглушку
             categories = ["Anatomy", "Ethics", "Physiology", "Pathology"]  # Пример
@@ -55,8 +66,14 @@ def setup_test(lang):
         categories = []
 
     test_lengths = [5, 10, 15, 20, 25]  # Пример
-    # Обновлен путь к шаблону
-    return render_template("tests/setup.html", categories=categories, test_lengths=test_lengths)
+    
+    # Выбираем шаблон в зависимости от устройства
+    template = get_template_for_device("tests/setup.html", "mobile/tests/test_mobile_system.html")
+    
+    return render_template(template, 
+                         categories=categories, 
+                         test_lengths=test_lengths,
+                         current_language=current_lang)
 
 # --- Маршрут для ЗАПУСКА теста ---
 @tests_bp.route("/start", methods=['POST'])
@@ -73,7 +90,10 @@ def start_custom_test(lang):
     try:
         query = Question.query
         if selected_category and selected_category != 'all':
-            query = query.filter(Question.category == selected_category)
+            # Фильтруем по названию категории через джойн
+            query = query.join(QuestionCategory, Question.category_id == QuestionCategory.id).filter(
+                QuestionCategory.name == selected_category
+            )
         all_matching_ids = [q.id for q in query.with_entities(Question.id).all()]
 
         if not all_matching_ids:
@@ -121,13 +141,19 @@ def take_test(lang):
         final_score = session.get("test_score", 0)
         session.pop("test_question_ids", None)
         session.pop("test_step", None)
-        session.pop("test_score", None)
+        test_score = session.pop("test_score", None)
         session.pop("test_total", None)
         session.pop("last_answered_step", None)
         session.pop("last_step_result", None)
         current_app.logger.info(f"Test finished. Score: {final_score}/{total}")
-        # Обновлен путь к шаблону
-        return render_template("tests/result.html", score=final_score, total=total)
+        
+        # Выбираем шаблон в зависимости от устройства
+        template = get_template_for_device("tests/result.html", "mobile/tests/test_mobile_result.html")
+        
+        return render_template(template, 
+                             score=final_score, 
+                             total=total,
+                             current_language=current_lang)
 
     current_question_id = question_ids[step]
     try:
@@ -166,8 +192,10 @@ def take_test(lang):
         if "already_answered_" in str(result):
             result = result.replace("already_answered_", "")
 
-    # Обновлен путь к шаблону и передаются дополнительные параметры
-    return render_template("tests/question.html", 
+    # Выбираем шаблон в зависимости от устройства
+    template = get_template_for_device("tests/question.html", "mobile/tests/test_mobile_question.html")
+    
+    return render_template(template, 
                            question=question, 
                            step=step, 
                            total=total, 
@@ -175,7 +203,8 @@ def take_test(lang):
                            correct_answer=correct_answer_text,
                            explanation=explanation,
                            options=options,
-                           submitted_answer=submitted_answer)
+                           submitted_answer=submitted_answer,
+                           current_language=current_lang)
 
 # --- Маршрут для перехода к СЛЕДУЮЩЕМУ вопросу ---
 @tests_bp.route("/next", methods=["POST"])

@@ -1,0 +1,373 @@
+{% extends "mobile_base.html" %}
+
+{% block title %}{% if current_language == 'ru' %}Система тестирования{% elif current_language == 'nl' %}Testsysteem{% else %}Test System{% endif %} - Dental Academy{% endblock %}
+
+{% block nav_items %}
+<a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+    <i class="bi bi-house"></i>
+    <span>Главная</span>
+</a>
+<a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+    <i class="bi bi-book"></i>
+    <span>Обучение</span>
+</a>
+<a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item active">
+    <i class="bi bi-clipboard-check"></i>
+    <span>Тесты</span>
+</a>
+<a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item">
+    <i class="bi bi-person-heart"></i>
+    <span>Пациенты</span>
+</a>
+<a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
+    <i class="fas fa-robot"></i>
+    <span>AI</span>
+</a>
+{% endblock %}
+
+{% block page_styles %}
+.test-setup-container {
+    padding: 1.5rem;
+}
+
+.welcome-text {
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.welcome-text h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-text p {
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.test-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.test-option-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.test-option-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    color: white;
+}
+
+.test-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.test-info {
+    flex: 1;
+}
+
+.test-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.test-description {
+    opacity: 0.8;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.setup-form {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.category-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.category-option {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    color: white;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.category-option:hover,
+.category-option.selected {
+    background: rgba(62, 205, 193, 0.3);
+    border-color: rgba(62, 205, 193, 0.5);
+    transform: translateY(-2px);
+}
+
+.length-selector {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.length-option {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 60px;
+    text-align: center;
+}
+
+.length-option:hover,
+.length-option.selected {
+    background: rgba(62, 205, 193, 0.3);
+    border-color: rgba(62, 205, 193, 0.5);
+}
+
+.start-test-btn {
+    background: linear-gradient(135deg, #3ECDC1, #44A08D);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.start-test-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(62, 205, 193, 0.3);
+}
+
+.start-test-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+{% endblock %}
+
+{% block header_left %}
+<a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="theme-toggle">
+    <i class="bi bi-arrow-left"></i>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="test-setup-container">
+    <div class="welcome-text">
+        <h1>
+            {% if current_language == 'ru' %}
+                Система тестирования
+            {% elif current_language == 'nl' %}
+                Testsysteem
+            {% else %}
+                Test System
+            {% endif %}
+        </h1>
+        <p>
+            {% if current_language == 'ru' %}
+                Выберите тип теста для проверки знаний
+            {% elif current_language == 'nl' %}
+                Kies het type test om uw kennis te controleren
+            {% else %}
+                Choose test type to check your knowledge
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Быстрые опции тестов -->
+    <div class="glass-card">
+        <div class="test-options">
+            <a href="{{ url_for('tests_bp.start_custom_test', lang=current_language or 'en') }}" 
+               class="test-option-btn" 
+               onclick="startQuickTest('all', 10); return false;">
+                <div class="test-icon">
+                    <i class="bi bi-lightning-fill"></i>
+                </div>
+                <div class="test-info">
+                    <div class="test-title">
+                        {% if current_language == 'ru' %}Быстрый тест{% elif current_language == 'nl' %}Snelle test{% else %}Quick Test{% endif %}
+                    </div>
+                    <div class="test-description">
+                        {% if current_language == 'ru' %}10 случайных вопросов{% elif current_language == 'nl' %}10 willekeurige vragen{% else %}10 random questions{% endif %}
+                    </div>
+                </div>
+                <i class="bi bi-chevron-right" style="opacity: 0.7;"></i>
+            </a>
+            
+            <a href="#" class="test-option-btn" onclick="showCustomSetup(); return false;">
+                <div class="test-icon">
+                    <i class="bi bi-gear-fill"></i>
+                </div>
+                <div class="test-info">
+                    <div class="test-title">
+                        {% if current_language == 'ru' %}Настраиваемый тест{% elif current_language == 'nl' %}Aangepaste test{% else %}Custom Test{% endif %}
+                    </div>
+                    <div class="test-description">
+                        {% if current_language == 'ru' %}Выберите категорию и количество вопросов{% elif current_language == 'nl' %}Kies categorie en aantal vragen{% else %}Choose category and number of questions{% endif %}
+                    </div>
+                </div>
+                <i class="bi bi-chevron-right" style="opacity: 0.7;"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Форма настройки теста -->
+    <div class="glass-card" id="customSetup" style="display: none;">
+        <form method="POST" action="{{ url_for('tests_bp.start_custom_test', lang=current_language or 'en') }}">
+            {{ csrf_token() }}
+            <div class="form-group">
+                <label class="form-label">
+                    {% if current_language == 'ru' %}Категория{% elif current_language == 'nl' %}Categorie{% else %}Category{% endif %}
+                </label>
+                <div class="category-options">
+                    <div class="category-option selected" data-category="all">
+                        {% if current_language == 'ru' %}Все{% elif current_language == 'nl' %}Alle{% else %}All{% endif %}
+                    </div>
+                    {% for category in categories %}
+                    <div class="category-option" data-category="{{ category }}">{{ category }}</div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="category" id="selectedCategory" value="all">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    {% if current_language == 'ru' %}Количество вопросов{% elif current_language == 'nl' %}Aantal vragen{% else %}Number of Questions{% endif %}
+                </label>
+                <div class="length-selector">
+                    {% for length in test_lengths %}
+                    <div class="length-option {% if length == 10 %}selected{% endif %}" data-length="{{ length }}">{{ length }}</div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="length" id="selectedLength" value="10">
+            </div>
+
+            <button type="submit" class="start-test-btn">
+                <i class="bi bi-play-fill"></i>
+                {% if current_language == 'ru' %}Начать тест{% elif current_language == 'nl' %}Test starten{% else %}Start Test{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showCustomSetup() {
+    document.getElementById('customSetup').style.display = 'block';
+    document.querySelector('.test-option-btn[onclick*="showCustomSetup"]').style.opacity = '0.7';
+}
+
+function startQuickTest(category, length) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('tests_bp.start_custom_test', lang=current_language or 'en') }}";
+    
+    // Добавляем CSRF токен
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrf_token';
+    csrfInput.value = '{{ csrf_token() }}';
+    
+    const categoryInput = document.createElement('input');
+    categoryInput.type = 'hidden';
+    categoryInput.name = 'category';
+    categoryInput.value = category;
+    
+    const lengthInput = document.createElement('input');
+    lengthInput.type = 'hidden';
+    lengthInput.name = 'length';
+    lengthInput.value = length;
+    
+    form.appendChild(csrfInput);
+    form.appendChild(categoryInput);
+    form.appendChild(lengthInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Обработчики для выбора опций
+document.addEventListener('DOMContentLoaded', function() {
+    // Категории
+    document.querySelectorAll('.category-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.category-option').forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('selectedCategory').value = this.dataset.category;
+        });
+    });
+    
+    // Длина теста
+    document.querySelectorAll('.length-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.length-option').forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('selectedLength').value = this.dataset.length;
+        });
+    });
+});
+</script>
+{% endblock %} 

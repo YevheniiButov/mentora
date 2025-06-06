@@ -1,15 +1,17 @@
 # Мобильные роуты для Dental Academy
 # Вставьте сюда код мобильных роутов
 
-from flask import Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app, jsonify
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app, jsonify, abort
+from flask_login import login_required, current_user, login_user, logout_user
 from models import (
     db, Subject, Module, UserProgress, Lesson, ContentCategory,
     ContentSubcategory, ContentTopic, LearningPath,
-    VirtualPatientScenario, VirtualPatientAttempt
+    VirtualPatientScenario, VirtualPatientAttempt, User
 )
 from utils.mobile_detection import get_mobile_detector
 from translations import get_translation as t
+from extensions import bcrypt
+from forms import LoginForm, RegistrationForm
 
 mobile_bp = Blueprint('mobile', __name__, url_prefix='/<lang>/mobile', template_folder='../templates/mobile')
 
@@ -65,23 +67,105 @@ def welcome(lang):
     )
 
 # Авторизация
-@mobile_bp.route('/auth/login')
+@mobile_bp.route('/auth/login', methods=['GET', 'POST'])
 def login(lang):
     """Мобильная страница входа."""
+    if current_user.is_authenticated:
+        return redirect(url_for('mobile.learning_map', lang=lang))
+    
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        # Проверка валидности хеша
+        valid_hash = False
+        if user:
+            try:
+                if user.password_hash and (user.password_hash.startswith('$2b$') or 
+                                         user.password_hash.startswith('$2a$')):
+                    valid_hash = True
+            except Exception as e:
+                current_app.logger.error(f"Error checking password hash: {e}")
+        
+        # Проверяем пароль
+        try:
+            password_correct = False
+            if user and valid_hash:
+                password_correct = bcrypt.check_password_hash(user.password_hash, form.password.data)
+            
+            if user and password_correct:
+                login_user(user, remember=form.remember_me.data if hasattr(form, 'remember_me') else False)
+                flash("Вы успешно вошли в систему!", "success")
+                current_app.logger.info(f"User {user.email} logged in successfully via mobile.")
+                
+                # Редирект на мобильную карту обучения
+                next_page = request.args.get('next')
+                if next_page and next_page.startswith('/'):
+                    return redirect(next_page)
+                return redirect(url_for('mobile.learning_map', lang=lang))
+            else:
+                flash("Неверный email или пароль.", "danger")
+                current_app.logger.warning(f"Failed mobile login attempt for email {form.email.data}")
+        except ValueError as e:
+            current_app.logger.error(f"Password hash error for user {form.email.data}: {e}")
+            flash("Ошибка аутентификации. Обратитесь в поддержку.", "danger")
+    
     return render_template(
         'mobile/auth/login_mobile.html',
+        form=form,
         title='Login',
         current_language=lang
     )
 
-@mobile_bp.route('/auth/register')
+@mobile_bp.route('/auth/register', methods=['GET', 'POST'])
 def register(lang):
     """Мобильная страница регистрации."""
+    if current_user.is_authenticated:
+        return redirect(url_for('mobile.learning_map', lang=lang))
+    
+    form = RegistrationForm()
+    
+    if form.validate_on_submit():
+        existing_user = User.query.filter_by(email=form.email.data).first()
+        if existing_user:
+            flash('Аккаунт с таким email уже существует.', 'warning')
+            return render_template('mobile/auth/register_mobile.html', form=form, title='Register', current_language=lang)
+        
+        try:
+            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+            
+            new_user = User(
+                email=form.email.data,
+                username=form.email.data, 
+                password_hash=hashed_password,
+                name=form.name.data
+            )
+            
+            db.session.add(new_user)
+            db.session.commit()
+            current_app.logger.info(f"New user registered via mobile: {new_user.email}")
+            flash('Регистрация завершена! Теперь войдите в систему.', 'success')
+            
+            return redirect(url_for('mobile.login', lang=lang))
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error during mobile registration for {form.email.data}: {e}", exc_info=True)
+            flash('Произошла ошибка при регистрации. Попробуйте снова.', 'danger')
+    
     return render_template(
         'mobile/auth/register_mobile.html',
+        form=form,
         title='Register',
         current_language=lang
     )
+
+@mobile_bp.route('/auth/logout')
+@login_required
+def logout(lang):
+    """Мобильный выход из системы."""
+    logout_user()
+    flash("Вы успешно вышли из системы.", "info")
+    return redirect(url_for('mobile.welcome', lang=lang))
 
 # Обучение
 @mobile_bp.route('/subjects')
@@ -426,5 +510,23 @@ def device_info(lang):
         'current_language': lang,
         'request_headers': dict(request.headers)
     })
+
+# Мобильные тесты
+@mobile_bp.route('/tests')
+@login_required
+def tests(lang):
+    """Мобильная страница тестов - перенаправляет на систему тестов."""
+    return redirect(url_for('tests_bp.setup_test', lang=lang))
+
+# Тестовые роуты для проверки ошибок (без авторизации)
+@mobile_bp.route('/test-404')
+def test_404(lang):
+    """Тестовый роут для проверки страницы 404."""
+    abort(404)
+
+@mobile_bp.route('/test-500')  
+def test_500(lang):
+    """Тестовый роут для проверки страницы 500."""
+    abort(500)
 
 # Вставьте сюда роуты 
