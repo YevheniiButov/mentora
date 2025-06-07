@@ -1,0 +1,59 @@
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('welcome') if get_navigation_config else {} %}
+
+{% block title %}Test Nav Config - Dental Academy{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; text-align: center;">
+    <h1 style="color: white; margin-bottom: 2rem;">⚙️ Тест с nav_config</h1>
+    
+    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
+        <h2 style="color: white; margin-bottom: 1rem;">🔧 Nav Config Status</h2>
+        <p style="color: rgba(255,255,255,0.8);">
+            Nav Config функция: {{ 'Доступна' if get_navigation_config else 'Недоступна' }}<br>
+            {% if nav_config %}
+                Конфигурация загружена: ✅<br>
+                Тип страницы: welcome<br>
+                Показать нижнюю навигацию: {{ nav_config.show_bottom_nav if nav_config else 'N/A' }}<br>
+                Показать кнопку назад: {{ nav_config.show_back_button if nav_config else 'N/A' }}
+            {% else %}
+                Конфигурация загружена: ❌
+            {% endif %}
+        </p>
+    </div>
+    
+    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
+        <h2 style="color: white; margin-bottom: 1rem;">📱 Ожидаемое поведение</h2>
+        <p style="color: rgba(255,255,255,0.8);">
+            Для страницы 'welcome' должно быть:<br>
+            • Нижняя навигация: Показана<br>
+            • Кнопка назад: Скрыта<br>
+            • Кнопка профиля: Показана<br>
+            • Языковой селектор: Показан<br>
+            • Прогресс бар: Скрыт
+        </p>
+    </div>
+    
+    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
+        <h2 style="color: white; margin-bottom: 1rem;">🎯 Проверка активной секции</h2>
+        <p style="color: rgba(255,255,255,0.8);">
+            Активная секция навигации: {{ get_active_nav_item(request.endpoint) if get_active_nav_item else 'Функция недоступна' }}<br>
+            Текущий endpoint: {{ request.endpoint or 'Неизвестно' }}
+        </p>
+    </div>
+    
+    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 16px;">
+        <h2 style="color: white; margin-bottom: 1rem;">🧩 Отладочная информация</h2>
+        <p style="color: rgba(255,255,255,0.8); font-family: monospace; font-size: 0.85rem;">
+            {% if nav_config %}
+                {% for key, value in nav_config.items() %}
+                    {{ key }}: {{ value }}<br>
+                {% endfor %}
+            {% else %}
+                nav_config пустой или недоступен
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endblock %} 

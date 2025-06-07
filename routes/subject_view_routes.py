@@ -4,14 +4,14 @@ import random
 import os # Добавлен импорт os
 from flask import Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app, jsonify
 from flask_login import login_required, current_user
+from extensions import db
 from models import (
-    db, Subject, Module, UserProgress, Lesson, ContentCategory,
-    ContentSubcategory, ContentTopic, LearningPath,
-    VirtualPatientScenario, VirtualPatientAttempt # Убедитесь, что эти модели существуют
+    Module, Lesson, UserProgress, Subject, LearningPath, User,
+    VirtualPatientScenario, Test, Question, TestAttempt,
+    ContentCategory, ContentSubcategory, ContentTopic
 )
-# Предполагается, что эти функции существуют в указанном файле или вы предоставите их реализацию
+from translations_new import get_translation as t
 from routes.learning_map_routes import get_module_stats, get_user_stats, calculate_subject_progress
-from translations import get_translation as t
 
 subject_view_bp = Blueprint(
     "subject_view_bp",
@@ -21,7 +21,7 @@ subject_view_bp = Blueprint(
 )
 
 # Языковые настройки из Фрагмента 2
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa']
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'en'
 
 @subject_view_bp.before_request

@@ -1,27 +1,27 @@
 {% extends "mobile_base.html" %}
 
-{% block title %}{% if current_language == 'ru' %}Система тестирования{% elif current_language == 'nl' %}Testsysteem{% else %}Test System{% endif %} - Dental Academy{% endblock %}
+{% block title %}{% if lang == 'ru' %}Система тестирования{% elif lang == 'nl' %}Testsysteem{% else %}Test System{% endif %} - Dental Academy{% endblock %}
 
 {% block nav_items %}
-<a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
     <i class="bi bi-house"></i>
-    <span>Главная</span>
+    <span>{{ t('home', lang) }}</span>
 </a>
-<a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
     <i class="bi bi-book"></i>
-    <span>Обучение</span>
+    <span>{{ t('learning', lang) }}</span>
 </a>
-<a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item active">
+<a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item active">
     <i class="bi bi-clipboard-check"></i>
-    <span>Тесты</span>
+    <span>{{ t('tests', lang) }}</span>
 </a>
-<a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=lang) }}" class="nav-item">
     <i class="bi bi-person-heart"></i>
-    <span>Пациенты</span>
+    <span>{{ t('patients', lang) }}</span>
 </a>
-<a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
+<a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
     <i class="fas fa-robot"></i>
-    <span>AI</span>
+    <span>{{ t('ai_assistant', lang) }}</span>
 </a>
 {% endblock %}
 
@@ -209,7 +209,7 @@
 {% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="theme-toggle">
+<a href="{{ url_for('mobile.learning_map', lang=lang or 'en') }}" class="theme-toggle">
     <i class="bi bi-arrow-left"></i>
 </a>
 {% endblock %}
@@ -218,18 +218,18 @@
 <div class="test-setup-container">
     <div class="welcome-text">
         <h1>
-            {% if current_language == 'ru' %}
+            {% if lang == 'ru' %}
                 Система тестирования
-            {% elif current_language == 'nl' %}
+            {% elif lang == 'nl' %}
                 Testsysteem
             {% else %}
                 Test System
             {% endif %}
         </h1>
         <p>
-            {% if current_language == 'ru' %}
+            {% if lang == 'ru' %}
                 Выберите тип теста для проверки знаний
-            {% elif current_language == 'nl' %}
+            {% elif lang == 'nl' %}
                 Kies het type test om uw kennis te controleren
             {% else %}
                 Choose test type to check your knowledge
@@ -240,7 +240,7 @@
     <!-- Быстрые опции тестов -->
     <div class="glass-card">
         <div class="test-options">
-            <a href="{{ url_for('tests_bp.start_custom_test', lang=current_language or 'en') }}" 
+            <a href="{{ url_for('tests_bp.start_custom_test', lang=lang or 'en') }}" 
                class="test-option-btn" 
                onclick="startQuickTest('all', 10); return false;">
                 <div class="test-icon">
@@ -248,10 +248,10 @@
                 </div>
                 <div class="test-info">
                     <div class="test-title">
-                        {% if current_language == 'ru' %}Быстрый тест{% elif current_language == 'nl' %}Snelle test{% else %}Quick Test{% endif %}
+                        {% if lang == 'ru' %}Быстрый тест{% elif lang == 'nl' %}Snelle test{% else %}Quick Test{% endif %}
                     </div>
                     <div class="test-description">
-                        {% if current_language == 'ru' %}10 случайных вопросов{% elif current_language == 'nl' %}10 willekeurige vragen{% else %}10 random questions{% endif %}
+                        {% if lang == 'ru' %}10 случайных вопросов{% elif lang == 'nl' %}10 willekeurige vragen{% else %}10 random questions{% endif %}
                     </div>
                 </div>
                 <i class="bi bi-chevron-right" style="opacity: 0.7;"></i>
@@ -263,10 +263,10 @@
                 </div>
                 <div class="test-info">
                     <div class="test-title">
-                        {% if current_language == 'ru' %}Настраиваемый тест{% elif current_language == 'nl' %}Aangepaste test{% else %}Custom Test{% endif %}
+                        {% if lang == 'ru' %}Настраиваемый тест{% elif lang == 'nl' %}Aangepaste test{% else %}Custom Test{% endif %}
                     </div>
                     <div class="test-description">
-                        {% if current_language == 'ru' %}Выберите категорию и количество вопросов{% elif current_language == 'nl' %}Kies categorie en aantal vragen{% else %}Choose category and number of questions{% endif %}
+                        {% if lang == 'ru' %}Выберите категорию и количество вопросов{% elif lang == 'nl' %}Kies categorie en aantal vragen{% else %}Choose category and number of questions{% endif %}
                     </div>
                 </div>
                 <i class="bi bi-chevron-right" style="opacity: 0.7;"></i>
@@ -276,15 +276,15 @@
 
     <!-- Форма настройки теста -->
     <div class="glass-card" id="customSetup" style="display: none;">
-        <form method="POST" action="{{ url_for('tests_bp.start_custom_test', lang=current_language or 'en') }}">
+        <form method="POST" action="{{ url_for('tests_bp.start_custom_test', lang=lang or 'en') }}">
             {{ csrf_token() }}
             <div class="form-group">
                 <label class="form-label">
-                    {% if current_language == 'ru' %}Категория{% elif current_language == 'nl' %}Categorie{% else %}Category{% endif %}
+                    {% if lang == 'ru' %}Категория{% elif lang == 'nl' %}Categorie{% else %}Category{% endif %}
                 </label>
                 <div class="category-options">
                     <div class="category-option selected" data-category="all">
-                        {% if current_language == 'ru' %}Все{% elif current_language == 'nl' %}Alle{% else %}All{% endif %}
+                        {% if lang == 'ru' %}Все{% elif lang == 'nl' %}Alle{% else %}All{% endif %}
                     </div>
                     {% for category in categories %}
                     <div class="category-option" data-category="{{ category }}">{{ category }}</div>
@@ -295,7 +295,7 @@
 
             <div class="form-group">
                 <label class="form-label">
-                    {% if current_language == 'ru' %}Количество вопросов{% elif current_language == 'nl' %}Aantal vragen{% else %}Number of Questions{% endif %}
+                    {% if lang == 'ru' %}Количество вопросов{% elif lang == 'nl' %}Aantal vragen{% else %}Number of Questions{% endif %}
                 </label>
                 <div class="length-selector">
                     {% for length in test_lengths %}
@@ -307,7 +307,7 @@
 
             <button type="submit" class="start-test-btn">
                 <i class="bi bi-play-fill"></i>
-                {% if current_language == 'ru' %}Начать тест{% elif current_language == 'nl' %}Test starten{% else %}Start Test{% endif %}
+                {% if lang == 'ru' %}Начать тест{% elif lang == 'nl' %}Test starten{% else %}Start Test{% endif %}
             </button>
         </form>
     </div>
@@ -324,7 +324,7 @@ function showCustomSetup() {
 function startQuickTest(category, length) {
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = "{{ url_for('tests_bp.start_custom_test', lang=current_language or 'en') }}";
+    form.action = "{{ url_for('tests_bp.start_custom_test', lang=lang or 'en') }}";
     
     // Добавляем CSRF токен
     const csrfInput = document.createElement('input');

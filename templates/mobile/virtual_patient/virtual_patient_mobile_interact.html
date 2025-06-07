@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ current_language }}" {% if current_language in ['ar', 'fa', 'he', 'ur'] %}dir="rtl"{% endif %}>
+<html lang="{{ lang }}" {% if lang in ['ar', 'fa', 'he', 'ur'] %}dir="rtl"{% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -826,7 +826,7 @@
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="header-content">
-            <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language) }}" class="back-btn">
+            <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=lang) }}" class="back-btn">
                 <i class="bi bi-arrow-left"></i>
             </a>
             
@@ -993,7 +993,7 @@
         <!-- Response Area -->
         {% if not is_final %}
             <div class="response-area">
-                <form method="POST" action="{{ url_for('virtual_patient_bp.select_option', lang=current_language) }}" id="responseForm">
+                <form method="POST" action="{{ url_for('virtual_patient_bp.select_option', lang=lang) }}" id="responseForm">
                     <input type="hidden" name="selected_option" id="selectedOption">
                     
                     <div class="response-options" id="responseOptions">
@@ -1013,7 +1013,7 @@
                 <div class="final-icon">🎯</div>
                 <h3 style="margin-bottom: 1rem;">Консультация завершена</h3>
                 <p style="margin-bottom: 2rem;">Отличная работа! Вы завершили сценарий с виртуальным пациентом.</p>
-                <a href="{{ url_for('virtual_patient_bp.results', lang=current_language, attempt_id=attempt.id) }}" class="continue-btn">
+                <a href="{{ url_for('virtual_patient_bp.results', lang=lang, attempt_id=attempt.id) }}" class="continue-btn">
                     <i class="bi bi-clipboard-data"></i>
                     Посмотреть результаты
                 </a>
@@ -1410,25 +1410,25 @@
 
     <!-- Нижняя навигация -->
     <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
             <i class="bi bi-house"></i>
-            <span>Главная</span>
+            <span>{{ t('home', lang) }}</span>
         </a>
-        <a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
             <i class="bi bi-book"></i>
-            <span>Обучение</span>
+            <span>{{ t('learning', lang) }}</span>
         </a>
-        <a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
             <i class="bi bi-clipboard-check"></i>
-            <span>Тесты</span>
+            <span>{{ t('tests', lang) }}</span>
         </a>
-        <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item active">
+        <a href="/{{ lang }}/virtual-patient" class="nav-item active">
             <i class="bi bi-person-heart"></i>
-            <span>Пациенты</span>
+            <span>{{ t('patients', lang) }}</span>
         </a>
-        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
             <i class="fas fa-robot"></i>
-            <span>AI</span>
+            <span>{{ t('ai_assistant', lang) }}</span>
         </a>
     </nav>
 </body>

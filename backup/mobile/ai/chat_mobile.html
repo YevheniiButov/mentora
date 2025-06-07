@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="{{ current_language }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('ai_assistant', lang=current_language) if t('ai_assistant', lang=current_language) != 'ai_assistant' else 'AI Assistant' }} - Dental Academy</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#3ECDC1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dental Academy">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/mobile/mobile-app.css">
+    
+    <style>
+        /* ===== AI CHAT МОБИЛЬНЫЕ СТИЛИ ===== */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+        }
+
+        .header-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+
+        .header-action {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .main-content {
+            padding: calc(var(--header-height) + 0.5rem) 0 calc(var(--nav-height) + 0.5rem);
+            min-height: 100vh;
+        }
+
+        .ai-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - var(--header-height) - var(--nav-height));
+            padding: 0;
+            background: transparent;
+        }
+        
+        /* Статус AI */
+        .ai-status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 1rem;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .ai-status-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+        }
+        
+        .ai-status-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .ai-provider-selector {
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Область сообщений */
+        .ai-messages-area {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        /* Пузырьки сообщений */
+        .ai-message {
+            max-width: 85%;
+            animation: slideInMessage 0.3s ease-out;
+        }
+        
+        @keyframes slideInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .ai-message.user {
+            align-self: flex-end;
+        }
+        
+        .ai-message.assistant {
+            align-self: flex-start;
+        }
+        
+        .ai-message-bubble {
+            padding: 12px 16px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        
+        .ai-message.user .ai-message-bubble {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .ai-message.assistant .ai-message-bubble {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom-left-radius: 8px;
+        }
+        
+        .ai-message-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .ai-message.assistant .ai-message-time {
+            text-align: left;
+        }
+        
+        /* RAG источники */
+        .ai-rag-sources {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ai-rag-source {
+            display: inline-block;
+            padding: 2px 6px;
+            background: rgba(62, 205, 193, 0.2);
+            color: var(--primary);
+            border-radius: 4px;
+            font-size: 10px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        
+        /* Индикатор печатания */
+        .ai-typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border-bottom-left-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 85%;
+            align-self: flex-start;
+            color: white;
+        }
+        
+        .ai-typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .ai-typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            animation: typingDots 1.4s infinite ease-in-out;
+        }
+        
+        .ai-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .ai-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typingDots {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Панель ввода */
+        .ai-input-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            margin: 0 1rem 1rem;
+            border-radius: var(--border-radius);
+        }
+        
+        .ai-input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ai-input-container.focused {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(62, 205, 193, 0.1);
+        }
+        
+        .ai-message-input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            resize: none;
+            font-size: 16px;
+            line-height: 1.4;
+            max-height: 120px;
+            min-height: 20px;
+            color: white;
+            padding: 4px 8px;
+        }
+        
+        .ai-message-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .ai-send-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .ai-send-button:disabled {
+            background: rgba(255, 255, 255, 0.3);
+            opacity: 0.5;
+        }
+        
+        .ai-send-button:not(:disabled):active {
+            transform: scale(0.9);
+        }
+        
+        /* Кнопки быстрых действий */
+        .ai-quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+        }
+        
+        .ai-quick-action {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-quick-action:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.98);
+        }
+        
+        /* Пустое состояние */
+        .ai-empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .ai-empty-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: white;
+            font-size: 32px;
+        }
+        
+        .ai-empty-state h3 {
+            margin: 0 0 0.5rem 0;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .ai-empty-state p {
+            margin: 0 0 1.5rem 0;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .ai-setup-button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-setup-button:active {
+            transform: scale(0.98);
+        }
+        
+        /* Предложения */
+        .ai-suggestions {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .ai-suggestions h4 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .ai-suggestion-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .ai-suggestion-item:active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .ai-suggestion-title {
+            font-weight: 500;
+            font-size: 13px;
+            color: white;
+            margin-bottom: 2px;
+        }
+        
+        .ai-suggestion-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* ===== BOTTOM NAVIGATION ===== */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 env(safe-area-inset-left) env(safe-area-inset-bottom) env(safe-area-inset-right);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: rgba(102, 126, 234, 0.6);
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(62, 205, 193, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        /* НИЖНЯЯ НАВИГАЦИЯ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 1000;
+            padding: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="mobile-header">
+        <button class="header-action" onclick="history.back()">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+        
+        <h1 class="header-title">{{ t('ai_assistant', lang=current_language) if t('ai_assistant', lang=current_language) != 'ai_assistant' else 'AI Assistant' }}</h1>
+        
+        <a href="{{ url_for('ai.ai_settings', lang=current_language) }}" class="header-action">
+            <i class="bi bi-gear"></i>
+        </a>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="ai-chat-container">
+            {% if not has_configured_ai %}
+            <!-- Пустое состояние - нет настроенного AI -->
+            <div class="ai-empty-state">
+                <div class="ai-empty-icon">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <h3>{{ t('setup_ai_assistant', lang=current_language) if t('setup_ai_assistant', lang=current_language) != 'setup_ai_assistant' else 'Setup AI Assistant' }}</h3>
+                <p>{{ t('configure_ai_api_keys', lang=current_language) if t('configure_ai_api_keys', lang=current_language) != 'configure_ai_api_keys' else 'Configure your AI API keys to start chatting with your personal dental assistant. We support free providers like Groq and DeepSeek.' }}</p>
+                <a href="{{ url_for('ai.ai_settings', lang=current_language) }}" class="ai-setup-button">
+                    <i class="bi bi-gear"></i>
+                    {{ t('configure_now', lang=current_language) if t('configure_now', lang=current_language) != 'configure_now' else 'Configure Now' }}
+                </a>
+            </div>
+            {% else %}
+            <!-- Статус бар AI -->
+            <div class="ai-status-bar">
+                <div class="ai-status-info">
+                    <div class="ai-status-icon"></div>
+                    <span>{{ t('ai_ready', lang=current_language) if t('ai_ready', lang=current_language) != 'ai_ready' else 'AI Ready' }}</span>
+                </div>
+                <div class="ai-provider-selector" id="current-provider">
+                    Groq
+                </div>
+            </div>
+            
+            <!-- Область сообщений -->
+            <div class="ai-messages-area" id="messages-area">
+                {% if recent_conversations %}
+                    {% for conversation in recent_conversations %}
+                    <!-- Сообщение пользователя -->
+                    <div class="ai-message user">
+                        <div class="ai-message-bubble">{{ conversation.query }}</div>
+                        <div class="ai-message-time">{{ conversation.timestamp.strftime('%H:%M') }}</div>
+                    </div>
+                    
+                    <!-- Ответ AI -->
+                    <div class="ai-message assistant">
+                        <div class="ai-message-bubble">
+                            {{ conversation.response }}
+                            {% if conversation.rag_sources %}
+                            <div class="ai-rag-sources">
+                                {% for source in conversation.rag_sources %}
+                                <span class="ai-rag-source">{{ source }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="ai-message-time">{{ conversation.timestamp.strftime('%H:%M') }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Приветственное сообщение -->
+                    <div class="ai-message assistant">
+                        <div class="ai-message-bubble">
+                            {{ t('ai_welcome_message', lang=current_language) if t('ai_welcome_message', lang=current_language) != 'ai_welcome_message' else 'Hello! I\'m your dental AI assistant. I can help you with questions about dental procedures, exam preparation, and learning guidance. What would you like to know?' }}
+                        </div>
+                        <div class="ai-message-time">{{ t('now', lang=current_language) if t('now', lang=current_language) != 'now' else 'Now' }}</div>
+                    </div>
+                    
+                    <!-- Предложения -->
+                    <div class="ai-suggestions">
+                        <h4>{{ t('suggested_questions', lang=current_language) if t('suggested_questions', lang=current_language) != 'suggested_questions' else 'Suggested Questions' }}</h4>
+                        
+                        <div class="ai-suggestion-item" onclick="askSuggestion('What are the main causes of dental caries?')">
+                            <div class="ai-suggestion-title">{{ t('about_caries', lang=current_language) if t('about_caries', lang=current_language) != 'about_caries' else 'About Caries' }}</div>
+                            <div class="ai-suggestion-desc">{{ t('learn_about_causes', lang=current_language) if t('learn_about_causes', lang=current_language) != 'learn_about_causes' else 'Learn about causes and prevention' }}</div>
+                        </div>
+                        
+                        <div class="ai-suggestion-item" onclick="askSuggestion('How should I prepare for the BIG exam?')">
+                            <div class="ai-suggestion-title">{{ t('exam_preparation', lang=current_language) if t('exam_preparation', lang=current_language) != 'exam_preparation' else 'Exam Preparation' }}</div>
+                            <div class="ai-suggestion-desc">{{ t('get_study_tips', lang=current_language) if t('get_study_tips', lang=current_language) != 'get_study_tips' else 'Get personalized study tips' }}</div>
+                        </div>
+                        
+                        <div class="ai-suggestion-item" onclick="askSuggestion('What should I focus on based on my current progress?')">
+                            <div class="ai-suggestion-title">{{ t('personalized_guidance', lang=current_language) if t('personalized_guidance', lang=current_language) != 'personalized_guidance' else 'Personalized Guidance' }}</div>
+                            <div class="ai-suggestion-desc">{{ t('based_on_progress', lang=current_language) if t('based_on_progress', lang=current_language) != 'based_on_progress' else 'Based on your learning progress' }}</div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Панель ввода -->
+            <div class="ai-input-panel">
+                <div class="ai-quick-actions">
+                    <a href="#" class="ai-quick-action" onclick="askSuggestion('Explain this lesson to me')">
+                        📚 {{ t('explain_lesson', lang=current_language) if t('explain_lesson', lang=current_language) != 'explain_lesson' else 'Explain lesson' }}
+                    </a>
+                    <a href="#" class="ai-quick-action" onclick="askSuggestion('Give me a quiz on this topic')">
+                        🎯 {{ t('quiz_me', lang=current_language) if t('quiz_me', lang=current_language) != 'quiz_me' else 'Quiz me' }}
+                    </a>
+                    <a href="#" class="ai-quick-action" onclick="askSuggestion('What should I study next?')">
+                        ⭐ {{ t('study_plan', lang=current_language) if t('study_plan', lang=current_language) != 'study_plan' else 'Study plan' }}
+                    </a>
+                </div>
+                
+                <div class="ai-input-container" id="input-container">
+                    <textarea 
+                        class="ai-message-input" 
+                        id="message-input"
+                        placeholder="{{ t('ask_ai_anything', lang=current_language) if t('ask_ai_anything', lang=current_language) != 'ask_ai_anything' else 'Ask me anything about dentistry...' }}"
+                        rows="1"></textarea>
+                    <button class="ai-send-button" id="send-button" disabled>
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
+            <i class="bi bi-house"></i>
+            <span>{{ t('home', lang) }}</span>
+        </a>
+        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
+            <i class="bi bi-book"></i>
+            <span>{{ t('learning', lang) }}</span>
+        </a>
+        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
+            <i class="bi bi-clipboard-check"></i>
+            <span>{{ t('tests', lang) }}</span>
+        </a>
+        <a href="/{{ lang }}/virtual-patient" class="nav-item">
+            <i class="bi bi-person-heart"></i>
+            <span>{{ t('patients', lang) }}</span>
+        </a>
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item active">
+            <i class="fas fa-robot"></i>
+            <span>{{ t('ai_assistant', lang) }}</span>
+        </a>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="/static/js/mobile/mobile-app.js"></script>
+    <script>
+        class MobileAIChat {
+            constructor() {
+                this.messageInput = document.getElementById('message-input');
+                this.sendButton = document.getElementById('send-button');
+                this.messagesArea = document.getElementById('messages-area');
+                this.inputContainer = document.getElementById('input-container');
+                this.isTyping = false;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.autoResizeTextarea();
+                this.scrollToBottom();
+                this.loadContextFromSession();
+            }
+            
+            loadContextFromSession() {
+                // Загружаем контекст из sessionStorage если есть
+                const context = sessionStorage.getItem('aiContext');
+                if (context) {
+                    try {
+                        const contextData = JSON.parse(context);
+                        if (contextData.type === 'lesson') {
+                            // Добавляем контекстное сообщение
+                            this.addContextMessage(contextData);
+                        }
+                        // Очищаем контекст после использования
+                        sessionStorage.removeItem('aiContext');
+                    } catch (e) {
+                        console.error('Error loading AI context:', e);
+                    }
+                }
+            }
+            
+            addContextMessage(contextData) {
+                if (this.messageInput) {
+                    const contextMessage = `Я изучаю урок "${contextData.lesson_title}". Можешь помочь мне с этой темой?`;
+                    this.messageInput.value = contextMessage;
+                    this.updateSendButton();
+                    this.messageInput.focus();
+                }
+            }
+            
+            setupEventListeners() {
+                if (this.messageInput) {
+                    this.messageInput.addEventListener('input', () => {
+                        this.updateSendButton();
+                        this.autoResizeTextarea();
+                    });
+                    
+                    this.messageInput.addEventListener('focus', () => {
+                        if (this.inputContainer) {
+                            this.inputContainer.classList.add('focused');
+                        }
+                    });
+                    
+                    this.messageInput.addEventListener('blur', () => {
+                        if (this.inputContainer) {
+                            this.inputContainer.classList.remove('focused');
+                        }
+                    });
+                    
+                    this.messageInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            this.sendMessage();
+                        }
+                    });
+                }
+                
+                if (this.sendButton) {
+                    this.sendButton.addEventListener('click', () => {
+                        this.sendMessage();
+                    });
+                }
+            }
+            
+            updateSendButton() {
+                if (this.messageInput && this.sendButton) {
+                    const hasText = this.messageInput.value.trim().length > 0;
+                    this.sendButton.disabled = !hasText || this.isTyping;
+                }
+            }
+            
+            autoResizeTextarea() {
+                if (this.messageInput) {
+                    this.messageInput.style.height = 'auto';
+                    this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
+                }
+            }
+            
+            async sendMessage() {
+                if (!this.messageInput) return;
+                
+                const message = this.messageInput.value.trim();
+                if (!message || this.isTyping) return;
+                
+                // Добавляем сообщение пользователя
+                this.addUserMessage(message);
+                
+                // Очищаем input
+                this.messageInput.value = '';
+                this.updateSendButton();
+                this.autoResizeTextarea();
+                
+                // Показываем индикатор печатания
+                this.showTypingIndicator();
+                
+                try {
+                    const response = await this.sendToAPI(message);
+                    this.hideTypingIndicator();
+                    
+                    if (response.error) {
+                        if (response.redirect_to_setup) {
+                            this.showError('{{ t("configure_api_keys_first", lang=current_language) if t("configure_api_keys_first", lang=current_language) != "configure_api_keys_first" else "Please configure your API keys first" }}');
+                            setTimeout(() => {
+                                window.location.href = '{{ url_for("ai.ai_settings", lang=current_language) }}';
+                            }, 2000);
+                        } else {
+                            this.showError(response.error);
+                        }
+                        return;
+                    }
+                    
+                    // Добавляем ответ AI
+                    this.addAIMessage(response.response, response.sources);
+                    
+                } catch (error) {
+                    this.hideTypingIndicator();
+                    this.showError('{{ t("connection_error", lang=current_language) if t("connection_error", lang=current_language) != "connection_error" else "Connection error. Please try again." }}');
+                }
+            }
+            
+            async sendToAPI(message) {
+                const response = await fetch('{{ url_for("ai.process_chat", lang=current_language) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        provider: 'groq'
+                    })
+                });
+                
+                return await response.json();
+            }
+            
+            addUserMessage(message) {
+                if (!this.messagesArea) return;
+                
+                const messageEl = document.createElement('div');
+                messageEl.className = 'ai-message user';
+                messageEl.innerHTML = `
+                    <div class="ai-message-bubble">${this.escapeHtml(message)}</div>
+                    <div class="ai-message-time">${new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</div>
+                `;
+                
+                this.messagesArea.appendChild(messageEl);
+                this.scrollToBottom();
+            }
+            
+            addAIMessage(message, sources = []) {
+                if (!this.messagesArea) return;
+                
+                const messageEl = document.createElement('div');
+                messageEl.className = 'ai-message assistant';
+                
+                let sourcesHtml = '';
+                if (sources && sources.length > 0) {
+                    sourcesHtml = `
+                        <div class="ai-rag-sources">
+                            ${sources.map(source => `<span class="ai-rag-source">${this.escapeHtml(source)}</span>`).join('')}
+                        </div>
+                    `;
+                }
+                
+                messageEl.innerHTML = `
+                    <div class="ai-message-bubble">
+                        ${this.escapeHtml(message)}
+                        ${sourcesHtml}
+                    </div>
+                    <div class="ai-message-time">${new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</div>
+                `;
+                
+                this.messagesArea.appendChild(messageEl);
+                this.scrollToBottom();
+            }
+            
+            showTypingIndicator() {
+                if (!this.messagesArea) return;
+                
+                this.isTyping = true;
+                this.updateSendButton();
+                
+                const indicator = document.createElement('div');
+                indicator.className = 'ai-typing-indicator';
+                indicator.id = 'typing-indicator';
+                indicator.innerHTML = `
+                    <div class="ai-typing-dots">
+                        <div class="ai-typing-dot"></div>
+                        <div class="ai-typing-dot"></div>
+                        <div class="ai-typing-dot"></div>
+                    </div>
+                    <span>{{ t("ai_thinking", lang=current_language) if t("ai_thinking", lang=current_language) != "ai_thinking" else "AI is thinking..." }}</span>
+                `;
+                
+                this.messagesArea.appendChild(indicator);
+                this.scrollToBottom();
+            }
+            
+            hideTypingIndicator() {
+                this.isTyping = false;
+                this.updateSendButton();
+                
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+            
+            showError(message) {
+                if (window.mobileApp) {
+                    window.mobileApp.showNotification(message, 'error');
+                } else {
+                    alert(message);
+                }
+            }
+            
+            scrollToBottom() {
+                if (this.messagesArea) {
+                    setTimeout(() => {
+                        this.messagesArea.scrollTop = this.messagesArea.scrollHeight;
+                    }, 100);
+                }
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Функция для предложений
+        function askSuggestion(question) {
+            if (window.aiChat) {
+                window.aiChat.messageInput.value = question;
+                window.aiChat.updateSendButton();
+                window.aiChat.messageInput.focus();
+            }
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            window.aiChat = new MobileAIChat();
+        });
+    </script>
+
+    <!-- Нижняя навигация -->
+    <nav class="mobile-bottom-nav">
+        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
+            <i class="bi bi-house"></i>
+            <span>{{ t('home', lang) }}</span>
+        </a>
+        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
+            <i class="bi bi-book"></i>
+            <span>{{ t('learning', lang) }}</span>
+        </a>
+        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
+            <i class="bi bi-clipboard-check"></i>
+            <span>{{ t('tests', lang) }}</span>
+        </a>
+        <a href="/{{ lang }}/virtual-patient" class="nav-item">
+            <i class="bi bi-person-heart"></i>
+            <span>{{ t('patients', lang) }}</span>
+        </a>
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item active">
+            <i class="fas fa-robot"></i>
+            <span>{{ t('ai_assistant', lang) }}</span>
+        </a>
+    </nav>
+</body>
+</html> 

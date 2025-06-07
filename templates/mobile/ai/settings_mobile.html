@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ current_language }}" data-theme="light">
+<html lang="{{ lang }}" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ t('ai_settings', lang=current_language) if t('ai_settings', lang=current_language) != 'ai_settings' else 'AI Settings' }} - Dental Academy</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ t('ai_settings', lang) }} - Dental Academy</title>
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/static/manifest.json">
@@ -298,11 +299,11 @@
 <body>
     <!-- Header -->
     <header class="mobile-header">
-        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="header-action">
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="header-action">
             <i class="bi bi-arrow-left"></i>
         </a>
         
-        <h1 class="header-title">{{ t('ai_settings', lang=current_language) if t('ai_settings', lang=current_language) != 'ai_settings' else 'AI Settings' }}</h1>
+        <h1 class="header-title">{{ t('ai_settings', lang) }}</h1>
         
         <div class="header-action" style="visibility: hidden;"></div>
     </header>
@@ -313,7 +314,7 @@
         <div class="ai-settings-section">
             <h3>
                 <i class="bi bi-robot"></i>
-                {{ t('ai_providers', lang=current_language) if t('ai_providers', lang=current_language) != 'ai_providers' else 'AI Providers' }}
+                {{ t('ai_providers', lang) }}
             </h3>
             
             {% for provider_key, provider in ai_providers.items() %}
@@ -328,11 +329,11 @@
                     </div>
                     <div class="ai-provider-status {% if provider.free_tier %}free{% else %}paid{% endif %} {% if provider_key in user_providers %}configured{% endif %}">
                         {% if provider_key in user_providers %}
-                            {{ t('configured', lang=current_language) if t('configured', lang=current_language) != 'configured' else 'Configured' }}
+                            {{ t('configured', lang) }}
                         {% elif provider.free_tier %}
-                            {{ t('free', lang=current_language) if t('free', lang=current_language) != 'free' else 'Free' }}
+                            {{ t('free', lang) }}
                         {% else %}
-                            {{ t('paid', lang=current_language) if t('paid', lang=current_language) != 'paid' else 'Paid' }}
+                            {{ t('paid', lang) }}
                         {% endif %}
                     </div>
                 </div>
@@ -341,7 +342,7 @@
                     <input 
                         type="password" 
                         class="ai-key-input" 
-                        placeholder="{{ t('enter_api_key', lang=current_language) if t('enter_api_key', lang=current_language) != 'enter_api_key' else 'Enter API Key' }}"
+                        placeholder="{{ t('enter_api_key', lang) }}"
                         data-provider="{{ provider_key }}"
                         {% if provider_key in user_providers %}value="••••••••••••••••"{% endif %}>
                     
@@ -349,17 +350,17 @@
                         {% if provider_key in user_providers %}
                         <button class="ai-btn ai-btn-danger" onclick="deleteApiKey('{{ provider_key }}')">
                             <i class="bi bi-trash"></i>
-                            {{ t('delete', lang=current_language) if t('delete', lang=current_language) != 'delete' else 'Delete' }}
+                            {{ t('delete', lang) }}
                         </button>
                         {% else %}
                         <button class="ai-btn ai-btn-primary" onclick="saveApiKey('{{ provider_key }}')">
                             <i class="bi bi-check"></i>
-                            {{ t('save', lang=current_language) if t('save', lang=current_language) != 'save' else 'Save' }}
+                            {{ t('save', lang) }}
                         </button>
                         {% endif %}
                         <button class="ai-btn ai-btn-secondary" onclick="testApiKey('{{ provider_key }}')">
                             <i class="bi bi-play"></i>
-                            {{ t('test', lang=current_language) if t('test', lang=current_language) != 'test' else 'Test' }}
+                            {{ t('test', lang) }}
                         </button>
                     </div>
                 </div>
@@ -372,17 +373,17 @@
         <div class="ai-settings-section">
             <h3>
                 <i class="bi bi-bar-chart"></i>
-                {{ t('usage_statistics', lang=current_language) if t('usage_statistics', lang=current_language) != 'usage_statistics' else 'Usage Statistics' }}
+                {{ t('usage_statistics', lang) }}
             </h3>
             
             <div class="ai-usage-stats">
                 <div class="ai-stat-item">
                     <div class="ai-stat-value">{{ usage_stats.total_requests or 0 }}</div>
-                    <div class="ai-stat-label">{{ t('total_requests', lang=current_language) if t('total_requests', lang=current_language) != 'total_requests' else 'Total Requests' }}</div>
+                    <div class="ai-stat-label">{{ t('total_requests', lang) }}</div>
                 </div>
                 <div class="ai-stat-item">
                     <div class="ai-stat-value">{{ usage_stats.tokens_used or 0 }}</div>
-                    <div class="ai-stat-label">{{ t('tokens_used', lang=current_language) if t('tokens_used', lang=current_language) != 'tokens_used' else 'Tokens Used' }}</div>
+                    <div class="ai-stat-label">{{ t('tokens_used', lang) }}</div>
                 </div>
             </div>
         </div>
@@ -393,17 +394,17 @@
         <div class="ai-settings-section">
             <h3>
                 <i class="bi bi-database"></i>
-                {{ t('knowledge_base', lang=current_language) if t('knowledge_base', lang=current_language) != 'knowledge_base' else 'Knowledge Base' }}
+                {{ t('knowledge_base', lang) }}
             </h3>
             
             <div class="ai-usage-stats">
                 <div class="ai-stat-item">
                     <div class="ai-stat-value">{{ rag_stats.total_documents or 0 }}</div>
-                    <div class="ai-stat-label">{{ t('documents', lang=current_language) if t('documents', lang=current_language) != 'documents' else 'Documents' }}</div>
+                    <div class="ai-stat-label">{{ t('documents', lang) }}</div>
                 </div>
                 <div class="ai-stat-item">
                     <div class="ai-stat-value">{{ rag_stats.embeddings_count or 0 }}</div>
-                    <div class="ai-stat-label">{{ t('embeddings', lang=current_language) if t('embeddings', lang=current_language) != 'embeddings' else 'Embeddings' }}</div>
+                    <div class="ai-stat-label">{{ t('embeddings', lang) }}</div>
                 </div>
             </div>
         </div>
@@ -412,25 +413,25 @@
 
     <!-- Bottom Navigation -->
     <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
             <i class="bi bi-house"></i>
-            <span>Главная</span>
+            <span>{{ t('home', lang) }}</span>
         </a>
-        <a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
             <i class="bi bi-book"></i>
-            <span>Обучение</span>
+            <span>{{ t('learning', lang) }}</span>
         </a>
-        <a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
             <i class="bi bi-clipboard-check"></i>
-            <span>Тесты</span>
+            <span>{{ t('tests', lang) }}</span>
         </a>
-        <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item">
+        <a href="/{{ lang }}/virtual-patient" class="nav-item">
             <i class="bi bi-person-heart"></i>
-            <span>Пациенты</span>
+            <span>{{ t('patients', lang) }}</span>
         </a>
-        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item active">
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item active">
             <i class="fas fa-robot"></i>
-            <span>AI</span>
+            <span>{{ t('ai_assistant', lang) }}</span>
         </a>
     </nav>
 
@@ -443,16 +444,17 @@
             
             if (!apiKey || apiKey === '••••••••••••••••') {
                 if (window.mobileApp) {
-                    window.mobileApp.showNotification('{{ t("please_enter_valid_key", lang=current_language) if t("please_enter_valid_key", lang=current_language) != "please_enter_valid_key" else "Please enter a valid API key" }}', 'error');
+                    window.mobileApp.showNotification('{{ t("please_enter_valid_key", lang) }}', 'error');
                 }
                 return;
             }
             
             try {
-                const response = await fetch('{{ url_for("ai.save_api_key", lang=current_language) }}', {
+                const response = await fetch('{{ url_for("ai.save_api_key", lang=lang) }}', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
                         provider: provider,
@@ -465,7 +467,7 @@
                 
                 if (result.success) {
                     if (window.mobileApp) {
-                        window.mobileApp.showNotification('{{ t("api_key_saved", lang=current_language) if t("api_key_saved", lang=current_language) != "api_key_saved" else "API key saved successfully" }}', 'success');
+                        window.mobileApp.showNotification('{{ t("api_key_saved", lang) }}', 'success');
                     }
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
@@ -479,20 +481,23 @@
         }
         
         async function deleteApiKey(provider) {
-            if (!confirm('{{ t("confirm_delete_key", lang=current_language) if t("confirm_delete_key", lang=current_language) != "confirm_delete_key" else "Are you sure you want to delete this API key?" }}')) {
+            if (!confirm('{{ t("confirm_delete_key", lang) }}?')) {
                 return;
             }
             
             try {
-                const response = await fetch(`{{ url_for("ai.delete_api_key", lang=current_language, provider="PROVIDER") }}`.replace('PROVIDER', provider), {
-                    method: 'DELETE'
+                const response = await fetch(`{{ url_for("ai.delete_api_key", lang=lang, provider="PROVIDER") }}`.replace('PROVIDER', provider), {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
                     if (window.mobileApp) {
-                        window.mobileApp.showNotification('{{ t("api_key_deleted", lang=current_language) if t("api_key_deleted", lang=current_language) != "api_key_deleted" else "API key deleted successfully" }}', 'success');
+                        window.mobileApp.showNotification('{{ t("api_key_deleted", lang) }}', 'success');
                     }
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
@@ -511,19 +516,19 @@
             
             if (!apiKey || apiKey === '••••••••••••••••') {
                 if (window.mobileApp) {
-                    window.mobileApp.showNotification('{{ t("please_enter_key_first", lang=current_language) if t("please_enter_key_first", lang=current_language) != "please_enter_key_first" else "Please enter an API key first" }}', 'error');
+                    window.mobileApp.showNotification('{{ t("please_enter_key_first", lang) }}', 'error');
                 }
                 return;
             }
             
             if (window.mobileApp) {
-                window.mobileApp.showNotification('{{ t("testing_api_key", lang=current_language) if t("testing_api_key", lang=current_language) != "testing_api_key" else "Testing API key..." }}', 'info');
+                window.mobileApp.showNotification('{{ t("testing_api_key", lang) }}', 'info');
             }
             
             // Простая тестовая реализация
             setTimeout(() => {
                 if (window.mobileApp) {
-                    window.mobileApp.showNotification('{{ t("api_key_test_complete", lang=current_language) if t("api_key_test_complete", lang=current_language) != "api_key_test_complete" else "API key test completed" }}', 'success');
+                    window.mobileApp.showNotification('{{ t("api_key_test_complete", lang) }}', 'success');
                 }
             }, 2000);
         }

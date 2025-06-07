@@ -11,7 +11,7 @@ from utils.mobile_detection import get_mobile_detector
 tests_bp = Blueprint("tests_bp", __name__, url_prefix="/<string:lang>/tests")
 
 # --- Языковые и защитные обработчики ---
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa']
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'en'
 
 @tests_bp.before_request

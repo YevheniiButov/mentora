@@ -6,17 +6,18 @@ from flask_login import login_required, current_user, login_user, logout_user
 from models import (
     db, Subject, Module, UserProgress, Lesson, ContentCategory,
     ContentSubcategory, ContentTopic, LearningPath,
-    VirtualPatientScenario, VirtualPatientAttempt, User
+    VirtualPatientScenario, VirtualPatientAttempt, User,
+    QuestionCategory, Question, Test, TestAttempt
 )
 from utils.mobile_detection import get_mobile_detector
-from translations import get_translation as t
-from extensions import bcrypt
+from translations_new import get_translation as t
+from extensions import bcrypt, babel
 from forms import LoginForm, RegistrationForm
 
 mobile_bp = Blueprint('mobile', __name__, url_prefix='/<lang>/mobile', template_folder='../templates/mobile')
 
 # Языковые настройки
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa']
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'en'
 
 @mobile_bp.before_request
@@ -306,6 +307,27 @@ def subject_view(lang, subject_id):
             module.progress = module_stats.get("progress", 0)
             module.completed_lessons = module_stats.get("completed_lessons", 0)
             module.total_lessons = module_stats.get("total_lessons", 0)
+            
+            # Добавляем дополнительные атрибуты для шаблона
+            if module.total_lessons > 0:
+                module.progress_percentage = int((module.completed_lessons / module.total_lessons) * 100)
+            else:
+                module.progress_percentage = 0
+                
+            module.is_completed = module.progress_percentage >= 100
+            module.is_locked = False  # Пока все модули доступны
+            module.estimated_time = f"{max(1, module.total_lessons * 5)}min"  # 5 мин на урок
+            module.difficulty = getattr(module, 'difficulty', 'Средний')
+            module.has_test = True  # Предполагаем что у всех модулей есть тест
+            
+            # Исправляем проблему с lessons - подсчитываем количество уроков
+            try:
+                if hasattr(module, 'lessons') and module.lessons:
+                    module.lessons_count = module.lessons.count()
+                else:
+                    module.lessons_count = module.total_lessons
+            except:
+                module.lessons_count = module.total_lessons
 
         # Получаем данные
         virtual_patients = get_virtual_patients_for_subject(selected_subject, current_user.id)
@@ -328,8 +350,14 @@ def subject_view(lang, subject_id):
         return render_template(
             'learning/subject_view_mobile.html',
             title=selected_subject.name,
+            subject=selected_subject,
             selected_subject=selected_subject,
             subject_modules=subject_modules,
+            modules=subject_modules,
+            total_lessons=selected_subject.total_lessons,
+            completed_lessons=selected_subject.completed_lessons,
+            progress_percentage=selected_subject.progress_percentage,
+            estimated_time=selected_subject.estimated_time,
             virtual_patients=virtual_patients,
             stats=stats,
             recommendations=recommendations,
@@ -356,7 +384,7 @@ def lesson_view(lang, lesson_id):
         ).first()
         
         return render_template(
-            'learning/lesson_view_mobile.html',
+            'learning/lesson_mobile.html',
             title=lesson.title,
             lesson=lesson,
             module=module,
@@ -367,6 +395,89 @@ def lesson_view(lang, lesson_id):
     except Exception as e:
         current_app.logger.error(f"Error in mobile lesson_view: {e}", exc_info=True)
         flash(t("error_loading_lesson", lang=lang), "danger")
+        return redirect(url_for('mobile.learning_map', lang=lang))
+
+@mobile_bp.route('/module/<int:module_id>')
+@login_required
+def module_view(lang, module_id):
+    """Мобильная страница просмотра модуля."""
+    try:
+        from collections import defaultdict
+        
+        module = Module.query.get_or_404(module_id)
+        
+        # Получаем все уроки модуля
+        lessons = Lesson.query.filter_by(module_id=module.id).order_by(Lesson.order).all()
+        current_app.logger.info(f"Module '{module.title}' has {len(lessons)} lessons")
+        
+        # Группируем уроки по подтемам (упрощенная версия)
+        subtopics = defaultdict(list)
+        
+        for lesson in lessons:
+            # Получаем прогресс урока
+            user_progress = UserProgress.query.filter_by(
+                user_id=current_user.id,
+                lesson_id=lesson.id
+            ).first()
+            
+            lesson_data = {
+                'lesson': lesson,
+                'completed': user_progress.completed if user_progress else False,
+                'progress_percentage': user_progress.progress_percentage if user_progress else 0
+            }
+            
+            # Группируем по типу контента для простоты
+            if lesson.content_type == 'learning_card':
+                subtopic_name = "Обучающие материалы"
+            elif lesson.content_type in ['quiz', 'test_question']:
+                subtopic_name = "Тесты и задания"
+            else:
+                subtopic_name = "Общие материалы"
+                
+            subtopics[subtopic_name].append(lesson_data)
+        
+        # Преобразуем в формат для шаблона
+        topics_with_subtopics = []
+        for subtopic_name, subtopic_lessons in subtopics.items():
+            # Подсчитываем прогресс подтемы
+            completed_lessons = sum(1 for item in subtopic_lessons if item['completed'])
+            total_lessons = len(subtopic_lessons)
+            progress_percent = int((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
+            
+            topic_data = {
+                'topic': {
+                    'name': subtopic_name,
+                    'description': f"Подтема: {subtopic_name}"
+                },
+                'lessons': subtopic_lessons,
+                'total_lessons': total_lessons,
+                'completed_lessons': completed_lessons,
+                'progress_percent': progress_percent
+            }
+            topics_with_subtopics.append(topic_data)
+        
+        # Сортируем подтемы
+        topics_with_subtopics.sort(key=lambda x: x['topic']['name'])
+        
+        # Общий прогресс модуля
+        total_lessons = len(lessons)
+        completed_lessons = sum(1 for topic in topics_with_subtopics for item in topic['lessons'] if item['completed'])
+        module_progress = int((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
+        
+        return render_template(
+            'learning/module_mobile.html',
+            title=module.title,
+            module=module,
+            topics_with_subtopics=topics_with_subtopics,
+            module_progress=module_progress,
+            total_lessons=total_lessons,
+            completed_lessons=completed_lessons,
+            current_language=lang
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in mobile module_view: {e}", exc_info=True)
+        flash(t("error_loading_module", lang=lang), "danger")
         return redirect(url_for('mobile.learning_map', lang=lang))
 
 # Тестирование
@@ -515,8 +626,35 @@ def device_info(lang):
 @mobile_bp.route('/tests')
 @login_required
 def tests(lang):
-    """Мобильная страница тестов - перенаправляет на систему тестов."""
-    return redirect(url_for('tests_bp.setup_test', lang=lang))
+    """Мобильная страница тестов."""
+    try:
+        # Получаем все категории для выбора
+        categories = QuestionCategory.query.all()
+        
+        # Подготавливаем данные о категориях
+        test_categories = []
+        for category in categories:
+            # Подсчитываем количество вопросов в категории
+            question_count = Question.query.filter_by(category_id=category.id).count()
+            
+            test_categories.append({
+                'id': category.id,
+                'name': category.name,
+                'description': category.description,
+                'question_count': question_count,
+                'icon': 'fa-brain' if 'теория' in category.name.lower() else 'fa-stethoscope'
+            })
+        
+        return render_template(
+            'mobile/tests/test_mobile_system.html',
+            title=t('test_system', lang=lang),
+            current_language=lang,
+            categories=test_categories
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error in mobile tests route: {e}", exc_info=True)
+        flash(t('error_loading_tests', lang=lang), 'error')
+        return redirect(url_for('mobile.welcome', lang=lang))
 
 # Тестовые роуты для проверки ошибок (без авторизации)
 @mobile_bp.route('/test-404')
@@ -528,5 +666,53 @@ def test_404(lang):
 def test_500(lang):
     """Тестовый роут для проверки страницы 500."""
     abort(500)
+
+# Тестирование системы навигации
+@mobile_bp.route('/test-navigation')
+def test_navigation(lang):
+    """Тестовый роут для проверки системы мобильной навигации."""
+    try:
+        current_app.logger.info(f"Navigation test accessed with language: {lang}")
+        return render_template(
+            'test_navigation.html',
+            lang=lang,
+            title='Navigation System Test',
+            current_language=lang
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error in navigation test route: {e}", exc_info=True)
+        return f"Error loading navigation test: {str(e)}", 500
+
+# Тестирование совместимости обновленного mobile_base.html
+@mobile_bp.route('/test-compatibility')
+def test_compatibility(lang):
+    """Тестовый роут для проверки совместимости с обновленным mobile_base.html."""
+    try:
+        current_app.logger.info(f"Compatibility test accessed with language: {lang}")
+        return render_template(
+            'mobile/test_compatibility.html',
+            lang=lang,
+            title='Compatibility Test',
+            current_language=lang
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error in compatibility test route: {e}", exc_info=True)
+        return f"Error loading compatibility test: {str(e)}", 500
+
+# Тестирование с nav_config
+@mobile_bp.route('/test-nav-config')
+def test_nav_config(lang):
+    """Тестовый роут для проверки работы с nav_config."""
+    try:
+        current_app.logger.info(f"Nav config test accessed with language: {lang}")
+        return render_template(
+            'mobile/test_nav_config.html',
+            lang=lang,
+            title='Nav Config Test',
+            current_language=lang
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error in nav config test route: {e}", exc_info=True)
+        return f"Error loading nav config test: {str(e)}", 500
 
 # Вставьте сюда роуты 

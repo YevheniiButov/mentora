@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Navigation Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/mobile-app.css') }}" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .config-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .nav-preview {
+            margin-top: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-ok { background: #10b981; }
+        .status-error { background: #ef4444; }
+        .status-warning { background: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Navigation System Test</h1>
+        <p>Тестирование системы мобильной навигации для Become a Tandarts</p>
+        
+        <!-- Статус системы -->
+        <div class="test-section">
+            <h2 class="test-title">📊 System Status</h2>
+            <ul>
+                <li>
+                    <span class="status-indicator {{ 'status-ok' if get_navigation_config else 'status-error' }}"></span>
+                    Navigation Config Function: {{ 'Working' if get_navigation_config else 'Error' }}
+                </li>
+                <li>
+                    <span class="status-indicator {{ 'status-ok' if get_active_nav_item else 'status-error' }}"></span>
+                    Active Nav Item Function: {{ 'Working' if get_active_nav_item else 'Error' }}
+                </li>
+                <li>
+                    <span class="status-indicator {{ 'status-ok' if generate_breadcrumbs else 'status-error' }}"></span>
+                    Breadcrumbs Function: {{ 'Working' if generate_breadcrumbs else 'Error' }}
+                </li>
+                <li>
+                    <span class="status-indicator {{ 'status-ok' if lang else 'status-warning' }}"></span>
+                    Language: {{ lang or 'Not set' }}
+                </li>
+                <li>
+                    <span class="status-indicator {{ 'status-ok' if request.endpoint else 'status-warning' }}"></span>
+                    Endpoint: {{ request.endpoint or 'Not detected' }}
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Тест конфигураций -->
+        <div class="test-section">
+            <h2 class="test-title">⚙️ Available Configurations</h2>
+            {% for config_name in ['welcome', 'learning_map', 'subject_view', 'lesson', 'test_question', 'ai_chat'] %}
+            <div>
+                <h4>{{ config_name }}:</h4>
+                {% if get_navigation_config %}
+                    {% set config = get_navigation_config(config_name) %}
+                    <div class="config-display">{{ config | tojson(indent=2) }}</div>
+                {% else %}
+                    <div class="config-display status-error">❌ get_navigation_config function not available</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Тест активного элемента -->
+        <div class="test-section">
+            <h2 class="test-title">🎯 Active Navigation Detection</h2>
+            <ul>
+                <li><strong>Current endpoint:</strong> {{ request.endpoint or 'None' }}</li>
+                <li><strong>Active item:</strong> 
+                    {% if get_active_nav_item %}
+                        {{ get_active_nav_item(request.endpoint) }}
+                    {% else %}
+                        ❌ Function not available
+                    {% endif %}
+                </li>
+                <li><strong>Language:</strong> {{ lang or 'en' }}</li>
+                <li><strong>URL:</strong> {{ request.url }}</li>
+            </ul>
+        </div>
+        
+        <!-- Тест breadcrumbs -->
+        <div class="test-section">
+            <h2 class="test-title">🗂️ Breadcrumbs Generation</h2>
+            {% if generate_breadcrumbs %}
+                {% set breadcrumbs = generate_breadcrumbs(request, lang or 'en') %}
+                {% if breadcrumbs %}
+                    <h4>Generated breadcrumbs:</h4>
+                    <div class="config-display">{{ breadcrumbs | tojson(indent=2) }}</div>
+                {% else %}
+                    <p>No breadcrumbs generated for current route</p>
+                {% endif %}
+            {% else %}
+                <div class="config-display status-error">❌ generate_breadcrumbs function not available</div>
+            {% endif %}
+        </div>
+        
+        <!-- Тест переводов -->
+        <div class="test-section">
+            <h2 class="test-title">🌐 Translation Test</h2>
+            <ul>
+                <li><strong>home:</strong> {{ t('home', lang) if t else 'Translation function not available' }}</li>
+                <li><strong>learning:</strong> {{ t('learning', lang) if t else 'Translation function not available' }}</li>
+                <li><strong>tests:</strong> {{ t('tests', lang) if t else 'Translation function not available' }}</li>
+                <li><strong>ai_assistant:</strong> {{ t('ai_assistant', lang) if t else 'Translation function not available' }}</li>
+            </ul>
+        </div>
+        
+        <!-- Тест компонента навигации -->
+        <div class="test-section">
+            <h2 class="test-title">📱 Navigation Component Preview</h2>
+            <p>Предварительный просмотр компонента мобильной навигации:</p>
+            
+            <h4>Welcome Page Configuration:</h4>
+            <div class="nav-preview">
+                {% if get_navigation_config %}
+                    {% set nav_config = get_navigation_config('welcome') %}
+                    {% for key, value in nav_config.items() %}
+                        {% set dummy_var = nav_config.__setitem__(key, value) or '' %}
+                    {% endfor %}
+                    
+                    <!-- Передаем конфигурацию в компонент -->
+                    {% set show_bottom_nav = nav_config.show_bottom_nav %}
+                    {% set show_back_button = nav_config.show_back_button %}
+                    {% set show_profile_button = nav_config.show_profile_button %}
+                    {% set show_settings_button = nav_config.show_settings_button %}
+                    {% set show_language_selector = nav_config.show_language_selector %}
+                    {% set show_progress = nav_config.show_progress %}
+                    {% set page_title = nav_config.page_title %}
+                    {% set breadcrumbs = nav_config.breadcrumbs %}
+                    
+                    {% include 'components/mobile_navigation.html' %}
+                {% else %}
+                    <div style="padding: 20px; text-align: center; color: #666;">
+                        ❌ Cannot load navigation component - get_navigation_config not available
+                    </div>
+                {% endif %}
+            </div>
+            
+            <h4>Test Page Configuration:</h4>
+            <div class="nav-preview">
+                {% if get_navigation_config %}
+                    {% set nav_config = get_navigation_config('test_question') %}
+                    {% set show_bottom_nav = nav_config.show_bottom_nav %}
+                    {% set show_back_button = nav_config.show_back_button %}
+                    {% set show_profile_button = nav_config.show_profile_button %}
+                    {% set show_settings_button = nav_config.show_settings_button %}
+                    {% set show_language_selector = nav_config.show_language_selector %}
+                    {% set show_progress = nav_config.show_progress %}
+                    {% set page_title = nav_config.page_title %}
+                    {% set breadcrumbs = nav_config.breadcrumbs %}
+                    {% set progress_data = {'percentage': 65, 'current': 13, 'total': 20} %}
+                    
+                    {% include 'components/mobile_navigation.html' %}
+                {% else %}
+                    <div style="padding: 20px; text-align: center; color: #666;">
+                        ❌ Cannot load navigation component - get_navigation_config not available
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Отладочная информация -->
+        <div class="test-section">
+            <h2 class="test-title">🔍 Debug Information</h2>
+            <div class="config-display">
+                <strong>Request Data:</strong><br>
+                URL: {{ request.url }}<br>
+                Method: {{ request.method }}<br>
+                Endpoint: {{ request.endpoint }}<br>
+                View Args: {{ request.view_args | tojson }}<br>
+                <br>
+                <strong>Flask Global Objects:</strong><br>
+                g.lang: {{ g.lang if g else 'g not available' }}<br>
+                session.lang: {{ session.lang if session else 'session not available' }}<br>
+                <br>
+                <strong>Available Functions:</strong><br>
+                get_navigation_config: {{ 'Yes' if get_navigation_config else 'No' }}<br>
+                get_active_nav_item: {{ 'Yes' if get_active_nav_item else 'No' }}<br>
+                generate_breadcrumbs: {{ 'Yes' if generate_breadcrumbs else 'No' }}<br>
+                t (translation): {{ 'Yes' if t else 'No' }}<br>
+                get_country_code: {{ 'Yes' if get_country_code else 'No' }}<br>
+                get_language_names: {{ 'Yes' if get_language_names else 'No' }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Добавляем отступ снизу для мобильной навигации -->
+    <div style="height: 100px;"></div>
+    
+    <script src="{{ url_for('static', filename='js/mobile-app.js') }}"></script>
+</body>
+</html> 

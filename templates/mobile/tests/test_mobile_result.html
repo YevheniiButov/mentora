@@ -1,25 +1,25 @@
 {% extends "mobile_base.html" %}
 
 {% block nav_items %}
-<a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
     <i class="bi bi-house"></i>
-    <span>Главная</span>
+    <span>{{ t('home', lang) }}</span>
 </a>
-<a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
     <i class="bi bi-book"></i>
-    <span>Обучение</span>
+    <span>{{ t('learning', lang) }}</span>
 </a>
-<a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item active">
+<a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item active">
     <i class="bi bi-clipboard-check"></i>
-    <span>Тесты</span>
+    <span>{{ t('tests', lang) }}</span>
 </a>
-<a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=lang) }}" class="nav-item">
     <i class="bi bi-person-heart"></i>
-    <span>Пациенты</span>
+    <span>{{ t('patients', lang) }}</span>
 </a>
-<a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
+<a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
     <i class="fas fa-robot"></i>
-    <span>AI</span>
+    <span>{{ t('ai_assistant', lang) }}</span>
 </a>
 {% endblock %}
 
@@ -32,7 +32,7 @@
     <meta name="mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
     
-    <title>{% if current_language == 'ru' %}Результаты теста{% elif current_language == 'nl' %}Testresultaten{% else %}Test Results{% endif %} - Dental Academy</title>
+    <title>{% if lang == 'ru' %}Результаты теста{% elif lang == 'nl' %}Testresultaten{% else %}Test Results{% endif %} - Dental Academy</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -396,12 +396,12 @@
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="header-content">
-            <a href="{{ url_for('tests_bp.setup_test', lang=current_language) }}" class="back-btn">
+            <a href="{{ url_for('tests_bp.setup_test', lang=lang) }}" class="back-btn">
                 <i class="bi bi-arrow-left"></i>
             </a>
             <h1 class="header-title">
-                {% if current_language == 'ru' %}Результаты
-                {% elif current_language == 'nl' %}Resultaten
+                {% if lang == 'ru' %}Результаты
+                {% elif lang == 'nl' %}Resultaten
                 {% else %}Results
                 {% endif %}
             </h1>
@@ -430,26 +430,26 @@
             <!-- Result Title -->
             <h1 class="result-title">
                 {% if performance_level == 'excellent' %}
-                    {% if current_language == 'ru' %}Превосходно!
-                    {% elif current_language == 'nl' %}Uitstekend!
+                    {% if lang == 'ru' %}Превосходно!
+                    {% elif lang == 'nl' %}Uitstekend!
                     {% else %}Excellent!
                     {% endif %}
                 {% elif performance_level == 'good' %}
-                    {% if current_language == 'ru' %}Хорошо!
-                    {% elif current_language == 'nl' %}Goed gedaan!
+                    {% if lang == 'ru' %}Хорошо!
+                    {% elif lang == 'nl' %}Goed gedaan!
                     {% else %}Well Done!
                     {% endif %}
                 {% else %}
-                    {% if current_language == 'ru' %}Можно лучше
-                    {% elif current_language == 'nl' %}Kan beter
+                    {% if lang == 'ru' %}Можно лучше
+                    {% elif lang == 'nl' %}Kan beter
                     {% else %}Needs Improvement
                     {% endif %}
                 {% endif %}
             </h1>
 
             <p class="result-subtitle">
-                {% if current_language == 'ru' %}Ваш результат по тесту
-                {% elif current_language == 'nl' %}Je testresultaat
+                {% if lang == 'ru' %}Ваш результат по тесту
+                {% elif lang == 'nl' %}Je testresultaat
                 {% else %}Your test result
                 {% endif %}
             </p>
@@ -478,8 +478,8 @@
                     </svg>
                     <div class="score-text" id="scoreText">0%</div>
                     <div class="score-label">
-                        {% if current_language == 'ru' %}балл
-                        {% elif current_language == 'nl' %}score
+                        {% if lang == 'ru' %}балл
+                        {% elif lang == 'nl' %}score
                         {% else %}score
                         {% endif %}
                     </div>
@@ -491,8 +491,8 @@
                 <div class="stat-item">
                     <div class="stat-number correct">{{ score }}</div>
                     <div class="stat-label">
-                        {% if current_language == 'ru' %}Правильных
-                        {% elif current_language == 'nl' %}Juist
+                        {% if lang == 'ru' %}Правильных
+                        {% elif lang == 'nl' %}Juist
                         {% else %}Correct
                         {% endif %}
                     </div>
@@ -500,8 +500,8 @@
                 <div class="stat-item">
                     <div class="stat-number total">{{ total }}</div>
                     <div class="stat-label">
-                        {% if current_language == 'ru' %}Всего
-                        {% elif current_language == 'nl' %}Totaal
+                        {% if lang == 'ru' %}Всего
+                        {% elif lang == 'nl' %}Totaal
                         {% else %}Total
                         {% endif %}
                     </div>
@@ -509,8 +509,8 @@
                 <div class="stat-item">
                     <div class="stat-number percentage">{{ percentage }}%</div>
                     <div class="stat-label">
-                        {% if current_language == 'ru' %}Процент
-                        {% elif current_language == 'nl' %}Percentage
+                        {% if lang == 'ru' %}Процент
+                        {% elif lang == 'nl' %}Percentage
                         {% else %}Percentage
                         {% endif %}
                     </div>
@@ -521,18 +521,18 @@
             <div class="result-message delay-3 fade-in">
                 {% if performance_level == 'excellent' %}
                     <div class="message-text">
-                        {% if current_language == 'ru' %}
+                        {% if lang == 'ru' %}
                             Фантастический результат! Вы продемонстрировали отличное понимание материала.
-                        {% elif current_language == 'nl' %}
+                        {% elif lang == 'nl' %}
                             Fantastisch resultaat! Je hebt een uitstekend begrip van de stof getoond.
                         {% else %}
                             Fantastic result! You've demonstrated excellent understanding of the material.
                         {% endif %}
                     </div>
                     <div class="message-tips">
-                        {% if current_language == 'ru' %}
+                        {% if lang == 'ru' %}
                             Продолжайте в том же духе и переходите к следующим модулям!
-                        {% elif current_language == 'nl' %}
+                        {% elif lang == 'nl' %}
                             Ga zo door en ga verder naar de volgende modules!
                         {% else %}
                             Keep up the great work and proceed to the next modules!
@@ -540,18 +540,18 @@
                     </div>
                 {% elif performance_level == 'good' %}
                     <div class="message-text">
-                        {% if current_language == 'ru' %}
+                        {% if lang == 'ru' %}
                             Хороший результат! Вы справились с большинством вопросов.
-                        {% elif current_language == 'nl' %}
+                        {% elif lang == 'nl' %}
                             Goed resultaat! Je hebt de meeste vragen goed beantwoord.
                         {% else %}
                             Good result! You answered most questions correctly.
                         {% endif %}
                     </div>
                     <div class="message-tips">
-                        {% if current_language == 'ru' %}
+                        {% if lang == 'ru' %}
                             Рекомендуем повторить некоторые темы для лучшего понимания.
-                        {% elif current_language == 'nl' %}
+                        {% elif lang == 'nl' %}
                             We raden aan om enkele onderwerpen te herhalen voor beter begrip.
                         {% else %}
                             We recommend reviewing some topics for better understanding.
@@ -559,18 +559,18 @@
                     </div>
                 {% else %}
                     <div class="message-text">
-                        {% if current_language == 'ru' %}
+                        {% if lang == 'ru' %}
                             Есть возможности для улучшения. Не расстраивайтесь!
-                        {% elif current_language == 'nl' %}
+                        {% elif lang == 'nl' %}
                             Er zijn mogelijkheden voor verbetering. Laat je niet ontmoedigen!
                         {% else %}
                             There's room for improvement. Don't get discouraged!
                         {% endif %}
                     </div>
                     <div class="message-tips">
-                        {% if current_language == 'ru' %}
+                        {% if lang == 'ru' %}
                             Вернитесь к учебным материалам и попробуйте тест снова.
-                        {% elif current_language == 'nl' %}
+                        {% elif lang == 'nl' %}
                             Ga terug naar het leermateriaal en probeer de test opnieuw.
                         {% else %}
                             Review the learning materials and try the test again.
@@ -581,28 +581,28 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons delay-3 fade-in">
-                <a href="{{ url_for('mobile.learning_map', lang=current_language) }}" class="action-btn">
+                <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="action-btn">
                     <i class="bi bi-map"></i>
-                    {% if current_language == 'ru' %}Карта обучения
-                    {% elif current_language == 'nl' %}Leerkaart
+                    {% if lang == 'ru' %}Карта обучения
+                    {% elif lang == 'nl' %}Leerkaart
                     {% else %}Learning Map
                     {% endif %}
                 </a>
 
                 {% if percentage < 80 %}
-                <a href="{{ url_for('tests_bp.setup_test', lang=current_language) }}" class="action-btn retry">
+                <a href="{{ url_for('tests_bp.setup_test', lang=lang) }}" class="action-btn retry">
                     <i class="bi bi-arrow-repeat"></i>
-                    {% if current_language == 'ru' %}Попробовать снова
-                    {% elif current_language == 'nl' %}Probeer opnieuw
+                    {% if lang == 'ru' %}Попробовать снова
+                    {% elif lang == 'nl' %}Probeer opnieuw
                     {% else %}Try Again
                     {% endif %}
                 </a>
                 {% endif %}
 
-                <a href="{{ url_for('tests_bp.setup_test', lang=current_language) }}" class="action-btn secondary">
+                <a href="{{ url_for('tests_bp.setup_test', lang=lang) }}" class="action-btn secondary">
                     <i class="bi bi-clipboard-check"></i>
-                    {% if current_language == 'ru' %}Новый тест
-                    {% elif current_language == 'nl' %}Nieuwe test
+                    {% if lang == 'ru' %}Новый тест
+                    {% elif lang == 'nl' %}Nieuwe test
                     {% else %}New Test
                     {% endif %}
                 </a>

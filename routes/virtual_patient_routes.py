@@ -21,7 +21,7 @@ virtual_patient_bp = Blueprint(
 )
 
 # Языковые настройки
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa']
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'ru' # Установите ваш язык по умолчанию
 
 # Новая функция из Шага 7.3 (размещаем после импортов)

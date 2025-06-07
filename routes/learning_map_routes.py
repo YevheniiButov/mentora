@@ -4,15 +4,19 @@ from flask import (
     Blueprint, render_template, request, session, redirect, url_for, g, flash, 
     jsonify, current_app
 )
-from models import VirtualPatientScenario, VirtualPatientAttempt
 from flask_login import login_required, current_user
-from models import db, LearningPath, Subject, Module, Lesson, UserProgress, Test, UserExamDate, ContentCategory
+from extensions import db
+from models import (
+    VirtualPatientScenario, VirtualPatientAttempt, LearningPath, Subject, Module, Lesson, UserProgress, Test, UserExamDate, ContentCategory,
+    User, Question, TestAttempt
+)
+from translations_new import get_translation as t  # предполагаем, что функция называется get_translation
 from sqlalchemy import func
 import json
 import os
 import subprocess
 from datetime import datetime
-from translations import get_translation as t  # предполагаем, что функция называется get_translation
+
 # Создаем Blueprint для карты обучения
 learning_map_bp = Blueprint(
     "learning_map_bp",
@@ -22,7 +26,7 @@ learning_map_bp = Blueprint(
     )
 
 # --- Языковые и защитные обработчики ---
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa']
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'en'
 
 @learning_map_bp.before_request

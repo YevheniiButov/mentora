@@ -15,7 +15,7 @@ dashboard_bp = Blueprint(
 )
 
 # Языковые и защитные обработчики
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa']
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'en'
 
 @dashboard_bp.before_request

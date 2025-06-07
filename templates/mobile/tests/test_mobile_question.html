@@ -1,25 +1,25 @@
 {% extends "mobile_base.html" %}
 
 {% block nav_items %}
-<a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
     <i class="bi bi-house"></i>
-    <span>Главная</span>
+    <span>{{ t('home', lang) }}</span>
 </a>
-<a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
     <i class="bi bi-book"></i>
-    <span>Обучение</span>
+    <span>{{ t('learning', lang) }}</span>
 </a>
-<a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item active">
+<a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item active">
     <i class="bi bi-clipboard-check"></i>
-    <span>Тесты</span>
+    <span>{{ t('tests', lang) }}</span>
 </a>
-<a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item">
+<a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=lang) }}" class="nav-item">
     <i class="bi bi-person-heart"></i>
-    <span>Пациенты</span>
+    <span>{{ t('patients', lang) }}</span>
 </a>
-<a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
+<a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
     <i class="fas fa-robot"></i>
-    <span>AI</span>
+    <span>{{ t('ai_assistant', lang) }}</span>
 </a>
 {% endblock %}
 
@@ -32,7 +32,7 @@
     <meta name="mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
     
-    <title>{% if current_language == 'ru' %}Вопрос {{ step + 1 }}{% elif current_language == 'nl' %}Vraag {{ step + 1 }}{% else %}Question {{ step + 1 }}{% endif %} - Dental Academy</title>
+    <title>{% if lang == 'ru' %}Вопрос {{ step + 1 }}{% elif lang == 'nl' %}Vraag {{ step + 1 }}{% else %}Question {{ step + 1 }}{% endif %} - Dental Academy</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -387,12 +387,12 @@
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="header-content">
-            <a href="{{ url_for('tests_bp.setup_test', lang=current_language) }}" class="back-btn">
+            <a href="{{ url_for('tests_bp.setup_test', lang=lang) }}" class="back-btn">
                 <i class="bi bi-arrow-left"></i>
             </a>
             <h1 class="header-title">
-                {% if current_language == 'ru' %}Вопрос {{ step + 1 }} из {{ total }}
-                {% elif current_language == 'nl' %}Vraag {{ step + 1 }} van {{ total }}
+                {% if lang == 'ru' %}Вопрос {{ step + 1 }} из {{ total }}
+                {% elif lang == 'nl' %}Vraag {{ step + 1 }} van {{ total }}
                 {% else %}Question {{ step + 1 }} of {{ total }}
                 {% endif %}
             </h1>
@@ -415,7 +415,7 @@
                 {{ question.text | safe }}
             </div>
 
-            <form method="POST" action="{{ url_for('tests_bp.take_test', lang=current_language) }}" id="questionForm">
+            <form method="POST" action="{{ url_for('tests_bp.take_test', lang=lang) }}" id="questionForm">
                 <div class="options-container">
                     {% for option in options %}
                     <div class="option-btn {% if result and submitted_answer == option %}selected{% endif %} 
@@ -448,8 +448,8 @@
                 <div class="action-buttons">
                     <button type="submit" class="submit-btn" id="submitBtn" disabled>
                         <i class="bi bi-check-circle me-2"></i>
-                        {% if current_language == 'ru' %}Ответить
-                        {% elif current_language == 'nl' %}Antwoorden
+                        {% if lang == 'ru' %}Ответить
+                        {% elif lang == 'nl' %}Antwoorden
                         {% else %}Submit Answer
                         {% endif %}
                     </button>
@@ -463,28 +463,28 @@
                 {% if result == 'correct' %}
                     <h4>
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        {% if current_language == 'ru' %}Правильно! Вы дали правильный ответ.
-                        {% elif current_language == 'nl' %}Juist! Je hebt het juiste antwoord gegeven.
+                        {% if lang == 'ru' %}Правильно! Вы дали правильный ответ.
+                        {% elif lang == 'nl' %}Juist! Je hebt het juiste antwoord gegeven.
                         {% else %}Great job! You gave the correct answer.
                         {% endif %}
                     </h4>
                     <p>
-                        {% if current_language == 'ru' %}Отличная работа!
-                        {% elif current_language == 'nl' %}Geweldig werk!
+                        {% if lang == 'ru' %}Отличная работа!
+                        {% elif lang == 'nl' %}Geweldig werk!
                         {% else %}Great job!
                         {% endif %}
                     </p>
                 {% else %}
                     <h4>
                         <i class="bi bi-x-circle-fill me-2"></i>
-                        {% if current_language == 'ru' %}Неправильно
-                        {% elif current_language == 'nl' %}Onjuist
+                        {% if lang == 'ru' %}Неправильно
+                        {% elif lang == 'nl' %}Onjuist
                         {% else %}Incorrect
                         {% endif %}
                     </h4>
                     <p>
-                        {% if current_language == 'ru' %}Правильный ответ: {{ correct_answer }}
-                        {% elif current_language == 'nl' %}Het juiste antwoord: {{ correct_answer }}
+                        {% if lang == 'ru' %}Правильный ответ: {{ correct_answer }}
+                        {% elif lang == 'nl' %}Het juiste antwoord: {{ correct_answer }}
                         {% else %}The correct answer: {{ correct_answer }}
                         {% endif %}
                     </p>
@@ -495,8 +495,8 @@
             {% if explanation %}
             <div class="explanation-box fade-in">
                 <div class="explanation-title">
-                    {% if current_language == 'ru' %}Объяснение:
-                    {% elif current_language == 'nl' %}Uitleg:
+                    {% if lang == 'ru' %}Объяснение:
+                    {% elif lang == 'nl' %}Uitleg:
                     {% else %}Explanation:
                     {% endif %}
                 </div>
@@ -507,19 +507,19 @@
             {% endif %}
 
             <!-- Next Button -->
-            <form method="POST" action="{{ url_for('tests_bp.next_question', lang=current_language) }}">
+            <form method="POST" action="{{ url_for('tests_bp.next_question', lang=lang) }}">
                 <div class="action-buttons">
                     <button type="submit" class="next-btn">
                         {% if step + 1 >= total %}
                             <i class="bi bi-flag-fill me-2"></i>
-                            {% if current_language == 'ru' %}Завершить тест
-                            {% elif current_language == 'nl' %}Test voltooien
+                            {% if lang == 'ru' %}Завершить тест
+                            {% elif lang == 'nl' %}Test voltooien
                             {% else %}Finish Test
                             {% endif %}
                         {% else %}
                             <i class="bi bi-arrow-right me-2"></i>
-                            {% if current_language == 'ru' %}Следующий вопрос
-                            {% elif current_language == 'nl' %}Volgende vraag
+                            {% if lang == 'ru' %}Следующий вопрос
+                            {% elif lang == 'nl' %}Volgende vraag
                             {% else %}Next Question
                             {% endif %}
                         {% endif %}

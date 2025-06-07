@@ -6,15 +6,17 @@ Includes RAG-powered AI system with user API keys
 
 from flask import Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app, jsonify
 from flask_login import login_required, current_user
+from extensions import db
 from models import (
-    db, Subject, Module, UserProgress, Lesson, ContentCategory,
+    Subject, Module, UserProgress, Lesson, ContentCategory,
     ContentSubcategory, ContentTopic, LearningPath, User,
-    UserAPIKey, AIConversation, ContentEmbedding
+    UserAPIKey, AIConversation, ContentEmbedding,
+    VirtualPatientScenario, Test, Question, TestAttempt
 )
 from utils.mobile_detection import get_mobile_detector
 from utils.ai_manager import AIManager, AIProviderManager
 from utils.rag_system import RAGSystem
-from translations import get_translation as t
+from translations_new import get_translation as t
 import json
 import logging
 
@@ -26,7 +28,7 @@ ai_manager = AIManager()
 rag_system = RAGSystem()
 
 # Языковые настройки
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa']
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'en'
 
 @ai_bp.before_request

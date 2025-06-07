@@ -10,8 +10,9 @@ from flask_login import current_user
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
-from translations import get_translation, setup_translations
+from translations_new import setup_translations
 from utils.subtopics import create_slug, update_lesson_subtopics, reorder_subtopic_lessons
+from utils.mobile_navigation import MobileNavigationConfig, get_active_nav_item
 from mobile_integration import init_mobile_integration
 from utils.mobile_helpers import init_mobile_helpers
 from flask import send_from_directory, Response
@@ -46,7 +47,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Языковые настройки
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa']
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'en'
 
 def fromjson_filter(json_string):
@@ -815,6 +816,16 @@ def create_app(test_config=None):
             get_user_xp=get_user_xp,
             get_user_progress_to_next_level=get_user_progress_to_next_level
         )
+
+    # Функции для мобильной навигации
+    @app.context_processor
+    def inject_navigation_helpers():
+        """Добавляет помощники мобильной навигации в контекст всех шаблонов"""
+        return {
+            'get_navigation_config': MobileNavigationConfig.get_config,
+            'generate_breadcrumbs': MobileNavigationConfig.generate_breadcrumbs,
+            'get_active_nav_item': get_active_nav_item
+        }
 
     print(f"Registered blueprint: {subject_view_bp.name} with url_prefix: {subject_view_bp.url_prefix}")
 

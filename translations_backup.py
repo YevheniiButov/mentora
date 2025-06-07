@@ -8,7 +8,11 @@ translations = {
 
         # === Navigation & Auth ===
         'home': 'Home',
+        'learning': 'Learning',
         'learning_map': 'Learning Map',
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
         'dashboard': 'Dashboard',
         'about_big': 'About BIG',
         'profile': 'Profile',
@@ -344,6 +348,46 @@ translations = {
         'try_again': 'Try again',
         'loading': 'Loading...',
 
+        # === UI Elements ===
+        'dark_mode': 'Dark Mode',
+        'light_mode': 'Light Mode',
+        'language': 'Language',
+        'theme': 'Theme',
+        'switch_theme': 'Switch Theme',
+        'current_language': 'Current Language',
+        
+        # === Authentication ===
+        'register': 'Register',
+        'login': 'Login',
+        'already_have_account_signin': 'Already have an account? Sign In',
+        'create_account': 'Create Account',
+        'enter_your_name': 'Enter your name',
+        'enter_your_email': 'Enter your email',
+        'next': 'Next',
+        'back': 'Back',
+        'create_strong_password': 'Create a strong password',
+        'repeat_password': 'Repeat password',
+        'submit': 'Submit',
+        'continue': 'Continue',
+        'start': 'Start',
+        
+        # === Navigation (already exists but adding for consistency) ===
+        'home': 'Home',
+        'learning': 'Learning', 
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
+        
+        # === Additional UI ===
+        'settings': 'Settings',
+        'profile': 'Profile',
+        'logout': 'Logout',
+        'loading': 'Loading...',
+        'error': 'Error',
+        'success': 'Success',
+        'cancel': 'Cancel',
+        'save': 'Save',
+        'patients_coming_soon': 'Patients Coming Soon',
     },
 
     'ru': {
@@ -353,7 +397,11 @@ translations = {
 
         # === Навигация и авторизация ===
         'home': 'Главная',
+        'learning': 'Обучение',
         'learning_map': 'Карта обучения',
+        'tests': 'Тесты',
+        'patients': 'Пациенты',
+        'ai_assistant': 'AI Помощник',
         'dashboard': 'Дашборд',
         'about_big': 'О BIG',
         'profile': 'Профиль',
@@ -641,14 +689,14 @@ translations = {
         # Статистика
         'platform_stats': 'Присоединяйтесь к тысячам успешных студентов',
         'active_students': 'Активных Студентов',
-        'success_rate': 'Процент Успеха %',
-        'practice_questions': 'Практических Вопросов',
-        'languages': 'Языков',
+        'success_rate': 'Success Rate %',
+        'practice_questions': 'Practice Questions',
+        'languages': 'Languages',
         
         # Отзывы
-        'student_success': 'Истории Успеха Студентов',
+        'student_success': 'Student Success Stories',
         'testimonial_1': 'Dental Academy помогла мне сдать экзамен BIG с первой попытки. Виртуальные пациенты были невероятно реалистичными!',
-        'testimonial_author_1': 'Анна Мартинес',
+        'testimonial_author_1': 'Anna Martinez',
         'dentist_amsterdam': 'Стоматолог, Амстердам',
         
         # Финальный CTA
@@ -679,6 +727,47 @@ translations = {
         'network_error': 'Произошла ошибка сети',
         'try_again': 'Попробовать снова',
         'loading': 'Загрузка...',
+
+        # === UI Elements ===
+        'dark_mode': 'Темная тема',
+        'light_mode': 'Светлая тема',
+        'language': 'Язык',
+        'theme': 'Тема',
+        'switch_theme': 'Переключить тему',
+        'current_language': 'Текущий язык',
+        
+        # === Authentication ===
+        'register': 'Регистрация',
+        'login': 'Войти',
+        'already_have_account_signin': 'Уже есть аккаунт? Войти',
+        'create_account': 'Создать аккаунт',
+        'enter_your_name': 'Введите ваше имя',
+        'enter_your_email': 'Введите ваш email',
+        'next': 'Далее',
+        'back': 'Назад',
+        'create_strong_password': 'Создайте надежный пароль',
+        'repeat_password': 'Повторите пароль',
+        'submit': 'Отправить',
+        'continue': 'Продолжить',
+        'start': 'Начать',
+        
+        # === Navigation (already exists but adding for consistency) ===
+        'home': 'Home',
+        'learning': 'Learning', 
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
+        
+        # === Additional UI ===
+        'settings': 'Настройки',
+        'profile': 'Профиль',
+        'logout': 'Выйти',
+        'loading': 'Loading...',
+        'error': 'Ошибка',
+        'success': 'Успех',
+        'cancel': 'Отмена',
+        'save': 'Сохранить',
+        'patients_coming_soon': 'Пациенты скоро появятся',
     },
 
     'nl': {
@@ -688,7 +777,11 @@ translations = {
 
         # === Навигация и авторизация ===
         'home': 'Home',
-        'learning_map': 'Leerkaart',
+        'learning': 'Learning',
+        'learning_map': 'Learning Map',
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
         'dashboard': 'Dashboard',
         'about_big': 'Over BIG',
         'profile': 'Profiel',
@@ -830,7 +923,7 @@ translations = {
         'unlock_all_features': 'Ontgrendel Alle Functies',
         'upgrade_premium_description': 'Upgrade naar premium abonnement voor toegang tot alle modules',
         'subscribe_now': 'Nu Abonneren',
-        'recommended_module': 'Aanbevolen Module',
+        'recommended_module': 'Recomenduerend Module',
         'continue_this_module': 'Ga Verder met deze Module',
         'dental_anatomy': 'Tandanatomie',
         'dental_anatomy_description': 'Basisstructuur en morfologie van tanden',
@@ -1023,7 +1116,11 @@ translations = {
     'es': {
         # === Navigation & Auth ===
         'home': 'Inicio',
-        'learning_map': 'Mapa de aprendizaje',
+        'learning': 'Learning',
+        'learning_map': 'Learning Map',
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
         'dashboard': 'Panel',
         'about_big': 'Acerca de BIG',
         'profile': 'Perfil',
@@ -1353,7 +1450,11 @@ translations = {
     'pt': {
         # === Navigation & Auth ===
         'home': 'Início',
-        'learning_map': 'Mapa de aprendizagem',
+        'learning': 'Learning',
+        'learning_map': 'Learning Map',
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
         'dashboard': 'Painel',
         'about_big': 'Sobre BIG',
         'profile': 'Perfil',
@@ -1581,7 +1682,7 @@ translations = {
         'progress_tracking': 'Acompanhamento do progresso',
         'progress_tracking_desc': 'Análise detalhada do seu aprendizado',
         'theory_title': 'Teoria',
-        'theory_description': 'Módulos estruturados sobre anatomia, fisiologia e radiologia',
+        'theory_description': 'Módulos estruturados sobre anatomía, fisiología y radiología',
         'anatomy': 'Anatomia',
         'physiology': 'Fisiologia',
         'radiology': 'Radiologia',
@@ -1683,7 +1784,11 @@ translations = {
     'uk': {
         # === Navigation & Auth ===
         'home': 'Головна',
-        'learning_map': 'Карта навчання',
+        'learning': 'Learning',
+        'learning_map': 'Learning Map',
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
         'dashboard': 'Дашборд',
         'about_big': 'Про BIG',
         'profile': 'Профіль',
@@ -1996,24 +2101,28 @@ translations = {
         'language_name_es': 'Español',
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
-        'language_name_fa': 'فارسی',
+        'language_name_fa': 'Farsça', # Corrected to Farsça
         
         # UI элементы
-        'select_language': 'Обрати Мову',
-        'toggle_theme': 'Перемкнути Тему',
-        'theme_changed': 'Тему змінено',
-        'language_changed': 'Мову успішно змінено',
-        'install_prompt': 'Встановіть цей додаток для кращого досвіду!',
-        'install_success': 'Додаток успішно встановлено!',
-        'network_error': 'Сталася помилка мережі',
-        'try_again': 'Спробувати знову',
-        'loading': 'Завантаження...',
+        'select_language': 'Dil Seç',
+        'toggle_theme': 'Tema Değiştir',
+        'theme_changed': 'Tema değiştirildi',
+        'language_changed': 'Dil başarıyla değiştirildi',
+        'install_prompt': 'En iyi deneyim için bu uygulamayı yükleyin!',
+        'install_success': 'Uygulama başarıyla yüklendi!',
+        'network_error': 'Ağ hatası oluştu',
+        'try_again': 'Tekrar dene',
+        'loading': 'Yükleniyor...',
     },
 
     'fa': {
         # === Navigation & Auth ===
         'home': 'خانه',
-        'learning_map': 'نقشه یادگیری',
+        'learning': 'Learning',
+        'learning_map': 'Learning Map',
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
         'dashboard': 'داشبورد',
         'about_big': 'درباره BIG',
         'profile': 'پروفایل',
@@ -2326,24 +2435,28 @@ translations = {
         'language_name_es': 'Español',
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
-        'language_name_fa': 'فارسی',
+        'language_name_fa': 'Farsça', # Corrected to Farsça
         
         # UI элементы
-        'select_language': 'انتخاب زبان',
-        'toggle_theme': 'تغییر تم',
-        'theme_changed': 'تم تغییر کرد',
-        'language_changed': 'زبان با موفقیت تغییر کرد',
-        'install_prompt': 'برای بهترین تجربه این اپ را نصب کنید!',
-        'install_success': 'اپ با موفقیت نصب شد!',
-        'network_error': 'خطای شبکه رخ داد',
-        'try_again': 'دوباره تلاش کنید',
-        'loading': 'در حال بارگذاری...',
+        'select_language': 'Dil Seç',
+        'toggle_theme': 'Tema Değiştir',
+        'theme_changed': 'Tema değiştirildi',
+        'language_changed': 'Dil başarıyla değiştirildi',
+        'install_prompt': 'En iyi deneyim için bu uygulamayı yükleyin!',
+        'install_success': 'Uygulama başarıyla yüklendi!',
+        'network_error': 'Ağ hatası oluştu',
+        'try_again': 'Tekrar dene',
+        'loading': 'Yükleniyor...',
     },
 
-    'tr': {
+'tr': {
         # === Navigation & Auth ===
         'home': 'Ana Sayfa',
-        'learning_map': 'Öğrenme Haritası',
+        'learning': 'Learning',
+        'learning_map': 'Learning Map',
+        'tests': 'Tests',
+        'patients': 'Patients',
+        'ai_assistant': 'AI Assistant',
         'dashboard': 'Panel',
         'about_big': 'BIG Hakkında',
         'profile': 'Profil',
@@ -2353,19 +2466,19 @@ translations = {
         'login': 'Giriş',
         'register': 'Kaydol',
         # === Homepage Content ===
-        'seo_title': "Hollanda'daki Diş Hekimleri İçin BIG Sınavı Hazırlığı - Tandarts Olun",
-        'seo_description': "Hollanda'daki diş hekimlerini BIG kayıt sınavına (BI-toets) hazırlayan çevrimiçi platform. Çalışma materyalleri, deneme sınavları, ipuçları ve topluluk.",
+        'seo_title': "Hollanda'daki Diş Hekimleri İçin BIG Sınavı Hazırlığı - Tandarts Olun", # Add 'seo_title' key
+        'seo_description': "Hollanda'daki diş hekimlerini BIG kayıt sınavına (BI-toets) hazırlayan çevrimiçi platform. Çalışma materyalleri, deneme sınavları, ipuçları ve topluluk.", # Add 'seo_description' key
         'big_exam_for_dentists': 'Diş hekimleri için BIG sınavı',
         'successful_path_title': 'Diş hekimliği lisansına giden <span class="text-teal-600">başarılı yolunuz</span>',
-        'complete_preparation': "Hollanda'daki yabancı diş hekimleri için BIG sınavına yönelik eksiksiz çevrimiçi hazırlık. Bugün öğrenmeye başlayın!",
+        'complete_preparation': "Hollanda'daki yabancı diş hekimleri için BIG sınavına yönelik eksiksiz çevrimiçi hazırlık. Bugün öğrenmeye başlayın!", # Add 'complete_preparation' key
         'start_for_free': 'Ücretsiz başla',
         'learn_about_big': 'BIG sınavı hakkında bilgi edinin',
         'students': 'Öğrenci',
         'success_rate': '% Başarı oranı',
         'rating': 'Değerlendirme',
         'alt_big_exam_interface': 'BIG sınav arayüzü',
-        'start_path_title': '<span class="text-gradient">BIG kaydına</span> giden yolculuğunuza başlayın',
-        'professional_platform': "Diş hekimlerini Hollanda'daki BIG sınavına ve lisanslamaya hazırlayan profesyonel çevrimiçi platform",
+        'start_path_title': '<span class="text-gradient">BIG kaydına</span> giden yolculuğunuza başlayın', # Add 'start_path_title' key
+        'professional_platform': "Diş hekimlerini Hollanda'daki BIG sınavına ve lisanslamaya hazırlayan profesyonel çevrimiçi platform", # Add 'professional_platform' key
         'structured_modules': 'Yapılandırılmış öğrenme modülleri',
         'professional_dutch': 'Profesyonel Hollandaca dili',
         'practice_exams': 'Deneme sınavları',
@@ -2377,7 +2490,7 @@ translations = {
         'exam': 'Sınav',
         'virtual_patient': 'Sanal Hasta',
         'why_choose_us': 'NEDEN BİZİ SEÇMELİSİNİZ?',
-        'our_approach': '<span class="text-accent">BIG sınavına</span> hazırlık yaklaşımımız',
+        'our_approach': '<span class="text-accent">BIG sınavına</span> hazırlık yaklaşımımız', # Add 'our_approach' key
         'comprehensive_system': 'Yabancı eğitimli diş hekimleri için özel olarak tasarlanmış kapsamlı bir hazırlık sistemi sunuyoruz',
         'structured_modules_desc': 'Resmi BIG kayıt gerekliliklerine ve gerçek deneyime dayalı özenle düzenlenmiş içerik',
         'interactive_flashcards': 'Etkileşimli Bilgi Kartları',
@@ -2559,7 +2672,7 @@ translations = {
         'ajax_error': 'Veriler yüklenirken bir hata oluştu.',
 
         # Additional keys from index.html that were not in translations.py (translated)
-        'platform_description': "Hollanda'da BIG sınavına hazırlık için modern eğitim platformu. Bireysel yaklaşımla yüksek kaliteli eğitim.",
+        "platform_description": "Hollanda'da BIG sınavına hazırlık için modern eğitim platformu. Bireysel yaklaşımla yüksek kaliteli eğitim.", # Add 'platform_description' key
         'learn_more': 'Daha fazla bilgi edin',
         'exam_preparation': 'Sınav Hazırlığı',
         'languages_supported': 'Desteklenen Diller',
@@ -2579,7 +2692,7 @@ translations = {
         'practice_title': 'Pratik',
         'practice_description': 'Klinik vakalar ve hasta etkileşimi simülasyonu',
         'case_studies': 'Vaka Çalışmaları',
-        'communication': 'İletişim', # Already existed, confirm context
+        'communication': 'İletişim',
         'exam_description': 'Sonuç analizi ile gerçek sınavlara hazırlık',
         'mock_exams': 'Deneme Sınavları',
         'analytics': 'Analizler',
@@ -2610,7 +2723,7 @@ translations = {
         'start_now': 'Şimdi Başla',
                 # Hero секция
         'welcome_hero_title': 'Diş Hekimi Olun',
-        'welcome_hero_subtitle': 'Diş hekimliği becerilerinde ustalaşın. BIG sınavını geçin. Hollanda\'da kariyerinizi dönüştürün.',
+        'welcome_hero_subtitle': 'Diş hekimliği becerilerinde ustalaşın. BIG sınavını geçin. Hollanda\'daki kariyerinizi dönüştürün.',
         'dental_academy': 'Dental Academy',
         'start_free_trial': 'Ücretsiz Deneme Başlat',
         'explore_platform': 'Platformu Keşfet',
@@ -2656,7 +2769,7 @@ translations = {
         'language_name_es': 'Español',
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
-        'language_name_fa': 'فارسی',
+        'language_name_fa': 'Farsça', # Corrected to Farsça
         
         # UI элементы
         'select_language': 'Dil Seç',
@@ -2668,7 +2781,348 @@ translations = {
         'network_error': 'Ağ hatası oluştu',
         'try_again': 'Tekrar dene',
         'loading': 'Yükleniyor...',
+    },
+
+    'ar': {
+        # === Navigation & Auth ===
+        'home': 'الرئيسية',
+        'learning': 'التعلم',
+        'learning_map': 'خريطة التعلم',
+        'tests': 'الاختبارات',
+        'patients': 'المرضى',
+        'ai_assistant': 'مساعد ذكي',
+        'dashboard': 'لوحة التحكم',
+        'about_big': 'حول BIG',
+        'profile': 'الملف الشخصي',
+        'settings': 'الإعدادات',
+        'admin_panel': 'لوحة الإدارة',
+        'logout': 'تسجيل الخروج',
+        'login': 'تسجيل الدخول',
+        'register': 'التسجيل',
+        
+        # === Homepage Content ===
+        'big_exam_for_dentists': 'امتحان BIG لأطباء الأسنان',
+        'successful_path_title': 'طريقك الناجح إلى ترخيص طب الأسنان',
+        'start_for_free': 'ابدأ مجانًا',
+        'learn_about_big': 'تعرف على امتحان BIG',
+        'students': 'طالب',
+        'success_rate': '% معدل النجاح',
+        'rating': 'التقييم',
+        'continue_learning': 'متابعة التعلم',
+        'about_big_exam': 'حول امتحان BIG',
+        'virtual_patient': 'مريض افتراضي',
+        'why_choose_us': 'لماذا تختارنا؟',
+        'start_learning': 'ابدأ التعلم',
+        
+        # === Learning Map Page ===
+        'progress': 'التقدم',
+        'overall_progress': 'التقدم العام',
+        'activity': 'النشاط',
+        'days_short': 'يوم',
+        'total_time': 'الوقت الإجمالي',
+        'exam_date_label': 'التاريخ',
+        'not_scheduled': 'غير مجدول',
+        'basic_medical_sciences': 'العلوم الطبية الأساسية',
+        'radiology': 'الأشعة',
+        'preclinical_skills': 'المهارات قبل السريرية',
+        'virtual_patients': 'مرضى افتراضيون',
+        'treatment_planning': 'تخطيط العلاج',
+        'premium': 'مميز',
+        'test': 'اختبار',
+        'start': 'ابدأ',
+        'start_test': 'ابدأ الاختبار',
+        'loading': 'جاري التحميل...',
+        
+        # === UI Elements ===
+        'dark_mode': 'الوضع المظلم',
+        'light_mode': 'الوضع المضيء', 
+        'language': 'اللغة',
+        'theme': 'المظهر',
+        'switch_theme': 'تبديل المظهر',
+        'current_language': 'اللغة الحالية',
+        
+        # === Authentication ===
+        'register': 'التسجيل',
+        'login': 'تسجيل الدخول',
+        'already_have_account_signin': 'لديك حساب بالفعل؟ تسجيل الدخول',
+        'create_account': 'إنشاء حساب',
+        'enter_your_name': 'أدخل اسمك',
+        'enter_your_email': 'أدخل بريدك الإلكتروني',
+        'next': 'التالي',
+        'back': 'السابق',
+        'create_strong_password': 'إنشاء كلمة مرور قوية',
+        'repeat_password': 'تكرار كلمة المرور',
+        'submit': 'إرسال',
+        'continue': 'متابعة',
+        'start': 'ابدأ',
+        
+        # === Navigation (already exists but adding for consistency) ===
+        'home': 'الرئيسية',
+        'learning': 'التعلم', 
+        'tests': 'الاختبارات',
+        'patients': 'المرضى',
+        'ai_assistant': 'المساعد الذكي',
+        
+        # === Additional UI ===
+        'settings': 'الإعدادات',
+        'profile': 'الملف الشخصي',
+        'logout': 'تسجيل الخروج',
+        'loading': 'جاري التحميل...',
+        'error': 'خطأ',
+        'success': 'نجح',
+        'cancel': 'إلغاء',
+        'save': 'حفظ',
+        'patients_coming_soon': 'المرضى قادمون قريباً',
+    },
+
+    # === WELCOME PAGE CONTENT KEYS ===
+    'become_tandarts': {
+        'en': 'Become a Tandarts',
+        'ru': 'Стань Дантистом',
+        'nl': 'Word een Tandarts',
+        'uk': 'Стань Дантистом',
+        'es': 'Conviértete en Dentista',
+        'pt': 'Torne-se um Dentista',
+        'tr': 'Bir Diş Hekimi Ol',
+        'fa': 'دندانپزشک شوید',
+        'ar': 'كن طبيب أسنان'
+    },
+    'hero_subtitle': {
+        'en': 'Master dental skills. Pass BIG exam. Transform your career in Netherlands.',
+        'ru': 'Овладей навыками стоматологии. Сдай экзамен BIG. Преобрази свою карьеру в Нидерландах.',
+        'nl': 'Beheers tandheelkundige vaardigheden. Slaag voor het BIG-examen. Transformeer je carrière in Nederland.',
+        'uk': 'Опануй навички стоматології. Склади іспит BIG. Трансформуй свою кар\'єру в Нідерландах.',
+        'es': 'Domina las habilidades dentales. Aprueba el examen BIG. Transforma tu carrera en los Países Bajos.',
+        'pt': 'Domine habilidades odontológicas. Passe no exame BIG. Transforme sua carreira na Holanda.',
+        'tr': 'Diş hekimliği becerilerinde ustalaşın. BIG sınavını geçin. Hollanda\'daki kariyerinizi dönüştürün.',
+        'fa': 'مهارت‌های دندانپزشکی را فراگیرید. آزمون BIG را بگذرانید. شغل خود را در هلند متحول کنید.',
+        'ar': 'أتقن مهارات طب الأسنان. اجتز امتحان BIG. حول مسيرتك المهنية في هولندا.'
+    },
+    'start_free_trial': {
+        'en': 'Start Free Trial',
+        'ru': 'Начать Бесплатно',
+        'nl': 'Start Gratis Proefperiode',
+        'uk': 'Почати Безкоштовно',
+        'es': 'Comenzar Prueba Gratuita',
+        'pt': 'Iniciar Teste Gratuito',
+        'tr': 'Ücretsiz Deneme Başlat',
+        'fa': 'شروع آزمایش رایگان',
+        'ar': 'ابدأ التجربة المجانية'
+    },
+    'explore_platform': {
+        'en': 'Explore Platform',
+        'ru': 'Изучить Платформу',
+        'nl': 'Verken Platform',
+        'uk': 'Вивчити Платформу',
+        'es': 'Explorar Plataforma',
+        'pt': 'Explorar Plataforma',
+        'tr': 'Platformu Keşfet',
+        'fa': 'کاوش پلتفرم',
+        'ar': 'استكشف المنصة'
+    },
+    'why_choose_dental_academy': {
+        'en': 'Why Choose Dental Academy?',
+        'ru': 'Почему Стоматологическая Академия?',
+        'nl': 'Waarom Tandheelkunde Academie kiezen?',
+        'uk': 'Чому Стоматологічна Академія?',
+        'es': '¿Por qué elegir Academia Dental?',
+        'pt': 'Por que escolher a Academia Dental?',
+        'tr': 'Neden Diş Hekimliği Akademisi?',
+        'fa': 'چرا آکادمی دندانپزشکی را انتخاب کنیم؟',
+        'ar': 'لماذا تختار أكاديمية طب الأسنان؟'
+    },
+    'expert_content': {
+        'en': 'Expert Content',
+        'ru': 'Экспертный Контент',
+        'nl': 'Expert Inhoud',
+        'uk': 'Експертний Контент',
+        'es': 'Contenido Experto',
+        'pt': 'Conteúdo Especializado',
+        'tr': 'Uzman İçeriği',
+        'fa': 'محتوای متخصص',
+        'ar': 'محتوى الخبراء'
+    },
+    'expert_content_description': {
+        'en': 'Curated by Dutch dental professionals for BIG exam success',
+        'ru': 'Составлено голландскими стоматологами для успеха на экзамене BIG',
+        'nl': 'Samengesteld door Nederlandse tandartsen voor BIG-examensucces',
+        'uk': 'Складено голландськими стоматологами для успіху на іспиті BIG',
+        'es': 'Curado por profesionales dentales holandeses para el éxito en el examen BIG',
+        'pt': 'Curado por profissionais dentários holandeses para sucesso no exame BIG',
+        'tr': 'BIG sınav başarısı için Hollandalı diş hekimleri tarafından hazırlandı',
+        'fa': 'توسط متخصصان دندانپزشکی هلندی برای موفقیت در آزمون BIG تنظیم شده',
+        'ar': 'منسق من قبل أطباء الأسنان الهولنديين لنجاح امتحان BIG'
+    },
+    'virtual_patients': {
+        'en': 'Virtual Patients',
+        'ru': 'Виртуальные Пациенты',
+        'nl': 'Virtuele Patiënten',
+        'uk': 'Віртуальні Пацієнти',
+        'es': 'Pacientes Virtuales',
+        'pt': 'Pacientes Virtuais',
+        'tr': 'Sanal Hastalar',
+        'fa': 'بیماران مجازی',
+        'ar': 'المرضى الافتراضيون'
+    },
+    'virtual_patients_description': {
+        'en': 'Practice with realistic patient scenarios and case studies',
+        'ru': 'Практикуйся с реалистичными сценариями пациентов и кейсами',
+        'nl': 'Oefen met realistische patiëntscenario\'s en casestudies',
+        'uk': 'Практикуйся з реалістичними сценаріями пацієнтів та кейсами',
+        'es': 'Practica con escenarios realistas de pacientes y estudios de casos',
+        'pt': 'Pratique com cenários realistas de pacientes e estudos de caso',
+        'tr': 'Gerçekçi hasta senaryoları ve vaka çalışmaları ile pratik yapın',
+        'fa': 'با سناریوهای واقعی بیمار و مطالعات موردی تمرین کنید',
+        'ar': 'تدرب مع سيناريوهات المرضى الواقعية ودراسات الحالة'
+    },
+    'adaptive_learning': {
+        'en': 'Adaptive Learning',
+        'ru': 'Адаптивное Обучение',
+        'nl': 'Adaptief Leren',
+        'uk': 'Адаптивне Навчання',
+        'es': 'Aprendizaje Adaptativo',
+        'pt': 'Aprendizagem Adaptativa',
+        'tr': 'Uyarlanabilir Öğrenme',
+        'fa': 'یادگیری تطبیقی',
+        'ar': 'التعلم التكيفي'
+    },
+    'adaptive_learning_description': {
+        'en': 'AI-powered system adapts to your learning pace and style',
+        'ru': 'ИИ-система адаптируется к твоему темпу и стилю обучения',
+        'nl': 'AI-gestuurd systeem past zich aan je leertempo en -stijl aan',
+        'uk': 'ІІ-система адаптується до твого темпу та стилю навчання',
+        'es': 'Sistema impulsado por IA se adapta a tu ritmo y estilo de aprendizaje',
+        'pt': 'Sistema alimentado por IA adapta-se ao seu ritmo e estilo de aprendizagem',
+        'tr': 'AI destekli sistem öğrenme hızınıza ve tarzınıza uyum sağlar',
+        'fa': 'سیستم مبتنی بر هوش مصنوعی با سرعت و سبک یادگیری شما سازگار می‌شود',
+        'ar': 'نظام مدعوم بالذكاء الاصطناعي يتكيف مع وتيرة وأسلوب التعلم الخاص بك'
+    },
+    'nine_languages': {
+        'en': '9 Languages',
+        'ru': '9 Языков',
+        'nl': '9 Talen',
+        'uk': '9 Мов',
+        'es': '9 Idiomas',
+        'pt': '9 Idiomas',
+        'tr': '9 Dil',
+        'fa': '۹ زبان',
+        'ar': '٩ لغات'
+    },
+    'nine_languages_description': {
+        'en': 'Study in your native language, master Dutch terminology',
+        'ru': 'Изучай на родном языке, освоив голландскую терминологию',
+        'nl': 'Studeer in je moedertaal, beheers Nederlandse terminologie',
+        'uk': 'Вивчай рідною мовою, освоюючи голландську термінологію',
+        'es': 'Estudia en tu idioma nativo, domina la terminología holandesa',
+        'pt': 'Estude na sua língua nativa, domine a terminologia holandesa',
+        'tr': 'Ana dilinizde çalışın, Hollandaca terminolojiyi öğrenin',
+        'fa': 'به زبان مادری خود مطالعه کنید، اصطلاحات هلندی را فرا بگیرید',
+        'ar': 'ادرس بلغتك الأم، أتقن المصطلحات الهولندية'
+    },
+    
+    # === VIRTUAL PATIENTS PAGE ===
+    'practice_clinical_skills': {
+        'en': 'Practice clinical skills with virtual patients. Each case is based on real clinical scenarios.',
+        'ru': 'Практикуйся с виртуальными пациентами. Каждый случай основан на реальных клинических сценариях.',
+        'nl': 'Oefen klinische vaardigheden met virtuele patiënten. Elke casus is gebaseerd op echte klinische scenario\'s.',
+        'uk': 'Практикуйся з віртуальними пацієнтами. Кожен випадок базується на реальних клінічних сценаріях.',
+        'es': 'Practica habilidades clínicas con pacientes virtuales. Cada caso se basa en escenarios clínicos reales.',
+        'pt': 'Pratique habilidades clínicas com pacientes virtuais. Cada caso é baseado em cenários clínicos reais.',
+        'tr': 'Sanal hastalarla klinik becerilerinizi geliştirin. Her vaka gerçek klinik senaryolara dayanmaktadır.',
+        'fa': 'مهارت‌های بالینی را با بیماران مجازی تمرین کنید. هر مورد بر اساس سناریوهای بالینی واقعی است.',
+        'ar': 'تدرب على المهارات السريرية مع المرضى الافتراضيين. كل حالة تعتمد على سيناريوهات سريرية حقيقية.'
+    },
+    'virtual_patients_development': {
+        'en': 'Virtual patients are in development. Soon you\'ll be able to practice your skills!',
+        'ru': 'Виртуальные пациенты находятся в разработке. Скоро вы сможете практиковать свои навыки!',
+        'nl': 'Virtuele patiënten zijn in ontwikkeling. Binnenkort kun je je vaardigheden oefenen!',
+        'uk': 'Віртуальні пацієнти в розробці. Незабаром ви зможете практикувати свої навички!',
+        'es': 'Los pacientes virtuales están en desarrollo. ¡Pronto podrás practicar tus habilidades!',
+        'pt': 'Pacientes virtuais estão em desenvolvimento. Em breve você poderá praticar suas habilidades!',
+        'tr': 'Sanal hastalar geliştirilmekte. Yakında becerilerinizi pratik edebileceksiniz!',
+        'fa': 'بیماران مجازی در حال توسعه هستند. به زودی خواهید توانست مهارت‌های خود را تمرین کنید!',
+        'ar': 'المرضى الافتراضيون قيد التطوير. قريباً ستتمكن من ممارسة مهاراتك!'
+    },
+    
+    # === TEST SYSTEM ===
+    'test_system': {
+        'en': 'Test System',
+        'ru': 'Система Тестирования',
+        'nl': 'Test Systeem',
+        'uk': 'Система Тестування',
+        'es': 'Sistema de Pruebas',
+        'pt': 'Sistema de Testes',
+        'tr': 'Test Sistemi',
+        'fa': 'سیستم آزمون',
+        'ar': 'نظام الاختبار'
+    },
+    'choose_test_type': {
+        'en': 'Choose test type to check your knowledge',
+        'ru': 'Выберите тип теста для проверки знаний',
+        'nl': 'Kies testtype om je kennis te controleren',
+        'uk': 'Оберіть тип тесту для перевірки знань',
+        'es': 'Elige el tipo de prueba para verificar tu conocimiento',
+        'pt': 'Escolha o tipo de teste para verificar seu conhecimento',
+        'tr': 'Bilginizi kontrol etmek için test türünü seçin',
+        'fa': 'نوع آزمون را برای بررسی دانش خود انتخاب کنید',
+        'ar': 'اختر نوع الاختبار للتحقق من معرفتك'
+    },
+    'error_loading_tests': {
+        'en': 'Error loading test categories',
+        'ru': 'Ошибка загрузки категорий тестов',
+        'nl': 'Fout bij laden van testcategorieën',
+        'uk': 'Помилка завантаження категорій тестів',
+        'es': 'Error al cargar las categorías de pruebas',
+        'pt': 'Erro ao carregar categorias de teste',
+        'tr': 'Test kategorileri yüklenirken hata',
+        'fa': 'خطا در بارگیری دسته‌بندی آزمون‌ها',
+        'ar': 'خطأ في تحميل فئات الاختبار'
+    },
+    'quick_start': {
+        'en': 'Quick Start',
+        'ru': 'Быстрый старт',
+        'nl': 'Snelle start',
+        'uk': 'Швидкий старт',
+        'es': 'Inicio rápido',
+        'pt': 'Início rápido',
+        'tr': 'Hızlı başlangıç',
+        'fa': 'شروع سریع',
+        'ar': 'بداية سريعة'
+    },
+    'start_learning_journey': {
+        'en': 'Start your learning journey',
+        'ru': 'Начните свое обучение',
+        'nl': 'Begin je leerreis',
+        'uk': 'Почніть своє навчання',
+        'es': 'Comienza tu viaje de aprendizaje',
+        'pt': 'Comece sua jornada de aprendizado',
+        'tr': 'Öğrenme yolculuğunuza başlayın',
+        'fa': 'سفر یادگیری خود را شروع کنید',
+        'ar': 'ابدأ رحلة التعلم'
+    },
+    'test_your_knowledge': {
+        'en': 'Test your knowledge',
+        'ru': 'Проверьте свои знания',
+        'nl': 'Test je kennis',
+        'uk': 'Перевірте свої знання',
+        'es': 'Pon a prueba tus conocimientos',
+        'pt': 'Teste seus conhecimentos',
+        'tr': 'Bilginizi test edin',
+        'fa': 'دانش خود را آزمایش کنید',
+        'ar': 'اختبر معرفتك'
+    },
+    'get_instant_help': {
+        'en': 'Get instant help',
+        'ru': 'Получите мгновенную помощь',
+        'nl': 'Krijg directe hulp',
+        'uk': 'Отримайте миттєву допомогу',
+        'es': 'Obtén ayuda instantánea',
+        'pt': 'Obtenha ajuda instantânea',
+        'tr': 'Anında yardım alın',
+        'fa': 'کمک فوری دریافت کنید',
+        'ar': 'احصل على مساعدة فورية'
     }
+
 }
 
 def get_translation(key, lang='en', **kwargs):
@@ -2726,7 +3180,8 @@ def get_language_names():
         'pt': 'Português',
         'uk': 'Українська',
         'fa': 'فارسی',
-        'tr': 'Türkçe'
+        'tr': 'Türkçe',
+        'ar': 'العربية'
     }
 
 def is_rtl_language(lang):
@@ -2752,7 +3207,8 @@ def get_country_code(lang_code):
         'es': 'es',
         'pt': 'pt',
         'tr': 'tr',
-        'fa': 'ir'
+        'fa': 'ir',
+        'ar': 'sa'
     }
     return country_mapping.get(lang_code, 'gb')
 

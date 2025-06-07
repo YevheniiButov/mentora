@@ -65,7 +65,7 @@ def home(lang):
         has_pending_tests=False,
         get_country_code=lambda code: {
             'en': 'gb', 'nl': 'nl', 'ru': 'ru', 'uk': 'ua',
-            'es': 'es', 'pt': 'pt', 'tr': 'tr', 'fa': 'ir'
+            'es': 'es', 'pt': 'pt', 'tr': 'tr', 'fa': 'ir', 'ar': 'sa'
         }.get(code, code)
     )
 

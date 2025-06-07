@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="{{ current_language or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if current_language == 'ru' %}Вход - Стоматологическая Академия{% elif current_language == 'uk' %}Вхід - Стоматологічна Академія{% elif current_language == 'nl' %}Inloggen - Tandheelkunde Academie{% elif current_language == 'es' %}Iniciar Sesión - Academia Dental{% elif current_language == 'tr' %}Giriş - Diş Hekimliği Akademisi{% elif current_language == 'fa' %}ورود - آکادمی دندانپزشکی{% else %}Login - Dental Academy{% endif %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/mobile/mobile-app.css') }}" rel="stylesheet">
+    <style>
+        :root {
+            --auth-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --auth-card-bg: rgba(255, 255, 255, 0.1);
+            --auth-input-bg: rgba(255, 255, 255, 0.2);
+        }
+        
+        body {
+            background: var(--auth-bg);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 20px;
+        }
+        
+        .auth-bg-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .auth-shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+        }
+        
+        .auth-shape-1 {
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.2);
+            top: 10%;
+            left: -50px;
+            animation: authFloat1 20s infinite ease-in-out;
+        }
+        
+        .auth-shape-2 {
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.15);
+            bottom: 20%;
+            right: -30px;
+            animation: authFloat2 25s infinite ease-in-out;
+        }
+        
+        .auth-shape-3 {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            top: 40%;
+            right: 20%;
+            animation: authFloat3 15s infinite ease-in-out;
+        }
+        
+        @keyframes authFloat1 {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+        
+        @keyframes authFloat2 {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(40px) rotate(-180deg); }
+        }
+        
+        @keyframes authFloat3 {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(90deg); }
+        }
+        
+        .auth-card {
+            background: var(--auth-card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+        
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .auth-logo i {
+            font-size: 3rem;
+            color: white;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .auth-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .auth-form-group {
+            margin-bottom: 20px;
+        }
+        
+        .auth-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .auth-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: var(--auth-input-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .auth-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .auth-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.9));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .auth-links {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .auth-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            margin: 10px 0;
+            transition: color 0.3s ease;
+        }
+        
+        .auth-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        .auth-separator {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .auth-separator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 0;
+        }
+        
+        .auth-separator span {
+            background: var(--auth-card-bg);
+            padding: 0 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .error-message {
+            background: rgba(220, 53, 69, 0.15);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #ff6b7a;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .success-message {
+            background: rgba(40, 167, 69, 0.15);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            color: #4ade80;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid #333;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Анимированные фоновые элементы -->
+        <div class="auth-bg-shapes">
+            <div class="auth-shape auth-shape-1"></div>
+            <div class="auth-shape auth-shape-2"></div>
+            <div class="auth-shape auth-shape-3"></div>
+        </div>
+        
+        <!-- Форма входа -->
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="fas fa-tooth"></i>
+                <h3 style="color: white; margin: 0;">{% if current_language == 'ru' %}Стоматологическая Академия{% elif current_language == 'uk' %}Стоматологічна Академія{% elif current_language == 'nl' %}Tandheelkunde Academie{% elif current_language == 'es' %}Academia Dental{% elif current_language == 'tr' %}Diş Hekimliği Akademisi{% elif current_language == 'fa' %}آکادمی دندانپزشکی{% else %}Dental Academy{% endif %}</h3>
+            </div>
+            
+            <h2 class="auth-title">
+                {% if current_language == 'ru' %}Вход в аккаунт
+                {% elif current_language == 'uk' %}Вхід в акаунт
+                {% elif current_language == 'nl' %}Inloggen
+                {% elif current_language == 'es' %}Iniciar Sesión
+                {% elif current_language == 'tr' %}Giriş Yap
+                {% elif current_language == 'fa' %}ورود به حساب
+                {% else %}Sign In
+                {% endif %}
+            </h2>
+            
+            <!-- Flash сообщения -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="{% if category == 'error' or category == 'danger' %}error-message{% else %}success-message{% endif %}">
+                            <i class="fas fa-{% if category == 'error' or category == 'danger' %}exclamation-triangle{% else %}check-circle{% endif %} me-2"></i>{{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Форма входа -->
+            <form method="POST" action="{{ url_for('mobile.login', lang=current_language or 'en') }}" id="loginForm">
+                {{ form.hidden_tag() }}
+                
+                <div class="auth-form-group">
+                    {{ form.email.label(class="auth-label") }}
+                    {{ form.email(class="auth-input", 
+                        placeholder=(
+                            "Введите ваш email" if current_language == 'ru' else
+                            "Введіть ваш email" if current_language == 'uk' else
+                            "Voer uw e-mailadres in" if current_language == 'nl' else
+                            "Ingrese su correo electrónico" if current_language == 'es' else
+                            "E-posta adresinizi girin" if current_language == 'tr' else
+                            "ایمیل خود را وارد کنید" if current_language == 'fa' else
+                            "Enter your email address"
+                        )) }}
+                    {% if form.email.errors %}
+                        <div class="error-message">
+                            {% for error in form.email.errors %}
+                                <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="auth-form-group">
+                    {{ form.password.label(class="auth-label") }}
+                    {{ form.password(class="auth-input",
+                        placeholder=(
+                            "Введите пароль" if current_language == 'ru' else
+                            "Введіть пароль" if current_language == 'uk' else
+                            "Voer uw wachtwoord in" if current_language == 'nl' else
+                            "Ingrese su contraseña" if current_language == 'es' else
+                            "Şifrenizi girin" if current_language == 'tr' else
+                            "رمز عبور خود را وارد کنید" if current_language == 'fa' else
+                            "Enter your password"
+                        )) }}
+                    {% if form.password.errors %}
+                        <div class="error-message">
+                            {% for error in form.password.errors %}
+                                <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="auth-btn" id="loginBtn">
+                    <span class="btn-text">
+                        {{ t('login', current_language or 'en') }}
+                    </span>
+                </button>
+            </form>
+            
+            <div class="auth-separator">
+                <span>
+                {% if current_language == 'ru' %}или
+                {% elif current_language == 'uk' %}або
+                {% elif current_language == 'nl' %}of
+                {% elif current_language == 'es' %}o
+                {% elif current_language == 'tr' %}veya
+                {% elif current_language == 'fa' %}یا
+                {% else %}or
+                {% endif %}
+                </span>
+            </div>
+            
+            <div class="auth-links">
+                <a href="{{ url_for('mobile.register', lang=current_language or 'en') }}" class="auth-link">
+                    {% if current_language == 'ru' %}Нет аккаунта? Зарегистрироваться
+                    {% elif current_language == 'uk' %}Немає акаунта? Зареєструватися
+                    {% elif current_language == 'nl' %}Geen account? Registreren
+                    {% elif current_language == 'es' %}¿No tienes cuenta? Registrarse
+                    {% elif current_language == 'tr' %}Hesabınız yok mu? Kayıt olun
+                    {% elif current_language == 'fa' %}حساب کاربری ندارید؟ ثبت نام
+                    {% else %}Don't have an account? Sign Up
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('mobile.subjects_view', lang=current_language or 'en') }}" class="auth-link">
+                    {% if current_language == 'ru' %}Просмотреть контент без регистрации
+                    {% elif current_language == 'uk' %}Переглянути контент без реєстрації
+                    {% elif current_language == 'nl' %}Bekijk inhoud zonder registratie
+                    {% elif current_language == 'es' %}Ver contenido sin registro
+                    {% elif current_language == 'tr' %}Kayıt olmadan içeriği görüntüle
+                    {% elif current_language == 'fa' %}مشاهده محتوا بدون ثبت نام
+                    {% else %}Browse content without registration
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Обработка формы входа
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            const btnText = btn.querySelector('.btn-text');
+            
+            // Показываем индикатор загрузки
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="loading-spinner"></span>' + 
+                '{% if current_language == "ru" %}Вход...{% elif current_language == "uk" %}Вхід...{% elif current_language == "nl" %}Inloggen...{% elif current_language == "es" %}Iniciando...{% elif current_language == "tr" %}Giriş yapılıyor...{% elif current_language == "fa" %}در حال ورود...{% else %}Signing in...{% endif %}';
+        });
+        
+        // Автофокус на первое поле
+        document.getElementById('email').focus();
+        
+        // Очистка ошибок при печати
+        document.querySelectorAll('.auth-input').forEach(input => {
+            input.addEventListener('input', function() {
+                const errorMsg = document.querySelector('.error-message');
+                if (errorMsg && this.value.trim()) {
+                    errorMsg.style.opacity = '0.5';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,814 +1,641 @@
-<!DOCTYPE html>
-<html lang="{{ current_language }}" data-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ lesson.title }} - Dental Academy</title>
-    
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#3ECDC1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="/static/css/mobile/mobile-app.css">
-    
-    <style>
-        /* ===== LESSON VIEW SPECIFIC STYLES ===== */
-        .mobile-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: var(--header-height);
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1rem;
-        }
+{% extends "mobile_base.html" %}
 
-        .header-left,
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+{% block title %}{{ lesson.title }} - {{ t('dental_academy', lang) }}{% endblock %}
 
-        .header-action {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
+{% block head_extra %}
+<!-- Дополнительные мета-теги для уроков -->
+<meta name="description" content="{{ lesson.description or t('learn_dentistry', lang) }}">
+<meta property="og:title" content="{{ lesson.title }}">
+<meta property="og:description" content="{{ lesson.description or t('learn_dentistry', lang) }}">
+{% endblock %}
 
-        .lesson-progress-header {
-            flex: 1;
-            text-align: center;
-            color: white;
-        }
+{% block body_start %}
+<!-- Настройка навигации для урока -->
+{% set breadcrumbs = [
+    {'title': 'learning', 'url': url_for('mobile.learning_map', lang=lang)},
+    {'title': lesson.module.subject.name if lesson.module and lesson.module.subject else 'subject', 'url': url_for('mobile.subject_view', lang=lang, subject_id=lesson.module.subject_id) if lesson.module else '#'},
+    {'title': lesson.title, 'url': None}
+] %}
 
-        .lesson-title-header {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+{% set progress_data = {
+    'current': current_section or 1,
+    'total': total_sections or 1,
+    'percentage': ((current_section or 1) / (total_sections or 1) * 100) | round
+} %}
 
-        .lesson-progress-text {
-            font-size: 0.75rem;
-            opacity: 0.8;
-        }
+{% set nav_config = get_navigation_config('lesson',
+    breadcrumbs=breadcrumbs,
+    show_back_button=True,
+    show_progress=True,
+    progress_data=progress_data,
+    show_bottom_nav=True
+) %}
+{% endblock %}
 
-        .main-content {
-            padding: calc(var(--header-height) + 0.5rem) 0 calc(var(--nav-height) + 0.5rem);
-            min-height: 100vh;
-        }
-
-        /* ===== LESSON PROGRESS BAR ===== */
-        .lesson-progress-bar {
-            position: fixed;
-            top: var(--header-height);
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            z-index: 999;
-        }
-
-        .lesson-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        /* ===== LESSON CONTENT ===== */
-        .lesson-content {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius);
-            margin: 1rem;
-            padding: 2rem 1.5rem;
-            min-height: calc(100vh - var(--header-height) - var(--nav-height) - 3rem);
-            position: relative;
-        }
-
-        .lesson-header {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .lesson-title {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.3;
-        }
-
-        .lesson-meta {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .meta-item {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .lesson-description {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        /* ===== LESSON BODY ===== */
-        .lesson-body {
-            color: white;
-            line-height: 1.6;
-        }
-
-        .lesson-body h1,
-        .lesson-body h2,
-        .lesson-body h3,
-        .lesson-body h4 {
-            color: white;
-            margin: 2rem 0 1rem;
-            font-weight: 600;
-        }
-
-        .lesson-body h1 { font-size: 1.5rem; }
-        .lesson-body h2 { font-size: 1.3rem; }
-        .lesson-body h3 { font-size: 1.1rem; }
-        .lesson-body h4 { font-size: 1rem; }
-
-        .lesson-body p {
-            margin-bottom: 1.5rem;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .lesson-body ul,
-        .lesson-body ol {
-            margin: 1rem 0 1.5rem 1.5rem;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .lesson-body li {
-            margin-bottom: 0.5rem;
-        }
-
-        .lesson-body img {
-            width: 100%;
-            height: auto;
-            border-radius: var(--border-radius-small);
-            margin: 1.5rem 0;
-            box-shadow: var(--shadow-soft);
-        }
-
-        .lesson-body blockquote {
-            background: rgba(255, 255, 255, 0.1);
-            border-left: 4px solid var(--primary);
-            padding: 1rem 1.5rem;
-            margin: 1.5rem 0;
-            border-radius: 0 var(--border-radius-small) var(--border-radius-small) 0;
-            font-style: italic;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        /* ===== INTERACTIVE ELEMENTS ===== */
-        .lesson-highlight {
-            background: rgba(62, 205, 193, 0.2);
-            border: 1px solid rgba(62, 205, 193, 0.4);
-            border-radius: var(--border-radius-small);
-            padding: 1rem;
-            margin: 1.5rem 0;
-        }
-
-        .lesson-note {
-            background: rgba(251, 191, 36, 0.2);
-            border: 1px solid rgba(251, 191, 36, 0.4);
-            border-radius: var(--border-radius-small);
-            padding: 1rem;
-            margin: 1.5rem 0;
-        }
-
-        .lesson-warning {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            border-radius: var(--border-radius-small);
-            padding: 1rem;
-            margin: 1.5rem 0;
-        }
-
-        /* ===== LESSON NAVIGATION ===== */
-        .lesson-navigation {
-            position: fixed;
-            bottom: var(--nav-height);
-            left: 0;
-            right: 0;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            z-index: 998;
-        }
-
-        .nav-btn {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border: none;
-            border-radius: var(--border-radius-small);
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            min-height: 44px;
-        }
-
-        .nav-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .nav-btn.secondary {
-            background: rgba(102, 126, 234, 0.2);
-            color: rgba(102, 126, 234, 1);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-        }
-
-        .nav-btn:hover:not(:disabled),
-        .nav-btn:active:not(:disabled) {
-            transform: scale(1.05);
-        }
-
-        .lesson-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .action-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            width: 44px;
-            height: 44px;
-            border-radius: var(--border-radius-small);
-            color: rgba(102, 126, 234, 1);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 1.1rem;
-        }
-
-        .action-btn:hover,
-        .action-btn:active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-
-        .action-btn.active {
-            background: rgba(62, 205, 193, 0.2);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* ===== BOTTOM NAVIGATION ===== */
-        .mobile-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: var(--nav-height);
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 env(safe-area-inset-left) env(safe-area-inset-bottom) env(safe-area-inset-right);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            color: rgba(102, 126, 234, 0.6);
-            text-decoration: none;
-            font-size: 0.7rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 0.5rem;
-            border-radius: 12px;
-            min-width: 60px;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            background: rgba(62, 205, 193, 0.1);
-        }
-
-        .nav-item i {
-            font-size: 1.3rem;
-        }
-
-        /* ===== FLOATING ELEMENTS ===== */
-        .floating-notes {
-            position: fixed;
-            top: 50%;
-            right: 1rem;
-            transform: translateY(-50%);
-            z-index: 997;
-        }
-
-        .floating-btn {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .floating-btn:hover,
-        .floating-btn:active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 360px) {
-            .lesson-content {
-                margin: 0.5rem;
-                padding: 1.5rem 1rem;
-            }
+{% block content %}
+<div class="lesson-container">
+    <!-- Основной контент урока -->
+    <div class="lesson-content">
+        <!-- Заголовок урока -->
+        <div class="lesson-header">
+            <h1 class="lesson-title">{{ lesson.title }}</h1>
             
-            .lesson-navigation {
-                padding: 0.75rem;
-            }
-            
-            .nav-btn {
-                padding: 0.625rem 1rem;
-                font-size: 0.85rem;
-            }
-        }
-
-        /* ===== ТЕМНАЯ ТЕМА ===== */
-        [data-theme="dark"] .lesson-navigation {
-            background: rgba(31, 41, 55, 0.95);
-        }
-
-        [data-theme="dark"] .mobile-bottom-nav {
-            background: rgba(31, 41, 55, 0.95);
-        }
-
-        [data-theme="dark"] .nav-item {
-            color: rgba(156, 163, 175, 0.8);
-        }
-
-        [data-theme="dark"] .nav-item.active {
-            color: var(--primary);
-            background: rgba(62, 205, 193, 0.2);
-        }
-
-        /* ===== ANIMATIONS ===== */
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .slide-up {
-            animation: slideUp 0.4s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <header class="mobile-header">
-        <div class="header-left">
-            <button class="header-action" onclick="history.back()">
-                <i class="bi bi-arrow-left"></i>
-            </button>
-        </div>
-        
-        <div class="lesson-progress-header">
-            <div class="lesson-title-header">{{ lesson.title }}</div>
-            <div class="lesson-progress-text">
-                <span id="currentPage">1</span> из <span id="totalPages">{{ total_pages or 1 }}</span>
+            <div class="lesson-meta">
+                <span class="meta-item">
+                    <i class="bi bi-clock"></i>
+                    {{ lesson.estimated_time or t('15_min', lang) or '15 мин' }}
+                </span>
+                <span class="meta-item">
+                    <i class="bi bi-bar-chart"></i>
+                    {{ lesson.difficulty or t('medium', lang) or 'Средний' }}
+                </span>
+                {% if lesson.views %}
+                <span class="meta-item">
+                    <i class="bi bi-eye"></i>
+                    {{ lesson.views }}
+                </span>
+                {% endif %}
             </div>
+            
+            {% if lesson.description %}
+            <p class="lesson-description">{{ lesson.description }}</p>
+            {% endif %}
         </div>
-        
-        <div class="header-right">
-            <button class="header-action" onclick="toggleBookmark()">
-                <i class="bi bi-bookmark"></i>
-            </button>
-            <button class="header-action" onclick="openLessonMenu()">
-                <i class="bi bi-three-dots"></i>
-            </button>
-        </div>
-    </header>
 
-    <!-- Lesson Progress Bar -->
-    <div class="lesson-progress-bar">
-        <div class="lesson-progress-fill" id="lessonProgressFill"></div>
+        <!-- Тело урока -->
+        <div class="lesson-body" id="lessonBody">
+            {% if lesson.content %}
+                {{ lesson.content | safe }}
+            {% else %}
+                <div class="lesson-highlight">
+                    <h3>🦷 {{ t('welcome_to_lesson', lang) or 'Добро пожаловать в урок!' }}</h3>
+                    <p>{{ t('lesson_intro_text', lang) or 'Этот урок поможет вам изучить основы стоматологии. Внимательно прочитайте материал и выполните все задания.' }}</p>
+                </div>
+
+                <h2>{{ t('basic_concepts', lang) or 'Основные понятия' }}</h2>
+                <p>{{ t('concepts_intro', lang) or 'В этом разделе мы рассмотрим ключевые концепции, которые необходимо знать каждому стоматологу.' }}</p>
+
+                <div class="lesson-note">
+                    <strong>💡 {{ t('important', lang) or 'Важно' }}:</strong> {{ t('practical_attention', lang) or 'Обратите особое внимание на практические аспекты применения изученного материала.' }}
+                </div>
+
+                <h3>{{ t('practical_recommendations', lang) or 'Практические рекомендации' }}</h3>
+                <ul>
+                    <li>{{ t('follow_aseptic_rules', lang) or 'Всегда соблюдайте правила асептики и антисептики' }}</li>
+                    <li>{{ t('use_quality_materials', lang) or 'Используйте качественные материалы и инструменты' }}</li>
+                    <li>{{ t('keep_detailed_docs', lang) or 'Ведите подробную документацию' }}</li>
+                    <li>{{ t('continuous_learning', lang) or 'Постоянно повышайте свою квалификацию' }}</li>
+                </ul>
+
+                <div class="lesson-warning">
+                    <strong>⚠️ {{ t('attention', lang) or 'Внимание' }}:</strong> {{ t('educational_only', lang) or 'Данный материал предназначен только для образовательных целей и не заменяет профессиональную медицинскую консультацию.' }}
+                </div>
+
+                <h3>{{ t('conclusion', lang) or 'Заключение' }}</h3>
+                <p>{{ t('continuous_practice', lang) or 'Изучение стоматологии требует постоянной практики и обновления знаний. Продолжайте изучать новые методики и технологии в области стоматологии.' }}</p>
+            {% endif %}
+        </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="lesson-content fade-in">
-            <!-- Lesson Header -->
-            <div class="lesson-header">
-                <h1 class="lesson-title">{{ lesson.title }}</h1>
-                
-                <div class="lesson-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-clock"></i>
-                        {{ lesson.estimated_time or '15 мин' }}
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-bar-chart"></i>
-                        {{ lesson.difficulty or 'Средний' }}
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-eye"></i>
-                        {{ lesson.views or 0 }}
-                    </span>
-                </div>
-                
-                {% if lesson.description %}
-                <p class="lesson-description">{{ lesson.description }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Lesson Body -->
-            <div class="lesson-body" id="lessonBody">
-                {% if lesson.content %}
-                    {{ lesson.content | safe }}
-                {% else %}
-                    <div class="lesson-highlight">
-                        <h3>🦷 Добро пожаловать в урок!</h3>
-                        <p>Этот урок поможет вам изучить основы стоматологии. Внимательно прочитайте материал и выполните все задания.</p>
-                    </div>
-
-                    <h2>Основные понятия</h2>
-                    <p>В этом разделе мы рассмотрим ключевые концепции, которые необходимо знать каждому стоматологу.</p>
-
-                    <div class="lesson-note">
-                        <strong>💡 Важно:</strong> Обратите особое внимание на практические аспекты применения изученного материала.
-                    </div>
-
-                    <h3>Практические рекомендации</h3>
-                    <ul>
-                        <li>Всегда соблюдайте правила асептики и антисептики</li>
-                        <li>Используйте качественные материалы и инструменты</li>
-                        <li>Ведите подробную документацию</li>
-                        <li>Постоянно повышайте свою квалификацию</li>
-                    </ul>
-
-                    <div class="lesson-warning">
-                        <strong>⚠️ Внимание:</strong> Данный материал предназначен только для образовательных целей и не заменяет профессиональную медицинскую консультацию.
-                    </div>
-
-                    <h3>Заключение</h3>
-                    <p>Изучение стоматологии требует постоянной практики и обновления знаний. Продолжайте изучать новые методики и технологии в области стоматологии.</p>
-                {% endif %}
-            </div>
-        </div>
-    </main>
-
-    <!-- Floating Notes -->
-    <div class="floating-notes">
-        <button class="floating-btn" onclick="toggleNotes()" title="Заметки">
+    <!-- Плавающие кнопки -->
+    <div class="floating-actions">
+        <button class="floating-btn" onclick="toggleNotes()" title="{{ t('notes', lang) or 'Заметки' }}">
             <i class="bi bi-journal-text"></i>
         </button>
-        <button class="floating-btn" onclick="openAIAssistant()" title="AI помощник">
+        <button class="floating-btn" onclick="openAIAssistant()" title="{{ t('ai_assistant', lang) or 'AI помощник' }}">
             <i class="bi bi-robot"></i>
         </button>
     </div>
 
-    <!-- Lesson Navigation -->
+    <!-- Навигация по урокам -->
     <nav class="lesson-navigation">
         <button class="nav-btn secondary" id="prevBtn" onclick="previousLesson()" 
                 {% if not previous_lesson %}disabled{% endif %}>
             <i class="bi bi-chevron-left"></i>
-            Назад
+            {{ t('back', lang) or 'Назад' }}
         </button>
         
         <div class="lesson-actions">
-            <button class="action-btn" onclick="toggleBookmark()" title="Закладка">
+            <button class="action-btn" onclick="toggleBookmark()" title="{{ t('bookmark', lang) or 'Закладка' }}">
                 <i class="bi bi-bookmark"></i>
             </button>
-            <button class="action-btn" onclick="shareLesson()" title="Поделиться">
+            <button class="action-btn" onclick="shareLesson()" title="{{ t('share', lang) or 'Поделиться' }}">
                 <i class="bi bi-share"></i>
             </button>
-            <button class="action-btn" onclick="toggleNotes()" title="Заметки">
-                <i class="bi bi-journal-text"></i>
+            <button class="action-btn" onclick="openAIAssistant()" title="{{ t('ai_assistant', lang) or 'AI помощник' }}">
+                <i class="bi bi-robot"></i>
             </button>
         </div>
         
         <button class="nav-btn" id="nextBtn" onclick="nextLesson()">
             {% if next_lesson %}
-                Далее
+                {{ t('next', lang) or 'Далее' }}
                 <i class="bi bi-chevron-right"></i>
             {% else %}
-                Завершить
+                {{ t('complete', lang) or 'Завершить' }}
                 <i class="bi bi-check-circle"></i>
             {% endif %}
         </button>
     </nav>
+</div>
+{% endblock %}
 
-    <!-- Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="/{{ current_language }}/mobile/welcome" class="nav-item">
-            <i class="bi bi-house"></i>
-            <span>Главная</span>
-        </a>
-        <a href="/{{ current_language }}/mobile/learning" class="nav-item active">
-            <i class="bi bi-book"></i>
-            <span>Обучение</span>
-        </a>
-        <a href="/{{ current_language }}/mobile/tests" class="nav-item">
-            <i class="bi bi-clipboard-check"></i>
-            <span>Тесты</span>
-        </a>
-        <a href="/{{ current_language }}/virtual-patient" class="nav-item">
-            <i class="bi bi-person-heart"></i>
-            <span>Пациенты</span>
-        </a>
-        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
-            <i class="fas fa-robot"></i>
-            <span>AI</span>
-        </a>
-    </nav>
+{% block styles_extra %}
+<style>
+/* ===== LESSON SPECIFIC STYLES ===== */
+.lesson-container {
+    padding-bottom: 100px; /* Отступ для навигации урока */
+}
 
-    <!-- Scripts -->
-    <script src="/static/js/mobile/mobile-app.js"></script>
-    <script>
-        // Lesson specific functionality
-        let currentPage = 1;
-        let totalPages = {{ total_pages or 1 }};
-        let lessonProgress = 0;
-        let isBookmarked = false;
-        let notesVisible = false;
+.lesson-content {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius, 12px);
+    margin: 1rem;
+    padding: 2rem 1.5rem;
+    min-height: calc(100vh - 200px);
+}
 
-        // Initialize lesson
-        document.addEventListener('DOMContentLoaded', function() {
-            updateProgress();
-            setupScrollTracking();
-            loadUserProgress();
-        });
+.lesson-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
 
-        function updateProgress() {
-            const progressFill = document.getElementById('lessonProgressFill');
-            const currentPageSpan = document.getElementById('currentPage');
-            
-            lessonProgress = (currentPage / totalPages) * 100;
-            progressFill.style.width = lessonProgress + '%';
-            currentPageSpan.textContent = currentPage;
-            
-            // Save progress
-            saveProgress();
-        }
+.lesson-title {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
 
-        function setupScrollTracking() {
-            let ticking = false;
-            
-            window.addEventListener('scroll', () => {
-                if (!ticking) {
-                    requestAnimationFrame(() => {
-                        const scrolled = window.pageYOffset;
-                        const maxScroll = document.body.scrollHeight - window.innerHeight;
-                        const scrollProgress = Math.min((scrolled / maxScroll) * 100, 100);
-                        
-                        // Update progress based on scroll
-                        if (scrollProgress > lessonProgress) {
-                            lessonProgress = scrollProgress;
-                            document.getElementById('lessonProgressFill').style.width = lessonProgress + '%';
-                            saveProgress();
-                        }
-                        
-                        ticking = false;
-                    });
-                    ticking = true;
+.lesson-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.lesson-description {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+/* ===== LESSON BODY ===== */
+.lesson-body {
+    color: white;
+    line-height: 1.6;
+}
+
+.lesson-body h1,
+.lesson-body h2,
+.lesson-body h3,
+.lesson-body h4 {
+    color: white;
+    margin: 2rem 0 1rem;
+    font-weight: 600;
+}
+
+.lesson-body h1 { font-size: 1.5rem; }
+.lesson-body h2 { font-size: 1.3rem; }
+.lesson-body h3 { font-size: 1.1rem; }
+.lesson-body h4 { font-size: 1rem; }
+
+.lesson-body p {
+    margin-bottom: 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.lesson-body ul,
+.lesson-body ol {
+    margin: 1rem 0 1.5rem 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.lesson-body li {
+    margin-bottom: 0.5rem;
+}
+
+.lesson-body img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.lesson-highlight {
+    background: rgba(62, 205, 193, 0.1);
+    border: 1px solid rgba(62, 205, 193, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.lesson-note {
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 4px solid #3b82f6;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.lesson-warning {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #ef4444;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 8px 8px 0;
+}
+
+/* ===== FLOATING ACTIONS ===== */
+.floating-actions {
+    position: fixed;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    z-index: 997;
+}
+
+.floating-btn {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.floating-btn:hover,
+.floating-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+/* ===== LESSON NAVIGATION ===== */
+.lesson-navigation {
+    position: fixed;
+    bottom: 80px; /* Над bottom navigation */
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    z-index: 998;
+}
+
+.nav-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.nav-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #6b7280;
+}
+
+.nav-btn.secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.lesson-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover,
+.action-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.action-btn.active {
+    background: rgba(62, 205, 193, 0.2);
+    border-color: #3ecdc1;
+    color: #3ecdc1;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+    .lesson-content {
+        margin: 0.5rem;
+        padding: 1.5rem 1rem;
+    }
+    
+    .lesson-meta {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .lesson-navigation {
+        padding: 0.75rem;
+    }
+    
+    .nav-btn {
+        padding: 0.625rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .floating-actions {
+        right: 0.5rem;
+    }
+}
+
+/* ===== ТЕМНАЯ ТЕМА ===== */
+[data-theme="dark"] .lesson-navigation {
+    background: rgba(31, 41, 55, 0.95);
+}
+
+[data-theme="dark"] .nav-btn.secondary {
+    border-color: rgba(156, 163, 175, 0.3);
+    color: rgba(156, 163, 175, 0.8);
+}
+
+[data-theme="dark"] .action-btn {
+    background: rgba(75, 85, 99, 0.3);
+    border-color: rgba(156, 163, 175, 0.2);
+    color: rgba(156, 163, 175, 0.8);
+}
+
+/* ===== АНИМАЦИИ ===== */
+.lesson-content {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+// Lesson specific functionality
+let currentSection = {{ current_section or 1 }};
+let totalSections = {{ total_sections or 1 }};
+let lessonProgress = 0;
+let isBookmarked = false;
+let notesVisible = false;
+
+// Initialize lesson
+document.addEventListener('DOMContentLoaded', function() {
+    setupScrollTracking();
+    loadUserProgress();
+    updateProgressBar();
+});
+
+function updateProgressBar() {
+    // Обновляем прогресс в header через nav_config
+    const progressFill = document.querySelector('.progress-fill');
+    if (progressFill) {
+        lessonProgress = (currentSection / totalSections) * 100;
+        progressFill.style.width = lessonProgress + '%';
+    }
+    saveProgress();
+}
+
+function setupScrollTracking() {
+    let ticking = false;
+    
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const scrolled = window.pageYOffset;
+                const maxScroll = document.body.scrollHeight - window.innerHeight;
+                const scrollProgress = Math.min((scrolled / maxScroll) * 100, 100);
+                
+                // Update progress based on scroll
+                if (scrollProgress > lessonProgress) {
+                    lessonProgress = scrollProgress;
+                    const progressFill = document.querySelector('.progress-fill');
+                    if (progressFill) {
+                        progressFill.style.width = lessonProgress + '%';
+                    }
+                    saveProgress();
                 }
-            }, { passive: true });
-        }
-
-        function saveProgress() {
-            // Save lesson progress to localStorage or send to server
-            const progressData = {
-                lessonId: {{ lesson.id }},
-                progress: lessonProgress,
-                currentPage: currentPage,
-                timestamp: new Date().toISOString()
-            };
-            
-            localStorage.setItem('lesson_progress_{{ lesson.id }}', JSON.stringify(progressData));
-            
-            // Send to server if user is authenticated
-            {% if current_user.is_authenticated %}
-            fetch('/{{ current_language }}/mobile/api/lesson/{{ lesson.id }}/progress', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(progressData)
-            }).catch(console.error);
-            {% endif %}
-        }
-
-        function loadUserProgress() {
-            const saved = localStorage.getItem('lesson_progress_{{ lesson.id }}');
-            if (saved) {
-                const data = JSON.parse(saved);
-                lessonProgress = data.progress || 0;
-                currentPage = data.currentPage || 1;
-                updateProgress();
-            }
-        }
-
-        function toggleBookmark() {
-            isBookmarked = !isBookmarked;
-            const bookmarkBtns = document.querySelectorAll('.bi-bookmark, .bi-bookmark-fill');
-            
-            bookmarkBtns.forEach(btn => {
-                if (isBookmarked) {
-                    btn.classList.remove('bi-bookmark');
-                    btn.classList.add('bi-bookmark-fill');
-                } else {
-                    btn.classList.remove('bi-bookmark-fill');
-                    btn.classList.add('bi-bookmark');
-                }
+                
+                ticking = false;
             });
-            
-            const message = isBookmarked ? 'Урок добавлен в закладки' : 'Урок удален из закладок';
-            window.mobileApp.showNotification(message, isBookmarked ? 'success' : 'info');
+            ticking = true;
         }
+    }, { passive: true });
+}
 
-        function toggleNotes() {
-            notesVisible = !notesVisible;
-            
-            if (notesVisible) {
-                // Здесь можно открыть модальное окно с заметками
-                window.mobileApp.showNotification('Функция заметок в разработке', 'info');
+function saveProgress() {
+    // Save lesson progress to localStorage or send to server
+    const progressData = {
+        lessonId: {{ lesson.id }},
+        progress: lessonProgress,
+        currentSection: currentSection,
+        timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem('lesson_progress_{{ lesson.id }}', JSON.stringify(progressData));
+    
+    // Send to server if user is authenticated
+    {% if current_user.is_authenticated %}
+    fetch('/{{ lang }}/mobile/api/lesson/{{ lesson.id }}/progress', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(progressData)
+    }).catch(console.error);
+    {% endif %}
+}
+
+function loadUserProgress() {
+    const saved = localStorage.getItem('lesson_progress_{{ lesson.id }}');
+    if (saved) {
+        const data = JSON.parse(saved);
+        lessonProgress = data.progress || 0;
+        currentSection = data.currentSection || 1;
+        updateProgressBar();
+    }
+}
+
+function toggleBookmark() {
+    isBookmarked = !isBookmarked;
+    const bookmarkBtns = document.querySelectorAll('.action-btn .bi-bookmark, .action-btn .bi-bookmark-fill');
+    
+    bookmarkBtns.forEach(btn => {
+        if (isBookmarked) {
+            btn.classList.remove('bi-bookmark');
+            btn.classList.add('bi-bookmark-fill');
+            btn.parentElement.classList.add('active');
+        } else {
+            btn.classList.remove('bi-bookmark-fill');
+            btn.classList.add('bi-bookmark');
+            btn.parentElement.classList.remove('active');
+        }
+    });
+    
+    const message = isBookmarked ? 
+        ({{ t('lesson_bookmarked', lang) | tojson }} || 'Урок добавлен в закладки') : 
+        ({{ t('lesson_unbookmarked', lang) | tojson }} || 'Урок удален из закладок');
+    
+    if (window.mobileApp && window.mobileApp.showNotification) {
+        window.mobileApp.showNotification(message, isBookmarked ? 'success' : 'info');
+    }
+}
+
+function toggleNotes() {
+    notesVisible = !notesVisible;
+    
+    if (notesVisible) {
+        // Здесь можно открыть модальное окно с заметками
+        if (window.mobileApp && window.mobileApp.showNotification) {
+            window.mobileApp.showNotification({{ t('notes_in_development', lang) | tojson }} || 'Функция заметок в разработке', 'info');
+        }
+    }
+}
+
+function shareLesson() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ lesson.title }}',
+            text: {{ t('studying_dentistry', lang) | tojson }} || 'Изучаю стоматологию в Dental Academy',
+            url: window.location.href
+        }).catch(console.error);
+    } else {
+        // Fallback - copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            if (window.mobileApp && window.mobileApp.showNotification) {
+                window.mobileApp.showNotification({{ t('link_copied', lang) | tojson }} || 'Ссылка скопирована в буфер обмена', 'success');
             }
-        }
-
-        function shareLesson() {
-            if (navigator.share) {
-                navigator.share({
-                    title: '{{ lesson.title }}',
-                    text: 'Изучаю стоматологию в Dental Academy',
-                    url: window.location.href
-                }).catch(console.error);
-            } else {
-                // Fallback - copy to clipboard
-                navigator.clipboard.writeText(window.location.href).then(() => {
-                    window.mobileApp.showNotification('Ссылка скопирована в буфер обмена', 'success');
-                }).catch(() => {
-                    window.mobileApp.showNotification('Не удалось скопировать ссылку', 'error');
-                });
-            }
-        }
-
-        function openAIAssistant() {
-            // Открыть AI помощника с контекстом урока
-            const lessonTitle = document.querySelector('.lesson-title')?.textContent || '';
-            const lessonContent = document.querySelector('.lesson-text')?.textContent?.slice(0, 500) || '';
-            
-            // Сохраняем контекст урока в sessionStorage для AI
-            sessionStorage.setItem('aiContext', JSON.stringify({
-                type: 'lesson',
-                lesson_id: {{ lesson.id }},
-                lesson_title: lessonTitle,
-                lesson_content: lessonContent
-            }));
-            
-            // Переходим на страницу AI с правильным маршрутом
-            window.location.href = '{{ url_for("ai.ai_chat", lang=current_language) }}';
-        }
-
-        function openLessonMenu() {
-            // Открыть меню урока
-            const actions = [
-                { icon: 'bi-download', text: 'Скачать для оффлайн', action: 'downloadLesson' },
-                { icon: 'bi-printer', text: 'Печать', action: 'printLesson' },
-                { icon: 'bi-flag', text: 'Сообщить о проблеме', action: 'reportIssue' },
-                { icon: 'bi-gear', text: 'Настройки', action: 'openSettings' }
-            ];
-            
-            // Простая реализация - можно расширить
-            window.mobileApp.showNotification('Меню урока в разработке', 'info');
-        }
-
-        function previousLesson() {
-            {% if previous_lesson %}
-                window.location.href = '/{{ current_language }}/mobile/lesson/{{ previous_lesson.id }}';
-            {% endif %}
-        }
-
-        function nextLesson() {
-            {% if next_lesson %}
-                // Mark current lesson as completed and go to next
-                markLessonCompleted();
-                window.location.href = '/{{ current_language }}/mobile/lesson/{{ next_lesson.id }}';
-            {% else %}
-                // Complete the lesson and return to module
-                markLessonCompleted();
-                window.location.href = '/{{ current_language }}/mobile/subject/{{ lesson.module.subject_id }}';
-            {% endif %}
-        }
-
-        function markLessonCompleted() {
-            lessonProgress = 100;
-            saveProgress();
-            
-            {% if current_user.is_authenticated %}
-            fetch('/{{ current_language }}/mobile/api/lesson/{{ lesson.id }}/complete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }).catch(console.error);
-            {% endif %}
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
-                previousLesson();
-            } else if (e.key === 'ArrowRight') {
-                nextLesson();
-            } else if (e.key === 'b' && e.ctrlKey) {
-                e.preventDefault();
-                toggleBookmark();
+        }).catch(() => {
+            if (window.mobileApp && window.mobileApp.showNotification) {
+                window.mobileApp.showNotification({{ t('copy_failed', lang) | tojson }} || 'Не удалось скопировать ссылку', 'error');
             }
         });
-    </script>
-</body>
-</html> 
+    }
+}
+
+function openAIAssistant() {
+    // Открыть AI помощника с контекстом урока
+    const lessonTitle = document.querySelector('.lesson-title')?.textContent || '';
+    const lessonContent = document.querySelector('.lesson-body')?.textContent?.slice(0, 500) || '';
+    
+    // Сохраняем контекст урока в sessionStorage для AI
+    sessionStorage.setItem('aiContext', JSON.stringify({
+        type: 'lesson',
+        lesson_id: {{ lesson.id }},
+        lesson_title: lessonTitle,
+        lesson_content: lessonContent
+    }));
+    
+    // Переходим на страницу AI
+    window.location.href = '{{ url_for("ai.ai_chat", lang=lang) }}';
+}
+
+function previousLesson() {
+    {% if previous_lesson %}
+        window.location.href = '{{ url_for("mobile.lesson_view", lang=lang, lesson_id=previous_lesson.id) }}';
+    {% endif %}
+}
+
+function nextLesson() {
+    {% if next_lesson %}
+        // Mark current lesson as completed and go to next
+        markLessonCompleted();
+        window.location.href = '{{ url_for("mobile.lesson_view", lang=lang, lesson_id=next_lesson.id) }}';
+    {% else %}
+        // Complete the lesson and return to subject/module
+        markLessonCompleted();
+        {% if lesson.module and lesson.module.subject_id %}
+            window.location.href = '{{ url_for("mobile.subject_view", lang=lang, subject_id=lesson.module.subject_id) }}';
+        {% else %}
+            window.location.href = '{{ url_for("mobile.learning_map", lang=lang) }}';
+        {% endif %}
+    {% endif %}
+}
+
+function markLessonCompleted() {
+    lessonProgress = 100;
+    saveProgress();
+    
+    {% if current_user.is_authenticated %}
+    fetch('/{{ lang }}/mobile/api/lesson/{{ lesson.id }}/complete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).catch(console.error);
+    {% endif %}
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+        previousLesson();
+    } else if (e.key === 'ArrowRight') {
+        nextLesson();
+    } else if (e.key === 'b' && e.ctrlKey) {
+        e.preventDefault();
+        toggleBookmark();
+    }
+});
+</script>
+{% endblock %} 

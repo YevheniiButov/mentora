@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" {% if is_rtl_language(lang) %}dir="rtl"{% endif %}>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    
+    <title>{% block title %}{{ t('dental_academy', lang) }}{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile/mobile-app.css') }}">
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* === ВЕРХНИЙ HEADER === */
+        .mobile-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 100%;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .header-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            flex: 1;
+            text-align: center;
+            margin: 0 1rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle, .search-btn, .profile-menu-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover, .search-btn:hover, .profile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* === ОСНОВНОЙ КОНТЕНТ === */
+        .mobile-content {
+            padding: 1.5rem;
+            padding-bottom: 90px; /* Отступ для навигации */
+            min-height: calc(100vh - 140px);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        /* === НИЖНЯЯ НАВИГАЦИЯ === */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 1000;
+            padding: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: #3ECDC1;
+            background: rgba(62, 205, 193, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-item span {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* === АНИМАЦИИ ПЕРЕХОДОВ === */
+        .page-transition-enter {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .page-transition-enter-active {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .page-transition-exit {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .page-transition-exit-active {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        /* === АДАПТИВНОСТЬ === */
+        @media (max-width: 480px) {
+            .mobile-content {
+                padding: 1rem;
+                padding-bottom: 85px;
+            }
+            
+            .nav-item span {
+                font-size: 10px;
+            }
+            
+            .header-title {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    
+    <!-- ЕДИНЫЙ ВЕРХНИЙ HEADER -->
+    <div class="mobile-header">
+        <div class="header-content">
+            {% if show_back_button %}
+            <a href="javascript:history.back()" class="back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            {% else %}
+            <div style="width: 44px;"></div>
+            {% endif %}
+            
+            <h1 class="header-title">
+                {% block page_title %}{{ t('dental_academy', lang) }}{% endblock %}
+            </h1>
+            
+            <div class="header-right">
+                {% if show_search %}
+                <button class="search-btn" id="searchToggle" title="{{ t('search', lang) }}">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% endif %}
+                
+                <button class="theme-toggle" id="themeToggle" title="{{ t('toggle_theme', lang) }}">
+                    <i class="bi bi-sun-fill light-icon"></i>
+                    <i class="bi bi-moon-fill dark-icon"></i>
+                </button>
+                
+                <button class="profile-menu-btn" id="profileMenu" title="{{ t('menu', lang) }}">
+                    {% if current_user and current_user.is_authenticated %}
+                        <i class="bi bi-person-circle"></i>
+                    {% else %}
+                        <i class="bi bi-list"></i>
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main class="mobile-content" id="mainContent">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- ЕДИНАЯ НИЖНЯЯ НАВИГАЦИЯ -->
+    <nav class="mobile-bottom-nav" id="bottomNav">
+        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item {% if active_page == 'home' %}active{% endif %}" data-page="home">
+            <i class="bi bi-house"></i>
+            <span>{{ t('home', lang) }}</span>
+        </a>
+        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item {% if active_page == 'learning' %}active{% endif %}" data-page="learning">
+            <i class="bi bi-book"></i>
+            <span>{{ t('learning', lang) }}</span>
+        </a>
+        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item {% if active_page == 'tests' %}active{% endif %}" data-page="tests">
+            <i class="bi bi-clipboard-check"></i>
+            <span>{{ t('tests', lang) }}</span>
+        </a>
+        <a href="/{{ lang }}/virtual-patient" class="nav-item {% if active_page == 'patients' %}active{% endif %}" data-page="patients">
+            <i class="bi bi-person-heart"></i>
+            <span>{{ t('patients', lang) }}</span>
+        </a>
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item {% if active_page == 'ai' %}active{% endif %}" data-page="ai">
+            <i class="fas fa-robot"></i>
+            <span>{{ t('ai_assistant', lang) }}</span>
+        </a>
+    </nav>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/mobile/mobile-app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile/navigation.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // Touch handling improvements
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        
+        // Prevent double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html> 

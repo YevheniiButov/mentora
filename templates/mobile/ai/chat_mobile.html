@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ current_language }}" data-theme="light">
+<html lang="{{ lang }}" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ t('ai_assistant', lang=current_language) if t('ai_assistant', lang=current_language) != 'ai_assistant' else 'AI Assistant' }} - Dental Academy</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ t('ai_assistant', lang) }} - Dental Academy</title>
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/static/manifest.json">
@@ -542,9 +543,9 @@
             <i class="bi bi-arrow-left"></i>
         </button>
         
-        <h1 class="header-title">{{ t('ai_assistant', lang=current_language) if t('ai_assistant', lang=current_language) != 'ai_assistant' else 'AI Assistant' }}</h1>
+        <h1 class="header-title">{{ t('ai_assistant', lang) }}</h1>
         
-        <a href="{{ url_for('ai.ai_settings', lang=current_language) }}" class="header-action">
+        <a href="{{ url_for('ai.ai_settings', lang=lang) }}" class="header-action">
             <i class="bi bi-gear"></i>
         </a>
     </header>
@@ -558,11 +559,11 @@
                 <div class="ai-empty-icon">
                     <i class="bi bi-robot"></i>
                 </div>
-                <h3>{{ t('setup_ai_assistant', lang=current_language) if t('setup_ai_assistant', lang=current_language) != 'setup_ai_assistant' else 'Setup AI Assistant' }}</h3>
-                <p>{{ t('configure_ai_api_keys', lang=current_language) if t('configure_ai_api_keys', lang=current_language) != 'configure_ai_api_keys' else 'Configure your AI API keys to start chatting with your personal dental assistant. We support free providers like Groq and DeepSeek.' }}</p>
-                <a href="{{ url_for('ai.ai_settings', lang=current_language) }}" class="ai-setup-button">
+                <h3>{{ t('setup_ai_assistant', lang) }}</h3>
+                <p>{{ t('configure_ai_api_keys', lang) }}</p>
+                <a href="{{ url_for('ai.ai_settings', lang=lang) }}" class="ai-setup-button">
                     <i class="bi bi-gear"></i>
-                    {{ t('configure_now', lang=current_language) if t('configure_now', lang=current_language) != 'configure_now' else 'Configure Now' }}
+                    {{ t('configure_now', lang) }}
                 </a>
             </div>
             {% else %}
@@ -570,7 +571,7 @@
             <div class="ai-status-bar">
                 <div class="ai-status-info">
                     <div class="ai-status-icon"></div>
-                    <span>{{ t('ai_ready', lang=current_language) if t('ai_ready', lang=current_language) != 'ai_ready' else 'AI Ready' }}</span>
+                    <span>{{ t('ai_ready', lang) }}</span>
                 </div>
                 <div class="ai-provider-selector" id="current-provider">
                     Groq
@@ -606,28 +607,28 @@
                     <!-- Приветственное сообщение -->
                     <div class="ai-message assistant">
                         <div class="ai-message-bubble">
-                            {{ t('ai_welcome_message', lang=current_language) if t('ai_welcome_message', lang=current_language) != 'ai_welcome_message' else 'Hello! I\'m your dental AI assistant. I can help you with questions about dental procedures, exam preparation, and learning guidance. What would you like to know?' }}
+                            {{ t('ai_welcome_message', lang) }}
                         </div>
-                        <div class="ai-message-time">{{ t('now', lang=current_language) if t('now', lang=current_language) != 'now' else 'Now' }}</div>
+                        <div class="ai-message-time">{{ t('now', lang) }}</div>
                     </div>
                     
                     <!-- Предложения -->
                     <div class="ai-suggestions">
-                        <h4>{{ t('suggested_questions', lang=current_language) if t('suggested_questions', lang=current_language) != 'suggested_questions' else 'Suggested Questions' }}</h4>
+                        <h4>{{ t('suggested_questions', lang) }}</h4>
                         
                         <div class="ai-suggestion-item" onclick="askSuggestion('What are the main causes of dental caries?')">
-                            <div class="ai-suggestion-title">{{ t('about_caries', lang=current_language) if t('about_caries', lang=current_language) != 'about_caries' else 'About Caries' }}</div>
-                            <div class="ai-suggestion-desc">{{ t('learn_about_causes', lang=current_language) if t('learn_about_causes', lang=current_language) != 'learn_about_causes' else 'Learn about causes and prevention' }}</div>
+                            <div class="ai-suggestion-title">{{ t('about_caries', lang) }}</div>
+                            <div class="ai-suggestion-desc">{{ t('learn_about_causes', lang) }}</div>
                         </div>
                         
                         <div class="ai-suggestion-item" onclick="askSuggestion('How should I prepare for the BIG exam?')">
-                            <div class="ai-suggestion-title">{{ t('exam_preparation', lang=current_language) if t('exam_preparation', lang=current_language) != 'exam_preparation' else 'Exam Preparation' }}</div>
-                            <div class="ai-suggestion-desc">{{ t('get_study_tips', lang=current_language) if t('get_study_tips', lang=current_language) != 'get_study_tips' else 'Get personalized study tips' }}</div>
+                            <div class="ai-suggestion-title">{{ t('exam_preparation', lang) }}</div>
+                            <div class="ai-suggestion-desc">{{ t('get_study_tips', lang) }}</div>
                         </div>
                         
                         <div class="ai-suggestion-item" onclick="askSuggestion('What should I focus on based on my current progress?')">
-                            <div class="ai-suggestion-title">{{ t('personalized_guidance', lang=current_language) if t('personalized_guidance', lang=current_language) != 'personalized_guidance' else 'Personalized Guidance' }}</div>
-                            <div class="ai-suggestion-desc">{{ t('based_on_progress', lang=current_language) if t('based_on_progress', lang=current_language) != 'based_on_progress' else 'Based on your learning progress' }}</div>
+                            <div class="ai-suggestion-title">{{ t('personalized_guidance', lang) }}</div>
+                            <div class="ai-suggestion-desc">{{ t('based_on_progress', lang) }}</div>
                         </div>
                     </div>
                 {% endif %}
@@ -637,13 +638,13 @@
             <div class="ai-input-panel">
                 <div class="ai-quick-actions">
                     <a href="#" class="ai-quick-action" onclick="askSuggestion('Explain this lesson to me')">
-                        📚 {{ t('explain_lesson', lang=current_language) if t('explain_lesson', lang=current_language) != 'explain_lesson' else 'Explain lesson' }}
+                        📚 {{ t('explain_lesson', lang) }}
                     </a>
                     <a href="#" class="ai-quick-action" onclick="askSuggestion('Give me a quiz on this topic')">
-                        🎯 {{ t('quiz_me', lang=current_language) if t('quiz_me', lang=current_language) != 'quiz_me' else 'Quiz me' }}
+                        🎯 {{ t('quiz_me', lang) }}
                     </a>
                     <a href="#" class="ai-quick-action" onclick="askSuggestion('What should I study next?')">
-                        ⭐ {{ t('study_plan', lang=current_language) if t('study_plan', lang=current_language) != 'study_plan' else 'Study plan' }}
+                        ⭐ {{ t('study_plan', lang) }}
                     </a>
                 </div>
                 
@@ -651,7 +652,7 @@
                     <textarea 
                         class="ai-message-input" 
                         id="message-input"
-                        placeholder="{{ t('ask_ai_anything', lang=current_language) if t('ask_ai_anything', lang=current_language) != 'ask_ai_anything' else 'Ask me anything about dentistry...' }}"
+                        placeholder="{{ t('ask_ai_anything', lang) }}"
                         rows="1"></textarea>
                     <button class="ai-send-button" id="send-button" disabled>
                         <i class="bi bi-send"></i>
@@ -664,25 +665,25 @@
 
     <!-- Bottom Navigation -->
     <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
             <i class="bi bi-house"></i>
-            <span>Главная</span>
+            <span>{{ t('home', lang) }}</span>
         </a>
-        <a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
             <i class="bi bi-book"></i>
-            <span>Обучение</span>
+            <span>{{ t('learning', lang) }}</span>
         </a>
-        <a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
             <i class="bi bi-clipboard-check"></i>
-            <span>Тесты</span>
+            <span>{{ t('tests', lang) }}</span>
         </a>
-        <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item">
+        <a href="/{{ lang }}/virtual-patient" class="nav-item">
             <i class="bi bi-person-heart"></i>
-            <span>Пациенты</span>
+            <span>{{ t('patients', lang) }}</span>
         </a>
-        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item active">
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item active">
             <i class="fas fa-robot"></i>
-            <span>AI</span>
+            <span>{{ t('ai_assistant', lang) }}</span>
         </a>
     </nav>
 
@@ -805,9 +806,9 @@
                     
                     if (response.error) {
                         if (response.redirect_to_setup) {
-                            this.showError('{{ t("configure_api_keys_first", lang=current_language) if t("configure_api_keys_first", lang=current_language) != "configure_api_keys_first" else "Please configure your API keys first" }}');
+                            this.showError('{{ t("configure_api_keys_first", lang) }}');
                             setTimeout(() => {
-                                window.location.href = '{{ url_for("ai.ai_settings", lang=current_language) }}';
+                                window.location.href = '{{ url_for("ai.ai_settings", lang=lang) }}';
                             }, 2000);
                         } else {
                             this.showError(response.error);
@@ -820,15 +821,16 @@
                     
                 } catch (error) {
                     this.hideTypingIndicator();
-                    this.showError('{{ t("connection_error", lang=current_language) if t("connection_error", lang=current_language) != "connection_error" else "Connection error. Please try again." }}');
+                    this.showError('{{ t("connection_error", lang) }}');
                 }
             }
             
             async sendToAPI(message) {
-                const response = await fetch('{{ url_for("ai.process_chat", lang=current_language) }}', {
+                const response = await fetch('{{ url_for("ai.process_chat", lang=lang) }}', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
                         message: message,
@@ -895,7 +897,7 @@
                         <div class="ai-typing-dot"></div>
                         <div class="ai-typing-dot"></div>
                     </div>
-                    <span>{{ t("ai_thinking", lang=current_language) if t("ai_thinking", lang=current_language) != "ai_thinking" else "AI is thinking..." }}</span>
+                    <span>{{ t("ai_thinking", lang) }}</span>
                 `;
                 
                 this.messagesArea.appendChild(indicator);
@@ -949,29 +951,5 @@
             window.aiChat = new MobileAIChat();
         });
     </script>
-
-    <!-- Нижняя навигация -->
-    <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
-            <i class="bi bi-house"></i>
-            <span>Главная</span>
-        </a>
-        <a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
-            <i class="bi bi-book"></i>
-            <span>Обучение</span>
-        </a>
-        <a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item">
-            <i class="bi bi-clipboard-check"></i>
-            <span>Тесты</span>
-        </a>
-        <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item">
-            <i class="bi bi-person-heart"></i>
-            <span>Пациенты</span>
-        </a>
-        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item active">
-            <i class="fas fa-robot"></i>
-            <span>AI</span>
-        </a>
-    </nav>
 </body>
 </html> 

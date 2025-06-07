@@ -375,19 +375,19 @@
     <!-- Error Information Card -->
     <div class="error-card">
         <h1 class="error-title">
-            {% if current_language == 'ru' %}
+            {% if lang == 'ru' %}
                 Внутренняя ошибка сервера
-            {% elif current_language == 'nl' %}
+            {% elif lang == 'nl' %}
                 Interne serverfout
-            {% elif current_language == 'uk' %}
+            {% elif lang == 'uk' %}
                 Внутрішня помилка сервера
-            {% elif current_language == 'es' %}
+            {% elif lang == 'es' %}
                 Error interno del servidor
-            {% elif current_language == 'pt' %}
+            {% elif lang == 'pt' %}
                 Erro interno do servidor
-            {% elif current_language == 'tr' %}
+            {% elif lang == 'tr' %}
                 İç sunucu hatası
-            {% elif current_language == 'fa' %}
+            {% elif lang == 'fa' %}
                 خطای داخلی سرور
             {% else %}
                 Internal Server Error
@@ -397,19 +397,19 @@
         <div class="status-indicator">
             <div class="status-dot"></div>
             <div class="status-text">
-                {% if current_language == 'ru' %}
+                {% if lang == 'ru' %}
                     Система временно недоступна
-                {% elif current_language == 'nl' %}
+                {% elif lang == 'nl' %}
                     Systeem tijdelijk niet beschikbaar
-                {% elif current_language == 'uk' %}
+                {% elif lang == 'uk' %}
                     Система тимчасово недоступна
-                {% elif current_language == 'es' %}
+                {% elif lang == 'es' %}
                     Sistema temporalmente no disponible
-                {% elif current_language == 'pt' %}
+                {% elif lang == 'pt' %}
                     Sistema temporariamente indisponível
-                {% elif current_language == 'tr' %}
+                {% elif lang == 'tr' %}
                     Sistem geçici olarak kullanılamıyor
-                {% elif current_language == 'fa' %}
+                {% elif lang == 'fa' %}
                     سیستم موقتاً در دسترس نیست
                 {% else %}
                     System Temporarily Unavailable
@@ -418,19 +418,19 @@
         </div>
 
         <p class="error-message">
-            {% if current_language == 'ru' %}
+            {% if lang == 'ru' %}
                 Наш сервер сломался как зуб без должного ухода! Наши инженеры уже работают над восстановлением системы.
-            {% elif current_language == 'nl' %}
+            {% elif lang == 'nl' %}
                 Onze server is kapot gegaan zoals een tand zonder goede zorg! Onze ingenieurs werken al aan het herstel van het systeem.
-            {% elif current_language == 'uk' %}
+            {% elif lang == 'uk' %}
                 Наш сервер зламався як зуб без належного догляду! Наші інженери вже працюють над відновленням системи.
-            {% elif current_language == 'es' %}
+            {% elif lang == 'es' %}
                 ¡Nuestro servidor se rompió como un diente sin el cuidado adecuado! Nuestros ingenieros ya están trabajando en la restauración del sistema.
-            {% elif current_language == 'pt' %}
+            {% elif lang == 'pt' %}
                 Nosso servidor quebrou como um dente sem os devidos cuidados! Nossos engenheiros já estão trabalhando na restauração do sistema.
-            {% elif current_language == 'tr' %}
+            {% elif lang == 'tr' %}
                 Sunucumuz uygun bakım yapılmayan bir diş gibi bozuldu! Mühendislerimiz sistemin restorasyonu için çalışıyor.
-            {% elif current_language == 'fa' %}
+            {% elif lang == 'fa' %}
                 سرور ما مثل دندانی که از آن مراقبت نشده شکسته شده! مهندسان ما در حال کار روی بازسازی سیستم هستند.
             {% else %}
                 Our server broke down like a tooth without proper care! Our engineers are already working on restoring the system.
@@ -442,19 +442,19 @@
                 <i class="bi bi-arrow-clockwise" id="retryIcon"></i>
                 <div class="loading-spinner" id="loadingSpinner"></div>
                 <span id="retryText">
-                    {% if current_language == 'ru' %}
+                    {% if lang == 'ru' %}
                         Попробовать снова
-                    {% elif current_language == 'nl' %}
+                    {% elif lang == 'nl' %}
                         Opnieuw proberen
-                    {% elif current_language == 'uk' %}
+                    {% elif lang == 'uk' %}
                         Спробувати знову
-                    {% elif current_language == 'es' %}
+                    {% elif lang == 'es' %}
                         Intentar de nuevo
-                    {% elif current_language == 'pt' %}
+                    {% elif lang == 'pt' %}
                         Tentar novamente
-                    {% elif current_language == 'tr' %}
+                    {% elif lang == 'tr' %}
                         Tekrar dene
-                    {% elif current_language == 'fa' %}
+                    {% elif lang == 'fa' %}
                         دوباره تلاش کن
                     {% else %}
                         Try Again
@@ -462,21 +462,21 @@
                 </span>
             </button>
 
-            <a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="action-btn">
+            <a href="{{ url_for('mobile.welcome', lang=lang or 'en') }}" class="action-btn">
                 <i class="bi bi-house-fill"></i>
-                {% if current_language == 'ru' %}
+                {% if lang == 'ru' %}
                     На главную
-                {% elif current_language == 'nl' %}
+                {% elif lang == 'nl' %}
                     Naar home
-                {% elif current_language == 'uk' %}
+                {% elif lang == 'uk' %}
                     На головну
-                {% elif current_language == 'es' %}
+                {% elif lang == 'es' %}
                     Ir a inicio
-                {% elif current_language == 'pt' %}
+                {% elif lang == 'pt' %}
                     Ir para casa
-                {% elif current_language == 'tr' %}
+                {% elif lang == 'tr' %}
                     Ana sayfaya git
-                {% elif current_language == 'fa' %}
+                {% elif lang == 'fa' %}
                     برو به خانه
                 {% else %}
                     Go Home
@@ -485,19 +485,19 @@
 
             <button class="action-btn secondary" onclick="contactSupport()">
                 <i class="bi bi-headset"></i>
-                {% if current_language == 'ru' %}
+                {% if lang == 'ru' %}
                     Связаться с поддержкой
-                {% elif current_language == 'nl' %}
+                {% elif lang == 'nl' %}
                     Contact opnemen met support
-                {% elif current_language == 'uk' %}
+                {% elif lang == 'uk' %}
                     Зв'язатися з підтримкою
-                {% elif current_language == 'es' %}
+                {% elif lang == 'es' %}
                     Contactar soporte
-                {% elif current_language == 'pt' %}
+                {% elif lang == 'pt' %}
                     Contatar suporte
-                {% elif current_language == 'tr' %}
+                {% elif lang == 'tr' %}
                     Destekle iletişim kur
-                {% elif current_language == 'fa' %}
+                {% elif lang == 'fa' %}
                     تماس با پشتیبانی
                 {% else %}
                     Contact Support
@@ -508,19 +508,19 @@
         <!-- Technical Information -->
         <div class="technical-info" id="techInfo" style="display: none;">
             <div style="margin-bottom: 0.5rem; color: var(--error); font-weight: bold;">
-                {% if current_language == 'ru' %}
+                {% if lang == 'ru' %}
                     Техническая информация:
-                {% elif current_language == 'nl' %}
+                {% elif lang == 'nl' %}
                     Technische informatie:
-                {% elif current_language == 'uk' %}
+                {% elif lang == 'uk' %}
                     Технічна інформація:
-                {% elif current_language == 'es' %}
+                {% elif lang == 'es' %}
                     Información técnica:
-                {% elif current_language == 'pt' %}
+                {% elif lang == 'pt' %}
                     Informações técnicas:
-                {% elif current_language == 'tr' %}
+                {% elif lang == 'tr' %}
                     Teknik bilgi:
-                {% elif current_language == 'fa' %}
+                {% elif lang == 'fa' %}
                     اطلاعات فنی:
                 {% else %}
                     Technical Information:
@@ -537,29 +537,29 @@
 {% endblock %}
 
 {% block nav_items %}
-<a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item active">
+<a href="{{ url_for('mobile.welcome', lang=lang or 'en') }}" class="nav-item active">
     <div class="nav-icon">
         <i class="bi bi-house-fill"></i>
     </div>
-    <span class="nav-label">Home</span>
+    <span class="nav-label">{{ t('home', lang or 'en') }}</span>
 </a>
-<a href="#" class="nav-item" onclick="retryConnection()">
+<a href="{{ url_for('mobile.learning_map', lang=lang or 'en') }}" class="nav-item">
     <div class="nav-icon">
-        <i class="bi bi-arrow-clockwise"></i>
+        <i class="bi bi-book"></i>
     </div>
-    <span class="nav-label">Retry</span>
+    <span class="nav-label">{{ t('learning', lang or 'en') }}</span>
 </a>
-<a href="#" class="nav-item" onclick="toggleTechInfo()">
+<a href="{{ url_for('ai.ai_chat', lang=lang or 'en') }}" class="nav-item">
     <div class="nav-icon">
-        <i class="bi bi-info-circle"></i>
+        <i class="fas fa-robot"></i>
     </div>
-    <span class="nav-label">Info</span>
+    <span class="nav-label">{{ t('ai_assistant', lang or 'en') }}</span>
 </a>
-<a href="#" class="nav-item" onclick="contactSupport()">
+<a href="#" class="nav-item" onclick="reportProblem()">
     <div class="nav-icon">
-        <i class="bi bi-headset"></i>
+        <i class="bi bi-bug"></i>
     </div>
-    <span class="nav-label">Support</span>
+    <span class="nav-label">{{ t('report', lang or 'en') }}</span>
 </a>
 {% endblock %}
 
@@ -596,7 +596,7 @@ function retryConnection() {
         'en': 'Reconnecting...'
     };
     
-    const lang = '{{ current_language or "en" }}';
+    const lang = '{{ lang or "en" }}';
     text.textContent = loadingTexts[lang] || loadingTexts['en'];
     
     retryCount++;
@@ -648,7 +648,7 @@ function showMaxRetriesMessage() {
         'en': 'Maximum retry attempts exceeded. Please contact support.'
     };
     
-    const lang = '{{ current_language or "en" }}';
+    const lang = '{{ lang or "en" }}';
     alert(messages[lang] || messages['en']);
     contactSupport();
 }
@@ -665,7 +665,7 @@ function contactSupport() {
         'en': 'Redirecting to support page...'
     };
     
-    const lang = '{{ current_language or "en" }}';
+    const lang = '{{ lang or "en" }}';
     alert(messages[lang] || messages['en']);
     
     // В реальном приложении здесь был бы редирект на страницу поддержки
@@ -687,7 +687,7 @@ function toggleTechInfo() {
 }
 
 function goHome() {
-    window.location.href = "{{ url_for('mobile.welcome', lang=current_language or 'en') }}";
+    window.location.href = "{{ url_for('mobile.welcome', lang=lang or 'en') }}";
 }
 
 // Автоматическая попытка восстановления через 30 секунд

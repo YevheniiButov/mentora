@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
     
-    <title>{% if current_language == 'ru' %}Виртуальные пациенты{% elif current_language == 'nl' %}Virtuele patiënten{% else %}Virtual Patients{% endif %} - Dental Academy</title>
+    <title>{{ t('virtual_patients', lang or 'en') }} - Dental Academy</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -440,14 +440,11 @@
     <!-- Mobile Header -->
     <div class="mobile-header">
         <div class="header-content">
-            <a href="{{ url_for('mobile.learning_map', lang=current_language) }}" class="back-btn">
+            <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="back-btn">
                 <i class="bi bi-arrow-left"></i>
             </a>
             <h1 class="header-title">
-                {% if current_language == 'ru' %}Виртуальные пациенты
-                {% elif current_language == 'nl' %}Virtuele patiënten
-                {% else %}Virtual Patients
-                {% endif %}
+                {{ t('virtual_patients', lang or 'en') }}
             </h1>
             <div style="width: 44px;"></div>
         </div>
@@ -459,19 +456,13 @@
         <div class="intro-card fade-in">
             <div class="intro-icon">🏥</div>
             <h2 style="margin-bottom: 1rem;">
-                {% if current_language == 'ru' %}Реальная практика
-                {% elif current_language == 'nl' %}Echte praktijk
+                {% if lang == 'ru' %}Реальная практика
+                {% elif lang == 'nl' %}Echte praktijk
                 {% else %}Real Practice
                 {% endif %}
             </h2>
             <p style="margin-bottom: 0;">
-                {% if current_language == 'ru' %}
-                Отрабатывайте клинические навыки с виртуальными пациентами. Каждый случай основан на реальных клинических сценариях.
-                {% elif current_language == 'nl' %}
-                Oefen klinische vaardigheden met virtuele patiënten. Elke casus is gebaseerd op echte klinische scenario's.
-                {% else %}
-                Practice clinical skills with virtual patients. Each case is based on real clinical scenarios.
-                {% endif %}
+                {{ t('practice_clinical_skills', lang or 'en') }}
             </p>
         </div>
 
@@ -491,8 +482,8 @@
                         <div class="patient-info">
                             <div class="patient-name">{{ scenario.title or 'Unnamed Patient' }}</div>
                             <div class="patient-age">
-                                {% if current_language == 'ru' %}Клинический случай
-                                {% elif current_language == 'nl' %}Klinische casus
+                                {% if lang == 'ru' %}Клинический случай
+                                {% elif lang == 'nl' %}Klinische casus
                                 {% else %}Clinical Case
                                 {% endif %}
                             </div>
@@ -508,22 +499,22 @@
                     <div class="difficulty-badge">
                         {% if scenario.difficulty == 'easy' %}
                             <span class="badge easy">
-                                {% if current_language == 'ru' %}Простой
-                                {% elif current_language == 'nl' %}Makkelijk
+                                {% if lang == 'ru' %}Простой
+                                {% elif lang == 'nl' %}Makkelijk
                                 {% else %}Easy
                                 {% endif %}
                             </span>
                         {% elif scenario.difficulty == 'medium' %}
                             <span class="badge medium">
-                                {% if current_language == 'ru' %}Средний
-                                {% elif current_language == 'nl' %}Gemiddeld
+                                {% if lang == 'ru' %}Средний
+                                {% elif lang == 'nl' %}Gemiddeld
                                 {% else %}Medium
                                 {% endif %}
                             </span>
                         {% else %}
                             <span class="badge hard">
-                                {% if current_language == 'ru' %}Сложный
-                                {% elif current_language == 'nl' %}Moeilijk
+                                {% if lang == 'ru' %}Сложный
+                                {% elif lang == 'nl' %}Moeilijk
                                 {% else %}Hard
                                 {% endif %}
                             </span>
@@ -541,8 +532,8 @@
                         <div class="vital-sign">
                             <div class="vital-icon stable">💓</div>
                             <span>
-                                {% if current_language == 'ru' %}Стабильно
-                                {% elif current_language == 'nl' %}Stabiel
+                                {% if lang == 'ru' %}Стабильно
+                                {% elif lang == 'nl' %}Stabiel
                                 {% else %}Stable
                                 {% endif %}
                             </span>
@@ -551,13 +542,13 @@
                             <div class="vital-icon {% if scenario.difficulty == 'hard' %}concerning{% else %}stable{% endif %}">🌡️</div>
                             <span>
                                 {% if scenario.difficulty == 'hard' %}
-                                    {% if current_language == 'ru' %}Тревожно
-                                    {% elif current_language == 'nl' %}Zorgelijk
+                                    {% if lang == 'ru' %}Тревожно
+                                    {% elif lang == 'nl' %}Zorgelijk
                                     {% else %}Concerning
                                     {% endif %}
                                 {% else %}
-                                    {% if current_language == 'ru' %}Норма
-                                    {% elif current_language == 'nl' %}Normaal
+                                    {% if lang == 'ru' %}Норма
+                                    {% elif lang == 'nl' %}Normaal
                                     {% else %}Normal
                                     {% endif %}
                                 {% endif %}
@@ -566,8 +557,8 @@
                         <div class="vital-sign">
                             <div class="vital-icon stable">🫁</div>
                             <span>
-                                {% if current_language == 'ru' %}Ровное
-                                {% elif current_language == 'nl' %}Regelmatig
+                                {% if lang == 'ru' %}Ровное
+                                {% elif lang == 'nl' %}Regelmatig
                                 {% else %}Regular
                                 {% endif %}
                             </span>
@@ -584,8 +575,8 @@
                             </div>
                             <div class="progress-text">
                                 <span>
-                                    {% if current_language == 'ru' %}Ваш лучший результат
-                                    {% elif current_language == 'nl' %}Je beste score
+                                    {% if lang == 'ru' %}Ваш лучший результат
+                                    {% elif lang == 'nl' %}Je beste score
                                     {% else %}Your best score
                                     {% endif %}
                                 </span>
@@ -596,25 +587,25 @@
 
                     <!-- Action Button -->
                     {% if scenario.is_premium and not current_user.has_subscription %}
-                        <a href="{{ url_for('main_bp.subscribe', lang=current_language) }}" class="action-button premium">
+                        <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="action-button premium">
                             <i class="bi bi-lock-fill"></i>
-                            {% if current_language == 'ru' %}Нужна подписка
-                            {% elif current_language == 'nl' %}Abonnement vereist
+                            {% if lang == 'ru' %}Нужна подписка
+                            {% elif lang == 'nl' %}Abonnement vereist
                             {% else %}Subscription Required
                             {% endif %}
                         </a>
                     {% else %}
-                        <a href="{{ url_for('virtual_patient_bp.start_scenario', lang=current_language, scenario_id=scenario.id) }}" class="action-button {% if scenario.user_progress and scenario.user_progress.completed %}retry{% endif %}">
+                        <a href="{{ url_for('virtual_patient_bp.start_scenario', lang=lang, scenario_id=scenario.id) }}" class="action-button {% if scenario.user_progress and scenario.user_progress.completed %}retry{% endif %}">
                             {% if scenario.user_progress and scenario.user_progress.completed %}
                                 <i class="bi bi-arrow-repeat"></i>
-                                {% if current_language == 'ru' %}Повторить осмотр
-                                {% elif current_language == 'nl' %}Herhaal onderzoek
+                                {% if lang == 'ru' %}Повторить осмотр
+                                {% elif lang == 'nl' %}Herhaal onderzoek
                                 {% else %}Repeat Examination
                                 {% endif %}
                             {% else %}
                                 <i class="bi bi-stethoscope"></i>
-                                {% if current_language == 'ru' %}Начать осмотр
-                                {% elif current_language == 'nl' %}Begin onderzoek
+                                {% if lang == 'ru' %}Начать осмотр
+                                {% elif lang == 'nl' %}Begin onderzoek
                                 {% else %}Start Examination
                                 {% endif %}
                             {% endif %}
@@ -626,19 +617,10 @@
             <div class="empty-state fade-in">
                 <div class="empty-state-icon">🏥</div>
                 <h3 style="margin-bottom: 1rem;">
-                    {% if current_language == 'ru' %}Пациенты скоро появятся
-                    {% elif current_language == 'nl' %}Patiënten komen binnenkort
-                    {% else %}Patients Coming Soon
-                    {% endif %}
+                    {{ t('patients_coming_soon', lang or 'en') }}
                 </h3>
                 <p>
-                    {% if current_language == 'ru' %}
-                    Виртуальные пациенты находятся в разработке. Скоро вы сможете практиковать свои навыки!
-                    {% elif current_language == 'nl' %}
-                    Virtuele patiënten zijn in ontwikkeling. Binnenkort kun je je vaardigheden oefenen!
-                    {% else %}
-                    Virtual patients are in development. Soon you'll be able to practice your skills!
-                    {% endif %}
+                    {{ t('virtual_patients_development', lang or 'en') }}
                 </p>
             </div>
         {% endif %}
@@ -689,25 +671,25 @@
 
     <!-- Нижняя навигация -->
     <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
             <i class="bi bi-house"></i>
-            <span>Главная</span>
+            <span>{{ t('home', lang) }}</span>
         </a>
-        <a href="{{ url_for('mobile.learning_map', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
             <i class="bi bi-book"></i>
-            <span>Обучение</span>
+            <span>{{ t('learning', lang) }}</span>
         </a>
-        <a href="{{ url_for('mobile.tests', lang=current_language or 'en') }}" class="nav-item">
+        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
             <i class="bi bi-clipboard-check"></i>
-            <span>Тесты</span>
+            <span>{{ t('tests', lang) }}</span>
         </a>
-        <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=current_language or 'en') }}" class="nav-item active">
+        <a href="/{{ lang }}/virtual-patient" class="nav-item active">
             <i class="bi bi-person-heart"></i>
-            <span>Пациенты</span>
+            <span>{{ t('patients', lang) }}</span>
         </a>
-        <a href="{{ url_for('ai.ai_chat', lang=current_language) }}" class="nav-item">
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
             <i class="fas fa-robot"></i>
-            <span>AI</span>
+            <span>{{ t('ai_assistant', lang) }}</span>
         </a>
     </nav>
 </body>
