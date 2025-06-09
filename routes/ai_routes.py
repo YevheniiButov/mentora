@@ -19,6 +19,7 @@ from utils.rag_system import RAGSystem
 from translations_new import get_translation as t
 import json
 import logging
+from datetime import datetime
 
 # Blueprint setup
 ai_bp = Blueprint('ai', __name__, url_prefix='/<lang>/ai-assistant', template_folder='../templates')
@@ -403,4 +404,323 @@ def get_recent_conversations(user_id, limit=10):
 
 def get_ai_usage_stats(user_id):
     """Обратная совместимость - получение статистики использования."""
-    return ai_manager.get_user_statistics(user_id) 
+    return ai_manager.get_user_statistics(user_id)
+
+# ===== НОВЫЕ ENDPOINTS ДЛЯ ИИ АНАЛИТИКИ =====
+
+@ai_bp.route('/analytics/realtime', methods=['GET'])
+@login_required
+def get_realtime_ai_analytics(lang):
+    """Реальные метрики ИИ системы (только для админов)"""
+    try:
+        # Проверка прав доступа
+        if not (current_user.role == 'admin' or getattr(current_user, 'is_admin', False)):
+            return jsonify({
+                'success': False,
+                'error': 'Access denied. Admin rights required.'
+            }), 403
+        
+        from utils.ai_analytics import ai_analytics
+        
+        metrics = ai_analytics.get_realtime_metrics()
+        
+        current_app.logger.info(f"Admin {current_user.id} accessed realtime AI analytics")
+        
+        return jsonify({
+            'success': True,
+            'metrics': metrics
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Realtime analytics error: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'Analytics service temporarily unavailable'
+        }), 500
+
+@ai_bp.route('/analytics/historical', methods=['GET'])
+@login_required
+def get_historical_ai_analytics(lang):
+    """Исторические данные ИИ аналитики (только для админов)"""
+    try:
+        # Проверка прав доступа
+        if not (current_user.role == 'admin' or getattr(current_user, 'is_admin', False)):
+            return jsonify({
+                'success': False,
+                'error': 'Access denied. Admin rights required.'
+            }), 403
+        
+        # Получаем параметр количества дней
+        days = request.args.get('days', 30, type=int)
+        days = min(max(days, 1), 365)  # От 1 до 365 дней
+        
+        from utils.ai_analytics import ai_analytics
+        
+        historical_data = ai_analytics.get_historical_analytics(days)
+        
+        current_app.logger.info(f"Admin {current_user.id} accessed historical AI analytics for {days} days")
+        
+        return jsonify({
+            'success': True,
+            'data': historical_data
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Historical analytics error: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'Historical analytics service temporarily unavailable'
+        }), 500
+
+@ai_bp.route('/analytics/user-insights', methods=['GET'])
+@login_required
+def get_user_insights(lang):
+    """Аналитические инсайты о пользователях ИИ (только для админов)"""
+    try:
+        # Проверка прав доступа
+        if not (current_user.role == 'admin' or getattr(current_user, 'is_admin', False)):
+            return jsonify({
+                'success': False,
+                'error': 'Access denied. Admin rights required.'
+            }), 403
+        
+        # Получаем параметры
+        user_id = request.args.get('user_id', type=int)
+        days = request.args.get('days', 7, type=int)
+        days = min(max(days, 1), 90)  # От 1 до 90 дней
+        
+        from utils.ai_analytics import ai_analytics
+        
+        insights = ai_analytics.get_user_behavior_insights(user_id, days)
+        
+        current_app.logger.info(f"Admin {current_user.id} accessed user insights for user {user_id or 'all'}")
+        
+        return jsonify({
+            'success': True,
+            'insights': insights
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"User insights error: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'User insights service temporarily unavailable'
+        }), 500
+
+@ai_bp.route('/analytics/track-event', methods=['POST'])
+@login_required
+def track_ai_event(lang):
+    """Отслеживание событий ИИ системы"""
+    try:
+        data = request.get_json()
+        
+        event_type = data.get('event_type')
+        event_data = data.get('event_data', {})
+        
+        if not event_type:
+            return jsonify({
+                'success': False,
+                'error': 'event_type is required'
+            }), 400
+        
+        # Валидация типа события
+        valid_event_types = [
+            'chat_start', 'chat_end', 'prediction_request', 
+            'recommendation_click', 'widget_interaction', 
+            'mode_switch', 'quick_action', 'analysis_request'
+        ]
+        
+        if event_type not in valid_event_types:
+            return jsonify({
+                'success': False,
+                'error': f'Invalid event_type. Must be one of: {", ".join(valid_event_types)}'
+            }), 400
+        
+        # Создаем запись о событии
+        from models import UserStats
+        
+        # Обновляем или создаем статистику пользователя
+        user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
+        if not user_stats:
+            user_stats = UserStats(
+                user_id=current_user.id,
+                total_study_time=0,
+                lessons_completed=0,
+                tests_completed=0,
+                current_streak=0,
+                longest_streak=0,
+                total_experience_points=0,
+                current_level=1,
+                achievements_unlocked=0,
+                last_activity=datetime.utcnow()
+            )
+            db.session.add(user_stats)
+        
+        # Обновляем последнюю активность
+        user_stats.last_activity = datetime.utcnow()
+        
+        # Сохраняем событие в AIConversation с специальным типом
+        conversation = AIConversation(
+            user_id=current_user.id,
+            session_id=data.get('session_id', f"event_{current_user.id}_{datetime.utcnow().timestamp()}"),
+            user_message=f"EVENT:{event_type}",
+            ai_response=json.dumps(event_data),
+            provider='system',
+            model='analytics',
+            tokens_used=0,
+            response_time_ms=0,
+            language=lang,
+            timestamp=datetime.utcnow()
+        )
+        
+        db.session.add(conversation)
+        db.session.commit()
+        
+        current_app.logger.info(f"User {current_user.id} tracked event: {event_type}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Event tracked successfully'
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Event tracking error: {e}", exc_info=True)
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': 'Event tracking failed'
+        }), 500
+
+@ai_bp.route('/analytics/feedback', methods=['POST'])
+@login_required
+def submit_ai_feedback(lang):
+    """Отзывы пользователей о работе ИИ"""
+    try:
+        data = request.get_json()
+        
+        feedback_type = data.get('feedback_type')  # 'prediction', 'recommendation', 'chat', 'widget'
+        rating = data.get('rating')  # 1-5
+        comment = data.get('comment', '')
+        context = data.get('context', {})  # Дополнительная информация
+        
+        if not feedback_type or not rating:
+            return jsonify({
+                'success': False,
+                'error': 'feedback_type and rating are required'
+            }), 400
+        
+        if not (1 <= rating <= 5):
+            return jsonify({
+                'success': False,
+                'error': 'rating must be between 1 and 5'
+            }), 400
+        
+        # Валидация типа отзыва
+        valid_feedback_types = ['prediction', 'recommendation', 'chat', 'widget', 'analysis', 'training']
+        if feedback_type not in valid_feedback_types:
+            return jsonify({
+                'success': False,
+                'error': f'Invalid feedback_type. Must be one of: {", ".join(valid_feedback_types)}'
+            }), 400
+        
+        # Сохраняем отзыв как специальную запись разговора
+        from datetime import datetime
+        
+        feedback_data = {
+            'feedback_type': feedback_type,
+            'rating': rating,
+            'comment': comment,
+            'context': context,
+            'user_agent': request.headers.get('User-Agent', ''),
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        
+        conversation = AIConversation(
+            user_id=current_user.id,
+            session_id=f"feedback_{current_user.id}_{datetime.utcnow().timestamp()}",
+            user_message=f"FEEDBACK:{feedback_type}:RATING:{rating}",
+            ai_response=json.dumps(feedback_data),
+            provider='system',
+            model='feedback',
+            tokens_used=0,
+            response_time_ms=0,
+            language=lang,
+            timestamp=datetime.utcnow()
+        )
+        
+        db.session.add(conversation)
+        db.session.commit()
+        
+        current_app.logger.info(f"User {current_user.id} submitted feedback: {feedback_type}, rating: {rating}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Feedback submitted successfully'
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Feedback submission error: {e}", exc_info=True)
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': 'Feedback submission failed'
+        }), 500
+
+@ai_bp.route('/analytics/dashboard-data', methods=['GET'])
+@login_required
+def get_analytics_dashboard_data(lang):
+    """Получение данных для административного дашборда (только для админов)"""
+    try:
+        # Проверка прав доступа
+        if not (current_user.role == 'admin' or getattr(current_user, 'is_admin', False)):
+            return jsonify({
+                'success': False,
+                'error': 'Access denied. Admin rights required.'
+            }), 403
+        
+        from utils.ai_analytics import ai_analytics
+        
+        # Получаем все данные для дашборда
+        realtime_metrics = ai_analytics.get_realtime_metrics()
+        historical_data = ai_analytics.get_historical_analytics(7)  # Последние 7 дней
+        user_insights = ai_analytics.get_user_behavior_insights()
+        
+        dashboard_data = {
+            'overview': {
+                'active_users_today': realtime_metrics.get('active_users', 0),
+                'ai_interactions_24h': realtime_metrics.get('ai_interactions', 0),
+                'system_health': realtime_metrics.get('system_health', 0.5),
+                'user_satisfaction': realtime_metrics.get('user_satisfaction', 0.7)
+            },
+            'charts': {
+                'daily_activity': historical_data.get('daily_metrics', []),
+                'trending_topics': realtime_metrics.get('trending_topics', []),
+                'feature_usage': realtime_metrics.get('usage_by_feature', {}),
+                'trends': historical_data.get('trends', {})
+            },
+            'insights': {
+                'user_engagement': realtime_metrics.get('user_engagement', 0.6),
+                'learning_effectiveness': realtime_metrics.get('learning_effectiveness', 0.7),
+                'error_rate': realtime_metrics.get('error_rate', 0.05),
+                'power_users': user_insights.get('power_users', [])
+            },
+            'performance': realtime_metrics.get('performance_metrics', {}),
+            'summary': historical_data.get('summary', {}),
+            'last_updated': realtime_metrics.get('timestamp')
+        }
+        
+        current_app.logger.info(f"Admin {current_user.id} accessed analytics dashboard data")
+        
+        return jsonify({
+            'success': True,
+            'data': dashboard_data
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Dashboard data error: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'Dashboard data service temporarily unavailable'
+        }), 500
+
+# ===== КОНЕЦ НОВЫХ ENDPOINTS ДЛЯ АНАЛИТИКИ ===== 

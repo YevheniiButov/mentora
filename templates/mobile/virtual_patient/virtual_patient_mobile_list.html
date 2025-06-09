@@ -1,696 +1,339 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1a1a2e">
-    
-    <title>{{ t('virtual_patients', lang or 'en') }} - Dental Academy</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('virtual_patients_list',
+    show_logo=True,
+    show_back_button=True,
+    show_bottom_nav=True,
+    show_profile_button=True,
+    show_settings_button=True,
+    show_language_selector=True,
+    page_title=t('virtual_patients', lang)
+) %}
+
+{% block title %}{{ t('virtual_patients', lang or 'en') }} - Dental Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* === INTRO CARD === */
+    .intro-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+
+    .intro-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    /* === PATIENT CARDS === */
+    .patient-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .patient-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .patient-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff6b6b, #feca57);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .patient-avatar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .patient-info {
+        flex: 1;
+    }
+
+    .patient-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .patient-age {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .patient-description {
+        margin-bottom: 1rem;
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+
+    .difficulty-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .difficulty-badge .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    .badge.easy {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+
+    .badge.medium {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+    }
+
+    .badge.hard {
+        background: linear-gradient(135deg, #dc3545, #e83e8c);
+    }
+
+    .patient-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        opacity: 0.9;
+    }
+
+    .start-button {
+        background: linear-gradient(135deg, #3ECDC1, #44A08D);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .start-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
+        color: white;
+    }
+
+    /* === EMPTY STATE === */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: white;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    /* === АНИМАЦИИ === */
+    .patient-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .patient-card:nth-child(2) { animation-delay: 0.1s; }
+    .patient-card:nth-child(3) { animation-delay: 0.2s; }
+    .patient-card:nth-child(4) { animation-delay: 0.3s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 0;
-            overflow-x: hidden;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
+    }
+</style>
+{% endblock %}
 
-        .mobile-header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+{% block content %}
+<!-- Intro Card -->
+<div class="intro-card">
+    <div class="intro-icon">👨‍⚕️</div>
+    <h2>{{ t('virtual_patients', lang or 'en') }}</h2>
+    <p>{{ t('virtual_patients_desc', lang or 'en') or 'Практикуйтесь на виртуальных пациентах для улучшения навыков диагностики' }}</p>
+</div>
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 100%;
-        }
-
-        .back-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 12px;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .header-title {
-            color: white;
-            font-weight: 600;
-            font-size: 1.2rem;
-            flex: 1;
-            text-align: center;
-            margin: 0 1rem;
-        }
-
-        .main-content {
-            padding: 1.5rem;
-            padding-bottom: 90px; /* Отступ для навигации */
-        }
-
-        .intro-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            color: white;
-            text-align: center;
-        }
-
-        .intro-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-        }
-
-        .patient-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: white;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .patient-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .patient-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .patient-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ff6b6b, #feca57);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .patient-avatar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .patient-info {
-            flex: 1;
-        }
-
-        .patient-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .patient-age {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .patient-description {
-            margin-bottom: 1rem;
-            line-height: 1.5;
-            font-size: 0.95rem;
-        }
-
-        .difficulty-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .difficulty-badge .badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-
-        .badge.easy {
-            background: linear-gradient(135deg, #28a745, #20c997);
-        }
-
-        .badge.medium {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: #333;
-        }
-
-        .badge.hard {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-        }
-
-        .badge.premium {
-            background: linear-gradient(135deg, #6f42c1, #e83e8c);
-            color: white;
-        }
-
-        .progress-section {
-            margin-bottom: 1rem;
-        }
-
-        .progress-bar-container {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            height: 8px;
-            overflow: hidden;
-            margin-bottom: 0.5rem;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 1s ease;
-        }
-
-        .progress-bar-fill.excellent {
-            background: linear-gradient(90deg, #28a745, #20c997);
-        }
-
-        .progress-bar-fill.good {
-            background: linear-gradient(90deg, #17a2b8, #20c997);
-        }
-
-        .progress-bar-fill.needs-improvement {
-            background: linear-gradient(90deg, #ffc107, #fd7e14);
-        }
-
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            opacity: 0.9;
-        }
-
-        .vital-signs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-        }
-
-        .vital-sign {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex: 1;
-            font-size: 0.85rem;
-        }
-
-        .vital-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-        }
-
-        .vital-icon.stable {
-            background: #28a745;
-            animation: pulse-stable 2s infinite;
-        }
-
-        .vital-icon.concerning {
-            background: #ffc107;
-            animation: pulse-warning 1.5s infinite;
-        }
-
-        .vital-icon.critical {
-            background: #dc3545;
-            animation: pulse-critical 1s infinite;
-        }
-
-        @keyframes pulse-stable {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        @keyframes pulse-warning {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.1); }
-        }
-
-        @keyframes pulse-critical {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.9; transform: scale(1.2); }
-        }
-
-        .action-button {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            border: none;
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            width: 100%;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .action-button:hover {
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .action-button.premium {
-            background: linear-gradient(135deg, #6f42c1, #e83e8c);
-        }
-
-        .action-button.retry {
-            background: linear-gradient(135deg, #17a2b8, #6f42c1);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: white;
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.6;
-        }
-
-        .fade-in {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.2s; }
-        .delay-3 { animation-delay: 0.3s; }
-        .delay-4 { animation-delay: 0.4s; }
-
-        @media (max-width: 576px) {
-            .main-content {
-                padding: 1rem;
-            }
-            
-            .patient-card {
-                padding: 1.25rem;
-            }
-            
-            .vital-signs {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .vital-sign {
-                justify-content: center;
-            }
-        }
-
-        /* МОБИЛЬНАЯ НАВИГАЦИЯ */
-        .mobile-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            z-index: 1000;
-            padding: 0.5rem;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: rgba(255, 255, 255, 0.7);
-            transition: all 0.3s ease;
-            padding: 0.5rem;
-            border-radius: 12px;
-            min-width: 60px;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            color: #3ECDC1;
-            background: rgba(62, 205, 193, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .nav-item i {
-            font-size: 1.2rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .nav-item span {
-            font-size: 0.7rem;
-            font-weight: 500;
-        }
-    </style>
-</head>
-<body>
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="header-content">
-            <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="back-btn">
-                <i class="bi bi-arrow-left"></i>
-            </a>
-            <h1 class="header-title">
-                {{ t('virtual_patients', lang or 'en') }}
-            </h1>
-            <div style="width: 44px;"></div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Intro Card -->
-        <div class="intro-card fade-in">
-            <div class="intro-icon">🏥</div>
-            <h2 style="margin-bottom: 1rem;">
-                {% if lang == 'ru' %}Реальная практика
-                {% elif lang == 'nl' %}Echte praktijk
-                {% else %}Real Practice
-                {% endif %}
-            </h2>
-            <p style="margin-bottom: 0;">
-                {{ t('practice_clinical_skills', lang or 'en') }}
-            </p>
-        </div>
-
-        <!-- Patients List -->
-        {% if scenarios %}
-            {% for scenario in scenarios %}
-                <div class="patient-card fade-in delay-{{ loop.index % 4 + 1 }}">
-                    <!-- Patient Header -->
-                    <div class="patient-header">
-                        <div class="patient-avatar">
-                            {% if scenario.title %}
-                                {{ scenario.title[0] }}
-                            {% else %}
-                                👤
-                            {% endif %}
-                        </div>
-                        <div class="patient-info">
-                            <div class="patient-name">{{ scenario.title or 'Unnamed Patient' }}</div>
-                            <div class="patient-age">
-                                {% if lang == 'ru' %}Клинический случай
-                                {% elif lang == 'nl' %}Klinische casus
-                                {% else %}Clinical Case
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Patient Description -->
-                    <div class="patient-description">
-                        {{ scenario.description or 'No description available' }}
-                    </div>
-
-                    <!-- Difficulty Badge -->
-                    <div class="difficulty-badge">
-                        {% if scenario.difficulty == 'easy' %}
-                            <span class="badge easy">
-                                {% if lang == 'ru' %}Простой
-                                {% elif lang == 'nl' %}Makkelijk
-                                {% else %}Easy
-                                {% endif %}
-                            </span>
-                        {% elif scenario.difficulty == 'medium' %}
-                            <span class="badge medium">
-                                {% if lang == 'ru' %}Средний
-                                {% elif lang == 'nl' %}Gemiddeld
-                                {% else %}Medium
-                                {% endif %}
-                            </span>
-                        {% else %}
-                            <span class="badge hard">
-                                {% if lang == 'ru' %}Сложный
-                                {% elif lang == 'nl' %}Moeilijk
-                                {% else %}Hard
-                                {% endif %}
-                            </span>
-                        {% endif %}
-                        
-                        {% if scenario.is_premium %}
-                            <span class="badge premium">
-                                <i class="bi bi-star-fill"></i> Premium
-                            </span>
-                        {% endif %}
-                    </div>
-
-                    <!-- Vital Signs (Simulated) -->
-                    <div class="vital-signs">
-                        <div class="vital-sign">
-                            <div class="vital-icon stable">💓</div>
-                            <span>
-                                {% if lang == 'ru' %}Стабильно
-                                {% elif lang == 'nl' %}Stabiel
-                                {% else %}Stable
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="vital-sign">
-                            <div class="vital-icon {% if scenario.difficulty == 'hard' %}concerning{% else %}stable{% endif %}">🌡️</div>
-                            <span>
-                                {% if scenario.difficulty == 'hard' %}
-                                    {% if lang == 'ru' %}Тревожно
-                                    {% elif lang == 'nl' %}Zorgelijk
-                                    {% else %}Concerning
-                                    {% endif %}
-                                {% else %}
-                                    {% if lang == 'ru' %}Норма
-                                    {% elif lang == 'nl' %}Normaal
-                                    {% else %}Normal
-                                    {% endif %}
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="vital-sign">
-                            <div class="vital-icon stable">🫁</div>
-                            <span>
-                                {% if lang == 'ru' %}Ровное
-                                {% elif lang == 'nl' %}Regelmatig
-                                {% else %}Regular
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Progress Section -->
-                    {% if scenario.user_progress and scenario.user_progress.completed %}
-                        <div class="progress-section">
-                            {% set percentage = scenario.user_progress.percentage %}
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill {% if percentage >= 80 %}excellent{% elif percentage >= 60 %}good{% else %}needs-improvement{% endif %}" 
-                                     style="width: {{ percentage }}%;"></div>
-                            </div>
-                            <div class="progress-text">
-                                <span>
-                                    {% if lang == 'ru' %}Ваш лучший результат
-                                    {% elif lang == 'nl' %}Je beste score
-                                    {% else %}Your best score
-                                    {% endif %}
-                                </span>
-                                <span>{{ scenario.user_progress.score }}/{{ scenario.user_progress.max_score }} ({{ percentage }}%)</span>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <!-- Action Button -->
-                    {% if scenario.is_premium and not current_user.has_subscription %}
-                        <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="action-button premium">
-                            <i class="bi bi-lock-fill"></i>
-                            {% if lang == 'ru' %}Нужна подписка
-                            {% elif lang == 'nl' %}Abonnement vereist
-                            {% else %}Subscription Required
-                            {% endif %}
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('virtual_patient_bp.start_scenario', lang=lang, scenario_id=scenario.id) }}" class="action-button {% if scenario.user_progress and scenario.user_progress.completed %}retry{% endif %}">
-                            {% if scenario.user_progress and scenario.user_progress.completed %}
-                                <i class="bi bi-arrow-repeat"></i>
-                                {% if lang == 'ru' %}Повторить осмотр
-                                {% elif lang == 'nl' %}Herhaal onderzoek
-                                {% else %}Repeat Examination
-                                {% endif %}
-                            {% else %}
-                                <i class="bi bi-stethoscope"></i>
-                                {% if lang == 'ru' %}Начать осмотр
-                                {% elif lang == 'nl' %}Begin onderzoek
-                                {% else %}Start Examination
-                                {% endif %}
-                            {% endif %}
-                        </a>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state fade-in">
-                <div class="empty-state-icon">🏥</div>
-                <h3 style="margin-bottom: 1rem;">
-                    {{ t('patients_coming_soon', lang or 'en') }}
-                </h3>
-                <p>
-                    {{ t('virtual_patients_development', lang or 'en') }}
-                </p>
+<!-- Patient Cards -->
+{% if patients %}
+    {% for patient in patients %}
+    <div class="patient-card">
+        <div class="patient-header">
+            <div class="patient-avatar">
+                {{ patient.name[0] if patient.name else '👤' }}
             </div>
-        {% endif %}
-    </div>
-
-    <script>
-        // Touch handling improvements
-        document.addEventListener('touchstart', function() {}, { passive: true });
+            <div class="patient-info">
+                <div class="patient-name">{{ patient.name or 'Anonymous Patient' }}</div>
+                <div class="patient-age">{{ patient.age or 'Age unknown' }} {{ t('years_old', lang or 'en') or 'years old' }}</div>
+            </div>
+        </div>
         
-        // Prevent double-tap zoom
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function (event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
+        <div class="patient-description">
+            {{ patient.description or t('no_description', lang or 'en') }}
+        </div>
+        
+        <div class="difficulty-badge">
+            <span class="badge {{ patient.difficulty or 'medium' }}">
+                <i class="bi bi-star-fill"></i>
+                {{ t(patient.difficulty or 'medium', lang or 'en') or (patient.difficulty or 'medium')|title }}
+            </span>
+        </div>
+        
+        <div class="patient-stats">
+            <div class="stat-item">
+                <i class="bi bi-clock"></i>
+                <span>{{ patient.estimated_time or '15' }} {{ t('minutes', lang or 'en') or 'min' }}</span>
+            </div>
+            <div class="stat-item">
+                <i class="bi bi-chat-dots"></i>
+                <span>{{ patient.steps_count or 8 }} {{ t('steps', lang or 'en') or 'steps' }}</span>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('virtual_patient_bp.scenario_detail', lang=lang, scenario_id=patient.id) }}" 
+           class="start-button">
+            <i class="bi bi-play-fill"></i>
+            {{ t('start_case', lang or 'en') or 'Начать случай' }}
+        </a>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>{{ t('no_patients_available', lang or 'en') or 'Нет доступных пациентов' }}</h3>
+        <p>{{ t('patients_coming_soon', lang or 'en') or 'Виртуальные пациенты скоро появятся' }}</p>
+    </div>
+{% endif %}
+{% endblock %}
 
-        // Animate progress bars on load
-        document.addEventListener('DOMContentLoaded', function() {
-            const progressBars = document.querySelectorAll('.progress-bar-fill');
-            
-            setTimeout(() => {
-                progressBars.forEach(bar => {
-                    const width = bar.style.width;
-                    bar.style.width = '0%';
-                    
-                    setTimeout(() => {
-                        bar.style.width = width;
-                    }, 100);
-                });
-            }, 500);
-        });
-
-        // Add haptic feedback for supported devices
-        function addHapticFeedback(element) {
-            element.addEventListener('touchstart', function() {
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-            });
+<script>
+    // Touch handling improvements
+    document.addEventListener('touchstart', function() {}, { passive: true });
+    
+    // Prevent double-tap zoom
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
         }
+        lastTouchEnd = now;
+    }, false);
 
-        // Apply haptic feedback to buttons
-        document.querySelectorAll('.action-button').forEach(addHapticFeedback);
-    </script>
+    // Animate progress bars on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBars = document.querySelectorAll('.progress-bar-fill');
+        
+        setTimeout(() => {
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        }, 500);
+    });
 
-    <!-- Нижняя навигация -->
-    <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
-            <i class="bi bi-house"></i>
-            <span>{{ t('home', lang) }}</span>
-        </a>
-        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
-            <i class="bi bi-book"></i>
-            <span>{{ t('learning', lang) }}</span>
-        </a>
-        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
-            <i class="bi bi-clipboard-check"></i>
-            <span>{{ t('tests', lang) }}</span>
-        </a>
-        <a href="/{{ lang }}/virtual-patient" class="nav-item active">
-            <i class="bi bi-person-heart"></i>
-            <span>{{ t('patients', lang) }}</span>
-        </a>
-        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
-            <i class="fas fa-robot"></i>
-            <span>{{ t('ai_assistant', lang) }}</span>
-        </a>
-    </nav>
-</body>
-</html> 
+    // Add haptic feedback for supported devices
+    function addHapticFeedback(element) {
+        element.addEventListener('touchstart', function() {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        });
+    }
+
+    // Apply haptic feedback to buttons
+    document.querySelectorAll('.action-button').forEach(addHapticFeedback);
+</script>
+
+<!-- Нижняя навигация -->
+<nav class="mobile-bottom-nav">
+    <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
+        <i class="bi bi-house"></i>
+        <span>{{ t('home', lang) }}</span>
+    </a>
+    <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
+        <i class="bi bi-book"></i>
+        <span>{{ t('learning', lang) }}</span>
+    </a>
+    <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
+        <i class="bi bi-clipboard-check"></i>
+        <span>{{ t('tests', lang) }}</span>
+    </a>
+    <a href="/{{ lang }}/virtual-patient" class="nav-item active">
+        <i class="bi bi-person-heart"></i>
+        <span>{{ t('patients', lang) }}</span>
+    </a>
+    <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
+        <i class="fas fa-robot"></i>
+        <span>{{ t('ai_assistant', lang) }}</span>
+    </a>
+</nav> 

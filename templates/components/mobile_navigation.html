@@ -56,7 +56,7 @@
             {% endif %}
             
             {% if show_settings_button %}
-            <a href="#" 
+            <a href="{{ url_for('mobile.settings', lang=lang) if lang else url_for('mobile.settings', lang='en') }}" 
                class="header-action-btn"
                aria-label="{{ t('settings', lang) or 'Settings' }}">
                 <i class="bi bi-gear"></i>
@@ -149,7 +149,7 @@
             <span>{{ t('patients', lang) or 'Patients' }}</span>
         </a>
         
-        <a href="{{ url_for('ai.ai_chat', lang=lang) if lang else url_for('ai.ai_chat', lang='en') }}" 
+        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" 
            class="nav-item {{ 'active' if active_section == 'ai' else '' }}"
            aria-label="{{ t('ai_assistant', lang) or 'AI Assistant' }}">
             <i class="fas fa-robot"></i>
@@ -198,8 +198,10 @@
     right: 0;
     z-index: 1000;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
 
 .mobile-header-content {
@@ -207,26 +209,28 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem;
-    min-height: 60px;
+    max-width: 100%;
 }
 
 .mobile-back-btn {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 1.2rem;
+    transition: all 0.3s ease;
     cursor: pointer;
-    transition: background 0.2s ease;
 }
 
 .mobile-back-btn:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    color: white;
 }
 
 .mobile-header-title {
@@ -236,47 +240,24 @@
 }
 
 .mobile-header-title h1 {
-    margin: 0;
-    font-size: 1.2rem;
+    color: white;
     font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Стили для логотипа */
-.mobile-header-logo {
-    height: 40px;
-    max-width: 200px;
-    object-fit: contain;
-    filter: brightness(0) invert(1); /* Делает логотип белым */
-    transition: opacity 0.2s ease;
-}
-
-.mobile-header-logo:hover {
-    opacity: 0.8;
-}
-
-/* Адаптивность для маленьких экранов */
-@media (max-width: 375px) {
-    .mobile-header-logo {
-        height: 32px;
-        max-width: 150px;
-    }
+    font-size: 1.2rem;
+    margin: 0;
 }
 
 .mobile-breadcrumbs {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    color: white;
     font-size: 0.9rem;
-    flex-wrap: wrap;
 }
 
 .mobile-breadcrumbs a {
-    color: rgba(255,255,255,0.8);
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.2s;
 }
 
 .mobile-breadcrumbs a:hover {
@@ -285,12 +266,12 @@
 
 .mobile-breadcrumbs .current {
     color: white;
-    font-weight: 600;
+    font-weight: 500;
 }
 
-.mobile-breadcrumbs i {
-    margin: 0 0.5rem;
-    font-size: 0.7rem;
+.mobile-header-logo {
+    height: 32px;
+    width: auto;
 }
 
 .mobile-header-actions {
@@ -300,91 +281,101 @@
 }
 
 .header-action-btn {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border: none;
-    border-radius: 50%;
+    border-radius: 20px;
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
     text-decoration: none;
-    font-size: 1.1rem;
-    transition: background 0.2s ease;
 }
 
 .header-action-btn:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
     color: white;
+    transform: translateY(-2px);
 }
 
 .mobile-progress-container {
-    padding: 0 1rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .mobile-progress-bar {
-    flex: 1;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
     height: 6px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 3px;
     overflow: hidden;
+    margin-bottom: 0.5rem;
 }
 
 .progress-fill {
     height: 100%;
-    background: #4ade80;
-    transition: width 0.3s ease;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 10px;
+    transition: width 1s ease;
 }
 
 .progress-text {
     font-size: 0.8rem;
-    opacity: 0.9;
-    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
 }
 
+/* НИЖНЯЯ НАВИГАЦИЯ - Обновленный дизайн */
 .mobile-bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
-    background: white;
-    border-top: 1px solid #e5e7eb;
+    height: 70px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    align-items: center;
+    justify-content: space-around;
+    z-index: 1000;
+    padding: 0.5rem;
 }
 
 .nav-item {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.75rem 0.5rem;
     text-decoration: none;
-    color: #6b7280;
-    transition: all 0.2s ease;
-    min-height: 60px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    border-radius: 12px;
+    min-width: 60px;
+    flex: 1;
     justify-content: center;
 }
 
 .nav-item:hover,
 .nav-item:focus {
-    color: #667eea;
+    color: #3ECDC1;
+    background: rgba(62, 205, 193, 0.1);
+    transform: translateY(-2px);
     text-decoration: none;
-    background: rgba(102, 126, 234, 0.05);
 }
 
 .nav-item.active {
-    color: #667eea;
-    background: rgba(102, 126, 234, 0.1);
+    color: #3ECDC1;
+    background: rgba(62, 205, 193, 0.1);
+    transform: translateY(-2px);
 }
 
 .nav-item i {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     margin-bottom: 0.25rem;
     line-height: 1;
 }
@@ -413,11 +404,12 @@
     gap: 0.3rem;
     color: white;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .current-language:hover {
     background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
 }
 
 .current-language img {
@@ -431,9 +423,12 @@
     position: absolute;
     top: 100%;
     right: 0;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     padding: 0.5rem 0;
     margin: 0;
     list-style: none;
@@ -451,14 +446,14 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    color: #374151;
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
 }
 
 .language-options li a:hover {
-    background: #f3f4f6;
-    color: #374151;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 .language-options img {
@@ -509,27 +504,10 @@
     .nav-item i {
         font-size: 1.1rem;
     }
-}
-
-/* Темная тема поддержка */
-@media (prefers-color-scheme: dark) {
-    .mobile-bottom-nav {
-        background: #1f2937;
-        border-top-color: #374151;
-    }
     
-    .language-options {
-        background: #1f2937;
-        color: white;
-    }
-    
-    .language-options li a {
-        color: #e5e7eb;
-    }
-    
-    .language-options li a:hover {
-        background: #374151;
-        color: white;
+    .mobile-content {
+        padding: 0.75rem;
+        margin-bottom: 75px;
     }
 }
 </style>

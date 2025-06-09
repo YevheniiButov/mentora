@@ -1,1435 +1,533 @@
-<!DOCTYPE html>
-<html lang="{{ lang }}" {% if lang in ['ar', 'fa', 'he', 'ur'] %}dir="rtl"{% endif %}>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#667eea">
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('virtual_patient_interact',
+    show_logo=True,
+    show_back_button=True,
+    show_bottom_nav=False,
+    show_profile_button=False,
+    show_settings_button=False,
+    show_language_selector=False,
+    page_title=scenario_model_obj.title
+) %}
+
+{% block title %}{{ scenario_model_obj.title }} - Virtual Patient - Dental Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* === СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ ИНТЕРАКТИВНОГО РЕЖИМА === */
     
-    <title>{{ scenario_model_obj.title }} - Virtual Patient - Dental Academy</title>
+    /* Полный экран для погружения */
+    body {
+        height: 100vh;
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
+
+    /* Анимированный фон */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(60, 206, 193, 0.3) 0%, transparent 50%);
+        animation: backgroundShift 10s ease-in-out infinite;
+    }
+
+    @keyframes backgroundShift {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(-20px, -10px) scale(1.1); }
+        66% { transform: translate(20px, 10px) scale(0.9); }
+    }
+
+    /* === КОНТЕЙНЕРЫ ДЛЯ ЭФФЕКТОВ === */
+    .patient-photo-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        overflow: visible;
+    }
+
+    .patient-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        transition: filter 0.5s ease;
+    }
+
+    /* === ФИЗИОЛОГИЧЕСКИЕ ЭФФЕКТЫ === */
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Используем существующие CSS файлы вместо mobile-app.css -->
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    /* Капли пота */
+    .sweat-drop {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.3) 100%);
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.8);
+        animation: sweatDrop 2.5s ease-in-out infinite;
+        opacity: 0;
+        z-index: 5;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            color: white;
+    @keyframes sweatDrop {
+        0% { 
+            opacity: 0; 
+            transform: translateY(-5px) scale(0.5);
         }
-
-        /* Анимированный фон */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(60, 206, 193, 0.3) 0%, transparent 50%);
-            animation: backgroundShift 10s ease-in-out infinite;
+        15% { 
+            opacity: 1; 
+            transform: translateY(0) scale(1);
         }
-
-        @keyframes backgroundShift {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(-20px, -10px) scale(1.1); }
-            66% { transform: translate(20px, 10px) scale(0.9); }
+        85% { 
+            opacity: 0.8; 
+            transform: translateY(25px) scale(0.8);
         }
-
-        /* Header */
-        .mobile-header {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-            padding: 1rem;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
+        100% { 
+            opacity: 0; 
+            transform: translateY(35px) scale(0.3);
         }
+    }
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 100%;
+    .sweat-drop:nth-child(1) { top: 10%; left: 45%; animation-delay: 0s; }
+    .sweat-drop:nth-child(2) { top: 15%; left: 20%; animation-delay: 0.8s; }
+    .sweat-drop:nth-child(3) { top: 12%; left: 75%; animation-delay: 1.6s; }
+    .sweat-drop:nth-child(4) { top: 25%; left: 30%; animation-delay: 2.2s; }
+
+    /* Слезы */
+    .tear-drop {
+        position: absolute;
+        width: 2px;
+        height: 15px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(200,230,255,0.7) 100%);
+        border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.9);
+        animation: tearDrop 3.5s ease-in-out infinite;
+        opacity: 0;
+        z-index: 5;
+    }
+
+    @keyframes tearDrop {
+        0% { 
+            opacity: 0; 
+            transform: translateY(-2px) scale(0.3);
         }
-
-        .back-btn {
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            text-decoration: none;
+        20% { 
+            opacity: 1; 
+            transform: translateY(0) scale(1);
         }
-
-        .back-btn:hover {
-            background: rgba(0, 0, 0, 0.6);
-            transform: scale(1.05);
-            color: white;
+        80% { 
+            opacity: 0.9; 
+            transform: translateY(35px) scale(0.8);
         }
-
-        .patient-status {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex: 1;
-            justify-content: center;
+        100% { 
+            opacity: 0; 
+            transform: translateY(45px) scale(0.5);
         }
+    }
 
-        /* КОНТЕЙНЕРЫ ДЛЯ ЭФФЕКТОВ */
-        .patient-photo-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            overflow: visible;
-        }
+    .tear-drop.left { top: 40%; left: 25%; animation-delay: 0s; }
+    .tear-drop.right { top: 42%; right: 25%; animation-delay: 1.2s; }
 
-        .patient-photo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            transition: filter 0.5s ease;
-        }
+    /* Индикатор дыхания */
+    .breathing-indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        animation: breathing 4s ease-in-out infinite;
+    }
 
-        /* ФИЗИОЛОГИЧЕСКИЕ ЭФФЕКТЫ */
-        
-        /* Капли пота */
-        .sweat-drop {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.3) 100%);
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.8);
-            animation: sweatDrop 2.5s ease-in-out infinite;
+    @keyframes breathing {
+        0%, 100% { transform: scale(1); opacity: 0.3; }
+        50% { transform: scale(1.05); opacity: 0.6; }
+    }
+
+    /* === ИНТЕРФЕЙС ДИАЛОГА === */
+    .dialogue-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 2px solid rgba(255, 255, 255, 0.2);
+        padding: 1.5rem;
+        max-height: 50vh;
+        overflow-y: auto;
+        z-index: 200;
+    }
+
+    .dialogue-text {
+        color: white;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .choices-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .choice-button {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        color: white;
+        font-size: 1rem;
+        line-height: 1.4;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .choice-button:hover {
+        background: rgba(62, 205, 193, 0.3);
+        border-color: rgba(62, 205, 193, 0.6);
+        transform: translateY(-2px);
+    }
+
+    .choice-button:active {
+        transform: translateY(0);
+    }
+
+    /* === СТАТУС ПАЦИЕНТА === */
+    .patient-status-area {
+        position: fixed;
+        top: calc(var(--header-height) + 1rem);
+        left: 1rem;
+        right: 1rem;
+        display: flex;
+        justify-content: center;
+        z-index: 150;
+    }
+
+    .patient-display {
+        width: 200px;
+        height: 200px;
+        position: relative;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* === КНОПКИ ДЕЙСТВИЙ === */
+    .action-buttons {
+        position: fixed;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 150;
+    }
+
+    .action-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.6);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .action-btn:hover {
+        background: rgba(62, 205, 193, 0.6);
+        border-color: rgba(62, 205, 193, 0.8);
+        transform: scale(1.1);
+    }
+
+    /* === ПРОГРЕСС БАР === */
+    .progress-container {
+        position: fixed;
+        top: calc(var(--header-height) + 0.5rem);
+        left: 1rem;
+        right: 1rem;
+        z-index: 100;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3ECDC1, #44A08D);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    /* === АНИМАЦИИ === */
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .slide-up {
+        animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
             opacity: 0;
-            z-index: 5;
-        }
-
-        @keyframes sweatDrop {
-            0% { 
-                opacity: 0; 
-                transform: translateY(-5px) scale(0.5);
-            }
-            15% { 
-                opacity: 1; 
-                transform: translateY(0) scale(1);
-            }
-            85% { 
-                opacity: 0.8; 
-                transform: translateY(25px) scale(0.8);
-            }
-            100% { 
-                opacity: 0; 
-                transform: translateY(35px) scale(0.3);
-            }
-        }
-
-        .sweat-drop:nth-child(1) { top: 10%; left: 45%; animation-delay: 0s; }
-        .sweat-drop:nth-child(2) { top: 15%; left: 20%; animation-delay: 0.8s; }
-        .sweat-drop:nth-child(3) { top: 12%; left: 75%; animation-delay: 1.6s; }
-        .sweat-drop:nth-child(4) { top: 25%; left: 30%; animation-delay: 2.2s; }
-
-        /* Слезы */
-        .tear-drop {
-            position: absolute;
-            width: 2px;
-            height: 15px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(200,230,255,0.7) 100%);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.9);
-            animation: tearDrop 3.5s ease-in-out infinite;
-            opacity: 0;
-            z-index: 5;
-        }
-
-        @keyframes tearDrop {
-            0% { 
-                opacity: 0; 
-                transform: translateY(-2px) scale(0.3);
-            }
-            20% { 
-                opacity: 1; 
-                transform: translateY(0) scale(1);
-            }
-            80% { 
-                opacity: 0.9; 
-                transform: translateY(35px) scale(0.8);
-            }
-            100% { 
-                opacity: 0; 
-                transform: translateY(45px) scale(0.5);
-            }
-        }
-
-        .tear-drop.left { top: 40%; left: 25%; animation-delay: 0s; }
-        .tear-drop.right { top: 42%; right: 25%; animation-delay: 1.2s; }
-
-        /* Индикатор дыхания */
-        .breathing-indicator {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .breathing-normal {
-            animation: breathingNormal 4s ease-in-out infinite;
-        }
-
-        .breathing-stressed {
-            animation: breathingStressed 2.2s ease-in-out infinite;
-        }
-
-        .breathing-relaxed {
-            animation: breathingRelaxed 6s ease-in-out infinite;
-        }
-
-        @keyframes breathingNormal {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-
-        @keyframes breathingStressed {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.04); }
-        }
-
-        @keyframes breathingRelaxed {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.01); }
-        }
-
-        /* ЖЕСТЫ РУК */
-        .hand-gesture {
-            position: absolute;
-            pointer-events: none;
-            z-index: 4;
-            opacity: 0;
-        }
-
-        .hand-touch-cheek {
-            top: 40%;
-            right: -10%;
-            width: 40%;
-            height: 30%;
-            background: radial-gradient(ellipse, rgba(255,220,180,0.8) 0%, rgba(255,220,180,0.3) 70%, transparent 100%);
-            border-radius: 50% 20% 60% 40%;
-            animation: handTouchCheek 3s ease-in-out infinite;
-        }
-
-        @keyframes handTouchCheek {
-            0%, 100% { 
-                opacity: 0; 
-                transform: translateX(20px) rotate(-10deg);
-            }
-            30%, 70% { 
-                opacity: 0.7; 
-                transform: translateX(0) rotate(0deg);
-            }
-        }
-
-        .hand-protective {
-            top: 20%;
-            left: -5%;
-            width: 35%;
-            height: 40%;
-            background: radial-gradient(ellipse, rgba(255,220,180,0.6) 0%, rgba(255,220,180,0.2) 80%, transparent 100%);
-            border-radius: 40% 60% 50% 50%;
-            animation: handProtective 2.5s ease-in-out infinite;
-        }
-
-        @keyframes handProtective {
-            0%, 100% { 
-                opacity: 0; 
-                transform: translateY(10px) translateX(-10px) rotate(10deg);
-            }
-            40%, 60% { 
-                opacity: 0.8; 
-                transform: translateY(0) translateX(0) rotate(0deg);
-            }
-        }
-
-        .hand-clenched {
-            bottom: -5%;
-            left: 10%;
-            width: 25%;
-            height: 20%;
-            background: radial-gradient(circle, rgba(255,220,180,0.7) 0%, rgba(255,220,180,0.3) 100%);
-            border-radius: 50%;
-            animation: handClenched 1.8s ease-in-out infinite;
-        }
-
-        @keyframes handClenched {
-            0%, 100% { 
-                opacity: 0.6; 
-                transform: scale(1);
-            }
-            50% { 
-                opacity: 0.9; 
-                transform: scale(1.1);
-            }
-        }
-
-        /* МИКРОАНИМАЦИИ ЛИЦА */
-        .facial-effect {
-            position: absolute;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        /* Моргание */
-        .blink-overlay {
-            top: 35%;
-            left: 20%;
-            width: 60%;
-            height: 8%;
-            background: linear-gradient(180deg, transparent 0%, rgba(255,220,180,0.9) 50%, transparent 100%);
-            border-radius: 50%;
-            opacity: 0;
-            animation: blinkAnimation 5s ease-in-out infinite;
-        }
-
-        .blink-stressed {
-            animation: blinkStressed 2.5s ease-in-out infinite;
-        }
-
-        @keyframes blinkAnimation {
-            0%, 95%, 100% { opacity: 0; }
-            97% { opacity: 0.8; }
-        }
-
-        @keyframes blinkStressed {
-            0%, 90%, 100% { opacity: 0; }
-            95% { opacity: 0.8; }
-        }
-
-        /* Нахмуренные брови */
-        .frown-overlay {
-            top: 25%;
-            left: 25%;
-            width: 50%;
-            height: 10%;
-            background: linear-gradient(45deg, transparent 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
-            border-radius: 50%;
-            opacity: 0;
-            animation: frownAnimation 4s ease-in-out infinite;
-        }
-
-        @keyframes frownAnimation {
-            0%, 100% { opacity: 0; transform: translateY(0); }
-            50% { opacity: 0.6; transform: translateY(2px); }
-        }
-
-        /* ЦВЕТОВЫЕ ЭФФЕКТЫ */
-        .color-effect-red {
-            filter: hue-rotate(10deg) saturate(1.3) brightness(1.1);
-            animation: redFlush 3s ease-in-out infinite;
-        }
-
-        @keyframes redFlush {
-            0%, 100% { filter: hue-rotate(0deg) saturate(1) brightness(1); }
-            50% { filter: hue-rotate(10deg) saturate(1.3) brightness(1.1); }
-        }
-
-        .color-effect-pale {
-            filter: saturate(0.6) brightness(0.9) contrast(0.8);
-            animation: paleEffect 2s ease-in-out infinite;
-        }
-
-        @keyframes paleEffect {
-            0%, 100% { filter: saturate(0.8) brightness(0.95) contrast(0.9); }
-            50% { filter: saturate(0.6) brightness(0.9) contrast(0.8); }
-        }
-
-        /* Аватар пациента */
-        .patient-avatar-header {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: visible;
-            animation: breathing 4s ease-in-out infinite;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-        }
-
-        .patient-photo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        @keyframes breathing {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        /* Статус пациента */
-        .status-indicator {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            z-index: 10;
-        }
-
-        .status-stable { background: linear-gradient(135deg, #28a745, #20c997); }
-        .status-concerning { background: linear-gradient(135deg, #ffc107, #fd7e14); }
-        .status-critical { background: linear-gradient(135deg, #dc3545, #e83e8c); }
-
-        .patient-info {
-            text-align: center;
-        }
-
-        .patient-name {
-            color: #ffffff !important;
-            font-weight: 700;
-            font-size: 1rem;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
-            background: rgba(0, 0, 0, 0.4);
-            padding: 0.25rem 0.75rem;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .patient-emotion {
-            font-size: 0.75rem;
-            color: #ffffff !important;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            font-weight: 600;
-            margin-top: 0.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        /* Main Container */
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            padding-top: 90px;
-        }
-
-        .chat-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            padding-bottom: 0;
-        }
-
-        /* Patient Introduction */
-        .patient-intro {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(25px);
-            border: 2px solid rgba(255, 255, 255, 0.25);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            animation: fadeInUp 0.8s ease-out;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-
-        .patient-avatar-large {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto 1.5rem;
-            position: relative;
-            overflow: visible;
-            animation: avatarPulse 3s ease-in-out infinite;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        .patient-photo-large {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        @keyframes avatarPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .patient-details {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: #ffffff !important;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 1rem;
-            border-radius: 12px;
-            font-weight: 600;
-        }
-
-        /* Chat Messages */
-        .chat-message {
-            margin-bottom: 1.5rem;
-            animation: messageSlideIn 0.6s ease-out;
-        }
-
-        @keyframes messageSlideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message-patient {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
-        .message-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            position: relative;
-            overflow: visible;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .patient-photo-message {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .message-content {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 1.5rem;
-            color: #ffffff !important;
-            max-width: 85%;
-            position: relative;
-            line-height: 1.6;
-            font-size: 1rem;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
-            font-weight: 500;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        .message-content::before {
-            content: '';
-            position: absolute;
-            left: -10px;
-            top: 15px;
-            width: 0;
-            height: 0;
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
-            border-right: 10px solid rgba(0, 0, 0, 0.6);
-        }
-
-        .emotion-indicator {
-            position: absolute;
-            top: -12px;
-            right: 1.5rem;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(15px);
-            color: #ffffff !important;
-            padding: 0.6rem 1.4rem;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
-        }
-
-        /* Clinical Notes */
-        .clinical-notes {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(25px);
-            border: 2px solid rgba(59, 130, 246, 0.6);
-            border-radius: 16px;
-            padding: 1.75rem;
-            margin: 1.5rem 0;
-            color: #ffffff !important;
-            font-size: 1rem;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
-            font-weight: 500;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        .clinical-notes-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            color: #60a5fa !important;
-            font-weight: 700;
-            font-size: 1rem;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.5rem;
-            border-radius: 8px;
-        }
-
-        /* Response Area */
-        .response-area {
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(25px);
-            border-top: 2px solid rgba(255, 255, 255, 0.2);
-            padding: 1.5rem;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .response-options {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            max-height: 40vh;
-            overflow-y: auto;
-        }
-
-        .response-option {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(20px);
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 18px;
-            padding: 1.5rem;
-            color: #ffffff !important;
-            text-align: left;
-            font-size: 1rem;
-            line-height: 1.6;
-            transition: all 0.4s ease;
-            cursor: pointer;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
-            font-weight: 600;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .response-option:hover {
-            border-color: rgba(255, 255, 255, 0.6);
-            background: rgba(0, 0, 0, 0.8);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
-        }
-
-        .response-option.selected {
-            border-color: rgba(40, 167, 69, 0.8);
-            background: rgba(40, 167, 69, 0.3);
-        }
-
-        /* Loading */
-        .loading-indicator {
-            display: none;
-            justify-content: center;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1.5rem;
-            color: #ffffff !important;
-            font-size: 1rem;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 16px;
-            margin: 1rem 0;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
-            font-weight: 600;
-        }
-
-        .loading-dots {
-            display: flex;
-            gap: 0.4rem;
-        }
-
-        .loading-dot {
-            width: 8px;
-            height: 8px;
-            background: white;
-            border-radius: 50%;
-            animation: loadingPulse 1.4s infinite ease-in-out;
-        }
-
-        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
-        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
-        .loading-dot:nth-child(3) { animation-delay: 0s; }
-
-        @keyframes loadingPulse {
-            0%, 80%, 100% { opacity: 0.4; transform: scale(1); }
-            40% { opacity: 1; transform: scale(1.3); }
-        }
-
-        /* Final Message */
-        .final-message {
-            text-align: center;
-            padding: 2rem;
-            color: white;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 20px;
-            margin: 1rem;
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .final-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            animation: pulse 2s infinite;
-        }
-
-        .continue-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            border: none;
-            border-radius: 12px;
-            padding: 1rem 2rem;
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .continue-btn:hover {
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h3, h2, h1 {
-            color: #ffffff !important;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9) !important;
-            font-weight: 700 !important;
-        }
-
-        p {
-            color: #ffffff !important;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8) !important;
-        }
-
-        strong {
-            color: #ffffff !important;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9) !important;
-        }
-
-        /* Общий стиль кнопок */
-        .btn, .action-btn, .response-option, .continue-btn, .back-btn {
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            border: none;
-            outline: none;
-        }
-
-        /* НИЖНЯЯ НАВИГАЦИЯ */
-        .mobile-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            z-index: 1000;
-            padding: 0.5rem;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: rgba(255, 255, 255, 0.7);
-            transition: all 0.3s ease;
-            padding: 0.5rem;
-            border-radius: 12px;
-            min-width: 60px;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            color: white;
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .nav-icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .nav-label {
-            font-size: 0.7rem;
-            font-weight: 500;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="header-content">
-            <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=lang) }}" class="back-btn">
-                <i class="bi bi-arrow-left"></i>
-            </a>
-            
-            <div class="patient-status">
-                <div class="patient-avatar-header">
-                    <div class="patient-photo-container" id="headerPatientContainer">
-                        <img src="{{ url_for('static', filename='images/virtual_patients/patient_maria.jpg') }}" 
-                             alt="{{ global_patient_info.name|default('Пациент') }}" class="patient-photo" id="headerPatientPhoto">
-                        <div class="breathing-indicator" id="headerBreathing"></div>
-                        
-                        <!-- Капли пота -->
-                        <div class="sweat-drop" style="display: none;"></div>
-                        <div class="sweat-drop" style="display: none;"></div>
-                        <div class="sweat-drop" style="display: none;"></div>
-                        <div class="sweat-drop" style="display: none;"></div>
-                        
-                        <!-- Слезы -->
-                        <div class="tear-drop left" style="display: none;"></div>
-                        <div class="tear-drop right" style="display: none;"></div>
-                        
-                        <!-- Жесты рук -->
-                        <div class="hand-gesture hand-touch-cheek" id="headerHandCheek"></div>
-                        <div class="hand-gesture hand-protective" id="headerHandProtective"></div>
-                        <div class="hand-gesture hand-clenched" id="headerHandClenched"></div>
-                        
-                        <!-- Микроанимации лица -->
-                        <div class="facial-effect blink-overlay" id="headerBlink"></div>
-                        <div class="facial-effect frown-overlay" id="headerFrown"></div>
-                    </div>
-                    <div class="status-indicator {% if history.score < 0 %}status-critical{% elif history.score < 20 %}status-concerning{% else %}status-stable{% endif %}"></div>
-                </div>
-                <div class="patient-info">
-                    <div class="patient-name">{{ global_patient_info.name }}</div>
-                    <div class="patient-emotion">{{ current_node.patient_emotion|default("neutral") }}</div>
-                </div>
-            </div>
-            
-            <div style="width: 44px;"></div>
-        </div>
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Прогресс бар -->
+<div class="progress-container">
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {{ progress_percentage or 0 }}%"></div>
     </div>
+</div>
 
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Chat Area -->
-        <div class="chat-area" id="chatArea">
-            <!-- Patient Introduction (only on first interaction) -->
-            {% if history.nodes|length <= 1 %}
-            <div class="patient-intro fade-in">
-                <div class="patient-avatar-large">
-                    <div class="patient-photo-container" id="introPatientContainer">
-                        <img src="{{ url_for('static', filename='images/virtual_patients/patient_maria.jpg') }}" 
-                                 alt="{{ global_patient_info.name|default('Пациент') }}" class="patient-photo-large" id="introPatientPhoto">
-                        <div class="breathing-indicator" id="introBreathing"></div>
-                        
-                        <!-- Капли пота -->
-                        <div class="sweat-drop" style="display: none;"></div>
-                        <div class="sweat-drop" style="display: none;"></div>
-                        <div class="sweat-drop" style="display: none;"></div>
-                        <div class="sweat-drop" style="display: none;"></div>
-                        
-                        <!-- Слезы -->
-                        <div class="tear-drop left" style="display: none;"></div>
-                        <div class="tear-drop right" style="display: none;"></div>
-                        
-                        <!-- Жесты рук -->
-                        <div class="hand-gesture hand-touch-cheek" id="introHandCheek"></div>
-                        <div class="hand-gesture hand-protective" id="introHandProtective"></div>
-                        <div class="hand-gesture hand-clenched" id="introHandClenched"></div>
-                        
-                        <!-- Микроанимации лица -->
-                        <div class="facial-effect blink-overlay" id="introBlink"></div>
-                        <div class="facial-effect frown-overlay" id="introFrown"></div>
-                    </div>
-                </div>
-                <h3 style="margin-bottom: 0.75rem;">{{ global_patient_info.name }}</h3>
-                <div class="patient-details">
-                    <strong>{{ global_patient_info.age }} лет • {{ global_patient_info.gender }}</strong><br>
-                    {{ global_patient_info.medical_history }}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Current Patient Statement -->
-            <div class="chat-message fade-in">
-                <div class="message-patient">
-                    <div class="message-avatar">
-                        <div class="patient-photo-container" id="messagePatientContainer">
-                            <img src="{{ url_for('static', filename='images/virtual_patients/patient_maria.jpg') }}" 
-                                 alt="{{ global_patient_info.name|default('Пациент') }}" class="patient-photo-message" id="messagePatientPhoto">
-                            <div class="breathing-indicator" id="messageBreathing"></div>
-                            
-                            <!-- Капли пота -->
-                            <div class="sweat-drop" style="display: none;"></div>
-                            <div class="sweat-drop" style="display: none;"></div>
-                            <div class="sweat-drop" style="display: none;"></div>
-                            <div class="sweat-drop" style="display: none;"></div>
-                            
-                            <!-- Слезы -->
-                            <div class="tear-drop left" style="display: none;"></div>
-                            <div class="tear-drop right" style="display: none;"></div>
-                            
-                            <!-- Жесты рук -->
-                            <div class="hand-gesture hand-touch-cheek" id="messageHandCheek"></div>
-                            <div class="hand-gesture hand-protective" id="messageHandProtective"></div>
-                            <div class="hand-gesture hand-clenched" id="messageHandClenched"></div>
-                            
-                            <!-- Микроанимации лица -->
-                            <div class="facial-effect blink-overlay" id="messageBlink"></div>
-                            <div class="facial-effect frown-overlay" id="messageFrown"></div>
-                        </div>
-                    </div>
-                    <div class="message-content">
-                        {% if current_node.patient_emotion and current_node.patient_emotion != 'neutral' %}
-                        <div class="emotion-indicator emotion-{{ current_node.patient_emotion }}">
-                            {% if current_node.patient_emotion == 'concerned' %}😟 Обеспокоен{% endif %}
-                            {% if current_node.patient_emotion == 'worried' %}😰 Волнуется{% endif %}
-                            {% if current_node.patient_emotion == 'angry' %}😠 Злится{% endif %}
-                            {% if current_node.patient_emotion == 'grateful' %}🙏 Благодарен{% endif %}
-                            {% if current_node.patient_emotion == 'panicked' %}😱 Паника{% endif %}
-                            {% if current_node.patient_emotion == 'relieved' %}😌 Облегчение{% endif %}
-                            {% if current_node.patient_emotion == 'happy' %}😊 Счастлив{% endif %}
-                            {% if current_node.patient_emotion == 'confused' %}😕 Смущен{% endif %}
-                        </div>
-                        {% endif %}
-                        {{ current_node.patient_statement }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Clinical Notes -->
-            {% if dentist_notes.should_display %}
-            <div class="clinical-notes fade-in">
-                <div class="clinical-notes-header">
-                    <i class="bi bi-clipboard2-pulse"></i>
-                    Клинические заметки
-                </div>
-                <div>
-                    {% if dentist_notes.clinical_observations %}
-                        <p><strong>Наблюдения:</strong> {{ dentist_notes.clinical_observations }}</p>
-                    {% endif %}
-                    
-                    {% if dentist_notes.diagnostic_hints %}
-                        <p><strong>Диагностические подсказки:</strong> {{ dentist_notes.diagnostic_hints }}</p>
-                    {% endif %}
-                    
-                    {% if dentist_notes.examination_results %}
-                        <p><strong>Результаты обследования:</strong> {{ dentist_notes.examination_results }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Loading Indicator -->
-            <div class="loading-indicator" id="loadingIndicator">
-                <span>Пациент думает...</span>
-                <div class="loading-dots">
-                    <div class="loading-dot"></div>
-                    <div class="loading-dot"></div>
-                    <div class="loading-dot"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Response Area -->
-        {% if not is_final %}
-            <div class="response-area">
-                <form method="POST" action="{{ url_for('virtual_patient_bp.select_option', lang=lang) }}" id="responseForm">
-                    <input type="hidden" name="selected_option" id="selectedOption">
-                    
-                    <div class="response-options" id="responseOptions">
-                        {% for option in current_node.options %}
-                            <button type="button" class="response-option" 
-                                    data-option="{{ loop.index0 }}" 
-                                    data-option-text="{{ option.text }}"
-                                    data-score="{{ option.score or 0 }}">
-                                {{ option.text }}
-                            </button>
-                        {% endfor %}
-                    </div>
-                </form>
+<!-- Область пациента -->
+<div class="patient-status-area">
+    <div class="patient-display" id="patientDisplay">
+        {% if patient_image %}
+            <div class="patient-photo-container">
+                <img src="{{ patient_image }}" alt="Patient" class="patient-photo" id="patientPhoto">
+                
+                <!-- Физиологические эффекты -->
+                <div class="breathing-indicator" id="breathingIndicator"></div>
+                
+                <!-- Капли пота (показываются при стрессе) -->
+                <div class="sweat-drop" style="display: none;"></div>
+                <div class="sweat-drop" style="display: none;"></div>
+                <div class="sweat-drop" style="display: none;"></div>
+                <div class="sweat-drop" style="display: none;"></div>
+                
+                <!-- Слезы (показываются при боли) -->
+                <div class="tear-drop left" style="display: none;"></div>
+                <div class="tear-drop right" style="display: none;"></div>
             </div>
         {% else %}
-            <div class="final-message fade-in">
-                <div class="final-icon">🎯</div>
-                <h3 style="margin-bottom: 1rem;">Консультация завершена</h3>
-                <p style="margin-bottom: 2rem;">Отличная работа! Вы завершили сценарий с виртуальным пациентом.</p>
-                <a href="{{ url_for('virtual_patient_bp.results', lang=lang, attempt_id=attempt.id) }}" class="continue-btn">
-                    <i class="bi bi-clipboard-data"></i>
-                    Посмотреть результаты
-                </a>
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 3rem;">
+                👤
             </div>
         {% endif %}
     </div>
+</div>
 
-    <script>
-        let selectedOption = null;
-        let isProcessing = false;
+<!-- Кнопки действий -->
+<div class="action-buttons">
+    <button class="action-btn" onclick="showPatientHistory()" title="{{ t('patient_history', lang) or 'История пациента' }}">
+        <i class="bi bi-file-medical"></i>
+    </button>
+    <button class="action-btn" onclick="takeNotes()" title="{{ t('take_notes', lang) or 'Заметки' }}">
+        <i class="bi bi-pencil"></i>
+    </button>
+    <button class="action-btn" onclick="showHints()" title="{{ t('hints', lang) or 'Подсказки' }}">
+        <i class="bi bi-lightbulb"></i>
+    </button>
+</div>
 
-        // === СИСТЕМА УПРАВЛЕНИЯ ВИЗУАЛЬНЫМИ ЭФФЕКТАМИ ПАЦИЕНТА ===
-        
-        // Конфигурация состояния пациента
-        const patientState = {
-            emotion: '{{ current_node.patient_emotion|default("neutral") }}',
-            score: {{ history.score|default(50) }},
-            stress_level: 0,
-            pain_level: 0,
-            breathing_rate: 16,
-            heart_rate: 72
-        };
+<!-- Диалоговая область -->
+<div class="dialogue-container slide-up" id="dialogueContainer">
+    <div class="dialogue-text" id="dialogueText">
+        {{ current_step.description or 'Добро пожаловать к виртуальному пациенту. Что вы хотите сделать?' }}
+    </div>
+    
+    <div class="choices-container" id="choicesContainer">
+        {% if choices %}
+            {% for choice in choices %}
+                <button class="choice-button" onclick="makeChoice({{ choice.id }})">
+                    {{ choice.text }}
+                </button>
+            {% endfor %}
+        {% else %}
+            <button class="choice-button" onclick="makeChoice('start')">
+                {{ t('start_examination', lang) or 'Начать осмотр' }}
+            </button>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
 
-        // Маппинг эмоций в физиологические параметры
-        const emotionMapping = {
-            'neutral': { stress: 20, pain: 10, breathing: 16, heart: 72 },
-            'concerned': { stress: 45, pain: 25, breathing: 18, heart: 78 },
-            'worried': { stress: 65, pain: 35, breathing: 22, heart: 85 },
-            'angry': { stress: 80, pain: 40, breathing: 25, heart: 95 },
-            'panicked': { stress: 95, pain: 60, breathing: 30, heart: 110 },
-            'grateful': { stress: 15, pain: 5, breathing: 14, heart: 65 },
-            'relieved': { stress: 25, pain: 15, breathing: 15, heart: 70 },
-            'happy': { stress: 10, pain: 0, breathing: 14, heart: 68 },
-            'confused': { stress: 40, pain: 20, breathing: 17, heart: 75 }
-        };
+{% block extra_js %}
+<script>
+// Состояние пациента
+let patientState = {
+    stress: 0,
+    pain: 0,
+    breathing: 'normal'
+};
 
-        // Инициализация состояния пациента
-        function initPatientState() {
-            const mapping = emotionMapping[patientState.emotion] || emotionMapping['neutral'];
-            
-            // Базовые значения из эмоций
-            patientState.stress_level = mapping.stress;
-            patientState.pain_level = mapping.pain;
-            patientState.breathing_rate = mapping.breathing;
-            patientState.heart_rate = mapping.heart;
-            
-            // Корректировка на основе общего счёта (performance)
-            const scoreModifier = Math.max(0, (50 - patientState.score) / 50);
-            patientState.stress_level = Math.min(100, patientState.stress_level + (scoreModifier * 30));
-            patientState.pain_level = Math.min(100, patientState.pain_level + (scoreModifier * 20));
-            
-            console.log('Patient State:', patientState);
-        }
+// Обновление визуального состояния пациента
+function updatePatientState(newState) {
+    Object.assign(patientState, newState);
+    
+    const photo = document.getElementById('patientPhoto');
+    const sweatDrops = document.querySelectorAll('.sweat-drop');
+    const tearDrops = document.querySelectorAll('.tear-drop');
+    
+    // Эффекты стресса
+    if (patientState.stress > 50) {
+        sweatDrops.forEach(drop => drop.style.display = 'block');
+        if (photo) photo.style.filter = 'brightness(0.9) saturate(1.2)';
+    } else {
+        sweatDrops.forEach(drop => drop.style.display = 'none');
+    }
+    
+    // Эффекты боли
+    if (patientState.pain > 70) {
+        tearDrops.forEach(drop => drop.style.display = 'block');
+        if (photo) photo.style.filter = 'brightness(0.8) saturate(1.3) hue-rotate(10deg)';
+    } else {
+        tearDrops.forEach(drop => drop.style.display = 'none');
+    }
+    
+    // Сброс фильтров при нормальном состоянии
+    if (patientState.stress <= 50 && patientState.pain <= 70) {
+        if (photo) photo.style.filter = 'none';
+    }
+}
 
-        // Класс управления эффектами для отдельного аватара
-        class PatientEffectsManager {
-            constructor(containerId, photoId, prefix) {
-                this.container = document.getElementById(containerId);
-                this.photo = document.getElementById(photoId);
-                this.prefix = prefix;
-                this.activeEffects = new Set();
-                
-                if (!this.container || !this.photo) {
-                    console.warn(`PatientEffectsManager: не найден контейнер ${containerId} или фото ${photoId}`);
-                    return;
-                }
-                
-                this.initializeEffects();
+// Выбор действия
+function makeChoice(choiceId) {
+    // Добавляем тактильную обратную связь
+    if (navigator.vibrate) {
+        navigator.vibrate(50);
+    }
+    
+    // Отправляем выбор на сервер
+    fetch(`/{{ lang }}/virtual-patient/choice`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            scenario_id: '{{ scenario_model_obj.id }}',
+            choice_id: choiceId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateDialogue(data.next_step);
+            updateProgress(data.progress);
+            
+            if (data.patient_state) {
+                updatePatientState(data.patient_state);
             }
             
-            initializeEffects() {
-                // Получаем все элементы эффектов
-                this.sweatDrops = this.container.querySelectorAll('.sweat-drop');
-                this.tearDrops = this.container.querySelectorAll('.tear-drop');
-                this.breathing = this.container.querySelector('.breathing-indicator');
-                this.handGestures = {
-                    cheek: this.container.querySelector('.hand-touch-cheek'),
-                    protective: this.container.querySelector('.hand-protective'),
-                    clenched: this.container.querySelector('.hand-clenched')
-                };
-                this.facialEffects = {
-                    blink: this.container.querySelector('.blink-overlay'),
-                    frown: this.container.querySelector('.frown-overlay')
-                };
-            }
-            
-            // Активация капель пота
-            activateSweat(intensity) {
-                if (intensity < 60) {
-                    this.deactivateSweat();
-                    return;
-                }
-                
-                if (this.activeEffects.has('sweat')) return;
-                this.activeEffects.add('sweat');
-                
-                const dropsToShow = Math.min(4, Math.floor((intensity - 60) / 10) + 1);
-                
-                for (let i = 0; i < dropsToShow; i++) {
-                    if (this.sweatDrops[i]) {
-                        this.sweatDrops[i].style.display = 'block';
-                        this.sweatDrops[i].style.animationDelay = `${i * 0.8}s`;
-                    }
-                }
-            }
-            
-            deactivateSweat() {
-                if (!this.activeEffects.has('sweat')) return;
-                this.activeEffects.delete('sweat');
-                
-                this.sweatDrops.forEach(drop => {
-                    drop.style.display = 'none';
-                });
-            }
-            
-            // Активация слёз
-            activateTears(intensity) {
-                if (intensity < 70) {
-                    this.deactivateTears();
-                    return;
-                }
-                
-                if (this.activeEffects.has('tears')) return;
-                this.activeEffects.add('tears');
-                
-                this.tearDrops.forEach((tear, index) => {
-                    tear.style.display = 'block';
-                    tear.style.animationDelay = `${index * 1.2}s`;
-                });
-            }
-            
-            deactivateTears() {
-                if (!this.activeEffects.has('tears')) return;
-                this.activeEffects.delete('tears');
-                
-                this.tearDrops.forEach(tear => {
-                    tear.style.display = 'none';
-                });
-            }
-            
-            // Управление дыханием
-            setBreathing(rate) {
-                if (!this.breathing) return;
-                
-                this.breathing.classList.remove('breathing-normal', 'breathing-stressed', 'breathing-relaxed');
-                
-                if (rate > 22) {
-                    this.breathing.classList.add('breathing-stressed');
-                } else if (rate < 15) {
-                    this.breathing.classList.add('breathing-relaxed');
-                } else {
-                    this.breathing.classList.add('breathing-normal');
-                }
-            }
-            
-            // Жесты рук
-            activateHandGesture(type) {
-                // Сначала скрываем все жесты
-                Object.values(this.handGestures).forEach(gesture => {
-                    if (gesture) gesture.style.display = 'none';
-                });
-                
-                if (this.handGestures[type]) {
-                    this.handGestures[type].style.display = 'block';
-                    this.activeEffects.add(`hand-${type}`);
-                }
-            }
-            
-            deactivateHandGestures() {
-                Object.values(this.handGestures).forEach(gesture => {
-                    if (gesture) gesture.style.display = 'none';
-                });
-                
-                ['hand-cheek', 'hand-protective', 'hand-clenched'].forEach(effect => {
-                    this.activeEffects.delete(effect);
-                });
-            }
-            
-            // Микроанимации лица
-            setBlinking(stressed = false) {
-                if (!this.facialEffects.blink) return;
-                
-                this.facialEffects.blink.classList.remove('blink-stressed');
-                if (stressed) {
-                    this.facialEffects.blink.classList.add('blink-stressed');
-                }
-            }
-            
-            showFrown(show = true) {
-                if (!this.facialEffects.frown) return;
-                
-                this.facialEffects.frown.style.display = show ? 'block' : 'none';
-            }
-            
-            // Цветовые эффекты
-            applyColorEffect(effect) {
-                if (!this.photo) return;
-                
-                this.photo.classList.remove('color-effect-red', 'color-effect-pale');
-                
-                if (effect === 'red') {
-                    this.photo.classList.add('color-effect-red');
-                } else if (effect === 'pale') {
-                    this.photo.classList.add('color-effect-pale');
-                }
-            }
-            
-            // Обновление всех эффектов на основе состояния
-            updateEffects(state) {
-                // Капли пота
-                this.activateSweat(state.stress_level);
-                
-                // Слёзы
-                this.activateTears(state.pain_level);
-                
-                // Дыхание
-                this.setBreathing(state.breathing_rate);
-                
-                // Жесты рук
-                this.deactivateHandGestures();
-                if (state.pain_level > 40) {
-                    this.activateHandGesture('cheek');
-                } else if (state.stress_level > 60) {
-                    this.activateHandGesture('clenched');
-                } else if (state.emotion === 'panicked') {
-                    this.activateHandGesture('protective');
-                }
-                
-                // Микроанимации лица
-                this.setBlinking(state.stress_level > 50);
-                this.showFrown(state.pain_level > 30 || state.stress_level > 60);
-                
-                // Цветовые эффекты
-                if (state.emotion === 'angry' || state.stress_level > 80) {
-                    this.applyColorEffect('red');
-                } else if (state.pain_level > 80 || state.emotion === 'panicked') {
-                    this.applyColorEffect('pale');
-                } else {
-                    this.applyColorEffect(null);
-                }
-            }
-        }
-
-        // Инициализация менеджеров эффектов для всех аватаров
-        let effectsManagers = [];
-
-        function initEffectsManagers() {
-            // Аватар в хедере
-            effectsManagers.push(new PatientEffectsManager('headerPatientContainer', 'headerPatientPhoto', 'header'));
-            
-            // Большой аватар во введении (если есть)
-            if (document.getElementById('introPatientContainer')) {
-                effectsManagers.push(new PatientEffectsManager('introPatientContainer', 'introPatientPhoto', 'intro'));
-            }
-            
-            // Аватар в сообщении
-            effectsManagers.push(new PatientEffectsManager('messagePatientContainer', 'messagePatientPhoto', 'message'));
-        }
-
-        // Обновление всех эффектов
-        function updateAllEffects() {
-            effectsManagers.forEach(manager => {
-                if (manager && manager.container) {
-                    manager.updateEffects(patientState);
-                }
-            });
-        }
-
-        // Проверка производительности устройства
-        function checkPerformance() {
-            const canvas = document.createElement('canvas');
-            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-            
-            // Простая проверка - если WebGL недоступен или мало памяти, отключаем сложные эффекты
-            const lowPerformance = !gl || navigator.hardwareConcurrency < 4 || navigator.deviceMemory < 4;
-            
-            if (lowPerformance) {
-                console.log('Обнаружено слабое устройство, упрощаем эффекты');
-                document.body.classList.add('low-performance');
-                // Можно добавить CSS правила для .low-performance для упрощения анимаций
-            }
-            
-            return !lowPerformance;
-        }
-
-        // Инициализация системы эффектов
-        function initPatientEffects() {
-            console.log('🎭 Инициализация системы визуальных эффектов пациента');
-            
-            // Проверяем производительность
-            const highPerformance = checkPerformance();
-            
-            if (!highPerformance) {
-                console.log('⚡ Режим низкой производительности активирован');
-            }
-            
-            // Инициализируем состояние пациента
-            initPatientState();
-            
-            // Инициализируем менеджеры эффектов
-            initEffectsManagers();
-            
-            // Применяем начальные эффекты
-            updateAllEffects();
-            
-            // Периодическое обновление некоторых эффектов (например, для вариации)
-            setInterval(() => {
-                // Можно добавить небольшие случайные вариации
-                if (Math.random() > 0.7) {
-                    updateAllEffects();
-                }
-            }, 5000);
-        }
-
-        // Тактильная обратная связь
-        function vibrate(pattern) {
-            if (navigator.vibrate) {
-                navigator.vibrate(pattern);
-            }
-        }
-
-        // Обработка выбора ответа
-        document.querySelectorAll('.response-option').forEach(option => {
-            option.addEventListener('click', function() {
-                if (isProcessing) return;
-                
-                // Тактильная обратная связь
-                vibrate([50, 50, 100]);
-                
-                selectedOption = this.dataset.option;
-                isProcessing = true;
-                
-                // Визуальная обратная связь
-                document.querySelectorAll('.response-option').forEach(opt => {
-                    opt.style.opacity = '0.5';
-                    opt.style.pointerEvents = 'none';
-                });
-                
-                this.style.opacity = '1';
-                this.classList.add('selected');
-                
-                // Показываем загрузку
+            if (data.completed) {
                 setTimeout(() => {
-                    document.getElementById('loadingIndicator').style.display = 'flex';
-                    
-                    // Прокрутка к низу
-                    const chatArea = document.getElementById('chatArea');
-                    chatArea.scrollTop = chatArea.scrollHeight;
-                    
-                    // Отправляем форму
-                    setTimeout(() => submitResponse(), 1500);
-                }, 500);
-            });
-
-            // Эффект наведения с вибрацией
-            option.addEventListener('mouseenter', function() {
-                vibrate(25);
-            });
-        });
-
-        function submitResponse() {
-            if (!selectedOption || isProcessing) return;
-            
-            document.getElementById('selectedOption').value = selectedOption;
-            document.getElementById('responseForm').submit();
-        }
-
-        // Автопрокрутка при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            // Инициализируем систему эффектов пациента
-            initPatientEffects();
-            
-            const chatArea = document.getElementById('chatArea');
-            chatArea.scrollTop = chatArea.scrollHeight;
-            
-            // Анимация появления опций
-            const options = document.querySelectorAll('.response-option');
-            options.forEach((option, index) => {
-                option.style.animationDelay = `${index * 0.1}s`;
-                option.classList.add('fade-in');
-            });
-        });
-
-        // Предотвращение зума при двойном тапе
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function (event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
+                    window.location.href = data.results_url;
+                }, 2000);
             }
-            lastTouchEnd = now;
-        }, false);
-    </script>
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
 
-    <!-- Нижняя навигация -->
-    <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
-            <i class="bi bi-house"></i>
-            <span>{{ t('home', lang) }}</span>
-        </a>
-        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
-            <i class="bi bi-book"></i>
-            <span>{{ t('learning', lang) }}</span>
-        </a>
-        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
-            <i class="bi bi-clipboard-check"></i>
-            <span>{{ t('tests', lang) }}</span>
-        </a>
-        <a href="/{{ lang }}/virtual-patient" class="nav-item active">
-            <i class="bi bi-person-heart"></i>
-            <span>{{ t('patients', lang) }}</span>
-        </a>
-        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
-            <i class="fas fa-robot"></i>
-            <span>{{ t('ai_assistant', lang) }}</span>
-        </a>
-    </nav>
-</body>
-</html>
+// Обновление диалога
+function updateDialogue(step) {
+    const dialogueText = document.getElementById('dialogueText');
+    const choicesContainer = document.getElementById('choicesContainer');
+    
+    if (dialogueText) {
+        dialogueText.textContent = step.description;
+        dialogueText.classList.add('fade-in');
+    }
+    
+    if (choicesContainer && step.choices) {
+        choicesContainer.innerHTML = '';
+        step.choices.forEach(choice => {
+            const button = document.createElement('button');
+            button.className = 'choice-button';
+            button.textContent = choice.text;
+            button.onclick = () => makeChoice(choice.id);
+            choicesContainer.appendChild(button);
+        });
+        choicesContainer.classList.add('slide-up');
+    }
+}
+
+// Обновление прогресса
+function updateProgress(percentage) {
+    const progressFill = document.querySelector('.progress-fill');
+    if (progressFill) {
+        progressFill.style.width = percentage + '%';
+    }
+}
+
+// Дополнительные функции
+function showPatientHistory() {
+    // Показать историю пациента
+    alert('{{ t("patient_history_placeholder", lang) or "История пациента будет доступна в следующих версиях" }}');
+}
+
+function takeNotes() {
+    // Открыть блокнот
+    alert('{{ t("notes_placeholder", lang) or "Функция заметок будет доступна в следующих версиях" }}');
+}
+
+function showHints() {
+    // Показать подсказки
+    alert('{{ t("hints_placeholder", lang) or "Подсказки будут доступны в следующих версиях" }}');
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // Предотвращение случайного зума
+    document.addEventListener('touchmove', function(e) {
+        if (e.scale !== 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    // Инициализация состояния пациента
+    updatePatientState({
+        stress: {{ patient_stress or 0 }},
+        pain: {{ patient_pain or 0 }}
+    });
+    
+    console.log('🏥 Virtual Patient Interactive Mode - готов!');
+});
+</script>
+{% endblock %}

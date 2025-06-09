@@ -1,43 +1,38 @@
-{% extends "mobile_base.html" %}
-
-{% block nav_items %}
-<a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
-    <i class="bi bi-house"></i>
-    <span>{{ t('home', lang) }}</span>
-</a>
-<a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
-    <i class="bi bi-book"></i>
-    <span>{{ t('learning', lang) }}</span>
-</a>
-<a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item active">
-    <i class="bi bi-clipboard-check"></i>
-    <span>{{ t('tests', lang) }}</span>
-</a>
-<a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=lang) }}" class="nav-item">
-    <i class="bi bi-person-heart"></i>
-    <span>{{ t('patients', lang) }}</span>
-</a>
-<a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
-    <i class="fas fa-robot"></i>
-    <span>{{ t('ai_assistant', lang) }}</span>
-</a>
-{% endblock %}
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}" {% if is_rtl_language(lang) %}dir="rtl"{% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1a1a2e">
+    <meta name="theme-color" content="#6366f1">
     
     <title>{% if lang == 'ru' %}Вопрос {{ step + 1 }}{% elif lang == 'nl' %}Vraag {{ step + 1 }}{% else %}Question {{ step + 1 }}{% endif %} - Dental Academy</title>
     
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            /* Modern CSS variables for consistency */
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-glass: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-primary: rgba(255, 255, 255, 0.2);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --transition-normal: 0.3s ease;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -45,79 +40,72 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
             min-height: 100vh;
             padding: 0;
             overflow-x: hidden;
+            color: var(--text-primary);
         }
 
-        .mobile-header {
-            background: rgba(255, 255, 255, 0.1);
+        /* Test-specific header without back button */
+        .test-header {
+            background: var(--bg-glass);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1rem;
+            border-bottom: 1px solid var(--border-primary);
+            padding: 1.5rem 1rem;
             position: sticky;
             top: 0;
             z-index: 100;
+            text-align: center;
         }
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 100%;
+        .test-title {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
         }
 
-        .back-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 12px;
-            width: 44px;
-            height: 44px;
+        .progress-info {
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
+            gap: 1rem;
+            margin-top: 0.5rem;
         }
 
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .header-title {
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            flex: 1;
-            text-align: center;
-            margin: 0 1rem;
-        }
-
-        .progress-indicator {
+        .question-counter {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 12px;
-            padding: 0.5rem 0.75rem;
-            color: white;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .progress-percentage {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
             font-size: 0.9rem;
             font-weight: 600;
         }
 
         .main-content {
             padding: 1.5rem;
-            min-height: calc(100vh - 80px);
+            min-height: calc(100vh - 120px);
         }
 
         .progress-bar-container {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 100px;
-            height: 8px;
-            margin-bottom: 1.5rem;
+            height: 10px;
+            margin-bottom: 2rem;
             overflow: hidden;
+            position: relative;
         }
 
         .progress-bar {
@@ -125,36 +113,54 @@
             height: 100%;
             border-radius: 100px;
             transition: width 0.6s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.15);
+            background: var(--bg-glass);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 1.5rem;
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-normal);
         }
 
         .glass-card.correct {
             border-color: rgba(40, 167, 69, 0.5);
-            background: rgba(40, 167, 69, 0.1);
+            background: rgba(40, 167, 69, 0.15);
         }
 
         .glass-card.incorrect {
             border-color: rgba(220, 53, 69, 0.5);
-            background: rgba(220, 53, 69, 0.1);
+            background: rgba(220, 53, 69, 0.15);
         }
 
         .question-text {
-            color: white;
-            font-size: 1.2rem;
+            color: var(--text-primary);
+            font-size: 1.3rem;
             font-weight: 600;
-            line-height: 1.5;
-            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            text-align: left;
         }
 
         .options-container {
@@ -164,70 +170,96 @@
         }
 
         .option-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 1rem 1.25rem;
-            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            color: var(--text-primary);
             text-align: left;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all var(--transition-normal);
             font-size: 1rem;
-            line-height: 1.4;
+            line-height: 1.5;
             position: relative;
             overflow: hidden;
         }
 
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left var(--transition-normal);
+        }
+
+        .option-btn:hover::before {
+            left: 100%;
+        }
+
         .option-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         .option-btn.selected {
-            background: rgba(13, 110, 253, 0.3);
-            border-color: rgba(13, 110, 253, 0.5);
+            background: rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
 
         .option-btn.correct {
             background: rgba(40, 167, 69, 0.3);
-            border-color: rgba(40, 167, 69, 0.5);
+            border-color: rgba(40, 167, 69, 0.6);
         }
 
         .option-btn.incorrect {
             background: rgba(220, 53, 69, 0.3);
-            border-color: rgba(220, 53, 69, 0.5);
+            border-color: rgba(220, 53, 69, 0.6);
         }
 
         .option-btn.disabled {
             pointer-events: none;
-            opacity: 0.7;
+            opacity: 0.8;
+        }
+
+        .option-content {
+            display: flex;
+            align-items: center;
+            position: relative;
         }
 
         .option-letter {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            margin-right: 0.75rem;
-            font-weight: 600;
-            font-size: 0.9rem;
+            margin-right: 1rem;
+            font-weight: 700;
+            font-size: 1rem;
             flex-shrink: 0;
         }
 
         .option-text {
             flex: 1;
+            font-weight: 500;
         }
 
         .result-icon {
             position: absolute;
-            right: 1rem;
+            right: 0;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity var(--transition-normal);
         }
 
         .option-btn.correct .result-icon,
@@ -236,56 +268,61 @@
         }
 
         .result-message {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            color: white;
+            background: var(--bg-glass);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+            color: var(--text-primary);
             text-align: center;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-primary);
         }
 
         .result-message.correct {
             background: rgba(40, 167, 69, 0.2);
-            border: 1px solid rgba(40, 167, 69, 0.3);
+            border-color: rgba(40, 167, 69, 0.4);
         }
 
         .result-message.incorrect {
             background: rgba(220, 53, 69, 0.2);
-            border: 1px solid rgba(220, 53, 69, 0.3);
+            border-color: rgba(220, 53, 69, 0.4);
         }
 
         .result-message h4 {
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.2rem;
+            font-weight: 700;
         }
 
         .result-message p {
             margin: 0;
             opacity: 0.9;
+            font-size: 1rem;
         }
 
         .explanation-box {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            color: white;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--bg-glass);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+            color: var(--text-primary);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-primary);
         }
 
         .explanation-title {
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-size: 1.1rem;
         }
 
         .explanation-text {
-            line-height: 1.5;
+            line-height: 1.6;
             opacity: 0.9;
+            font-size: 1rem;
         }
 
         .action-buttons {
@@ -295,64 +332,65 @@
         }
 
         .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             border: none;
-            border-radius: 12px;
-            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 2rem;
             color: white;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 1.1rem;
             flex: 1;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
         }
 
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
         }
 
         .submit-btn:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
         .submit-btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
 
         .next-btn {
-            background: rgba(40, 167, 69, 0.8);
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
             border: none;
-            border-radius: 12px;
-            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 2rem;
             color: white;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 1.1rem;
             flex: 1;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
         }
 
         .next-btn:hover {
-            background: rgba(40, 167, 69, 0.9);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
         }
 
         .next-btn:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
         .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.6s ease-in-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -360,13 +398,18 @@
             }
         }
 
+        /* Responsive Design */
         @media (max-width: 576px) {
+            .test-header {
+                padding: 1rem;
+            }
+            
             .main-content {
                 padding: 1rem;
             }
             
             .glass-card {
-                padding: 1rem;
+                padding: 1.5rem;
             }
             
             .question-text {
@@ -374,29 +417,46 @@
             }
             
             .option-btn {
-                padding: 0.75rem 1rem;
+                padding: 1rem;
             }
             
             .action-buttons {
                 flex-direction: column;
             }
+
+            .progress-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="header-content">
-            <a href="{{ url_for('tests_bp.setup_test', lang=lang) }}" class="back-btn">
-                <i class="bi bi-arrow-left"></i>
-            </a>
-            <h1 class="header-title">
+    <!-- Test Header (NO back button, NO navigation) -->
+    <div class="test-header">
+        <h1 class="test-title">
+            {% if lang == 'ru' %}Тест в процессе
+            {% elif lang == 'nl' %}Test in uitvoering  
+            {% else %}Test in Progress
+            {% endif %}
+        </h1>
+        <div class="progress-info">
+            <div class="question-counter">
                 {% if lang == 'ru' %}Вопрос {{ step + 1 }} из {{ total }}
                 {% elif lang == 'nl' %}Vraag {{ step + 1 }} van {{ total }}
                 {% else %}Question {{ step + 1 }} of {{ total }}
                 {% endif %}
-            </h1>
-            <div class="progress-indicator">
+            </div>
+            <div class="progress-percentage">
                 {{ ((step + 1) / total * 100) | int }}%
             </div>
         </div>
@@ -425,16 +485,16 @@
                          {% endif %}
                          {% if result %}disabled{% endif %}"
                          onclick="{% if not result %}selectOption(this, '{{ option }}'){% endif %}">
-                        <div style="display: flex; align-items: center; position: relative;">
+                        <div class="option-content">
                             <div class="option-letter">{{ loop.index0 | int | chr(65) }}</div>
                             <div class="option-text">{{ option }}</div>
                             <div class="result-icon">
                                 {% if result == 'correct' and option == correct_answer %}
-                                    <i class="bi bi-check-circle-fill" style="color: #28a745;"></i>
+                                    <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
                                 {% elif result == 'incorrect' and submitted_answer == option %}
-                                    <i class="bi bi-x-circle-fill" style="color: #dc3545;"></i>
+                                    <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i>
                                 {% elif result and option == correct_answer %}
-                                    <i class="bi bi-check-circle-fill" style="color: #28a745;"></i>
+                                    <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
                                 {% endif %}
                             </div>
                         </div>
@@ -463,15 +523,15 @@
                 {% if result == 'correct' %}
                     <h4>
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        {% if lang == 'ru' %}Правильно! Вы дали правильный ответ.
-                        {% elif lang == 'nl' %}Juist! Je hebt het juiste antwoord gegeven.
-                        {% else %}Great job! You gave the correct answer.
+                        {% if lang == 'ru' %}Правильно! Отличная работа.
+                        {% elif lang == 'nl' %}Juist! Geweldig werk.
+                        {% else %}Correct! Great job.
                         {% endif %}
                     </h4>
                     <p>
-                        {% if lang == 'ru' %}Отличная работа!
-                        {% elif lang == 'nl' %}Geweldig werk!
-                        {% else %}Great job!
+                        {% if lang == 'ru' %}Вы дали правильный ответ!
+                        {% elif lang == 'nl' %}Je hebt het juiste antwoord gegeven!
+                        {% else %}You gave the correct answer!
                         {% endif %}
                     </p>
                 {% else %}
@@ -495,6 +555,7 @@
             {% if explanation %}
             <div class="explanation-box fade-in">
                 <div class="explanation-title">
+                    <i class="bi bi-lightbulb me-2"></i>
                     {% if lang == 'ru' %}Объяснение:
                     {% elif lang == 'nl' %}Uitleg:
                     {% else %}Explanation:
@@ -530,6 +591,7 @@
         </div>
     </div>
 
+    <!-- Scripts -->
     <script>
         let selectedAnswer = null;
 
@@ -547,10 +609,13 @@
             document.getElementById('selectedOption').value = value;
             
             // Enable submit button
-            document.getElementById('submitBtn').disabled = false;
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
         }
 
-        // Touch handling improvements
+        // Touch handling improvements for mobile
         document.addEventListener('touchstart', function() {}, { passive: true });
         
         // Prevent double-tap zoom on buttons
@@ -568,10 +633,50 @@
         setTimeout(() => {
             const resultMessage = document.querySelector('.result-message');
             if (resultMessage) {
-                resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                resultMessage.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
             }
-        }, 100);
+        }, 200);
         {% endif %}
+
+        // Haptic feedback for mobile devices
+        function hapticFeedback() {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+        }
+
+        // Add haptic feedback to option selection
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('touchstart', hapticFeedback);
+        });
+
+        // Keyboard accessibility
+        document.addEventListener('keydown', function(e) {
+            if (e.key >= '1' && e.key <= '9') {
+                const optionIndex = parseInt(e.key) - 1;
+                const options = document.querySelectorAll('.option-btn:not(.disabled)');
+                if (options[optionIndex]) {
+                    const value = options[optionIndex].getAttribute('onclick');
+                    if (value) {
+                        const match = value.match(/selectOption\(this, '([^']+)'\)/);
+                        if (match) {
+                            selectOption(options[optionIndex], match[1]);
+                        }
+                    }
+                }
+            }
+        });
+
+        // Focus management
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstOption = document.querySelector('.option-btn:not(.disabled)');
+            if (firstOption) {
+                firstOption.focus();
+            }
+        });
     </script>
 </body>
 </html> 

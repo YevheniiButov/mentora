@@ -686,4 +686,600 @@ class RAGSystem:
             
         except Exception as e:
             self.logger.error(f"Ошибка получения статистики: {e}")
-            return {} 
+            return {}
+
+    # ===== ПЕРСОНАЛИЗИРОВАННЫЙ ПОИСК (расширение RAG) =====
+    
+    def personalized_search(self, query: str, user_id: int, language: str = 'en', limit: int = 10) -> List[Dict]:
+        """
+        Персонализированный семантический поиск
+        Учитывает стиль обучения и прогресс пользователя
+        
+        Args:
+            query: Поисковый запрос
+            user_id: ID пользователя  
+            language: Язык поиска
+            limit: Максимальное количество результатов
+            
+        Returns:
+            Персонализированные результаты поиска
+        """
+        try:
+            # Получаем профиль пользователя из adaptive_learning
+            from utils.adaptive_learning import AdaptiveLearningEngine
+            adaptive_engine = AdaptiveLearningEngine()
+            
+            # Получаем данные попыток для анализа профиля
+            recent_attempts_data = adaptive_engine._get_user_attempts_data(user_id)
+            if recent_attempts_data:
+                user_profile = adaptive_engine.analyze_user_performance(user_id, recent_attempts_data)
+            else:
+                # Базовый профиль если нет данных
+                from utils.adaptive_learning import UserProfile, LearningStyle, SkillLevel
+                from datetime import datetime
+                user_profile = UserProfile(
+                    user_id=user_id,
+                    learning_style=LearningStyle.VISUAL,
+                    skill_levels={'general': SkillLevel.BEGINNER},
+                    preferences={},
+                    performance_history=[],
+                    weakness_areas=[],
+                    strength_areas=[],
+                    last_updated=datetime.utcnow()
+                )
+            
+            # Стандартный поиск с увеличенным лимитом для лучшего выбора
+            base_results = self.semantic_search(query, language=language, limit=limit*2)
+            
+            if not base_results:
+                return []
+            
+            # Персонализированное ранжирование
+            personalized_results = self._rerank_by_user_profile(
+                base_results, user_profile, user_id
+            )
+            
+            # Добавляем информацию о персонализации
+            for result in personalized_results:
+                result['is_personalized'] = True
+                result['user_id'] = user_id
+            
+            self.logger.info(f"Персонализированный поиск для пользователя {user_id}: {len(personalized_results)} результатов")
+            return personalized_results[:limit]
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка персонализированного поиска для пользователя {user_id}: {e}")
+            # Fallback к обычному поиску
+            fallback_results = self.semantic_search(query, language=language, limit=limit)
+            return fallback_results
+    
+    def _rerank_by_user_profile(self, results: List[Dict], user_profile, user_id: int) -> List[Dict]:
+        """
+        Переранжирует результаты на основе профиля пользователя
+        
+        Args:
+            results: Исходные результаты поиска
+            user_profile: Профиль пользователя из adaptive_learning
+            user_id: ID пользователя
+            
+        Returns:
+            Переранжированные результаты
+        """
+        try:
+            enriched_results = []
+            
+            for result in results:
+                # Копируем результат
+                enriched_result = result.copy()
+                
+                # Базовый скор из semantic_search
+                base_score = result.get('similarity', 0.0)
+                
+                # Бонус за соответствие стилю обучения
+                learning_style_bonus = self._calculate_learning_style_bonus(
+                    result, user_profile.learning_style.value
+                )
+                
+                # Бонус за уровень сложности
+                difficulty_bonus = self._calculate_difficulty_bonus(
+                    result, user_profile.skill_levels
+                )
+                
+                # Бонус за слабые области (приоритет контенту по слабым навыкам)
+                weakness_bonus = self._calculate_weakness_bonus(
+                    result, user_profile.weakness_areas
+                )
+                
+                # Штраф за уже изученный контент
+                completion_penalty = self._calculate_completion_penalty(
+                    result, user_id
+                )
+                
+                # Итоговый персонализированный скор
+                personalized_score = (
+                    base_score + 
+                    learning_style_bonus + 
+                    difficulty_bonus + 
+                    weakness_bonus - 
+                    completion_penalty
+                )
+                
+                enriched_result['personalized_score'] = float(personalized_score)
+                enriched_result['base_similarity'] = float(base_score)
+                enriched_result['learning_style_bonus'] = float(learning_style_bonus)
+                enriched_result['difficulty_bonus'] = float(difficulty_bonus)
+                enriched_result['weakness_bonus'] = float(weakness_bonus)
+                enriched_result['completion_penalty'] = float(completion_penalty)
+                
+                enriched_results.append(enriched_result)
+            
+            # Сортируем по персонализированному скору
+            enriched_results.sort(key=lambda x: x.get('personalized_score', 0), reverse=True)
+            
+            return enriched_results
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка переранжирования результатов: {e}")
+            return results
+    
+    def _calculate_learning_style_bonus(self, result: Dict, learning_style: str) -> float:
+        """
+        Рассчитывает бонус за соответствие стилю обучения
+        
+        Args:
+            result: Результат поиска
+            learning_style: Стиль обучения пользователя
+            
+        Returns:
+            Бонус (0.0 - 0.3)
+        """
+        try:
+            content_type = result.get('content_type', 'lesson')
+            
+            # Определяем типы контента из текста
+            text_content = result.get('text', '').lower()
+            title = result.get('title', '').lower()
+            full_text = f"{title} {text_content}"
+            
+            # Матрица предпочтений стилей обучения
+            style_keywords = {
+                'visual': {
+                    'keywords': ['изображение', 'рисунок', 'схема', 'диаграмма', 'фото', 'рентген', 'снимок'],
+                    'content_bonus': {'lesson': 0.1, 'virtual_patient': 0.15}
+                },
+                'analytical': {
+                    'keywords': ['анализ', 'исследование', 'данные', 'статистика', 'детальный', 'глубокий'],
+                    'content_bonus': {'question': 0.2, 'lesson': 0.15}
+                },
+                'intuitive': {
+                    'keywords': ['интуитивный', 'быстрый', 'простой', 'основы', 'краткий'],
+                    'content_bonus': {'virtual_patient': 0.2, 'lesson': 0.1}
+                },
+                'systematic': {
+                    'keywords': ['протокол', 'алгоритм', 'пошаговый', 'системный', 'методика', 'процедура'],
+                    'content_bonus': {'lesson': 0.2, 'question': 0.15}
+                },
+                'empathetic': {
+                    'keywords': ['пациент', 'общение', 'эмпатия', 'сочувствие', 'понимание', 'поддержка'],
+                    'content_bonus': {'virtual_patient': 0.25, 'lesson': 0.1}
+                }
+            }
+            
+            style_config = style_keywords.get(learning_style, {})
+            
+            # Бонус за тип контента
+            content_bonus = style_config.get('content_bonus', {}).get(content_type, 0.0)
+            
+            # Бонус за ключевые слова
+            keyword_bonus = 0.0
+            keywords = style_config.get('keywords', [])
+            for keyword in keywords:
+                if keyword in full_text:
+                    keyword_bonus += 0.02  # По 0.02 за каждое ключевое слово
+            
+            keyword_bonus = min(keyword_bonus, 0.1)  # Максимум 0.1 за ключевые слова
+            
+            total_bonus = content_bonus + keyword_bonus
+            return min(total_bonus, 0.3)  # Максимальный бонус 0.3
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка расчета бонуса стиля обучения: {e}")
+            return 0.0
+    
+    def _calculate_difficulty_bonus(self, result: Dict, skill_levels: Dict) -> float:
+        """
+        Рассчитывает бонус за соответствие уровню навыков
+        
+        Args:
+            result: Результат поиска  
+            skill_levels: Словарь уровней навыков пользователя
+            
+        Returns:
+            Бонус (-0.2 до 0.2)
+        """
+        try:
+            content_difficulty = result.get('difficulty_level', 'intermediate')
+            if content_difficulty is None:
+                content_difficulty = 'intermediate'
+            
+            # Определяем средний уровень навыков пользователя
+            if skill_levels:
+                from utils.adaptive_learning import SkillLevel
+                skill_values = {
+                    SkillLevel.BEGINNER: 1,
+                    SkillLevel.INTERMEDIATE: 2, 
+                    SkillLevel.ADVANCED: 3,
+                    SkillLevel.EXPERT: 4
+                }
+                
+                total_skill = sum(skill_values.get(level, 2) for level in skill_levels.values())
+                avg_skill = total_skill / len(skill_levels)
+                
+                if avg_skill <= 1.5:
+                    user_level = 'beginner'
+                elif avg_skill <= 2.5:
+                    user_level = 'intermediate'
+                elif avg_skill <= 3.5:
+                    user_level = 'advanced'
+                else:
+                    user_level = 'expert'
+            else:
+                user_level = 'beginner'
+            
+            # Матрица соответствия уровней (оптимальная сложность немного выше текущего уровня)
+            level_matrix = {
+                'beginner': {
+                    'beginner': 0.15,
+                    'intermediate': 0.2,  # Оптимальный рост
+                    'advanced': -0.05,
+                    'expert': -0.15
+                },
+                'intermediate': {
+                    'beginner': 0.05,
+                    'intermediate': 0.15,
+                    'advanced': 0.2,      # Оптимальный рост
+                    'expert': 0.05
+                },
+                'advanced': {
+                    'beginner': -0.1,
+                    'intermediate': 0.05,
+                    'advanced': 0.15,
+                    'expert': 0.2         # Оптимальный рост
+                },
+                'expert': {
+                    'beginner': -0.2,
+                    'intermediate': -0.05,
+                    'advanced': 0.1,
+                    'expert': 0.15
+                }
+            }
+            
+            bonus = level_matrix.get(user_level, {}).get(content_difficulty, 0.0)
+            return float(bonus)
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка расчета бонуса сложности: {e}")
+            return 0.0
+    
+    def _calculate_weakness_bonus(self, result: Dict, weakness_areas: List[str]) -> float:
+        """
+        Рассчитывает бонус за контент по слабым областям пользователя
+        
+        Args:
+            result: Результат поиска
+            weakness_areas: Список слабых областей пользователя
+            
+        Returns:
+            Бонус (0.0 - 0.25)
+        """
+        try:
+            if not weakness_areas:
+                return 0.0
+            
+            text_content = result.get('text', '').lower()
+            title = result.get('title', '').lower()
+            full_text = f"{title} {text_content}"
+            
+            # Маппинг слабых областей к ключевым словам
+            weakness_keywords = {
+                'diagnosis': ['диагност', 'диагноз', 'симптом', 'признак', 'осмотр', 'исследование'],
+                'communication': ['общение', 'разговор', 'объяснение', 'консультация', 'беседа'],
+                'empathy': ['эмпатия', 'сочувствие', 'понимание', 'поддержка', 'забота'],
+                'clinical_reasoning': ['клиническое мышление', 'рассуждение', 'логика', 'анализ'],
+                'patient_management': ['ведение пациент', 'управление', 'планирование'],
+                'treatment_planning': ['план лечения', 'терапия', 'лечение', 'процедура'],
+                'emergency_response': ['экстренный', 'неотложный', 'срочный', 'быстрый']
+            }
+            
+            bonus = 0.0
+            for weakness in weakness_areas:
+                keywords = weakness_keywords.get(weakness, [weakness])
+                for keyword in keywords:
+                    if keyword in full_text:
+                        bonus += 0.05  # По 0.05 за каждое совпадение
+                        break  # Не добавляем дополнительный бонус за одну область
+            
+            return min(bonus, 0.25)  # Максимальный бонус 0.25
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка расчета бонуса слабых областей: {e}")
+            return 0.0
+    
+    def _calculate_completion_penalty(self, result: Dict, user_id: int) -> float:
+        """
+        Рассчитывает штраф за уже изученный контент
+        
+        Args:
+            result: Результат поиска
+            user_id: ID пользователя
+            
+        Returns:
+            Штраф (0.0 - 0.15)
+        """
+        try:
+            content_id = result.get('content_id')
+            content_type = result.get('content_type')
+            
+            if not content_id:
+                return 0.0
+            
+            penalty = 0.0
+            
+            if content_type == 'lesson':
+                # Проверяем завершенность урока
+                from models import UserProgress
+                progress = db.session.query(UserProgress).filter_by(
+                    user_id=user_id, 
+                    lesson_id=content_id
+                ).first()
+                
+                if progress and progress.completed:
+                    penalty = 0.15  # Снижаем приоритет изученного контента
+                    
+            elif content_type == 'virtual_patient':
+                # Проверяем попытки прохождения виртуального пациента
+                from models import VirtualPatientAttempt
+                attempts = db.session.query(VirtualPatientAttempt).filter_by(
+                    user_id=user_id,
+                    scenario_id=content_id,
+                    completed=True
+                ).count()
+                
+                if attempts > 0:
+                    # Штраф зависит от количества попыток
+                    penalty = min(0.1 + (attempts * 0.02), 0.15)
+                    
+            elif content_type == 'question':
+                # Проверяем попытки ответа на вопрос
+                from models import TestAttempt
+                attempts = db.session.query(TestAttempt).filter_by(
+                    user_id=user_id,
+                    question_id=content_id
+                ).count()
+                
+                if attempts > 2:  # Если отвечал больше 2 раз
+                    penalty = 0.08
+            
+            return float(penalty)
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка расчета штрафа завершенности: {e}")
+            return 0.0
+    
+    def recommend_next_content(self, user_id: int, language: str = 'en', limit: int = 5) -> List[Dict]:
+        """
+        Рекомендует следующий контент для изучения
+        На основе прогресса и предпочтений пользователя
+        
+        Args:
+            user_id: ID пользователя
+            language: Язык контента
+            limit: Количество рекомендаций
+            
+        Returns:
+            Список рекомендованного контента
+        """
+        try:
+            # Получаем профиль пользователя  
+            from utils.adaptive_learning import AdaptiveLearningEngine
+            adaptive_engine = AdaptiveLearningEngine()
+            
+            recent_attempts_data = adaptive_engine._get_user_attempts_data(user_id)
+            if not recent_attempts_data:
+                # Если нет данных, возвращаем базовые рекомендации
+                return self._get_default_recommendations(language, limit)
+            
+            user_profile = adaptive_engine.analyze_user_performance(user_id, recent_attempts_data)
+            
+            # Генерируем поисковые запросы для слабых областей
+            search_queries = self._generate_learning_queries(
+                user_profile.weakness_areas, user_profile.learning_style.value
+            )
+            
+            # Объединяем результаты поиска
+            all_results = []
+            for query in search_queries:
+                results = self.personalized_search(query, user_id, language=language, limit=3)
+                all_results.extend(results)
+            
+            # Если мало результатов, добавляем общие рекомендации
+            if len(all_results) < limit:
+                general_results = self.semantic_search(
+                    "dental learning materials", 
+                    language=language, 
+                    limit=limit-len(all_results)
+                )
+                all_results.extend(general_results)
+            
+            # Убираем дубликаты и сортируем
+            unique_results = self._deduplicate_results(all_results)
+            
+            # Добавляем информацию о рекомендации
+            for result in unique_results:
+                result['is_recommendation'] = True
+                result['recommendation_reason'] = self._get_recommendation_reason(result, user_profile)
+            
+            self.logger.info(f"Сгенерировано {len(unique_results)} рекомендаций для пользователя {user_id}")
+            return unique_results[:limit]
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка генерации рекомендаций для пользователя {user_id}: {e}")
+            return self._get_default_recommendations(language, limit)
+    
+    def _generate_learning_queries(self, weakness_areas: List[str], learning_style: str) -> List[str]:
+        """
+        Генерирует поисковые запросы для слабых областей
+        
+        Args:
+            weakness_areas: Слабые области пользователя
+            learning_style: Стиль обучения
+            
+        Returns:
+            Список поисковых запросов
+        """
+        queries = []
+        
+        # Маппинг областей к поисковым запросам
+        area_mappings = {
+            'diagnosis': ['dental diagnosis', 'диагностика стоматология', 'oral examination'],
+            'communication': ['patient communication', 'общение с пациентом', 'консультация'],
+            'empathy': ['empathy dentistry', 'эмпатия стоматология', 'patient care'],
+            'clinical_reasoning': ['clinical reasoning', 'клиническое мышление', 'decision making'],
+            'patient_management': ['patient management', 'ведение пациентов', 'treatment planning'],
+            'treatment_planning': ['treatment planning', 'план лечения', 'dental procedures'],
+            'emergency_response': ['dental emergency', 'неотложная помощь', 'urgent care']
+        }
+        
+        # Добавляем запросы для слабых областей
+        for area in weakness_areas[:3]:  # Ограничиваем топ-3 слабые области
+            area_queries = area_mappings.get(area, [area])
+            queries.extend(area_queries)
+        
+        # Добавляем запросы в зависимости от стиля обучения
+        style_queries = {
+            'visual': ['dental images', 'визуальные материалы', 'рентген'],
+            'analytical': ['research dentistry', 'исследования стоматология', 'evidence based'],
+            'systematic': ['dental protocols', 'протоколы лечения', 'guidelines'],
+            'empathetic': ['patient stories', 'случаи пациентов', 'clinical cases'],
+            'intuitive': ['practical dentistry', 'практическая стоматология', 'tips']
+        }
+        
+        style_specific = style_queries.get(learning_style, [])
+        queries.extend(style_specific)
+        
+        return queries[:5]  # Ограничиваем количество запросов
+    
+    def _deduplicate_results(self, results: List[Dict]) -> List[Dict]:
+        """
+        Убирает дубликаты из результатов поиска
+        
+        Args:
+            results: Список результатов
+            
+        Returns:
+            Уникальные результаты
+        """
+        seen_ids = set()
+        unique_results = []
+        
+        for result in results:
+            # Создаем уникальный идентификатор
+            content_key = f"{result.get('content_type', 'unknown')}_{result.get('content_id', 'unknown')}"
+            
+            if content_key not in seen_ids:
+                seen_ids.add(content_key)
+                unique_results.append(result)
+        
+        # Сортируем по personalized_score если есть, иначе по similarity
+        unique_results.sort(
+            key=lambda x: x.get('personalized_score', x.get('similarity', 0)), 
+            reverse=True
+        )
+        
+        return unique_results
+    
+    def _get_recommendation_reason(self, result: Dict, user_profile) -> str:
+        """
+        Генерирует объяснение причины рекомендации
+        
+        Args:
+            result: Результат поиска
+            user_profile: Профиль пользователя
+            
+        Returns:
+            Текстовое объяснение рекомендации
+        """
+        try:
+            reasons = []
+            
+            # Анализируем компоненты персонализированного скора
+            weakness_bonus = result.get('weakness_bonus', 0)
+            learning_style_bonus = result.get('learning_style_bonus', 0)
+            difficulty_bonus = result.get('difficulty_bonus', 0)
+            
+            if weakness_bonus > 0.1:
+                reasons.append("Поможет улучшить ваши слабые навыки")
+            
+            if learning_style_bonus > 0.1:
+                reasons.append(f"Соответствует вашему стилю обучения ({user_profile.learning_style.value})")
+            
+            if difficulty_bonus > 0.1:
+                reasons.append("Подходящий уровень сложности для вашего прогресса")
+            
+            content_type = result.get('content_type', 'материал')
+            if content_type == 'virtual_patient':
+                reasons.append("Практический случай для развития навыков")
+            elif content_type == 'question':
+                reasons.append("Тест для проверки знаний")
+            elif content_type == 'lesson':
+                reasons.append("Обучающий материал")
+            
+            if not reasons:
+                reasons.append("Рекомендуется для общего развития")
+            
+            return "; ".join(reasons[:2])  # Максимум 2 причины
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка генерации причины рекомендации: {e}")
+            return "Рекомендуется для изучения"
+    
+    def _get_default_recommendations(self, language: str, limit: int) -> List[Dict]:
+        """
+        Получает базовые рекомендации для новых пользователей
+        
+        Args:
+            language: Язык контента
+            limit: Количество рекомендаций
+            
+        Returns:
+            Список базовых рекомендаций
+        """
+        try:
+            # Базовые запросы для начинающих
+            default_queries = [
+                "dental basics",
+                "oral anatomy", 
+                "dental examination",
+                "patient communication",
+                "basic procedures"
+            ]
+            
+            all_results = []
+            for query in default_queries:
+                results = self.semantic_search(query, language=language, limit=2)
+                all_results.extend(results)
+            
+            # Убираем дубликаты
+            unique_results = self._deduplicate_results(all_results)
+            
+            # Добавляем базовую информацию о рекомендации
+            for result in unique_results:
+                result['is_recommendation'] = True
+                result['recommendation_reason'] = "Базовый материал для изучения"
+                result['is_default'] = True
+            
+            return unique_results[:limit]
+            
+        except Exception as e:
+            self.logger.error(f"Ошибка получения базовых рекомендаций: {e}")
+            return [] 

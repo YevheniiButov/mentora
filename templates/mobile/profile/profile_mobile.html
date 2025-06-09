@@ -1,0 +1,515 @@
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('profile',
+    show_back_button=false,
+    show_profile_button=false,
+    show_settings_button=true,
+    show_language_selector=true,
+    page_title='profile'
+) %}
+
+{% block title %}{{ t('profile', lang) }} - Dental Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== ПРОФИЛЬ СТИЛИ ===== */
+    .profile-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(62, 205, 193, 0.1), rgba(43, 158, 148, 0.1));
+        z-index: -1;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3ECDC1, #2B9E94);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 600;
+        box-shadow: 0 8px 25px rgba(62, 205, 193, 0.3);
+    }
+    
+    .profile-name {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-email {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .profile-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .profile-stat {
+        text-align: center;
+    }
+    
+    .profile-stat-value {
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    .profile-stat-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Секции профиля */
+    .profile-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+    
+    .profile-section-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .profile-section-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3ECDC1;
+        font-size: 1.1rem;
+    }
+    
+    .profile-section-title {
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        flex: 1;
+    }
+    
+    .profile-section-content {
+        padding: 0;
+    }
+    
+    .profile-menu-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        color: white;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .profile-menu-item:last-child {
+        border-bottom: none;
+    }
+    
+    .profile-menu-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .profile-menu-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 1rem;
+        color: #3ECDC1;
+        font-size: 1rem;
+    }
+    
+    .profile-menu-content {
+        flex: 1;
+    }
+    
+    .profile-menu-title {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .profile-menu-subtitle {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .profile-menu-arrow {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.9rem;
+    }
+    
+    /* Прогресс обучения */
+    .learning-progress {
+        padding: 1.5rem;
+    }
+    
+    .progress-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .progress-info {
+        flex: 1;
+    }
+    
+    .progress-title {
+        color: white;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .progress-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+    }
+    
+    .progress-value {
+        color: #3ECDC1;
+        font-weight: 600;
+        margin-left: 1rem;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3ECDC1, #2B9E94);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+    
+    /* Быстрые действия */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .quick-action {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .quick-action:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+    }
+    
+    .quick-action-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #3ECDC1;
+    }
+    
+    .quick-action-title {
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    /* Кнопка выхода */
+    .logout-button {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+        width: 100%;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+    
+    .logout-button:hover {
+        background: rgba(239, 68, 68, 0.2);
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Хедер профиля -->
+<div class="profile-header">
+    <div class="profile-avatar">
+        {{ current_user.first_name[0] if current_user.first_name else 'U' }}{{ current_user.last_name[0] if current_user.last_name else '' }}
+    </div>
+    <h1 class="profile-name">
+        {{ current_user.first_name or current_user.username }} {{ current_user.last_name or '' }}
+    </h1>
+    <p class="profile-email">{{ current_user.email }}</p>
+    
+    <div class="profile-stats">
+        <div class="profile-stat">
+            <div class="profile-stat-value">{{ (user_stats.completed_lessons if user_stats else 0) or 0 }}</div>
+            <div class="profile-stat-label">{{ t('lessons', lang) or 'Уроки' }}</div>
+        </div>
+        <div class="profile-stat">
+            <div class="profile-stat-value">{{ (user_stats.test_scores if user_stats else 0) or 0 }}%</div>
+            <div class="profile-stat-label">{{ t('avg_score', lang) or 'Средний балл' }}</div>
+        </div>
+        <div class="profile-stat">
+            <div class="profile-stat-value">{{ (user_stats.study_streak if user_stats else 0) or 0 }}</div>
+            <div class="profile-stat-label">{{ t('streak', lang) or 'Дней подряд' }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Прогресс обучения -->
+<div class="profile-section">
+    <div class="profile-section-header">
+        <div class="profile-section-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h2 class="profile-section-title">{{ t('learning_progress', lang) or 'Прогресс обучения' }}</h2>
+    </div>
+    <div class="profile-section-content">
+        <div class="learning-progress">
+            <div class="progress-item">
+                <div class="progress-info">
+                    <div class="progress-title">{{ t('overall_progress', lang) or 'Общий прогресс' }}</div>
+                    <div class="progress-subtitle">{{ (user_progress.completed_modules if user_progress else 0) or 0 }} {{ t('of', lang) or 'из' }} {{ (user_progress.total_modules if user_progress else 0) or 0 }} {{ t('modules', lang) or 'модулей' }}</div>
+                </div>
+                <div class="progress-value">{{ (user_progress.overall_percentage if user_progress else 0) or 0 }}%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" data-progress="{{ (user_progress.overall_percentage if user_progress else 0) or 0 }}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div class="profile-section">
+    <div class="profile-section-header">
+        <div class="profile-section-icon">
+            <i class="fas fa-bolt"></i>
+        </div>
+        <h2 class="profile-section-title">{{ t('quick_actions', lang) or 'Быстрые действия' }}</h2>
+    </div>
+    <div class="profile-section-content">
+        <div class="quick-actions">
+            <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="quick-action">
+                <div class="quick-action-icon">📚</div>
+                <div class="quick-action-title">{{ t('continue_learning', lang) or 'Продолжить обучение' }}</div>
+            </a>
+            <a href="{{ url_for('mobile.tests', lang=lang) }}" class="quick-action">
+                <div class="quick-action-icon">🎯</div>
+                <div class="quick-action-title">{{ t('take_test', lang) or 'Пройти тест' }}</div>
+            </a>
+            <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="quick-action">
+                <div class="quick-action-icon">🤖</div>
+                <div class="quick-action-title">{{ t('ask_ai', lang) or 'Спросить AI' }}</div>
+            </a>
+            <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=lang) }}" class="quick-action">
+                <div class="quick-action-icon">👨‍⚕️</div>
+                <div class="quick-action-title">{{ t('virtual_patients', lang) or 'Виртуальные пациенты' }}</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Настройки -->
+<div class="profile-section">
+    <div class="profile-section-header">
+        <div class="profile-section-icon">
+            <i class="fas fa-cog"></i>
+        </div>
+        <h2 class="profile-section-title">{{ t('settings', lang) or 'Настройки' }}</h2>
+    </div>
+    <div class="profile-section-content">
+        <a href="{{ url_for('mobile.edit_profile', lang=lang) }}" class="profile-menu-item">
+            <div class="profile-menu-icon">
+                <i class="fas fa-user-edit"></i>
+            </div>
+            <div class="profile-menu-content">
+                <div class="profile-menu-title">{{ t('edit_profile', lang) or 'Редактировать профиль' }}</div>
+                <div class="profile-menu-subtitle">{{ t('change_personal_info', lang) or 'Изменить личную информацию' }}</div>
+            </div>
+            <div class="profile-menu-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('mobile.notifications_settings', lang=lang) }}" class="profile-menu-item">
+            <div class="profile-menu-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div class="profile-menu-content">
+                <div class="profile-menu-title">{{ t('notifications', lang) or 'Уведомления' }}</div>
+                <div class="profile-menu-subtitle">{{ t('manage_notifications', lang) or 'Управление уведомлениями' }}</div>
+            </div>
+            <div class="profile-menu-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('mobile.privacy_settings', lang=lang) }}" class="profile-menu-item">
+            <div class="profile-menu-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="profile-menu-content">
+                <div class="profile-menu-title">{{ t('privacy', lang) or 'Приватность' }}</div>
+                <div class="profile-menu-subtitle">{{ t('privacy_settings', lang) or 'Настройки приватности' }}</div>
+            </div>
+            <div class="profile-menu-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Информация -->
+<div class="profile-section">
+    <div class="profile-section-header">
+        <div class="profile-section-icon">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <h2 class="profile-section-title">{{ t('information', lang) or 'Информация' }}</h2>
+    </div>
+    <div class="profile-section-content">
+        <a href="{{ url_for('mobile.help', lang=lang) }}" class="profile-menu-item">
+            <div class="profile-menu-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <div class="profile-menu-content">
+                <div class="profile-menu-title">{{ t('help_support', lang) or 'Помощь и поддержка' }}</div>
+                <div class="profile-menu-subtitle">{{ t('get_help', lang) or 'Получить помощь' }}</div>
+            </div>
+            <div class="profile-menu-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('mobile.about', lang=lang) }}" class="profile-menu-item">
+            <div class="profile-menu-icon">
+                <i class="fas fa-info"></i>
+            </div>
+            <div class="profile-menu-content">
+                <div class="profile-menu-title">{{ t('about_app', lang) or 'О приложении' }}</div>
+                <div class="profile-menu-subtitle">{{ t('version_info', lang) or 'Информация о версии' }}</div>
+            </div>
+            <div class="profile-menu-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Кнопка выхода -->
+<button class="logout-button" onclick="logout()">
+    <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
+    {{ t('logout', lang) or 'Выйти' }}
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function logout() {
+    if (confirm('{{ t("confirm_logout", lang) or "Вы уверены, что хотите выйти?" }}')) {
+        // Показываем индикатор загрузки
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>{{ t("logging_out", lang) or "Выход..." }}';
+        button.disabled = true;
+        
+        // Отправляем запрос на выход
+        fetch('{{ url_for("mobile.logout", lang=lang) }}', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Очищаем локальные данные
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Переходим на страницу входа
+                window.location.href = '{{ url_for("mobile.login", lang=lang) }}';
+            } else {
+                throw new Error('Logout failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error during logout:', error);
+            button.innerHTML = originalText;
+            button.disabled = false;
+            alert('{{ t("logout_error", lang) or "Ошибка при выходе" }}');
+        });
+    }
+}
+
+// Анимация прогресс-бара при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    const progressFills = document.querySelectorAll('.progress-fill');
+    progressFills.forEach(fill => {
+        const targetWidth = fill.getAttribute('data-progress') + '%';
+        fill.style.width = '0%';
+        setTimeout(() => {
+            fill.style.width = targetWidth;
+        }, 500);
+    });
+});
+</script>
+{% endblock %}

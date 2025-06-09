@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from flask import Flask, flash, render_template, redirect, url_for, g, request, session, jsonify, current_app
 from flask_login import current_user
 from flask_migrate import Migrate
-from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 from translations_new import setup_translations
 from utils.subtopics import create_slug, update_lesson_subtopics, reorder_subtopic_lessons
@@ -18,7 +17,7 @@ from utils.mobile_helpers import init_mobile_helpers
 from flask import send_from_directory, Response
 
 # Import extensions
-from extensions import db, login_manager, bcrypt, babel, cache
+from extensions import db, login_manager, bcrypt, babel, cache, csrf
 
 # Import models
 from models import User, Module, Lesson, UserProgress, Subject, LearningPath, VirtualPatientScenario
@@ -305,7 +304,7 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate = Migrate(app, db)
     bcrypt.init_app(app)
-    csrf = CSRFProtect(app)
+    csrf.init_app(app)
     cache.init_app(app)
     
     # Настройка логина с измененными параметрами
@@ -318,7 +317,11 @@ def create_app(test_config=None):
     
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(User, int(user_id))    
+        try:
+            return db.session.get(User, int(user_id))
+        except Exception as e:
+            app.logger.warning(f"Error loading user {user_id}: {e}")
+            return None
     
     # Добавляем функции перевода в глобальное пространство имен Jinja2
     setup_translations(app)

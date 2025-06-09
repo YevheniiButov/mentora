@@ -10,7 +10,7 @@ from models import db, User, Module, Lesson, LearningPath, Subject # Добав�
 from werkzeug.utils import secure_filename # Добавлено для работы с xray_upload
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from models import VirtualPatientScenario
 from utils.decorators import admin_required
 
@@ -78,6 +78,15 @@ def dashboard(lang):
         lessons=lessons,
         latest_users=latest_users
     )
+
+# Путь: /<lang>/admin/ai-analytics
+@admin_bp.route("/ai-analytics")
+@login_required
+@admin_required
+def ai_analytics_dashboard(lang):
+    """Отображает дашборд аналитики ИИ системы."""
+    return render_template("ai_analytics_dashboard.html")
+
 @admin_bp.route('/api/import-scenarios', methods=['POST'])
 @login_required
 @admin_required
@@ -2293,3 +2302,194 @@ def preview_module_content(module_id, lang):
     except Exception as e:
         current_app.logger.error(f"Error previewing module: {e}", exc_info=True)
         return "Ошибка при предпросмотре модуля", 500
+
+# Путь: /<lang>/admin/ai-notifications
+@admin_bp.route("/ai-notifications")
+@login_required
+@admin_required
+def ai_notifications(lang):
+    """Отображает страницу настроек уведомлений ИИ аналитики."""
+    return render_template("notification_settings.html")
+
+# API для управления настройками уведомлений
+@admin_bp.route("/api/notification-settings", methods=["GET"])
+@login_required
+@admin_required
+def get_notification_settings(lang):
+    """Получает текущие настройки уведомлений."""
+    try:
+        from utils.ai_notifications import AINotificationManager
+        
+        notification_manager = AINotificationManager()
+        settings = notification_manager.get_notification_settings()
+        
+        return jsonify({
+            'success': True,
+            'settings': settings
+        })
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при получении настроек уведомлений: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@admin_bp.route("/api/update-notification-settings", methods=["POST"])
+@login_required
+@admin_required
+def update_notification_settings(lang):
+    """Обновляет настройки уведомлений."""
+    try:
+        from utils.ai_notifications import AINotificationManager
+        
+        data = request.json
+        thresholds = data.get('thresholds', {})
+        
+        notification_manager = AINotificationManager()
+        success = notification_manager.update_thresholds(thresholds)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Настройки успешно обновлены'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Ошибка при обновлении настроек'
+            }), 400
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при обновлении настроек уведомлений: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@admin_bp.route("/api/test-notification", methods=["POST"])
+@login_required
+@admin_required
+def test_notification(lang):
+    """Отправляет тестовое уведомление администраторам."""
+    try:
+        from utils.ai_notifications import AINotificationManager
+        from datetime import datetime
+        
+        notification_manager = AINotificationManager()
+        admin_emails = notification_manager.get_admin_emails()
+        
+        if not admin_emails:
+            return jsonify({
+                'success': False,
+                'message': 'Не найдены email адреса администраторов'
+            }), 400
+        
+        # Создаем тестовый алерт
+        test_alert = {
+            'type': 'test',
+            'severity': 'info',
+            'title': 'ТЕСТ: Проверка системы уведомлений',
+            'message': f'Это тестовое уведомление, отправленное администратором {current_user.name} в {datetime.now().strftime("%H:%M:%S")}',
+            'timestamp': datetime.now(),
+            'actions': ['Убедиться, что уведомления работают корректно']
+        }
+        
+        # Отправляем тестовое уведомление
+        success = notification_manager.send_email_notification(test_alert, admin_emails)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'Тестовое уведомление отправлено на {len(admin_emails)} адресов'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Ошибка при отправке тестового уведомления. Проверьте настройки SMTP.'
+            }), 400
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при отправке тестового уведомления: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@admin_bp.route("/api/run-alert-check", methods=["POST"])
+@login_required
+@admin_required
+def run_alert_check(lang):
+    """Запускает ручную проверку алертов."""
+    try:
+        from utils.ai_notifications import AINotificationManager
+        
+        notification_manager = AINotificationManager()
+        alerts = notification_manager.process_alerts(send_notifications=True)
+        
+        # Логируем действие администратора
+        current_app.logger.info(f"Администратор {current_user.name} запустил проверку алертов. Найдено алертов: {len(alerts)}")
+        
+        alert_summary = []
+        for alert in alerts:
+            alert_summary.append({
+                'type': alert['type'],
+                'severity': alert['severity'],
+                'title': alert['title']
+            })
+        
+        return jsonify({
+            'success': True,
+            'alert_count': len(alerts),
+            'alerts': alert_summary,
+            'message': f'Проверка завершена. Обнаружено алертов: {len(alerts)}'
+        })
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при запуске проверки алертов: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@admin_bp.route("/api/alert-history", methods=["GET"])
+@login_required
+@admin_required
+def get_alert_history(lang):
+    """Получает историю алертов."""
+    try:
+        # Здесь можно добавить получение истории из базы данных
+        # Пока возвращаем заглушку
+        
+        # В будущем здесь будет запрос к таблице alerts/notifications
+        mock_alerts = [
+            {
+                'id': 1,
+                'timestamp': datetime.now() - timedelta(hours=1),
+                'type': 'error_rate',
+                'severity': 'warning',
+                'title': 'Повышенный процент ошибок ИИ',
+                'message': 'Процент ошибок составляет 12%',
+                'status': 'sent'
+            },
+            {
+                'id': 2,
+                'timestamp': datetime.now() - timedelta(hours=2),
+                'type': 'satisfaction',
+                'severity': 'critical',
+                'title': 'Низкая удовлетворенность пользователей',
+                'message': 'Удовлетворенность упала до 58%',
+                'status': 'sent'
+            }
+        ]
+        
+        # Конвертируем datetime в строки для JSON
+        for alert in mock_alerts:
+            alert['timestamp'] = alert['timestamp'].isoformat()
+        
+        return jsonify({
+            'success': True,
+            'alerts': mock_alerts
+        })
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при получении истории алертов: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500

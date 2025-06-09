@@ -5,6 +5,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_babel import Babel
 from flask_caching import Cache
+from flask_wtf.csrf import CSRFProtect
 
 # --- Naming convention for SQLAlchemy/Alembic ---
 convention = {
@@ -24,6 +25,7 @@ bcrypt = Bcrypt()
 login_manager = LoginManager()
 babel = Babel()
 cache = Cache()
+csrf = CSRFProtect()
 import json
 
 def register_template_filters(app):

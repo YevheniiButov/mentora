@@ -1,6 +1,14 @@
 {% extends "mobile_base.html" %}
 
-{% set nav_config = get_navigation_config('learning_map') if get_navigation_config else {} %}
+{% set nav_config = get_navigation_config('learning_map',
+    show_logo=True,
+    show_back_button=False,
+    show_bottom_nav=True,
+    show_profile_button=True,
+    show_settings_button=True,
+    show_language_selector=True,
+    page_title=t('learning', lang)
+) %}
 
 {% block title %}{{ t('learning', lang) }} - {{ t('dental_academy', lang) }}{% endblock %}
 
@@ -69,13 +77,13 @@
 <style>
     /* === SEARCH SECTION === */
     .search-section {
-            margin-bottom: 2rem;
-        }
+        margin-bottom: 2rem;
+    }
 
     .search-input-container {
         position: relative;
         background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 16px;
         padding: 0.75rem 1rem;
         backdrop-filter: blur(10px);
@@ -95,7 +103,7 @@
         background: none;
         border: none;
         outline: none;
-            color: white;
+        color: white;
         font-size: 1rem;
         padding-left: 2rem;
     }
@@ -105,17 +113,17 @@
     }
 
     /* === SUBJECTS GRID === */
-        .subjects-grid {
-            display: grid;
+    .subjects-grid {
+        display: grid;
         gap: 1.5rem;
-        }
+    }
 
-        .subject-card {
+    .subject-card {
         background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;
-            padding: 1.5rem;
+        padding: 1.5rem;
         text-decoration: none;
         color: white;
         transition: all 0.3s ease;
@@ -127,31 +135,31 @@
         transform: translateY(-5px);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         color: white;
-        }
+    }
 
-        .subject-icon {
-            width: 60px;
-            height: 60px;
+    .subject-icon {
+        width: 60px;
+        height: 60px;
         background: linear-gradient(135deg, #3ECDC1, #44A08D);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 1.5rem;
         font-weight: bold;
-            color: white;
-            flex-shrink: 0;
-        }
+        color: white;
+        flex-shrink: 0;
+    }
 
     .subject-content {
-            flex: 1;
-        }
+        flex: 1;
+    }
 
-        .subject-title {
+    .subject-title {
         font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
 
     .subject-description {
         font-size: 0.9rem;
@@ -161,26 +169,26 @@
     }
 
     .subject-stats {
-            display: flex;
-            gap: 1rem;
+        display: flex;
+        gap: 1rem;
         margin-bottom: 1rem;
-        }
+    }
 
     .stat {
-            display: flex;
-            align-items: center;
+        display: flex;
+        align-items: center;
         gap: 0.5rem;
         font-size: 0.8rem;
         opacity: 0.9;
-        }
+    }
 
     .stat i {
         font-size: 0.9rem;
-        }
+    }
 
     .progress-container {
-            display: flex;
-            align-items: center;
+        display: flex;
+        align-items: center;
         gap: 0.75rem;
     }
 
@@ -201,7 +209,7 @@
 
     .progress-text {
         font-size: 0.8rem;
-            font-weight: 600;
+        font-weight: 600;
         opacity: 0.9;
         min-width: 40px;
     }
@@ -252,11 +260,11 @@
 
     /* === АДАПТИВНОСТЬ === */
     @media (min-width: 768px) {
-            .subjects-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .subjects-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
-    </style>
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -275,7 +283,7 @@
                 
                 if (title.includes(searchTerm) || description.includes(searchTerm)) {
                     card.style.display = 'flex';
-            } else {
+                } else {
                     card.style.display = 'none';
                 }
             });
@@ -289,13 +297,13 @@
                 const width = bar.style.width;
                 bar.style.width = '0%';
                 
-            setTimeout(() => {
+                setTimeout(() => {
                     bar.style.width = width;
                 }, 100);
-                });
             }, 500);
+        }, 500);
         
         console.log('📚 Learning Map - готово!');
-        });
-    </script>
+    });
+</script>
 {% endblock %} 

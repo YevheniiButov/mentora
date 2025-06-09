@@ -76,10 +76,24 @@
   .spinner { width: 50px; height: 50px; border: 5px solid rgba(62, 205, 193, 0.2); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Анимированный логотип */
-  .animated-logo { width: 100px; height: 100px; }
-  .animated-logo path, .animated-logo circle { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: dash 3s ease-in-out forwards; }
-  @keyframes dash { to { stroke-dashoffset: 0; } }
+  /* Статический пульсирующий логотип */
+  .static-favicon-logo {
+    width: 80px;
+    height: 80px;
+    animation: pulse-logo 2s infinite;
+    filter: drop-shadow(0 4px 20px rgba(62, 205, 193, 0.3));
+  }
+  
+  @keyframes pulse-logo {
+    0%, 100% { 
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% { 
+      transform: scale(1.1);
+      opacity: 0.8;
+    }
+  }
 
   /* Интерактивная карточка */
   .interactive-element { perspective: 1000px; margin: 2rem auto; max-width: 400px; }
@@ -88,111 +102,6 @@
   .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .card-front { background: linear-gradient(135deg, #3ECDC1, #2BB6AC); color: white; }
   .card-back { background: linear-gradient(135deg, #6C5CE7, #8983F3); color: white; transform: rotateY(180deg); }
-
-  /* СТИЛИ ДЛЯ ВИРТУАЛЬНЫХ ПАЦИЕНТОВ */
-  .virtual-patients-section {
-      margin-top: 2rem;
-      padding: 1.5rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 16px;
-      color: white;
-  }
-  .virtual-patients-title {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-      font-size: 1.25rem;
-      font-weight: 600;
-  }
-  .vp-icon {
-      width: 32px;
-      height: 32px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-  }
-   .vp-icon i { 
-      font-size: 1.2rem; 
-  }
-  .virtual-patients-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
-  }
-  .vp-card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-      padding: 1.25rem;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      display: flex; 
-      flex-direction: column; 
-      justify-content: space-between; 
-  }
-  .vp-card:hover {
-      transform: translateY(-3px);
-      background: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  }
-  .vp-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start; 
-      margin-bottom: 1rem;
-  }
-  .vp-title {
-      font-size: 1rem; 
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      line-height: 1.3;
-      flex-grow: 1; 
-      margin-right: 0.5rem; 
-  }
-  .vp-difficulty {
-      padding: 0.25rem 0.5rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      white-space: nowrap; 
-  }
-  .difficulty-easy { background: rgba(46, 204, 113, 0.3); color: #2ecc71; }
-  .difficulty-medium { background: rgba(241, 196, 15, 0.3); color: #f1c40f; }
-  .difficulty-hard { background: rgba(231, 76, 60, 0.3); color: #e74c3c; }
-  .vp-description {
-      font-size: 0.85rem;
-      opacity: 0.9;
-      line-height: 1.4;
-      margin-bottom: 1rem;
-      flex-grow: 1; 
-  }
-  .vp-progress { margin-bottom: 1rem; }
-  .vp-progress-bar { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
-  .vp-progress-fill { height: 100%; background: linear-gradient(90deg, #2ecc71, #27ae60); border-radius: 3px; transition: width 0.8s ease; }
-  .vp-progress-text { font-size: 0.75rem; opacity: 0.8; display: flex; justify-content: space-between; }
-  .vp-actions { display: flex; gap: 0.5rem; margin-top: auto; }
-  .vp-btn { flex: 1; padding: 0.5rem 1rem; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; text-decoration: none; font-size: 0.85rem; font-weight: 500; text-align: center; transition: all 0.3s ease; }
-  .vp-btn:hover { background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; transform: translateY(-1px); }
-  .vp-btn.premium { background: linear-gradient(45deg, #f39c12, #e67e22); border-color: #f39c12; }
-  .vp-btn.completed { background: linear-gradient(45deg, #2ecc71, #27ae60); border-color: #2ecc71; }
-  .vp-empty-state { text-align: center; padding: 2rem; opacity: 0.7; }
-  .vp-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
-   .vp-empty-icon i { font-size: inherit; }
-  .view-all-vp { margin-top: 1.5rem; text-align: center; }
-  .view-all-vp a { color: white; text-decoration: none; font-weight: 500; padding: 0.6rem 1.2rem; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; background: rgba(255, 255, 255, 0.1); transition: all 0.3s ease; display: inline-block;}
-  .view-all-vp a:hover { background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; }
-  .view-all-vp i { vertical-align: middle; }
-
-  @media (max-width: 768px) {
-      .virtual-patients-grid { grid-template-columns: 1fr; }
-      .vp-actions { flex-direction: column; }
-      .virtual-patients-title { font-size: 1.1rem; }
-  }
 </style>
 {% endblock %}
 
@@ -237,7 +146,7 @@
                                 </svg>
                             {% elif path.id == 6 %}
                                 <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
-                                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+                                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
                                 </svg>
                             {% else %}
                                 <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
@@ -292,19 +201,16 @@
         <div class="middle-column">
             <div class="page-header">
                 <div class="breadcrumb">
-                    <span>{{ t('learning_map', lang) }}</span>
                     {% if selected_subject and selected_subject.learning_path %}
-                        <span class="separator">/</span>
                         <span>{{ selected_subject.learning_path.name }}</span>
                         <span class="separator">/</span>
                         <span class="active">{{ selected_subject.name }}</span>
                     {% elif selected_path %}
-                        <span class="separator">/</span>
                         <span class="active">{{ selected_path.name }}</span>
                     {% endif %}
                 </div>
-                <h1>{% if selected_subject %}{{ selected_subject.name }}{% elif selected_path %}{{ selected_path.name }}{% else %}{{ t('welcome_message', lang)|default('Добро пожаловать!') }}{% endif %}</h1>
-                <p>{% if selected_subject %}{{ selected_subject.description|default('') }}{% elif selected_path %}{{ selected_path.description|default(t('select_subject_from_left_list', lang)) }}{% else %}{{ t('select_category_message', lang)|default('Выберите категорию для начала обучения') }}{% endif %}</p>
+                <h1>{% if selected_subject %}{{ selected_subject.name }}{% elif selected_path %}{{ selected_path.name }}{% endif %}</h1>
+                <p>{% if selected_subject %}{{ selected_subject.description|default('') }}{% elif selected_path %}{{ selected_path.description|default(t('select_subject_from_left_list', lang)) }}{% endif %}</p>
             </div>
 
             {% if selected_subject %}
@@ -475,19 +381,10 @@
                 {% endif %}
             </div>
             {% else %}
-            <div class="splash-screen" id="splashScreen">
-              <div class="splash-logo">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Become a Tandarts">
-              </div>
-              <div class="splash-loader">
-                <div class="loader-bar"></div>
-              </div>
-            </div>
-
             <div class="welcome-screen">
               <div class="welcome-header">
                 <div class="welcome-icon">
-                  {% include "includes/_animated_logo.html" %}
+                  <img src="{{ url_for('static', filename='favicon.png') }}" alt="Dental Academy" class="static-favicon-logo">
                 </div>
                 <h2>{{ t('welcome_title', lang)|default('Добро пожаловать в Become a Tandarts!') }}</h2>
                 <p class="welcome-subtitle">{{ t('welcome_subtitle', lang)|default('Ваш путь к успешной подготовке к BIG экзамену') }}</p>
@@ -511,29 +408,7 @@
                   </div>
                 </div>
                 
-                <div class="path-carousel mobile-only">
-                  <div class="carousel-indicators">
-                    <span class="active" data-slide="0"></span>
-                    <span data-slide="1"></span>
-                    <span data-slide="2"></span>
-                  </div>
-                  <div class="carousel-container">
-                    <div class="step-card knowledge-center">
-                      <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path></svg></div>
-                      <div class="step-content"><h4>{{ t('knowledge_center', lang)|default('Центр знаний') }}</h4><p>{{ t('knowledge_center_desc', lang)|default('Теоретические основы и ключевые концепции') }}</p><button class="btn-start" data-path="1">{{ t('start', lang)|default('Начать') }}</button></div>
-                    </div>
-                    <div class="step-card communication">
-                      <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path></svg></div>
-                      <div class="step-content"><h4>{{ t('communication', lang)|default('Коммуникация') }}</h4><p>{{ t('communication_desc', lang)|default('Отработка навыков общения с пациентами') }}</p><button class="btn-start" data-path="2">{{ t('start', lang)|default('Начать') }}</button></div>
-                    </div>
-                    <div class="step-card preclinical">
-                      <div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M9 3h6v2H9zM8 3h8l-1 9-2 2h-2l-2-2z" fill="none" stroke="currentColor" stroke-width="2"></path><path d="M8 14v.5A5.5 5.5 0 0 0 13.5 20h1a5.5 5.5 0 0 0 5.5-5.5V14" fill="none" stroke="currentColor" stroke-width="2"></path></svg></div>
-                      <div class="step-content"><h4>{{ t('preclinical_skills', lang)|default('Доклинические навыки') }}</h4><p>{{ t('preclinical_desc', lang)|default('Базовые стоматологические процедуры') }}</p><button class="btn-start" data-path="3">{{ t('start', lang)|default('Начать') }}</button></div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="welcome-steps desktop-only">
+                <div class="welcome-steps">
                   <h3>{{ t('getting_started', lang)|default('С чего начать?') }}</h3>
                   <div class="steps-grid">
                     <div class="step-card knowledge-center"><div class="step-icon"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path></svg></div><div class="step-content"><h4>{{ t('knowledge_center', lang)|default('Центр знаний') }}</h4><p>{{ t('knowledge_center_desc', lang)|default('Теоретические основы и ключевые концепции') }}</p><button class="btn-start" data-path="1">{{ t('start', lang)|default('Начать') }}</button></div></div>
@@ -634,37 +509,6 @@
         </div>
     </div>
 
-    <div class="mobile-nav">
-      <a href="#" class="mobile-nav-item {% if selected_path and selected_path.id == 1 %}active{% endif %}" data-path="1">
-        <div class="mobile-nav-icon knowledge"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path></svg></div>
-        <span class="mobile-nav-label">{{ t('knowledge_center', lang) | default('Knowledge Center') }}</span>
-      </a>
-      <a href="#" class="mobile-nav-item {% if selected_path and selected_path.id == 2 %}active{% endif %}" data-path="2">
-        <div class="mobile-nav-icon communication"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path></svg></div>
-        <span class="mobile-nav-label">{{ t('communication', lang) | default('Communication') }}</span>
-      </a>
-      <a href="#" class="mobile-nav-item {% if selected_path and selected_path.id == 3 %}active{% endif %}" data-path="3">
-        <div class="mobile-nav-icon preclinical"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M9 3h6v2H9zM8 3h8l-1 9-2 2h-2l-2-2z" fill="none" stroke="currentColor" stroke-width="2"></path><path d="M8 14v.5A5.5 5.5 0 0 0 13.5 20h1a5.5 5.5 0 0 0 5.5-5.5V14" fill="none" stroke="currentColor" stroke-width="2"></path></svg></div>
-        <span class="mobile-nav-label">{{ t('preclinical_skills', lang) | default('Preclinical Skills') }}</span>
-      </a>
-      <a href="#" class="mobile-nav-item {% if selected_path and selected_path.id == 4 %}active{% endif %}" data-path="4">
-        <div class="mobile-nav-icon workstation"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" fill="none" stroke="currentColor" stroke-width="2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1" fill="none" stroke="currentColor" stroke-width="2"></rect></svg></div>
-        <span class="mobile-nav-label">{{ t('workstation', lang) | default('Workstation') }}</span>
-      </a>
-      <a href="#" class="mobile-nav-item {% if selected_path and selected_path.id == 6 %}active{% endif %}" data-path="6">
-        <div class="mobile-nav-icon virtual-patients">
-            <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
-            </svg>
-        </div>
-        <span class="mobile-nav-label">{{ t('virtual_patients', lang) | default('Virtual Patients') }}</span>
-      </a>
-    </div>
-
-    <div class="stats-toggle">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-    </div>
-
     <div class="modal fade" id="examDateModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -674,18 +518,6 @@
             </div>
         </div>
     </div>
-    
-    {% if not selected_subject and not selected_path %}
-    <div class="mobile-navbar">
-      <a href="{{ url_for('dashboard_bp.learning_dashboard', lang=lang) }}" class="mobile-nav-item {% if request.endpoint == 'dashboard_bp.learning_dashboard' %}active{% endif %}"><div class="nav-icon"><i class="bi bi-speedometer2"></i></div><span>{{ t('dashboard', lang) }}</span></a>
-      <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="mobile-nav-item {% if request.endpoint == 'learning_map_bp.learning_map' %}active{% endif %}"><div class="nav-icon"><i class="bi bi-map"></i></div><span>{{ t('learning_map', lang) }}</span></a>
-      <div class="mobile-nav-item center-button"><div class="floating-button" id="practiceButton"><i class="bi bi-play-fill"></i></div><span>{{ t('practice', lang) }}</span></div>
-      <a href="{{ url_for('virtual_patient_bp.scenarios_list', lang=lang) }}" class="mobile-nav-item {% if 'virtual_patient_bp' in request.endpoint %}active{% endif %}">
-          <div class="nav-icon"><i class="bi bi-person"></i></div><span>{{ t('patients', lang) }}</span>
-      </a>
-      <a href="{{ url_for('main_bp.profile', lang=lang) }}" class="mobile-nav-item {% if request.endpoint == 'main_bp.profile' %}active{% endif %}"><div class="nav-icon"><i class="bi bi-person-circle"></i></div><span>{{ t('profile', lang) }}</span></a>
-    </div>
-    {% endif %}
 </div>
 <div class="interactive-element"> <div class="interactive-card" id="interactiveCardFooter">
     <div class="card-front">

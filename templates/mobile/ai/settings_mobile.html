@@ -1,537 +1,404 @@
-<!DOCTYPE html>
-<html lang="{{ lang }}" data-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ t('ai_settings', lang) }} - Dental Academy</title>
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('ai_settings', 
+    show_logo=True,
+    show_back_button=True,
+    show_bottom_nav=True,
+    show_profile_button=True,
+    show_settings_button=True,
+    show_language_selector=True,
+    page_title=t('ai_settings', lang)
+) %}
+
+{% block title %}{{ t('ai_settings', lang) }} - Dental Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== AI SETTINGS МОБИЛЬНЫЕ СТИЛИ ===== */
+    .ai-settings-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
     
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#3ECDC1">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Dental Academy">
+    .ai-settings-section h3 {
+        margin: 0 0 16px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    .ai-provider-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+    }
     
-    <!-- Styles -->
-    <link rel="stylesheet" href="/static/css/mobile/mobile-app.css">
+    .ai-provider-card.configured {
+        border-color: var(--primary);
+        background: rgba(62, 205, 193, 0.1);
+    }
     
-    <style>
-        /* ===== AI SETTINGS МОБИЛЬНЫЕ СТИЛИ ===== */
-        .mobile-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: var(--header-height);
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1rem;
-        }
+    .ai-provider-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    
+    .ai-provider-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .ai-provider-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .ai-provider-details h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .ai-provider-details p {
+        margin: 2px 0 0 0;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .ai-provider-status {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+    
+    .ai-provider-status.free {
+        background: rgba(76, 222, 128, 0.2);
+        color: #4ade80;
+    }
+    
+    .ai-provider-status.paid {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fbbf24;
+    }
+    
+    .ai-provider-status.configured {
+        background: rgba(62, 205, 193, 0.2);
+        color: var(--primary);
+    }
+    
+    .ai-key-input-group {
+        margin-top: 12px;
+    }
+    
+    .ai-key-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        margin-bottom: 8px;
+        box-sizing: border-box;
+    }
+    
+    .ai-key-input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .ai-key-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(62, 205, 193, 0.1);
+    }
+    
+    .ai-key-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .ai-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .ai-btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+    }
+    
+    .ai-btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    .ai-btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .ai-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .ai-usage-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+    }
+    
+    .ai-stat-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    .ai-stat-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 4px;
+    }
+    
+    .ai-stat-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+</style>
+{% endblock %}
 
-        .header-title {
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-align: center;
-            flex: 1;
-        }
-
-        .header-action {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .main-content {
-            padding: calc(var(--header-height) + 1rem) 1rem calc(var(--nav-height) + 1rem);
-            min-height: 100vh;
-        }
+{% block content %}
+    <!-- AI Providers Section -->
+    <div class="ai-settings-section">
+        <h3>
+            <i class="bi bi-robot"></i>
+            {{ t('ai_providers', lang) }}
+        </h3>
         
-        .ai-settings-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .ai-settings-section h3 {
-            margin: 0 0 16px 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .ai-provider-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .ai-provider-card.configured {
-            border-color: var(--primary);
-            background: rgba(62, 205, 193, 0.1);
-        }
-        
-        .ai-provider-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        
-        .ai-provider-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .ai-provider-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .ai-provider-details h4 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-        }
-        
-        .ai-provider-details p {
-            margin: 2px 0 0 0;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .ai-provider-status {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-        
-        .ai-provider-status.free {
-            background: rgba(76, 222, 128, 0.2);
-            color: #4ade80;
-        }
-        
-        .ai-provider-status.paid {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-        }
-        
-        .ai-provider-status.configured {
-            background: rgba(62, 205, 193, 0.2);
-            color: var(--primary);
-        }
-        
-        .ai-key-input-group {
-            margin-top: 12px;
-        }
-        
-        .ai-key-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            margin-bottom: 8px;
-            box-sizing: border-box;
-        }
-        
-        .ai-key-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-        
-        .ai-key-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(62, 205, 193, 0.1);
-        }
-        
-        .ai-key-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .ai-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: none;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .ai-btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-        
-        .ai-btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-        
-        .ai-btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .ai-btn:active {
-            transform: scale(0.98);
-        }
-        
-        .ai-usage-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 16px;
-        }
-        
-        .ai-stat-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-        }
-        
-        .ai-stat-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
-        
-        .ai-stat-label {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* ===== BOTTOM NAVIGATION ===== */
-        .mobile-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: var(--nav-height);
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 env(safe-area-inset-left) env(safe-area-inset-bottom) env(safe-area-inset-right);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            color: rgba(102, 126, 234, 0.6);
-            text-decoration: none;
-            font-size: 0.7rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 0.5rem;
-            border-radius: 12px;
-            min-width: 60px;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            background: rgba(62, 205, 193, 0.1);
-        }
-
-        .nav-item i {
-            font-size: 1.3rem;
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <header class="mobile-header">
-        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="header-action">
-            <i class="bi bi-arrow-left"></i>
-        </a>
-        
-        <h1 class="header-title">{{ t('ai_settings', lang) }}</h1>
-        
-        <div class="header-action" style="visibility: hidden;"></div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- AI Providers Section -->
-        <div class="ai-settings-section">
-            <h3>
-                <i class="bi bi-robot"></i>
-                {{ t('ai_providers', lang) }}
-            </h3>
-            
-            {% for provider_key, provider in ai_providers.items() %}
-            <div class="ai-provider-card {% if provider_key in user_providers %}configured{% endif %}">
-                <div class="ai-provider-header">
-                    <div class="ai-provider-info">
-                        <div class="ai-provider-icon">{{ provider.name[:2].upper() }}</div>
-                        <div class="ai-provider-details">
-                            <h4>{{ provider.name }}</h4>
-                            <p>{{ provider.description }}</p>
-                        </div>
-                    </div>
-                    <div class="ai-provider-status {% if provider.free_tier %}free{% else %}paid{% endif %} {% if provider_key in user_providers %}configured{% endif %}">
-                        {% if provider_key in user_providers %}
-                            {{ t('configured', lang) }}
-                        {% elif provider.free_tier %}
-                            {{ t('free', lang) }}
-                        {% else %}
-                            {{ t('paid', lang) }}
-                        {% endif %}
+        {% for provider_key, provider in ai_providers.items() %}
+        <div class="ai-provider-card {% if provider_key in user_providers %}configured{% endif %}">
+            <div class="ai-provider-header">
+                <div class="ai-provider-info">
+                    <div class="ai-provider-icon">{{ provider.name[:2].upper() }}</div>
+                    <div class="ai-provider-details">
+                        <h4>{{ provider.name }}</h4>
+                        <p>{{ provider.description }}</p>
                     </div>
                 </div>
-                
-                <div class="ai-key-input-group">
-                    <input 
-                        type="password" 
-                        class="ai-key-input" 
-                        placeholder="{{ t('enter_api_key', lang) }}"
-                        data-provider="{{ provider_key }}"
-                        {% if provider_key in user_providers %}value="••••••••••••••••"{% endif %}>
-                    
-                    <div class="ai-key-actions">
-                        {% if provider_key in user_providers %}
-                        <button class="ai-btn ai-btn-danger" onclick="deleteApiKey('{{ provider_key }}')">
-                            <i class="bi bi-trash"></i>
-                            {{ t('delete', lang) }}
-                        </button>
-                        {% else %}
-                        <button class="ai-btn ai-btn-primary" onclick="saveApiKey('{{ provider_key }}')">
-                            <i class="bi bi-check"></i>
-                            {{ t('save', lang) }}
-                        </button>
-                        {% endif %}
-                        <button class="ai-btn ai-btn-secondary" onclick="testApiKey('{{ provider_key }}')">
-                            <i class="bi bi-play"></i>
-                            {{ t('test', lang) }}
-                        </button>
-                    </div>
+                <div class="ai-provider-status {% if provider.free_tier %}free{% else %}paid{% endif %} {% if provider_key in user_providers %}configured{% endif %}">
+                    {% if provider_key in user_providers %}
+                        {{ t('configured', lang) }}
+                    {% elif provider.free_tier %}
+                        {{ t('free', lang) }}
+                    {% else %}
+                        {{ t('paid', lang) }}
+                    {% endif %}
                 </div>
             </div>
-            {% endfor %}
-        </div>
-
-        <!-- Usage Statistics -->
-        {% if usage_stats %}
-        <div class="ai-settings-section">
-            <h3>
-                <i class="bi bi-bar-chart"></i>
-                {{ t('usage_statistics', lang) }}
-            </h3>
             
-            <div class="ai-usage-stats">
-                <div class="ai-stat-item">
-                    <div class="ai-stat-value">{{ usage_stats.total_requests or 0 }}</div>
-                    <div class="ai-stat-label">{{ t('total_requests', lang) }}</div>
-                </div>
-                <div class="ai-stat-item">
-                    <div class="ai-stat-value">{{ usage_stats.tokens_used or 0 }}</div>
-                    <div class="ai-stat-label">{{ t('tokens_used', lang) }}</div>
+            <div class="ai-key-input-group">
+                <input 
+                    type="password" 
+                    class="ai-key-input" 
+                    placeholder="{{ t('enter_api_key', lang) }}"
+                    data-provider="{{ provider_key }}"
+                    {% if provider_key in user_providers %}value="••••••••••••••••"{% endif %}>
+                
+                <div class="ai-key-actions">
+                    {% if provider_key in user_providers %}
+                    <button class="ai-btn ai-btn-danger" onclick="deleteApiKey('{{ provider_key }}')">
+                        <i class="bi bi-trash"></i>
+                        {{ t('delete', lang) }}
+                    </button>
+                    {% else %}
+                    <button class="ai-btn ai-btn-primary" onclick="saveApiKey('{{ provider_key }}')">
+                        <i class="bi bi-check"></i>
+                        {{ t('save', lang) }}
+                    </button>
+                    {% endif %}
+                    <button class="ai-btn ai-btn-secondary" onclick="testApiKey('{{ provider_key }}')">
+                        <i class="bi bi-play"></i>
+                        {{ t('test', lang) }}
+                    </button>
                 </div>
             </div>
         </div>
-        {% endif %}
+        {% endfor %}
+    </div>
 
-        <!-- RAG Statistics -->
-        {% if rag_stats %}
-        <div class="ai-settings-section">
-            <h3>
-                <i class="bi bi-database"></i>
-                {{ t('knowledge_base', lang) }}
-            </h3>
-            
-            <div class="ai-usage-stats">
-                <div class="ai-stat-item">
-                    <div class="ai-stat-value">{{ rag_stats.total_documents or 0 }}</div>
-                    <div class="ai-stat-label">{{ t('documents', lang) }}</div>
-                </div>
-                <div class="ai-stat-item">
-                    <div class="ai-stat-value">{{ rag_stats.embeddings_count or 0 }}</div>
-                    <div class="ai-stat-label">{{ t('embeddings', lang) }}</div>
-                </div>
+    <!-- Usage Statistics -->
+    {% if usage_stats %}
+    <div class="ai-settings-section">
+        <h3>
+            <i class="bi bi-bar-chart"></i>
+            {{ t('usage_statistics', lang) }}
+        </h3>
+        
+        <div class="ai-usage-stats">
+            <div class="ai-stat-item">
+                <div class="ai-stat-value">{{ usage_stats.total_requests or 0 }}</div>
+                <div class="ai-stat-label">{{ t('total_requests', lang) }}</div>
+            </div>
+            <div class="ai-stat-item">
+                <div class="ai-stat-value">{{ usage_stats.tokens_used or 0 }}</div>
+                <div class="ai-stat-label">{{ t('tokens_used', lang) }}</div>
             </div>
         </div>
-        {% endif %}
-    </main>
+    </div>
+    {% endif %}
 
-    <!-- Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
-            <i class="bi bi-house"></i>
-            <span>{{ t('home', lang) }}</span>
-        </a>
-        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
-            <i class="bi bi-book"></i>
-            <span>{{ t('learning', lang) }}</span>
-        </a>
-        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
-            <i class="bi bi-clipboard-check"></i>
-            <span>{{ t('tests', lang) }}</span>
-        </a>
-        <a href="/{{ lang }}/virtual-patient" class="nav-item">
-            <i class="bi bi-person-heart"></i>
-            <span>{{ t('patients', lang) }}</span>
-        </a>
-        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item active">
-            <i class="fas fa-robot"></i>
-            <span>{{ t('ai_assistant', lang) }}</span>
-        </a>
-    </nav>
+    <!-- RAG Statistics -->
+    {% if rag_stats %}
+    <div class="ai-settings-section">
+        <h3>
+            <i class="bi bi-database"></i>
+            {{ t('knowledge_base', lang) }}
+        </h3>
+        
+        <div class="ai-usage-stats">
+            <div class="ai-stat-item">
+                <div class="ai-stat-value">{{ rag_stats.total_documents or 0 }}</div>
+                <div class="ai-stat-label">{{ t('documents', lang) }}</div>
+            </div>
+            <div class="ai-stat-item">
+                <div class="ai-stat-value">{{ rag_stats.embeddings_count or 0 }}</div>
+                <div class="ai-stat-label">{{ t('embeddings', lang) }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
 
-    <!-- Scripts -->
-    <script src="/static/js/mobile/mobile-app.js"></script>
-    <script>
-        async function saveApiKey(provider) {
-            const input = document.querySelector(`input[data-provider="${provider}"]`);
-            const apiKey = input.value.trim();
-            
-            if (!apiKey || apiKey === '••••••••••••••••') {
-                if (window.mobileApp) {
-                    window.mobileApp.showNotification('{{ t("please_enter_valid_key", lang) }}', 'error');
-                }
-                return;
-            }
-            
-            try {
-                const response = await fetch('{{ url_for("ai.save_api_key", lang=lang) }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        provider: provider,
-                        api_key: apiKey,
-                        key_name: `${provider}_key`
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    if (window.mobileApp) {
-                        window.mobileApp.showNotification('{{ t("api_key_saved", lang) }}', 'success');
-                    }
-                    setTimeout(() => window.location.reload(), 1500);
-                } else {
-                    throw new Error(result.error || 'Failed to save API key');
-                }
-            } catch (error) {
-                if (window.mobileApp) {
-                    window.mobileApp.showNotification(error.message, 'error');
-                }
-            }
-        }
+{% block scripts %}
+<script>
+    async function saveApiKey(provider) {
+        const input = document.querySelector(`input[data-provider="${provider}"]`);
+        const apiKey = input.value.trim();
         
-        async function deleteApiKey(provider) {
-            if (!confirm('{{ t("confirm_delete_key", lang) }}?')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`{{ url_for("ai.delete_api_key", lang=lang, provider="PROVIDER") }}`.replace('PROVIDER', provider), {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    if (window.mobileApp) {
-                        window.mobileApp.showNotification('{{ t("api_key_deleted", lang) }}', 'success');
-                    }
-                    setTimeout(() => window.location.reload(), 1500);
-                } else {
-                    throw new Error(result.error || 'Failed to delete API key');
-                }
-            } catch (error) {
-                if (window.mobileApp) {
-                    window.mobileApp.showNotification(error.message, 'error');
-                }
-            }
-        }
-        
-        async function testApiKey(provider) {
-            const input = document.querySelector(`input[data-provider="${provider}"]`);
-            const apiKey = input.value.trim();
-            
-            if (!apiKey || apiKey === '••••••••••••••••') {
-                if (window.mobileApp) {
-                    window.mobileApp.showNotification('{{ t("please_enter_key_first", lang) }}', 'error');
-                }
-                return;
-            }
-            
+        if (!apiKey || apiKey === '••••••••••••••••') {
             if (window.mobileApp) {
-                window.mobileApp.showNotification('{{ t("testing_api_key", lang) }}', 'info');
+                window.mobileApp.showNotification('{{ t("please_enter_valid_key", lang) }}', 'error');
             }
-            
-            // Простая тестовая реализация
-            setTimeout(() => {
-                if (window.mobileApp) {
-                    window.mobileApp.showNotification('{{ t("api_key_test_complete", lang) }}', 'success');
-                }
-            }, 2000);
+            return;
         }
-    </script>
-</body>
-</html> 
+        
+        try {
+            const response = await fetch('{{ url_for("ai.save_api_key", lang=lang) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    provider: provider,
+                    api_key: apiKey,
+                    key_name: `${provider}_key`
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (window.mobileApp) {
+                    window.mobileApp.showNotification('{{ t("api_key_saved", lang) }}', 'success');
+                }
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                throw new Error(result.error || 'Failed to save API key');
+            }
+        } catch (error) {
+            if (window.mobileApp) {
+                window.mobileApp.showNotification(error.message, 'error');
+            }
+        }
+    }
+    
+    async function deleteApiKey(provider) {
+        if (!confirm('{{ t("confirm_delete_key", lang) }}?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`{{ url_for("ai.delete_api_key", lang=lang, provider="PROVIDER") }}`.replace('PROVIDER', provider), {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (window.mobileApp) {
+                    window.mobileApp.showNotification('{{ t("api_key_deleted", lang) }}', 'success');
+                }
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                throw new Error(result.error || 'Failed to delete API key');
+            }
+        } catch (error) {
+            if (window.mobileApp) {
+                window.mobileApp.showNotification(error.message, 'error');
+            }
+        }
+    }
+    
+    async function testApiKey(provider) {
+        const input = document.querySelector(`input[data-provider="${provider}"]`);
+        const apiKey = input.value.trim();
+        
+        if (!apiKey || apiKey === '••••••••••••••••') {
+            if (window.mobileApp) {
+                window.mobileApp.showNotification('{{ t("please_enter_key_first", lang) }}', 'error');
+            }
+            return;
+        }
+        
+        if (window.mobileApp) {
+            window.mobileApp.showNotification('{{ t("testing_api_key", lang) }}', 'info');
+        }
+        
+        // Простая тестовая реализация
+        setTimeout(() => {
+            if (window.mobileApp) {
+                window.mobileApp.showNotification('{{ t("api_key_test_complete", lang) }}', 'success');
+            }
+        }, 2000);
+    }
+</script>
+{% endblock %} 

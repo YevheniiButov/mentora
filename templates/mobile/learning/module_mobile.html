@@ -1,597 +1,435 @@
-<!DOCTYPE html>
-<html lang="{{ lang }}" data-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ module.title }} - Dental Academy</title>
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('module_view', 
+    show_logo=True,
+    show_back_button=True,
+    show_bottom_nav=True,
+    show_profile_button=True,
+    show_settings_button=True,
+    show_language_selector=True,
+    page_title=module.title
+) %}
+
+{% block title %}{{ module.title }} - Dental Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== MODULE VIEW SPECIFIC STYLES ===== */
     
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#3ECDC1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="/static/css/mobile/mobile-app.css">
-    
-    <style>
-        /* ===== MODULE VIEW SPECIFIC STYLES ===== */
-        .mobile-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: var(--header-height);
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1rem;
-        }
+    /* ===== MODULE HERO SECTION ===== */
+    .module-hero {
+        margin-bottom: 2rem;
+    }
 
-        .header-title {
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            text-align: center;
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+    .module-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
 
-        .header-action {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
+    .module-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--secondary), var(--accent));
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
 
-        .main-content {
-            padding: calc(var(--header-height) + 1rem) 1rem calc(var(--nav-height) + 1rem);
-            min-height: 100vh;
-        }
+    .module-info {
+        flex: 1;
+    }
 
-        /* ===== MODULE HERO SECTION ===== */
-        .module-hero {
-            margin-bottom: 2rem;
-        }
+    .module-title {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
 
-        .module-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
+    .module-description {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
 
-        .module-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--secondary), var(--accent));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            flex-shrink: 0;
-        }
+    .module-meta {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
 
-        .module-info {
-            flex: 1;
-        }
+    .meta-item {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-        .module-title {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            line-height: 1.3;
-        }
+    .meta-item i {
+        font-size: 1rem;
+    }
 
-        .module-description {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 1rem;
-        }
+    /* ===== PROGRESS SECTION ===== */
+    .progress-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
 
-        .module-meta {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-        }
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
 
-        .meta-item {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+    .progress-title {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
 
-        .meta-item i {
-            font-size: 1rem;
-        }
+    .progress-percentage {
+        color: var(--primary);
+        font-size: 1.5rem;
+        font-weight: 800;
+    }
 
-        /* ===== PROGRESS SECTION ===== */
-        .progress-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
+    .progress-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+    }
 
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
+    .progress-stat {
+        text-align: center;
+    }
 
-        .progress-title {
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
+    .stat-number {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 700;
+        display: block;
+    }
 
-        .progress-percentage {
-            color: var(--primary);
-            font-size: 1.5rem;
-            font-weight: 800;
-        }
+    .stat-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
 
-        .progress-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-top: 1rem;
-        }
+    /* ===== SUBTOPICS SECTION ===== */
+    .subtopics-section {
+        margin-bottom: 2rem;
+    }
 
-        .progress-stat {
-            text-align: center;
-        }
+    .subtopic-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
 
-        .stat-number {
-            color: white;
-            font-size: 1.3rem;
-            font-weight: 700;
-            display: block;
-        }
+    .subtopic-header {
+        padding: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+    }
 
-        .stat-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-        }
+    .subtopic-header:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
 
-        /* ===== SUBTOPICS SECTION ===== */
-        .subtopics-section {
-            margin-bottom: 2rem;
-        }
+    .subtopic-info {
+        flex: 1;
+    }
 
-        .subtopic-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius);
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
+    .subtopic-title {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
 
-        .subtopic-header {
-            padding: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.3s ease;
-        }
+    .subtopic-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
 
-        .subtopic-header:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
+    .subtopic-progress {
+        margin-top: 0.5rem;
+    }
 
-        .subtopic-info {
-            flex: 1;
-        }
+    .expand-icon {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
 
-        .subtopic-title {
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
+    .subtopic-card.expanded .expand-icon {
+        transform: rotate(180deg);
+    }
 
-        .subtopic-meta {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 0.5rem;
-        }
+    .lessons-list {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
 
-        .subtopic-progress {
-            margin-top: 0.5rem;
-        }
+    .subtopic-card.expanded .lessons-list {
+        max-height: 1000px;
+    }
 
-        .expand-icon {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
-        }
+    .lesson-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
 
-        .subtopic-card.expanded .expand-icon {
-            transform: rotate(180deg);
-        }
+    .lesson-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
 
-        .lessons-list {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
+    .lesson-item:last-child {
+        border-bottom: none;
+    }
 
-        .subtopic-card.expanded .lessons-list {
-            max-height: 1000px;
-        }
+    .lesson-status {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
 
-        .lesson-item {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    .lesson-status.completed {
+        background: rgba(76, 222, 128, 0.2);
+        color: rgb(76, 222, 128);
+    }
 
-        .lesson-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
+    .lesson-status.in-progress {
+        background: rgba(251, 191, 36, 0.2);
+        color: rgb(251, 191, 36);
+    }
 
-        .lesson-item:last-child {
-            border-bottom: none;
-        }
+    .lesson-status.not-started {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+    }
 
-        .lesson-status {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
+    .lesson-info {
+        flex: 1;
+    }
 
-        .lesson-status.completed {
-            background: rgba(76, 222, 128, 0.2);
-            color: rgb(76, 222, 128);
-        }
+    .lesson-title {
+        color: white;
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
 
-        .lesson-status.in-progress {
-            background: rgba(251, 191, 36, 0.2);
-            color: rgb(251, 191, 36);
-        }
+    .lesson-meta {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+    }
 
-        .lesson-status.not-started {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.7);
-        }
+    /* ===== FLOATING ACTION BUTTON ===== */
+    .fab {
+        position: fixed;
+        bottom: calc(var(--nav-height) + 1rem);
+        right: 1rem;
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
+        transition: all 0.3s ease;
+        z-index: 999;
+    }
 
-        .lesson-info {
-            flex: 1;
-        }
+    .fab:hover,
+    .fab:active {
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 12px 35px rgba(62, 205, 193, 0.5);
+    }
 
-        .lesson-title {
-            color: white;
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 0.25rem;
-        }
+    /* ===== ANIMATIONS ===== */
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+    }
 
-        .lesson-meta {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.8rem;
-        }
+    .fade-in-up:nth-child(2) { animation-delay: 0.1s; }
+    .fade-in-up:nth-child(3) { animation-delay: 0.2s; }
+    .fade-in-up:nth-child(4) { animation-delay: 0.3s; }
+</style>
+{% endblock %}
 
-        /* ===== FLOATING ACTION BUTTON ===== */
-        .fab {
-            position: fixed;
-            bottom: calc(var(--nav-height) + 1rem);
-            right: 1rem;
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
-            transition: all 0.3s ease;
-            z-index: 999;
-        }
-
-        .fab:hover,
-        .fab:active {
-            transform: scale(1.1) translateY(-2px);
-            box-shadow: 0 12px 35px rgba(62, 205, 193, 0.5);
-        }
-
-        /* ===== BOTTOM NAVIGATION ===== */
-        .mobile-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: var(--nav-height);
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 env(safe-area-inset-left) env(safe-area-inset-bottom) env(safe-area-inset-right);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            color: rgba(102, 126, 234, 0.6);
-            text-decoration: none;
-            font-size: 0.7rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 0.5rem;
-            border-radius: 12px;
-            min-width: 60px;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            background: rgba(62, 205, 193, 0.1);
-        }
-
-        .nav-item i {
-            font-size: 1.3rem;
-        }
-
-        /* ===== ANIMATIONS ===== */
-        .fade-in-up {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        .fade-in-up:nth-child(2) { animation-delay: 0.1s; }
-        .fade-in-up:nth-child(3) { animation-delay: 0.2s; }
-        .fade-in-up:nth-child(4) { animation-delay: 0.3s; }
-
-        /* ===== ТЕМНАЯ ТЕМА ===== */
-        [data-theme="dark"] .mobile-bottom-nav {
-            background: rgba(31, 41, 55, 0.95);
-        }
-
-        [data-theme="dark"] .nav-item {
-            color: rgba(156, 163, 175, 0.8);
-        }
-
-        [data-theme="dark"] .nav-item.active {
-            color: var(--primary);
-            background: rgba(62, 205, 193, 0.2);
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Header -->
-    <header class="mobile-header">
-        <button class="header-action" onclick="history.back()">
-            <i class="bi bi-arrow-left"></i>
-        </button>
-        
-        <h1 class="header-title">{{ module.title }}</h1>
-        
-        <button class="header-action" onclick="toggleBookmark()">
-            <i class="bi bi-bookmark"></i>
-        </button>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Module Hero Section -->
-        <section class="module-hero fade-in-up">
-            <div class="module-header">
-                <div class="module-icon">
-                    <i class="bi bi-collection"></i>
-                </div>
+{% block content %}
+    <!-- Module Hero Section -->
+    <section class="module-hero fade-in-up">
+        <div class="module-header">
+            <div class="module-icon">
+                <i class="bi bi-collection"></i>
+            </div>
+            
+            <div class="module-info">
+                <h2 class="module-title">{{ module.title }}</h2>
+                <p class="module-description">{{ module.description or 'Изучите материалы этого модуля для углубления знаний' }}</p>
                 
-                <div class="module-info">
-                    <h2 class="module-title">{{ module.title }}</h2>
-                    <p class="module-description">{{ module.description or 'Изучите материалы этого модуля для углубления знаний' }}</p>
+                <div class="module-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-file-text"></i>
+                        {{ total_lessons }} уроков
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-collection"></i>
+                        {{ topics_with_subtopics|length }} разделов
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-clock"></i>
+                        ~{{ (total_lessons * 5) }}мин
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Section -->
+    <section class="progress-section fade-in-up">
+        <div class="progress-header">
+            <h3 class="progress-title">Прогресс модуля</h3>
+            <span class="progress-percentage">{{ module_progress }}%</span>
+        </div>
+        
+        <div class="mobile-progress-bar">
+            <div class="mobile-progress-fill" data-progress="{{ module_progress }}" style="width: 0%"></div>
+        </div>
+        
+        <div class="progress-stats">
+            <div class="progress-stat">
+                <span class="stat-number">{{ completed_lessons }}</span>
+                <span class="stat-label">Завершено</span>
+            </div>
+            <div class="progress-stat">
+                <span class="stat-number">{{ total_lessons - completed_lessons }}</span>
+                <span class="stat-label">Осталось</span>
+            </div>
+            <div class="progress-stat">
+                <span class="stat-number">{{ topics_with_subtopics|length }}</span>
+                <span class="stat-label">Разделов</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subtopics Section -->
+    <section class="subtopics-section fade-in-up">
+        {% for topic_data in topics_with_subtopics %}
+        <div class="subtopic-card" data-topic="{{ loop.index }}">
+            <div class="subtopic-header" onclick="toggleSubtopic({{ loop.index }})">
+                <div class="subtopic-info">
+                    <h4 class="subtopic-title">{{ topic_data.topic.name }}</h4>
                     
-                    <div class="module-meta">
+                    <div class="subtopic-meta">
                         <span class="meta-item">
                             <i class="bi bi-file-text"></i>
-                            {{ total_lessons }} уроков
+                            {{ topic_data.total_lessons }} уроков
                         </span>
                         <span class="meta-item">
-                            <i class="bi bi-collection"></i>
-                            {{ topics_with_subtopics|length }} разделов
+                            <i class="bi bi-check-circle"></i>
+                            {{ topic_data.completed_lessons }} завершено
                         </span>
-                        <span class="meta-item">
-                            <i class="bi bi-clock"></i>
-                            ~{{ (total_lessons * 5) }}мин
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Progress Section -->
-        <section class="progress-section fade-in-up">
-            <div class="progress-header">
-                <h3 class="progress-title">Прогресс модуля</h3>
-                <span class="progress-percentage">{{ module_progress }}%</span>
-            </div>
-            
-            <div class="mobile-progress-bar">
-                <div class="mobile-progress-fill" data-progress="{{ module_progress }}" style="width: 0%"></div>
-            </div>
-            
-            <div class="progress-stats">
-                <div class="progress-stat">
-                    <span class="stat-number">{{ completed_lessons }}</span>
-                    <span class="stat-label">Завершено</span>
-                </div>
-                <div class="progress-stat">
-                    <span class="stat-number">{{ total_lessons - completed_lessons }}</span>
-                    <span class="stat-label">Осталось</span>
-                </div>
-                <div class="progress-stat">
-                    <span class="stat-number">{{ topics_with_subtopics|length }}</span>
-                    <span class="stat-label">Разделов</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Subtopics Section -->
-        <section class="subtopics-section fade-in-up">
-            {% for topic_data in topics_with_subtopics %}
-            <div class="subtopic-card" data-topic="{{ loop.index }}">
-                <div class="subtopic-header" onclick="toggleSubtopic({{ loop.index }})">
-                    <div class="subtopic-info">
-                        <h4 class="subtopic-title">{{ topic_data.topic.name }}</h4>
-                        
-                        <div class="subtopic-meta">
-                            <span class="meta-item">
-                                <i class="bi bi-file-text"></i>
-                                {{ topic_data.total_lessons }} уроков
-                            </span>
-                            <span class="meta-item">
-                                <i class="bi bi-check-circle"></i>
-                                {{ topic_data.completed_lessons }} завершено
-                            </span>
-                        </div>
-                        
-                        <div class="subtopic-progress">
-                            <div class="mobile-progress-bar">
-                                <div class="mobile-progress-fill" 
-                                    data-progress="{{ topic_data.progress_percent }}" 
-                                    style="width: 0%"></div>
-                            </div>
-                        </div>
                     </div>
                     
-                    <i class="bi bi-chevron-down expand-icon"></i>
-                </div>
-                
-                <div class="lessons-list">
-                    {% for lesson_data in topic_data.lessons %}
-                    <div class="lesson-item" onclick="openLesson({{ lesson_data.lesson.id }})">
-                        <div class="lesson-status {% if lesson_data.completed %}completed{% elif lesson_data.progress_percentage > 0 %}in-progress{% else %}not-started{% endif %}">
-                            {% if lesson_data.completed %}
-                                <i class="bi bi-check-circle-fill"></i>
-                            {% elif lesson_data.progress_percentage > 0 %}
-                                <i class="bi bi-play-circle-fill"></i>
-                            {% else %}
-                                <i class="bi bi-circle"></i>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="lesson-info">
-                            <div class="lesson-title">{{ lesson_data.lesson.title }}</div>
-                            <div class="lesson-meta">
-                                {% if lesson_data.lesson.content_type == 'learning_card' %}
-                                    <i class="bi bi-card-text"></i> Обучающий материал
-                                {% elif lesson_data.lesson.content_type in ['quiz', 'test_question'] %}
-                                    <i class="bi bi-question-circle"></i> Тест
-                                {% else %}
-                                    <i class="bi bi-file-text"></i> Урок
-                                {% endif %}
-                                {% if lesson_data.progress_percentage > 0 and not lesson_data.completed %}
-                                    • {{ lesson_data.progress_percentage }}% завершено
-                                {% endif %}
-                            </div>
+                    <div class="subtopic-progress">
+                        <div class="mobile-progress-bar">
+                            <div class="mobile-progress-fill" 
+                                data-progress="{{ topic_data.progress_percent }}" 
+                                style="width: 0%"></div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
+                
+                <i class="bi bi-chevron-down expand-icon"></i>
             </div>
-            {% endfor %}
-        </section>
-    </main>
+            
+            <div class="lessons-list">
+                {% for lesson_data in topic_data.lessons %}
+                <div class="lesson-item" onclick="openLesson({{ lesson_data.lesson.id }})">
+                    <div class="lesson-status {% if lesson_data.completed %}completed{% elif lesson_data.progress_percentage > 0 %}in-progress{% else %}not-started{% endif %}">
+                        {% if lesson_data.completed %}
+                            <i class="bi bi-check-circle-fill"></i>
+                        {% elif lesson_data.progress_percentage > 0 %}
+                            <i class="bi bi-play-circle-fill"></i>
+                        {% else %}
+                            <i class="bi bi-circle"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="lesson-info">
+                        <div class="lesson-title">{{ lesson_data.lesson.title }}</div>
+                        <div class="lesson-meta">
+                            {% if lesson_data.lesson.content_type == 'learning_card' %}
+                                <i class="bi bi-card-text"></i> Обучающий материал
+                            {% elif lesson_data.lesson.content_type in ['quiz', 'test_question'] %}
+                                <i class="bi bi-question-circle"></i> Тест
+                            {% else %}
+                                <i class="bi bi-file-text"></i> Урок
+                            {% endif %}
+                            {% if lesson_data.progress_percentage > 0 and not lesson_data.completed %}
+                                • {{ lesson_data.progress_percentage }}% завершено
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </section>
 
     <!-- Floating Action Button -->
     <button class="fab" onclick="showQuickActions()">
         <i class="bi bi-list"></i>
     </button>
 
-    <!-- Bottom Navigation -->
-    <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
-            <i class="bi bi-house"></i>
-            <span>{{ t('home', lang) }}</span>
-        </a>
-        <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item active">
-            <i class="bi bi-book"></i>
-            <span>{{ t('learning', lang) }}</span>
-        </a>
-        <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
-            <i class="bi bi-clipboard-check"></i>
-            <span>{{ t('tests', lang) }}</span>
-        </a>
-        <a href="/{{ lang }}/virtual-patient" class="nav-item">
-            <i class="bi bi-person-heart"></i>
-            <span>{{ t('patients', lang) }}</span>
-        </a>
-        <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
-            <i class="fas fa-robot"></i>
-            <span>{{ t('ai_assistant', lang) }}</span>
-        </a>
-    </nav>
-
     <!-- Scripts -->
     <script src="/static/js/mobile/mobile-app.js"></script>
     <script>
         // Module View specific functionality
-        function toggleBookmark() {
-            const btn = event.target.closest('.header-action');
-            const icon = btn.querySelector('i');
-            
-            if (icon.classList.contains('bi-bookmark')) {
-                icon.classList.remove('bi-bookmark');
-                icon.classList.add('bi-bookmark-fill');
-                window.mobileApp.showNotification('Модуль добавлен в закладки', 'success');
-            } else {
-                icon.classList.remove('bi-bookmark-fill');
-                icon.classList.add('bi-bookmark');
-                window.mobileApp.showNotification('Модуль удален из закладок', 'info');
-            }
-        }
-
         function toggleSubtopic(topicIndex) {
             const card = document.querySelector(`[data-topic="${topicIndex}"]`);
             card.classList.toggle('expanded');
@@ -616,5 +454,4 @@
             }, 500);
         });
     </script>
-</body>
-</html> 
+{% endblock %} 

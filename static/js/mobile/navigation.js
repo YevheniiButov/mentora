@@ -33,12 +33,19 @@ class MobileNavigation {
         
         navItems.forEach(item => {
             item.addEventListener('click', (e) => {
+                const targetUrl = item.getAttribute('href');
+                const targetPage = item.getAttribute('data-page');
+                
+                // НЕ блокируем переходы на внешние страницы (AI, и т.д.)
+                if (targetUrl.includes('/ai-assistant') || targetUrl.includes('/ai/') || 
+                    targetUrl.includes('/virtual-patient') || targetUrl.includes('/admin')) {
+                    // Позволяем стандартный переход
+                    return;
+                }
+                
                 e.preventDefault();
                 
                 if (this.isTransitioning) return;
-                
-                const targetUrl = item.getAttribute('href');
-                const targetPage = item.getAttribute('data-page');
                 
                 // Проверяем, не на той ли странице уже находимся
                 if (this.isCurrentPage(targetUrl)) return;

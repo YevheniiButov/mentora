@@ -11,8 +11,9 @@ from models import (
 )
 from utils.mobile_detection import get_mobile_detector
 from translations_new import get_translation as t
-from extensions import bcrypt, babel
+from extensions import bcrypt, babel, csrf
 from forms import LoginForm, RegistrationForm
+from datetime import datetime, timedelta
 
 mobile_bp = Blueprint('mobile', __name__, url_prefix='/<lang>/mobile', template_folder='../templates/mobile')
 
@@ -503,9 +504,21 @@ def profile(lang):
         current_language=lang
     )
 
+# Настройки
+@mobile_bp.route('/settings')
+@login_required
+def settings(lang):
+    """Мобильная страница настроек."""
+    return render_template(
+        'mobile/settings.html',
+        title=t('settings', lang=lang),
+        current_language=lang
+    )
+
 # API для мобильных приложений
 @mobile_bp.route('/api/subjects')
 @login_required
+@csrf.exempt
 def api_subjects(lang):
     """API для получения предметов."""
     try:
@@ -547,6 +560,7 @@ def api_subjects(lang):
 
 @mobile_bp.route('/api/lesson/<int:lesson_id>/progress', methods=['POST'])
 @login_required
+@csrf.exempt
 def api_save_lesson_progress(lang, lesson_id):
     """API для сохранения прогресса урока."""
     try:
@@ -581,6 +595,155 @@ def api_save_lesson_progress(lang, lesson_id):
     except Exception as e:
         current_app.logger.error(f"Error saving lesson progress: {e}", exc_info=True)
         db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# API эндпоинты для настроек
+@mobile_bp.route('/api/settings', methods=['GET'])
+@login_required
+@csrf.exempt
+def api_get_settings(lang):
+    """API для получения текущих настроек пользователя."""
+    try:
+        # Получаем настройки пользователя из базы данных или сессии
+        user_settings = {
+            'theme': getattr(current_user, 'theme', 'light'),
+            'language': getattr(current_user, 'language', lang),
+            'notifications_enabled': getattr(current_user, 'notifications_enabled', True),
+            'daily_reminders': getattr(current_user, 'daily_reminders', True),
+            'reminder_time': getattr(current_user, 'reminder_time', '09:00'),
+            'progress_notifications': getattr(current_user, 'progress_notifications', True),
+            'auto_play_videos': getattr(current_user, 'auto_play_videos', True),
+            'offline_mode': getattr(current_user, 'offline_mode', False),
+            'daily_goal': getattr(current_user, 'daily_goal', 3),
+            'content_difficulty': getattr(current_user, 'content_difficulty', 'intermediate'),
+            'analytics_enabled': getattr(current_user, 'analytics_enabled', True),
+            'data_sharing': getattr(current_user, 'data_sharing', False)
+        }
+        
+        return jsonify({'success': True, 'settings': user_settings})
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting user settings: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@mobile_bp.route('/api/settings', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_save_settings(lang):
+    """API для сохранения настроек пользователя."""
+    try:
+        data = request.get_json()
+        
+        # Обновляем настройки пользователя
+        # В реальном приложении здесь нужно сохранять в модель User или отдельную таблицу настроек
+        for key, value in data.items():
+            if hasattr(current_user, key):
+                setattr(current_user, key, value)
+        
+        # Пока что сохраним в сессию для простоты
+        if 'user_settings' not in session:
+            session['user_settings'] = {}
+        
+        session['user_settings'].update(data)
+        
+        # В продакшене здесь должно быть:
+        # db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Настройки сохранены'})
+        
+    except Exception as e:
+        current_app.logger.error(f"Error saving user settings: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@mobile_bp.route('/api/openai-key', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_save_openai_key(lang):
+    """API для сохранения OpenAI API ключа пользователя."""
+    try:
+        data = request.get_json()
+        openai_key = data.get('openai_key', '').strip()
+        
+        if not openai_key:
+            return jsonify({'success': False, 'error': 'OpenAI ключ не может быть пустым'}), 400
+        
+        # В реальном приложении ключ должен быть зашифрован перед сохранением
+        # Пока сохраним в сессию для простоты
+        session['openai_key'] = openai_key
+        
+        # В продакшене:
+        # current_user.openai_key = encrypt(openai_key)
+        # db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'OpenAI ключ сохранен'})
+        
+    except Exception as e:
+        current_app.logger.error(f"Error saving OpenAI key: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@mobile_bp.route('/api/reset-settings', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_reset_settings(lang):
+    """API для сброса настроек к значениям по умолчанию."""
+    try:
+        # Сбрасываем настройки к дефолтным значениям
+        default_settings = {
+            'theme': 'light',
+            'language': 'en',
+            'notifications_enabled': True,
+            'daily_reminders': True,
+            'reminder_time': '09:00',
+            'progress_notifications': True,
+            'auto_play_videos': True,
+            'offline_mode': False,
+            'daily_goal': 3,
+            'content_difficulty': 'intermediate',
+            'analytics_enabled': True,
+            'data_sharing': False
+        }
+        
+        # Сохраняем дефолтные настройки
+        session['user_settings'] = default_settings
+        
+        # В продакшене здесь должен быть сброс в базе данных
+        # for key, value in default_settings.items():
+        #     if hasattr(current_user, key):
+        #         setattr(current_user, key, value)
+        # db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Настройки сброшены к значениям по умолчанию', 'settings': default_settings})
+        
+    except Exception as e:
+        current_app.logger.error(f"Error resetting settings: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@mobile_bp.route('/api/clear-cache', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_clear_cache(lang):
+    """API для очистки кэша приложения."""
+    try:
+        # Очищаем кэш пользователя
+        # В реальном приложении здесь была бы логика очистки кэшированных данных
+        
+        # Очистка кэша сессии
+        cache_keys_to_clear = ['user_settings', 'cached_subjects', 'cached_modules']
+        for key in cache_keys_to_clear:
+            if key in session:
+                del session[key]
+        
+        # В продакшене здесь может быть:
+        # - Очистка Redis кэша
+        # - Очистка файлового кэша
+        # - Очистка кэшированных данных пользователя
+        
+        current_app.logger.info(f"Cache cleared for user {current_user.id}")
+        
+        return jsonify({'success': True, 'message': 'Кэш успешно очищен'})
+        
+    except Exception as e:
+        current_app.logger.error(f"Error clearing cache: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # Редирект для совместимости
