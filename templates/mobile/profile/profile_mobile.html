@@ -377,7 +377,7 @@
         <h2 class="profile-section-title">{{ t('settings', lang) or 'Настройки' }}</h2>
     </div>
     <div class="profile-section-content">
-        <a href="{{ url_for('mobile.edit_profile', lang=lang) }}" class="profile-menu-item">
+        <a href="{{ url_for('main_bp.profile', lang=lang) }}" class="profile-menu-item">
             <div class="profile-menu-icon">
                 <i class="fas fa-user-edit"></i>
             </div>
@@ -390,7 +390,7 @@
             </div>
         </a>
         
-        <a href="{{ url_for('mobile.notifications_settings', lang=lang) }}" class="profile-menu-item">
+        <a href="{{ url_for('mobile.settings', lang=lang) }}" class="profile-menu-item">
             <div class="profile-menu-icon">
                 <i class="fas fa-bell"></i>
             </div>
@@ -403,7 +403,7 @@
             </div>
         </a>
         
-        <a href="{{ url_for('mobile.privacy_settings', lang=lang) }}" class="profile-menu-item">
+        <a href="{{ url_for('mobile.settings', lang=lang) }}" class="profile-menu-item">
             <div class="profile-menu-icon">
                 <i class="fas fa-shield-alt"></i>
             </div>
@@ -427,7 +427,7 @@
         <h2 class="profile-section-title">{{ t('information', lang) or 'Информация' }}</h2>
     </div>
     <div class="profile-section-content">
-        <a href="{{ url_for('mobile.help', lang=lang) }}" class="profile-menu-item">
+        <a href="#" onclick="showComingSoon()" class="profile-menu-item">
             <div class="profile-menu-icon">
                 <i class="fas fa-question-circle"></i>
             </div>
@@ -440,7 +440,7 @@
             </div>
         </a>
         
-        <a href="{{ url_for('mobile.about', lang=lang) }}" class="profile-menu-item">
+        <a href="#" onclick="showComingSoon()" class="profile-menu-item">
             <div class="profile-menu-icon">
                 <i class="fas fa-info"></i>
             </div>
@@ -498,6 +498,10 @@ function logout() {
             alert('{{ t("logout_error", lang) or "Ошибка при выходе" }}');
         });
     }
+}
+
+function showComingSoon() {
+    alert('{{ t("coming_soon", lang) or "Эта функция скоро будет доступна!" }}');
 }
 
 // Анимация прогресс-бара при загрузке

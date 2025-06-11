@@ -1,0 +1,385 @@
+/* ===== LIQUID GLASS THEME SYSTEM ===== */
+
+:root {
+  /* === СВЕТЛАЯ ТЕМА (по умолчанию) === */
+  
+  /* Основные цвета */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #e2e8f0;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-nav: rgba(255, 255, 255, 0.95);
+  --bg-sidebar: rgba(248, 250, 252, 0.9);
+  --bg-modal: rgba(255, 255, 255, 0.9);
+  
+  /* Текст */
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --text-inverse: #ffffff;
+  --text-accent: #2d3748;
+  
+  /* Границы */
+  --border-color: rgba(226, 232, 240, 0.6);
+  --border-light: rgba(247, 250, 252, 0.8);
+  --border-dark: rgba(203, 213, 224, 0.7);
+  --border-focus: rgba(62, 205, 193, 0.4);
+  
+  /* Тени для светлой темы */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  /* Blur настройки */
+  --blur-sm: 8px;
+  --blur-md: 12px;
+  --blur-lg: 16px;
+  --blur-xl: 24px;
+  
+  /* Цвета бренда */
+  --primary-500: #3ECDC1;
+  --secondary-500: #6C5CE7;
+  --accent-500: #FDCB6E;
+  --success-500: #2ecc71;
+  --warning-500: #f39c12;
+  --danger-500: #e74c3c;
+  
+  /* Переходы */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-glass: backdrop-filter 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+[data-theme="dark"] {
+  /* === iOS 26 LIQUID GLASS ТЕМНАЯ ТЕМА === */
+  
+  /* Основные фоны */
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #1c1c1e;
+  --bg-tertiary: #2c2c2e;
+  --bg-card: rgba(28, 28, 30, 0.7);
+  --bg-nav: rgba(28, 28, 30, 0.85);
+  --bg-sidebar: rgba(10, 10, 11, 0.9);
+  --bg-modal: rgba(28, 28, 30, 0.9);
+  
+  /* Специальные glass фоны */
+  --glass-primary: rgba(28, 28, 30, 0.6);
+  --glass-secondary: rgba(44, 44, 46, 0.5);
+  --glass-tertiary: rgba(58, 58, 60, 0.4);
+  --glass-overlay: rgba(0, 0, 0, 0.3);
+  --glass-subtle: rgba(255, 255, 255, 0.05);
+  
+  /* Текст для темной темы */
+  --text-primary: #f2f2f7;
+  --text-secondary: #aeaeb2;
+  --text-muted: #8e8e93;
+  --text-inverse: #1c1c1e;
+  --text-accent: #ffffff;
+  
+  /* Границы для темной темы */
+  --border-color: rgba(84, 84, 88, 0.4);
+  --border-light: rgba(142, 142, 147, 0.2);
+  --border-dark: rgba(174, 174, 178, 0.3);
+  --border-focus: rgba(62, 205, 193, 0.6);
+  
+  /* Тени для темной темы */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.5);
+  
+  /* Внутренние тени */
+  --inset-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1);
+  --inset-shadow-dark: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  
+  /* Градиенты */
+  --gradient-glass: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    rgba(255, 255, 255, 0.05) 50%, 
+    rgba(255, 255, 255, 0.01) 100%);
+  
+  --gradient-card: linear-gradient(145deg, 
+    rgba(44, 44, 46, 0.8) 0%, 
+    rgba(28, 28, 30, 0.6) 100%);
+  
+  --gradient-nav: linear-gradient(180deg, 
+    rgba(28, 28, 30, 0.95) 0%, 
+    rgba(28, 28, 30, 0.85) 100%);
+  
+  /* Цветные градиенты */
+  --primary-gradient: linear-gradient(135deg, #3ECDC1 0%, #48CAE4 100%);
+  --secondary-gradient: linear-gradient(135deg, #6C5CE7 0%, #A855F7 100%);
+  --accent-gradient: linear-gradient(135deg, #FDCB6E 0%, #F39C12 100%);
+  
+  /* Блики и отражения */
+  --glass-shine: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    transparent 70%);
+    
+  /* Специфичные цвета компонентов */
+  --progress-bg: rgba(58, 58, 60, 0.5);
+  --progress-fill: var(--primary-gradient);
+  --modal-backdrop: rgba(0, 0, 0, 0.7);
+  --tooltip-bg: rgba(44, 44, 46, 0.9);
+  --code-bg: rgba(28, 28, 30, 0.8);
+  --input-bg: rgba(58, 58, 60, 0.6);
+  --button-bg: rgba(44, 44, 46, 0.7);
+  --card-hover-bg: rgba(44, 44, 46, 0.9);
+}
+
+/* ===== БАЗОВЫЕ LIQUID GLASS КЛАССЫ ===== */
+
+.glass {
+  background: var(--glass-primary);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md), var(--inset-shadow);
+  transition: var(--transition-glass);
+}
+
+.glass-card {
+  background: var(--gradient-card);
+  backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg), var(--inset-shadow);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--glass-shine);
+  opacity: 0.5;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl), var(--inset-shadow);
+  background: var(--card-hover-bg);
+}
+
+/* Навигация */
+.glass-nav {
+  background: var(--gradient-nav);
+  backdrop-filter: blur(var(--blur-xl));
+  -webkit-backdrop-filter: blur(var(--blur-xl));
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Кнопки */
+.glass-button {
+  background: var(--button-bg);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm), var(--inset-shadow);
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+  color: var(--text-primary);
+}
+
+.glass-button::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: var(--glass-shine);
+  opacity: 0;
+  transition: var(--transition-smooth);
+  transform: rotate(45deg);
+}
+
+.glass-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md), var(--inset-shadow);
+}
+
+.glass-button:hover::before {
+  opacity: 1;
+  animation: shine 0.6s ease-in-out;
+}
+
+.glass-button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm), var(--inset-shadow-dark);
+}
+
+/* Поля ввода */
+.glass-input {
+  background: var(--input-bg);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: var(--inset-shadow-dark);
+  transition: var(--transition-smooth);
+  color: var(--text-primary);
+}
+
+.glass-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--border-focus), var(--inset-shadow-dark);
+  outline: none;
+}
+
+.glass-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Модальные окна */
+.glass-modal {
+  background: var(--bg-modal);
+  backdrop-filter: blur(var(--blur-xl));
+  -webkit-backdrop-filter: blur(var(--blur-xl));
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: var(--shadow-xl);
+}
+
+.glass-modal-backdrop {
+  background: var(--modal-backdrop);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+}
+
+/* Переключатель темы */
+.theme-toggle {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  background: var(--glass-secondary);
+  border-radius: 15px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+}
+
+.theme-toggle::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transition: var(--transition-bounce);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .theme-toggle::before {
+  transform: translateX(28px);
+  background: var(--accent-500);
+}
+
+.theme-toggle:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Анимации */
+@keyframes shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Плавные переходы между темами */
+.theme-transitioning,
+.theme-transitioning * {
+  transition: background-color 0.3s ease, 
+              border-color 0.3s ease, 
+              color 0.3s ease, 
+              box-shadow 0.3s ease,
+              backdrop-filter 0.3s ease !important;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .glass-card {
+    border-radius: 12px;
+    backdrop-filter: blur(var(--blur-md));
+  }
+
+  .glass-nav {
+    backdrop-filter: blur(var(--blur-lg));
+    border-radius: 0 0 16px 16px;
+  }
+
+  .glass-button {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .glass-card {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Поддержка сенсорных устройств */
+@media (hover: none) {
+  .glass-card:hover {
+    transform: none;
+  }
+  
+  .glass-card:active {
+    transform: scale(0.98);
+  }
+  
+  .glass-button:hover {
+    transform: none;
+  }
+  
+  .glass-button:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Fallback для браузеров без поддержки backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass, .glass-card, .glass-nav, .glass-button, .glass-input, .glass-modal {
+    background: var(--bg-card);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  
+  [data-theme="dark"] .glass,
+  [data-theme="dark"] .glass-card,
+  [data-theme="dark"] .glass-nav,
+  [data-theme="dark"] .glass-button,
+  [data-theme="dark"] .glass-input,
+  [data-theme="dark"] .glass-modal {
+    background: var(--bg-secondary);
+  }
+} 

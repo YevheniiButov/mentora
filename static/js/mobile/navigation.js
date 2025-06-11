@@ -37,20 +37,31 @@ class MobileNavigation {
                 const targetPage = item.getAttribute('data-page');
                 
                 // НЕ блокируем переходы на внешние страницы (AI, и т.д.)
-                if (targetUrl.includes('/ai-assistant') || targetUrl.includes('/ai/') || 
-                    targetUrl.includes('/virtual-patient') || targetUrl.includes('/admin')) {
+                if (targetUrl && (targetUrl.includes('/ai-assistant') || targetUrl.includes('/ai/') || 
+                    targetUrl.includes('/virtual-patient') || targetUrl.includes('/admin'))) {
                     // Позволяем стандартный переход
                     return;
                 }
                 
-                e.preventDefault();
+                // НЕ блокируем стандартную навигацию - это может вызывать проблемы
+                // e.preventDefault();
                 
-                if (this.isTransitioning) return;
+                if (this.isTransitioning) {
+                    e.preventDefault();
+                    return;
+                }
                 
                 // Проверяем, не на той ли странице уже находимся
-                if (this.isCurrentPage(targetUrl)) return;
+                if (targetUrl && this.isCurrentPage(targetUrl)) {
+                    e.preventDefault();
+                    return;
+                }
                 
-                this.navigateToPage(targetUrl, targetPage);
+                // Добавляем визуальную обратную связь, но НЕ блокируем переход
+                this.addVisualFeedback(item);
+                
+                // Обновляем активную навигацию без блокировки перехода
+                this.updateActiveNavigationFor(targetPage);
             });
             
             // Добавляем тактильную обратную связь
@@ -163,6 +174,14 @@ class MobileNavigation {
         const backBtn = document.querySelector('.back-btn');
         if (backBtn) {
             backBtn.addEventListener('click', (e) => {
+                // Проверяем есть ли у кнопки href
+                const href = backBtn.getAttribute('href');
+                if (href && href !== '#') {
+                    // Позволяем стандартную навигацию по href
+                    return;
+                }
+                
+                // Только если нет href или он пустой - делаем preventDefault
                 e.preventDefault();
                 this.goBack();
             });
@@ -292,6 +311,17 @@ class MobileNavigation {
                 element.style.transform = '';
             }, 150);
         }, { passive: true });
+    }
+    
+    addVisualFeedback(element) {
+        // Добавляем визуальный эффект нажатия
+        element.style.transform = 'scale(0.95)';
+        element.style.opacity = '0.8';
+        
+        setTimeout(() => {
+            element.style.transform = '';
+            element.style.opacity = '';
+        }, 150);
     }
 }
 

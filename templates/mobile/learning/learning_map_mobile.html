@@ -31,7 +31,11 @@
     <div class="subjects-grid" id="subjectsGrid">
         {% if subjects %}
             {% for subject in subjects %}
-                <a href="{{ url_for('mobile.subject_view', lang=lang, subject_id=subject.id) }}" class="subject-card">
+                {% if show_auth_prompt %}
+                    <a href="{{ url_for('mobile.public_subject_view', lang=lang, subject_id=subject.id) }}" class="subject-card">
+                {% else %}
+                    <a href="{{ url_for('mobile.subject_view', lang=lang, subject_id=subject.id) }}" class="subject-card">
+                {% endif %}
                     <div class="subject-icon">
                         {% if subject.name %}
                             {{ subject.name[0] }}
@@ -40,8 +44,8 @@
                         {% endif %}
                     </div>
                     <div class="subject-content">
-                        <h3 class="subject-title">{{ subject.name or 'Unnamed Subject' }}</h3>
-                        <p class="subject-description">{{ subject.description or t('no_description', lang or 'en') }}</p>
+                        <h3 class="subject-title">{{ subject.name or t('unnamed_subject', lang) or 'Unnamed Subject' }}</h3>
+                        <p class="subject-description">{{ subject.description or t('no_description', lang) or t('learning_module.no_description', lang) or 'Описание будет добавлено позже' }}</p>
                         
                         <div class="subject-stats">
                             <div class="stat">

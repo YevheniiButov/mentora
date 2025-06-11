@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
    */
   function startLesson(lessonId) {
     const currentLang = document.documentElement.lang || 'en';
-    window.location.href = `/${currentLang}/lesson/${lessonId}`;
+    window.location.href = `/${currentLang}/mobile/lesson/${lessonId}`;
   }
   
   /**

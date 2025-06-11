@@ -8,7 +8,7 @@ from extensions import db
 from models import (
     Module, Lesson, UserProgress, Subject, LearningPath, User,
     VirtualPatientScenario, Test, Question, TestAttempt,
-    ContentCategory, ContentSubcategory, ContentTopic
+    ContentCategory, ContentSubcategory, ContentTopic, VirtualPatientAttempt
 )
 from translations_new import get_translation as t
 from routes.learning_map_routes import get_module_stats, get_user_stats, calculate_subject_progress

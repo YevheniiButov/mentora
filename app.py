@@ -296,7 +296,11 @@ def create_app(test_config=None):
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Увеличено время жизни сессии
     
-
+    # Настройки CSRF для предотвращения истечения токенов
+    app.config['WTF_CSRF_TIME_LIMIT'] = 7200  # 2 часа вместо стандартного 1 часа
+    app.config['WTF_CSRF_CHECK_DEFAULT'] = True
+    app.config['WTF_CSRF_METHODS'] = ['POST', 'PUT', 'PATCH', 'DELETE']
+    
     # Настройка поддержки прокси для правильных URL
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     
@@ -861,19 +865,63 @@ def create_app(test_config=None):
     # Страница 500
     @app.errorhandler(500)
     def internal_error(e):
-        from utils.mobile_detection import get_mobile_detector
-        detector = get_mobile_detector()
+        """Обработчик внутренних ошибок сервера."""
+        lang = g.get('lang', session.get('lang', DEFAULT_LANGUAGE))
         
-        # Получаем язык из g или сессии
-        lang = getattr(g, 'lang', session.get('lang', app.config.get('DEFAULT_LANGUAGE', 'en')))
-        g.current_language = lang  # Для совместимости с шаблонами
+        # Логируем ошибку
+        app.logger.error(f"Internal server error: {e}", exc_info=True)
         
-        db.session.rollback()
+        # Проверяем, является ли это AJAX-запросом
+        if request.headers.get('Content-Type') == 'application/json' or \
+           request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'error': 'Внутренняя ошибка сервера',
+                'code': 500
+            }), 500
         
-        if detector.is_mobile_device:
-            return render_template('mobile/500.html', current_language=lang), 500
-        else:
-            return render_template('500.html', current_language=lang), 500
+        return render_template(
+            'errors/500.html',
+            lang=lang,
+            t=lambda key, default=None: translations.get(lang, {}).get(key, default or key)
+        ), 500
+
+    @app.errorhandler(400)
+    def bad_request(e):
+        """Обработчик ошибок CSRF и других неправильных запросов."""
+        lang = g.get('lang', session.get('lang', DEFAULT_LANGUAGE))
+        
+        # Проверяем, является ли это ошибкой CSRF
+        error_description = str(e.description) if hasattr(e, 'description') else str(e)
+        is_csrf_error = 'CSRF' in error_description or 'csrf' in error_description.lower()
+        
+        app.logger.warning(f"Bad request (400): {error_description}")
+        
+        # Если это AJAX-запрос
+        if request.headers.get('Content-Type') == 'application/json' or \
+           request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            if is_csrf_error:
+                return jsonify({
+                    'error': 'CSRF токен истек. Пожалуйста, обновите страницу.',
+                    'code': 400,
+                    'csrf_error': True,
+                    'reload_required': True
+                }), 400
+            else:
+                return jsonify({
+                    'error': 'Неправильный запрос',
+                    'code': 400
+                }), 400
+        
+        # Для обычных запросов
+        if is_csrf_error:
+            flash('Время сессии истекло. Пожалуйста, повторите действие.', 'warning')
+            return redirect(request.referrer or url_for('main_bp.index', lang=lang))
+        
+        return render_template(
+            'errors/400.html',
+            lang=lang,
+            t=lambda key, default=None: translations.get(lang, {}).get(key, default or key)
+        ), 400
     
     # Редирект на страницу с языком по умолчанию из корня
     @app.route('/')

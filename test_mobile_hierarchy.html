@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест мобильной иерархии - Dental Academy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(25px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #3ecdc1;
+        }
+        
+        .hierarchy-level {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+        
+        .level-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #3ecdc1;
+        }
+        
+        .test-link {
+            display: block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .test-link:before {
+            content: "🔗 ";
+            margin-right: 0.5rem;
+        }
+        
+        .status {
+            float: right;
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .note {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            border-left: 4px solid #3ecdc1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦷 Тест мобильной иерархии Dental Academy</h1>
+        
+        <!-- Уровень 1: Главная -->
+        <div class="hierarchy-level">
+            <div class="level-title">📱 Уровень 1: Главная страница</div>
+            <a href="http://localhost:5000/ru/mobile/" class="test-link">
+                Мобильная главная
+                <span class="status">Базовая</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/welcome" class="test-link">
+                Welcome страница
+                <span class="status">Альтернативная</span>
+            </a>
+        </div>
+        
+        <!-- Уровень 2: Обучение -->
+        <div class="hierarchy-level">
+            <div class="level-title">📚 Уровень 2: Карта обучения</div>
+            <a href="http://localhost:5000/ru/mobile/subjects" class="test-link">
+                Предметы (публично)
+                <span class="status">Публичная</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/learning" class="test-link">
+                Карта обучения (авторизованно)
+                <span class="status">Требует входа</span>
+            </a>
+        </div>
+        
+        <!-- Уровень 3: Предмет -->
+        <div class="hierarchy-level">
+            <div class="level-title">📖 Уровень 3: Просмотр предмета</div>
+            <a href="http://localhost:5000/ru/mobile/subject/1" class="test-link">
+                Предмет #1 (авторизованно)
+                <span class="status">Требует входа</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/subject/2" class="test-link">
+                Предмет #2 (авторизованно)
+                <span class="status">Требует входа</span>
+            </a>
+        </div>
+        
+        <!-- Уровень 4: Модуль -->
+        <div class="hierarchy-level">
+            <div class="level-title">📝 Уровень 4: Просмотр модуля</div>
+            <a href="http://localhost:5000/ru/mobile/module/1" class="test-link">
+                Модуль #1
+                <span class="status">НОВЫЙ РОУТ</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/module/2" class="test-link">
+                Модуль #2
+                <span class="status">НОВЫЙ РОУТ</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/module/3" class="test-link">
+                Модуль #3
+                <span class="status">НОВЫЙ РОУТ</span>
+            </a>
+        </div>
+        
+        <!-- Уровень 5: Урок -->
+        <div class="hierarchy-level">
+            <div class="level-title">🎓 Уровень 5: Просмотр урока</div>
+            <a href="http://localhost:5000/ru/mobile/lesson/1" class="test-link">
+                Урок #1
+                <span class="status">НОВЫЙ РОУТ</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/lesson/2" class="test-link">
+                Урок #2
+                <span class="status">НОВЫЙ РОУТ</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/lesson/5" class="test-link">
+                Урок #5
+                <span class="status">НОВЫЙ РОУТ</span>
+            </a>
+        </div>
+        
+        <!-- Авторизация -->
+        <div class="hierarchy-level">
+            <div class="level-title">🔐 Авторизация</div>
+            <a href="http://localhost:5000/ru/mobile/auth/login" class="test-link">
+                Вход
+                <span class="status">Базовая</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/auth/register" class="test-link">
+                Регистрация
+                <span class="status">Базовая</span>
+            </a>
+        </div>
+        
+        <!-- Дополнительные страницы -->
+        <div class="hierarchy-level">
+            <div class="level-title">⚙️ Дополнительные страницы</div>
+            <a href="http://localhost:5000/ru/mobile/profile" class="test-link">
+                Профиль
+                <span class="status">Требует входа</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/settings" class="test-link">
+                Настройки
+                <span class="status">Требует входа</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/tests" class="test-link">
+                Тесты
+                <span class="status">Требует входа</span>
+            </a>
+        </div>
+        
+        <!-- API -->
+        <div class="hierarchy-level">
+            <div class="level-title">🔧 API Endpoints</div>
+            <a href="http://localhost:5000/ru/mobile/api/subjects" class="test-link">
+                API: Список предметов
+                <span class="status">JSON</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/test" class="test-link">
+                Диагностика системы
+                <span class="status">JSON</span>
+            </a>
+            <a href="http://localhost:5000/ru/mobile/device-info" class="test-link">
+                Информация об устройстве
+                <span class="status">JSON</span>
+            </a>
+        </div>
+        
+        <div class="note">
+            <strong>📋 Что тестировать:</strong>
+            <br>
+            1. ✅ Все ссылки должны открываться без ошибок
+            <br>
+            2. ✅ Навигация везде показывает логотип (не кнопку назад)
+            <br>
+            3. ✅ Нижнее меню работает корректно
+            <br>
+            4. ✅ Упрощенный интерфейс без лишних элементов
+            <br>
+            5. ✅ Защита от скриншотов активна
+            <br>
+            6. ✅ Переходы между уровнями работают
+        </div>
+    </div>
+    
+    <script>
+        // Отслеживание кликов для тестирования
+        document.querySelectorAll('.test-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                console.log('🔗 Переход на:', this.href);
+                
+                // Показываем статус тестирования
+                const status = this.querySelector('.status');
+                if (status) {
+                    status.style.background = '#fbbf24';
+                    status.textContent = 'Тестируем...';
+                    
+                    setTimeout(() => {
+                        status.style.background = '#22c55e';
+                        status.textContent = 'Открыто';
+                    }, 1000);
+                }
+            });
+        });
+        
+        console.log('🧪 Страница тестирования мобильной иерархии загружена');
+        console.log('📱 Откройте в мобильном браузере для полного тестирования');
+    </script>
+</body>
+</html> 

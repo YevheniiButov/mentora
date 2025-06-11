@@ -2,324 +2,139 @@
 
 {% block title %}{{ lesson.title }} - {{ t('dental_academy', lang) }}{% endblock %}
 
-{% block head_extra %}
-<!-- Дополнительные мета-теги для уроков -->
-<meta name="description" content="{{ lesson.description or t('learn_dentistry', lang) }}">
-<meta property="og:title" content="{{ lesson.title }}">
-<meta property="og:description" content="{{ lesson.description or t('learn_dentistry', lang) }}">
-{% endblock %}
-
-{% block body_start %}
-<!-- Настройка навигации для урока -->
-{% set breadcrumbs = [
-    {'title': 'learning', 'url': url_for('mobile.learning_map', lang=lang)},
-    {'title': lesson.module.subject.name if lesson.module and lesson.module.subject else 'subject', 'url': url_for('mobile.subject_view', lang=lang, subject_id=lesson.module.subject_id) if lesson.module else '#'},
-    {'title': lesson.title, 'url': None}
-] %}
-
-{% set progress_data = {
-    'current': current_section or 1,
-    'total': total_sections or 1,
-    'percentage': ((current_section or 1) / (total_sections or 1) * 100) | round
-} %}
-
-{% set nav_config = get_navigation_config('lesson',
-    breadcrumbs=breadcrumbs,
-    show_back_button=True,
-    show_progress=True,
-    progress_data=progress_data,
-    show_bottom_nav=True
-) %}
-{% endblock %}
-
-{% block content %}
-<div class="lesson-container">
-    <!-- Основной контент урока -->
-    <div class="lesson-content">
-        <!-- Заголовок урока -->
-        <div class="lesson-header">
-            <h1 class="lesson-title">{{ lesson.title }}</h1>
-            
-            <div class="lesson-meta">
-                <span class="meta-item">
-                    <i class="bi bi-clock"></i>
-                    {{ lesson.estimated_time or t('15_min', lang) or '15 мин' }}
-                </span>
-                <span class="meta-item">
-                    <i class="bi bi-bar-chart"></i>
-                    {{ lesson.difficulty or t('medium', lang) or 'Средний' }}
-                </span>
-                {% if lesson.views %}
-                <span class="meta-item">
-                    <i class="bi bi-eye"></i>
-                    {{ lesson.views }}
-                </span>
-                {% endif %}
-            </div>
-            
-            {% if lesson.description %}
-            <p class="lesson-description">{{ lesson.description }}</p>
-            {% endif %}
-        </div>
-
-        <!-- Тело урока -->
-        <div class="lesson-body" id="lessonBody">
-            {% if lesson.content %}
-                {{ lesson.content | safe }}
-            {% else %}
-                <div class="lesson-highlight">
-                    <h3>🦷 {{ t('welcome_to_lesson', lang) or 'Добро пожаловать в урок!' }}</h3>
-                    <p>{{ t('lesson_intro_text', lang) or 'Этот урок поможет вам изучить основы стоматологии. Внимательно прочитайте материал и выполните все задания.' }}</p>
-                </div>
-
-                <h2>{{ t('basic_concepts', lang) or 'Основные понятия' }}</h2>
-                <p>{{ t('concepts_intro', lang) or 'В этом разделе мы рассмотрим ключевые концепции, которые необходимо знать каждому стоматологу.' }}</p>
-
-                <div class="lesson-note">
-                    <strong>💡 {{ t('important', lang) or 'Важно' }}:</strong> {{ t('practical_attention', lang) or 'Обратите особое внимание на практические аспекты применения изученного материала.' }}
-                </div>
-
-                <h3>{{ t('practical_recommendations', lang) or 'Практические рекомендации' }}</h3>
-                <ul>
-                    <li>{{ t('follow_aseptic_rules', lang) or 'Всегда соблюдайте правила асептики и антисептики' }}</li>
-                    <li>{{ t('use_quality_materials', lang) or 'Используйте качественные материалы и инструменты' }}</li>
-                    <li>{{ t('keep_detailed_docs', lang) or 'Ведите подробную документацию' }}</li>
-                    <li>{{ t('continuous_learning', lang) or 'Постоянно повышайте свою квалификацию' }}</li>
-                </ul>
-
-                <div class="lesson-warning">
-                    <strong>⚠️ {{ t('attention', lang) or 'Внимание' }}:</strong> {{ t('educational_only', lang) or 'Данный материал предназначен только для образовательных целей и не заменяет профессиональную медицинскую консультацию.' }}
-                </div>
-
-                <h3>{{ t('conclusion', lang) or 'Заключение' }}</h3>
-                <p>{{ t('continuous_practice', lang) or 'Изучение стоматологии требует постоянной практики и обновления знаний. Продолжайте изучать новые методики и технологии в области стоматологии.' }}</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Плавающие кнопки -->
-    <div class="floating-actions">
-        <button class="floating-btn" onclick="toggleNotes()" title="{{ t('notes', lang) or 'Заметки' }}">
-            <i class="bi bi-journal-text"></i>
-        </button>
-        <button class="floating-btn" onclick="openAIAssistant()" title="{{ t('ai_assistant', lang) or 'AI помощник' }}">
-            <i class="bi bi-robot"></i>
-        </button>
-    </div>
-
-    <!-- Навигация по урокам -->
-    <nav class="lesson-navigation">
-        <button class="nav-btn secondary" id="prevBtn" onclick="previousLesson()" 
-                {% if not previous_lesson %}disabled{% endif %}>
-            <i class="bi bi-chevron-left"></i>
-            {{ t('back', lang) or 'Назад' }}
-        </button>
-        
-        <div class="lesson-actions">
-            <button class="action-btn" onclick="toggleBookmark()" title="{{ t('bookmark', lang) or 'Закладка' }}">
-                <i class="bi bi-bookmark"></i>
-            </button>
-            <button class="action-btn" onclick="shareLesson()" title="{{ t('share', lang) or 'Поделиться' }}">
-                <i class="bi bi-share"></i>
-            </button>
-            <button class="action-btn" onclick="openAIAssistant()" title="{{ t('ai_assistant', lang) or 'AI помощник' }}">
-                <i class="bi bi-robot"></i>
-            </button>
-        </div>
-        
-        <button class="nav-btn" id="nextBtn" onclick="nextLesson()">
-            {% if next_lesson %}
-                {{ t('next', lang) or 'Далее' }}
-                <i class="bi bi-chevron-right"></i>
-            {% else %}
-                {{ t('complete', lang) or 'Завершить' }}
-                <i class="bi bi-check-circle"></i>
-            {% endif %}
-        </button>
-    </nav>
-</div>
-{% endblock %}
-
-{% block styles_extra %}
+{% block extra_css %}
 <style>
-/* ===== LESSON SPECIFIC STYLES ===== */
+/* Упрощенные стили для урока */
 .lesson-container {
-    padding-bottom: 100px; /* Отступ для навигации урока */
+    padding: 1rem;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
-.lesson-content {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--border-radius, 12px);
-    margin: 1rem;
-    padding: 2rem 1.5rem;
-    min-height: calc(100vh - 200px);
+.lesson-hero {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .lesson-header {
-    margin-bottom: 2rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
-.lesson-title {
+.lesson-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.lesson-info h1 {
     color: white;
     font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
-    line-height: 1.3;
+    margin: 0;
 }
 
-.lesson-meta {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
+.progress-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
 }
 
-.meta-item {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3ecdc1, #44d7c4);
+    border-radius: 4px;
+    transition: width 0.6s ease;
 }
 
-.lesson-description {
-    color: rgba(255, 255, 255, 0.8);
+.progress-text {
+    color: rgba(255, 255, 255, 0.9);
     font-size: 0.9rem;
-    line-height: 1.5;
     text-align: center;
-    margin-bottom: 0;
+    display: block;
 }
 
-/* ===== LESSON BODY ===== */
-.lesson-body {
-    color: white;
-    line-height: 1.6;
-}
-
-.lesson-body h1,
-.lesson-body h2,
-.lesson-body h3,
-.lesson-body h4 {
-    color: white;
-    margin: 2rem 0 1rem;
-    font-weight: 600;
-}
-
-.lesson-body h1 { font-size: 1.5rem; }
-.lesson-body h2 { font-size: 1.3rem; }
-.lesson-body h3 { font-size: 1.1rem; }
-.lesson-body h4 { font-size: 1rem; }
-
-.lesson-body p {
-    margin-bottom: 1.5rem;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.lesson-body ul,
-.lesson-body ol {
-    margin: 1rem 0 1.5rem 1.5rem;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.lesson-body li {
-    margin-bottom: 0.5rem;
-}
-
-.lesson-body img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin: 1.5rem 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.lesson-highlight {
-    background: rgba(62, 205, 193, 0.1);
-    border: 1px solid rgba(62, 205, 193, 0.3);
-    border-radius: 8px;
+.lesson-content {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px);
+    border-radius: 20px;
     padding: 1.5rem;
-    margin: 1.5rem 0;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.lesson-note {
-    background: rgba(59, 130, 246, 0.1);
-    border-left: 4px solid #3b82f6;
-    padding: 1rem 1.5rem;
-    margin: 1.5rem 0;
-    border-radius: 0 8px 8px 0;
+.content-area {
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+    font-size: 1rem;
 }
 
-.lesson-warning {
-    background: rgba(239, 68, 68, 0.1);
-    border-left: 4px solid #ef4444;
-    padding: 1rem 1.5rem;
-    margin: 1.5rem 0;
-    border-radius: 0 8px 8px 0;
-}
-
-/* ===== FLOATING ACTIONS ===== */
-.floating-actions {
-    position: fixed;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
-    z-index: 997;
-}
-
-.floating-btn {
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
+.content-area h2, .content-area h3, .content-area h4 {
     color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    margin-bottom: 0.5rem;
+    font-weight: 600;
+    margin: 1.5rem 0 1rem 0;
+}
+
+.content-area h2 {
+    font-size: 1.3rem;
+}
+
+.content-area h3 {
     font-size: 1.2rem;
 }
 
-.floating-btn:hover,
-.floating-btn:active {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
+.content-area h4 {
+    font-size: 1.1rem;
 }
 
-/* ===== LESSON NAVIGATION ===== */
+.content-area p {
+    margin-bottom: 1rem;
+}
+
+.content-area ul, .content-area ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.content-area li {
+    margin-bottom: 0.5rem;
+}
+
 .lesson-navigation {
-    position: fixed;
-    bottom: 80px; /* Над bottom navigation */
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px);
+    border-radius: 20px;
     padding: 1rem;
-    z-index: 998;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .nav-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
-    border: none;
-    border-radius: 8px;
     padding: 0.75rem 1.5rem;
+    border-radius: 15px;
     font-weight: 600;
-    cursor: pointer;
+    text-decoration: none;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -327,315 +142,167 @@
     font-size: 0.9rem;
 }
 
-.nav-btn:hover:not(:disabled) {
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    color: white;
+    text-decoration: none;
 }
 
 .nav-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: #6b7280;
+    transform: none;
 }
 
-.nav-btn.secondary {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+.nav-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+}
+
+.nav-btn.primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.lesson-progress-info {
     color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    text-align: center;
 }
 
-.lesson-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.action-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    color: rgba(255, 255, 255, 0.8);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.action-btn:hover,
-.action-btn:active {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-.action-btn.active {
-    background: rgba(62, 205, 193, 0.2);
-    border-color: #3ecdc1;
-    color: #3ecdc1;
-}
-
-/* ===== RESPONSIVE ===== */
 @media (max-width: 480px) {
-    .lesson-content {
-        margin: 0.5rem;
-        padding: 1.5rem 1rem;
-    }
-    
-    .lesson-meta {
-        gap: 1rem;
-    }
-}
-
-@media (max-width: 360px) {
-    .lesson-navigation {
+    .lesson-container {
         padding: 0.75rem;
     }
     
+    .lesson-hero,
+    .lesson-content,
+    .lesson-navigation {
+        padding: 1rem;
+    }
+    
+    .lesson-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .lesson-info h1 {
+        font-size: 1.3rem;
+    }
+    
     .nav-btn {
-        padding: 0.625rem 1rem;
+        padding: 0.5rem 1rem;
         font-size: 0.85rem;
     }
     
-    .floating-actions {
-        right: 0.5rem;
+    .lesson-navigation {
+        flex-direction: column;
+        gap: 0.75rem;
     }
-}
-
-/* ===== ТЕМНАЯ ТЕМА ===== */
-[data-theme="dark"] .lesson-navigation {
-    background: rgba(31, 41, 55, 0.95);
-}
-
-[data-theme="dark"] .nav-btn.secondary {
-    border-color: rgba(156, 163, 175, 0.3);
-    color: rgba(156, 163, 175, 0.8);
-}
-
-[data-theme="dark"] .action-btn {
-    background: rgba(75, 85, 99, 0.3);
-    border-color: rgba(156, 163, 175, 0.2);
-    color: rgba(156, 163, 175, 0.8);
-}
-
-/* ===== АНИМАЦИИ ===== */
-.lesson-content {
-    animation: fadeIn 0.6s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    
+    .nav-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>
 {% endblock %}
 
-{% block scripts_extra %}
-<script>
-// Lesson specific functionality
-let currentSection = {{ current_section or 1 }};
-let totalSections = {{ total_sections or 1 }};
-let lessonProgress = 0;
-let isBookmarked = false;
-let notesVisible = false;
+{% block content %}
+<div class="lesson-container">
+    <!-- Заголовок урока -->
+    <div class="lesson-hero">
+        <div class="lesson-header">
+            <div class="lesson-icon">
+                <i class="fas fa-{{ lesson.content_type == 'quiz' and 'question-circle' or 'book-open' }}"></i>
+            </div>
+            <div class="lesson-info">
+                <h1>{{ lesson.title }}</h1>
+            </div>
+        </div>
+        
+        <!-- Прогресс урока -->
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ ((current_index + 1) / total_lessons * 100) | round }}%"></div>
+        </div>
+        <span class="progress-text">{{ current_index + 1 }} из {{ total_lessons }}</span>
+    </div>
 
-// Initialize lesson
-document.addEventListener('DOMContentLoaded', function() {
-    setupScrollTracking();
-    loadUserProgress();
-    updateProgressBar();
-});
+    <!-- Содержимое урока -->
+    <div class="lesson-content">
+        <div class="content-area">
+            {% if processed_content %}
+                {% if processed_content.type == 'learning_cards' %}
+                    {% for card in processed_content.cards %}
+                        <div class="learning-card">
+                            {% if card.title %}
+                                <h2>{{ card.title }}</h2>
+                            {% endif %}
+                            {% if card.content %}
+                                {{ card.content | safe }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% elif processed_content.type == 'quiz' %}
+                    <h2>{{ t('quiz', lang) or 'Тест' }}</h2>
+                    <div class="quiz-container">
+                        {% for question in processed_content.questions %}
+                            <div class="quiz-question">
+                                <h3>{{ question.question }}</h3>
+                                {% if question.options %}
+                                    {% for option in question.options %}
+                                        <label class="quiz-option">
+                                            <input type="radio" name="q{{ loop.index0 }}" value="{{ loop.index0 }}">
+                                            <span>{{ option }}</span>
+                                        </label>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ processed_content.content | safe }}
+                {% endif %}
+            {% else %}
+                <h2>{{ t('lesson_content', lang) or 'Содержание урока' }}</h2>
+                <p>{{ t('default_lesson_content', lang) or 'Это образовательный урок по стоматологии. Изучите материал внимательно.' }}</p>
+            {% endif %}
+        </div>
+    </div>
 
-function updateProgressBar() {
-    // Обновляем прогресс в header через nav_config
-    const progressFill = document.querySelector('.progress-fill');
-    if (progressFill) {
-        lessonProgress = (currentSection / totalSections) * 100;
-        progressFill.style.width = lessonProgress + '%';
-    }
-    saveProgress();
-}
-
-function setupScrollTracking() {
-    let ticking = false;
-    
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                const scrolled = window.pageYOffset;
-                const maxScroll = document.body.scrollHeight - window.innerHeight;
-                const scrollProgress = Math.min((scrolled / maxScroll) * 100, 100);
-                
-                // Update progress based on scroll
-                if (scrollProgress > lessonProgress) {
-                    lessonProgress = scrollProgress;
-                    const progressFill = document.querySelector('.progress-fill');
-                    if (progressFill) {
-                        progressFill.style.width = lessonProgress + '%';
-                    }
-                    saveProgress();
-                }
-                
-                ticking = false;
-            });
-            ticking = true;
-        }
-    }, { passive: true });
-}
-
-function saveProgress() {
-    // Save lesson progress to localStorage or send to server
-    const progressData = {
-        lessonId: {{ lesson.id }},
-        progress: lessonProgress,
-        currentSection: currentSection,
-        timestamp: new Date().toISOString()
-    };
-    
-    localStorage.setItem('lesson_progress_{{ lesson.id }}', JSON.stringify(progressData));
-    
-    // Send to server if user is authenticated
-    {% if current_user.is_authenticated %}
-    fetch('/{{ lang }}/mobile/api/lesson/{{ lesson.id }}/progress', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(progressData)
-    }).catch(console.error);
-    {% endif %}
-}
-
-function loadUserProgress() {
-    const saved = localStorage.getItem('lesson_progress_{{ lesson.id }}');
-    if (saved) {
-        const data = JSON.parse(saved);
-        lessonProgress = data.progress || 0;
-        currentSection = data.currentSection || 1;
-        updateProgressBar();
-    }
-}
-
-function toggleBookmark() {
-    isBookmarked = !isBookmarked;
-    const bookmarkBtns = document.querySelectorAll('.action-btn .bi-bookmark, .action-btn .bi-bookmark-fill');
-    
-    bookmarkBtns.forEach(btn => {
-        if (isBookmarked) {
-            btn.classList.remove('bi-bookmark');
-            btn.classList.add('bi-bookmark-fill');
-            btn.parentElement.classList.add('active');
-        } else {
-            btn.classList.remove('bi-bookmark-fill');
-            btn.classList.add('bi-bookmark');
-            btn.parentElement.classList.remove('active');
-        }
-    });
-    
-    const message = isBookmarked ? 
-        ({{ t('lesson_bookmarked', lang) | tojson }} || 'Урок добавлен в закладки') : 
-        ({{ t('lesson_unbookmarked', lang) | tojson }} || 'Урок удален из закладок');
-    
-    if (window.mobileApp && window.mobileApp.showNotification) {
-        window.mobileApp.showNotification(message, isBookmarked ? 'success' : 'info');
-    }
-}
-
-function toggleNotes() {
-    notesVisible = !notesVisible;
-    
-    if (notesVisible) {
-        // Здесь можно открыть модальное окно с заметками
-        if (window.mobileApp && window.mobileApp.showNotification) {
-            window.mobileApp.showNotification({{ t('notes_in_development', lang) | tojson }} || 'Функция заметок в разработке', 'info');
-        }
-    }
-}
-
-function shareLesson() {
-    if (navigator.share) {
-        navigator.share({
-            title: '{{ lesson.title }}',
-            text: {{ t('studying_dentistry', lang) | tojson }} || 'Изучаю стоматологию в Dental Academy',
-            url: window.location.href
-        }).catch(console.error);
-    } else {
-        // Fallback - copy to clipboard
-        navigator.clipboard.writeText(window.location.href).then(() => {
-            if (window.mobileApp && window.mobileApp.showNotification) {
-                window.mobileApp.showNotification({{ t('link_copied', lang) | tojson }} || 'Ссылка скопирована в буфер обмена', 'success');
-            }
-        }).catch(() => {
-            if (window.mobileApp && window.mobileApp.showNotification) {
-                window.mobileApp.showNotification({{ t('copy_failed', lang) | tojson }} || 'Не удалось скопировать ссылку', 'error');
-            }
-        });
-    }
-}
-
-function openAIAssistant() {
-    // Открыть AI помощника с контекстом урока
-    const lessonTitle = document.querySelector('.lesson-title')?.textContent || '';
-    const lessonContent = document.querySelector('.lesson-body')?.textContent?.slice(0, 500) || '';
-    
-    // Сохраняем контекст урока в sessionStorage для AI
-    sessionStorage.setItem('aiContext', JSON.stringify({
-        type: 'lesson',
-        lesson_id: {{ lesson.id }},
-        lesson_title: lessonTitle,
-        lesson_content: lessonContent
-    }));
-    
-    // Переходим на страницу AI
-    window.location.href = '{{ url_for("ai.ai_chat", lang=lang) }}';
-}
-
-function previousLesson() {
-    {% if previous_lesson %}
-        window.location.href = '{{ url_for("mobile.lesson_view", lang=lang, lesson_id=previous_lesson.id) }}';
-    {% endif %}
-}
-
-function nextLesson() {
-    {% if next_lesson %}
-        // Mark current lesson as completed and go to next
-        markLessonCompleted();
-        window.location.href = '{{ url_for("mobile.lesson_view", lang=lang, lesson_id=next_lesson.id) }}';
-    {% else %}
-        // Complete the lesson and return to subject/module
-        markLessonCompleted();
-        {% if lesson.module and lesson.module.subject_id %}
-            window.location.href = '{{ url_for("mobile.subject_view", lang=lang, subject_id=lesson.module.subject_id) }}';
+    <!-- Навигация -->
+    <div class="lesson-navigation">
+        {% if prev_lesson %}
+            <a href="{{ url_for('mobile.lesson_view', lang=lang, lesson_id=prev_lesson.id) }}" 
+               class="nav-btn">
+                <i class="fas fa-chevron-left"></i>
+                {{ t('previous', lang) or 'Назад' }}
+            </a>
         {% else %}
-            window.location.href = '{{ url_for("mobile.learning_map", lang=lang) }}';
+            <span class="nav-btn" style="opacity: 0.3;">
+                <i class="fas fa-chevron-left"></i>
+                {{ t('previous', lang) or 'Назад' }}
+            </span>
         {% endif %}
-    {% endif %}
-}
-
-function markLessonCompleted() {
-    lessonProgress = 100;
-    saveProgress();
-    
-    {% if current_user.is_authenticated %}
-    fetch('/{{ lang }}/mobile/api/lesson/{{ lesson.id }}/complete', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    }).catch(console.error);
-    {% endif %}
-}
-
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
-        previousLesson();
-    } else if (e.key === 'ArrowRight') {
-        nextLesson();
-    } else if (e.key === 'b' && e.ctrlKey) {
-        e.preventDefault();
-        toggleBookmark();
-    }
-});
-</script>
-{% endblock %} 
+        
+        <div class="lesson-progress-info">
+            {{ current_index + 1 }} / {{ total_lessons }}
+        </div>
+        
+        {% if next_lesson %}
+            <a href="{{ url_for('mobile.lesson_view', lang=lang, lesson_id=next_lesson.id) }}" 
+               class="nav-btn primary">
+                {{ t('next', lang) or 'Далее' }}
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% else %}
+            <a href="{{ url_for('mobile.module_view', lang=lang, module_id=module.id) }}" 
+               class="nav-btn primary">
+                {{ t('complete', lang) or 'Завершить' }}
+                <i class="fas fa-check"></i>
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -190,18 +190,27 @@
 
 <!-- CSS стили (используем существующие классы и добавляем недостающие) -->
 <style>
-/* Базовые стили для мобильной навигации */
+/* ===== iOS 26 LIQUID GLASS МОБИЛЬНАЯ НАВИГАЦИЯ ===== */
 .mobile-header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    background: var(--glass-nav);
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    border-bottom: 1px solid var(--border-glass);
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-glass);
+}
+
+/* Темная тема для header */
+[data-theme="dark"] .mobile-header {
+    background: var(--header-bg);
+    backdrop-filter: blur(var(--blur-xl));
+    border-bottom: 1px solid var(--border-glass);
+    box-shadow: var(--shadow-xl);
 }
 
 .mobile-header-content {
@@ -213,24 +222,44 @@
 }
 
 .mobile-back-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
+    background: var(--glass-secondary);
+    backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid var(--border-glass);
     border-radius: 12px;
     width: 44px;
     height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--text-primary);
     font-size: 1.2rem;
-    transition: all 0.3s ease;
+    transition: var(--transition-smooth);
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.mobile-back-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--glass-shine);
+    transition: left 0.5s ease;
+}
+
+.mobile-back-btn:hover::before {
+    left: 100%;
 }
 
 .mobile-back-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--glass-primary);
+    border-color: var(--border-glass-strong);
     transform: translateY(-2px);
-    color: white;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-lg);
 }
 
 .mobile-header-title {
@@ -240,10 +269,11 @@
 }
 
 .mobile-header-title h1 {
-    color: white;
+    color: var(--text-primary);
     font-weight: 600;
     font-size: 1.2rem;
     margin: 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .mobile-breadcrumbs {
@@ -328,22 +358,31 @@
     text-align: center;
 }
 
-/* НИЖНЯЯ НАВИГАЦИЯ - Обновленный дизайн */
+/* ===== НИЖНЯЯ НАВИГАЦИЯ - LIQUID GLASS ===== */
 .mobile-bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     height: 70px;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--glass-nav);
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    border-top: 1px solid var(--border-glass);
     display: flex;
     align-items: center;
     justify-content: space-around;
     z-index: 1000;
     padding: 0.5rem;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    transition: var(--transition-glass);
+}
+
+[data-theme="dark"] .mobile-bottom-nav {
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(var(--blur-xl));
+    border-top: 1px solid var(--border-glass);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .nav-item {
@@ -351,27 +390,55 @@
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.7);
-    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    transition: var(--transition-smooth);
     padding: 0.5rem;
     border-radius: 12px;
     min-width: 60px;
     flex: 1;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(var(--blur-sm));
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--glass-secondary);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+.nav-item:hover::before,
+.nav-item:focus::before {
+    opacity: 1;
 }
 
 .nav-item:hover,
 .nav-item:focus {
-    color: #3ECDC1;
-    background: rgba(62, 205, 193, 0.1);
+    color: var(--primary-500);
     transform: translateY(-2px);
     text-decoration: none;
+    box-shadow: var(--shadow-md);
+}
+
+.nav-item.active::before {
+    opacity: 1;
+    background: var(--glass-primary);
+    border-color: var(--border-glass-strong);
 }
 
 .nav-item.active {
-    color: #3ECDC1;
-    background: rgba(62, 205, 193, 0.1);
+    color: var(--primary-500);
     transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
 }
 
 .nav-item i {
@@ -509,6 +576,22 @@
         padding: 0.75rem;
         margin-bottom: 75px;
     }
+}
+
+/* ===== GLASS-ЭФФЕКТ ДЛЯ НАВИГАЦИИ ===== */
+.mobile-header, .mobile-bottom-nav {
+    background: rgba(20, 20, 30, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #fff;
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.10);
+    border: none;
+}
+
+.mobile-header *, .mobile-bottom-nav *,
+.mobile-header i, .mobile-bottom-nav i {
+    color: #fff !important;
+    fill: #fff !important;
 }
 </style>
 

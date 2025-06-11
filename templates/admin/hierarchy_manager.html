@@ -349,19 +349,74 @@
                             'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (response.status === 400) {
+                            return response.json().then(data => {
+                                if (data.csrf_error || data.reload_required) {
+                                    alert('Время сессии истекло. Страница будет обновлена.');
+                                    location.reload();
+                                    return;
+                                }
+                                throw new Error(data.error || 'Ошибка запроса');
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             // Удаляем элемент из DOM
                             this.closest('.hierarchy-item').remove();
+                            // Показываем уведомление об успехе
+                            showNotification('success', `${type.charAt(0).toUpperCase() + type.slice(1)} успешно удален`);
                         } else {
                             alert(`Ошибка: ${data.message}`);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Произошла ошибка при удалении');
+                        if (error.message.includes('CSRF') || error.message.includes('сессии')) {
+                            alert('Время сессии истекло. Страница будет обновлена.');
+                            location.reload();
+                        } else {
+                            alert('Произошла ошибка при удалении: ' + error.message);
+                        }
                     });
+                }
+            });
+        });
+        
+        // Функция для показа уведомлений
+        function showNotification(type, message) {
+            // Создаем простое уведомление
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <span>${message}</span>
+                    <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Автоматически скрываем через 5 секунд
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+        
+        // Глобальная обработка CSRF ошибок для всех форм
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const csrfToken = this.querySelector('input[name="csrf_token"]');
+                if (!csrfToken || !csrfToken.value) {
+                    e.preventDefault();
+                    alert('CSRF токен отсутствует. Пожалуйста, обновите страницу.');
+                    location.reload();
+                    return false;
                 }
             });
         });

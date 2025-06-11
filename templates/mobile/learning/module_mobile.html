@@ -1,457 +1,253 @@
 {% extends "mobile_base.html" %}
 
-{% set nav_config = get_navigation_config('module_view', 
-    show_logo=True,
-    show_back_button=True,
-    show_bottom_nav=True,
-    show_profile_button=True,
-    show_settings_button=True,
-    show_language_selector=True,
-    page_title=module.title
-) %}
-
-{% block title %}{{ module.title }} - Dental Academy{% endblock %}
+{% block title %}{{ module.title }} - {{ t('dental_academy', lang) }}{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* ===== MODULE VIEW SPECIFIC STYLES ===== */
+/* Упрощенные стили для модуля */
+.module-container {
+    padding: 1rem;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.module-hero {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.module-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.module-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.module-info h1 {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.progress-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3ecdc1, #44d7c4);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.progress-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    text-align: center;
+    display: block;
+}
+
+.lessons-section {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.lessons-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.lesson-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.lesson-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.lesson-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.lesson-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.lesson-icon.completed {
+    background: rgba(62, 205, 193, 0.2);
+    color: #3ecdc1;
+}
+
+.lesson-icon.available {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.lesson-icon.locked {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.lesson-info {
+    flex: 1;
+}
+
+.lesson-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.lesson-status {
+    margin-left: auto;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-completed {
+    background: rgba(62, 205, 193, 0.2);
+    color: #3ecdc1;
+}
+
+.status-available {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.status-locked {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 480px) {
+    .module-container {
+        padding: 0.75rem;
+    }
     
-    /* ===== MODULE HERO SECTION ===== */
-    .module-hero {
-        margin-bottom: 2rem;
+    .module-hero,
+    .lessons-section {
+        padding: 1rem;
     }
-
-    .module-header {
-        display: flex;
-        align-items: flex-start;
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
+    
     .module-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, var(--secondary), var(--accent));
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .module-info {
-        flex: 1;
-    }
-
-    .module-title {
-        color: white;
+        width: 50px;
+        height: 50px;
         font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        line-height: 1.3;
     }
-
-    .module-description {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 0.9rem;
-        line-height: 1.5;
-        margin-bottom: 1rem;
-    }
-
-    .module-meta {
-        display: flex;
-        gap: 1.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .meta-item {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.85rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .meta-item i {
-        font-size: 1rem;
-    }
-
-    /* ===== PROGRESS SECTION ===== */
-    .progress-section {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .progress-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .progress-title {
-        color: white;
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-
-    .progress-percentage {
-        color: var(--primary);
-        font-size: 1.5rem;
-        font-weight: 800;
-    }
-
-    .progress-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-
-    .progress-stat {
-        text-align: center;
-    }
-
-    .stat-number {
-        color: white;
+    
+    .module-info h1 {
         font-size: 1.3rem;
-        font-weight: 700;
-        display: block;
     }
-
-    .stat-label {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-    }
-
-    /* ===== SUBTOPICS SECTION ===== */
-    .subtopics-section {
-        margin-bottom: 2rem;
-    }
-
-    .subtopic-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: var(--border-radius);
-        margin-bottom: 1.5rem;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .subtopic-header {
-        padding: 1.5rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: all 0.3s ease;
-    }
-
-    .subtopic-header:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-
-    .subtopic-info {
-        flex: 1;
-    }
-
-    .subtopic-title {
-        color: white;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .subtopic-meta {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .subtopic-progress {
-        margin-top: 0.5rem;
-    }
-
-    .expand-icon {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 1.2rem;
-        transition: transform 0.3s ease;
-    }
-
-    .subtopic-card.expanded .expand-icon {
-        transform: rotate(180deg);
-    }
-
-    .lessons-list {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-
-    .subtopic-card.expanded .lessons-list {
-        max-height: 1000px;
-    }
-
-    .lesson-item {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .lesson-item:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-
-    .lesson-item:last-child {
-        border-bottom: none;
-    }
-
-    .lesson-status {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        flex-shrink: 0;
-    }
-
-    .lesson-status.completed {
-        background: rgba(76, 222, 128, 0.2);
-        color: rgb(76, 222, 128);
-    }
-
-    .lesson-status.in-progress {
-        background: rgba(251, 191, 36, 0.2);
-        color: rgb(251, 191, 36);
-    }
-
-    .lesson-status.not-started {
-        background: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    .lesson-info {
-        flex: 1;
-    }
-
-    .lesson-title {
-        color: white;
-        font-size: 0.95rem;
-        font-weight: 500;
-        margin-bottom: 0.25rem;
-    }
-
-    .lesson-meta {
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.8rem;
-    }
-
-    /* ===== FLOATING ACTION BUTTON ===== */
-    .fab {
-        position: fixed;
-        bottom: calc(var(--nav-height) + 1rem);
-        right: 1rem;
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border: none;
-        border-radius: 50%;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-        box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
-        transition: all 0.3s ease;
-        z-index: 999;
-    }
-
-    .fab:hover,
-    .fab:active {
-        transform: scale(1.1) translateY(-2px);
-        box-shadow: 0 12px 35px rgba(62, 205, 193, 0.5);
-    }
-
-    /* ===== ANIMATIONS ===== */
-    .fade-in-up {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    .fade-in-up:nth-child(2) { animation-delay: 0.1s; }
-    .fade-in-up:nth-child(3) { animation-delay: 0.2s; }
-    .fade-in-up:nth-child(4) { animation-delay: 0.3s; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-    <!-- Module Hero Section -->
-    <section class="module-hero fade-in-up">
+<div class="module-container">
+    <!-- Заголовок модуля -->
+    <div class="module-hero">
         <div class="module-header">
             <div class="module-icon">
-                <i class="bi bi-collection"></i>
+                <i class="fas fa-{{ module.icon or 'file-text' }}"></i>
             </div>
-            
             <div class="module-info">
-                <h2 class="module-title">{{ module.title }}</h2>
-                <p class="module-description">{{ module.description or 'Изучите материалы этого модуля для углубления знаний' }}</p>
-                
-                <div class="module-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-file-text"></i>
-                        {{ total_lessons }} уроков
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-collection"></i>
-                        {{ topics_with_subtopics|length }} разделов
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-clock"></i>
-                        ~{{ (total_lessons * 5) }}мин
-                    </span>
-                </div>
+                <h1>{{ module.title }}</h1>
             </div>
-        </div>
-    </section>
-
-    <!-- Progress Section -->
-    <section class="progress-section fade-in-up">
-        <div class="progress-header">
-            <h3 class="progress-title">Прогресс модуля</h3>
-            <span class="progress-percentage">{{ module_progress }}%</span>
         </div>
         
-        <div class="mobile-progress-bar">
-            <div class="mobile-progress-fill" data-progress="{{ module_progress }}" style="width: 0%"></div>
+        <!-- Прогресс модуля -->
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ module.progress_percentage or 0 }}%"></div>
         </div>
-        
-        <div class="progress-stats">
-            <div class="progress-stat">
-                <span class="stat-number">{{ completed_lessons }}</span>
-                <span class="stat-label">Завершено</span>
-            </div>
-            <div class="progress-stat">
-                <span class="stat-number">{{ total_lessons - completed_lessons }}</span>
-                <span class="stat-label">Осталось</span>
-            </div>
-            <div class="progress-stat">
-                <span class="stat-number">{{ topics_with_subtopics|length }}</span>
-                <span class="stat-label">Разделов</span>
-            </div>
-        </div>
-    </section>
+        <span class="progress-text">{{ module.progress_percentage or 0 }}% завершено</span>
+    </div>
 
-    <!-- Subtopics Section -->
-    <section class="subtopics-section fade-in-up">
-        {% for topic_data in topics_with_subtopics %}
-        <div class="subtopic-card" data-topic="{{ loop.index }}">
-            <div class="subtopic-header" onclick="toggleSubtopic({{ loop.index }})">
-                <div class="subtopic-info">
-                    <h4 class="subtopic-title">{{ topic_data.topic.name }}</h4>
-                    
-                    <div class="subtopic-meta">
-                        <span class="meta-item">
-                            <i class="bi bi-file-text"></i>
-                            {{ topic_data.total_lessons }} уроков
-                        </span>
-                        <span class="meta-item">
-                            <i class="bi bi-check-circle"></i>
-                            {{ topic_data.completed_lessons }} завершено
-                        </span>
-                    </div>
-                    
-                    <div class="subtopic-progress">
-                        <div class="mobile-progress-bar">
-                            <div class="mobile-progress-fill" 
-                                data-progress="{{ topic_data.progress_percent }}" 
-                                style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <i class="bi bi-chevron-down expand-icon"></i>
-            </div>
-            
-            <div class="lessons-list">
-                {% for lesson_data in topic_data.lessons %}
-                <div class="lesson-item" onclick="openLesson({{ lesson_data.lesson.id }})">
-                    <div class="lesson-status {% if lesson_data.completed %}completed{% elif lesson_data.progress_percentage > 0 %}in-progress{% else %}not-started{% endif %}">
-                        {% if lesson_data.completed %}
-                            <i class="bi bi-check-circle-fill"></i>
-                        {% elif lesson_data.progress_percentage > 0 %}
-                            <i class="bi bi-play-circle-fill"></i>
+    <!-- Уроки -->
+    <div class="lessons-section">
+        <h2 class="section-title">{{ t('lessons', lang) or 'Уроки' }}</h2>
+        
+        <div class="lessons-grid">
+            {% for lesson in lessons %}
+            <a href="{{ url_for('mobile.lesson_view', lang=lang, lesson_id=lesson.id) }}" 
+               class="lesson-card">
+                <div class="lesson-header">
+                    <div class="lesson-icon {% if lesson.is_completed %}completed{% elif lesson.is_locked %}locked{% else %}available{% endif %}">
+                        {% if lesson.is_completed %}
+                            <i class="fas fa-check"></i>
+                        {% elif lesson.is_locked %}
+                            <i class="fas fa-lock"></i>
                         {% else %}
-                            <i class="bi bi-circle"></i>
+                            <i class="fas fa-play"></i>
                         {% endif %}
                     </div>
-                    
                     <div class="lesson-info">
-                        <div class="lesson-title">{{ lesson_data.lesson.title }}</div>
-                        <div class="lesson-meta">
-                            {% if lesson_data.lesson.content_type == 'learning_card' %}
-                                <i class="bi bi-card-text"></i> Обучающий материал
-                            {% elif lesson_data.lesson.content_type in ['quiz', 'test_question'] %}
-                                <i class="bi bi-question-circle"></i> Тест
-                            {% else %}
-                                <i class="bi bi-file-text"></i> Урок
-                            {% endif %}
-                            {% if lesson_data.progress_percentage > 0 and not lesson_data.completed %}
-                                • {{ lesson_data.progress_percentage }}% завершено
-                            {% endif %}
-                        </div>
+                        <h3 class="lesson-title">{{ lesson.title }}</h3>
+                    </div>
+                    <div class="lesson-status {% if lesson.is_completed %}status-completed{% elif lesson.is_locked %}status-locked{% else %}status-available{% endif %}">
+                        {% if lesson.is_completed %}
+                            {{ t('completed', lang) or 'Завершено' }}
+                        {% elif lesson.is_locked %}
+                            {{ t('locked', lang) or 'Заблокировано' }}
+                        {% else %}
+                            {{ t('available', lang) or 'Доступно' }}
+                        {% endif %}
                     </div>
                 </div>
-                {% endfor %}
-            </div>
+            </a>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </section>
-
-    <!-- Floating Action Button -->
-    <button class="fab" onclick="showQuickActions()">
-        <i class="bi bi-list"></i>
-    </button>
-
-    <!-- Scripts -->
-    <script src="/static/js/mobile/mobile-app.js"></script>
-    <script>
-        // Module View specific functionality
-        function toggleSubtopic(topicIndex) {
-            const card = document.querySelector(`[data-topic="${topicIndex}"]`);
-            card.classList.toggle('expanded');
-        }
-
-        function openLesson(lessonId) {
-            window.location.href = `/{{ lang }}/mobile/lesson/${lessonId}`;
-        }
-
-        function showQuickActions() {
-            // Простая реализация - можно расширить
-            window.mobileApp.showNotification('Быстрые действия в разработке', 'info');
-        }
-
-        // Initialize progress bars animation
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                document.querySelectorAll('.mobile-progress-fill').forEach(bar => {
-                    const progress = bar.dataset.progress;
-                    bar.style.width = progress + '%';
-                });
-            }, 500);
-        });
-    </script>
-{% endblock %} 
+    </div>
+</div>
+{% endblock %}

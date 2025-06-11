@@ -67,7 +67,7 @@ class MobileNavigationConfig:
             'logo_url': None
         },
         
-        'lesson': {
+        'lesson_view': {
             'show_bottom_nav': True,
             'show_back_button': True,
             'show_profile_button': False,

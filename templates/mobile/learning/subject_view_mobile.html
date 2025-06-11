@@ -2,420 +2,127 @@
 
 {% block title %}{{ subject.name }} - {{ t('dental_academy', lang) }}{% endblock %}
 
-{% block head_extra %}
-<!-- Дополнительные мета-теги для предмета -->
-<meta name="description" content="{{ subject.description or t('learn_subject', lang) }}">
-<meta property="og:title" content="{{ subject.name }}">
-<meta property="og:description" content="{{ subject.description or t('learn_subject', lang) }}">
-{% endblock %}
-
-{% block body_start %}
-<!-- Настройка навигации для предмета -->
-{% set breadcrumbs = [
-    {'title': 'learning', 'url': url_for('mobile.learning_map', lang=lang)},
-    {'title': subject.name, 'url': None}
-] %}
-
-{% set nav_config = get_navigation_config('subject_view',
-    breadcrumbs=breadcrumbs,
-    show_back_button=True,
-    show_bottom_nav=True
-) %}
-{% endblock %}
-
-{% block content %}
-<div class="subject-container">
-    <!-- Hero секция предмета -->
-    <div class="subject-hero">
-        <div class="subject-header">
-            <div class="subject-icon">
-                {% if subject.icon %}
-                    <i class="{{ subject.icon }}"></i>
-                {% else %}
-                    🦷
-                {% endif %}
-            </div>
-            <div class="subject-info">
-                <h1 class="subject-title">{{ subject.name }}</h1>
-                {% if subject.description %}
-                <p class="subject-description">{{ subject.description }}</p>
-                {% endif %}
-                <div class="subject-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-book"></i>
-                        {{ modules|length if modules else 0 }} {{ t('modules', lang) or 'модулей' }}
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-clock"></i>
-                        {{ subject.estimated_time or t('6_hours', lang) or '6 часов' }}
-                    </span>
-                    {% if subject.difficulty %}
-                    <span class="meta-item">
-                        <i class="bi bi-bar-chart"></i>
-                        {{ subject.difficulty }}
-                    </span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Прогресс обучения -->
-    <div class="progress-section">
-        <div class="progress-header">
-            <h2 class="progress-title">{{ t('your_progress', lang) or 'Ваш прогресс' }}</h2>
-            <span class="progress-percentage">{{ progress_percentage or 0 }}%</span>
-        </div>
-        
-        <div class="progress-bar-container">
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: {{ progress_percentage or 0 }}%"></div>
-            </div>
-        </div>
-        
-        <div class="progress-stats">
-            <div class="progress-stat">
-                <span class="stat-number">{{ completed_lessons or 0 }}</span>
-                <span class="stat-label">{{ t('completed', lang) or 'Завершено' }}</span>
-            </div>
-            <div class="progress-stat">
-                <span class="stat-number">{{ total_lessons or 0 }}</span>
-                <span class="stat-label">{{ t('total_lessons', lang) or 'Всего уроков' }}</span>
-            </div>
-            <div class="progress-stat">
-                <span class="stat-number">{{ study_time or '0h' }}</span>
-                <span class="stat-label">{{ t('study_time', lang) or 'Время изучения' }}</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Фильтры модулей -->
-    <div class="filter-tabs">
-        <button class="filter-tab active" onclick="filterModules('all')">
-            {{ t('all', lang) or 'Все' }}
-        </button>
-        <button class="filter-tab" onclick="filterModules('available')">
-            {{ t('available', lang) or 'Доступно' }}
-        </button>
-        <button class="filter-tab" onclick="filterModules('completed')">
-            {{ t('completed', lang) or 'Завершено' }}
-        </button>
-    </div>
-
-    <!-- Список модулей -->
-    <div class="modules-list">
-        {% if modules %}
-            {% for module in modules %}
-            <div class="module-card {{ 'completed' if module.is_completed else 'available' if module.is_available else 'locked' }}" 
-                 data-filter="{{ 'completed' if module.is_completed else 'available' if module.is_available else 'locked' }}">
-                <div class="module-content" onclick="openModule({{ module.id }}, {{ module.is_available | tojson }})">
-                    <div class="module-header">
-                        <div class="module-icon">
-                            {% if module.is_completed %}
-                                <i class="bi bi-check-circle-fill"></i>
-                            {% elif module.is_available %}
-                                <i class="bi bi-play-circle"></i>
-                            {% else %}
-                                <i class="bi bi-lock"></i>
-                            {% endif %}
-                        </div>
-                        <div class="module-info">
-                            <h3 class="module-title">{{ module.name }}</h3>
-                            <p class="module-description">{{ module.description or '' }}</p>
-                        </div>
-                        <div class="module-status">
-                            {% if module.is_completed %}
-                                <span class="status-badge completed">{{ t('completed', lang) or 'Завершено' }}</span>
-                            {% elif module.is_available %}
-                                <span class="status-badge available">{{ t('available', lang) or 'Доступно' }}</span>
-                            {% else %}
-                                <span class="status-badge locked">{{ t('locked', lang) or 'Заблокировано' }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="module-meta">
-                        <span class="meta-item">
-                            <i class="bi bi-file-text"></i>
-                            {{ module.lessons_count or 0 }} {{ t('lessons', lang) or 'уроков' }}
-                        </span>
-                        {% if module.estimated_time %}
-                        <span class="meta-item">
-                            <i class="bi bi-clock"></i>
-                            {{ module.estimated_time }}
-                        </span>
-                        {% endif %}
-                        {% if module.progress_percentage %}
-                        <span class="meta-item">
-                            <i class="bi bi-graph-up"></i>
-                            {{ module.progress_percentage }}%
-                        </span>
-                        {% endif %}
-                    </div>
-                    
-                    {% if module.progress_percentage and module.progress_percentage > 0 %}
-                    <div class="module-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {{ module.progress_percentage }}%"></div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">📚</div>
-                <h3>{{ t('no_modules_yet', lang) or 'Модулей пока нет' }}</h3>
-                <p>{{ t('modules_will_be_added', lang) or 'Модули для этого предмета будут добавлены в ближайшее время.' }}</p>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Дополнительные действия -->
-    <div class="subject-actions">
-        <button class="action-button secondary" onclick="bookmarkSubject()">
-            <i class="bi bi-bookmark"></i>
-            {{ t('bookmark', lang) or 'В закладки' }}
-        </button>
-        <button class="action-button secondary" onclick="shareSubject()">
-            <i class="bi bi-share"></i>
-            {{ t('share', lang) or 'Поделиться' }}
-        </button>
-        <button class="action-button primary" onclick="openAIAssistant()">
-            <i class="bi bi-robot"></i>
-            {{ t('ai_help', lang) or 'Помощь AI' }}
-        </button>
-    </div>
-</div>
-{% endblock %}
-
-{% block styles_extra %}
+{% block extra_css %}
 <style>
-/* ===== SUBJECT VIEW SPECIFIC STYLES ===== */
+/* Упрощенные стили для предмета */
+.subject-container {
+    padding: 1rem;
+    max-width: 100%;
+    margin: 0 auto;
+}
 
-/* ===== SUBJECT HERO SECTION ===== */
 .subject-hero {
-    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .subject-header {
     display: flex;
-    align-items: flex-start;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .subject-icon {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
+    border-radius: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     color: white;
     flex-shrink: 0;
 }
 
-.subject-info {
-    flex: 1;
-}
-
-.subject-title {
+.subject-info h1 {
     color: white;
     font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
-    line-height: 1.3;
-}
-
-.subject-description {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin-bottom: 1rem;
-}
-
-.subject-meta {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.meta-item {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* ===== PROGRESS SECTION ===== */
-.progress-section {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.progress-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.progress-title {
-    color: white;
-    font-size: 1.1rem;
-    font-weight: 600;
     margin: 0;
 }
 
-.progress-percentage {
-    color: #3ecdc1;
-    font-size: 1.5rem;
-    font-weight: 800;
-}
-
-.progress-bar-container {
-    margin-bottom: 1rem;
-}
-
 .progress-bar {
-    width: 100%;
     height: 8px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
     border-radius: 4px;
     overflow: hidden;
+    margin-bottom: 0.5rem;
 }
 
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #3ecdc1, #44d7c4);
-    transition: width 0.3s ease;
+    border-radius: 4px;
+    transition: width 0.6s ease;
 }
 
-.progress-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
-
-.progress-stat {
+.progress-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
     text-align: center;
-}
-
-.stat-number {
-    color: white;
-    font-size: 1.3rem;
-    font-weight: 700;
     display: block;
 }
 
-.stat-label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-}
-
-/* ===== FILTER TABS ===== */
-.filter-tabs {
-    display: flex;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 0.25rem;
-    margin-bottom: 1.5rem;
-}
-
-.filter-tab {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    font-weight: 500;
-    padding: 0.75rem;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.filter-tab.active {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-.filter-tab:hover {
+.modules-section {
     background: rgba(255, 255, 255, 0.15);
-    color: white;
+    backdrop-filter: blur(25px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== MODULES LIST ===== */
-.modules-list {
-    margin-bottom: 2rem;
+.section-title {
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.modules-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .module-card {
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    border-radius: 15px;
+    padding: 1rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
     transition: all 0.3s ease;
 }
 
 .module-card:hover {
+    background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.module-card.locked {
-    opacity: 0.6;
-}
-
-.module-content {
-    padding: 1.5rem;
-    cursor: pointer;
 }
 
 .module-header {
     display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .module-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+    color: white;
     flex-shrink: 0;
-}
-
-.module-card.completed .module-icon {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
-}
-
-.module-card.available .module-icon {
-    background: rgba(59, 130, 246, 0.2);
-    color: #3b82f6;
-}
-
-.module-card.locked .module-icon {
-    background: rgba(107, 114, 128, 0.2);
-    color: #6b7280;
 }
 
 .module-info {
@@ -424,363 +131,136 @@
 
 .module-title {
     color: white;
-    font-size: 1.1rem;
     font-weight: 600;
-    margin: 0 0 0.5rem 0;
-    line-height: 1.3;
-}
-
-.module-description {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
-    line-height: 1.4;
+    font-size: 1rem;
     margin: 0;
 }
 
-.module-status {
-    align-self: flex-start;
+.module-progress {
+    margin-top: 0.5rem;
 }
 
-.status-badge {
+.module-progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.module-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3ecdc1, #44d7c4);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+
+.module-progress-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+}
+
+.module-status {
+    margin-left: auto;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-.status-badge.completed {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
+.status-completed {
+    background: rgba(62, 205, 193, 0.2);
+    color: #3ecdc1;
 }
 
-.status-badge.available {
-    background: rgba(59, 130, 246, 0.2);
-    color: #3b82f6;
+.status-available {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
 }
 
-.status-badge.locked {
-    background: rgba(107, 114, 128, 0.2);
-    color: #6b7280;
+.status-locked {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
 }
 
-.module-meta {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-}
-
-.module-progress {
-    margin-top: 1rem;
-}
-
-.module-progress .progress-bar {
-    height: 4px;
-}
-
-/* ===== EMPTY STATE ===== */
-.empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.empty-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-}
-
-.empty-state h3 {
-    color: white;
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
-
-/* ===== SUBJECT ACTIONS ===== */
-.subject-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-}
-
-.action-button {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    flex: 1;
-    justify-content: center;
-}
-
-.action-button.primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-color: transparent;
-}
-
-.action-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.action-button.primary:hover {
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-/* ===== RESPONSIVE ===== */
 @media (max-width: 480px) {
-    .subject-header {
-        gap: 1rem;
+    .subject-container {
+        padding: 0.75rem;
+    }
+    
+    .subject-hero,
+    .modules-section {
+        padding: 1rem;
     }
     
     .subject-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 2rem;
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
     }
     
-    .subject-meta {
-        gap: 1rem;
+    .subject-info h1 {
+        font-size: 1.3rem;
     }
-    
-    .progress-stats {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-    
-    .progress-stat {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-align: left;
-        padding: 0.5rem;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-    }
-    
-    .module-header {
-        gap: 0.75rem;
-    }
-    
-    .module-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2rem;
-    }
-}
-
-/* ===== ТЕМНАЯ ТЕМА ===== */
-[data-theme="dark"] .filter-tab.active {
-    background: rgba(75, 85, 99, 0.5);
-}
-
-[data-theme="dark"] .module-card {
-    background: rgba(31, 41, 55, 0.3);
-    border-color: rgba(75, 85, 99, 0.3);
-}
-
-/* ===== АНИМАЦИИ ===== */
-.module-card {
-    animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Фильтрация модулей */
-.module-card.hidden {
-    display: none;
 }
 </style>
 {% endblock %}
 
-{% block scripts_extra %}
-<script>
-// Subject view functionality
-let currentFilter = 'all';
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSubjectView();
-});
-
-function initializeSubjectView() {
-    // Загружаем сохраненный прогресс
-    loadProgress();
-    
-    // Настраиваем фильтрацию
-    updateFilterCounts();
-}
-
-function filterModules(filter) {
-    currentFilter = filter;
-    
-    // Обновляем активную вкладку
-    document.querySelectorAll('.filter-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    // Фильтруем модули
-    const modules = document.querySelectorAll('.module-card');
-    modules.forEach(module => {
-        const moduleFilter = module.getAttribute('data-filter');
+{% block content %}
+<div class="subject-container">
+    <!-- Заголовок предмета -->
+    <div class="subject-hero">
+        <div class="subject-header">
+            <div class="subject-icon">
+                <i class="fas fa-{{ subject.icon or 'book' }}"></i>
+            </div>
+            <div class="subject-info">
+                <h1>{{ subject.name }}</h1>
+            </div>
+        </div>
         
-        if (filter === 'all' || moduleFilter === filter) {
-            module.classList.remove('hidden');
-        } else {
-            module.classList.add('hidden');
-        }
-    });
-}
+        <!-- Прогресс предмета -->
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress_percentage or 0 }}%"></div>
+        </div>
+        <span class="progress-text">{{ progress_percentage or 0 }}% завершено</span>
+    </div>
 
-function updateFilterCounts() {
-    const modules = document.querySelectorAll('.module-card');
-    const counts = {
-        all: modules.length,
-        available: document.querySelectorAll('[data-filter="available"]').length,
-        completed: document.querySelectorAll('[data-filter="completed"]').length,
-        locked: document.querySelectorAll('[data-filter="locked"]').length
-    };
-    
-    // Можно обновить текст в табах с количеством
-    // document.querySelector('[onclick="filterModules(\'all\')"]').textContent = `Все (${counts.all})`;
-}
-
-function openModule(moduleId, isAvailable) {
-    if (!isAvailable) {
-        if (window.mobileApp && window.mobileApp.showNotification) {
-            window.mobileApp.showNotification(
-                {{ t('module_locked', lang) | tojson }} || 'Модуль заблокирован. Завершите предыдущие модули.', 
-                'warning'
-            );
-        }
-        return;
-    }
-    
-    // Переходим к модулю используя правильный роут
-    const moduleUrl = '{{ url_for("mobile.module_view", lang=lang, module_id=0) }}'.replace('0', moduleId);
-    window.location.href = moduleUrl;
-}
-
-function bookmarkSubject() {
-    const subjectId = {{ subject.id if subject else 'null' }};
-    
-    // Сохраняем в localStorage
-    let bookmarks = JSON.parse(localStorage.getItem('bookmarked_subjects') || '[]');
-    
-    if (bookmarks.includes(subjectId)) {
-        bookmarks = bookmarks.filter(id => id !== subjectId);
-        if (window.mobileApp && window.mobileApp.showNotification) {
-            window.mobileApp.showNotification(
-                {{ t('subject_unbookmarked', lang) | tojson }} || 'Предмет удален из закладок', 
-                'info'
-            );
-        }
-    } else {
-        bookmarks.push(subjectId);
-        if (window.mobileApp && window.mobileApp.showNotification) {
-            window.mobileApp.showNotification(
-                {{ t('subject_bookmarked', lang) | tojson }} || 'Предмет добавлен в закладки', 
-                'success'
-            );
-        }
-    }
-    
-    localStorage.setItem('bookmarked_subjects', JSON.stringify(bookmarks));
-    
-    // Отправляем на сервер если пользователь авторизован
-    {% if current_user.is_authenticated %}
-    fetch('/{{ lang }}/mobile/api/subject/{{ subject.id if subject else 0 }}/bookmark', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            bookmarked: bookmarks.includes(subjectId)
-        })
-    }).catch(console.error);
-    {% endif %}
-}
-
-function shareSubject() {
-    const subjectName = {{ subject.name | tojson if subject else '""' }};
-    const shareData = {
-        title: subjectName,
-        text: ({{ t('studying_subject', lang) | tojson }} || 'Изучаю предмет') + ': ' + subjectName,
-        url: window.location.href
-    };
-    
-    if (navigator.share) {
-        navigator.share(shareData).catch(console.error);
-    } else {
-        // Fallback - копируем ссылку
-        navigator.clipboard.writeText(window.location.href).then(() => {
-            if (window.mobileApp && window.mobileApp.showNotification) {
-                window.mobileApp.showNotification(
-                    {{ t('link_copied', lang) | tojson }} || 'Ссылка скопирована', 
-                    'success'
-                );
-            }
-        }).catch(() => {
-            if (window.mobileApp && window.mobileApp.showNotification) {
-                window.mobileApp.showNotification(
-                    {{ t('copy_failed', lang) | tojson }} || 'Не удалось скопировать ссылку', 
-                    'error'
-                );
-            }
-        });
-    }
-}
-
-function openAIAssistant() {
-    const subjectName = {{ subject.name | tojson if subject else '""' }};
-    const subjectDescription = {{ subject.description | tojson if subject and subject.description else '""' }};
-    
-    // Сохраняем контекст предмета для AI
-    sessionStorage.setItem('aiContext', JSON.stringify({
-        type: 'subject',
-        subject_id: {{ subject.id if subject else 'null' }},
-        subject_name: subjectName,
-        subject_description: subjectDescription
-    }));
-    
-    // Переходим на AI помощника
-    window.location.href = '{{ url_for("ai.ai_chat", lang=lang) }}';
-}
-
-function loadProgress() {
-    // Загружаем прогресс из localStorage если нет серверных данных
-    const subjectId = {{ subject.id if subject else 'null' }};
-    const saved = localStorage.getItem(`subject_progress_${subjectId}`);
-    
-    if (saved) {
-        const data = JSON.parse(saved);
-        // Обновляем UI с сохраненным прогрессом
-        console.log('Loaded progress:', data);
-    }
-}
-</script>
+    <!-- Модули -->
+    <div class="modules-section">
+        <h2 class="section-title">{{ t('modules', lang) or 'Модули' }}</h2>
+        
+        <div class="modules-grid">
+            {% for module in subject_modules %}
+            <a href="{{ url_for('mobile.module_view', lang=lang, module_id=module.id) }}" 
+               class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="fas fa-{{ module.icon or 'file-text' }}"></i>
+                    </div>
+                    <div class="module-info">
+                        <h3 class="module-title">{{ module.title }}</h3>
+                    </div>
+                    <div class="module-status {% if module.is_completed %}status-completed{% elif module.is_available %}status-available{% else %}status-locked{% endif %}">
+                        {% if module.is_completed %}
+                            {{ t('completed', lang) or 'Завершено' }}
+                        {% elif module.is_available %}
+                            {{ t('available', lang) or 'Доступно' }}
+                        {% else %}
+                            {{ t('locked', lang) or 'Заблокировано' }}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="module-progress">
+                    <div class="module-progress-bar">
+                        <div class="module-progress-fill" style="width: {{ module.progress_percentage or 0 }}%"></div>
+                    </div>
+                    <span class="module-progress-text">{{ module.progress_percentage or 0 }}%</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endblock %} 

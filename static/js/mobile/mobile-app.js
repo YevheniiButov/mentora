@@ -136,13 +136,18 @@ class MobileApp {
         // Получаем URL из data-атрибута или href
         const url = card.dataset.href || card.querySelector('a')?.href;
         if (url) {
-            // Показываем индикатор загрузки
-            this.showLoadingState(card);
+            // НЕ используем setTimeout для навигации - это может вызывать проблемы
+            // Вместо этого позволяем браузеру обработать клик естественно
             
-            // Переходим на страницу
-            setTimeout(() => {
-                window.location.href = url;
-            }, 200);
+            // Если есть ссылка внутри карточки, кликаем на неё
+            const link = card.querySelector('a');
+            if (link) {
+                // Позволяем стандартному клику сработать
+                return;
+            }
+            
+            // Иначе переходим программно без задержки
+            window.location.href = url;
         }
     }
 
