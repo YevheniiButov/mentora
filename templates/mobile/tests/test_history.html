@@ -1,0 +1,164 @@
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('tests',
+    show_logo=True,
+    show_back_button=True,
+    show_bottom_nav=True,
+    show_profile_button=True,
+    show_settings_button=True,
+    show_language_selector=True,
+    page_title=t('test_history', lang)
+) %}
+
+{% block title %}{{ t('test_history', lang) }} - {{ t('dental_academy', lang) }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        padding: 1rem;
+    }
+    
+    .history-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .history-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #ffffff, #3ECDC1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .test-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .test-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .test-card:active {
+        transform: scale(0.98);
+    }
+    
+    .test-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .test-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .test-date {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .test-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #3ECDC1;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 0.25rem;
+    }
+    
+    .progress-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3ECDC1, #2B9E94);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="history-header">
+        <h1 class="history-title">{{ t('test_history', lang) }}</h1>
+    </div>
+    
+    <div class="test-list">
+        {% for stat in test_stats %}
+        <a href="{{ url_for('tests_bp.test_results', lang=lang, test_id=stat.test.id) }}" class="test-card">
+            <div class="test-header">
+                <h2 class="test-title">{{ stat.test.title }}</h2>
+                <span class="test-date">{{ stat.date.strftime('%d.%m.%Y') if stat.date else '' }}</span>
+            </div>
+            
+            <div class="test-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ stat.correct_answers }}/{{ stat.total_questions }}</div>
+                    <div class="stat-label">{{ t('score', lang) }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ "%.1f"|format(stat.accuracy) }}%</div>
+                    <div class="stat-label">{{ t('accuracy', lang) }}</div>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ stat.accuracy }}%"></div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Добавляем тактильную обратную связь для карточек тестов
+    document.querySelectorAll('.test-card').forEach(card => {
+        card.addEventListener('touchstart', function() {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+        });
+    });
+</script>
+{% endblock %} 

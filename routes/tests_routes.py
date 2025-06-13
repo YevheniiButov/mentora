@@ -3,9 +3,11 @@ from flask import (
     Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app
 )
 from flask_login import login_required, current_user
-from models import db, Question, UserProgress, ContentCategory, QuestionCategory
+from models import db, Question, UserProgress, ContentCategory, QuestionCategory, Test, TestAttempt
 import random
 from utils.mobile_detection import get_mobile_detector
+from utils.test_generator import TestGenerator
+from translations_new import get_translation as t
 
 # Имя блюпринта изменено на "tests" (без "_bp")
 tests_bp = Blueprint("tests_bp", __name__, url_prefix="/<string:lang>/tests")
@@ -74,6 +76,68 @@ def setup_test(lang):
                          categories=categories, 
                          test_lengths=test_lengths,
                          current_language=current_lang)
+
+# --- Алиасы для обратной совместимости ---
+@tests_bp.route("/setup", methods=['GET', 'POST'])
+@login_required
+def mobile_setup_test(lang):
+    """Обработчик для мобильного выбора теста"""
+    current_lang = g.lang
+    if request.method == 'POST':
+        test_type = request.form.get('test_type', 'quick')
+        if test_type == 'quick':
+            return start_quick_test(lang)
+        elif test_type == 'comprehensive':
+            return start_comprehensive_test(lang)
+        else:
+            flash(t('invalid_test_type', lang=current_lang), 'warning')
+            return redirect(url_for('.mobile_setup_test', lang=current_lang))
+    
+    # GET запрос - показываем форму выбора
+    try:
+        # Получаем категории динамически из БД через джойн
+        distinct_categories = db.session.query(QuestionCategory.name).join(
+            Question, Question.category_id == QuestionCategory.id
+        ).distinct().all()
+        categories = sorted([cat[0] for cat in distinct_categories if cat[0]])
+        if not categories:  # Если категории в БД не найдены, используем заглушку
+            categories = ["Anatomy", "Ethics", "Physiology", "Pathology"]  # Пример
+            flash(t('no_categories_found', lang=current_lang), "warning")
+    except Exception as e:
+        current_app.logger.error(f"Error fetching categories: {e}", exc_info=True)
+        flash(t('error_loading_categories', lang=current_lang), "danger")
+        categories = []
+
+    template = get_template_for_device("tests/setup.html", "mobile/tests/test_mobile_system.html")
+    
+    return render_template(template,
+                         categories=categories,
+                         current_language=current_lang)
+
+@tests_bp.route("/custom/start", methods=['POST'])
+@login_required
+def mobile_start_custom_test(lang):
+    """Обработчик для мобильного запуска настраиваемого теста"""
+    current_lang = g.lang
+    category = request.form.get('category')
+    count = int(request.form.get('length', 10))
+    
+    generator = TestGenerator(current_user.id)
+    question_ids = generator.generate_custom_test([category], count)
+    
+    if not question_ids:
+        flash(t('no_questions_available', lang=current_lang), 'warning')
+        return redirect(url_for('.mobile_setup_test', lang=current_lang))
+    
+    session['test_question_ids'] = question_ids
+    session['test_step'] = 0
+    session['test_score'] = 0
+    session['test_total'] = len(question_ids)
+    session['test_type'] = 'custom'
+    session.pop('last_answered_step', None)
+    session.pop('last_step_result', None)
+    
+    return redirect(url_for('.take_test', lang=current_lang))
 
 # --- Маршрут для ЗАПУСКА теста ---
 @tests_bp.route("/start", methods=['POST'])
@@ -288,3 +352,221 @@ def start_final_test(lang, subject_id):
         current_app.logger.error(f"Error starting final test: {e}", exc_info=True)
         flash(f"Error starting final test: {e}", "danger")
         return
+
+# --- Маршрут для быстрого теста ---
+@tests_bp.route("/quick-start", methods=['GET', 'POST'])
+@login_required
+def start_quick_test(lang):
+    """Запускает быстрый тест (5-10 вопросов)"""
+    current_lang = g.lang
+    
+    if request.method == 'POST':
+        category = request.form.get('category')
+        count = int(request.form.get('count', 10))
+        
+        generator = TestGenerator(current_user.id)
+        question_ids = generator.generate_quick_test(category, count)
+        
+        if not question_ids:
+            flash(t('no_questions_available', lang=current_lang), 'warning')
+            return redirect(url_for('.setup_test', lang=current_lang))
+        
+        session['test_question_ids'] = question_ids
+        session['test_step'] = 0
+        session['test_score'] = 0
+        session['test_total'] = len(question_ids)
+        session['test_type'] = 'quick'
+        session.pop('last_answered_step', None)
+        session.pop('last_step_result', None)
+        
+        return redirect(url_for('.take_test', lang=current_lang))
+    
+    # GET запрос - показываем форму выбора
+    categories = QuestionCategory.query.all()
+    template = get_template_for_device("tests/quick_setup.html", "mobile/tests/test_quick_setup.html")
+    
+    return render_template(template,
+                         categories=categories,
+                         current_language=current_lang)
+
+# --- Маршрут для полного теста ---
+@tests_bp.route("/comprehensive-start", methods=['GET', 'POST'])
+@login_required
+def start_comprehensive_test(lang):
+    """Запускает полный тест (20-30 вопросов)"""
+    current_lang = g.lang
+    
+    if request.method == 'POST':
+        category = request.form.get('category')
+        count = int(request.form.get('count', 30))
+        
+        generator = TestGenerator(current_user.id)
+        question_ids = generator.generate_comprehensive_test(category, count)
+        
+        if not question_ids:
+            flash(t('no_questions_available', lang=current_lang), 'warning')
+            return redirect(url_for('.setup_test', lang=current_lang))
+        
+        session['test_question_ids'] = question_ids
+        session['test_step'] = 0
+        session['test_score'] = 0
+        session['test_total'] = len(question_ids)
+        session['test_type'] = 'comprehensive'
+        session.pop('last_answered_step', None)
+        session.pop('last_step_result', None)
+        
+        return redirect(url_for('.take_test', lang=current_lang))
+    
+    # GET запрос - показываем форму выбора
+    categories = QuestionCategory.query.all()
+    template = get_template_for_device("tests/comprehensive_setup.html", "mobile/tests/test_comprehensive_setup.html")
+    
+    return render_template(template,
+                         categories=categories,
+                         current_language=current_lang)
+
+# --- Маршрут для настраиваемого теста ---
+@tests_bp.route("/custom-setup", methods=['GET', 'POST'])
+@login_required
+def setup_custom_test(lang):
+    """Настройка настраиваемого теста"""
+    current_lang = g.lang
+    
+    if request.method == 'POST':
+        categories = request.form.getlist('categories')
+        count = int(request.form.get('count', 20))
+        difficulty = request.form.get('difficulty')
+        
+        generator = TestGenerator(current_user.id)
+        question_ids = generator.generate_custom_test(categories, count, difficulty)
+        
+        if not question_ids:
+            flash(t('no_questions_available', lang=current_lang), 'warning')
+            return redirect(url_for('.setup_test', lang=current_lang))
+        
+        session['test_question_ids'] = question_ids
+        session['test_step'] = 0
+        session['test_score'] = 0
+        session['test_total'] = len(question_ids)
+        session['test_type'] = 'custom'
+        session.pop('last_answered_step', None)
+        session.pop('last_step_result', None)
+        
+        return redirect(url_for('.take_test', lang=current_lang))
+    
+    # GET запрос - показываем форму выбора
+    categories = QuestionCategory.query.all()
+    difficulties = ['easy', 'medium', 'hard']
+    template = get_template_for_device("tests/custom_setup.html", "mobile/tests/test_custom_setup.html")
+    
+    return render_template(template,
+                         categories=categories,
+                         difficulties=difficulties,
+                         current_language=current_lang)
+
+# --- Маршрут для истории тестов ---
+@tests_bp.route("/history")
+@login_required
+def test_history(lang):
+    """Показывает историю тестов пользователя"""
+    current_lang = g.lang
+    
+    # Получаем все тесты пользователя
+    tests = Test.query.join(TestAttempt).filter(
+        TestAttempt.user_id == current_user.id
+    ).distinct().order_by(Test.id.desc()).all()
+    
+    # Собираем статистику для каждого теста
+    test_stats = []
+    for test in tests:
+        attempts = TestAttempt.query.filter_by(
+            user_id=current_user.id,
+            test_id=test.id
+        ).all()
+        
+        total_questions = len(attempts)
+        correct_answers = sum(1 for a in attempts if a.is_correct)
+        accuracy = (correct_answers / total_questions * 100) if total_questions > 0 else 0
+        
+        test_stats.append({
+            'test': test,
+            'total_questions': total_questions,
+            'correct_answers': correct_answers,
+            'accuracy': accuracy,
+            'date': attempts[0].created_at if attempts else None
+        })
+    
+    template = get_template_for_device("tests/history.html", "mobile/tests/test_history.html")
+    
+    return render_template(template,
+                         test_stats=test_stats,
+                         current_language=current_lang)
+
+# --- Маршрут для прогресса тестов ---
+@tests_bp.route("/progress")
+@login_required
+def test_progress(lang):
+    """Показывает прогресс пользователя в тестах"""
+    current_lang = g.lang
+    
+    # Получаем прогресс пользователя
+    generator = TestGenerator(current_user.id)
+    progress = generator.get_user_progress()
+    
+    # Получаем статистику по категориям
+    category_stats = []
+    for category_name, stats in progress['category_stats'].items():
+        category = QuestionCategory.query.filter_by(name=category_name).first()
+        if category:
+            category_stats.append({
+                'category': category,
+                'total_attempts': stats['total'],
+                'correct_attempts': stats['correct'],
+                'accuracy': stats['accuracy']
+            })
+    
+    # Сортируем категории по точности
+    category_stats.sort(key=lambda x: x['accuracy'], reverse=True)
+    
+    template = get_template_for_device("tests/progress.html", "mobile/tests/test_progress.html")
+    
+    return render_template(template,
+                         progress=progress,
+                         category_stats=category_stats,
+                         current_language=current_lang)
+
+# --- Маршрут для результатов теста ---
+@tests_bp.route("/<int:test_id>/results")
+@login_required
+def test_results(lang, test_id):
+    """Показывает результаты теста"""
+    current_lang = g.lang
+    
+    # Получаем попытки теста
+    attempts = TestAttempt.query.filter_by(
+        user_id=current_user.id,
+        test_id=test_id
+    ).all()
+    
+    if not attempts:
+        flash(t('no_test_results', lang=current_lang), 'warning')
+        return redirect(url_for('.setup_test', lang=current_lang))
+    
+    # Собираем статистику
+    total_questions = len(attempts)
+    correct_answers = sum(1 for a in attempts if a.is_correct)
+    accuracy = (correct_answers / total_questions * 100) if total_questions > 0 else 0
+    
+    # Получаем прогресс пользователя
+    generator = TestGenerator(current_user.id)
+    progress = generator.get_user_progress()
+    
+    template = get_template_for_device("tests/results.html", "mobile/tests/test_results.html")
+    
+    return render_template(template,
+                         attempts=attempts,
+                         total_questions=total_questions,
+                         correct_answers=correct_answers,
+                         accuracy=accuracy,
+                         progress=progress,
+                         current_language=current_lang)

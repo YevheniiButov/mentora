@@ -377,6 +377,51 @@
         font-size: 0.8rem;
         margin-top: 0.25rem;
     }
+
+    .category-selector-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        width: 90%;
+        max-width: 500px;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .modal-header h3 {
+        color: white;
+        margin: 0;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
 </style>
 {% endblock %}
 
@@ -422,7 +467,12 @@
 <!-- Test Options в стиле AI чата -->
 <div class="test-options-container">
     <!-- Quick Test -->
-    <a href="{{ url_for('tests_bp.setup_test', lang=lang) }}" class="test-option-card ai-glow">
+    <a href="{{ url_for('tests_bp.mobile_setup_test', lang=lang) }}" class="test-option-card ai-glow" onclick="showCategorySelector('quick')">
+        <form method="POST" action="{{ url_for('tests_bp.mobile_setup_test', lang=lang) }}" id="quickTestForm" style="display: none;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="test_type" value="quick">
+            <input type="hidden" name="category" id="quickTestCategory">
+        </form>
         <div class="test-option-header">
             <div class="test-option-icon">
                 <i class="bi bi-lightning-charge"></i>
@@ -445,7 +495,12 @@
     </a>
     
     <!-- Full Test -->
-    <a href="{{ url_for('tests_bp.setup_test', lang=lang) }}" class="test-option-card ai-glow">
+    <a href="{{ url_for('tests_bp.mobile_setup_test', lang=lang) }}" class="test-option-card ai-glow" onclick="showCategorySelector('comprehensive')">
+        <form method="POST" action="{{ url_for('tests_bp.mobile_setup_test', lang=lang) }}" id="comprehensiveTestForm" style="display: none;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="test_type" value="comprehensive">
+            <input type="hidden" name="category" id="comprehensiveTestCategory">
+        </form>
         <div class="test-option-header">
             <div class="test-option-icon">
                 <i class="bi bi-clipboard-check"></i>
@@ -498,7 +553,8 @@
         <span class="custom-test-title">{{ t('ai_test_configurator', lang) or 'AI Конфигуратор теста' }}</span>
     </div>
     
-    <form method="POST" action="{{ url_for('tests_bp.start_custom_test', lang=lang) }}">
+    <form method="POST" action="{{ url_for('tests_bp.mobile_start_custom_test', lang=lang) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-section">
             <label class="form-label">
                 <i class="bi bi-folder"></i> {{ t('select_category', lang) or 'Выберите категорию:' }}
@@ -534,6 +590,23 @@
         </button>
     </form>
 </div>
+
+<!-- Category Selector Modal -->
+<div class="category-selector-modal" id="categorySelectorModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>{{ t('select_category', lang) or 'Выберите категорию' }}</h3>
+            <button onclick="closeCategorySelector()" class="close-btn">&times;</button>
+        </div>
+        <div class="category-grid">
+            {% for category in categories %}
+            <div class="category-chip" onclick="selectCategoryForTest('{{ category }}')">
+                {{ category }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -542,6 +615,30 @@
 function toggleCustomTest() {
     const panel = document.getElementById('customTestPanel');
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+let currentTestType = null;
+
+function showCategorySelector(testType) {
+    event.preventDefault();
+    currentTestType = testType;
+    document.getElementById('categorySelectorModal').style.display = 'block';
+}
+
+function closeCategorySelector() {
+    document.getElementById('categorySelectorModal').style.display = 'none';
+    currentTestType = null;
+}
+
+function selectCategoryForTest(category) {
+    if (currentTestType === 'quick') {
+        document.getElementById('quickTestCategory').value = category;
+        document.getElementById('quickTestForm').submit();
+    } else if (currentTestType === 'comprehensive') {
+        document.getElementById('comprehensiveTestCategory').value = category;
+        document.getElementById('comprehensiveTestForm').submit();
+    }
+    closeCategorySelector();
 }
 
 // Выбор категории
