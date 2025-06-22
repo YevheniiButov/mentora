@@ -11,6 +11,8 @@ import json
 from datetime import datetime, timezone, timedelta # Добавлен timedelta, если он используется для started_at fallback
 import random
 from utils.mobile_detection import get_mobile_detector
+from utils.translations import t, DEFAULT_LANGUAGE
+from translations_modules.virtual_patient import optimized_translations  # Добавляем импорт
 
 # Определение Blueprint
 virtual_patient_bp = Blueprint(
@@ -532,9 +534,15 @@ def results(lang, attempt_id): # Это единственная функция 
         "mobile/virtual_patient/virtual_patient_mobile_results.html"
     )
 
+    # Подготавливаем переводы для JavaScript
+    js_translations = {
+        'results_js': optimized_translations.get('results_js', {})
+    }
+
     return render_template(
         template,
         attempt=attempt,
+        scenario=scenario_model,
         scenario_model=scenario_model,
         scenario_data_for_lang=scenario_data_for_lang,
         global_patient_info=global_patient_info,
@@ -544,7 +552,9 @@ def results(lang, attempt_id): # Это единственная функция 
         calculate_empathy_score=calculate_empathy_score,
         calculate_clinical_score=calculate_clinical_score,
         calculate_communication_score=calculate_communication_score,
-        calculate_base_experience_points=calculate_base_experience_points
+        calculate_base_experience_points=calculate_base_experience_points,
+        translations=js_translations,  # Передаем только нужные переводы
+        lang=lang
     )
 
 @virtual_patient_bp.route("/api/select_option", methods=["POST"])

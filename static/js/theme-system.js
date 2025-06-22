@@ -13,41 +13,35 @@
     class RobustThemeSystem {
         constructor() {
             this.storageKey = 'theme';
+            this.currentTheme = null;
             this.isInitialized = false;
-            this.currentTheme = 'light';
+            this.isTransitioning = false;
             
-            console.log('🎨 Initializing Robust Theme System...');
-            this.init();
+            // Инициализация
+            this.initialize();
         }
         
-        init() {
-            if (this.isInitialized) {
-                console.warn('⚠️ Theme system already initialized');
-                return;
-            }
-            
+        initialize() {
             try {
-                // 1. Определяем текущую тему
+                console.log('🎨 Initializing theme system...');
+                
+                // Определяем начальную тему
                 this.currentTheme = this.detectTheme();
-                console.log('🔍 Detected theme:', this.currentTheme);
                 
-                // 2. Применяем тему немедленно
-                this.applyTheme(this.currentTheme, true);
+                // Применяем тему
+                this.applyTheme(this.currentTheme, false);
                 
-                // 3. Настраиваем обработчики событий
-                this.setupEventDelegation();
-                
-                // 4. Создаем глобальные функции
+                // Настраиваем глобальные функции
                 this.setupGlobalFunctions();
                 
-                // 5. Настраиваем наблюдение за системными изменениями
+                // Настраиваем наблюдатель системной темы
                 this.setupSystemThemeWatcher();
                 
                 this.isInitialized = true;
-                console.log('✅ Robust Theme System initialized successfully');
+                console.log('✅ Theme system initialized successfully');
                 
             } catch (error) {
-                console.error('❌ Failed to initialize theme system:', error);
+                console.error('❌ Error initializing theme system:', error);
                 this.fallbackInitialization();
             }
         }

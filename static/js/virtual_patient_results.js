@@ -10,6 +10,7 @@ class EnhancedVirtualPatientResults {
         this.animationObserver = null;
         this.particles = [];
         this.isInitialized = false;
+        this.tooltip = null;
         this.init();
     }
 
@@ -44,11 +45,11 @@ class EnhancedVirtualPatientResults {
             console.log('✅ Enhanced Virtual Patient Results initialized successfully!');
             
             // Показываем уведомление об успешной загрузке
-            this.showNotification('Система загружена! 🎉', 'success');
+            this.showNotification(window.t('system_loaded', window.lang) + ' 🎉', 'success');
             
         } catch (error) {
             console.error('❌ Error initializing Enhanced Virtual Patient Results:', error);
-            this.showNotification('Ошибка загрузки системы', 'error');
+            this.showNotification(window.t('system_load_error', window.lang), 'error');
         }
     }
 
@@ -172,7 +173,7 @@ class EnhancedVirtualPatientResults {
             const parent = element.closest('.metric-card');
             if (parent) {
                 const label = parent.querySelector('.metric-label');
-                if (label && label.textContent.includes('Время')) {
+                if (label && label.textContent.includes(window.t('scenario_time', window.lang))) {
                     const timeText = element.textContent;
                     const minutes = parseInt(timeText);
                     if (!isNaN(minutes)) {
@@ -236,14 +237,14 @@ class EnhancedVirtualPatientResults {
                 type: 'radar',
                 data: {
                     labels: [
-                        'Эмпатия',
-                        'Клинические навыки',
-                        'Коммуникация',
-                        'Эффективность',
-                        'Качество решений'
+                        window.t('empathy', window.lang),
+                        window.t('clinical_skills', window.lang),
+                        window.t('communication', window.lang),
+                        window.t('efficiency', window.lang),
+                        window.t('decision_quality', window.lang)
                     ],
                     datasets: [{
-                        label: 'Ваши результаты',
+                        label: window.t('your_results', window.lang),
                         data: [
                             data.empathy,
                             data.clinical,
@@ -251,81 +252,26 @@ class EnhancedVirtualPatientResults {
                             data.efficiency,
                             data.decision
                         ],
-                        backgroundColor: 'rgba(62, 205, 193, 0.15)',
-                        borderColor: 'rgba(62, 205, 193, 1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: 'rgba(62, 205, 193, 1)',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 3,
-                        pointRadius: 8,
-                        pointHoverRadius: 12,
-                        pointHoverBackgroundColor: 'rgba(102, 126, 234, 1)',
-                        pointHoverBorderColor: '#ffffff',
-                        pointHoverBorderWidth: 3
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(102, 126, 234, 1)'
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 2000,
-                        easing: 'easeInOutQuart'
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#ffffff',
-                            bodyColor: '#ffffff',
-                            borderColor: 'rgba(62, 205, 193, 1)',
-                            borderWidth: 1,
-                            cornerRadius: 8,
-                            padding: 12,
-                            displayColors: false,
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.parsed.r}%`;
-                                }
-                            }
-                        }
-                    },
                     scales: {
                         r: {
                             angleLines: {
-                                display: true,
-                                color: 'rgba(148, 163, 184, 0.3)',
-                                lineWidth: 1
+                                display: true
                             },
-                            grid: {
-                                color: 'rgba(148, 163, 184, 0.2)',
-                                lineWidth: 1
-                            },
-                            pointLabels: {
-                                font: {
-                                    size: 13,
-                                    weight: 500
-                                },
-                                color: '#475569',
-                                padding: 10
-                            },
-                            ticks: {
-                                display: false
-                            },
-                            min: 0,
-                            max: 100,
-                            beginAtZero: true
+                            suggestedMin: 0,
+                            suggestedMax: 100
                         }
-                    },
-                    interaction: {
-                        intersect: false
                     }
                 }
             });
-
-            console.log('✅ Competency chart created successfully!');
-            
         } catch (error) {
             console.error('❌ Error creating competency chart:', error);
         }
@@ -402,7 +348,7 @@ class EnhancedVirtualPatientResults {
             });
             
             element.addEventListener('mouseleave', (e) => {
-                this.hideTooltip(e.target);
+                this.hideTooltip();
             });
         });
     }
@@ -578,7 +524,7 @@ class EnhancedVirtualPatientResults {
             }
         }, 2000);
         
-        this.showNotification('Награда получена! 🏆', 'success');
+        this.showNotification(window.t('reward_received', window.lang) + ' 🏆', 'success');
     }
 
     /**
@@ -681,6 +627,49 @@ class EnhancedVirtualPatientResults {
         });
         
         console.log('🧹 Enhanced Virtual Patient Results destroyed');
+    }
+
+    /**
+     * Показывает всплывающую подсказку
+     */
+    showTooltip(element) {
+        const tooltipText = element.getAttribute('data-tooltip');
+        if (!tooltipText) return;
+
+        // Создаем элемент подсказки, если его еще нет
+        if (!this.tooltip) {
+            this.tooltip = document.createElement('div');
+            this.tooltip.className = 'tooltip-content';
+            document.body.appendChild(this.tooltip);
+        }
+
+        // Устанавливаем текст и позицию
+        this.tooltip.textContent = tooltipText;
+        this.tooltip.style.display = 'block';
+
+        // Позиционируем подсказку
+        const rect = element.getBoundingClientRect();
+        const tooltipRect = this.tooltip.getBoundingClientRect();
+
+        this.tooltip.style.left = `${rect.left + (rect.width / 2) - (tooltipRect.width / 2)}px`;
+        this.tooltip.style.top = `${rect.bottom + 10}px`;
+
+        // Добавляем класс для анимации
+        this.tooltip.classList.add('tooltip-visible');
+    }
+
+    /**
+     * Скрывает всплывающую подсказку
+     */
+    hideTooltip() {
+        if (this.tooltip) {
+            this.tooltip.classList.remove('tooltip-visible');
+            setTimeout(() => {
+                if (this.tooltip) {
+                    this.tooltip.style.display = 'none';
+                }
+            }, 200);
+        }
     }
 }
 

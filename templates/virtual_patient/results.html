@@ -24,7 +24,7 @@
 <div class="container py-4">
     <!-- Заголовок с современными анимациями -->
     <div class="text-center mb-4 scroll-reveal">
-        <h1 class="gradient-text">Анализ клинического случая</h1>
+        <h1 class="gradient-text">{{ t('clinical_case_analysis', lang) }}</h1>
         <h2 class="text-muted">{{ scenario_data_for_lang.patient_info.name }}</h2>
         <p class="lead">{{ scenario.title }}</p>
     </div>
@@ -36,7 +36,7 @@
             
             <!-- Блок общего результата с улучшенными стилями -->
             <div class="performance-overview card-base scroll-reveal">
-                <h3>Общая производительность</h3>
+                <h3>{{ t('overall_performance', lang) }}</h3>
                 
                 <!-- Улучшенный круговой индикатор с анимациями -->
                 <div class="score-circle">
@@ -51,7 +51,7 @@
                     </svg>
                     <div class="score-display">
                         <div class="score-value">{{ attempt.score }}/{{ scenario.max_score }}</div>
-                        <div class="score-label">Баллы</div>
+                        <div class="score-label">{{ t('points', lang) }}</div>
                     </div>
                 </div>
 
@@ -63,35 +63,35 @@
 
                 <!-- Современная сетка метрик с интерактивными эффектами -->
                 <div class="metrics-grid">
-                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="Общий набранный балл за сценарий">
+                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="{{ t('total_score_tooltip', lang) }}">
                         <div class="metric-value">{{ attempt.score }}</div>
-                        <div class="metric-label">Общий балл</div>
+                        <div class="metric-label">{{ t('total_score', lang) }}</div>
                     </div>
-                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="Количество принятых решений в сценарии">
+                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="{{ t('decisions_made_tooltip', lang) }}">
                         <div class="metric-value">{{ history.decisions|length }}</div>
-                        <div class="metric-label">Принято решений</div>
+                        <div class="metric-label">{{ t('decisions_made', lang) }}</div>
                     </div>
-                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="Общее время прохождения сценария в минутах">
+                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="{{ t('scenario_time_tooltip', lang) }}">
                         <div class="metric-value">{{ "%.0f"|format(attempt.time_spent or 0) }}</div>
-                        <div class="metric-label">Время сценария</div>
+                        <div class="metric-label">{{ t('scenario_time', lang) }}</div>
                     </div>
-                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="Среднее время принятия одного решения">
+                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="{{ t('avg_decision_time_tooltip', lang) }}">
                         <div class="metric-value">{{ "%.0f"|format((attempt.time_spent or 360) / (history.decisions|length or 1)) }}</div>
-                        <div class="metric-label">Ср. время решения</div>
+                        <div class="metric-label">{{ t('avg_decision_time', lang) }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Улучшенная временная линия решений -->
             <div class="decision-timeline scroll-reveal">
-                <h3>📋 Временная линия решений</h3>
+                <h3>📋 {{ t('decision_timeline', lang) }}</h3>
                 {% for decision in history.decisions %}
                 <div class="decision-item animate-on-scroll">
                     <div class="decision-content">
                         <p class="decision-text">{{ decision.option_text }}</p>
                     </div>
                     <div class="decision-score {{ 'positive' if decision.score_awarded > 0 else ('negative' if decision.score_awarded < 0 else 'neutral') }}"
-                         data-tooltip="Баллы за это решение">
+                         data-tooltip="{{ t('points_for_decision', lang) }}">
                         {% if decision.score_awarded > 0 %}+{% endif %}{{ decision.score_awarded }}
                     </div>
                 </div>
@@ -104,26 +104,26 @@
             
             <!-- Блок наград с современными эффектами -->
             <div class="rewards-section scroll-reveal">
-                <h3>🎉 Награды за прохождение</h3>
+                <h3>🎉 {{ t('completion_rewards', lang) }}</h3>
                 
                 <div class="rewards-grid">
-                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="Очки опыта за завершение сценария">
+                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="{{ t('xp_for_completion_tooltip', lang) }}">
                         <div class="reward-value">+{{ calculate_base_experience_points(((attempt.score / scenario.max_score) * 100) if scenario.max_score > 0 else 0) }} XP</div>
-                        <div class="reward-label">Очки опыта</div>
+                        <div class="reward-label">{{ t('experience_points', lang) }}</div>
                     </div>
-                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="Ваш текущий уровень в системе">
+                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="{{ t('current_level_tooltip', lang) }}">
                         <div class="reward-value">LVL {{ gamification_data.current_level }}</div>
-                        <div class="reward-label">Ваш уровень</div>
+                        <div class="reward-label">{{ t('your_level', lang) }}</div>
                     </div>
-                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="Общее количество завершенных сценариев">
+                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="{{ t('completed_scenarios_tooltip', lang) }}">
                         <div class="reward-value">{{ gamification_data.scenarios_completed }}</div>
-                        <div class="reward-label">Сценариев завершено</div>
+                        <div class="reward-label">{{ t('scenarios_completed', lang) }}</div>
                     </div>
                 </div>
                 
                 <!-- Прогресс до следующего уровня с анимацией -->
                 <div class="level-progress">
-                    <div>До уровня {{ gamification_data.current_level + 1 }}: {{ gamification_data.points_to_next_level }} XP</div>
+                    <div>{{ t('to_level', lang) }} {{ gamification_data.current_level + 1 }}: {{ gamification_data.points_to_next_level }} XP</div>
                     <div class="progress-bar">
                         {% set progress_percentage = ((gamification_data.total_xp - (100 if gamification_data.current_level > 1 else 0)) / (250 - (100 if gamification_data.current_level > 1 else 0))) * 100 if gamification_data.current_level <= 2 else 50 %}
                         <div class="progress-fill" style="width: {{ progress_percentage }}%;"></div>
@@ -133,7 +133,7 @@
 
             <!-- Анализ компетенций с интерактивной диаграммой -->
             <div class="competency-analysis scroll-reveal">
-                <h3>📊 Анализ компетенций</h3>
+                <h3>📊 {{ t('competency_analysis', lang) }}</h3>
                 
                 <!-- Контейнер для интерактивной диаграммы -->
                 <div class="competency-chart-container">
@@ -142,16 +142,16 @@
 
                 <!-- Детальные оценки с улучшенным дизайном -->
                 <div class="competency-scores">
-                    <div class="competency-metric magnetic-hover" data-competency="empathy" data-tooltip="Способность понимать и разделять чувства пациента">
-                        <span class="competency-name">Эмпатия</span>
+                    <div class="competency-metric magnetic-hover" data-competency="empathy" data-tooltip="{{ t('empathy_tooltip', lang) }}">
+                        <span class="competency-name">{{ t('empathy', lang) }}</span>
                         <span class="competency-score">{{ calculate_empathy_score(history) }}</span>
                     </div>
-                    <div class="competency-metric magnetic-hover" data-competency="clinical" data-tooltip="Медицинские знания и клинические навыки">
-                        <span class="competency-name">Клинические навыки</span>
+                    <div class="competency-metric magnetic-hover" data-competency="clinical" data-tooltip="{{ t('clinical_skills_tooltip', lang) }}">
+                        <span class="competency-name">{{ t('clinical_skills', lang) }}</span>
                         <span class="competency-score">{{ calculate_clinical_score(history) }}</span>
                     </div>
-                    <div class="competency-metric magnetic-hover" data-competency="communication" data-tooltip="Навыки общения и взаимодействия с пациентом">
-                        <span class="competency-name">Коммуникация</span>
+                    <div class="competency-metric magnetic-hover" data-competency="communication" data-tooltip="{{ t('communication_tooltip', lang) }}">
+                        <span class="competency-name">{{ t('communication', lang) }}</span>
                         <span class="competency-score">{{ calculate_communication_score(history) }}</span>
                     </div>
                 </div>
@@ -175,6 +175,15 @@
 
 <!-- Инициализация специальных эффектов -->
 <script>
+// Делаем функцию t() доступной в JavaScript
+window.t = function(key, lang) {
+    const translations = {{ translations|tojson|safe }};
+    return translations[lang] && translations[lang][key] 
+        ? translations[lang][key] 
+        : key;
+};
+window.lang = '{{ lang }}';
+
 document.addEventListener('DOMContentLoaded', function() {
     // Добавляем классы для анимаций
     const cards = document.querySelectorAll('.metric-card, .reward-card');
@@ -198,125 +207,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (entry.target.classList.contains('metric-card')) {
                     setTimeout(() => {
                         entry.target.style.transform = 'translateY(0) scale(1)';
-                        entry.target.style.opacity = '1';
                     }, 100);
                 }
             }
         });
     }, observerOptions);
     
-    // Наблюдаем за элементами
-    document.querySelectorAll('.scroll-reveal').forEach(el => {
-        observer.observe(el);
+    document.querySelectorAll('.scroll-reveal').forEach(element => {
+        observer.observe(element);
     });
-    
-    // Инициализация tooltips
-    const tooltipElements = document.querySelectorAll('[data-tooltip]');
-    tooltipElements.forEach(element => {
-        element.classList.add('tooltip');
-    });
-    
-    // Celebration эффект для наград
-    document.querySelectorAll('.reward-card').forEach(card => {
-        card.addEventListener('click', function() {
-            // Создаем эффект празднования
-            this.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 200);
-            
-            // Показываем уведомление
-            if (window.vpResults && window.vpResults.showNotification) {
-                window.vpResults.showNotification('Награда отмечена! 🏆', 'success');
-            }
-        });
-    });
-    
-    console.log('✅ Enhanced Virtual Patient Results initialized!');
-});
-
-// Инициализация системы частиц (если не загружена автоматически)
-if (!document.querySelector('.particle')) {
-    setTimeout(() => {
-        const particleContainer = document.querySelector('.particle-container');
-        if (particleContainer && !particleContainer.children.length) {
-            for (let i = 0; i < 5; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.top = `${Math.random() * 100}%`;
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.animationDelay = `${Math.random() * 20}s`;
-                particleContainer.appendChild(particle);
-            }
-        }
-    }, 1000);
-}
-
-// Обработка ошибок для graceful degradation
-window.addEventListener('error', function(e) {
-    console.warn('Non-critical error in VP Results:', e.message);
 });
 </script>
-
-<!-- Критический CSS для мгновенной загрузки (inline) -->
-<style>
-/* Критические стили для первого показа */
-.scroll-reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.scroll-reveal.revealed {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.fade-in {
-    animation: fadeInUp 600ms ease-out forwards;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Плавная загрузка для низкоскоростных соединений */
-.metric-card, .reward-card {
-    transition: all 0.3s ease;
-}
-
-.metric-card:hover, .reward-card:hover {
-    transform: translateY(-4px);
-}
-
-/* Базовая поддержка для старых браузеров */
-.results-container {
-    display: block;
-}
-
-@supports (display: grid) {
-    .results-container {
-        display: grid;
-        grid-template-columns: 1fr 400px;
-        gap: 2rem;
-    }
-}
-
-@media (max-width: 992px) {
-    .results-container {
-        display: block !important;
-    }
-    
-    .results-sidebar {
-        margin-top: 2rem;
-    }
-}
-</style>
 {% endblock %}

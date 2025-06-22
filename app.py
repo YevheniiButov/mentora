@@ -9,6 +9,12 @@ from flask import Flask, flash, render_template, redirect, url_for, g, request, 
 from flask_login import current_user
 from flask_migrate import Migrate
 from werkzeug.middleware.proxy_fix import ProxyFix
+import sys
+import os
+
+# Добавляем текущую директорию в PYTHONPATH
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from translations_new import setup_translations
 from utils.subtopics import create_slug, update_lesson_subtopics, reorder_subtopic_lessons
 from utils.mobile_navigation import MobileNavigationConfig, get_active_nav_item
@@ -26,6 +32,8 @@ from models import User, Module, Lesson, UserProgress, Subject, LearningPath, Vi
 from routes.main_routes import main_bp
 from routes.auth_routes import auth_bp
 from routes.admin_routes import admin_bp
+from routes.admin import admin_unified_bp  # Новая единая админка
+from routes.admin_unified import admin_unified_bp as admin_simple_bp  # Простая админка
 from routes.forum_routes import forum_bp
 from routes.virtual_patient_routes import virtual_patient_bp
 from routes.api_routes import api_bp
@@ -726,8 +734,18 @@ def create_app(test_config=None):
         app.register_blueprint(learning_bp)
     
     app.register_blueprint(admin_bp)
+    app.register_blueprint(admin_unified_bp)  # Регистрируем единую админку
+    app.register_blueprint(admin_simple_bp)  # Регистрируем простую админку
     app.register_blueprint(forum_bp)
-    
+
+    # Регистрируем новый blueprint для навигации по контенту
+    from routes.content_navigation import content_nav_bp
+    app.register_blueprint(content_nav_bp)             # Навигация по контенту
+
+    # Регистрируем универсальный загрузчик контента
+    from routes.admin.uploader_routes import uploader_bp
+    app.register_blueprint(uploader_bp)                # Универсальный загрузчик
+
     app.register_blueprint(tests_bp)
     app.register_blueprint(learning_map_bp)
     app.register_blueprint(dashboard_bp)

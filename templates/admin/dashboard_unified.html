@@ -1,0 +1,146 @@
+<!-- templates/admin/dashboard_unified.html -->
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_users }}</h3>
+                    <p>Total Users</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_modules }}</h3>
+                    <p>Modules</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="bi bi-journal-text"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_lessons }}</h3>
+                    <p>Lessons</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-info">
+                    <i class="bi bi-question-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ stats.total_questions }}</h3>
+                    <p>Questions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="action-card">
+                <h5><i class="bi bi-plus-circle me-2"></i>Quick Actions</h5>
+                <div class="action-buttons">
+                    <a href="{{ url_for('admin_simple.content_manager') }}" class="btn btn-primary">
+                        <i class="bi bi-book me-1"></i> Manage Content
+                    </a>
+                    <a href="{{ url_for('admin_simple.users_manager') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-people me-1"></i> Manage Users
+                    </a>
+                    <a href="{{ url_for('admin_simple.analytics') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-bar-chart me-1"></i> View Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="action-card">
+                <h5><i class="bi bi-clock-history me-2"></i>Recent Activity</h5>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <i class="bi bi-plus-circle text-success"></i>
+                        <span>New module "Advanced Dental Care" created</span>
+                        <small>2 hours ago</small>
+                    </div>
+                    <div class="activity-item">
+                        <i class="bi bi-person-plus text-primary"></i>
+                        <span>User "john.doe@example.com" registered</span>
+                        <small>4 hours ago</small>
+                    </div>
+                    <div class="activity-item">
+                        <i class="bi bi-upload text-warning"></i>
+                        <span>10 new questions imported</span>
+                        <small>Yesterday</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Status -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="status-card">
+                <div class="status-header">
+                    <h6><i class="bi bi-server me-2"></i>System Status</h6>
+                    <span class="status-indicator online"></span>
+                </div>
+                <div class="status-body">
+                    <p class="mb-1">Database: <span class="text-success">Connected</span></p>
+                    <p class="mb-1">Memory Usage: <span class="text-warning">45%</span></p>
+                    <p class="mb-0">Disk Space: <span class="text-success">78% Free</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="status-card">
+                <div class="status-header">
+                    <h6><i class="bi bi-graph-up me-2"></i>Performance</h6>
+                </div>
+                <div class="status-body">
+                    <p class="mb-1">Response Time: <span class="text-success">120ms</span></p>
+                    <p class="mb-1">Active Sessions: <span class="text-info">{{ stats.total_users }}</span></p>
+                    <p class="mb-0">Uptime: <span class="text-success">99.9%</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="status-card">
+                <div class="status-header">
+                    <h6><i class="bi bi-shield-check me-2"></i>Security</h6>
+                </div>
+                <div class="status-body">
+                    <p class="mb-1">SSL Certificate: <span class="text-success">Valid</span></p>
+                    <p class="mb-1">Failed Logins: <span class="text-success">0</span></p>
+                    <p class="mb-0">Last Backup: <span class="text-success">1 hour ago</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

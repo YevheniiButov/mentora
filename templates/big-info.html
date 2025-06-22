@@ -1,162 +1,558 @@
 {% extends "base.html" %}
-{# --- SEO Meta Tags for big-info.html --- #}
-{% block title %}
-    {% if lang == 'ru' %}Руководство по BIG регистрации для стоматологов в Нидерландах - Become a Tandarts
-    {% elif lang == 'nl' %}Handleiding BIG-registratie voor tandartsen in Nederland - Become a Tandarts
-    {% elif lang == 'uk' %}Керівництво по BIG реєстрації для стоматологів у Нідерландах - Become a Tandarts {# Пример #}
-    {% elif lang == 'es' %}Guía de registro BIG para dentistas en los Países Bajos - Become a Tandarts {# Пример #}
-    {% elif lang == 'pt' %}Guia de registo BIG para dentistas na Holanda - Become a Tandarts
-    {% elif lang == 'tr' %}Hollanda'daki diş hekimleri için BIG kayıt rehberi - Become a Tandarts {# Пример #}
-    {% elif lang == 'fa' %}راهنمای ثبت نام BIG برای دندانپزشکان در هلند - Become a Tandarts {# Пример #}
-    {% else %}BIG Registration Guide for Dentists in the Netherlands - Become a Tandarts
-    {% endif %}
+
+{# SEO Meta Tags #}
+{% block title %}{{ t('big_info.seo.title', lang) }}{% endblock %}
+{% block meta_description %}{{ t('big_info.seo.description', lang) }}{% endblock %}
+
+{# Custom CSS for this page #}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/big-info.css') }}">
 {% endblock %}
 
-{% block meta_description %}
-    {% if lang == 'ru' %}Пошаговое руководство и важная информация для иностранных стоматологов, подающих на BIG регистрацию в Нидерландах. Требования и процедура.
-    {% elif lang == 'nl' %}Stap-voor-stap handleiding en essentiële informatie voor buitenlandse tandartsen die BIG-registratie aanvragen in Nederland. Eisen en procedure.
-    {% elif lang == 'uk' %}Покрокове керівництво та важлива інформація для іноземних стоматологів, які подають на BIG реєстрацію в Нідерландах. Вимоги та процедура.{# Пример #}
-    {% elif lang == 'es' %}Guía paso a paso e información esencial para dentistas extranjeros que solicitan el registro BIG en los Países Bajos. Requisitos y procedimiento.{# Пример #}
-    {% elif lang == 'pt' %}Guia passo-a-passo e informações essenciais para dentistas estrangeiros que solicitam o registo BIG na Holanda. Requisitos e procedimento.
-    {% elif lang == 'tr' %}Hollanda'da BIG kaydı başvurusunda bulunan yabancı diş hekimleri için adım adım kılavuz ve temel bilgiler. Gereksinimler ve prosedür.{# Пример #}
-    {% elif lang == 'fa' %}راهنمای گام به گام و اطلاعات ضروری برای دندانپزشکان خارجی متقاضی ثبت نام BIG در هلند. الزامات و روش.{# Пример #}
-    {% else %}Step-by-step guide and essential information for foreign-trained dentists applying for BIG registration in the Netherlands. Requirements and procedure.
-    {% endif %}
+{# JavaScript for this page - moved to head #}
+{% block page_scripts %}
+<script>
+// Глобальные переменные для отслеживания состояния
+let activeStep = null;
+
+// Функция для переключения шага
+function toggleStep(headerElement) {
+    const content = headerElement.nextElementSibling;
+    const icon = headerElement.querySelector('.big-step-icon');
+    
+    // Закрыть все остальные шаги
+    const allHeaders = document.querySelectorAll('.big-step-header');
+    const allContents = document.querySelectorAll('.big-step-content');
+    
+    allHeaders.forEach(header => {
+        if (header !== headerElement) {
+            header.classList.remove('active');
+            header.querySelector('.big-step-icon').textContent = '▼';
+        }
+    });
+    
+    allContents.forEach(otherContent => {
+        if (otherContent !== content) {
+            otherContent.classList.remove('active');
+        }
+    });
+    
+    // Переключить текущий шаг
+    headerElement.classList.toggle('active');
+    content.classList.toggle('active');
+    
+    if (content.classList.contains('active')) {
+        icon.textContent = '▲';
+        updateProgress();
+        activeStep = headerElement;
+    } else {
+        icon.textContent = '▼';
+        activeStep = null;
+    }
+}
+
+function updateProgress() {
+    const activeSteps = document.querySelectorAll('.big-step-header.active').length;
+    const totalSteps = document.querySelectorAll('.big-step-header').length;
+    const progress = (activeSteps / totalSteps) * 100;
+    
+    document.getElementById('overallProgress').style.width = progress + '%';
+}
+
+// Инициализация при загрузке DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем обработчики событий для всех заголовков
+    document.querySelectorAll('.big-step-header').forEach(header => {
+        header.addEventListener('click', function() {
+            toggleStep(this);
+            
+            // Плавная прокрутка
+            setTimeout(() => {
+                this.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 300);
+        });
+    });
+
+    // Автоматически открыть первый шаг
+    const firstStep = document.querySelector('.big-step-header');
+    if (firstStep) {
+        setTimeout(() => {
+            toggleStep(firstStep);
+        }, 1000);
+    }
+
+    // Наблюдатель для анимаций при скролле
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Наблюдать за всеми карточками и подразделами
+    const elementsToObserve = document.querySelectorAll('.big-info-card, .big-subsection, .big-alert');
+    elementsToObserve.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+});
+</script>
 {% endblock %}
-{# --- End SEO Meta Tags --- #}
 
 {% block content %}
-  {# --- ДОБАВЛЕН КЛАСС "main-content-padding" К ТЕГУ SECTION --- #}
-  <section id="big-info-content" class="main-content-padding"> {# <--- ВОТ ЕДИНСТВЕННОЕ ИЗМЕНЕНИЕ #}
-    <h1>
-      {% if lang == 'ru' %} Процедура регистрации в BIG
-      {% elif lang == 'uk' %} Процедура реєстрації в BIG
-      {% elif lang == 'nl' %} BIG-registratieprocedure
-      {% elif lang == 'es' %} Procedimiento de registro BIG
-      {% elif lang == 'pt' %} Procedimento de Registo BIG
-      {% elif lang == 'tr' %} BIG Kayıt Süreci
-      {% elif lang == 'fa' %} روند ثبت‌نام در BIG
-      {% else %} BIG Registration Procedure
-      {% endif %}
-    </h1>
-
-    {# ----- Начало контента страницы ----- #}
-
-    <div class="step">
-      <h2>1. Credential Evaluation (IDW)</h2>
-      <p>
-        {% if lang == 'ru' %}
-          Первый шаг к регистрации в BIG — это оценка вашего иностранного диплома и квалификаций через IDW (Internationale Diplomawaardering). Этот процесс включает подачу официальных документов об образовании для определения их эквивалентности голландским стандартам. Рекомендуется заранее подготовить все необходимые документы, включая дипломы, приложения к ним и свидетельства о прохождении стажировок.
-        {% elif lang == 'uk' %}
-          Перший крок до реєстрації в BIG — це оцінка вашого іноземного диплома та кваліфікацій через IDW (Internationale Diplomawaardering). Цей процес включає подання офіційних документів про освіту для визначення їх еквівалентності нідерландським стандартам. Рекомендується заздалегідь підготувати всі необхідні документи, включаючи дипломи, додатки до них та свідоцтва про проходження стажувань.
-        {% elif lang == 'nl' %}
-          De eerste stap naar registratie in het BIG-register is de waardering van uw buitenlandse diploma en kwalificaties via IDW (Internationale Diplomawaardering). Dit proces omvat het indienen van officiële onderwijsdocumenten om hun gelijkwaardigheid aan Nederlandse standaarden te bepalen. Het is raadzaam om vooraf alle benodigde documenten voor te bereiden, waaronder diploma's, bijlagen en certificaten van stages.
-        {% elif lang == 'es' %}
-          El primer paso para registrarse en el BIG es la evaluación de tu diploma y calificaciones extranjeras a través de IDW (Internationale Diplomawaardering). Este proceso implica presentar documentos educativos oficiales para determinar su equivalencia con los estándares holandeses. Se recomienda preparar con anticipación todos los documentos necesarios, incluyendo diplomas, anexos y certificados de prácticas.
-        {% elif lang == 'pt' %}
-          O primeiro passo para o registo no BIG é a avaliação do seu diploma e qualificações estrangeiras através do IDW (Internationale Diplomawaardering). Este processo envolve a submissão de documentos educacionais oficiais para determinar a sua equivalência aos padrões holandeses. É aconselhável preparar antecipadamente todos os documentos necessários, incluindo diplomas, históricos escolares e certificados de estágio.
-        {% elif lang == 'tr' %}
-          BIG'e kayıt olmanın ilk adımı, yabancı diplomanızın ve yeterliliklerinizin IDW (Internationale Diplomawaardering) aracılığıyla değerlendirilmesidir. Bu süreç, resmi eğitim belgelerinizin Hollanda standartlarına eşdeğerliğini belirlemek için sunulmasını içerir. Diplomalar, ekler ve staj sertifikaları dahil olmak üzere gerekli tüm belgeleri önceden hazırlamanız önerilir.
-        {% elif lang == 'fa' %}
-          اولین گام برای ثبت‌نام در BIG، ارزیابی مدرک تحصیلی و صلاحیت‌های خارجی شما از طریق IDW (Internationale Diplomawaardering) است. این فرآیند شامل ارائه مدارک تحصیلی رسمی برای تعیین معادل بودن آن‌ها با استانداردهای هلندی می‌باشد. توصیه می‌شود که از قبل تمامی مدارک مورد نیاز، از جمله دیپلم‌ها، پیوست‌ها و گواهی‌های کارآموزی را آماده کنید.
-        {% else %}
-          The first step towards BIG registration is the evaluation of your foreign diploma and qualifications through IDW (Internationale Diplomawaardering). This process involves submitting official educational documents to determine their equivalence to Dutch standards. It is advisable to prepare all necessary documents in advance, including diplomas, transcripts, and internship certificates.
-        {% endif %}
-      </p>
+<section id="big-info-content" class="main-content-padding big-info-section">
+    <div class="big-page-header">
+        <h1 class="big-page-title">{{ t('big_info.page.title', lang) }}</h1>
+        <p class="big-page-subtitle">{{ t('big_info.page.subtitle', lang) }}</p>
     </div>
 
-    <div class="step">
-      <h2>2. Language Proficiency</h2>
-      <p>
-        {% if lang == 'ru' %}
-          Для успешной работы в Нидерландах необходимо владеть нидерландским языком как минимум на уровне B2. Это включает не только повседневное общение, но и знание медицинской терминологии. Официальным подтверждением может быть Staatsexamen NT2 (Programma II). Рекомендуется также изучать клинический голландский для прохождения экзаменов и работы с пациентами.
-        {% elif lang == 'uk' %}
-          Для успішної роботи в Нідерландах потрібно володіти нідерландською мовою на рівні не нижче B2. Це стосується як загального мовлення, так і медичної термінології. Підтвердженням може бути Staatsexamen NT2 (Programma II). Варто також вивчати клінічну нідерландську для успішного проходження іспитів і роботи з пацієнтами.
-        {% elif lang == 'nl' %}
-          Voor een succesvolle registratie moet je Nederlands beheersen op minimaal B2-niveau. Dit geldt voor algemene communicatie én medische terminologie. Staatsexamen NT2 (Programma II) is een erkend bewijs. Het is aan te raden om ook medisch Nederlands te leren voor examens en praktijk.
-        {% elif lang == 'es' %}
-          Para trabajar en los Países Bajos, necesitas dominar el neerlandés al menos a nivel B2. Esto incluye la comunicación cotidiana y el vocabulario médico. El Staatsexamen NT2 (Programa II) es una certificación oficial. También se recomienda estudiar neerlandés médico para aprobar los exámenes y tratar con pacientes.
-        {% elif lang == 'pt' %}
-          Para trabalhar nos Países Baixos, necessita de conhecimentos da língua neerlandesa, no mínimo ao nível B2. Isto inclui tanto a comunicação geral como o vocabulário médico. O Staatsexamen NT2 (Programa II) é uma certificação oficial. Recomenda-se também o estudo do neerlandês médico para passar nos exames e interagir com os pacientes.
-        {% elif lang == 'tr' %}
-          Hollanda'da çalışmak için en az B2 seviyesinde Hollandaca bilmek gereklidir. Bu, günlük iletişim kadar tıbbi terimleri de kapsar. Resmi bir belge olarak Staatsexamen NT2 (Programma II) kabul edilir. Sınavları geçmek ve hasta iletişimi için tıbbi Hollandaca da öğrenilmelidir.
-        {% elif lang == 'fa' %}
-          برای کار در هلند باید حداقل در سطح B2 به زبان هلندی مسلط باشید. این شامل مکالمات عمومی و واژگان پزشکی است. آزمون رسمی Staatsexamen NT2 (Programma II) به عنوان مدرک معتبر شناخته می‌شود. یادگیری زبان هلندی پزشکی نیز برای آزمون‌ها و کار با بیماران توصیه می‌شود.
-        {% else %}
-          To work in the Netherlands, you need Dutch language skills at a minimum B2 level. This includes both general communication and medical vocabulary. Staatsexamen NT2 (Programma II) is an official certification. It’s also recommended to study medical Dutch to pass exams and interact with patients.
-        {% endif %}
-      </p>
+    <!-- Прогресс общего процесса -->
+    <div class="big-progress-container">
+        <div class="big-progress-title">{{ t('big_info.progress.title', lang) }}</div>
+        <div class="big-progress-bar">
+            <div class="big-progress-fill" style="width: 0%" id="overallProgress"></div>
+        </div>
     </div>
 
-    <div class="step">
-      <h2>3. BI-Toets (Basic Medical Knowledge)</h2>
-      <p>
-        {% if lang == 'ru' %}
-          BI-toets — это профессиональный экзамен, проверяющий ваши базовые медицинские знания, понимание нидерландской системы здравоохранения, а также знание соответствующих законов и этики. Экзамен включает вопросы с множественным выбором, клинические ситуации и интерпретацию медицинской информации. Является обязательным шагом перед допуском к практике.
-        {% elif lang == 'uk' %}
-          BI-toets — це професійний іспит, який перевіряє базові медичні знання, розуміння системи охорони здоров'я Нідерландів, а також знання законодавства та етики. Іспит включає питання з вибором відповіді, клінічні ситуації та інтерпретацію медичної інформації. Є обов'язковим етапом перед допуском до практики.
-        {% elif lang == 'nl' %}
-          De BI-toets is een professionele toets die je medische basiskennis test, evenals je begrip van het Nederlandse zorgsysteem, wetgeving en medische ethiek. De toets bevat meerkeuzevragen, casussen en interpretatie van medische gegevens. Deze stap is verplicht voordat je mag starten met praktijkervaring.
-        {% elif lang == 'es' %}
-          El BI-toets es un examen profesional que evalúa tus conocimientos médicos básicos, el entendimiento del sistema de salud neerlandés, leyes y ética médica. Incluye preguntas de opción múltiple, casos clínicos y análisis de información médica. Es obligatorio antes de poder ejercer.
-        {% elif lang == 'pt' %}
-          O BI-toets é um exame profissional que testa os seus conhecimentos médicos básicos, a compreensão do sistema de saúde holandês, as leis relevantes e a ética médica. Inclui perguntas de escolha múltipla, cenários clínicos e interpretação de dados médicos. Este passo é obrigatório antes de iniciar a prática supervisionada.
-        {% elif lang == 'tr' %}
-          BI-toets, temel tıbbi bilginizi, Hollanda sağlık sistemi hakkındaki bilginizi, yasalar ve etik bilgilerinizi ölçen mesleki bir sınavdır. Çoktan seçmeli sorular, klinik senaryolar ve tıbbi bilgi yorumlama içerir. Uygulamaya geçmeden önce bu adım zorunludur.
-        {% elif lang == 'fa' %}
-          آزمون BI یک آزمون حرفه‌ای است که دانش پایه پزشکی، درک سیستم مراقبت سلامت هلند، قوانین و اخلاق پزشکی شما را ارزیابی می‌کند. آزمون شامل سؤالات چندگزینه‌ای، سناریوهای بالینی و تفسیر اطلاعات پزشکی است. این مرحله قبل از شروع به کار اجباری است.
-        {% else %}
-          The BI-toets is a professional exam testing your basic medical knowledge, understanding of the Dutch healthcare system, relevant laws, and medical ethics. It includes multiple-choice questions, clinical scenarios, and interpretation of medical data. This step is mandatory before starting supervised practice.
-        {% endif %}
-      </p>
+    <!-- Шаг 1: Оценка образования -->
+    <div class="big-step-container">
+        <div class="big-step-header">
+            <div class="big-step-header-content">
+                <div class="big-step-number">1</div>
+                <h2 class="big-step-title">{{ t('big_info.step1.title', lang) }}</h2>
+                <span class="big-step-icon">▼</span>
+            </div>
+        </div>
+        <div class="big-step-content">
+            <div class="big-step-content-inner">
+                <p class="big-step-description">{{ t('big_info.step1.description', lang) }}</p>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step1.documents.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <ul class="big-custom-list">
+                            <li>{{ t('big_info.step1.documents.diploma', lang) }}</li>
+                            <li>{{ t('big_info.step1.documents.transcript', lang) }}</li>
+                            <li>{{ t('big_info.step1.documents.internships', lang) }}</li>
+                            <li>{{ t('big_info.step1.documents.translations', lang) }}</li>
+                            <li>{{ t('big_info.step1.documents.conduct_certificate', lang) }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="big-alert big-alert-warning">
+                    <strong>{{ t('big_info.step1.warning.title', lang) }}:</strong> {{ t('big_info.step1.warning.text', lang) }}
+                </div>
+
+                <div class="big-info-cards">
+                    <div class="big-info-card">
+                        <h4 class="big-info-card-title">{{ t('big_info.step1.timeline.title', lang) }}</h4>
+                        <p>{{ t('big_info.step1.timeline.text', lang) }}</p>
+                    </div>
+                    <div class="big-info-card">
+                        <h4 class="big-info-card-title">{{ t('big_info.step1.cost.title', lang) }}</h4>
+                        <p>{{ t('big_info.step1.cost.text', lang) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="step">
-      <h2>4. Professional Practice Evaluation</h2>
-      <p>
-        {% if lang == 'ru' %}
-          После сдачи BI-toets и оценки диплома вы можете быть направлены на профессиональную стажировку или экзамен в зависимости от уровня вашего образования и опыта. Некоторые кандидаты проходят адаптационный период (aanpassingsstage) под наблюдением. Это помогает доказать практические навыки и соответствие голландским стандартам.
-        {% elif lang == 'uk' %}
-          Після складання BI-toets та оцінки диплома вас можуть направити на професійну практику або додатковий іспит залежно від вашого рівня освіти й досвіду. Деякі кандидати проходять адаптаційний період (aanpassingsstage) під наглядом. Це допомагає підтвердити практичні навички та відповідність стандартам Нідерландів.
-        {% elif lang == 'nl' %}
-          Na het behalen van de BI-toets en diplomawaardering kun je worden toegewezen aan een praktijkstage of aanvullende toets, afhankelijk van je opleiding en ervaring. Sommige kandidaten volgen een aanpassingsstage onder supervisie. Dit helpt om praktische vaardigheden aan te tonen volgens de Nederlandse normen.
-        {% elif lang == 'es' %}
-          Tras aprobar el BI-toets y la evaluación de tu diploma, puedes ser asignado a una pasantía profesional o evaluación adicional según tu formación y experiencia. Algunos candidatos realizan un período de adaptación (aanpassingsstage) bajo supervisión. Esto ayuda a demostrar habilidades prácticas según los estándares holandeses.
-        {% elif lang == 'pt' %}
-          Após passar no BI-toets e na avaliação de credenciais, pode ser encaminhado para um estágio profissional ou avaliação adicional, dependendo da sua educação e experiência. Alguns candidatos passam por um período de adaptação supervisionado (aanpassingsstage). Isto ajuda a demonstrar competências práticas de acordo com os padrões holandeses.
-        {% elif lang == 'tr' %}
-          BI-toets ve diploma değerlendirmesinden sonra, eğitim ve deneyiminize göre mesleki bir staj veya değerlendirme sınavına yönlendirilebilirsiniz. Bazı adaylar, gözetim altında geçen uyum süreci (aanpassingsstage) ile yetkinliklerini gösterir. Bu süreç Hollanda standartlarına uygunluğu kanıtlamak için önemlidir.
-        {% elif lang == 'fa' %}
-          پس از قبولی در آزمون BI و ارزیابی مدارک، ممکن است بسته به سطح تحصیلات و تجربه‌تان به کارآموزی حرفه‌ای یا آزمون عملی ارجاع داده شوید. برخی داوطلبان دوره تطبیقی (aanpassingsstage) را تحت نظارت می‌گذرانند. این مرحله برای اثبات مهارت‌های عملی مطابق با استانداردهای هلند مهم است.
-        {% else %}
-          After passing the BI-toets and credential evaluation, you may be assigned to a professional internship or additional assessment depending on your education and experience. Some candidates go through a supervised adaptation period (aanpassingsstage). This helps demonstrate practical skills according to Dutch standards.
-        {% endif %}
-      </p>
+    <!-- Шаг 2: Языковая подготовка -->
+    <div class="big-step-container">
+        <div class="big-step-header">
+            <div class="big-step-header-content">
+                <div class="big-step-number">2</div>
+                <h2 class="big-step-title">{{ t('big_info.step2.title', lang) }}</h2>
+                <span class="big-step-icon">▼</span>
+            </div>
+        </div>
+        <div class="big-step-content">
+            <div class="big-step-content-inner">
+                <p class="big-step-description">{{ t('big_info.step2.description', lang) }}</p>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step2.requirements.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <table class="big-info-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ t('big_info.step2.table.skill', lang) }}</th>
+                                    <th>{{ t('big_info.step2.table.level', lang) }}</th>
+                                    <th>{{ t('big_info.step2.table.exam', lang) }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ t('big_info.step2.table.general_dutch', lang) }}</td>
+                                    <td>B2+</td>
+                                    <td>{{ t('big_info.step2.table.staatsexamen', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step2.table.english_reading', lang) }}</td>
+                                    <td>B2</td>
+                                    <td>{{ t('big_info.step2.table.alternative', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step2.table.medical_terminology', lang) }}</td>
+                                    <td>{{ t('big_info.step2.table.professional', lang) }}</td>
+                                    <td>{{ t('big_info.step2.table.bi_toets_part', lang) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="big-alert big-alert-info">
+                    <strong>{{ t('big_info.step2.tip.title', lang) }}:</strong> {{ t('big_info.step2.tip.text', lang) }}
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="step">
-      <h2>5. Apply for BIG Registration</h2>
-      <p>
-        {% if lang == 'ru' %}
-          После завершения всех шагов вы можете подать официальную заявку на регистрацию в реестре BIG. Это включает загрузку всех необходимых документов на сайте <a href="https://www.bigregister.nl" target="_blank" rel="noopener noreferrer">bigregister.nl</a>, оплату регистрационного сбора и ожидание подтверждения. После одобрения вы получите номер BIG, который дает право официально работать стоматологом в Нидерландах.
-        {% elif lang == 'uk' %}
-          Після виконання всіх кроків ви можете подати офіційну заявку на реєстрацію в реєстрі BIG. Це передбачає завантаження всіх необхідних документів на сайті <a href="https://www.bigregister.nl" target="_blank" rel="noopener noreferrer">bigregister.nl</a>, оплату збору та очікування підтвердження. Після схвалення ви отримаєте номер BIG, що дає право офіційно працювати стоматологом у Нідерландах.
-        {% elif lang == 'nl' %}
-          Na het afronden van alle stappen kun je een officiële aanvraag indienen voor registratie in het BIG-register. Dit houdt in dat je alle vereiste documenten uploadt op <a href="https://www.bigregister.nl" target="_blank" rel="noopener noreferrer">bigregister.nl</a>, het registratiebedrag betaalt en wacht op goedkeuring. Na goedkeuring ontvang je een BIG-nummer waarmee je officieel als tandarts in Nederland mag werken.
-        {% elif lang == 'es' %}
-          Una vez que hayas completado todos los pasos, puedes presentar tu solicitud oficial para el registro en el BIG. Esto incluye subir todos los documentos necesarios en <a href="https://www.bigregister.nl" target="_blank" rel="noopener noreferrer">bigregister.nl</a>, pagar la tasa de registro y esperar la aprobación. Tras la aprobación, recibirás tu número BIG que te autoriza a trabajar oficialmente como dentista en los Países Bajos.
-        {% elif lang == 'pt' %}
-          Assim que tiver concluído todos os passos, pode submeter a sua candidatura oficial para inclusão no registo BIG. Isto inclui o carregamento de todos os documentos necessários em <a href="https://www.bigregister.nl" target="_blank" rel="noopener noreferrer">bigregister.nl</a>, o pagamento da taxa de registo e a espera pela aprovação. Uma vez aprovado, receberá o seu número BIG, permitindo-lhe exercer oficialmente como dentista nos Países Baixos.
-        {% elif lang == 'tr' %}
-          Tüm adımları tamamladıktan sonra BIG kaydı için resmi başvuruda bulunabilirsiniz. Gerekli belgeleri <a href="https://www.bigregister.nl" target="_blank" rel="noopener noreferrer">bigregister.nl</a> adresine yükleyip kayıt ücretini ödedikten sonra onay sürecini beklemeniz gerekir. Onaylandıktan sonra, Hollanda'da resmi olarak diş hekimi olarak çalışmanızı sağlayan BIG numarasını alırsınız.
-        {% elif lang == 'fa' %}
-          پس از تکمیل همه مراحل، می‌توانید درخواست رسمی خود را برای ثبت در BIG ارائه دهید. این شامل بارگذاری تمام مدارک لازم در <a href="https://www.bigregister.nl" target="_blank" rel="noopener noreferrer">bigregister.nl</a>، پرداخت هزینه ثبت‌نام و انتظار برای تأیید است. پس از تأیید، شماره BIG دریافت می‌کنید که اجازه کار رسمی به عنوان دندانپزشک در هلند را می‌دهد.
-        {% else %}
-          Once you have completed all the steps, you can submit your official application for inclusion in the BIG register. This includes uploading all required documents to <a href="https://www.bigregister.nl" target="_blank" rel="noopener noreferrer">bigregister.nl</a>, paying the registration fee, and waiting for approval. Once approved, you will receive your BIG number, allowing you to officially practice as a dentist in the Netherlands.
-        {% endif %}
-      </p>
+    <!-- Шаг 3: BI-Toets (самый подробный) -->
+    <div class="big-step-container">
+        <div class="big-step-header">
+            <div class="big-step-header-content">
+                <div class="big-step-number">3</div>
+                <h2 class="big-step-title">{{ t('big_info.step3.title', lang) }}</h2>
+                <span class="big-step-icon">▼</span>
+            </div>
+        </div>
+        <div class="big-step-content">
+            <div class="big-step-content-inner">
+                <p class="big-step-description">{{ t('big_info.step3.description', lang) }}</p>
+
+                <div class="big-alert big-alert-warning">
+                    <strong>{{ t('big_info.step3.key_info.title', lang) }}:</strong> 
+                    <br>• {{ t('big_info.step3.key_info.cost', lang) }}
+                    <br>• {{ t('big_info.step3.key_info.frequency', lang) }}
+                    <br>• {{ t('big_info.step3.key_info.participants', lang) }}
+                    <br>• {{ t('big_info.step3.key_info.duration', lang) }}
+                </div>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step3.theory.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <div class="big-info-cards">
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.theory.basic_medical.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.theory.basic_medical.anatomy', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.basic_medical.pathology', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.basic_medical.pharmacology', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.basic_medical.microbiology', lang) }}</li>
+                                </ul>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.theory.thk1.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.theory.thk1.cariology', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.thk1.endodontics', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.thk1.pediatric', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.thk1.periodontology', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.thk1.saliva', lang) }}</li>
+                                </ul>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.theory.thk2.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.theory.thk2.prosthetics', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.thk2.implantology', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.thk2.orthodontics', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.thk2.surgery', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.thk2.kinesiology', lang) }}</li>
+                                </ul>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.theory.radiology.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.theory.radiology.interpretation', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.radiology.safety', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.radiology.methods', lang) }}</li>
+                                </ul>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.theory.statistics.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.theory.statistics.descriptive', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.statistics.tests', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.statistics.interpretation', lang) }}</li>
+                                </ul>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.theory.methodology.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.theory.methodology.pico', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.methodology.research_design', lang) }}</li>
+                                    <li>{{ t('big_info.step3.theory.methodology.evidence_based', lang) }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step3.practical.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <table class="big-info-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ t('big_info.step3.practical.table.skill', lang) }}</th>
+                                    <th>{{ t('big_info.step3.practical.table.attempts', lang) }}</th>
+                                    <th>{{ t('big_info.step3.practical.table.description', lang) }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ t('big_info.step3.practical.manual_skills', lang) }}</td>
+                                    <td>3</td>
+                                    <td>{{ t('big_info.step3.practical.manual_description', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step3.practical.caries_excavation', lang) }}</td>
+                                    <td>1</td>
+                                    <td>{{ t('big_info.step3.practical.caries_description', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step3.practical.endo_preparation', lang) }}</td>
+                                    <td>2</td>
+                                    <td>{{ t('big_info.step3.practical.endo_description', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step3.practical.crown_preparation', lang) }}</td>
+                                    <td>2</td>
+                                    <td>{{ t('big_info.step3.practical.crown_description', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step3.practical.cleaning', lang) }}</td>
+                                    <td>1</td>
+                                    <td>{{ t('big_info.step3.practical.cleaning_description', lang) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="big-alert big-alert-success">
+                            <strong>{{ t('big_info.step3.practical.success.title', lang) }}:</strong> {{ t('big_info.step3.practical.success.text', lang) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step3.intake_ethics.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <div class="big-info-cards">
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.intake.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.intake.zoom_conversation', lang) }}</li>
+                                    <li>{{ t('big_info.step3.intake.history_taking', lang) }}</li>
+                                    <li>{{ t('big_info.step3.intake.procedure_explanation', lang) }}</li>
+                                    <li>{{ t('big_info.step3.intake.empathy', lang) }}</li>
+                                </ul>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.ethics.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.ethics.gerodontology', lang) }}</li>
+                                    <li>{{ t('big_info.step3.ethics.anxious_patients', lang) }}</li>
+                                    <li>{{ t('big_info.step3.ethics.disabled_patients', lang) }}</li>
+                                    <li>{{ t('big_info.step3.ethics.behavior_management', lang) }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step3.treatment_planning.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <div class="big-info-cards">
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.case1.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.case1.phase1', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case1.phase2', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case1.phase3', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case1.phase4', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case1.phase5', lang) }}</li>
+                                </ul>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.case2.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.case2.icdas', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case2.xrays', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case2.pediatric_plan', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case2.prevention', lang) }}</li>
+                                </ul>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step3.case3.title', lang) }}</h4>
+                                <ul class="big-custom-list">
+                                    <li>{{ t('big_info.step3.case3.trauma_diagnosis', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case3.resorption_types', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case3.treatment_plan', lang) }}</li>
+                                    <li>{{ t('big_info.step3.case3.prognosis', lang) }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step3.passing_criteria.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <table class="big-info-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ t('big_info.step3.passing.component', lang) }}</th>
+                                    <th>{{ t('big_info.step3.passing.requirement', lang) }}</th>
+                                    <th>{{ t('big_info.step3.passing.passing_grade', lang) }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ t('big_info.step3.passing.theory', lang) }}</td>
+                                    <td>{{ t('big_info.step3.passing.theory_req', lang) }}</td>
+                                    <td>{{ t('big_info.step3.passing.theory_grade', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step3.passing.practical', lang) }}</td>
+                                    <td>{{ t('big_info.step3.passing.practical_req', lang) }}</td>
+                                    <td>{{ t('big_info.step3.passing.practical_grade', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step3.passing.treatment', lang) }}</td>
+                                    <td>{{ t('big_info.step3.passing.treatment_req', lang) }}</td>
+                                    <td>{{ t('big_info.step3.passing.treatment_grade', lang) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ t('big_info.step3.passing.overall', lang) }}</td>
+                                    <td>{{ t('big_info.step3.passing.overall_req', lang) }}</td>
+                                    <td>{{ t('big_info.step3.passing.overall_grade', lang) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="big-alert big-alert-danger">
+                    <strong>{{ t('big_info.step3.failure.title', lang) }}:</strong>
+                    <br>• {{ t('big_info.step3.failure.additional_courses', lang) }}
+                    <br>• {{ t('big_info.step3.failure.repeat_after_2_years', lang) }}
+                    <br>• {{ t('big_info.step3.failure.individual_assessment', lang) }}
+                </div>
+            </div>
+        </div>
     </div>
 
-    {# ----- Конец контента страницы ----- #}
-  </section>
+    <!-- Шаг 4: Практическая оценка -->
+    <div class="big-step-container">
+        <div class="big-step-header">
+            <div class="big-step-header-content">
+                <div class="big-step-number">4</div>
+                <h2 class="big-step-title">{{ t('big_info.step4.title', lang) }}</h2>
+                <span class="big-step-icon">▼</span>
+            </div>
+        </div>
+        <div class="big-step-content">
+            <div class="big-step-content-inner">
+                <p class="big-step-description">{{ t('big_info.step4.description', lang) }}</p>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step4.types.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <div class="big-info-cards">
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step4.aanpassingsstage.title', lang) }}</h4>
+                                <p>{{ t('big_info.step4.aanpassingsstage.description', lang) }}</p>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step4.proeve.title', lang) }}</h4>
+                                <p>{{ t('big_info.step4.proeve.description', lang) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="big-alert big-alert-info">
+                    <strong>{{ t('big_info.step4.goal.title', lang) }}:</strong> {{ t('big_info.step4.goal.text', lang) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Шаг 5: Финальная регистрация -->
+    <div class="big-step-container">
+        <div class="big-step-header">
+            <div class="big-step-header-content">
+                <div class="big-step-number">5</div>
+                <h2 class="big-step-title">{{ t('big_info.step5.title', lang) }}</h2>
+                <span class="big-step-icon">▼</span>
+            </div>
+        </div>
+        <div class="big-step-content">
+            <div class="big-step-content-inner">
+                <p class="big-step-description">{{ t('big_info.step5.description', lang) }}</p>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step5.process.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <ul class="big-custom-list">
+                            <li>{{ t('big_info.step5.process.account', lang) }} <a href="https://www.bigregister.nl" target="_blank">bigregister.nl</a></li>
+                            <li>{{ t('big_info.step5.process.documents', lang) }}</li>
+                            <li>{{ t('big_info.step5.process.payment', lang) }}</li>
+                            <li>{{ t('big_info.step5.process.waiting', lang) }}</li>
+                            <li>{{ t('big_info.step5.process.big_number', lang) }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="big-alert big-alert-success">
+                    <strong>{{ t('big_info.step5.congratulations.title', lang) }}!</strong> {{ t('big_info.step5.congratulations.text', lang) }}
+                </div>
+
+                <div class="big-subsection">
+                    <h3 class="big-subsection-title">{{ t('big_info.step5.after_big.title', lang) }}</h3>
+                    <div class="big-subsection-content">
+                        <div class="big-info-cards">
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step5.job_search.title', lang) }}</h4>
+                                <p>{{ t('big_info.step5.job_search.text', lang) }}</p>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step5.education.title', lang) }}</h4>
+                                <p>{{ t('big_info.step5.education.text', lang) }}</p>
+                            </div>
+                            <div class="big-info-card">
+                                <h4 class="big-info-card-title">{{ t('big_info.step5.insurance.title', lang) }}</h4>
+                                <p>{{ t('big_info.step5.insurance.text', lang) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Финальная информация -->
+    <div class="big-final-cta">
+        <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="big-btn">
+            📚 {{ t('big_info.cta.start_preparation', lang) }}
+        </a>
+    </div>
+</section>
 {% endblock %}

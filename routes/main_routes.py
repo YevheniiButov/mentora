@@ -20,7 +20,10 @@ main_bp = Blueprint('main_bp', __name__, template_folder='../templates')
 @main_bp.context_processor
 def inject_lang():
     lang = getattr(g, 'lang', current_app.config['DEFAULT_LANGUAGE'])
-    return dict(lang=lang)
+    return dict(
+        lang=lang,
+        current_year=datetime.now().year
+    )
 
 @main_bp.route('/')
 def index():

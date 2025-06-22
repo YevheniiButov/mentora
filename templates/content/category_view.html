@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} - Dental Academy{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main_bp.index', lang=lang) }}">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('content_nav.categories_list', lang=lang) }}">Категории</a></li>
+                    <li class="breadcrumb-item active">{{ category.name }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-{{ category.icon or 'folder' }} me-3 text-primary" style="font-size: 2rem;"></i>
+                <div>
+                    <h1 class="mb-0">{{ category.name }}</h1>
+                    <p class="text-muted mb-0">Подкатегории для изучения</p>
+                </div>
+            </div>
+            
+            {% if subcategories %}
+                <div class="row">
+                    {% for subcategory in subcategories %}
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi bi-{{ subcategory.icon or 'bookmark' }} me-2 text-secondary" style="font-size: 1.25rem;"></i>
+                                    <h5 class="card-title mb-0">{{ subcategory.name }}</h5>
+                                </div>
+                                
+                                <p class="card-text text-muted">
+                                    Тем: {{ subcategory.topics.count() }}
+                                </p>
+                                
+                                <a href="{{ url_for('content_nav.view_subcategory', lang=lang, category_slug=category.slug, subcategory_slug=subcategory.slug) }}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-arrow-right me-1"></i>
+                                    Перейти к темам
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <h4>Пока нет подкатегорий</h4>
+                    <p>В этой категории пока нет подкатегорий для изучения.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

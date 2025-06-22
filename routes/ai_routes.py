@@ -963,4 +963,236 @@ def recommend_content(lang):
             'using_fallback': True
         }), 500
 
+# ===== HEALTH CHECK ENDPOINT =====
+
+@ai_bp.route('/health', methods=['GET'])
+def ai_health_check(lang):
+    """Проверка здоровья AI системы."""
+    try:
+        health_status = {
+            'ai_system': 'operational',
+            'database': 'connected',
+            'timestamp': datetime.utcnow().isoformat(),
+            'features': {
+                'exam_prediction': True,
+                'content_recommendations': True,
+                'progress_analysis': True,
+                'simple_chat': True
+            }
+        }
+        
+        # Проверяем подключение к БД
+        try:
+            from sqlalchemy import text
+            db.session.execute(text('SELECT 1'))
+            health_status['database'] = 'connected'
+        except:
+            health_status['database'] = 'disconnected'
+            health_status['ai_system'] = 'degraded'
+        
+        return jsonify(health_status)
+        
+    except Exception as e:
+        return jsonify({
+            'ai_system': 'error',
+            'error': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
+# ===== PROGRESS STATS ENDPOINT =====
+
+@ai_bp.route('/progress-stats', methods=['GET'])
+@login_required
+def get_progress_stats(lang):
+    """Получение статистики прогресса пользователя."""
+    try:
+        from models import UserProgress, TestAttempt, Lesson, Module
+        
+        # Прогресс по урокам
+        user_progress = db.session.query(UserProgress)\
+            .filter_by(user_id=current_user.id)\
+            .all()
+        
+        total_lessons = db.session.query(Lesson).count()
+        completed_lessons = len([p for p in user_progress if p.completed])
+        
+        # Прогресс по тестам
+        test_attempts = db.session.query(TestAttempt)\
+            .filter_by(user_id=current_user.id)\
+            .all()
+        
+        avg_test_score = 0
+        if test_attempts:
+            scores = [attempt.score for attempt in test_attempts if attempt.score is not None]
+            avg_test_score = sum(scores) / len(scores) if scores else 0
+        
+        # Определяем слабые области
+        weak_areas = []
+        if completed_lessons < total_lessons * 0.3:
+            weak_areas.append("Теоретические знания")
+        if avg_test_score < 70:
+            weak_areas.append("Практические навыки")
+        if not test_attempts:
+            weak_areas.append("Тестирование")
+        
+        overall_progress = (completed_lessons / total_lessons * 100) if total_lessons > 0 else 0
+        
+        stats = {
+            'overall_progress': round(overall_progress, 1),
+            'lessons_completed': completed_lessons,
+            'total_lessons': total_lessons,
+            'average_test_score': round(avg_test_score, 1),
+            'total_test_attempts': len(test_attempts),
+            'weak_areas': weak_areas,
+            'last_activity': max([p.updated_at for p in user_progress], default=datetime.utcnow()).isoformat() if user_progress else None
+        }
+        
+        return jsonify({
+            'success': True,
+            'stats': stats,
+            'generated_at': datetime.utcnow().isoformat()
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Progress stats error: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'Failed to get progress stats',
+            'fallback_stats': {
+                'overall_progress': 0,
+                'lessons_completed': 0,
+                'total_lessons': 1,
+                'weak_areas': ["Начните обучение"]
+            }
+        }), 500
+
+# ===== ПРОСТОЙ ЧАТ БЕЗ AI =====
+
+@ai_bp.route('/simple-chat', methods=['POST'])
+@login_required
+def simple_chat(lang):
+    """Простой чат-бот без AI для демонстрации."""
+    try:
+        data = request.get_json()
+        user_message = data.get('message', '').strip().lower()
+        
+        # Простые ответы на основе ключевых слов
+        responses = {
+            'привет': 'Привет! Как дела с обучением?',
+            'как дела': 'У меня все отлично! Готов помочь с изучением стоматологии.',
+            'помощь': 'Я могу помочь с навигацией по платформе и ответить на базовые вопросы.',
+            'экзамен': 'Для подготовки к экзамену рекомендую регулярно изучать материалы и проходить тесты.',
+            'big': 'BIG экзамен - важный этап. Изучайте все разделы равномерно.',
+            'голландский': 'Для изучения голландского языка есть специальный раздел в программе.',
+            'анатомия': 'Анатомия зубов - основа стоматологии. Начните с базовых структур.',
+            'default': 'Интересный вопрос! Попробуйте поискать ответ в учебных материалах.'
+        }
+        
+        # Находим подходящий ответ
+        response_text = responses['default']
+        for keyword, response in responses.items():
+            if keyword in user_message:
+                response_text = response
+                break
+        
+        return jsonify({
+            'success': True,
+            'response': response_text,
+            'type': 'simple_bot',
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Simple chat error: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'Chat temporarily unavailable'
+        }), 500
+
+# ===== FALLBACK ENDPOINTS ДЛЯ ИСПРАВЛЕНИЯ 500/400 ОШИБОК =====
+
+@ai_bp.route('/predict-exam-fallback', methods=['POST', 'GET'])
+@login_required
+def predict_exam_fallback(lang):
+    """Fallback эндпоинт для предсказания экзамена."""
+    try:
+        from models import UserProgress, Lesson
+        
+        # Простая логика без AI Manager
+        user_progress = db.session.query(UserProgress)\
+            .filter_by(user_id=current_user.id)\
+            .all()
+        
+        total_lessons = db.session.query(Lesson).count()
+        completed_lessons = len([p for p in user_progress if p.completed])
+        
+        if total_lessons > 0:
+            completion_rate = completed_lessons / total_lessons
+            exam_readiness = min(95, completion_rate * 100)
+        else:
+            exam_readiness = 50
+        
+        prediction_result = {
+            'exam_readiness': round(exam_readiness, 1),
+            'success_probability': round(min(95, exam_readiness + 10), 1),
+            'weak_areas': ["Продолжайте обучение"] if exam_readiness < 80 else [],
+            'recommendations': [
+                "Продолжайте изучение материалов",
+                "Проходите тесты регулярно"
+            ],
+            'confidence_level': 'medium',
+            'user_stats': {
+                'completion_rate': round(completion_rate * 100, 1) if total_lessons > 0 else 0,
+                'lessons_completed': completed_lessons,
+                'total_lessons': total_lessons
+            }
+        }
+        
+        return jsonify({
+            'success': True,
+            'prediction': prediction_result
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Exam prediction error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@ai_bp.route('/recommend-content-fallback', methods=['POST', 'GET'])
+@login_required  
+def recommend_content_fallback(lang):
+    """Fallback эндпоинт для рекомендаций."""
+    try:
+        recommendations = [
+            {
+                'title': 'Продолжите обучение',
+                'description': 'Изучайте новые материалы каждый день',
+                'type': 'general'
+            },
+            {
+                'title': 'Практические навыки',
+                'description': 'Развивайте клинические навыки',
+                'type': 'skill'
+            },
+            {
+                'title': 'Тестирование',
+                'description': 'Проверьте свои знания',
+                'type': 'test'
+            }
+        ]
+        
+        return jsonify({
+            'success': True,
+            'recommendations': recommendations
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Recommendations error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # ===== КОНЕЦ СПЕЦИАЛИЗИРОВАННЫХ AI ENDPOINTS ===== 

@@ -22,54 +22,69 @@ def inject_lang():
 # --- Маршрут для входа пользователей ---
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login(lang):
-    g.lang = lang # Устанавливаем g.lang
+    g.lang = lang
     if current_user.is_authenticated:
-        # Используем main_bp.profile, предполагая его существование
         return redirect(url_for('main_bp.profile', lang=lang))
     
     form = LoginForm()
     if form.validate_on_submit():
+        current_app.logger.info(f"Login attempt for email: {form.email.data}")
+        current_app.logger.info(f"Form data: {form.data}")
+        
+        # Проверяем длину пароля
+        if len(form.password.data) < 6:
+            current_app.logger.warning(f"Password too short for user {form.email.data}")
+            flash("Invalid email or password.", "danger")
+            return render_template("auth/login.html", form=form, title="Login")
+        
         user = User.query.filter_by(email=form.email.data).first()
         
-        # Исправление 2: Добавляем проверку валидности хеша
-        valid_hash = False
-        if user:
-            try:
-                # Проверяем формат хеша (должен начинаться с $2b$ или $2a$)
-                if user.password_hash and (user.password_hash.startswith('$2b$') or 
-                                         user.password_hash.startswith('$2a$')):
-                    valid_hash = True
-            except Exception as e:
-                current_app.logger.error(f"Error checking password hash: {e}")
+        if not user:
+            current_app.logger.warning(f"User not found for email: {form.email.data}")
+            flash("Invalid email or password.", "danger")
+            return render_template("auth/login.html", form=form, title="Login")
         
-        # Проверяем пароль только если хеш имеет правильный формат
+        current_app.logger.info(f"Found user: {user.email}, role: {user.role}")
+        current_app.logger.info(f"User password hash: {user.password_hash[:20]}...")
+        
+        # Проверка валидности хеша
+        valid_hash = False
+        try:
+            if user.password_hash:
+                current_app.logger.info(f"Password hash format: {user.password_hash[:10]}...")
+                if user.password_hash.startswith('$2b$') or user.password_hash.startswith('$2a$'):
+                    valid_hash = True
+                    current_app.logger.info("Password hash format is valid")
+                else:
+                    current_app.logger.warning("Invalid password hash format")
+        except Exception as e:
+            current_app.logger.error(f"Error checking password hash: {e}")
+        
+        # Проверяем пароль
         try:
             password_correct = False
-            if user and valid_hash:
+            if valid_hash:
                 password_correct = bcrypt.check_password_hash(user.password_hash, form.password.data)
+                current_app.logger.info(f"Password check result: {password_correct}")
             
-            if user and password_correct:
+            if password_correct:
                 login_user(user, remember=form.remember_me.data if hasattr(form, 'remember_me') else False)
-                flash("Successfully logged in!", "success") # TODO: Локализация
-                current_app.logger.info(f"User {user.email} logged in successfully.")
+                current_app.logger.info(f"User {user.email} logged in successfully")
+                flash("Successfully logged in!", "success")
                 
-                # Пытаемся редиректнуть на 'next' или на профиль
                 next_page = request.args.get('next')
-                # Проверка безопасности редиректа (базовая)
                 if next_page and not next_page.startswith('/'):
-                    next_page = None # Сброс, если URL внешний или подозрительный
+                    next_page = None
                 
                 profile_url_success = url_for("main_bp.profile", lang=lang)
                 return redirect(next_page or profile_url_success)
             else:
-                flash("Invalid email or password.", "danger") # TODO: Локализация
-                current_app.logger.warning(f"Failed login attempt for email {form.email.data}")
+                current_app.logger.warning(f"Invalid password for user {user.email}")
+                flash("Invalid email or password.", "danger")
         except ValueError as e:
-            # Добавляем обработку ошибки хеша
             current_app.logger.error(f"Password hash error for user {form.email.data}: {e}")
             flash("Authentication error. Please contact support.", "danger")
     
-    # Обновлен путь к шаблону
     return render_template("auth/login.html", form=form, title="Login")
 
 # --- Маршрут для выхода пользователей ---
@@ -93,34 +108,34 @@ def register(lang):
     if form.validate_on_submit():
         existing_user = User.query.filter_by(email=form.email.data).first()
         if existing_user:
-            flash('An account with this email already exists.', 'warning') # TODO: Локализация
+            flash('An account with this email already exists.', 'warning')
             return render_template("auth/register.html", form=form, title="Register")
         
-        # Исправление 3: Убедимся, что хеш правильно создается
         try:
+            # Логируем процесс создания хеша
+            current_app.logger.info(f"Creating password hash for user {form.email.data}")
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+            current_app.logger.info(f"Generated hash: {hashed_password[:20]}...")
             
             new_user = User(
                 email=form.email.data,
                 username=form.email.data, 
                 password_hash=hashed_password,
-                name=form.name.data
-                # Остальные поля User (avatar, role и т.д.) получат значения по умолчанию
+                name=form.name.data,
+                role='user'  # Явно указываем роль
             )
             
             db.session.add(new_user)
             db.session.commit()
-            current_app.logger.info(f"New user registered: {new_user.email}")
-            flash('Registration successful! Please log in.', 'success') # TODO: Локализация
+            current_app.logger.info(f"New user registered: {new_user.email} with role {new_user.role}")
+            flash('Registration successful! Please log in.', 'success')
             
-            # Используем абсолютный путь вместо относительного для согласованности
             return redirect(url_for('auth_bp.login', lang=lang))
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error during registration for {form.email.data}: {e}", exc_info=True)
-            flash(f'An error occurred during registration. Please try again.', 'danger') # TODO: Локализация
+            flash(f'An error occurred during registration. Please try again.', 'danger')
     
-    # Обновлен путь к шаблону
     return render_template("auth/register.html", form=form, title="Register")
 
 @auth_bp.route('/debug')

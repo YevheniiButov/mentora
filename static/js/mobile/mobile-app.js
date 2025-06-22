@@ -370,4 +370,130 @@ document.addEventListener('DOMContentLoaded', () => {
 // Экспорт для использования в других модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MobileApp;
+}
+
+// Мобильное приложение
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация темы
+    if (window.themeController) {
+        // Добавляем переключатель темы в мобильную навигацию
+        const themeToggle = document.querySelector('.mobile-theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                window.themeController.toggleTheme();
+            });
+        }
+    }
+
+    // Мобильная навигация
+    const menuToggle = document.querySelector('#menu-toggle');
+    const sidebar = document.querySelector('#mobile-sidebar');
+    const sidebarOverlay = document.querySelector('#sidebar-overlay');
+    const closeSidebar = document.querySelector('#close-sidebar');
+
+    if (menuToggle && sidebar && sidebarOverlay) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        if (closeSidebar) {
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
+
+        // Свайп для закрытия меню
+        let startX = 0;
+        sidebar.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        sidebar.addEventListener('touchmove', (e) => {
+            const currentX = e.touches[0].clientX;
+            const diff = startX - currentX;
+            
+            if (diff > 50) { // Свайп влево
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
+    // Уведомления
+    const notificationToggle = document.querySelector('#notifications-toggle');
+    if (notificationToggle) {
+        notificationToggle.addEventListener('click', () => {
+            showNotification('Уведомления пока недоступны', 'info');
+        });
+    }
+
+    // Предотвращение двойного тапа для зума
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // Обработка тач-событий
+    document.addEventListener('touchstart', function() {}, { passive: true });
+});
+
+// Функция для показа уведомлений
+function showNotification(message, type = 'info', duration = 3000) {
+    const container = document.querySelector('#notification-container');
+    if (!container) return;
+
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="bi bi-${getNotificationIcon(type)}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+
+    container.appendChild(notification);
+
+    // Автоматическое удаление
+    setTimeout(() => {
+        notification.style.animation = 'slideOutUp 0.3s ease-in-out';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, duration);
+}
+
+// Получение иконки для уведомления
+function getNotificationIcon(type) {
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    return icons[type] || icons.info;
+}
+
+// Экспорт для использования в других модулях
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        showNotification,
+        getNotificationIcon
+    };
 } 

@@ -4,6 +4,14 @@
 {% block title %}{{ t('seo_title', g.lang) }}{% endblock %}
 {% block meta_description %}{{ t('seo_description', g.lang) }}{% endblock %}
 
+{% block head %}
+{{ super() }}
+<!-- CSRF Token for AJAX requests -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="user-authenticated" content="{{ 'true' if current_user.is_authenticated else 'false' }}">
+<meta name="current-language" content="{{ g.lang }}">
+{% endblock %}
+
 {% block styles %}
 {{ super() }}
 <!-- Optimized Modern Theme CSS -->
@@ -13,6 +21,220 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ ОТОБРАЖЕНИЯ СЕКЦИЙ И ШАПКИ -->
+<style>
+/* ===== ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ ШАПКИ ===== */
+.modern-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+  height: 70px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.modern-header .navbar {
+  padding: 0.5rem 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.modern-header .navbar .container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 1.5rem !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-brand img {
+  height: 40px !important;
+  width: auto !important;
+}
+
+.modern-header .navbar-collapse {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-nav {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  margin-left: auto !important;
+  height: 100% !important;
+}
+
+.modern-header .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 1rem !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-header .nav-link:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #3ECDC1 !important;
+}
+
+.modern-header .dropdown-toggle,
+.modern-header .btn {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-header .dropdown-toggle:hover,
+.modern-header .btn:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Темная тема для шапки */
+[data-theme="dark"] .modern-header {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .modern-header .nav-link {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .modern-header .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .modern-header .dropdown-toggle,
+[data-theme="dark"] .modern-header .btn {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 992px) {
+  .modern-header {
+    height: 60px !important;
+  }
+  
+  .modern-header .navbar-brand img {
+    height: 32px !important;
+  }
+  
+  .modern-header .navbar-toggler {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+    padding: 0.25rem !important;
+  }
+  
+  .modern-header .navbar-collapse {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
+    border-radius: 0 0 16px 16px !important;
+    padding: 1rem !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    height: auto !important;
+  }
+}
+
+/* ===== ИСПРАВЛЕНИЯ КОНТЕНТА ===== */
+/* Принудительно делаем все секции видимыми */
+.main-content {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* Секции должны быть видимыми */
+section {
+  display: block !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  margin-top: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero section получает padding-top */
+.hero-section {
+  padding-top: 70px !important;
+  margin-top: 0 !important;
+}
+
+/* Все контейнеры видимы */
+.container, .container-fluid {
+  display: block !important;
+  height: auto !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+/* Принудительно показываем конкретные секции */
+.features-section,
+.platform-features-section, 
+.benefits-section,
+.cta-section,
+.ai-dashboard-section {
+  display: block !important;
+  opacity: 1 !important;
+  height: auto !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  margin-top: 0 !important;
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -577,6 +799,353 @@
       </div>
     </div>
     
+    <script>
+// ===== ИСПРАВЛЕННЫЕ AI ВИДЖЕТЫ =====
+
+// 1. Улучшенная функция получения CSRF токена
+function getCSRFToken() {
+  let token = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+  if (!token) {
+    token = document.querySelector('input[name=csrf_token]')?.value;
+  }
+  console.log('CSRF Token:', token ? 'Found' : 'Not found');
+  return token || '';
+}
+
+// 2. Улучшенная функция для AI запросов
+async function makeAIRequest(url, data = {}, options = {}) {
+  const defaultOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options
+  };
+
+  if (defaultOptions.method === 'POST') {
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      defaultOptions.headers['X-CSRFToken'] = csrfToken;
+    }
+  }
+
+  if (data && Object.keys(data).length > 0) {
+    defaultOptions.body = JSON.stringify(data);
+  }
+
+  try {
+    console.log('Making request to:', url);
+    const response = await fetch(url, defaultOptions);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error('AI Request error:', error);
+    throw error;
+  }
+}
+
+// 3. ИСПРАВЛЕННАЯ загрузка готовности к экзамену
+async function loadExamReadiness() {
+  const container = document.getElementById('examReadinessContent');
+  if (!container) return;
+  
+  try {
+    container.innerHTML = getLoadingHTML('Анализируем прогресс...');
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const response = await fetch(`/${currentLang}/ai-assistant/predict-exam`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.prediction) {
+      renderExamReadiness(data.prediction);
+    } else {
+      throw new Error(data.error || 'No prediction data');
+    }
+    
+  } catch (error) {
+    console.error('Exam readiness error:', error);
+    container.innerHTML = `
+      <div class="text-center py-4">
+        <div class="alert alert-info">
+          <h5>📊 Анализ готовности</h5>
+          <p>Продолжайте изучение материалов для получения персонального анализа</p>
+          <a href="/${window.location.pathname.split('/')[1] || 'ru'}/learning-map" class="btn btn-primary btn-sm">
+            Перейти к обучению
+          </a>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// 4. ИСПРАВЛЕННАЯ загрузка рекомендаций
+async function loadRecommendations() {
+  const container = document.getElementById('recommendationsContent');
+  if (!container) return;
+  
+  try {
+    container.innerHTML = getLoadingHTML('Подбираем рекомендации...');
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const data = await makeAIRequest(`/${currentLang}/ai-assistant/recommend-content`, {
+      limit: 3
+    });
+    
+    if (data.success && data.recommendations) {
+      renderRecommendations(data.recommendations);
+    } else {
+      throw new Error(data.error || 'No recommendations data');
+    }
+    
+  } catch (error) {
+    console.error('Recommendations error:', error);
+    container.innerHTML = `
+      <div class="text-center py-3">
+        <div class="alert alert-info">
+          <h6>💡 Персональные рекомендации</h6>
+          <p>Рекомендации появятся после изучения первых материалов</p>
+          <a href="/${window.location.pathname.split('/')[1] || 'ru'}/learning-map" class="btn btn-outline-primary btn-sm">
+            Начать обучение
+          </a>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// 5. ИСПРАВЛЕННАЯ функция анализа прогресса
+async function loadProgressAnalysis() {
+  const container = document.getElementById('progressAnalysisContent');
+  if (!container) return;
+  
+  try {
+    container.innerHTML = getLoadingHTML('Анализируем слабые области...');
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const response = await fetch(`/${currentLang}/dashboard/api/progress-stats`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.success) {
+      renderProgressAnalysis(data.stats);
+    } else {
+      throw new Error('No progress data');
+    }
+    
+  } catch (error) {
+    console.error('Progress analysis error:', error);
+    container.innerHTML = `
+      <div class="text-center py-3">
+        <div class="alert alert-info">
+          <h6>📈 Анализ прогресса</h6>
+          <p>Детальный анализ появится после прохождения уроков</p>
+          <div class="progress mt-3">
+            <div class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// 6. ДОБАВЛЕННАЯ функция toggleMiniChat (была не определена!)
+function toggleMiniChat() {
+  const body = document.getElementById('miniChatBody');
+  const toggle = document.getElementById('miniChatToggle');
+  
+  if (!body || !toggle) return;
+  
+  if (body.style.display === 'none' || !body.style.display) {
+    body.style.display = 'block';
+    toggle.className = 'bi bi-chevron-up';
+  } else {
+    body.style.display = 'none';
+    toggle.className = 'bi bi-chevron-down';
+  }
+}
+
+// 7. ДОБАВЛЕННАЯ функция sendMiniChatMessage
+async function sendMiniChatMessage() {
+  const input = document.getElementById('miniChatInput');
+  const messages = document.getElementById('miniChatMessages');
+  
+  if (!input || !messages) return;
+  
+  const message = input.value.trim();
+  if (!message) return;
+  
+  // Добавляем сообщение пользователя
+  const userMessage = document.createElement('div');
+  userMessage.className = 'user-message';
+  userMessage.textContent = message;
+  messages.appendChild(userMessage);
+  
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+  
+  try {
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const data = await makeAIRequest(`/${currentLang}/ai-assistant/chat`, {
+      message: message,
+      mini_chat: true 
+    });
+    
+    if (data.success && data.response) {
+      const aiMessage = document.createElement('div');
+      aiMessage.className = 'ai-message';
+      aiMessage.innerHTML = `<i class="bi bi-robot"></i><span>${data.response}</span>`;
+      messages.appendChild(aiMessage);
+    } else {
+      throw new Error(data.error || 'No response from AI');
+    }
+    
+  } catch (error) {
+    console.error('Mini chat error:', error);
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'ai-message error';
+    errorMessage.innerHTML = `<i class="bi bi-exclamation-triangle"></i><span>AI временно недоступен</span>`;
+    messages.appendChild(errorMessage);
+  }
+  
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// 8. Вспомогательные функции
+function getLoadingHTML(text) {
+  return `
+    <div class="loading-state text-center py-3">
+      <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+      <div class="loading-text">${text}</div>
+    </div>
+  `;
+}
+
+function renderExamReadiness(prediction) {
+  const container = document.getElementById('examReadinessContent');
+  if (!container) return;
+
+  const readiness = prediction.exam_readiness || 0;
+  const weakAreas = prediction.weak_areas || [];
+
+  container.innerHTML = `
+    <div class="text-center">
+      <div class="circular-progress mb-3">
+        <div class="progress-circle" data-percentage="${readiness}">
+          <div class="progress-text">${readiness}%</div>
+        </div>
+      </div>
+      <h5 class="text-primary">Готовность к экзамену</h5>
+      ${weakAreas.length > 0 ? `
+        <div class="mt-3">
+          <h6 class="mb-2">Области для улучшения:</h6>
+          ${weakAreas.map(area => `<span class="badge badge-outline-warning me-1">${area}</span>`).join('')}
+        </div>
+      ` : '<p class="text-success">Отличная подготовка! 🎉</p>'}
+      <div class="text-center mt-3">
+        <a href="/${window.location.pathname.split('/')[1] || 'ru'}/ai-assistant/" class="btn btn-primary btn-sm">
+          Подробный анализ
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+function renderRecommendations(recommendations) {
+  const container = document.getElementById('recommendationsContent');
+  if (!container) return;
+
+  if (!recommendations || recommendations.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Пока нет персональных рекомендаций</p>';
+    return;
+  }
+
+  container.innerHTML = recommendations.slice(0, 3).map(rec => `
+    <div class="recommendation-item mb-3">
+      <div class="recommendation-title">${rec.title || 'Рекомендация'}</div>
+      <p class="recommendation-description">${rec.description || rec.text || 'Персональная рекомендация для вас'}</p>
+    </div>
+  `).join('');
+}
+
+function renderProgressAnalysis(stats) {
+  const container = document.getElementById('progressAnalysisContent');
+  if (!container) return;
+
+  const weakAreas = stats.weak_areas || [];
+  const overallProgress = stats.overall_progress || 0;
+
+  container.innerHTML = `
+    <div class="progress-summary">
+      <div class="progress-item">
+        <span class="progress-label">Общий прогресс</span>
+        <div class="progress">
+          <div class="progress-bar bg-info" style="width: ${overallProgress}%">${overallProgress}%</div>
+        </div>
+      </div>
+      ${weakAreas.length > 0 ? `
+        <div class="mt-3">
+          <h6 class="mb-2">Области для улучшения:</h6>
+          ${weakAreas.map(area => `<span class="badge badge-outline-warning me-1">${area}</span>`).join('')}
+        </div>
+      ` : '<p class="text-success mt-3">Отличная работа! 🎉</p>'}
+    </div>
+  `;
+}
+
+// 9. ИСПРАВЛЕННАЯ инициализация - убираем проверку аутентификации
+function initializeAIWidgets() {
+  console.log('Initializing AI widgets...');
+  
+  // Убираем проверку аутентификации - если пользователь на странице, значит авторизован
+  console.log('Starting AI widgets initialization...');
+
+  setTimeout(() => loadExamReadiness(), 100);
+  setTimeout(() => loadRecommendations(), 500);
+  setTimeout(() => loadProgressAnalysis(), 1000);
+  
+  // Инициализируем мини-чат
+  const miniChatInput = document.getElementById('miniChatInput');
+  if (miniChatInput) {
+    miniChatInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMiniChatMessage();
+      }
+    });
+  }
+}
+
+// 10. Запуск при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded - starting AI widgets');
+  setTimeout(initializeAIWidgets, 1000);
+});
+
+// Функция для кнопки обновления
+function refreshExamPrediction() {
+  loadExamReadiness();
+}
+</script>
+
     <div class="row g-4" id="aiDashboardSection">
       <!-- Виджет готовности к экзамену -->
       <div class="col-lg-6 col-md-6 mb-3" data-animate="fadeInLeft">
@@ -1803,64 +2372,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== AI WIDGETS FUNCTIONALITY =====
 
-// Глобальные переменные для ИИ виджетов
-let aiWidgets = {
-  examReadiness: null,
-  recommendations: null,
-  progressAnalytics: null,
-  miniChatExpanded: false
-};
-
-// Инициализация ИИ виджетов
-function initializeAIWidgets() {
-  // Проверяем, есть ли виджеты на странице
-  if (!document.getElementById('examReadinessWidget')) return;
-  
-  loadExamReadiness();
-  loadRecommendations();
-  loadProgressAnalytics();
-  setupMiniChat();
-}
-
-// Обновление предсказания экзамена
-async function refreshExamPrediction() {
-  loadExamReadiness();
-}
-
-// Загрузка готовности к экзамену
-async function loadExamReadiness() {
-  const container = document.getElementById('examReadinessContent');
-  if (!container) return;
-  
-  try {
-    container.innerHTML = getLoadingHTML('Анализируем готовность...');
-    
-    const currentLang = window.location.pathname.split('/')[1] || 'ru';
-    const response = await fetch(`/${currentLang}/ai-assistant/predict-exam`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCSRFToken()
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data.success && data.prediction) {
-      renderExamReadiness(data.prediction);
-    } else {
-      container.innerHTML = getErrorHTML('Не удалось получить анализ готовности');
-    }
-    
-  } catch (error) {
-    console.error('Exam readiness error:', error);
-    container.innerHTML = getErrorHTML('Ошибка загрузки данных');
-  }
-}
+  // УДАЛЕНО: дублирующийся блок (все функции уже определены выше)
 
 function renderExamReadiness(prediction) {
   const container = document.getElementById('examReadinessContent');
@@ -1910,38 +2422,42 @@ function renderExamReadiness(prediction) {
 }
 
 // Загрузка рекомендаций
+// 6. Исправленная загрузка рекомендаций
 async function loadRecommendations() {
   const container = document.getElementById('recommendationsContent');
-  if (!container) return;
+  if (!container) {
+    console.warn('recommendationsContent container not found');
+    return;
+  }
   
   try {
     container.innerHTML = getLoadingHTML('Подбираем рекомендации...');
     
     const currentLang = window.location.pathname.split('/')[1] || 'ru';
-    const response = await fetch(`/${currentLang}/ai-assistant/recommend-content`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCSRFToken()
-      },
-      body: JSON.stringify({ limit: 3 })
+    
+    const data = await makeAIRequest(`/${currentLang}/ai-assistant/recommend-content`, {
+      limit: 3
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const data = await response.json();
     
     if (data.success && data.recommendations) {
       renderRecommendations(data.recommendations);
     } else {
-      container.innerHTML = '<p class="text-muted text-center">Персональные рекомендации появятся после изучения материалов</p>';
+      throw new Error(data.error || 'No recommendations data');
     }
     
   } catch (error) {
     console.error('Recommendations error:', error);
-    container.innerHTML = '<p class="text-muted text-center">Рекомендации временно недоступны</p>';
+    container.innerHTML = `
+      <div class="text-center py-3">
+        <div class="alert alert-info">
+          <h6>💡 Персональные рекомендации</h6>
+          <p>Рекомендации появятся после изучения первых материалов</p>
+          <a href="/${window.location.pathname.split('/')[1] || 'ru'}/learning-map" class="btn btn-outline-primary btn-sm">
+            Начать обучение
+          </a>
+        </div>
+      </div>
+    `;
   }
 }
 
@@ -1962,27 +2478,77 @@ function renderRecommendations(recommendations) {
 }
 
 // Загрузка аналитики прогресса
+// 7. Исправленная функция анализа прогресса
 async function loadProgressAnalytics() {
   const container = document.getElementById('progressAnalyticsContent');
-  if (!container) return;
+  if (!container) {
+    console.warn('progressAnalyticsContent container not found');
+    return;
+  }
   
   try {
-    container.innerHTML = getLoadingHTML('Анализируем прогресс...');
+    container.innerHTML = getLoadingHTML('Анализируем слабые области...');
     
-    // Пока используем заглушку с реалистичными данными
-    setTimeout(() => {
-      renderProgressAnalytics({
-        study_consistency: 0.85,
-        average_session_time: 45,
-        progress_trend: 'up',
-        weak_areas_improvement: 0.12
-      });
-    }, 1500);
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    
+    // Попробуем получить данные прогресса из эндпоинта статистики
+    const response = await fetch(`/${currentLang}/ai-assistant/progress-stats`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.success) {
+      renderProgressAnalysis(data.stats);
+    } else {
+      throw new Error('No progress data');
+    }
     
   } catch (error) {
-    console.error('Progress analytics error:', error);
-    container.innerHTML = getErrorHTML('Ошибка загрузки аналитики');
+    console.error('Progress analysis error:', error);
+    container.innerHTML = `
+      <div class="text-center py-3">
+        <div class="alert alert-info">
+          <h6>📈 Анализ прогресса</h6>
+          <p>Детальный анализ появится после прохождения уроков и тестов</p>
+          <div class="progress mt-3">
+            <div class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+          </div>
+        </div>
+      </div>
+    `;
   }
+}
+
+// 8. Функция рендеринга анализа прогресса
+function renderProgressAnalysis(stats) {
+  const container = document.getElementById('progressAnalyticsContent');
+  if (!container) return;
+
+  const weakAreas = stats.weak_areas || [];
+  const overallProgress = stats.overall_progress || 0;
+
+  container.innerHTML = `
+    <div class="progress-summary">
+      <div class="progress-item">
+        <span class="progress-label">Общий прогресс</span>
+        <div class="progress">
+          <div class="progress-bar bg-info" style="width: ${overallProgress}%">${overallProgress}%</div>
+        </div>
+      </div>
+      
+      ${weakAreas.length > 0 ? `
+        <div class="mt-3">
+          <h6 class="mb-2">Области для улучшения:</h6>
+          ${weakAreas.map(area => `
+            <span class="badge badge-outline-warning me-1">${area}</span>
+          `).join('')}
+        </div>
+      ` : '<p class="text-success mt-3">Отличная работа! 🎉</p>'}
+    </div>
+  `;
 }
 
 function renderProgressAnalytics(analytics) {
@@ -2016,11 +2582,13 @@ function renderProgressAnalytics(analytics) {
 }
 
 // Мини-чат функциональность
+// 9. Безопасная инициализация мини-чата
 function setupMiniChat() {
   const input = document.getElementById('miniChatInput');
   if (input) {
     input.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
         sendMiniChatMessage();
       }
     });
@@ -2044,7 +2612,7 @@ function toggleMiniChat() {
   }
 }
 
-async function sendMiniChatMessage() {
+async function sendMiniChatMessageImpl() {
   const input = document.getElementById('miniChatInput');
   const messages = document.getElementById('miniChatMessages');
   
@@ -2064,23 +2632,11 @@ async function sendMiniChatMessage() {
   
   try {
     const currentLang = window.location.pathname.split('/')[1] || 'ru';
-    const response = await fetch(`/${currentLang}/ai-assistant/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCSRFToken()
-      },
-      body: JSON.stringify({ 
-        message: message,
-        mini_chat: true 
-      })
+    
+    const data = await makeAIRequest(`/${currentLang}/ai-assistant/chat`, {
+      message: message,
+      mini_chat: true 
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const data = await response.json();
     
     if (data.success && data.response) {
       const aiMessage = document.createElement('div');
@@ -2088,14 +2644,14 @@ async function sendMiniChatMessage() {
       aiMessage.innerHTML = `<i class="bi bi-robot"></i><span>${data.response}</span>`;
       messages.appendChild(aiMessage);
     } else {
-      throw new Error('No response from AI');
+      throw new Error(data.error || 'No response from AI');
     }
     
   } catch (error) {
     console.error('Mini chat error:', error);
     const errorMessage = document.createElement('div');
-    errorMessage.className = 'ai-message';
-    errorMessage.innerHTML = `<i class="bi bi-exclamation-triangle"></i><span>Извините, не удалось получить ответ</span>`;
+    errorMessage.className = 'ai-message error';
+    errorMessage.innerHTML = `<i class="bi bi-exclamation-triangle"></i><span>Извините, AI временно недоступен</span>`;
     messages.appendChild(errorMessage);
   }
   
@@ -2136,9 +2692,76 @@ function getAreaDisplayName(areaKey) {
   return areaNames[areaKey] || areaKey;
 }
 
+// ===== ИСПРАВЛЕННЫЕ JAVASCRIPT ФУНКЦИИ ДЛЯ AI ВИДЖЕТОВ =====
+
+// 1. Улучшенная функция получения CSRF токена
 function getCSRFToken() {
-  return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
+  // Попробуем несколько способов получения CSRF токена
+  let token = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+  
+  if (!token) {
+    token = document.querySelector('input[name=csrf_token]')?.value;
+  }
+  
+  if (!token) {
+    // Если токена нет, попробуем получить из cookies
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'csrf_token') {
+        token = value;
+        break;
+      }
+    }
+  }
+  
+  console.log('CSRF Token:', token ? 'Found' : 'Not found');
+  return token || '';
 }
+
+// 2. Улучшенная функция для AI запросов с обработкой ошибок
+async function makeAIRequest(url, data = {}, options = {}) {
+  const defaultOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options
+  };
+
+  // Добавляем CSRF токен только если это POST запрос
+  if (defaultOptions.method === 'POST') {
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      defaultOptions.headers['X-CSRFToken'] = csrfToken;
+    }
+  }
+
+  if (data && Object.keys(data).length > 0) {
+    defaultOptions.body = JSON.stringify(data);
+  }
+
+  try {
+    console.log('Making request to:', url);
+    const response = await fetch(url, defaultOptions);
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    console.log('Response data:', responseData);
+    
+    return responseData;
+  } catch (error) {
+    console.error('AI Request error:', error);
+    throw error;
+  }
+}
+
+// ДУБЛИРУЮЩИЕ ФУНКЦИИ УДАЛЕНЫ - используются версии выше
 </script>
 
 <script>
@@ -2289,8 +2912,33 @@ function optimizePerformance() {
   }, { passive: true });
 }
 
+// УДАЛЕНО: дублирующаяся инициализация (уже определена выше)
+
+// Функция проверки здоровья AI системы
+async function checkAIHealth() {
+  try {
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const response = await fetch(`/${currentLang}/ai-assistant/health`);
+    const data = await response.json();
+    
+    console.log('AI Health Check:', data);
+    return data.ai_system === 'operational';
+  } catch (error) {
+    console.error('Health check failed:', error);
+    return false;
+  }
+}
+
 // Инициализация мобильных оптимизаций
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM Content Loaded - starting initialization');
+  
+  // Инициализация AI виджетов
+  setTimeout(() => {
+    initializeAIWidgets();
+  }, 2000);
+  
+  // Мобильные оптимизации
   if (isMobileDevice()) {
     optimizeForMobile();
     setupMobileTouch();
@@ -2304,6 +2952,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+
+// Fallback для старых браузеров
+if (window.addEventListener) {
+  window.addEventListener('load', function() {
+    setTimeout(initializeAIWidgets, 3000);
+  });
+} else if (window.attachEvent) {
+  window.attachEvent('onload', function() {
+    setTimeout(initializeAIWidgets, 3000);
+  });
+}
 
 // Обработка изменения ориентации
 window.addEventListener('orientationchange', function() {

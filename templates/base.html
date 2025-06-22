@@ -1,26 +1,21 @@
 <!DOCTYPE html>
-<html lang="{{ g.lang | default('en') }}">
+<html lang="{{ lang }}" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Dental Academy{% endblock %}</title>
+  <title>{% block title %}{% endblock %} - Dental Academy</title>
   <meta name="description" content="{% block meta_description %}Платформа для подготовки к BIG экзамену для стоматологов в Нидерландах.{% endblock %}">
+  
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#3ECDC1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Dental Academy">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/icon-192.png') }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 
-  <!-- Мобильные стили -->
-  {% if is_mobile_device %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
-  {% endif %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-fixes.css') }}">
   <!-- Favicon -->
   <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" />
   
@@ -32,49 +27,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
-  <!-- Font Awesome (для дополнительных иконок) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   
-  <!-- Flag Icons (опционально для флагов стран) -->
+  <!-- Flag Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
 
-  <!-- 🌙 iOS 26 LIQUID GLASS THEME SYSTEM -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/base/variables.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/liquid-glass-theme.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/components/liquid-glass-components.css') }}">
-  
-  <!-- Modern Theme System -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
-  
-  <!-- Legacy CSS (для совместимости) -->
+  <!-- Основные стили -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-theme.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   
   <!-- Page-specific styles -->
   {% block page_styles %}{% endblock %}
-  
-  <!-- Additional styles from child templates -->
   {% block styles %}{% endblock %}
-  
-  <!-- Theme initialization script (critical, must be in head) -->
-  <script>
-    // Prevent flash of unstyled content (FOUC)
-    (function() {
-      const savedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
+  {% block extra_css %}{% endblock %}
 </head>
-<body class="modern-app">
-
-  <!-- Header -->
-  {% include "includes/_header.html" %}
+<body class="modern-app {% if request.endpoint == 'learning_map_bp.learning_map' %}learning-map-page{% endif %}">
+  <!-- HEADER INCLUDE -->
+  {% include 'includes/_header.html' %}
 
   <!-- Flash Messages Container -->
   <div class="flash-container" id="flash-container">
@@ -111,8 +86,8 @@
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Footer -->
-  {% include "includes/_footer.html" ignore missing %}
+  <!-- FOOTER INCLUDE -->
+  {% include 'includes/_footer.html' %}
 
   <!-- Loading Indicator -->
   <div class="loading-indicator" id="loading-indicator">
@@ -124,18 +99,14 @@
   </div>
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- React (for existing components) -->
   <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
 
-  <!-- Theme System (must load early) -->
-  <script src="{{ url_for('static', filename='js/theme-system.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/hero-animation.js') }}"></script>
-
-  <!-- NEW: Splash and Guide System -->
-  <script src="{{ url_for('static', filename='js/splash-and-guide-system.js') }}"></script>
+  <!-- Theme Controller -->
+  <script src="{{ url_for('static', filename='js/theme-controller.js') }}"></script>
 
   <!-- Legacy JS -->
   <script src="{{ url_for('static', filename='js/simple-counters.js') }}"></script>
@@ -161,258 +132,28 @@
       }
 
       init() {
-        // Auto-hide flash messages after 5 seconds
-        this.autoHideMessages();
+        if (!this.container) return;
         
-        // Handle server flash messages
-        this.processServerMessages();
-      }
-
-      autoHideMessages() {
+        // Auto-hide flash messages after 5 seconds
         const messages = this.container.querySelectorAll('.flash-message');
         messages.forEach(message => {
           setTimeout(() => {
-            this.hideMessage(message);
+            message.classList.add('fade-out');
+            setTimeout(() => message.remove(), 300);
           }, 5000);
         });
       }
-
-      processServerMessages() {
-        const serverMessages = document.getElementById('server-flash-messages');
-        if (serverMessages) {
-          serverMessages.style.display = 'none';
-        }
-      }
-
-      showMessage(type, text, duration = 5000) {
-        const message = document.createElement('div');
-        message.className = `flash-message alert alert-${type}`;
-        message.innerHTML = `
-          <div class="flash-content">
-            <div class="flash-icon">
-              ${this.getIconForType(type)}
-            </div>
-            <div class="flash-text">${text}</div>
-            <button type="button" class="flash-close" onclick="this.parentElement.parentElement.remove()">
-              <i class="bi bi-x"></i>
-            </button>
-          </div>
-        `;
-
-        this.container.appendChild(message);
-
-        // Trigger entrance animation
-        setTimeout(() => message.classList.add('show'), 10);
-
-        // Auto-hide
-        if (duration > 0) {
-          setTimeout(() => this.hideMessage(message), duration);
-        }
-
-        return message;
-      }
-
-      hideMessage(message) {
-        message.classList.add('hiding');
-        setTimeout(() => {
-          if (message.parentNode) {
-            message.parentNode.removeChild(message);
-          }
-        }, 300);
-      }
-
-      getIconForType(type) {
-        const icons = {
-          success: '<i class="bi bi-check-circle-fill"></i>',
-          error: '<i class="bi bi-exclamation-triangle-fill"></i>',
-          danger: '<i class="bi bi-exclamation-triangle-fill"></i>',
-          warning: '<i class="bi bi-exclamation-circle-fill"></i>',
-          info: '<i class="bi bi-info-circle-fill"></i>'
-        };
-        return icons[type] || icons.info;
-      }
     }
 
-    // Loading System
-    class LoadingSystem {
-      constructor() {
-        this.indicator = document.getElementById('loading-indicator');
-        this.isLoading = false;
-      }
-
-      show() {
-        if (this.isLoading) return;
-        this.isLoading = true;
-        this.indicator.classList.add('active');
-        document.body.classList.add('loading');
-      }
-
-      hide() {
-        if (!this.isLoading) return;
-        this.isLoading = false;
-        this.indicator.classList.remove('active');
-        document.body.classList.remove('loading');
-      }
-
-      // Show loading for AJAX requests
-      setupAjaxLoading() {
-        // Intercept fetch requests
-        const originalFetch = window.fetch;
-        window.fetch = (...args) => {
-          this.show();
-          return originalFetch(...args).finally(() => {
-            setTimeout(() => this.hide(), 300); // Small delay for UX
-          });
-        };
-      }
-    }
-
-    // Performance Monitor
-    class PerformanceMonitor {
-      constructor() {
-        this.metrics = {
-          loadTime: 0,
-          firstPaint: 0,
-          firstContentfulPaint: 0
-        };
-        this.init();
-      }
-
-      init() {
-        // Measure page load time
-        window.addEventListener('load', () => {
-          this.measurePerformance();
-        });
-      }
-
-      measurePerformance() {
-        if (window.performance) {
-          const navigation = performance.getEntriesByType('navigation')[0];
-          this.metrics.loadTime = navigation.loadEventEnd - navigation.loadEventStart;
-
-          // Paint metrics
-          const paintEntries = performance.getEntriesByType('paint');
-          paintEntries.forEach(entry => {
-            if (entry.name === 'first-paint') {
-              this.metrics.firstPaint = entry.startTime;
-            } else if (entry.name === 'first-contentful-paint') {
-              this.metrics.firstContentfulPaint = entry.startTime;
-            }
-          });
-
-          // Log to console in development
-          if (window.location.hostname === 'localhost') {
-            console.log('Performance Metrics:', this.metrics);
-          }
-        }
-      }
-    }
-
-    // Initialize Global Systems
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initialize flash messages
-      window.flashMessages = new FlashMessagesSystem();
-      
-      // Initialize loading system
-      window.loadingSystem = new LoadingSystem();
-      window.loadingSystem.setupAjaxLoading();
-      
-      // Initialize performance monitoring
-      window.performanceMonitor = new PerformanceMonitor();
-
-      // Legacy React Learning Map Support
-      const learningMapContainer = document.getElementById('learning-map-container');
-      if (learningMapContainer && typeof React !== 'undefined') {
-        const serverData = learningMapContainer.dataset.serverData 
-                          ? JSON.parse(learningMapContainer.dataset.serverData) 
-                          : {};
-        if (typeof ReactDOM !== 'undefined' && ReactDOM.createRoot) {
-          const root = ReactDOM.createRoot(learningMapContainer);
-          root.render(React.createElement(LearningMap, {
-            userData: serverData.userData || {},
-            modules: serverData.modules || {}
-          }));
-        }
-      }
-
-      // Language Switcher Handler
-      document.querySelectorAll('.language-switcher, [data-lang]').forEach(switcher => {
-        switcher.addEventListener('click', function(e) {
-          const langElement = e.target.closest('[data-lang]') || e.target;
-          const newLang = langElement.dataset.lang;
-          
-          if (newLang) {
-            e.preventDefault();
-            window.loadingSystem?.show();
-            
-            let currentPath = window.location.pathname;
-            const pathParts = currentPath.split('/');
-            
-            // Replace language in URL
-            if (pathParts.length > 1 && ['en', 'nl', 'ru', 'uk', 'es', 'pt', 'tr', 'fa'].includes(pathParts[1])) {
-              pathParts[1] = newLang;
-              window.location.href = pathParts.join('/');
-            } else {
-              // Fallback: use cookie and reload
-              document.cookie = `lang=${newLang}; path=/; max-age=31536000`;
-              window.location.reload();
-            }
-          }
-        });
-      });
-
-      // Smooth scrolling for anchor links
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute('href'));
-          if (target) {
-            const headerHeight = document.querySelector('.modern-header')?.offsetHeight || 70;
-            const targetPosition = target.offsetTop - headerHeight - 20;
-            
-            window.scrollTo({
-              top: targetPosition,
-              behavior: 'smooth'
-            });
-          }
-        });
-      });
-
-      // Add loaded class for CSS animations
-      document.body.classList.add('loaded');
-    });
-
-    // Global utility functions
-    window.showFlashMessage = (type, message, duration) => {
-      return window.flashMessages?.showMessage(type, message, duration);
-    };
-
-    window.showLoading = () => window.loadingSystem?.show();
-    window.hideLoading = () => window.loadingSystem?.hide();
-
-    // Error handling
-    window.addEventListener('error', function(e) {
-      console.error('JavaScript Error:', e.error);
-      if (window.flashMessages) {
-        window.flashMessages.showMessage('error', 'Произошла ошибка. Попробуйте обновить страницу.');
-      }
-    });
-
-    // Handle unhandled promise rejections
-    window.addEventListener('unhandledrejection', function(e) {
-      console.error('Unhandled Promise Rejection:', e.reason);
-      if (window.flashMessages) {
-        window.flashMessages.showMessage('error', 'Произошла ошибка при загрузке данных.');
-      }
+    // Initialize systems when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      new FlashMessagesSystem();
     });
   </script>
 
-  <!-- 🌙 iOS 26 Liquid Glass Theme Controller -->
-  <script src="{{ url_for('static', filename='js/liquid-glass-theme.js') }}"></script>
-
   <!-- Page-specific scripts -->
-  {% block body_scripts %}{% endblock %}
-
+  {% block page_scripts %}{% endblock %}
+  {% block scripts %}{% endblock %}
 </body>
 </html>
 
@@ -425,7 +166,6 @@
   transition: all var(--transition-slow);
   min-height: 100vh;
   overflow-x: hidden;
-  /* ИСПРАВЛЕНО: убираем глобальный padding-top */
   padding-top: 0 !important;
   margin: 0;
 }
@@ -443,12 +183,53 @@
   to { opacity: 1; }
 }
 
-/* ===== ИСПРАВЛЕНИЯ ДЛЯ ОСНОВНОГО КОНТЕНТА ===== */
+/* ===== КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ MAIN-CONTENT ===== */
 .main-content {
-  /* ИСПРАВЛЕНО: добавляем отступ только здесь */
-  margin-top: var(--header-height, 70px);
-  min-height: calc(100vh - var(--header-height, 70px));
-  padding-top: 0; /* Убираем дополнительные отступы */
+  /* УБИРАЕМ ВСЕ ОГРАНИЧЕНИЯ */
+  margin-top: 0 !important;
+  min-height: auto !important;
+  max-height: none !important;
+  height: auto !important;
+  padding-top: 0 !important;
+  overflow: visible !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Только hero-section получает padding-top для отступа от header */
+.main-content .hero-section {
+  padding-top: var(--header-height, 70px) !important;
+  margin-top: 0 !important;
+}
+
+/* Все остальные секции НЕ должны иметь отступов */
+.main-content section:not(.hero-section) {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  position: relative;
+  z-index: 1;
+  display: block !important;
+  opacity: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Обеспечиваем видимость всех контейнеров */
+.container, .container-fluid {
+  position: relative;
+  z-index: 1;
+  display: block !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Убираем верхний отступ для страницы карты обучения */
+.learning-map-page .main-content {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* ===== FLASH MESSAGES ===== */

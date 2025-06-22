@@ -6,6 +6,7 @@
 
 {% block styles %}
     {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/learning-map-modules.css') }}">
     <style>
         /* Основные переменные */
         :root {
@@ -287,18 +288,79 @@
         
         .module-card {
             background-color: white;
+            border: 2px solid transparent;
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-md);
             overflow: hidden;
-            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+            position: relative;
+            transition: all var(--transition-normal);
             height: 100%;
             display: flex;
             flex-direction: column;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        /* Градиентная рамка для модулей в стиле карты обучения */
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 2px;
+            background: var(--knowledge-gradient);
+            border-radius: var(--radius-xl);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: xor;
+            -webkit-mask-composite: xor;
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+            z-index: -1;
+        }
+
+        .module-card:hover::before {
+            opacity: 1;
         }
         
         .module-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(52, 152, 219, 0.3);
+            border-color: transparent;
+        }
+
+        /* Стили для разных категорий в стиле карты обучения */
+        .module-card.knowledge-center::before {
+            background: var(--knowledge-gradient);
+        }
+
+        .module-card.knowledge-center:hover {
+            box-shadow: 0 20px 40px rgba(52, 152, 219, 0.3);
+        }
+
+        .module-card.communication::before {
+            background: var(--communication-gradient);
+        }
+
+        .module-card.communication:hover {
+            box-shadow: 0 20px 40px rgba(125, 95, 255, 0.3);
+        }
+
+        .module-card.preclinical-skills::before {
+            background: var(--preclinical-gradient);
+        }
+
+        .module-card.preclinical-skills:hover {
+            box-shadow: 0 20px 40px rgba(78, 181, 177, 0.3);
+        }
+
+        .module-card.workstation::before {
+            background: var(--workstation-gradient);
+        }
+
+        .module-card.workstation:hover {
+            box-shadow: 0 20px 40px rgba(255, 118, 117, 0.3);
         }
         
         .module-link {

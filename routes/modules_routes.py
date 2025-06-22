@@ -220,8 +220,32 @@ def module_view(lang, module_id):
             }
             topics_with_subtopics.append(topic_data)
         
-        # Сортируем подтемы
-        topics_with_subtopics.sort(key=lambda x: x['topic']['name'])
+        # Сортируем подтемы по номеру модуля из card_id первой карточки
+        def get_module_order(topic_data):
+            """Извлекает номер модуля из card_id первой карточки для сортировки"""
+            try:
+                # Получаем первый урок темы
+                first_lesson = topic_data['lessons'][0] if topic_data['lessons'] else None
+                if not first_lesson or not first_lesson.content:
+                    return 999  # Fallback для тем без контента
+                
+                # Парсим JSON контент
+                content_data = json.loads(first_lesson.content)
+                if 'cards' in content_data and content_data['cards']:
+                    first_card = content_data['cards'][0]
+                    card_id = first_card.get('card_id', '')
+                    
+                    # Извлекаем номер модуля из card_id (например: "caries_m1_l1" -> 1)
+                    import re
+                    match = re.search(r'_m(\d+)_', card_id)
+                    if match:
+                        return int(match.group(1))
+                
+                return 999  # Fallback если не найден номер модуля
+            except (json.JSONDecodeError, KeyError, ValueError, IndexError):
+                return 999  # Fallback при ошибках
+        
+        topics_with_subtopics.sort(key=get_module_order)
         
         current_app.logger.info(f"Grouped into {len(topics_with_subtopics)} subtopics: {[t['topic']['name'] for t in topics_with_subtopics]}")
         
@@ -312,10 +336,17 @@ def subtopic_lessons_list(lang, module_id, slug):
                 try:
                     content_data = json.loads(lesson.content)
                     if 'cards' in content_data:
-                        for card in content_data['cards']:
+                        # Сортируем карточки по card_id для правильного порядка
+                        lesson_cards = content_data['cards']
+                        
+                        # Сортируем по card_id если он есть, иначе по порядку в массиве
+                        lesson_cards.sort(key=lambda card: card.get('card_id', ''))
+                        
+                        for card in lesson_cards:
                             cards.append({
                                 'question': card.get('question', ''),
                                 'answer': card.get('answer', ''),
+                                'card_id': card.get('card_id', ''),
                                 'lesson_id': lesson.id
                             })
                 except (json.JSONDecodeError, KeyError, AttributeError) as e:
@@ -325,12 +356,17 @@ def subtopic_lessons_list(lang, module_id, slug):
                 try:
                     content_data = json.loads(lesson.content)
                     if 'questions' in content_data:
-                        for question in content_data['questions']:
+                        # Сортируем вопросы по card_id если есть
+                        lesson_questions = content_data['questions']
+                        lesson_questions.sort(key=lambda q: q.get('card_id', ''))
+                        
+                        for question in lesson_questions:
                             tests.append({
                                 'question': question.get('question', ''),
                                 'options': question.get('options', []),
                                 'correct_answer': question.get('correct_answer', 0),
                                 'explanation': question.get('explanation', ''),
+                                'card_id': question.get('card_id', ''),
                                 'lesson_id': lesson.id
                             })
                 except (json.JSONDecodeError, KeyError, AttributeError) as e:

@@ -7,7 +7,7 @@ from flask import (
 from flask_login import login_required, current_user
 from extensions import db
 from models import (
-    VirtualPatientScenario, VirtualPatientAttempt, LearningPath, Subject, Module, Lesson, UserProgress, Test, UserExamDate, ContentCategory,
+    VirtualPatientScenario, VirtualPatientAttempt, LearningPath, Subject, Module, Lesson, UserProgress, Test, UserExamDate, ContentCategory, ContentSubcategory, ContentTopic,
     User, Question, TestAttempt
 )
 from translations_new import get_translation as t  # предполагаем, что функция называется get_translation
@@ -208,7 +208,56 @@ def learning_map(lang, path_id=None):
         # Статистика пользователя
         stats = get_user_stats(current_user.id)
 
+        # Загружаем категории контента с подкатегориями и темами
         content_categories = ContentCategory.query.order_by(ContentCategory.order).all()
+        print(f"🔍 DEBUG: Загружено категорий из БД: {len(content_categories)}")
+        
+        # Обрабатываем категории для отображения в карте обучения
+        processed_categories = []
+        for category in content_categories:
+            subcategories = []
+            for subcategory in category.subcategories.order_by(ContentSubcategory.order).all():
+                topics = []
+                for topic in subcategory.topics.order_by(ContentTopic.order).all():
+                    # Подсчитываем уроки для темы
+                    lessons_count = Lesson.query.filter_by(topic_id=topic.id).count()
+                    topics.append({
+                        'id': topic.id,
+                        'name': topic.name,
+                        'slug': topic.slug,
+                        'lessons_count': lessons_count,
+                        'url': url_for('content_nav.view_topic', 
+                                     lang=lang, 
+                                     category_slug=category.slug,
+                                     subcategory_slug=subcategory.slug,
+                                     topic_slug=topic.slug)
+                    })
+                
+                subcategories.append({
+                    'id': subcategory.id,
+                    'name': subcategory.name,
+                    'slug': subcategory.slug,
+                    'topics': topics,
+                    'topics_count': len(topics),
+                    'url': url_for('content_nav.view_subcategory',
+                                 lang=lang,
+                                 category_slug=category.slug,
+                                 subcategory_slug=subcategory.slug)
+                })
+            
+            category_data = {
+                'id': category.id,
+                'name': category.name,
+                'slug': category.slug,
+                'icon': category.icon or 'bi-book',
+                'subcategories': subcategories,
+                'subcategories_count': len(subcategories),
+                'url': url_for('content_nav.view_category',
+                             lang=lang,
+                             category_slug=category.slug)
+            }
+            processed_categories.append(category_data)
+            print(f"✅ DEBUG: Обработана категория ID={category.id}, name='{category.name}', подкатегорий={len(subcategories)}")
 
         
         return render_template(
@@ -222,7 +271,7 @@ def learning_map(lang, path_id=None):
                     has_subscription=current_user.has_subscription,
                     stats=stats,
                     recommendations=get_user_recommendations(current_user.id),  # Добавляем рекомендации
-                    content_categories=content_categories
+                    content_categories=processed_categories
 
         )
     except Exception as e:
@@ -662,37 +711,52 @@ def get_module_stats(module_id, user_id):
 def get_user_stats(user_id):
     """Получает статистику обучения пользователя"""
     try:
+        current_app.logger.info(f"=== Начало получения статистики для пользователя {user_id} ===")
+        
+        # Включаем логирование SQL-запросов
+        import logging
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        
         # Общее количество завершенных уроков
+        current_app.logger.info("Выполняем запрос на получение завершенных уроков...")
         completed_lessons_count = UserProgress.query.filter_by(
             user_id=user_id,
             completed=True
         ).count()
+        current_app.logger.info(f"Завершенных уроков: {completed_lessons_count}")
         
         # Общее количество уроков
+        current_app.logger.info("Выполняем запрос на получение общего количества уроков...")
         total_lessons_count = Lesson.query.count()
+        current_app.logger.info(f"Всего уроков: {total_lessons_count}")
         
         # Расчет общего прогресса
         overall_progress = round((completed_lessons_count / total_lessons_count) * 100) if total_lessons_count > 0 else 0
+        current_app.logger.info(f"Общий прогресс: {overall_progress}%")
         
         # Общее время обучения (в минутах)
+        current_app.logger.info("Выполняем запрос на получение общего времени обучения...")
         total_time_spent = db.session.query(
             func.sum(UserProgress.time_spent)
         ).filter_by(
             user_id=user_id
         ).scalar() or 0
+        current_app.logger.info(f"Общее время обучения: {total_time_spent} минут")
         
         # Количество дней активности
+        current_app.logger.info("Выполняем запрос на получение количества дней активности...")
         active_days_count = db.session.query(
             func.count(func.distinct(func.date(UserProgress.last_accessed)))
         ).filter_by(
             user_id=user_id
         ).scalar() or 0
+        current_app.logger.info(f"Дней активности: {active_days_count}")
         
         # Получаем дату последнего экзамена, если есть
         next_exam_date = None
         try:
-            # Вы можете адаптировать эту логику под свою структуру данных
             if hasattr(current_user, 'exam_dates') and current_user.exam_dates:
+                current_app.logger.info("Выполняем запрос на получение даты следующего экзамена...")
                 next_exam = db.session.query(UserExamDate).filter(
                     UserExamDate.user_id == user_id,
                     UserExamDate.exam_date > datetime.utcnow()
@@ -700,13 +764,18 @@ def get_user_stats(user_id):
                 
                 if next_exam:
                     next_exam_date = next_exam.exam_date.strftime('%d.%m.%Y')
+                    current_app.logger.info(f"Дата следующего экзамена: {next_exam_date}")
         except Exception as e:
-            print(f"Error getting exam date: {e}")
+            current_app.logger.error(f"Ошибка при получении даты экзамена: {e}")
         
         # Статистика по путям обучения
         learning_paths_stats = []
+        current_app.logger.info("Выполняем запрос на получение путей обучения...")
         for path in LearningPath.query.all():
+            current_app.logger.info(f"Обработка пути обучения: {path.name}")
+            
             # Получаем все уроки для данного пути обучения через JOIN
+            current_app.logger.info(f"Выполняем JOIN-запрос для пути {path.name}...")
             path_lessons = db.session.query(Lesson.id).join(
                 Module, Module.id == Lesson.module_id
             ).join(
@@ -718,16 +787,20 @@ def get_user_stats(user_id):
             # Преобразуем результат в список ID уроков
             path_lesson_ids = [lesson[0] for lesson in path_lessons]
             path_total_lessons = len(path_lesson_ids)
+            current_app.logger.info(f"Всего уроков в пути {path.name}: {path_total_lessons}")
             
             # Количество завершенных уроков для этого пути
+            current_app.logger.info(f"Выполняем запрос на получение завершенных уроков для пути {path.name}...")
             path_completed_lessons = UserProgress.query.filter(
                 UserProgress.user_id == user_id,
                 UserProgress.lesson_id.in_(path_lesson_ids),
                 UserProgress.completed == True
             ).count() if path_lesson_ids else 0
+            current_app.logger.info(f"Завершенных уроков в пути {path.name}: {path_completed_lessons}")
             
             # Расчет прогресса для данного пути
             path_progress = round((path_completed_lessons / path_total_lessons) * 100) if path_total_lessons > 0 else 0
+            current_app.logger.info(f"Прогресс в пути {path.name}: {path_progress}%")
             
             learning_paths_stats.append({
                 'id': path.id,
@@ -737,7 +810,7 @@ def get_user_stats(user_id):
                 'total_lessons': path_total_lessons
             })
         
-        return {
+        stats = {
             'overall_progress': overall_progress,
             'completed_lessons': completed_lessons_count,
             'total_lessons': total_lessons_count,
@@ -746,8 +819,15 @@ def get_user_stats(user_id):
             'next_exam_date': next_exam_date,
             'learning_paths': learning_paths_stats
         }
+        
+        current_app.logger.info(f"=== Статистика успешно получена для пользователя {user_id} ===")
+        current_app.logger.info(f"Итоговая статистика: {stats}")
+        
+        return stats
     except Exception as e:
         current_app.logger.error(f"Ошибка в get_user_stats: {str(e)}", exc_info=True)
+        current_app.logger.error(f"Тип ошибки: {type(e).__name__}")
+        current_app.logger.error(f"Детали ошибки: {str(e)}")
         return {
             'overall_progress': 0,
             'completed_lessons': 0,
@@ -757,6 +837,7 @@ def get_user_stats(user_id):
             'next_exam_date': None,
             'learning_paths': []
         }
+
 def get_virtual_patients_stats(user_id):
     """Получает статистику виртуальных пациентов для пользователя"""
     try:

@@ -1,8 +1,10 @@
 # routes/api_routes.py
 import json
-from flask import Blueprint, jsonify, g, request, current_app
+from flask import Blueprint, jsonify, g, request, current_app, session
 from flask_login import login_required, current_user
-from models import db, Lesson, UserProgress, Module, ContentTopic, ContentSubcategory
+from models import db, Lesson, UserProgress, Module, ContentTopic, ContentSubcategory, User
+from translations_new import get_translation as t
+from extensions import csrf
 import logging
 
 # Создаем Blueprint с префиксом /<lang>/api
@@ -11,6 +13,220 @@ api_bp = Blueprint(
     __name__,
     url_prefix='/<string:lang>/api')
 
+# Языковые настройки
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+DEFAULT_LANGUAGE = 'en'
+
+# Базовые переводы для сплеш-скрина и гайда
+SPLASH_GUIDE_TRANSLATIONS = {
+    'en': {
+        'splash': {
+            'loading_steps': [
+                'Initializing learning system...',
+                'Loading study materials...',
+                'Preparing interactive elements...',
+                'Almost ready...',
+                'Welcome!'
+            ],
+            'quotes': [
+                "Every step in learning brings you closer to your dream of becoming an excellent dentist"
+            ]
+        },
+        'guide': {
+            'welcome_title': '🎓 Welcome to Dental Academy!',
+            'welcome_subtitle': "Let's quickly get acquainted with the platform",
+            'navigation': {
+                'prev': '← Back',
+                'next': 'Next →',
+                'start': 'Start learning!',
+                'skip': 'Skip guide',
+                'dont_show': "Don't show again"
+            }
+        }
+    },
+    'ru': {
+        'splash': {
+            'loading_steps': [
+                'Инициализация системы обучения...',
+                'Загрузка учебных материалов...',
+                'Подготовка интерактивных элементов...',
+                'Почти готово...',
+                'Добро пожаловать!'
+            ],
+            'quotes': [
+                "Каждый шаг в обучении приближает вас к мечте стать отличным стоматологом"
+            ]
+        },
+        'guide': {
+            'welcome_title': '🎓 Добро пожаловать в Dental Academy!',
+            'welcome_subtitle': 'Давайте быстро познакомимся с платформой',
+            'navigation': {
+                'prev': '← Назад',
+                'next': 'Далее →',
+                'start': 'Начать обучение!',
+                'skip': 'Пропустить гайд',
+                'dont_show': 'Больше не показывать'
+            }
+        }
+    },
+    'nl': {
+        'splash': {
+            'loading_steps': [
+                'Leersysteem initialiseren...',
+                'Studiemateriaal laden...',
+                'Interactieve elementen voorbereiden...',
+                'Bijna klaar...',
+                'Welkom!'
+            ],
+            'quotes': [
+                "Elke stap in het leren brengt je dichter bij je droom om een uitstekende tandarts te worden"
+            ]
+        },
+        'guide': {
+            'welcome_title': '🎓 Welkom bij Dental Academy!',
+            'welcome_subtitle': 'Laten we snel kennismaken met het platform',
+            'navigation': {
+                'prev': '← Terug',
+                'next': 'Volgende →',
+                'start': 'Begin met leren!',
+                'skip': 'Gids overslaan',
+                'dont_show': 'Niet meer tonen'
+            }
+        }
+    }
+}
+
+@api_bp.before_request
+def before_request_api():
+    """Обработка языка для API роутов."""
+    try:
+        lang_from_url = request.view_args.get('lang') if request.view_args else None
+        
+        if lang_from_url and lang_from_url in SUPPORTED_LANGUAGES:
+            g.lang = lang_from_url
+        else:
+            g.lang = session.get('lang') or DEFAULT_LANGUAGE
+        
+        if session.get('lang') != g.lang:
+            session['lang'] = g.lang
+            
+    except Exception as e:
+        current_app.logger.error(f"Error in before_request_api: {e}", exc_info=True)
+        g.lang = DEFAULT_LANGUAGE
+
+@api_bp.route('/splash-guide-translations', methods=['GET'])
+def get_splash_guide_translations(lang):
+    """Возвращает переводы для сплеш-гайда."""
+    try:
+        translations = {
+            'splash': {
+                'title': t('splash_title', lang),
+                'description': t('splash_description', lang),
+                'button': t('splash_button', lang)
+            },
+            'guide': {
+                'title': t('guide_title', lang),
+                'description': t('guide_description', lang),
+                'button': t('guide_button', lang)
+            }
+        }
+        return jsonify(translations)
+    except Exception as e:
+        current_app.logger.error(f"Error getting splash guide translations: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to get translations'}), 500
+
+@api_bp.route('/user-onboarding-status', methods=['GET'])
+@login_required
+def get_user_onboarding_status(lang):
+    """Возвращает статус онбординга пользователя."""
+    try:
+        if current_user.is_authenticated:
+            user = User.query.get(current_user.id)
+            if user:
+                return jsonify({
+                    'onboarding_completed': user.onboarding_completed,
+                    'guide_completed': user.guide_completed,
+                    'skip_guides': user.skip_guides
+                })
+        
+        # Если пользователь не авторизован, используем сессию
+        return jsonify({
+            'onboarding_completed': session.get('dental_academy_visited', False),
+            'guide_completed': session.get('dental_academy_guide_completed', False),
+            'skip_guides': session.get('dental_academy_skip_guides', False)
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting user onboarding status: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to get onboarding status'}), 500
+
+@api_bp.route('/complete-onboarding', methods=['POST'])
+@login_required
+def complete_onboarding(lang):
+    """Отмечает завершение онбординга."""
+    try:
+        data = request.get_json()
+        completed_splash = data.get('completed_splash', False)
+        completed_guide = data.get('completed_guide', False)
+        skip_future_guides = data.get('skip_future_guides', False)
+        
+        if completed_splash:
+            session['dental_academy_visited'] = True
+            
+        if completed_guide:
+            session['dental_academy_guide_completed'] = True
+            
+        if skip_future_guides:
+            session['dental_academy_skip_guides'] = True
+            
+        # Если пользователь авторизован, сохраняем также в БД
+        if current_user.is_authenticated:
+            user = User.query.get(current_user.id)
+            if user:
+                if completed_splash:
+                    user.onboarding_completed = True
+                if completed_guide:
+                    user.guide_completed = True
+                if skip_future_guides:
+                    user.skip_guides = True
+                db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': t('onboarding_completed_successfully', lang) or 'Onboarding completed successfully'
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error completing onboarding: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to complete onboarding'}), 500
+
+@api_bp.route('/reset-onboarding', methods=['POST'])
+@login_required
+def reset_onboarding():
+    """Сбрасывает статус онбординга (для тестирования)."""
+    try:
+        # Очищаем сессию
+        session.pop('dental_academy_visited', None)
+        session.pop('dental_academy_guide_completed', None)
+        session.pop('dental_academy_skip_guides', None)
+        
+        # Если пользователь авторизован, сбрасываем также в БД
+        if current_user.is_authenticated:
+            user = User.query.get(current_user.id)
+            if user:
+                user.onboarding_completed = False
+                user.guide_completed = False
+                user.skip_guides = False
+                db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': t('onboarding_reset_successfully', g.lang) or 'Onboarding status reset successfully'
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error resetting onboarding: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to reset onboarding'}), 500
 
 # --- API эндпоинты ---
 @api_bp.route('/lessons-for-topic/<int:topic_id>')

@@ -12,18 +12,70 @@
 
 {% block extra_css %}
 <style>
-    /* ===== ПРОФИЛЬ СТИЛИ ===== */
+    /* ===== СОВРЕМЕННЫЙ МОБИЛЬНЫЙ ПРОФИЛЬ ===== */
+    :root {
+        --mobile-primary: #3ECDC1;
+        --mobile-primary-dark: #2BB6AC;
+        --mobile-secondary: #667eea;
+        --mobile-accent: #764ba2;
+        --mobile-glass-bg: rgba(255, 255, 255, 0.1);
+        --mobile-glass-border: rgba(255, 255, 255, 0.2);
+        --mobile-glass-hover: rgba(255, 255, 255, 0.15);
+        --mobile-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        --mobile-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.2);
+        --mobile-radius: 20px;
+        --mobile-radius-lg: 24px;
+        --mobile-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Плавающие частицы для мобильных */
+    .mobile-particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+    }
+    
+    .mobile-particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        animation: mobile-float 12s linear infinite;
+    }
+    
+    @keyframes mobile-float {
+        0% { 
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+        }
+        10% { opacity: 0.6; }
+        90% { opacity: 0.6; }
+        100% { 
+            transform: translateY(-100vh) rotate(180deg);
+            opacity: 0;
+        }
+    }
+    
+    /* ===== HERO ПРОФИЛЬ HEADER ===== */
     .profile-header {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--mobile-glass-bg);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        padding: 2rem 1.5rem;
+        border: 1px solid var(--mobile-glass-border);
+        border-radius: var(--mobile-radius-lg);
+        padding: 2.5rem 1.5rem;
         margin-bottom: 1.5rem;
         text-align: center;
         position: relative;
         overflow: hidden;
+        box-shadow: var(--mobile-shadow);
+        transition: var(--mobile-transition);
     }
     
     .profile-header::before {
@@ -33,23 +85,59 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, rgba(62, 205, 193, 0.1), rgba(43, 158, 148, 0.1));
+        background: linear-gradient(135deg, rgba(62, 205, 193, 0.08), rgba(43, 158, 148, 0.08));
         z-index: -1;
     }
     
+    .profile-header:active {
+        transform: scale(0.98);
+        box-shadow: var(--mobile-shadow-hover);
+    }
+    
+    /* ===== СОВРЕМЕННЫЙ АВАТАР ===== */
     .profile-avatar {
-        width: 100px;
-        height: 100px;
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #3ECDC1, #2B9E94);
+        background: linear-gradient(135deg, var(--mobile-primary), var(--mobile-primary-dark));
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 1rem;
+        margin: 0 auto 1.5rem;
         color: white;
-        font-size: 2.5rem;
-        font-weight: 600;
-        box-shadow: 0 8px 25px rgba(62, 205, 193, 0.3);
+        font-size: 3rem;
+        font-weight: 700;
+        box-shadow: 0 15px 35px rgba(62, 205, 193, 0.4);
+        position: relative;
+        overflow: hidden;
+        transition: var(--mobile-transition);
+    }
+    
+    .profile-avatar::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        transition: all 0.5s ease;
+        opacity: 0;
+    }
+    
+    .profile-avatar:active {
+        transform: scale(1.05);
+        box-shadow: 0 20px 45px rgba(62, 205, 193, 0.5);
+    }
+    
+    .profile-avatar:active::before {
+        opacity: 1;
+        animation: mobile-shimmer 1s ease-in-out;
+    }
+    
+    @keyframes mobile-shimmer {
+        0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
     }
     
     .profile-name {
@@ -288,6 +376,9 @@
 {% endblock %}
 
 {% block content %}
+<!-- Плавающие частицы для мобильных -->
+<div class="mobile-particles" id="mobileParticles"></div>
+
 <!-- Хедер профиля -->
 <div class="profile-header">
     <div class="profile-avatar">
@@ -464,15 +555,110 @@
 
 {% block extra_js %}
 <script>
+// ===== СОЗДАНИЕ МОБИЛЬНЫХ ЧАСТИЦ =====
+function createMobileParticles() {
+    const container = document.getElementById('mobileParticles');
+    if (!container) return;
+    
+    const particleCount = 20; // Меньше частиц для мобильных
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'mobile-particle';
+        
+        // Случайные позиции и размеры
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = '100%';
+        particle.style.animationDuration = (Math.random() * 8 + 6) + 's';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        
+        // Случайные цвета
+        const colors = [
+            'rgba(62, 205, 193, 0.4)',
+            'rgba(102, 126, 234, 0.4)', 
+            'rgba(139, 92, 246, 0.4)',
+            'rgba(255, 255, 255, 0.3)'
+        ];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        container.appendChild(particle);
+    }
+}
+
+// ===== ТАКТИЛЬНАЯ ОБРАТНАЯ СВЯЗЬ =====
+function addHapticFeedback() {
+    const touchElements = document.querySelectorAll('.profile-menu-item, .quick-action, .logout-button');
+    
+    touchElements.forEach(element => {
+        element.addEventListener('touchstart', function() {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10); // Легкая вибрация
+            }
+            this.style.transform = 'scale(0.98)';
+        });
+        
+        element.addEventListener('touchend', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+}
+
+// ===== PULL-TO-REFRESH =====
+let startY = 0;
+let currentY = 0;
+let pullDistance = 0;
+const maxPullDistance = 80;
+
+function setupPullToRefresh() {
+    const container = document.body;
+    
+    container.addEventListener('touchstart', function(e) {
+        if (window.scrollY === 0) {
+            startY = e.touches[0].clientY;
+        }
+    });
+    
+    container.addEventListener('touchmove', function(e) {
+        if (window.scrollY === 0 && startY > 0) {
+            currentY = e.touches[0].clientY;
+            pullDistance = Math.max(0, currentY - startY);
+            
+            if (pullDistance > 0 && pullDistance <= maxPullDistance) {
+                e.preventDefault();
+                const opacity = Math.min(pullDistance / maxPullDistance, 1);
+                document.body.style.transform = `translateY(${pullDistance * 0.5}px)`;
+                document.body.style.opacity = 1 - (opacity * 0.1);
+            }
+        }
+    });
+    
+    container.addEventListener('touchend', function() {
+        if (pullDistance > maxPullDistance) {
+            // Перезагружаем страницу
+            window.location.reload();
+        } else {
+            // Возвращаем обратно
+            document.body.style.transform = '';
+            document.body.style.opacity = '';
+        }
+        startY = 0;
+        pullDistance = 0;
+    });
+}
+
+// ===== ФУНКЦИИ ПРОФИЛЯ =====
 function logout() {
     if (confirm('{{ t("confirm_logout", lang) or "Вы уверены, что хотите выйти?" }}')) {
-        // Показываем индикатор загрузки
         const button = event.target;
         const originalText = button.innerHTML;
         button.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>{{ t("logging_out", lang) or "Выход..." }}';
         button.disabled = true;
         
-        // Отправляем запрос на выход
+        // Добавляем haptic feedback
+        if ('vibrate' in navigator) {
+            navigator.vibrate([50, 100, 50]);
+        }
+        
         fetch('{{ url_for("mobile.logout", lang=lang) }}', {
             method: 'GET',
             headers: {
@@ -481,12 +667,16 @@ function logout() {
         })
         .then(response => {
             if (response.ok) {
-                // Очищаем локальные данные
                 localStorage.clear();
                 sessionStorage.clear();
                 
-                // Переходим на страницу входа
-                window.location.href = '{{ url_for("mobile.login", lang=lang) }}';
+                // Анимация перехода
+                document.body.style.opacity = '0';
+                document.body.style.transform = 'scale(0.95)';
+                
+                setTimeout(() => {
+                    window.location.href = '{{ url_for("mobile.login", lang=lang) }}';
+                }, 300);
             } else {
                 throw new Error('Logout failed');
             }
@@ -495,25 +685,173 @@ function logout() {
             console.error('Error during logout:', error);
             button.innerHTML = originalText;
             button.disabled = false;
-            alert('{{ t("logout_error", lang) or "Ошибка при выходе" }}');
+            
+            // Вибрация ошибки
+            if ('vibrate' in navigator) {
+                navigator.vibrate([100, 50, 100, 50, 100]);
+            }
+            
+            showMobileNotification('{{ t("logout_error", lang) or "Ошибка при выходе" }}', 'error');
         });
     }
 }
 
 function showComingSoon() {
-    alert('{{ t("coming_soon", lang) or "Эта функция скоро будет доступна!" }}');
+    if ('vibrate' in navigator) {
+        navigator.vibrate(20);
+    }
+    showMobileNotification('{{ t("coming_soon", lang) or "Эта функция скоро будет доступна!" }}', 'info');
 }
 
-// Анимация прогресс-бара при загрузке
+// ===== МОБИЛЬНЫЕ УВЕДОМЛЕНИЯ =====
+function showMobileNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = 'mobile-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 1rem 1.5rem;
+        border-radius: 16px;
+        background: var(--mobile-glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--mobile-glass-border);
+        color: white;
+        box-shadow: var(--mobile-shadow);
+        transform: translateY(-100px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 500;
+    `;
+    
+    const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ',
+        warning: '⚠'
+    };
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.2rem;">${icons[type] || icons.info}</span>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Анимация появления
+    setTimeout(() => {
+        notification.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Автоудаление
+    setTimeout(() => {
+        notification.style.transform = 'translateY(-100px)';
+        setTimeout(() => notification.remove(), 400);
+    }, 3000);
+}
+
+// ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', function() {
+    // Создаем частицы
+    createMobileParticles();
+    
+    // Добавляем тактильную обратную связь
+    addHapticFeedback();
+    
+    // Настраиваем pull-to-refresh
+    setupPullToRefresh();
+    
+    // Анимация прогресс-баров
     const progressFills = document.querySelectorAll('.progress-fill');
     progressFills.forEach(fill => {
         const targetWidth = fill.getAttribute('data-progress') + '%';
         fill.style.width = '0%';
         setTimeout(() => {
             fill.style.width = targetWidth;
-        }, 500);
+        }, 800);
     });
+    
+    // Добавляем плавные переходы между страницами
+    const links = document.querySelectorAll('a[href^="/"]');
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.target !== '_blank') {
+                e.preventDefault();
+                const href = this.href;
+                
+                document.body.style.opacity = '0.8';
+                document.body.style.transform = 'scale(0.98)';
+                
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 200);
+            }
+        });
+    });
+    
+    // PWA возможности
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.log('SW registration failed');
+        });
+    }
+    
+    // Предотвращение зума при двойном тапе
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
 });
+
+// ===== ВИЗУАЛЬНЫЕ ЭФФЕКТЫ =====
+// Добавляем эффект частиц при нажатии
+document.addEventListener('touchstart', function(e) {
+    const touch = e.touches[0];
+    createTouchParticle(touch.clientX, touch.clientY);
+});
+
+function createTouchParticle(x, y) {
+    for (let i = 0; i < 3; i++) {
+        const particle = document.createElement('div');
+        particle.style.cssText = `
+            position: fixed;
+            left: ${x}px;
+            top: ${y}px;
+            width: 4px;
+            height: 4px;
+            background: rgba(62, 205, 193, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            animation: touchParticle 0.6s ease-out forwards;
+        `;
+        
+        particle.style.setProperty('--random-x', (Math.random() - 0.5) * 100 + 'px');
+        particle.style.setProperty('--random-y', (Math.random() - 0.5) * 100 + 'px');
+        
+        document.body.appendChild(particle);
+        
+        setTimeout(() => particle.remove(), 600);
+    }
+}
+
+// CSS для touch частиц
+const touchParticleStyle = document.createElement('style');
+touchParticleStyle.textContent = `
+    @keyframes touchParticle {
+        to {
+            transform: translate(var(--random-x), var(--random-y)) scale(0);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(touchParticleStyle);
 </script>
 {% endblock %}

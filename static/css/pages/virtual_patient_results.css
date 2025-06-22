@@ -1745,3 +1745,27 @@ textarea:focus,
     break-inside: avoid;
   }
 }
+
+/* Стили для тултипов */
+.tooltip-content {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    max-width: 200px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-content.tooltip-visible {
+    opacity: 1;
+    transform: translateY(0);
+}

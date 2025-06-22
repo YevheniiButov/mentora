@@ -17,9 +17,9 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False) 
+    password_hash = db.Column(db.String(128))
     name = db.Column(db.String(100))
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     role = db.Column(db.String(20), default='user')
     has_subscription = db.Column(db.Boolean, default=False)
@@ -29,6 +29,10 @@ class User(db.Model, UserMixin):
     # Отношения
     progress = db.relationship('UserProgress', backref='user', lazy='dynamic',
                               cascade='all, delete-orphan')
+    # Поля для онбординга
+    onboarding_completed = db.Column(db.Boolean, default=False)
+    guide_completed = db.Column(db.Boolean, default=False)
+    skip_guides = db.Column(db.Boolean, default=False)
     @property
     def is_admin(self):
         """Возвращает True, если пользователь имеет роль admin."""
