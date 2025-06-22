@@ -1,0 +1,339 @@
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('virtual_patients_list',
+    show_logo=True,
+    show_back_button=False,
+    show_bottom_nav=True,
+    show_profile_button=True,
+    show_settings_button=True,
+    show_language_selector=True,
+    page_title=t('virtual_patients', lang)
+) %}
+
+{% block title %}{{ t('virtual_patients', lang or 'en') }} - Dental Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* === INTRO CARD === */
+    .intro-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+
+    .intro-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    /* === PATIENT CARDS === */
+    .patient-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .patient-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .patient-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff6b6b, #feca57);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .patient-avatar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .patient-info {
+        flex: 1;
+    }
+
+    .patient-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .patient-age {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .patient-description {
+        margin-bottom: 1rem;
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+
+    .difficulty-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .difficulty-badge .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    .badge.easy {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+
+    .badge.medium {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+    }
+
+    .badge.hard {
+        background: linear-gradient(135deg, #dc3545, #e83e8c);
+    }
+
+    .patient-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        opacity: 0.9;
+    }
+
+    .start-button {
+        background: linear-gradient(135deg, #3ECDC1, #44A08D);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .start-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
+        color: white;
+    }
+
+    /* === EMPTY STATE === */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: white;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    /* === АНИМАЦИИ === */
+    .patient-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .patient-card:nth-child(2) { animation-delay: 0.1s; }
+    .patient-card:nth-child(3) { animation-delay: 0.2s; }
+    .patient-card:nth-child(4) { animation-delay: 0.3s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Intro Card -->
+<div class="intro-card">
+    <div class="intro-icon">👨‍⚕️</div>
+    <h2>{{ t('virtual_patients', lang or 'en') }}</h2>
+    <p>{{ t('virtual_patients_desc', lang or 'en') or 'Практикуйтесь на виртуальных пациентах для улучшения навыков диагностики' }}</p>
+</div>
+
+<!-- Patient Cards -->
+{% if patients %}
+    {% for patient in patients %}
+    <div class="patient-card">
+        <div class="patient-header">
+            <div class="patient-avatar">
+                {{ patient.name[0] if patient.name else '👤' }}
+            </div>
+            <div class="patient-info">
+                <div class="patient-name">{{ patient.name or 'Anonymous Patient' }}</div>
+                <div class="patient-age">{{ patient.age or 'Age unknown' }} {{ t('years_old', lang or 'en') or 'years old' }}</div>
+            </div>
+        </div>
+        
+        <div class="patient-description">
+            {{ patient.description or t('no_description', lang or 'en') }}
+        </div>
+        
+        <div class="difficulty-badge">
+            <span class="badge {{ patient.difficulty or 'medium' }}">
+                <i class="bi bi-star-fill"></i>
+                {{ t(patient.difficulty or 'medium', lang or 'en') or (patient.difficulty or 'medium')|title }}
+            </span>
+        </div>
+        
+        <div class="patient-stats">
+            <div class="stat-item">
+                <i class="bi bi-clock"></i>
+                <span>{{ patient.estimated_time or '15' }} {{ t('minutes', lang or 'en') or 'min' }}</span>
+            </div>
+            <div class="stat-item">
+                <i class="bi bi-chat-dots"></i>
+                <span>{{ patient.steps_count or 8 }} {{ t('steps', lang or 'en') or 'steps' }}</span>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('virtual_patient_bp.scenario_detail', lang=lang, scenario_id=patient.id) }}" 
+           class="start-button">
+            <i class="bi bi-play-fill"></i>
+            {{ t('start_case', lang or 'en') or 'Начать случай' }}
+        </a>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>{{ t('no_patients_available', lang or 'en') or 'Нет доступных пациентов' }}</h3>
+        <p>{{ t('patients_coming_soon', lang or 'en') or 'Виртуальные пациенты скоро появятся' }}</p>
+    </div>
+{% endif %}
+{% endblock %}
+
+<script>
+    // Touch handling improvements
+    document.addEventListener('touchstart', function() {}, { passive: true });
+    
+    // Prevent double-tap zoom
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // Animate progress bars on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBars = document.querySelectorAll('.progress-bar-fill');
+        
+        setTimeout(() => {
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        }, 500);
+    });
+
+    // Add haptic feedback for supported devices
+    function addHapticFeedback(element) {
+        element.addEventListener('touchstart', function() {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        });
+    }
+
+    // Apply haptic feedback to buttons
+    document.querySelectorAll('.action-button').forEach(addHapticFeedback);
+</script>
+
+<!-- Нижняя навигация -->
+<nav class="mobile-bottom-nav">
+    <a href="{{ url_for('mobile.welcome', lang=lang) }}" class="nav-item">
+        <i class="bi bi-house"></i>
+        <span>{{ t('home', lang) }}</span>
+    </a>
+    <a href="{{ url_for('mobile.learning_map', lang=lang) }}" class="nav-item">
+        <i class="bi bi-book"></i>
+        <span>{{ t('learning', lang) }}</span>
+    </a>
+    <a href="{{ url_for('mobile.tests', lang=lang) }}" class="nav-item">
+        <i class="bi bi-clipboard-check"></i>
+        <span>{{ t('tests', lang) }}</span>
+    </a>
+    <a href="/{{ lang }}/virtual-patient" class="nav-item active">
+        <i class="bi bi-person-heart"></i>
+        <span>{{ t('patients', lang) }}</span>
+    </a>
+    <a href="{{ url_for('ai.ai_chat', lang=lang) }}" class="nav-item">
+        <i class="fas fa-robot"></i>
+        <span>{{ t('ai_assistant', lang) }}</span>
+    </a>
+</nav> 

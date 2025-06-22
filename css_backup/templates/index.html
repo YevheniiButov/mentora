@@ -1,0 +1,2980 @@
+{% extends "base.html" %}
+
+{# --- SEO Meta Tags --- #}
+{% block title %}{{ t('seo_title', g.lang) }}{% endblock %}
+{% block meta_description %}{{ t('seo_description', g.lang) }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<!-- CSRF Token for AJAX requests -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="user-authenticated" content="{{ 'true' if current_user.is_authenticated else 'false' }}">
+<meta name="current-language" content="{{ g.lang }}">
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<!-- Optimized Modern Theme CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+
+<!-- Google Fonts для лучшей типографики -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ ОТОБРАЖЕНИЯ СЕКЦИЙ И ШАПКИ -->
+<style>
+/* ===== ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ ШАПКИ ===== */
+.modern-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+  height: 70px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.modern-header .navbar {
+  padding: 0.5rem 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.modern-header .navbar .container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 1.5rem !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-brand img {
+  height: 40px !important;
+  width: auto !important;
+}
+
+.modern-header .navbar-collapse {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-nav {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  margin-left: auto !important;
+  height: 100% !important;
+}
+
+.modern-header .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 1rem !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-header .nav-link:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #3ECDC1 !important;
+}
+
+.modern-header .dropdown-toggle,
+.modern-header .btn {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-header .dropdown-toggle:hover,
+.modern-header .btn:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Темная тема для шапки */
+[data-theme="dark"] .modern-header {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .modern-header .nav-link {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .modern-header .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .modern-header .dropdown-toggle,
+[data-theme="dark"] .modern-header .btn {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 992px) {
+  .modern-header {
+    height: 60px !important;
+  }
+  
+  .modern-header .navbar-brand img {
+    height: 32px !important;
+  }
+  
+  .modern-header .navbar-toggler {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+    padding: 0.25rem !important;
+  }
+  
+  .modern-header .navbar-collapse {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
+    border-radius: 0 0 16px 16px !important;
+    padding: 1rem !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    height: auto !important;
+  }
+}
+
+/* ===== ИСПРАВЛЕНИЯ КОНТЕНТА ===== */
+/* Принудительно делаем все секции видимыми */
+.main-content {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* Секции должны быть видимыми */
+section {
+  display: block !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  margin-top: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero section получает padding-top */
+.hero-section {
+  padding-top: 70px !important;
+  margin-top: 0 !important;
+}
+
+/* Все контейнеры видимы */
+.container, .container-fluid {
+  display: block !important;
+  height: auto !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+/* Принудительно показываем конкретные секции */
+.features-section,
+.platform-features-section, 
+.benefits-section,
+.cta-section,
+.ai-dashboard-section {
+  display: block !important;
+  opacity: 1 !important;
+  height: auto !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  margin-top: 0 !important;
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# === ИСПРАВЛЕННАЯ HERO SECTION === #}
+<section class="hero-section">
+  <!-- Background Effects (Reduced) -->
+  <div class="hero-bg"></div>
+  
+  <!-- Reduced Animated Particles (only for desktop) -->
+  <div class="floating-particles d-none d-lg-block"></div>
+  
+  <!-- Simplified Morphing Shapes (only 3 instead of 6) -->
+  <div class="floating-shape shape-1 d-none d-xl-block"></div>
+  <div class="floating-shape shape-2 d-none d-xl-block"></div>
+  <div class="floating-shape shape-3 d-none d-xl-block"></div>
+  
+  <div class="container">
+    <div class="hero-content">
+      <!-- Left Column: Text Content -->
+      <div class="hero-text" data-animate="fadeInLeft">
+        <h1 class="hero-title">
+          {{ t('successful_path_title', g.lang)|default('Твой путь к успеху в стоматологии') | safe }}
+        </h1>
+        
+        <p class="hero-subtitle">
+          {{ t('platform_description', g.lang)|default('Современная образовательная платформа для подготовки к экзамену BIG в Нидерландах. Качественное обучение с индивидуальным подходом.') }}
+        </p>
+        
+        <!-- CTA Buttons -->
+        <div class="cta-buttons">
+          <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="btn-modern btn-primary">
+            <i class="fas fa-rocket cta-icon"></i>
+            {{ t('start_for_free', g.lang)|default('Начать бесплатно') }}
+          </a>
+          <a href="#features" class="btn-modern btn-secondary">
+            <i class="fas fa-play cta-icon"></i>
+            {{ t('learn_more', g.lang)|default('Узнать больше') }}
+          </a>
+        </div>
+        
+        <!-- Realistic Statistics -->
+        <div class="stats-grid">
+          <div class="stat-card" data-animate="fadeInUp">
+            <div class="stat-number">BIG</div>
+            <div class="stat-label">{{ t('exam_preparation', g.lang)|default('Подготовка к экзамену') }}</div>
+          </div>
+          <div class="stat-card" data-animate="fadeInUp">
+            <div class="stat-number">8</div>
+            <div class="stat-label">{{ t('languages_supported', g.lang)|default('Языков поддержки') }}</div>
+          </div>
+          <div class="stat-card" data-animate="fadeInUp">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">{{ t('availability', g.lang)|default('Доступность') }}</div>
+          </div>
+        </div>
+      </div>
+      
+<!-- Right Column: Animated Phone with Screen Switching -->
+<div class="hero-visual" data-animate="fadeInRight">
+  <!-- Floating Particles Container -->
+  <div class="particles-container" id="particles"></div>
+  
+  <div class="app-showcase">
+    <div class="device-mockup">
+      <div class="device-screen">
+        <div class="screen-slides" id="screenSlides">
+          <!-- Screen 1: Main Features -->
+          <div class="screen-content">
+            <div class="app-header">
+              <h3 class="app-title">Become a Tandarts</h3>
+              <p class="app-subtitle">{{ t('interactive_learning', g.lang)|default('Интерактивное обучение') }}</p>
+            </div>
+            
+            <div class="feature-cards">
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h4>{{ t('structured_learning', g.lang)|default('Структурированное обучение') }}</h4>
+                <p>{{ t('structured_learning_desc', g.lang)|default('Пошаговая программа подготовки к экзамену') }}</p>
+              </div>
+              
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <i class="fas fa-user-md"></i>
+                </div>
+                <h4>{{ t('clinical_cases', g.lang)|default('Клинические случаи') }}</h4>
+                <p>{{ t('clinical_cases_desc', g.lang)|default('Практика на реалистичных медицинских сценариях') }}</p>
+              </div>
+              
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <h4>{{ t('progress_tracking', g.lang)|default('Отслеживание прогресса') }}</h4>
+                <p>{{ t('progress_tracking_desc', g.lang)|default('Детальная аналитика вашего обучения') }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 2: Learning Dashboard -->
+          <div class="screen-content screen-2">
+            <div class="app-header">
+              <h3 class="app-title">{{ t('learning_dashboard', g.lang)|default('Дашборд обучения') }}</h3>
+              <p class="app-subtitle">{{ t('your_progress', g.lang)|default('Ваш прогресс') }}</p>
+            </div>
+            
+            <div class="dashboard-stats">
+              <div class="stat-card">
+                <div class="stat-number">75%</div>
+                <div class="stat-label">{{ t('completed', g.lang)|default('Завершено') }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">24</div>
+                <div class="stat-label">{{ t('modules', g.lang)|default('Модулей') }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">156</div>
+                <div class="stat-label">{{ t('cards', g.lang)|default('Карточек') }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">89%</div>
+                <div class="stat-label">{{ t('accuracy', g.lang)|default('Точность') }}</div>
+              </div>
+            </div>
+
+            <div class="progress-list">
+              <div class="progress-item">
+                <div class="progress-header">
+                  <span>{{ t('anatomy', g.lang)|default('Анатомия') }}</span>
+                  <span>92%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 92%"></div>
+                </div>
+              </div>
+              <div class="progress-item">
+                <div class="progress-header">
+                  <span>{{ t('physiology', g.lang)|default('Физиология') }}</span>
+                  <span>78%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 78%"></div>
+                </div>
+              </div>
+              <div class="progress-item">
+                <div class="progress-header">
+                  <span>{{ t('radiology', g.lang)|default('Радиология') }}</span>
+                  <span>65%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 65%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 3: Test Interface -->
+          <div class="screen-content screen-3">
+            <div class="app-header">
+              <h3 class="app-title">{{ t('testing', g.lang)|default('Тестирование') }}</h3>
+              <p class="app-subtitle">{{ t('question_progress', g.lang)|default('Вопрос 3 из 15') }}</p>
+            </div>
+            
+            <div class="question-card">
+              <div class="question-text">
+                {{ t('sample_question', g.lang)|default('Какая структура отвечает за эмалевое образование в зубе?') }}
+              </div>
+              <div class="answer-options">
+                <div class="answer-option">A. {{ t('odontoblasts', g.lang)|default('Одонтобласты') }}</div>
+                <div class="answer-option correct">B. {{ t('ameloblasts', g.lang)|default('Амелобласты') }}</div>
+                <div class="answer-option">C. {{ t('cementoblasts', g.lang)|default('Цементобласты') }}</div>
+                <div class="answer-option">D. {{ t('osteoblasts', g.lang)|default('Остеобласты') }}</div>
+              </div>
+            </div>
+
+            <div class="feature-cards">
+              <div class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <h4>{{ t('timer', g.lang)|default('Таймер: 2:45') }}</h4>
+                <p>{{ t('time_remaining', g.lang)|default('Время на ответ') }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 4: Virtual Patient -->
+          <div class="screen-content screen-4">
+            <div class="app-header">
+              <h3 class="app-title">{{ t('virtual_patient', g.lang)|default('Виртуальный пациент') }}</h3>
+              <p class="app-subtitle">{{ t('clinical_case', g.lang)|default('Клинический случай') }}</p>
+            </div>
+            
+            <div class="patient-card">
+              <div class="patient-avatar">👨‍⚕️</div>
+              <div class="patient-info">
+                <h4>{{ t('patient_name', g.lang)|default('Мария, 34 года') }}</h4>
+                <p>{{ t('patient_complaint', g.lang)|default('Жалобы на боль в нижней челюсти') }}</p>
+              </div>
+            </div>
+
+            <div class="patient-symptoms">
+              <div class="symptom-item">
+                🦷 {{ t('symptom_1', g.lang)|default('Острая боль при жевании') }}
+              </div>
+              <div class="symptom-item">
+                🌡️ {{ t('symptom_2', g.lang)|default('Повышенная чувствительность') }}
+              </div>
+              <div class="symptom-item">
+                📅 {{ t('symptom_3', g.lang)|default('Симптомы в течение 3 дней') }}
+              </div>
+            </div>
+
+            <div class="feature-cards">
+              <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h4>{{ t('examination', g.lang)|default('Обследование') }}</h4>
+                <p>{{ t('conduct_exam', g.lang)|default('Провести осмотр') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen Indicators -->
+        <div class="screen-indicators">
+          <div class="indicator active" data-screen="0"></div>
+          <div class="indicator" data-screen="1"></div>
+          <div class="indicator" data-screen="2"></div>
+          <div class="indicator" data-screen="3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+{# === FEATURES SECTION === #}
+<section class="features-section py-5" id="features">
+  <div class="container">
+    <!-- Section Header -->
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center" data-animate="fadeInUp">
+        <h2 class="section-title position-relative mb-4">
+          {{ t('start_path_title', g.lang)|default('Начни свой путь к успеху') | safe }}
+        </h2>
+        <p class="lead text-muted">
+          {{ t('professional_platform', g.lang)|default('Профессиональная платформа для подготовки к экзаменам') }}
+        </p>
+      </div>
+    </div>
+    
+    <!-- Feature Cards -->
+    <div class="row g-4">
+      <!-- Theory Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card">
+          <div class="feature-icon knowledge-gradient">
+            <i class="bi bi-lightbulb-fill"></i>
+          </div>
+          <h3 class="feature-title">{{ t('theory_title', g.lang)|default('Теория') }}</h3>
+          <p class="feature-description">
+            {{ t('theory_description', g.lang)|default('Структурированные модули по анатомии, физиологии и радиологии') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">{{ t('anatomy', g.lang)|default('Анатомия') }}</span>
+            <span class="tag">{{ t('physiology', g.lang)|default('Физиология') }}</span>
+            <span class="tag">{{ t('radiology', g.lang)|default('Радиология') }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Practice Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card featured">
+          <div class="featured-badge">{{ t('most_popular', g.lang)|default('Популярное') }}</div>
+          <div class="feature-icon communication-gradient">
+            <i class="bi bi-chat-dots"></i>
+          </div>
+          <h3 class="feature-title">{{ t('practice_title', g.lang)|default('Практика') }}</h3>
+          <p class="feature-description">
+            {{ t('practice_description', g.lang)|default('Клинические случаи и симуляция работы с пациентами') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">{{ t('case_studies', g.lang)|default('Клинические случаи') }}</span>
+            <span class="tag">{{ t('communication', g.lang)|default('Коммуникация') }}</span>
+            <span class="tag">{{ t('medical_dutch', g.lang)|default('Медицинский голландский') }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Exam Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card">
+          <div class="feature-icon workstation-gradient">
+            <i class="bi bi-award-fill"></i>
+          </div>
+          <h3 class="feature-title">{{ t('exam_title', g.lang)|default('Экзамен') }}</h3>
+          <p class="feature-description">
+            {{ t('exam_description', g.lang)|default('Подготовка к реальным экзаменам с анализом результатов') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">{{ t('mock_exams', g.lang)|default('Пробные экзамены') }}</span>
+            <span class="tag">{{ t('analytics', g.lang)|default('Аналитика') }}</span>
+            <span class="tag">{{ t('strategy', g.lang)|default('Стратегия') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- CTA Section -->
+    <div class="text-center mt-5" data-animate="fadeInUp">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
+          <i class="bi bi-play-fill"></i>
+          {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
+        </a>
+      {% else %}
+        <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
+          <i class="bi bi-person-plus"></i>
+          {{ t('start_your_journey', g.lang)|default('Начать путешествие') }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{# === PLATFORM FEATURES SECTION === #}
+<section class="platform-features-section py-5">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center" data-animate="fadeInUp">
+        <span class="section-subtitle">
+          {{ t('platform_features', g.lang)|default('Возможности платформы') }}
+        </span>
+        <h2 class="section-title">
+          {{ t('why_choose_us', g.lang)|default('Почему выбирают нас') | safe }}
+        </h2>
+        <p class="section-description">
+          {{ t('comprehensive_approach', g.lang)|default('Комплексный подход к подготовке стоматологов') }}
+        </p>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
+        <div class="platform-feature">
+          <div class="platform-icon">
+            <i class="bi bi-globe"></i>
+          </div>
+          <h3 class="platform-title">
+            {{ t('multilingual_support', g.lang)|default('Многоязычность') }}
+          </h3>
+          <p class="platform-description">
+            {{ t('multilingual_description', g.lang)|default('Обучение на 8 языках для удобства студентов из разных стран') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
+        <div class="platform-feature">
+          <div class="platform-icon">
+            <i class="bi bi-clock"></i>
+          </div>
+          <h3 class="platform-title">
+            {{ t('flexible_schedule', g.lang)|default('Гибкий график') }}
+          </h3>
+          <p class="platform-description">
+            {{ t('flexible_description', g.lang)|default('Учитесь в удобное время в своем темпе') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
+        <div class="platform-feature">
+          <div class="platform-icon">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h3 class="platform-title">
+            {{ t('quality_assurance', g.lang)|default('Гарантия качества') }}
+          </h3>
+          <p class="platform-description">
+            {{ t('quality_description', g.lang)|default('Контент разработан экспертами в области стоматологии') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
+        <div class="platform-feature">
+          <div class="platform-icon">
+            <i class="bi bi-headset"></i>
+          </div>
+          <h3 class="platform-title">
+            {{ t('support_247', g.lang)|default('Поддержка 24/7') }}
+          </h3>
+          <p class="platform-description">
+            {{ t('support_description', g.lang)|default('Круглосуточная поддержка пользователей') }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# === BENEFITS SECTION === #}
+<section class="benefits-section py-5">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center" data-animate="fadeInUp">
+        <span class="section-subtitle">
+          {{ t('learning_approach', g.lang)|default('Подход к обучению') }}
+        </span>
+        <h2 class="section-title">
+          {{ t('our_methodology', g.lang)|default('Наша методология') | safe }}
+        </h2>
+        <p class="section-description">
+          {{ t('evidence_based', g.lang)|default('Основанная на доказательствах система обучения') }}
+        </p>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-journal-medical"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('structured_modules', g.lang)|default('Структурированные модули') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('structured_modules_desc', g.lang)|default('Логически выстроенная программа обучения от базовых знаний к продвинутым навыкам') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-card-checklist"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('adaptive_testing', g.lang)|default('Адаптивное тестирование') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('adaptive_testing_desc', g.lang)|default('Тесты, адаптирующиеся под ваш уровень знаний для оптимального обучения') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-translate"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('medical_dutch', g.lang)|default('Медицинский голландский') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('medical_dutch_desc', g.lang)|default('Специализированный курс медицинского голландского языка для работы в Нидерландах') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-clipboard-data"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('realistic_simulations', g.lang)|default('Реалистичные симуляции') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('realistic_simulations_desc', g.lang)|default('Виртуальные пациенты и клинические сценарии, максимально приближенные к реальности') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-bar-chart-line"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('detailed_analytics', g.lang)|default('Подробная аналитика') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('detailed_analytics_desc', g.lang)|default('Детальная статистика прогресса с персональными рекомендациями') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-people"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('community_learning', g.lang)|default('Обучение в сообществе') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('community_learning_desc', g.lang)|default('Активное сообщество студентов и экспертов для обмена знаниями') }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# === CALL TO ACTION SECTION === #}
+<section class="cta-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center" data-animate="fadeInUp">
+        <div class="cta-card">
+          <h2 class="cta-title">
+            {{ t('ready_to_start', g.lang)|default('Готовы начать?') }}
+          </h2>
+          <p class="cta-description">
+            {{ t('join_thousands', g.lang)|default('Присоединяйтесь к студентам, которые готовятся к BIG экзамену с нашей платформой') }}
+          </p>
+          <div class="cta-buttons">
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth_bp.register', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
+              <i class="bi bi-rocket-takeoff"></i>
+              {{ t('start_now', g.lang)|default('Начать сейчас') }}
+            </a>
+            <a href="{{ url_for('main_bp.big_info', lang=g.lang) }}" class="btn-modern btn-secondary btn-lg">
+              <i class="bi bi-info-circle"></i>
+              {{ t('learn_about_big', g.lang)|default('Узнать о BIG') }}
+            </a>
+            {% else %}
+            <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
+              <i class="bi bi-play-circle"></i>
+              {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# === AI ENHANCED DASHBOARD SECTION (только для авторизованных пользователей) === #}
+{% if current_user.is_authenticated %}
+<section class="ai-dashboard-section py-5">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-10 text-center" data-animate="fadeInUp">
+        <div class="ai-section-header">
+          <span class="section-subtitle ai-subtitle">
+            <i class="bi bi-robot me-2"></i>
+            {{ t('ai_powered', g.lang)|default('ИИ-технологии') }}
+          </span>
+          <h2 class="section-title ai-title">
+            {{ t('personal_ai_assistant', g.lang)|default('Персональный ИИ Ассистент') | safe }}
+          </h2>
+          <p class="section-description ai-description">
+            {{ t('ai_features_description', g.lang)|default('Получайте персональные рекомендации, анализ готовности к экзамену и интеллектуальную поддержку в обучении') }}
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+// ===== ИСПРАВЛЕННЫЕ AI ВИДЖЕТЫ =====
+
+// 1. Улучшенная функция получения CSRF токена
+function getCSRFToken() {
+  let token = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+  if (!token) {
+    token = document.querySelector('input[name=csrf_token]')?.value;
+  }
+  console.log('CSRF Token:', token ? 'Found' : 'Not found');
+  return token || '';
+}
+
+// 2. Улучшенная функция для AI запросов
+async function makeAIRequest(url, data = {}, options = {}) {
+  const defaultOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options
+  };
+
+  if (defaultOptions.method === 'POST') {
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      defaultOptions.headers['X-CSRFToken'] = csrfToken;
+    }
+  }
+
+  if (data && Object.keys(data).length > 0) {
+    defaultOptions.body = JSON.stringify(data);
+  }
+
+  try {
+    console.log('Making request to:', url);
+    const response = await fetch(url, defaultOptions);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error('AI Request error:', error);
+    throw error;
+  }
+}
+
+// 3. ИСПРАВЛЕННАЯ загрузка готовности к экзамену
+async function loadExamReadiness() {
+  const container = document.getElementById('examReadinessContent');
+  if (!container) return;
+  
+  try {
+    container.innerHTML = getLoadingHTML('Анализируем прогресс...');
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const response = await fetch(`/${currentLang}/ai-assistant/predict-exam`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.success && data.prediction) {
+      renderExamReadiness(data.prediction);
+    } else {
+      throw new Error(data.error || 'No prediction data');
+    }
+    
+  } catch (error) {
+    console.error('Exam readiness error:', error);
+    container.innerHTML = `
+      <div class="text-center py-4">
+        <div class="alert alert-info">
+          <h5>📊 Анализ готовности</h5>
+          <p>Продолжайте изучение материалов для получения персонального анализа</p>
+          <a href="/${window.location.pathname.split('/')[1] || 'ru'}/learning-map" class="btn btn-primary btn-sm">
+            Перейти к обучению
+          </a>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// 4. ИСПРАВЛЕННАЯ загрузка рекомендаций
+async function loadRecommendations() {
+  const container = document.getElementById('recommendationsContent');
+  if (!container) return;
+  
+  try {
+    container.innerHTML = getLoadingHTML('Подбираем рекомендации...');
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const data = await makeAIRequest(`/${currentLang}/ai-assistant/recommend-content`, {
+      limit: 3
+    });
+    
+    if (data.success && data.recommendations) {
+      renderRecommendations(data.recommendations);
+    } else {
+      throw new Error(data.error || 'No recommendations data');
+    }
+    
+  } catch (error) {
+    console.error('Recommendations error:', error);
+    container.innerHTML = `
+      <div class="text-center py-3">
+        <div class="alert alert-info">
+          <h6>💡 Персональные рекомендации</h6>
+          <p>Рекомендации появятся после изучения первых материалов</p>
+          <a href="/${window.location.pathname.split('/')[1] || 'ru'}/learning-map" class="btn btn-outline-primary btn-sm">
+            Начать обучение
+          </a>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// 5. ИСПРАВЛЕННАЯ функция анализа прогресса
+async function loadProgressAnalysis() {
+  const container = document.getElementById('progressAnalysisContent');
+  if (!container) return;
+  
+  try {
+    container.innerHTML = getLoadingHTML('Анализируем слабые области...');
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const response = await fetch(`/${currentLang}/dashboard/api/progress-stats`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.success) {
+      renderProgressAnalysis(data.stats);
+    } else {
+      throw new Error('No progress data');
+    }
+    
+  } catch (error) {
+    console.error('Progress analysis error:', error);
+    container.innerHTML = `
+      <div class="text-center py-3">
+        <div class="alert alert-info">
+          <h6>📈 Анализ прогресса</h6>
+          <p>Детальный анализ появится после прохождения уроков</p>
+          <div class="progress mt-3">
+            <div class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// 6. ДОБАВЛЕННАЯ функция toggleMiniChat (была не определена!)
+function toggleMiniChat() {
+  const body = document.getElementById('miniChatBody');
+  const toggle = document.getElementById('miniChatToggle');
+  
+  if (!body || !toggle) return;
+  
+  if (body.style.display === 'none' || !body.style.display) {
+    body.style.display = 'block';
+    toggle.className = 'bi bi-chevron-up';
+  } else {
+    body.style.display = 'none';
+    toggle.className = 'bi bi-chevron-down';
+  }
+}
+
+// 7. ДОБАВЛЕННАЯ функция sendMiniChatMessage
+async function sendMiniChatMessage() {
+  const input = document.getElementById('miniChatInput');
+  const messages = document.getElementById('miniChatMessages');
+  
+  if (!input || !messages) return;
+  
+  const message = input.value.trim();
+  if (!message) return;
+  
+  // Добавляем сообщение пользователя
+  const userMessage = document.createElement('div');
+  userMessage.className = 'user-message';
+  userMessage.textContent = message;
+  messages.appendChild(userMessage);
+  
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+  
+  try {
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const data = await makeAIRequest(`/${currentLang}/ai-assistant/chat`, {
+      message: message,
+      mini_chat: true 
+    });
+    
+    if (data.success && data.response) {
+      const aiMessage = document.createElement('div');
+      aiMessage.className = 'ai-message';
+      aiMessage.innerHTML = `<i class="bi bi-robot"></i><span>${data.response}</span>`;
+      messages.appendChild(aiMessage);
+    } else {
+      throw new Error(data.error || 'No response from AI');
+    }
+    
+  } catch (error) {
+    console.error('Mini chat error:', error);
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'ai-message error';
+    errorMessage.innerHTML = `<i class="bi bi-exclamation-triangle"></i><span>AI временно недоступен</span>`;
+    messages.appendChild(errorMessage);
+  }
+  
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// 8. Вспомогательные функции
+function getLoadingHTML(text) {
+  return `
+    <div class="loading-state text-center py-3">
+      <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+      <div class="loading-text">${text}</div>
+    </div>
+  `;
+}
+
+function renderExamReadiness(prediction) {
+  const container = document.getElementById('examReadinessContent');
+  if (!container) return;
+
+  const readiness = prediction.exam_readiness || 0;
+  const weakAreas = prediction.weak_areas || [];
+
+  container.innerHTML = `
+    <div class="text-center">
+      <div class="circular-progress mb-3">
+        <div class="progress-circle" data-percentage="${readiness}">
+          <div class="progress-text">${readiness}%</div>
+        </div>
+      </div>
+      <h5 class="text-primary">Готовность к экзамену</h5>
+      ${weakAreas.length > 0 ? `
+        <div class="mt-3">
+          <h6 class="mb-2">Области для улучшения:</h6>
+          ${weakAreas.map(area => `<span class="badge badge-outline-warning me-1">${area}</span>`).join('')}
+        </div>
+      ` : '<p class="text-success">Отличная подготовка! 🎉</p>'}
+      <div class="text-center mt-3">
+        <a href="/${window.location.pathname.split('/')[1] || 'ru'}/ai-assistant/" class="btn btn-primary btn-sm">
+          Подробный анализ
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+function renderRecommendations(recommendations) {
+  const container = document.getElementById('recommendationsContent');
+  if (!container) return;
+
+  if (!recommendations || recommendations.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Пока нет персональных рекомендаций</p>';
+    return;
+  }
+
+  container.innerHTML = recommendations.slice(0, 3).map(rec => `
+    <div class="recommendation-item mb-3">
+      <div class="recommendation-title">${rec.title || 'Рекомендация'}</div>
+      <p class="recommendation-description">${rec.description || rec.text || 'Персональная рекомендация для вас'}</p>
+    </div>
+  `).join('');
+}
+
+function renderProgressAnalysis(stats) {
+  const container = document.getElementById('progressAnalysisContent');
+  if (!container) return;
+
+  const weakAreas = stats.weak_areas || [];
+  const overallProgress = stats.overall_progress || 0;
+
+  container.innerHTML = `
+    <div class="progress-summary">
+      <div class="progress-item">
+        <span class="progress-label">Общий прогресс</span>
+        <div class="progress">
+          <div class="progress-bar bg-info" style="width: ${overallProgress}%">${overallProgress}%</div>
+        </div>
+      </div>
+      ${weakAreas.length > 0 ? `
+        <div class="mt-3">
+          <h6 class="mb-2">Области для улучшения:</h6>
+          ${weakAreas.map(area => `<span class="badge badge-outline-warning me-1">${area}</span>`).join('')}
+        </div>
+      ` : '<p class="text-success mt-3">Отличная работа! 🎉</p>'}
+    </div>
+  `;
+}
+
+// 9. ИСПРАВЛЕННАЯ инициализация - убираем проверку аутентификации
+function initializeAIWidgets() {
+  console.log('Initializing AI widgets...');
+  
+  // Убираем проверку аутентификации - если пользователь на странице, значит авторизован
+  console.log('Starting AI widgets initialization...');
+
+  setTimeout(() => loadExamReadiness(), 100);
+  setTimeout(() => loadRecommendations(), 500);
+  setTimeout(() => loadProgressAnalysis(), 1000);
+  
+  // Инициализируем мини-чат
+  const miniChatInput = document.getElementById('miniChatInput');
+  if (miniChatInput) {
+    miniChatInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMiniChatMessage();
+      }
+    });
+  }
+}
+
+// 10. Запуск при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded - starting AI widgets');
+  setTimeout(initializeAIWidgets, 1000);
+});
+
+// Функция для кнопки обновления
+function refreshExamPrediction() {
+  loadExamReadiness();
+}
+</script>
+
+    <div class="row g-4" id="aiDashboardSection">
+      <!-- Виджет готовности к экзамену -->
+      <div class="col-lg-6 col-md-6 mb-3" data-animate="fadeInLeft">
+        <div class="ai-widget exam-readiness-widget" id="examReadinessWidget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <i class="bi bi-brain text-primary"></i>
+              <h4>{{ t('big_exam_readiness', g.lang)|default('Готовность к BIG экзамену') }}</h4>
+            </div>
+            <div class="widget-actions">
+              <button class="btn btn-sm btn-outline-primary" onclick="refreshExamPrediction()">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="widget-body">
+            <div id="examReadinessContent">
+              <div class="loading-state">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span class="ms-2">{{ t('analyzing_progress', g.lang)|default('Анализируем ваш прогресс...') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Виджет персональных рекомендаций -->
+      <div class="col-lg-6 col-md-6 mb-3" data-animate="fadeInRight">
+        <div class="ai-widget recommendations-widget" id="recommendationsWidget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <i class="bi bi-lightbulb text-warning"></i>
+              <h4>{{ t('personal_recommendations', g.lang)|default('Персональные рекомендации') }}</h4>
+            </div>
+            <div class="widget-actions">
+              <a href="/{{ g.lang }}/ai-assistant/" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-chat-dots"></i> {{ t('details', g.lang)|default('Подробнее') }}
+              </a>
+            </div>
+          </div>
+          
+          <div class="widget-body">
+            <div id="recommendationsContent">
+              <div class="loading-state">
+                <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                <span class="ms-2">{{ t('selecting_recommendations', g.lang)|default('Подбираем рекомендации...') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Второй ряд виджетов -->
+    <div class="row g-4 mt-3" id="aiSecondarySection">
+      <!-- Мини-чат с ИИ -->
+      <div class="col-lg-8 col-md-7 mb-3" data-animate="fadeInLeft">
+        <div class="ai-widget mini-chat-widget" id="miniChatWidget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <i class="bi bi-robot text-success"></i>
+              <h4>{{ t('quick_ai_question', g.lang)|default('Быстрый вопрос к ИИ') }}</h4>
+            </div>
+            <div class="widget-actions">
+              <button class="btn btn-sm btn-outline-success" onclick="toggleMiniChat()">
+                <i class="bi bi-chevron-down" id="miniChatToggle"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="widget-body mini-chat-body" id="miniChatBody" style="display: none;">
+            <div class="mini-chat-messages" id="miniChatMessages">
+              <div class="welcome-message">
+                <div class="ai-message">
+                  <i class="bi bi-robot"></i>
+                  <span>{{ t('ai_greeting', g.lang)|default('Привет! У тебя есть быстрый вопрос по обучению?') }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mini-chat-input">
+              <div class="input-group">
+                <input type="text" 
+                       class="form-control" 
+                       id="miniChatInput" 
+                       placeholder="{{ t('write_question', g.lang)|default('Напишите ваш вопрос...') }}"
+                       maxlength="200">
+                <button class="btn btn-success" onclick="sendMiniChatMessage()">
+                  <i class="bi bi-send"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Виджет прогресс-аналитики -->
+      <div class="col-lg-4 col-md-5 mb-3" data-animate="fadeInRight">
+        <div class="ai-widget progress-analytics-widget" id="progressAnalyticsWidget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <i class="bi bi-graph-up text-info"></i>
+              <h4>{{ t('ai_progress_analysis', g.lang)|default('ИИ Анализ прогресса') }}</h4>
+            </div>
+            <div class="widget-actions">
+              <small class="text-muted" id="lastAnalysisTime">{{ t('analyzing', g.lang)|default('Анализ...') }}</small>
+            </div>
+          </div>
+          
+          <div class="widget-body">
+            <div id="progressAnalyticsContent">
+              <div class="loading-state">
+                <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+                <span class="ms-2">{{ t('analyzing_weak_areas', g.lang)|default('Анализируем слабые области...') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<style>
+/* ===== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ ===== */
+
+/* Исправление отступов hero-секции */
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  background: var(--hero-bg-gradient);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  /* ИСПРАВЛЕНО: использование переменной вместо фиксированного значения */
+  padding-top: calc(var(--header-height) + 2rem);
+  transition: background var(--transition-slow);
+}
+
+/* Остальные стили остаются прежними */
+.features-section {
+  background: var(--bg-secondary);
+}
+
+.platform-features-section {
+  background: var(--bg-primary);
+}
+
+.benefits-section {
+  background: var(--bg-secondary);
+}
+
+.cta-section {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+}
+
+/* ===== НОВЫЕ СТИЛИ ДЛЯ ПЛАТФОРМЕННЫХ ФУНКЦИЙ ===== */
+.platform-feature {
+  text-align: center;
+  padding: 2rem 1rem;
+  transition: all var(--transition-normal);
+  border-radius: var(--radius-lg);
+}
+
+.platform-feature:hover {
+  transform: translateY(-5px);
+  background: var(--glass-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.platform-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+  margin: 0 auto 1.5rem;
+  transition: all var(--transition-normal);
+}
+
+.platform-feature:hover .platform-icon {
+  transform: scale(1.1);
+  box-shadow: 0 10px 25px rgba(62, 205, 193, 0.3);
+}
+
+.platform-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.platform-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ===== CALL TO ACTION СТИЛИ ===== */
+.cta-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-xl);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.cta-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cta-description {
+  font-size: 1.25rem;
+  margin-bottom: 2.5rem;
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cta-buttons .btn-modern {
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+}
+
+.cta-buttons .btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.cta-buttons .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+  .hero-section {
+    /* ИСПРАВЛЕНО: адаптивный отступ для мобильных */
+    padding-top: calc(var(--header-mobile-height, 60px) + 1rem);
+  }
+  
+  .cta-title {
+    font-size: 2rem;
+  }
+  
+  .cta-description {
+    font-size: 1.1rem;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-buttons .btn-modern {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .platform-feature {
+    padding: 1.5rem 1rem;
+  }
+  
+  .platform-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+}
+
+/* Темная тема для новых элементов */
+[data-theme="dark"] .platform-feature:hover {
+  background: var(--glass-bg);
+}
+
+[data-theme="dark"] .cta-card {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ FEATURE CARDS ===== */
+
+/* Основные feature cards в Features Section */
+.feature-card.modern-card {
+  background: rgba(255, 255, 255, 0.95);
+  /* Webkit префиксы для iOS */
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  /* iOS-совместимые transitions */
+  -webkit-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  /* iOS touch optimization */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.feature-card.modern-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  /* iOS совместимые transforms */
+  -webkit-transform: scaleX(0);
+  transform: scaleX(0);
+  -webkit-transition: -webkit-transform 0.4s ease;
+  transition: transform 0.4s ease;
+}
+
+.feature-card.modern-card:hover::before,
+.feature-card.modern-card:active::before {
+  -webkit-transform: scaleX(1);
+  transform: scaleX(1);
+}
+
+.feature-card.modern-card:hover,
+.feature-card.modern-card:active {
+  -webkit-transform: translateY(-8px);
+  transform: translateY(-8px);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+  border-color: rgba(62, 205, 193, 0.3);
+}
+
+.feature-card.modern-card.featured {
+  background: linear-gradient(135deg, rgba(62, 205, 193, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+  border: 2px solid rgba(62, 205, 193, 0.3);
+  -webkit-transform: scale(1.02);
+  transform: scale(1.02);
+}
+
+.feature-card.modern-card.featured:hover,
+.feature-card.modern-card.featured:active {
+  -webkit-transform: translateY(-8px) scale(1.02);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 30px 70px rgba(62, 205, 193, 0.2);
+}
+
+.featured-badge {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background: linear-gradient(135deg, #ff6b6b, #ffa726);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  /* iOS анимация */
+  -webkit-animation: badge-pulse 2s ease-in-out infinite;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@-webkit-keyframes badge-pulse {
+  0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+  50% { -webkit-transform: scale(1.05); transform: scale(1.05); }
+}
+
+@keyframes badge-pulse {
+  0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+  50% { -webkit-transform: scale(1.05); transform: scale(1.05); }
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  border-radius: 20px;
+  display: flex;
+  /* iOS flexbox prefixes */
+  display: -webkit-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  position: relative;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+}
+
+.feature-card:hover .feature-icon,
+.feature-card:active .feature-icon {
+  -webkit-transform: scale(1.1) rotate(5deg);
+  transform: scale(1.1) rotate(5deg);
+}
+
+.knowledge-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.communication-gradient {
+  background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
+  box-shadow: 0 10px 30px rgba(62, 205, 193, 0.3);
+}
+
+.workstation-gradient {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  box-shadow: 0 10px 30px rgba(252, 182, 159, 0.3);
+}
+
+.feature-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  -webkit-transition: color 0.3s ease;
+  transition: color 0.3s ease;
+}
+
+.feature-card:hover .feature-title,
+.feature-card:active .feature-title {
+  color: var(--primary-color);
+}
+
+.feature-description {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.feature-tags {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  -webkit-justify-content: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.tag {
+  background: linear-gradient(135deg, rgba(62, 205, 193, 0.1), rgba(102, 126, 234, 0.1));
+  color: var(--primary-color);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid rgba(62, 205, 193, 0.2);
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  /* iOS touch optimization */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tag:hover,
+.tag:active {
+  background: linear-gradient(135deg, rgba(62, 205, 193, 0.2), rgba(102, 126, 234, 0.2));
+  -webkit-transform: translateY(-2px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);
+}
+
+/* Benefit Cards с iOS оптимизацией */
+.benefit-card {
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  -webkit-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  /* iOS touch optimization */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+.benefit-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(62, 205, 193, 0.1), transparent);
+  -webkit-transition: left 0.6s ease;
+  transition: left 0.6s ease;
+}
+
+.benefit-card:hover::after,
+.benefit-card:active::after {
+  left: 100%;
+}
+
+.benefit-card:hover,
+.benefit-card:active {
+  -webkit-transform: translateY(-6px);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+  border-color: rgba(62, 205, 193, 0.3);
+}
+
+.benefit-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 18px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.8rem;
+  margin: 0 auto 1.5rem;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.benefit-card:hover .benefit-icon,
+.benefit-card:active .benefit-icon {
+  -webkit-transform: scale(1.15) rotate(-5deg);
+  transform: scale(1.15) rotate(-5deg);
+  box-shadow: 0 15px 35px rgba(62, 205, 193, 0.4);
+}
+
+.benefit-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+  -webkit-transition: color 0.3s ease;
+  transition: color 0.3s ease;
+}
+
+.benefit-card:hover .benefit-title,
+.benefit-card:active .benefit-title {
+  color: var(--primary-color);
+}
+
+.benefit-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  position: relative;
+  z-index: 2;
+  font-size: 0.95rem;
+}
+
+/* Hero Section Feature Cards для iOS */
+.app-showcase .feature-cards {
+  display: -webkit-grid;
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.app-showcase .feature-card {
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  /* iOS touch optimization */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-showcase .feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(62, 205, 193, 0.05), rgba(102, 126, 234, 0.05));
+  opacity: 0;
+  -webkit-transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease;
+}
+
+.app-showcase .feature-card:hover::before,
+.app-showcase .feature-card:active::before {
+  opacity: 1;
+}
+
+.app-showcase .feature-card:hover,
+.app-showcase .feature-card:active {
+  -webkit-transform: translateY(-3px);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  border-color: rgba(62, 205, 193, 0.4);
+}
+
+/* iOS специфичные анимации */
+@-webkit-keyframes slideInUp {
+  from {
+    opacity: 0;
+    -webkit-transform: translateY(30px);
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    -webkit-transform: translateY(30px);
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+.feature-card.modern-card,
+.benefit-card {
+  -webkit-animation: slideInUp 0.6s ease-out forwards;
+  animation: slideInUp 0.6s ease-out forwards;
+}
+
+/* iOS fallback для старых версий Safari */
+@supports not (backdrop-filter: blur(20px)) {
+  .feature-card.modern-card,
+  .benefit-card {
+    background: rgba(255, 255, 255, 0.98);
+  }
+  
+  .app-showcase .feature-card {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  
+  [data-theme="dark"] .feature-card.modern-card,
+  [data-theme="dark"] .benefit-card {
+    background: rgba(30, 41, 59, 0.98);
+  }
+}
+
+/* iOS специфичные медиа-запросы */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+  .feature-icon,
+  .benefit-icon {
+    /* Оптимизация для retina дисплеев */
+    -webkit-font-smoothing: antialiased;
+    font-smooth: always;
+  }
+}
+
+/* iPhone безопасная зона */
+@supports (padding: max(0px)) {
+  .feature-card.modern-card,
+  .benefit-card {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+  }
+}
+
+/* iOS адаптивность для мобильных */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  .feature-card.modern-card,
+  .benefit-card {
+    padding: 2rem 1.5rem;
+    /* Улучшенная производительность на iOS */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  .feature-icon,
+  .benefit-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    /* GPU ускорение */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  .feature-title,
+  .benefit-title {
+    font-size: 1.2rem;
+  }
+  
+  .feature-tags {
+    gap: 0.3rem;
+  }
+  
+  .tag {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.8rem;
+  }
+}
+
+/* === AI DASHBOARD SECTION STYLES === */
+.ai-dashboard-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .ai-dashboard-section {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+.ai-section-header {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.ai-subtitle {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ai-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 1rem 0;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ai-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* AI Widgets Styles */
+.ai-widget {
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.ai-widget:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .ai-widget {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);
+}
+
+[data-theme="dark"] .widget-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(51, 65, 85, 0.3) 100%);
+}
+
+.widget-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.widget-title h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.widget-title i {
+  font-size: 1.2rem;
+}
+
+.widget-body {
+  padding: 24px;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  gap: 10px;
+}
+
+/* Exam Readiness Widget */
+.success-probability-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: white;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+.success-high { 
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+.success-medium { 
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+}
+.success-low { 
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+.weak-areas-list {
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.weak-area-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.weak-area-item:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.weak-area-priority {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-high { background: #dc2626; color: white; }
+.priority-medium { background: #d97706; color: white; }
+.priority-low { background: #059669; color: white; }
+
+/* Recommendations Widget */
+.recommendation-item {
+  background: var(--bg-secondary);
+  border-left: 4px solid var(--primary-color);
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 0 8px 8px 0;
+  transition: all 0.2s ease;
+}
+
+.recommendation-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recommendation-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.recommendation-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Mini Chat Widget */
+.mini-chat-body {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 0;
+}
+
+[data-theme="dark"] .mini-chat-body {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.mini-chat-messages {
+  height: 200px;
+  overflow-y: auto;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .mini-chat-messages {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.ai-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.user-message {
+  background: var(--primary-color);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  margin-left: 30px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.mini-chat-input {
+  padding: 20px;
+}
+
+.mini-chat-input .form-control {
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+/* Progress Analytics Widget */
+.analytics-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .analytics-metric {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.analytics-metric:last-child {
+  border-bottom: none;
+}
+
+.metric-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metric-value {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-trend {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.trend-up { background: #dcfce7; color: #166534; }
+.trend-down { background: #fef2f2; color: #991b1b; }
+.trend-stable { background: #e0f2fe; color: #0c4a6e; }
+
+[data-theme="dark"] .trend-up { background: #166534; color: #dcfce7; }
+[data-theme="dark"] .trend-down { background: #991b1b; color: #fef2f2; }
+[data-theme="dark"] .trend-stable { background: #0c4a6e; color: #e0f2fe; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ai-title {
+    font-size: 2rem;
+  }
+  
+  .ai-description {
+    font-size: 1rem;
+  }
+  
+  .widget-header {
+    padding: 16px 20px;
+  }
+  
+  .widget-body {
+    padding: 20px;
+  }
+  
+  .widget-title h4 {
+    font-size: 1rem;
+  }
+  
+  .success-probability-circle {
+    width: 80px;
+    height: 80px;
+    font-size: 1.2rem;
+  }
+  
+  .mini-chat-messages {
+    height: 160px;
+    padding: 16px;
+  }
+  
+  .mini-chat-input {
+    padding: 16px;
+  }
+  
+  /* Дополнительная мобильная адаптация для AI секции */
+  .ai-dashboard-section {
+    padding: 3rem 0;
+  }
+  
+  .ai-section-header {
+    margin-bottom: 2rem;
+  }
+  
+  .ai-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .ai-title {
+    font-size: 1.8rem;
+    margin: 0.5rem 0;
+  }
+  
+  .ai-description {
+    font-size: 0.95rem;
+  }
+  
+  /* Мобильная сетка для виджетов */
+  #aiDashboardSection .col-lg-6,
+  #aiSecondarySection .col-lg-8,
+  #aiSecondarySection .col-lg-4 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 576px) {
+  .ai-dashboard-section {
+    padding: 2rem 0;
+  }
+  
+  .ai-section-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .ai-title {
+    font-size: 1.5rem;
+  }
+  
+  .ai-description {
+    font-size: 0.9rem;
+  }
+  
+  /* Стек виджетов на очень маленьких экранах */
+  #aiDashboardSection,
+  #aiSecondarySection {
+    margin-top: 0 !important;
+  }
+  
+  #aiDashboardSection .row,
+  #aiSecondarySection .row {
+    margin: 0 -8px;
+  }
+  
+  #aiDashboardSection .col-lg-6,
+  #aiSecondarySection .col-lg-8,
+  #aiSecondarySection .col-lg-4 {
+    padding: 0 8px;
+    margin-bottom: 0.8rem;
+  }
+}
+
+/* Анимации появления */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ai-widget {
+  animation: fadeInScale 0.6s ease-out forwards;
+}
+
+/* Исправление отступов hero-секции */
+</style>
+
+{% endblock %}
+
+{% block body_scripts %}
+{{ super() }}
+
+
+<!-- Page-specific optimizations -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize smooth scrolling for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        const headerHeight = document.querySelector('.modern-header')?.offsetHeight || 70;
+        const targetPosition = target.offsetTop - headerHeight - 20;
+        
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+
+  // Reduce animations on mobile for better performance
+  if (window.innerWidth <= 768) {
+    document.documentElement.classList.add('mobile-optimized');
+  }
+  
+  // Animate elements on scroll
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+  
+  // Observe all elements with data-animate attribute
+  document.querySelectorAll('[data-animate]').forEach(el => {
+    observer.observe(el);
+  });
+  
+  // Initialize AI Widgets for authenticated users
+  if (typeof initializeAIWidgets !== 'undefined') {
+    initializeAIWidgets();
+  }
+  
+  // Initialize AI Widgets immediately if they exist
+  if (document.getElementById('examReadinessWidget')) {
+    initializeAIWidgets();
+  }
+});
+
+// ===== AI WIDGETS FUNCTIONALITY =====
+
+  // УДАЛЕНО: дублирующийся блок (все функции уже определены выше)
+
+function renderExamReadiness(prediction) {
+  const container = document.getElementById('examReadinessContent');
+  const probability = Math.round(prediction.success_probability * 100);
+  
+  let probabilityClass = 'success-low';
+  if (probability >= 80) probabilityClass = 'success-high';
+  else if (probability >= 60) probabilityClass = 'success-medium';
+  
+  let weakAreasHTML = '';
+  if (prediction.weak_areas && prediction.weak_areas.length > 0) {
+    weakAreasHTML = `
+      <div class="weak-areas-list">
+        ${prediction.weak_areas.slice(0, 3).map(area => `
+          <div class="weak-area-item">
+            <span>${getAreaDisplayName(area.area || area)}</span>
+            <span class="weak-area-priority priority-${area.priority || 'medium'}">${area.priority || 'medium'}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  
+  const currentLang = window.location.pathname.split('/')[1] || 'ru';
+  
+  container.innerHTML = `
+    <div class="text-center">
+      <div class="success-probability-circle ${probabilityClass}">
+        ${probability}%
+      </div>
+      <p class="mb-3 text-muted">Вероятность успеха на BIG экзамене</p>
+    </div>
+    
+    ${weakAreasHTML ? `
+      <div class="mt-3">
+        <h6 class="mb-2">Области для улучшения:</h6>
+        ${weakAreasHTML}
+      </div>
+    ` : '<p class="text-success text-center">Отличная подготовка! 🎉</p>'}
+    
+    <div class="text-center mt-3">
+      <a href="/${currentLang}/ai-assistant/" class="btn btn-primary btn-sm">
+        Подробный анализ
+      </a>
+    </div>
+  `;
+}
+
+// Загрузка рекомендаций
+// 6. Исправленная загрузка рекомендаций
+async function loadRecommendations() {
+  const container = document.getElementById('recommendationsContent');
+  if (!container) {
+    console.warn('recommendationsContent container not found');
+    return;
+  }
+  
+  try {
+    container.innerHTML = getLoadingHTML('Подбираем рекомендации...');
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    
+    const data = await makeAIRequest(`/${currentLang}/ai-assistant/recommend-content`, {
+      limit: 3
+    });
+    
+    if (data.success && data.recommendations) {
+      renderRecommendations(data.recommendations);
+    } else {
+      throw new Error(data.error || 'No recommendations data');
+    }
+    
+  } catch (error) {
+    console.error('Recommendations error:', error);
+    container.innerHTML = `
+      <div class="text-center py-3">
+        <div class="alert alert-info">
+          <h6>💡 Персональные рекомендации</h6>
+          <p>Рекомендации появятся после изучения первых материалов</p>
+          <a href="/${window.location.pathname.split('/')[1] || 'ru'}/learning-map" class="btn btn-outline-primary btn-sm">
+            Начать обучение
+          </a>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function renderRecommendations(recommendations) {
+  const container = document.getElementById('recommendationsContent');
+  
+  if (!recommendations || recommendations.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Пока нет персональных рекомендаций</p>';
+    return;
+  }
+  
+  container.innerHTML = recommendations.slice(0, 3).map(rec => `
+    <div class="recommendation-item">
+      <div class="recommendation-title">${rec.title || 'Рекомендация'}</div>
+      <p class="recommendation-description">${rec.description || rec.text || 'Персональная рекомендация для вас'}</p>
+    </div>
+  `).join('');
+}
+
+// Загрузка аналитики прогресса
+// 7. Исправленная функция анализа прогресса
+async function loadProgressAnalytics() {
+  const container = document.getElementById('progressAnalyticsContent');
+  if (!container) {
+    console.warn('progressAnalyticsContent container not found');
+    return;
+  }
+  
+  try {
+    container.innerHTML = getLoadingHTML('Анализируем слабые области...');
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    
+    // Попробуем получить данные прогресса из эндпоинта статистики
+    const response = await fetch(`/${currentLang}/ai-assistant/progress-stats`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.success) {
+      renderProgressAnalysis(data.stats);
+    } else {
+      throw new Error('No progress data');
+    }
+    
+  } catch (error) {
+    console.error('Progress analysis error:', error);
+    container.innerHTML = `
+      <div class="text-center py-3">
+        <div class="alert alert-info">
+          <h6>📈 Анализ прогресса</h6>
+          <p>Детальный анализ появится после прохождения уроков и тестов</p>
+          <div class="progress mt-3">
+            <div class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// 8. Функция рендеринга анализа прогресса
+function renderProgressAnalysis(stats) {
+  const container = document.getElementById('progressAnalyticsContent');
+  if (!container) return;
+
+  const weakAreas = stats.weak_areas || [];
+  const overallProgress = stats.overall_progress || 0;
+
+  container.innerHTML = `
+    <div class="progress-summary">
+      <div class="progress-item">
+        <span class="progress-label">Общий прогресс</span>
+        <div class="progress">
+          <div class="progress-bar bg-info" style="width: ${overallProgress}%">${overallProgress}%</div>
+        </div>
+      </div>
+      
+      ${weakAreas.length > 0 ? `
+        <div class="mt-3">
+          <h6 class="mb-2">Области для улучшения:</h6>
+          ${weakAreas.map(area => `
+            <span class="badge badge-outline-warning me-1">${area}</span>
+          `).join('')}
+        </div>
+      ` : '<p class="text-success mt-3">Отличная работа! 🎉</p>'}
+    </div>
+  `;
+}
+
+function renderProgressAnalytics(analytics) {
+  const container = document.getElementById('progressAnalyticsContent');
+  
+  container.innerHTML = `
+    <div class="analytics-metric">
+      <span class="metric-label">Регулярность обучения</span>
+      <span class="metric-value">
+        ${Math.round(analytics.study_consistency * 100)}%
+        <span class="metric-trend trend-up">↑</span>
+      </span>
+    </div>
+    <div class="analytics-metric">
+      <span class="metric-label">Среднее время сессии</span>
+      <span class="metric-value">${analytics.average_session_time} мин</span>
+    </div>
+    <div class="analytics-metric">
+      <span class="metric-label">Улучшение слабых областей</span>
+      <span class="metric-value">
+        +${Math.round(analytics.weak_areas_improvement * 100)}%
+        <span class="metric-trend trend-up">↗</span>
+      </span>
+    </div>
+  `;
+  
+  const timeElement = document.getElementById('lastAnalysisTime');
+  if (timeElement) {
+    timeElement.textContent = 'Обновлено сейчас';
+  }
+}
+
+// Мини-чат функциональность
+// 9. Безопасная инициализация мини-чата
+function setupMiniChat() {
+  const input = document.getElementById('miniChatInput');
+  if (input) {
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMiniChatMessage();
+      }
+    });
+  }
+}
+
+function toggleMiniChat() {
+  const body = document.getElementById('miniChatBody');
+  const toggle = document.getElementById('miniChatToggle');
+  
+  if (!body || !toggle) return;
+  
+  if (aiWidgets.miniChatExpanded) {
+    body.style.display = 'none';
+    toggle.className = 'bi bi-chevron-down';
+    aiWidgets.miniChatExpanded = false;
+  } else {
+    body.style.display = 'block';
+    toggle.className = 'bi bi-chevron-up';
+    aiWidgets.miniChatExpanded = true;
+  }
+}
+
+async function sendMiniChatMessageImpl() {
+  const input = document.getElementById('miniChatInput');
+  const messages = document.getElementById('miniChatMessages');
+  
+  if (!input || !messages) return;
+  
+  const message = input.value.trim();
+  if (!message) return;
+  
+  // Добавляем сообщение пользователя
+  const userMessage = document.createElement('div');
+  userMessage.className = 'user-message';
+  userMessage.textContent = message;
+  messages.appendChild(userMessage);
+  
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+  
+  try {
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    
+    const data = await makeAIRequest(`/${currentLang}/ai-assistant/chat`, {
+      message: message,
+      mini_chat: true 
+    });
+    
+    if (data.success && data.response) {
+      const aiMessage = document.createElement('div');
+      aiMessage.className = 'ai-message';
+      aiMessage.innerHTML = `<i class="bi bi-robot"></i><span>${data.response}</span>`;
+      messages.appendChild(aiMessage);
+    } else {
+      throw new Error(data.error || 'No response from AI');
+    }
+    
+  } catch (error) {
+    console.error('Mini chat error:', error);
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'ai-message error';
+    errorMessage.innerHTML = `<i class="bi bi-exclamation-triangle"></i><span>Извините, AI временно недоступен</span>`;
+    messages.appendChild(errorMessage);
+  }
+  
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// Вспомогательные функции
+function getLoadingHTML(text) {
+  return `
+    <div class="loading-state">
+      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+      <span class="ms-2">${text}</span>
+    </div>
+  `;
+}
+
+function getErrorHTML(text) {
+  return `
+    <div class="text-center text-muted py-3">
+      <i class="bi bi-exclamation-triangle mb-2"></i>
+      <p class="mb-0">${text}</p>
+    </div>
+  `;
+}
+
+function getAreaDisplayName(areaKey) {
+  const areaNames = {
+    'clinical_knowledge': 'Клинические знания',
+    'dutch_proficiency': 'Голландский язык',
+    'practical_skills': 'Практические навыки',
+    'communication': 'Коммуникация',
+    'ethics_law': 'Этика и право',
+    'anatomy': 'Анатомия',
+    'pathology': 'Патология',
+    'treatment': 'Лечение'
+  };
+  
+  return areaNames[areaKey] || areaKey;
+}
+
+// ===== ИСПРАВЛЕННЫЕ JAVASCRIPT ФУНКЦИИ ДЛЯ AI ВИДЖЕТОВ =====
+
+// 1. Улучшенная функция получения CSRF токена
+function getCSRFToken() {
+  // Попробуем несколько способов получения CSRF токена
+  let token = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+  
+  if (!token) {
+    token = document.querySelector('input[name=csrf_token]')?.value;
+  }
+  
+  if (!token) {
+    // Если токена нет, попробуем получить из cookies
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'csrf_token') {
+        token = value;
+        break;
+      }
+    }
+  }
+  
+  console.log('CSRF Token:', token ? 'Found' : 'Not found');
+  return token || '';
+}
+
+// 2. Улучшенная функция для AI запросов с обработкой ошибок
+async function makeAIRequest(url, data = {}, options = {}) {
+  const defaultOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options
+  };
+
+  // Добавляем CSRF токен только если это POST запрос
+  if (defaultOptions.method === 'POST') {
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      defaultOptions.headers['X-CSRFToken'] = csrfToken;
+    }
+  }
+
+  if (data && Object.keys(data).length > 0) {
+    defaultOptions.body = JSON.stringify(data);
+  }
+
+  try {
+    console.log('Making request to:', url);
+    const response = await fetch(url, defaultOptions);
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    console.log('Response data:', responseData);
+    
+    return responseData;
+  } catch (error) {
+    console.error('AI Request error:', error);
+    throw error;
+  }
+}
+
+// ДУБЛИРУЮЩИЕ ФУНКЦИИ УДАЛЕНЫ - используются версии выше
+</script>
+
+<script>
+// ===== МОБИЛЬНАЯ ОПТИМИЗАЦИЯ ДЛЯ ИИ ВИДЖЕТОВ =====
+
+// Определение мобильного устройства
+function isMobileDevice() {
+  return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Мобильная оптимизация для ИИ виджетов
+function optimizeForMobile() {
+  if (!isMobileDevice()) return;
+  
+  // Уменьшение частоты обновлений на мобильных
+  const originalSetInterval = window.setInterval;
+  window.setInterval = function(fn, delay) {
+    // Увеличиваем интервалы на мобильных для экономии батареи
+    const mobileDelay = delay > 1000 ? delay * 1.5 : delay;
+    return originalSetInterval(fn, mobileDelay);
+  };
+  
+  // Оптимизация анимаций для мобильных
+  const aiWidgets = document.querySelectorAll('.ai-widget');
+  aiWidgets.forEach(widget => {
+    // Упрощение анимаций на мобильных
+    widget.style.transition = 'all 0.2s ease';
+  });
+  
+  // Добавление touch классов
+  document.body.classList.add('mobile-optimized');
+  
+  // Lazy loading для виджетов на мобильных
+  if ('IntersectionObserver' in window) {
+    const lazyLoadObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const widget = entry.target;
+          const widgetId = widget.id;
+          
+          // Загружаем контент виджета только когда он появляется в viewport
+          switch(widgetId) {
+            case 'examReadinessWidget':
+              setTimeout(() => loadExamReadiness(), 100);
+              break;
+            case 'recommendationsWidget':
+              setTimeout(() => loadRecommendations(), 200);
+              break;
+            case 'progressAnalyticsWidget':
+              setTimeout(() => loadProgressAnalytics(), 300);
+              break;
+          }
+          
+          lazyLoadObserver.unobserve(widget);
+        }
+      });
+    }, {
+      rootMargin: '50px'
+    });
+    
+    // Наблюдаем за виджетами только на мобильных
+    aiWidgets.forEach(widget => {
+      lazyLoadObserver.observe(widget);
+    });
+  }
+}
+
+// Touch события для мобильных
+function setupMobileTouch() {
+  if (!isMobileDevice()) return;
+  
+  // Улучшение touch взаимодействия для кнопок
+  document.querySelectorAll('.ai-widget .btn').forEach(btn => {
+    btn.addEventListener('touchstart', function() {
+      this.style.transform = 'scale(0.95)';
+    });
+    
+    btn.addEventListener('touchend', function() {
+      this.style.transform = 'scale(1)';
+    });
+  });
+  
+  // Предотвращение двойного тапа для zoom
+  document.addEventListener('touchend', function(e) {
+    if (e.target.closest('.ai-widget')) {
+      e.preventDefault();
+    }
+  });
+}
+
+// Мобильная адаптация мини-чата
+function optimizeMiniChatForMobile() {
+  if (!isMobileDevice()) return;
+  
+  const miniChatInput = document.getElementById('miniChatInput');
+  const miniChatMessages = document.getElementById('miniChatMessages');
+  
+  if (miniChatInput) {
+    // Автоматическое скрытие клавиатуры после отправки
+    miniChatInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        setTimeout(() => {
+          this.blur();
+        }, 100);
+      }
+    });
+    
+    // Адаптация размера textarea на мобильных
+    miniChatInput.addEventListener('focus', function() {
+      if (miniChatMessages) {
+        miniChatMessages.style.height = '100px';
+      }
+    });
+    
+    miniChatInput.addEventListener('blur', function() {
+      if (miniChatMessages) {
+        miniChatMessages.style.height = '120px';
+      }
+    });
+  }
+}
+
+// Оптимизация производительности на мобильных
+function optimizePerformance() {
+  if (!isMobileDevice()) return;
+  
+  // Отключение hover эффектов на touch устройствах
+  const style = document.createElement('style');
+  style.textContent = `
+    @media (hover: none) {
+      .ai-widget:hover {
+        transform: none !important;
+      }
+      .recommendation-item:hover {
+        transform: none !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Уменьшение частоты scroll событий
+  let scrollTimeout;
+  window.addEventListener('scroll', function() {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+      // Обработка scroll события с задержкой
+    }, 100);
+  }, { passive: true });
+}
+
+// УДАЛЕНО: дублирующаяся инициализация (уже определена выше)
+
+// Функция проверки здоровья AI системы
+async function checkAIHealth() {
+  try {
+    const currentLang = window.location.pathname.split('/')[1] || 'ru';
+    const response = await fetch(`/${currentLang}/ai-assistant/health`);
+    const data = await response.json();
+    
+    console.log('AI Health Check:', data);
+    return data.ai_system === 'operational';
+  } catch (error) {
+    console.error('Health check failed:', error);
+    return false;
+  }
+}
+
+// Инициализация мобильных оптимизаций
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM Content Loaded - starting initialization');
+  
+  // Инициализация AI виджетов
+  setTimeout(() => {
+    initializeAIWidgets();
+  }, 2000);
+  
+  // Мобильные оптимизации
+  if (isMobileDevice()) {
+    optimizeForMobile();
+    setupMobileTouch();
+    optimizeMiniChatForMobile();
+    optimizePerformance();
+    
+    // Добавление мета-тега для мобильных браузеров
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
+  }
+});
+
+// Fallback для старых браузеров
+if (window.addEventListener) {
+  window.addEventListener('load', function() {
+    setTimeout(initializeAIWidgets, 3000);
+  });
+} else if (window.attachEvent) {
+  window.attachEvent('onload', function() {
+    setTimeout(initializeAIWidgets, 3000);
+  });
+}
+
+// Обработка изменения ориентации
+window.addEventListener('orientationchange', function() {
+  setTimeout(function() {
+    if (isMobileDevice()) {
+      // Пересчет размеров виджетов при смене ориентации
+      const aiWidgets = document.querySelectorAll('.ai-widget');
+      aiWidgets.forEach(widget => {
+        widget.style.height = 'auto';
+      });
+    }
+  }, 100);
+});
+</script>
+{% endblock %}

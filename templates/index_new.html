@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+
+{# --- SEO Meta Tags --- #}
+{% block title %}{{ t('seo_title', g.lang) }}{% endblock %}
+{% block meta_description %}{{ t('seo_description', g.lang) }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<!-- CSRF Token for AJAX requests -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="user-authenticated" content="{{ 'true' if current_user.is_authenticated else 'false' }}">
+<meta name="current-language" content="{{ g.lang }}">
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<!-- НОВАЯ СИСТЕМА ТЕМ - ЕДИНСТВЕННАЯ ТОЧКА ПОДКЛЮЧЕНИЯ -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
+
+<!-- Google Fonts для лучшей типографики -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ОПТИМИЗИРОВАННЫЕ СТИЛИ С НОВОЙ СИСТЕМОЙ ТЕМ -->
+<style>
+/* ===== СОВРЕМЕННАЯ ШАПКА С ТЕМАМИ ===== */
+.modern-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+  height: var(--header-height) !important;
+  background: var(--header-bg) !important;
+  backdrop-filter: var(--glass-blur, blur(10px)) !important;
+  border-bottom: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-md) !important;
+  transition: all var(--transition-speed) ease !important;
+}
+
+.modern-header .navbar {
+  padding: var(--space-sm) 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.modern-header .navbar .container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: var(--content-max-width) !important;
+  margin: 0 auto !important;
+  padding: 0 var(--space-lg) !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-brand img {
+  height: 40px !important;
+  width: auto !important;
+}
+
+.modern-header .navbar-collapse {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-nav {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  margin-left: auto !important;
+  height: 100% !important;
+}
+
+.modern-header .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  padding: var(--space-sm) var(--space-md) !important;
+  color: var(--theme-text) !important;
+  text-decoration: none !important;
+  border-radius: var(--border-radius) !important;
+  transition: all var(--transition-speed) ease !important;
+}
+
+.modern-header .nav-link:hover {
+  background: var(--theme-secondary) !important;
+  color: var(--primary) !important;
+}
+
+.modern-header .dropdown-toggle,
+.modern-header .btn {
+  display: flex !important;
+  align-items: center !important;
+  padding: var(--space-sm) var(--space-md) !important;
+  border-radius: var(--border-radius) !important;
+  border: 1px solid var(--theme-border) !important;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  text-decoration: none !important;
+  transition: all var(--transition-speed) ease !important;
+}
+
+.modern-header .dropdown-toggle:hover,
+.modern-header .btn:hover {
+  background: var(--theme-secondary) !important;
+  box-shadow: var(--theme-shadow-md) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 992px) {
+  .modern-header {
+    height: 60px !important;
+  }
+  
+  .modern-header .navbar-brand img {
+    height: 32px !important;
+  }
+  
+  .modern-header .navbar-toggler {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+    padding: var(--space-xs) !important;
+  }
+  
+  .modern-header .navbar-collapse {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: var(--theme-surface) !important;
+    backdrop-filter: var(--glass-blur, blur(20px)) !important;
+    border-radius: 0 0 var(--border-radius-xl) var(--border-radius-xl) !important;
+    padding: var(--space-md) !important;
+    box-shadow: var(--theme-shadow-lg) !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    height: auto !important;
+  }
+}
+
+/* ===== КОНТЕНТ С ТЕМАМИ ===== */
+.main-content {
+  margin-top: 0 !important;
+  padding-top: var(--header-height) !important;
+  background: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+  min-height: 100vh !important;
+}
+
+/* ===== СЕКЦИИ С АДАПТАЦИЕЙ ПОД ТЕМЫ ===== */
+section {
+  display: block !important;
+  opacity: 1 !important;
+  background: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+  padding: var(--space-2xl) 0 !important;
+}
+
+/* Герой секция */
+.hero-section {
+  background: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+  padding: var(--space-2xl) 0 !important;
+  min-height: 80vh !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Карточки */
+.card,
+.feature-card,
+.stats-card,
+.module-card {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: var(--border-radius-lg) !important;
+  box-shadow: var(--theme-shadow-md) !important;
+  transition: all var(--transition-speed) ease !important;
+  padding: var(--space-lg) !important;
+}
+
+.card:hover,
+.feature-card:hover,
+.stats-card:hover,
+.module-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--theme-shadow-lg) !important;
+  border-color: var(--primary) !important;
+}
+
+/* Кнопки */
+.btn-primary {
+  background: var(--primary) !important;
+  color: white !important;
+  border: none !important;
+  padding: var(--space-sm) var(--space-lg) !important;
+  border-radius: var(--border-radius) !important;
+  font-weight: 500 !important;
+  transition: all var(--transition-speed) ease !important;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3) !important;
+}
+
+.btn-secondary {
+  background: var(--secondary) !important;
+  color: white !important;
+  border: none !important;
+  padding: var(--space-sm) var(--space-lg) !important;
+  border-radius: var(--border-radius) !important;
+  font-weight: 500 !important;
+  transition: all var(--transition-speed) ease !important;
+}
+
+.btn-outline {
+  background: transparent !important;
+  color: var(--theme-text) !important;
+  border: 1px solid var(--theme-border) !important;
+  padding: var(--space-sm) var(--space-lg) !important;
+  border-radius: var(--border-radius) !important;
+  font-weight: 500 !important;
+  transition: all var(--transition-speed) ease !important;
+}
+
+.btn-outline:hover {
+  background: var(--theme-surface) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+/* Типографика */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--theme-text) !important;
+}
+
+p, span, div {
+  color: var(--theme-text-secondary) !important;
+}
+
+.text-muted {
+  color: var(--theme-text-muted) !important;
+}
+
+/* Градиентные фоны для категорий */
+.knowledge-bg {
+  background: var(--knowledge-gradient) !important;
+}
+
+.communication-bg {
+  background: var(--communication-gradient) !important;
+}
+
+.preclinical-bg {
+  background: var(--preclinical-gradient) !important;
+}
+
+.workstation-bg {
+  background: var(--workstation-gradient) !important;
+}
+
+/* Анимации появления */
+.fade-in {
+  animation: fadeIn var(--transition-speed) ease !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Статистика */
+.stats-number {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  color: var(--primary) !important;
+  line-height: 1 !important;
+}
+
+.stats-label {
+  color: var(--theme-text-muted) !important;
+  font-size: 0.9rem !important;
+  margin-top: var(--space-xs) !important;
+}
+
+/* Формы */
+.form-control {
+  background: var(--input-bg) !important;
+  color: var(--theme-text) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: var(--border-radius) !important;
+  padding: var(--space-sm) var(--space-md) !important;
+  transition: all var(--transition-speed) ease !important;
+}
+
+.form-control:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.1) !important;
+  background: var(--theme-surface) !important;
+}
+
+/* Прогресс бары */
+.progress {
+  background: var(--theme-border) !important;
+  border-radius: var(--border-radius) !important;
+  overflow: hidden !important;
+  height: 8px !important;
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, var(--primary), var(--secondary)) !important;
+  transition: width var(--transition-speed) ease !important;
+}
+
+/* Загрузчики */
+.spinner-border {
+  color: var(--primary) !important;
+}
+
+/* Алерты */
+.alert-success {
+  background: rgba(46, 204, 113, 0.1) !important;
+  color: var(--success) !important;
+  border: 1px solid var(--success) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+.alert-warning {
+  background: rgba(243, 156, 18, 0.1) !important;
+  color: var(--warning) !important;
+  border: 1px solid var(--warning) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+.alert-danger {
+  background: rgba(231, 76, 60, 0.1) !important;
+  color: var(--danger) !important;
+  border: 1px solid var(--danger) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+/* Улучшения для gradient темы */
+[data-theme="gradient"] .card,
+[data-theme="gradient"] .feature-card,
+[data-theme="gradient"] .stats-card,
+[data-theme="gradient"] .module-card {
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+}
+
+[data-theme="gradient"] .modern-header {
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Переключатель тем -->
+{% include 'includes/_theme_switcher.html' %}
+
+<!-- Основной контент страницы здесь будет из оригинального файла -->
+<main class="main-content">
+    <section class="hero-section fade-in">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">
+                        {{ t('hero_title', g.lang) }}
+                    </h1>
+                    <p class="lead mb-4">
+                        {{ t('hero_subtitle', g.lang) }}
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="{{ url_for('auth.register') }}" class="btn-primary">
+                            {{ t('get_started', g.lang) }}
+                        </a>
+                        <a href="{{ url_for('main_bp.about') }}" class="btn-outline">
+                            {{ t('learn_more', g.lang) }}
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image">
+                        <img src="{{ url_for('static', filename='images/hero-dental.png') }}" 
+                             alt="Dental Academy" 
+                             class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Статистика -->
+    <section class="stats-section fade-in">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <div class="stats-number">1000+</div>
+                        <div class="stats-label">{{ t('students', g.lang) }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <div class="stats-number">50+</div>
+                        <div class="stats-label">{{ t('courses', g.lang) }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <div class="stats-number">95%</div>
+                        <div class="stats-label">{{ t('success_rate', g.lang) }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <div class="stats-number">24/7</div>
+                        <div class="stats-label">{{ t('support', g.lang) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Модули обучения -->
+    <section class="modules-section fade-in">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center mb-5">
+                    <h2 class="display-5 fw-bold mb-4">{{ t('learning_modules', g.lang) }}</h2>
+                    <p class="lead">{{ t('modules_description', g.lang) }}</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="module-card knowledge-bg">
+                        <div class="module-icon">
+                            <i class="bi bi-book fs-1"></i>
+                        </div>
+                        <h5 class="mt-3">{{ t('knowledge_module', g.lang) }}</h5>
+                        <p class="text-muted">{{ t('knowledge_description', g.lang) }}</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" style="width: 75%"></div>
+                        </div>
+                        <a href="{{ url_for('learning.modules_list') }}" class="btn-outline w-100">
+                            {{ t('start_learning', g.lang) }}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="module-card communication-bg">
+                        <div class="module-icon">
+                            <i class="bi bi-chat-dots fs-1"></i>
+                        </div>
+                        <h5 class="mt-3">{{ t('communication_module', g.lang) }}</h5>
+                        <p class="text-muted">{{ t('communication_description', g.lang) }}</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" style="width: 60%"></div>
+                        </div>
+                        <a href="{{ url_for('learning.modules_list') }}" class="btn-outline w-100">
+                            {{ t('start_learning', g.lang) }}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="module-card preclinical-bg">
+                        <div class="module-icon">
+                            <i class="bi bi-tools fs-1"></i>
+                        </div>
+                        <h5 class="mt-3">{{ t('preclinical_module', g.lang) }}</h5>
+                        <p class="text-muted">{{ t('preclinical_description', g.lang) }}</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" style="width: 45%"></div>
+                        </div>
+                        <a href="{{ url_for('learning.modules_list') }}" class="btn-outline w-100">
+                            {{ t('start_learning', g.lang) }}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="module-card workstation-bg">
+                        <div class="module-icon">
+                            <i class="bi bi-laptop fs-1"></i>
+                        </div>
+                        <h5 class="mt-3">{{ t('workstation_module', g.lang) }}</h5>
+                        <p class="text-muted">{{ t('workstation_description', g.lang) }}</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" style="width: 30%"></div>
+                        </div>
+                        <a href="{{ url_for('learning.modules_list') }}" class="btn-outline w-100">
+                            {{ t('start_learning', g.lang) }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Инициализация анимаций
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления элементов
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+            }
+        });
+    });
+
+    document.querySelectorAll('section').forEach(section => {
+        observer.observe(section);
+    });
+    
+    // Анимация прогресс-баров
+    setTimeout(() => {
+        document.querySelectorAll('.progress-bar').forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            
+            setTimeout(() => {
+                bar.style.transition = 'width 1s ease';
+                bar.style.width = width;
+            }, 500);
+        });
+    }, 1000);
+});
+</script>
+{% endblock %} 

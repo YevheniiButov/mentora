@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" {% if is_rtl_language(lang) %}dir="rtl"{% endif %}>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    
+    <!-- 🛡️ ПРОСТАЯ ЗАЩИТА КОНТЕНТА -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-touch-fullscreen" content="yes">
+    
+    <title>{% block title %}{{ t('dental_academy', lang) }}{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile/mobile-app.css') }}">
+    
+    <!-- 🛡️ ПРОСТАЯ ЗАЩИТА -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/simple-protection.css') }}">
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Обеспечиваем отступы для контента */
+        .mobile-content {
+            margin-top: 80px; /* Отступ от верхней навигации */
+            margin-bottom: 90px; /* Отступ от нижней навигации */
+            padding: 1.5rem;
+            min-height: calc(100vh - 170px);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .mobile-content.with-progress {
+            margin-top: 120px; /* Больше отступа если есть прогресс бар */
+        }
+
+        @media (max-width: 480px) {
+            .mobile-content {
+                padding: 1rem;
+                margin-bottom: 85px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light" class="protected-content">
+    
+    <!-- Новая система навигации -->
+    {% if nav_config %}
+        {% set show_bottom_nav = nav_config.show_bottom_nav %}
+        {% set show_back_button = nav_config.show_back_button %}
+        {% set show_profile_button = nav_config.show_profile_button %}
+        {% set show_settings_button = nav_config.show_settings_button %}
+        {% set show_language_selector = nav_config.show_language_selector %}
+        {% set show_progress = nav_config.show_progress %}
+        {% set page_title = nav_config.page_title %}
+        {% set breadcrumbs = nav_config.breadcrumbs %}
+        {% set show_logo = nav_config.show_logo %}
+        {% set progress_data = nav_config.get('progress_data') %}
+    {% else %}
+        <!-- Значения по умолчанию если nav_config не передан -->
+        {% set show_bottom_nav = true %}
+        {% set show_back_button = false %}
+        {% set show_profile_button = true %}
+        {% set show_settings_button = true %}
+        {% set show_language_selector = true %}
+        {% set show_progress = false %}
+        {% set page_title = '' %}
+        {% set breadcrumbs = [] %}
+        {% set show_logo = false %}
+        {% set progress_data = none %}
+    {% endif %}
+    
+    {% include 'components/mobile_navigation.html' %}
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main class="mobile-content protected-content {% if nav_config and nav_config.show_progress %}with-progress{% endif %}" id="mainContent">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/mobile/mobile-app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile/navigation.js') }}"></script>
+    
+    <!-- 🛡️ ПРОСТАЯ ЗАЩИТА -->
+    <script src="{{ url_for('static', filename='js/simple-protection.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // 🛡️ ПРОСТАЯ ИНИЦИАЛИЗАЦИЯ
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработка тач-событий для мобильных устройств
+            document.addEventListener('touchstart', function() {}, { passive: true });
+            
+            // Предотвращение двойного тапа для зума
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            console.log('✅ Dental Academy - Простая защита активирована');
+        });
+    </script>
+</body>
+</html> 

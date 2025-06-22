@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>{{ title }}</h4>
+                    <span class="quiz-progress">Задание <span id="current-question">1</span> из <span id="total-questions">0</span></span>
+                </div>
+                <div class="card-body">
+                    <div class="xray-container"
+                         id="xrayContainer"
+                         data-quiz-items='{{ quiz_items | tojson | safe }}'
+                         style="position: relative; max-width: 100%; overflow: auto;">
+                        <canvas id="xrayCanvas" style="cursor: crosshair;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Задание</h5>
+                </div>
+                <div class="card-body">
+                    <div id="task-description" class="mb-3">Загрузка задания...</div>
+                    <div id="task-result" class="alert d-none"></div>
+                    <button id="next-task-btn" class="btn btn-primary">Следующее задание</button>
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Статистика</h5>
+                </div>
+                <div class="card-body">
+                    <p>Правильных ответов: <span id="correct-count">0</span></p>
+                    <p>Всего попыток: <span id="attempts-count">0</span></p>
+                    <div class="progress mt-3">
+                        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const canvas = document.getElementById('xrayCanvas');
+const ctx = canvas.getContext('2d');
+const container = document.getElementById('xrayContainer');
+const quizItems = JSON.parse(container.dataset.quizItems);
+
+let currentItemIndex = 0;
+let currentTaskIndex = 0;
+let correctAnswers = 0;
+let totalAttempts = 0;
+let currentAnswered = false;
+let img = new Image();
+
+function loadQuestion(index) {
+    if (index >= quizItems.length) {
+        alert("Викторина завершена");
+        return;
+    }
+
+    const item = quizItems[index];
+    const imagePath = "/static/xray/" + item.filename;
+    img.src = imagePath;
+    img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        drawImage();
+        showTask(item.tasks[0]);
+    };
+
+    document.getElementById('task-result').classList.add('d-none');
+    currentAnswered = false;
+    document.getElementById('task-description').innerText = item.tasks[0].description;
+    document.getElementById('current-question').innerText = index + 1;
+    updateProgressBar();
+}
+
+canvas.addEventListener('click', (e) => {
+    if (currentAnswered || currentItemIndex >= quizItems.length) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const currentItem = quizItems[currentItemIndex];
+    const task = currentItem.tasks[currentTaskIndex];
+    const box = currentItem.boxes[task.target_region];
+
+    totalAttempts++;
+    const correct = isPointInBox(x, y, box);
+    if (correct) correctAnswers++;
+
+    showResult(correct, box);
+    currentAnswered = true;
+    updateProgressBar();
+});
+
+document.getElementById('next-task-btn').addEventListener('click', () => {
+    if (currentAnswered) {
+        currentItemIndex++;
+        currentTaskIndex = 0;
+        loadQuestion(currentItemIndex);
+    }
+});
+
+function drawImage() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+}
+
+function drawBox(box, color = 'rgba(255,0,0,0.6)', lineWidth = 2) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeRect(box.x, box.y, box.w, box.h);
+    if (box.label) {
+        ctx.fillStyle = color;
+        ctx.font = '14px Arial';
+        ctx.fillText(box.label, box.x, box.y - 5);
+    }
+}
+
+function isPointInBox(x, y, box) {
+    return x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h;
+}
+
+function showResult(success, box) {
+    drawImage();
+    drawBox(box, success ? 'rgba(0,255,0,0.6)' : 'rgba(255,0,0,0.6)', 3);
+    const resultBox = document.getElementById('task-result');
+    resultBox.className = success ? 'alert alert-success' : 'alert alert-danger';
+    resultBox.innerText = success ? 'Правильно!' : 'Неправильно.';
+    resultBox.classList.remove('d-none');
+}
+
+function showTask(task) {
+    document.getElementById('task-description').innerText = task.description;
+}
+
+function updateProgressBar() {
+    const percent = totalAttempts > 0 ? (correctAnswers / totalAttempts) * 100 : 0;
+    const bar = document.getElementById('progress-bar');
+    bar.style.width = percent + '%';
+    bar.innerText = Math.round(percent) + '%';
+    bar.setAttribute('aria-valuenow', percent);
+    document.getElementById('total-questions').innerText = quizItems.length;
+}
+
+// Инициализация
+loadQuestion(currentItemIndex);
+</script>
+{% endblock %}

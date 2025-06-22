@@ -1,0 +1,263 @@
+{# templates/login.html #}
+{% extends "base.html" %}
+{# Импортируем макросы Bootstrap для форм, если вы их используете, иначе можно убрать #}
+{# {% import 'bootstrap/wtf.html' as wtf %} #}
+
+{# --- SEO --- #}
+{% block title %}{% if lang == 'ru' %}Вход - Become a Tandarts{% else %}Login - Become a Tandarts{% endif %}{% endblock %}
+{% block meta_description %}{% if lang == 'ru' %}Войдите в свой аккаунт на платформе Become a Tandarts для доступа к учебным материалам и тестам.{% else %}Login to your Become a Tandarts account to access learning materials and tests.{% endif %}{% endblock %}
+{# --- End SEO --- #}
+
+{% block styles %}
+{{ super() }}
+<style>
+  /* Стили для страницы входа */
+  #login-page-content {
+    position: relative;
+    min-height: calc(100vh - 120px);
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  /* Плавающие фоновые элементы */
+  .login-floating-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.7;
+    z-index: 0;
+    pointer-events: none;
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+  }
+  
+  .login-shape-1 {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(90deg, rgba(62, 205, 193, 0.6), rgba(62, 205, 193, 0.2));
+    top: -50px;
+    left: -150px;
+    animation: float-shape-1 25s infinite alternate ease-in-out;
+    box-shadow: 0 0 50px rgba(62, 205, 193, 0.3);
+  }
+  
+  .login-shape-2 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(90deg, rgba(108, 92, 231, 0.5), rgba(108, 92, 231, 0.15));
+    bottom: -100px;
+    right: -100px;
+    animation: float-shape-2 30s infinite alternate ease-in-out;
+    box-shadow: 0 0 50px rgba(108, 92, 231, 0.3);
+  }
+  
+  .login-shape-3 {
+    width: 250px;
+    height: 250px;
+    background: linear-gradient(90deg, rgba(255, 209, 102, 0.4), rgba(255, 209, 102, 0.1));
+    top: 30%;
+    right: 15%;
+    animation: float-shape-3 20s infinite alternate ease-in-out;
+    box-shadow: 0 0 40px rgba(255, 209, 102, 0.3);
+  }
+  
+  /* Анимации для плавающих элементов */
+  @keyframes float-shape-1 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(80px, 50px) rotate(15deg) scale(1.1); }
+  }
+  
+  @keyframes float-shape-2 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(-50px, -80px) rotate(-10deg) scale(1.2); }
+  }
+  
+  @keyframes float-shape-3 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(-30px, 30px) rotate(5deg) scale(0.9); }
+  }
+  
+  /* Карточка для формы входа с применением glassmorphism */
+  .login-card {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+  
+  .login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+  
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 70%);
+    pointer-events: none;
+  }
+  
+  /* Стилизация полей ввода */
+  .form-control {
+    border-radius: 10px;
+    padding: 12px 16px;
+    border: 1px solid rgba(222, 226, 230, 0.5);
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+  }
+  
+  .form-control:focus {
+    box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.2);
+    border-color: var(--primary-color, #3ECDC1);
+  }
+  
+  /* Стилизация кнопок */
+  .btn-primary {
+    background: linear-gradient(135deg, #3ECDC1, #2BB6AC);
+    border: none;
+    box-shadow: 0 4px 10px rgba(62, 205, 193, 0.3);
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(62, 205, 193, 0.4);
+  }
+  
+  .btn-outline-secondary {
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    border: 1px solid rgba(222, 226, 230, 0.7);
+    background-color: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-outline-secondary:hover:not([disabled]) {
+    background-color: rgba(233, 236, 239, 0.7);
+    transform: translateY(-2px);
+  }
+  
+  /* Разделитель */
+  .separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  .separator::before,
+  .separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(222, 226, 230, 0.7);
+  }
+  
+  .separator span {
+    padding: 0 1rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  {# !!! ДОБАВЛЕН КЛАСС 'main-content-padding' ДЛЯ ОТСТУПА ОТ ШАПКИ !!! #}
+  <div id="login-page-content" class="container main-content-padding">
+    <!-- Плавающие фоновые элементы -->
+    <div class="login-floating-shape login-shape-1"></div>
+    <div class="login-floating-shape login-shape-2"></div>
+    <div class="login-floating-shape login-shape-3"></div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6 col-xl-5"> {# Колонки для контроля ширины формы #}
+        <div class="login-card card shadow"> {# Карточка для формы #}
+          <div class="card-body p-4 p-sm-5"> {# Внутренние отступы #}
+            <h2 class="card-title text-center mb-4">
+                {% if lang == 'ru' %}Вход в аккаунт{% else %}Account Login{% endif %}
+            </h2>
+
+            {# Отображение flash-сообщений #}
+            {% include '_flash_messages.html' ignore missing %}
+
+            {# Форма входа (Flask-WTF) #}
+            <form method="POST" action="{{ url_for('auth_bp.login', lang=lang) }}" novalidate>
+              {{ form.hidden_tag() }} {# CSRF токен #}
+
+              <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {% if form.email.errors %}
+                  {{ form.email(class="form-control form-control-lg is-invalid", placeholder="your@email.com") }}
+                  <div class="invalid-feedback">
+                    {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
+                  </div>
+                {% else %}
+                  {{ form.email(class="form-control form-control-lg", placeholder="your@email.com") }}
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {% if form.password.errors %}
+                    {{ form.password(class="form-control form-control-lg is-invalid", placeholder="********") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.password(class="form-control form-control-lg", placeholder="********") }}
+                {% endif %}
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div class="form-check">
+                    {# Поле "Запомнить меня", если оно есть в вашей форме LoginForm #}
+                    {% if form.remember_me %}
+                      {{ form.remember_me(class="form-check-input") }}
+                      {{ form.remember_me.label(class="form-check-label") }}
+                    {% endif %}
+                  </div>
+                  {# Ссылка "Забыли пароль?" (пока заглушка) #}
+                  <a href="#" class="small text-muted text-decoration-none disabled">
+                    {% if lang == 'ru' %}Забыли пароль?{% else %}Forgot password?{% endif %}
+                  </a>
+              </div>
+
+              <div class="d-grid mb-3">
+                {{ form.submit(class="btn btn-primary btn-lg") }}
+              </div>
+
+              {# Ссылка на регистрацию (url_for корректен) #}
+              <div class="text-center small">
+                {% if lang == 'ru' %}Еще нет аккаунта?{% else %}Don't have an account?{% endif %}
+                <a href="{{ url_for('auth_bp.register', lang=lang) }}" class="text-decoration-none">
+                    {% if lang == 'ru' %}Зарегистрируйтесь{% else %}Register{% endif %}
+                </a>
+              </div>
+
+              {# Разделитель и кнопка Google (заглушка) #}
+              <div class="text-center mt-4">
+                 <div class="separator my-3"><span>{% if lang == 'ru' %}ИЛИ{% else %}OR{% endif %}</span></div>
+                 <button class="btn btn-outline-secondary w-100 disabled" type="button" aria-disabled="true">
+                     <i class="bi bi-google me-2"></i> {% if lang == 'ru' %}Войти через Google (скоро){% else %}Continue with Google (soon){% endif %}
+                 </button>
+             </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

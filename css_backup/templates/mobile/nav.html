@@ -1,0 +1,103 @@
+<div class="mobile-nav-container">
+    <!-- Левая часть навигации -->
+    <div class="nav-left">
+        <button class="nav-button glass-button" id="menu-toggle" aria-label="{{ t('open_menu', lang) }}">
+            <i class="bi bi-list"></i>
+        </button>
+        
+        <div class="nav-logo">
+            <img src="{{ url_for('static', filename='images/logo-white.png') }}" alt="{{ t('app_name', lang) }}">
+        </div>
+    </div>
+
+    <!-- Центральная часть - Breadcrumbs -->
+    <div class="nav-center">
+        {% if breadcrumbs %}
+            <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                <ol class="breadcrumb">
+                    {% for crumb in breadcrumbs %}
+                        <li class="breadcrumb-item {% if loop.last %}active{% endif %}">
+                            {% if not loop.last and crumb.url %}
+                                <a href="{{ crumb.url }}" class="breadcrumb-link">{{ crumb.title }}</a>
+                            {% else %}
+                                <span class="breadcrumb-current">{{ crumb.title }}</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            </nav>
+        {% endif %}
+    </div>
+
+    <!-- Правая часть навигации -->
+    <div class="nav-right">
+        <!-- Переключатель темы -->
+        <div class="theme-toggle-container">
+            <button class="theme-toggle" id="theme-toggle" aria-label="{{ t('toggle_theme', lang) }}">
+                <span class="theme-toggle-track"></span>
+                <span class="theme-toggle-thumb">
+                    <i class="bi bi-sun-fill light-icon"></i>
+                    <i class="bi bi-moon-fill dark-icon"></i>
+                </span>
+            </button>
+        </div>
+
+        <!-- Переключатель языка -->
+        <div class="language-toggle">
+            <button class="nav-button glass-button" id="language-toggle" aria-label="{{ t('change_language', lang) }}">
+                <img src="{{ url_for('static', filename='images/flags/' + get_country_code(lang) + '.svg') }}" alt="{{ lang }}" class="flag-icon">
+            </button>
+        </div>
+
+        <!-- Уведомления -->
+        <button class="nav-button glass-button notification-button" id="notifications-toggle" aria-label="{{ t('notifications', lang) }}">
+            <i class="bi bi-bell"></i>
+            <span class="notification-badge" id="notification-count" style="display: none;">0</span>
+        </button>
+    </div>
+</div>
+
+<!-- Боковое меню -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar glass-card" id="mobile-sidebar">
+    <div class="sidebar-header">
+        <h3>{{ t('menu', lang) }}</h3>
+        <button class="close-sidebar glass-button" id="close-sidebar" aria-label="{{ t('close_menu', lang) }}">
+            <i class="bi bi-x"></i>
+        </button>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('main_bp.welcome') }}" class="sidebar-link {% if request.endpoint == 'main_bp.welcome' %}active{% endif %}">
+            <i class="bi bi-house"></i>
+            <span>{{ t('home', lang) }}</span>
+        </a>
+        
+        <a href="{{ url_for('learning_map_bp.learning_map') }}" class="sidebar-link {% if 'learning' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-map"></i>
+            <span>{{ t('learning_map', lang) }}</span>
+        </a>
+        
+        <a href="{{ url_for('tests_bp.tests') }}" class="sidebar-link {% if 'tests' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-list-check"></i>
+            <span>{{ t('tests', lang) }}</span>
+        </a>
+        
+        <a href="{{ url_for('virtual_patient_bp.scenarios_list') }}" class="sidebar-link {% if 'virtual_patient' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-person-hearts"></i>
+            <span>{{ t('virtual_patients', lang) }}</span>
+        </a>
+        
+        <div class="sidebar-divider"></div>
+        
+        <a href="{{ url_for('main_bp.profile') }}" class="sidebar-link {% if request.endpoint == 'main_bp.profile' %}active{% endif %}">
+            <i class="bi bi-person"></i>
+            <span>{{ t('profile', lang) }}</span>
+        </a>
+        
+        <a href="{{ url_for('main_bp.settings') }}" class="sidebar-link {% if request.endpoint == 'main_bp.settings' %}active{% endif %}">
+            <i class="bi bi-gear"></i>
+            <span>{{ t('settings', lang) }}</span>
+        </a>
+    </nav>
+</aside> 

@@ -1,0 +1,1322 @@
+{% from "includes/_macros.html" import language_url %}
+
+<header class="modern-header">
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <!-- Logo -->
+      <a class="navbar-brand" href="{{ url_for('main_bp.home', lang=lang) }}">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Become a Tandarts" height="40">
+      </a>
+      
+      <!-- Mobile Toggle -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <!-- Navigation -->
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint == 'main_bp.home' }}" 
+               href="{{ url_for('main_bp.home', lang=lang) }}">
+ 
+              {{ t('home', lang) }}
+            </a>
+          </li>
+          
+          {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint == 'learning_map_bp.learning_map' }}" 
+               href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}">
+            
+              {{ t('learning_map', lang) }}
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint == 'dashboard_bp.learning_dashboard' }}" 
+               href="{{ url_for('dashboard_bp.learning_dashboard', lang=lang) }}">
+         
+              {{ t('dashboard', lang) }}
+            </a>
+          </li>
+          {% endif %}
+          
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main_bp.big_info', lang=lang) }}">
+           
+              {{ t('about_big', lang) }}
+            </a>
+          </li>
+        </ul>
+        
+        <!-- Right Side Actions -->
+        <div class="navbar-actions d-flex align-items-center">
+          <!-- Language Dropdown -->
+          <div class="dropdown me-3 language-dropdown" style="position: relative; z-index: 9999;">
+            <button class="btn btn-outline-primary language-btn" 
+                    type="button" id="languageDropdown" aria-expanded="false"
+                    style="pointer-events: auto !important; cursor: pointer !important;">
+              <i class="bi bi-globe"></i>
+              <span class="d-none d-md-inline ms-1">{{ lang|upper }}</span>
+              <i class="bi bi-chevron-down ms-1"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end language-menu" aria-labelledby="languageDropdown"
+                style="z-index: 10000 !important; position: absolute !important; display: none;">
+              <li><a class="dropdown-item {% if lang == 'en' %}active{% endif %}" 
+                     href="{{ language_url('en') }}"
+                     onclick="console.log('Switching to English');">
+                🇺🇸 English
+              </a></li>
+              <li><a class="dropdown-item {% if lang == 'ru' %}active{% endif %}" 
+                     href="{{ language_url('ru') }}"
+                     onclick="console.log('Switching to Russian');">
+                🇷🇺 Русский
+              </a></li>
+              <li><a class="dropdown-item {% if lang == 'nl' %}active{% endif %}" 
+                     href="{{ language_url('nl') }}"
+                     onclick="console.log('Switching to Dutch');">
+                🇳🇱 Nederlands
+              </a></li>
+              <li><a class="dropdown-item {% if lang == 'uk' %}active{% endif %}" 
+                     href="{{ language_url('uk') }}"
+                     onclick="console.log('Switching to Ukrainian');">
+                🇺🇦 Українська
+              </a></li>
+              <li><a class="dropdown-item {% if lang == 'fa' %}active{% endif %}" 
+                     href="{{ language_url('fa') }}"
+                     onclick="console.log('Switching to Persian');">
+                🇮🇷 فارسی
+              </a></li>
+              <li><a class="dropdown-item {% if lang == 'es' %}active{% endif %}" 
+                     href="{{ language_url('es') }}"
+                     onclick="console.log('Switching to Spanish');">
+                🇪🇸 Español
+              </a></li>
+              <li><a class="dropdown-item {% if lang == 'pt' %}active{% endif %}" 
+                     href="{{ language_url('pt') }}"
+                     onclick="console.log('Switching to Portuguese');">
+                🇵🇹 Português
+              </a></li>
+              <li><a class="dropdown-item {% if lang == 'tr' %}active{% endif %}" 
+                     href="{{ language_url('tr') }}"
+                     onclick="console.log('Switching to Turkish');">
+                🇹🇷 Türkçe
+              </a></li>
+            </ul>
+          </div>
+          
+          {% if current_user.is_authenticated %}
+          <!-- User Menu with Everything Inside -->
+          <div class="dropdown" style="position: relative; z-index: 1002;">
+            <button class="btn btn-primary dropdown-toggle user-btn" 
+                    type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="user-avatar">
+                <i class="bi bi-person-circle"></i>
+              </div>
+              <span class="d-none d-lg-inline ms-2">{{ current_user.name }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
+              <!-- User Info Header -->
+              <li class="dropdown-header">
+                <div class="user-info">
+                  <div class="user-details">
+                    <strong>{{ current_user.name }}</strong>
+                    <small class="text-muted d-block">{{ current_user.email }}</small>
+                  </div>
+                </div>
+              </li>
+              
+              <!-- Gamification Section -->
+              <li class="dropdown-header border-bottom">
+                <div class="user-stats">
+                  <div class="stat-item">
+                    <span class="level-badge">
+                      <i class="bi bi-star-fill"></i>
+                      Level {{ get_user_level() }}
+                    </span>
+                    <span class="xp-counter">
+                      <i class="bi bi-lightning-fill"></i>
+                      {{ get_user_xp() }} XP
+                    </span>
+                  </div>
+                  <div class="achievements-link-wrapper mt-2">
+                    <a href="{{ url_for('virtual_patient_bp.achievements', lang=lang) }}" 
+                       class="achievements-link">
+                      <i class="bi bi-trophy-fill"></i>
+                      {{ t('achievements', lang)|default('Достижения') }}
+                    </a>
+                  </div>
+                </div>
+              </li>
+              
+              <!-- Navigation Items -->
+              <li><a class="dropdown-item" href="{{ url_for('main_bp.profile', lang=lang) }}">
+                <i class="bi bi-person"></i>
+                {{ t('profile', lang) }}
+              </a></li>
+              
+              {% if current_user.is_admin %}
+              <li><a class="dropdown-item" href="{{ url_for('admin_bp.dashboard', lang=lang) }}">
+                <i class="bi bi-gear"></i>
+                {{ t('admin_panel', lang) }}
+              </a></li>
+              {% endif %}
+              
+              <li><hr class="dropdown-divider"></li>
+              
+              <!-- Theme Toggle -->
+              <li>
+                <button class="dropdown-item theme-toggle-inline" type="button" onclick="toggleTheme()">
+                  <i class="theme-icon fas fa-moon" id="theme-icon"></i>
+                  <span class="theme-text" id="theme-text">{{ t('dark_theme', lang)|default('Темная тема') }}</span>
+                </button>
+              </li>
+              
+              <li><hr class="dropdown-divider"></li>
+              
+              <!-- Logout -->
+              <li><a class="dropdown-item text-danger" href="{{ url_for('auth_bp.logout', lang=lang) }}">
+                <i class="bi bi-box-arrow-right"></i>
+                {{ t('logout', lang) }}
+              </a></li>
+            </ul>
+          </div>
+          
+          {% else %}
+          <!-- Guest Actions -->
+          <div class="guest-actions d-flex">
+            <a href="{{ url_for('auth_bp.login', lang=lang) }}" 
+               class="btn btn-outline-primary me-2">
+              <i class="bi bi-box-arrow-in-right"></i>
+              <span class="d-none d-md-inline ms-1">{{ t('login', lang) }}</span>
+            </a>
+            <a href="{{ url_for('auth_bp.register', lang=lang) }}" 
+               class="btn btn-primary">
+              <i class="bi bi-person-plus"></i>
+              <span class="d-none d-md-inline ms-1">{{ t('register', lang) }}</span>
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<style>
+/* ===== РАДИКАЛЬНОЕ ИСПРАВЛЕНИЕ ШАПКИ - МАКСИМАЛЬНЫЙ ПРИОРИТЕТ ===== */
+
+/* ПОЛНОЕ ПЕРЕОПРЕДЕЛЕНИЕ BOOTSTRAP СТИЛЕЙ */
+header.modern-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  max-height: 70px !important;
+  z-index: 1000 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+header.modern-header nav.navbar {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+}
+
+header.modern-header nav.navbar .container {
+  width: 100% !important;
+  max-width: 1200px !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+}
+
+header.modern-header .navbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  order: 1 !important;
+}
+
+header.modern-header .navbar-brand img {
+  height: 40px !important;
+  width: auto !important;
+  max-height: 40px !important;
+  object-fit: contain !important;
+}
+
+header.modern-header .navbar-collapse {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex: 1 !important;
+  height: 100% !important;
+  margin: 0 1rem !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+  order: 2 !important;
+}
+
+header.modern-header .navbar-nav {
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  flex-wrap: nowrap !important;
+  gap: 0.5rem !important;
+}
+
+header.modern-header .navbar-nav .nav-item {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+header.modern-header .navbar-nav .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  height: auto !important;
+  padding: 0.5rem 1rem !important;
+  margin: 0 !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+header.modern-header .navbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0.5rem !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+  flex-shrink: 0 !important;
+}
+
+header.modern-header .dropdown,
+header.modern-header .btn,
+header.modern-header .dropdown-toggle {
+  display: flex !important;
+  align-items: center !important;
+  height: auto !important;
+  padding: 0.5rem 1rem !important;
+  margin: 0 !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+header.modern-header .navbar-toggler {
+  display: none !important;
+  order: 3 !important;
+}
+
+/* Темная тема */
+[data-theme="dark"] header.modern-header {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] header.modern-header .nav-link {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] header.modern-header .dropdown,
+[data-theme="dark"] header.modern-header .btn,
+[data-theme="dark"] header.modern-header .dropdown-toggle {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+/* Мобильные устройства */
+@media (max-width: 992px) {
+  header.modern-header {
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
+  }
+  
+  header.modern-header .navbar-brand img {
+    height: 32px !important;
+    max-height: 32px !important;
+  }
+  
+  header.modern-header .navbar-toggler {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+    padding: 0.25rem !important;
+    margin-left: auto !important;
+  }
+  
+  header.modern-header .navbar-collapse {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
+    border-radius: 0 0 16px 16px !important;
+    padding: 1rem !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    height: auto !important;
+    z-index: 1001 !important;
+  }
+  
+  header.modern-header .navbar-nav {
+    flex-direction: column !important;
+    width: 100% !important;
+    height: auto !important;
+    gap: 0.5rem !important;
+  }
+  
+  header.modern-header .navbar-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    height: auto !important;
+    margin-top: 1rem !important;
+    padding-top: 1rem !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+/* ===== ИСПРАВЛЕННЫЕ СТИЛИ ШАПКИ ===== */
+
+/* Унифицированные переменные */
+:root {
+  --header-height: 70px;
+  --header-z-index: 1000;
+  --header-mobile-height: 60px;
+}
+
+.modern-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--header-z-index);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border-color);
+  transition: all var(--transition-slow);
+  box-shadow: var(--shadow-sm);
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+}
+
+.modern-header.scrolled {
+  background: var(--glass-hover);
+  box-shadow: var(--shadow-lg);
+}
+
+.modern-header.hidden {
+  transform: translateY(-100%);
+}
+
+.navbar {
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 100%;
+  flex-wrap: nowrap;
+}
+
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.5rem;
+  transition: transform var(--transition-normal);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+.navbar-brand img {
+  transition: all var(--transition-normal);
+  height: 40px;
+  width: auto;
+}
+
+.navbar-brand:hover img {
+  filter: brightness(1.1);
+}
+
+/* Фиксированная навигация */
+.navbar-collapse {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  flex-wrap: nowrap;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  height: 100%;
+  flex-wrap: nowrap;
+}
+
+.navbar-nav .nav-item {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  height: 100%;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+}
+
+/* Hamburger Menu */
+.navbar-toggler {
+  border: none;
+  padding: 0.5rem;
+  background: var(--glass-bg);
+  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
+  position: relative;
+  transition: all var(--transition-normal);
+  display: none;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+}
+
+.navbar-toggler span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text-primary);
+  margin: 4px auto;
+  transition: all var(--transition-normal);
+  border-radius: 1px;
+}
+
+.navbar-toggler:not(.collapsed) span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.navbar-toggler:not(.collapsed) span:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar-toggler:not(.collapsed) span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Navigation Links */
+.nav-link {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  height: 100%;
+  white-space: nowrap;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  transform: translateX(-50%);
+  transition: width var(--transition-normal);
+}
+
+.nav-link:hover::before {
+  width: 80%;
+}
+
+.nav-link:hover {
+  color: var(--primary-color) !important;
+  background: var(--glass-bg);
+  transform: translateY(-2px);
+}
+
+.nav-link.active {
+  color: var(--primary-color) !important;
+  background: var(--glass-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-link.active::before {
+  width: 80%;
+}
+
+/* Dropdown Styles */
+.dropdown-toggle,
+.btn {
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-color) !important;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-primary);
+  text-decoration: none;
+  height: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  pointer-events: auto !important;
+  z-index: 1001;
+  position: relative;
+}
+
+.dropdown-toggle:hover,
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  background: rgba(255, 255, 255, 1);
+}
+
+.dropdown-menu {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: var(--glass-blur);
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  animation: dropdownSlide 0.3s ease;
+  min-width: 220px;
+  z-index: 1050 !important;
+  position: absolute !important;
+}
+
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-item {
+  color: var(--text-secondary);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: var(--glass-bg);
+  color: var(--primary-color);
+  transform: translateX(5px);
+}
+
+.dropdown-item.active {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.dropdown-item.text-danger {
+  color: var(--danger-color);
+}
+
+.dropdown-item.text-danger:hover {
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--danger-color);
+}
+
+.dropdown-item i {
+  width: 16px;
+  text-align: center;
+  transition: transform var(--transition-normal);
+}
+
+.dropdown-item:hover i {
+  transform: scale(1.1);
+}
+
+.dropdown-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.5rem;
+}
+
+.dropdown-header.border-bottom {
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* User Info Styles */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-details strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.user-details small {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* User Stats in Dropdown */
+.user-stats {
+  text-align: center;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.level-badge {
+  background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.xp-counter {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.achievements-link-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.achievements-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+}
+
+.achievements-link:hover {
+  background: var(--glass-bg);
+  transform: scale(1.05);
+}
+
+/* Language Button */
+.language-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 70px;
+  justify-content: center;
+}
+
+/* User Button */
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+  border: none !important;
+  position: relative;
+  overflow: visible;
+  padding: 0.5rem 1rem !important;
+}
+
+.user-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.user-btn:hover::before {
+  left: 100%;
+}
+
+.user-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(62, 205, 193, 0.3);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* Button Enhancements */
+.btn {
+  border-radius: var(--radius-md) !important;
+  font-weight: 600;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem !important;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+  border: none !important;
+  position: relative;
+  overflow: visible;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(62, 205, 193, 0.3);
+}
+
+.btn-outline-primary {
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  background: transparent;
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: white !important;
+  transform: translateY(-2px);
+}
+
+/* Theme Toggle in Dropdown */
+.theme-toggle-inline {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+}
+
+.theme-toggle-inline:hover {
+  background: var(--glass-bg);
+  color: var(--primary-color);
+  transform: translateX(5px);
+}
+
+.theme-icon {
+  font-size: 1rem;
+  transition: transform var(--transition-normal);
+  width: 16px;
+  text-align: center;
+}
+
+.theme-toggle-inline:hover .theme-icon {
+  transform: rotate(180deg);
+}
+
+/* ===== ИСПРАВЛЕНИЕ ОТСТУПОВ ===== */
+
+/* УБИРАЕМ глобальный padding-top у body */
+body {
+  padding-top: 0 !important;
+  margin: 0;
+}
+
+/* Добавляем отступы ТОЛЬКО для специфических контейнеров */
+.main-content {
+  margin-top: var(--header-height);
+  min-height: calc(100vh - var(--header-height));
+  padding-top: 0 !important;
+}
+
+/* Специальная обработка для hero-секции */
+.hero-section {
+  padding-top: calc(var(--header-height) + 2rem);
+  min-height: 100vh;
+}
+
+/* Исправления для карты обучения */
+.learning-map-container .main-container {
+  margin-top: var(--header-height);
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* Mobile Responsive */
+@media (max-width: 992px) {
+  :root {
+    --header-height: var(--header-mobile-height);
+  }
+  
+  .navbar-toggler {
+    display: block;
+    order: 3;
+    margin-left: auto;
+  }
+  
+  .navbar-brand {
+    order: 1;
+  }
+  
+  .navbar-collapse {
+    order: 4;
+    width: 100%;
+  }
+  
+  .navbar-collapse {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    margin-top: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-xl);
+    backdrop-filter: var(--glass-blur);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navbar-nav {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .nav-link {
+    margin: 0.25rem 0;
+  }
+
+  .navbar-actions {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1rem;
+    margin-left: 0;
+  }
+
+  .dropdown {
+    width: 100%;
+  }
+
+  .dropdown-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .guest-actions {
+    flex-direction: column !important;
+    gap: 0.5rem;
+  }
+
+  .guest-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .user-dropdown {
+    position: static !important;
+    transform: none !important;
+    border: none;
+    box-shadow: none;
+    background: var(--glass-bg);
+    margin-top: 1rem;
+  }
+  
+  .hero-section {
+    padding-top: calc(var(--header-mobile-height) + 1rem);
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar {
+    padding: 0.75rem 0;
+  }
+  
+  .navbar-brand img {
+    height: 32px;
+  }
+  
+  .btn span {
+    display: none;
+  }
+  
+  .language-btn {
+    min-width: 45px;
+  }
+}
+
+/* ===== ИСПРАВЛЕНИЕ ЯЗЫКОВОЙ КНОПКИ БЕЗ BOOTSTRAP КОНФЛИКТОВ ===== */
+.language-dropdown {
+  position: relative !important;
+  z-index: 9999 !important;
+  display: inline-block !important;
+}
+
+.language-dropdown .language-btn {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  border: 1px solid var(--primary-color) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: var(--primary-color) !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+}
+
+.language-dropdown .language-btn:hover,
+.language-dropdown .language-btn:focus {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  outline: none !important;
+}
+
+.language-dropdown .language-btn[aria-expanded="true"] {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+.language-menu {
+  position: absolute !important;
+  top: calc(100% + 0.5rem) !important;
+  right: 0 !important;
+  z-index: 10000 !important;
+  min-width: 180px !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  background: white !important;
+  backdrop-filter: blur(10px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(-10px) !important;
+  transition: all 0.2s ease !important;
+  padding: 0.5rem 0 !important;
+  list-style: none !important;
+  margin: 0 !important;
+}
+
+.language-menu.show {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+  display: block !important;
+}
+
+.language-menu .dropdown-item {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.9rem !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.language-menu .dropdown-item:hover {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  transform: translateX(2px) !important;
+}
+
+.language-menu .dropdown-item.active {
+  background-color: rgba(var(--primary-color), 0.1) !important;
+  color: var(--primary-color) !important;
+  font-weight: 600 !important;
+}
+
+/* Мобильные исправления для языковой кнопки */
+@media (max-width: 768px) {
+  .language-dropdown {
+    width: 100% !important;
+  }
+  
+  .language-dropdown .dropdown-toggle {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  
+  .language-menu {
+    position: static !important;
+    width: 100% !important;
+    margin-top: 0.5rem !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+}
+</style>
+
+<script>
+// ИСПРАВЛЕНИЕ ЯЗЫКОВОГО DROPDOWN БЕЗ BOOTSTRAP КОНФЛИКТОВ
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🔧 Initializing language dropdown fix...');
+  
+  const langDropdown = document.getElementById('languageDropdown');
+  const langMenu = document.querySelector('.language-menu');
+  
+  if (langDropdown && langMenu) {
+    console.log('✅ Language dropdown elements found');
+    
+    // Отключаем Bootstrap обработчики
+    langDropdown.removeAttribute('data-bs-toggle');
+    langDropdown.removeAttribute('data-bs-auto-close');
+    
+    // Принудительно делаем элементы кликабельными
+    langDropdown.style.pointerEvents = 'auto';
+    langDropdown.style.cursor = 'pointer';
+    langDropdown.style.userSelect = 'none';
+    langDropdown.style.zIndex = '9999';
+    
+    langMenu.style.zIndex = '10000';
+    langMenu.style.position = 'absolute';
+    
+    // Основной обработчик клика
+    langDropdown.addEventListener('click', function(e) {
+      console.log('🖱️ Language dropdown clicked!');
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Закрываем все другие dropdown
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu !== langMenu && menu.style.display === 'block') {
+          menu.style.display = 'none';
+          menu.classList.remove('show');
+        }
+      });
+      
+      // Переключаем текущий dropdown
+      const isVisible = langMenu.style.display === 'block' || langMenu.classList.contains('show');
+      
+      if (isVisible) {
+        langMenu.style.display = 'none';
+        langMenu.classList.remove('show');
+        langDropdown.setAttribute('aria-expanded', 'false');
+        console.log('📥 Language menu closed');
+      } else {
+        langMenu.style.display = 'block';
+        langMenu.classList.add('show');
+        langDropdown.setAttribute('aria-expanded', 'true');
+        console.log('📤 Language menu opened');
+      }
+    });
+    
+    // Закрытие при клике вне меню
+    document.addEventListener('click', function(e) {
+      if (!langDropdown.contains(e.target) && !langMenu.contains(e.target)) {
+        langMenu.style.display = 'none';
+        langMenu.classList.remove('show');
+        langDropdown.setAttribute('aria-expanded', 'false');
+      }
+    });
+    
+    // Обработка для мобильных устройств
+    langDropdown.addEventListener('touchstart', function(e) {
+      console.log('📱 Language dropdown touched');
+      e.stopPropagation();
+    }, { passive: false });
+    
+    // Добавляем обработчики для элементов меню
+    langMenu.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        console.log('🌐 Language selected:', this.textContent.trim());
+        // Позволяем переходу произойти
+      });
+    });
+    
+    console.log('✅ Language dropdown fixes applied successfully!');
+  } else {
+    console.error('❌ Language dropdown elements not found!');
+  }
+  
+  // Диагностика конфликтов
+  console.log('🔍 Dropdown элементы:', document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+  console.log('🔍 Bootstrap version:', window.bootstrap?.Dropdown ? 'Available' : 'Not available');
+  
+  // Проверка z-index
+  if (langDropdown) {
+    const computedStyle = window.getComputedStyle(langDropdown.parentElement);
+    console.log('🔍 Z-index родителя:', computedStyle.zIndex);
+  }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const header = document.querySelector('.modern-header');
+  let lastScrollTop = 0;
+  const scrollThreshold = 50;
+
+  // Header scroll behavior
+  if (header) {
+    window.addEventListener('scroll', function() {
+      let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Add scrolled class for styling
+      if (currentScroll > 10) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+      
+      lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+    }, { passive: true });
+  }
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(e) {
+    const navbar = document.querySelector('.navbar-collapse');
+    const toggle = document.querySelector('.navbar-toggler');
+    
+    if (navbar && navbar.classList.contains('show') && 
+        !navbar.contains(e.target) && 
+        !toggle.contains(e.target)) {
+      const bsCollapse = bootstrap.Collapse.getInstance(navbar);
+      if (bsCollapse) {
+        bsCollapse.hide();
+      }
+    }
+  });
+
+  // Auto-close mobile menu when clicking nav links
+  document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+    link.addEventListener('click', function() {
+      const navbar = document.querySelector('.navbar-collapse');
+      if (navbar && navbar.classList.contains('show')) {
+        const bsCollapse = bootstrap.Collapse.getInstance(navbar);
+        if (bsCollapse) {
+          bsCollapse.hide();
+        }
+      }
+    });
+  });
+});
+</script>

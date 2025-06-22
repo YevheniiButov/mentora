@@ -1,0 +1,86 @@
+<!-- Модальное окно для добавления предмета (Subject) -->
+<div class="modal fade" id="addSubjectModal" tabindex="-1" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSubjectModalLabel">Добавить предмет</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('admin_bp.add_subject', lang=lang) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group mb-3">
+                        <label for="subject-name">Название</label>
+                        <input type="text" class="form-control" id="subject-name" name="name" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="subject-description">Описание</label>
+                        <textarea class="form-control" id="subject-description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="subject-path">Категория обучения</label>
+                        <select class="form-select" id="subject-path" name="learning_path_id" required>
+                            <option value="">Выберите категорию...</option>
+                            {% for path in learning_paths %}
+                                <option value="{{ path.id }}">{{ path.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="subject-order">Порядок отображения</label>
+                        <input type="number" class="form-control" id="subject-order" name="order" value="0">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="subject-icon">Иконка (Bootstrap Icons)</label>
+                        <input type="text" class="form-control" id="subject-icon" name="icon" value="folder2-open">
+                        <small class="form-text text-muted">Например: folder2-open, book, bookmark, etc.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования предмета (Subject) -->
+<div class="modal fade" id="editSubjectModal" tabindex="-1" aria-labelledby="editSubjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSubjectModalLabel">Редактировать предмет</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('admin_bp.update_subject', lang=lang) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" id="edit-subject-id" name="subject_id">
+                    <div class="form-group mb-3">
+                        <label for="edit-subject-name">Название</label>
+                        <input type="text" class="form-control" id="edit-subject-name" name="name" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit-subject-description">Описание</label>
+                        <textarea class="form-control" id="edit-subject-description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit-subject-path">Категория обучения</label>
+                        <select class="form-select" id="edit-subject-path" name="learning_path_id" required>
+                            {% for path in learning_paths %}
+                                <option value="{{ path.id }}">{{ path.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit-subject-order">Порядок отображения</label>
+                        <input type="number" class="form-control" id="edit-subject-order" name="order" value="0">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit-subject-icon">Иконка (Bootstrap Icons)</label>
+                        <input type="text" class="form-control" id="edit-subject-icon" name="icon">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Обновить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

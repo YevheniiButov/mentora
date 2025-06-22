@@ -1,0 +1,233 @@
+{% extends "desktop_base.html" %}
+
+{% block title %}{{ t('test_history', lang) }} - {{ t('dental_academy', lang) }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .history-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .history-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #ffffff, #3ECDC1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .test-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+    
+    .test-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .test-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .test-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .test-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+    }
+    
+    .test-date {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .test-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #3ECDC1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .progress-bar {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        margin-top: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3ECDC1, #2B9E94);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+    
+    .chart-container {
+        margin-top: 2rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 2rem;
+    }
+    
+    .chart-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 1.5rem;
+    }
+    
+    .chart {
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="history-header">
+        <h1 class="history-title">{{ t('test_history', lang) }}</h1>
+    </div>
+    
+    <div class="test-grid">
+        {% for stat in test_stats %}
+        <a href="{{ url_for('tests_bp.test_results', lang=lang, test_id=stat.test.id) }}" class="test-card">
+            <div class="test-header">
+                <h2 class="test-title">{{ stat.test.title }}</h2>
+                <span class="test-date">{{ stat.date.strftime('%d.%m.%Y') if stat.date else '' }}</span>
+            </div>
+            
+            <div class="test-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ stat.correct_answers }}/{{ stat.total_questions }}</div>
+                    <div class="stat-label">{{ t('score', lang) }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ "%.1f"|format(stat.accuracy) }}%</div>
+                    <div class="stat-label">{{ t('accuracy', lang) }}</div>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ stat.accuracy }}%"></div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    
+    <div class="chart-container">
+        <h3 class="chart-title">{{ t('progress_overview', lang) }}</h3>
+        <div class="chart" id="progressChart"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Инициализация графика прогресса
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    const testData = {{ test_stats|tojson }};
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: testData.map(stat => stat.date ? stat.date.split('T')[0] : ''),
+            datasets: [{
+                label: '{{ t("accuracy", lang) }}',
+                data: testData.map(stat => stat.accuracy),
+                borderColor: '#3ECDC1',
+                backgroundColor: 'rgba(62, 205, 193, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'rgba(255, 255, 255, 0.8)'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 

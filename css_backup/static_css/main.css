@@ -1,0 +1,217 @@
+/* main.css - Main entry point for CSS */
+
+/* Import base styles */
+@import 'base/variables.css';
+@import 'base/reset.css';  /* Create this file if needed */
+@import 'base/typography.css';  /* Create this file if needed */
+@import 'base/utilities.css';  /* Create this file if needed */
+@import 'base/global.css';
+/* Import layout styles */
+@import 'layouts/layout.css';
+
+/* Import component styles */
+@import 'components/components.css';
+@import 'components/circular_progress.css';
+
+/* Import page-specific styles */
+@import 'pages/home.css';  /* Hero and home page styles */
+@import 'pages/big-info.css';  
+/* Additional imports for other pages as needed */
+@import 'pages/learning_map.css'; 
+@import 'pages/learning_dashboard.css';
+/* @import 'pages/auth.css'; */
+/* @import 'pages/profile.css'; */
+@import 'pages/test.css';
+@import 'pages/_flash_messages.css';
+@import 'pages/virtual_patient.css';
+@import 'pages/module.css';
+
+/* Основные стили */
+:root {
+    --header-height: 70px;
+    --footer-height: 200px;
+    --content-max-width: 1200px;
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}
+
+/* Сброс стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Шапка - базовые стили для всех header */
+.header,
+.modern-header {
+    height: var(--header-height);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.nav-container {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding: 0 1rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo img {
+    height: 40px;
+    width: auto;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Основной контент - правильные стили */
+.main-content {
+    flex: 1;
+    margin-top: var(--header-height);
+    padding: 0;
+    width: 100%;
+    min-height: calc(100vh - var(--header-height));
+    overflow: visible;
+}
+
+/* Специальные стили для страницы с картой обучения */
+.learning-map-page .main-content {
+    padding: 0;
+    max-width: none;
+    margin: 0;
+}
+
+/* Подвал */
+.footer {
+    background: var(--bg-secondary);
+    padding: 2rem 1rem;
+    margin-top: auto;
+}
+
+.footer-content {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-logo img {
+    height: 40px;
+    width: auto;
+}
+
+.footer-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.footer-bottom {
+    max-width: var(--content-max-width);
+    margin: 2rem auto 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+/* Переключатель темы */
+.theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-speed);
+}
+
+.theme-toggle:hover {
+    background: var(--bg-hover);
+}
+
+.theme-toggle i {
+    font-size: 1.25rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+    
+    .footer-links {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn var(--transition-speed) ease-in-out;
+}
+
+/* Утилиты */
+.container {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 2rem; }

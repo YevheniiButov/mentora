@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination %} {# Убедитесь, что макрос использует Bootstrap классы #}
+
+{% block title %}{{ topic.title }}{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
+{% endblock %}
+
+{% block content %}
+{# Используем ваш класс для отступа от шапки #}
+<div class="container main-content-padding pt-3 forum-page-content">
+
+    {# Заголовок темы и информация (используем Bootstrap классы) #}
+    <h1 class="h3 mb-2 fw-bold">{{ topic.title }}</h1> {# Используем классы заголовков Bootstrap h1-h6 #}
+    <p class="small text-muted mb-4"> {# Используем Bootstrap small и text-muted #}
+        Автор темы: <a href="#" class="fw-medium text-decoration-none">{{ topic.author.name }}</a> | {# TODO: Ссылка на профиль автора #}
+        Создано: <span title="{{ topic.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">{{ topic.timestamp.strftime('%d %b %Y, %H:%M') }}</span>
+        {% if topic.category %}
+            | Категория: <span class="badge bg-secondary rounded-pill fw-normal">{{ topic.category }}</span> {# Используем Bootstrap badge #}
+        {% endif %}
+    </p>
+
+    {# Отображение Flash сообщений (убедитесь, что оно только в base.html) #}
+    {# {% include '_flash_messages.html' ignore missing %} #}
+
+    {# Список постов #}
+    <div class="mb-4"> {# Заменили space-y-6 на общий mb-4 #}
+        {% if posts %}
+            {% for post in posts %}
+            {# --- Начало блока одного поста (используем Bootstrap card) --- #}
+            <div class="card shadow-sm mb-3 forum-post-card" id="post-{{ post.id }}"> {# Используем Bootstrap card и mb-3 #}
+                <div class="row g-0"> {# Используем Bootstrap Grid для разделения автора и контента #}
+
+                    {# Информация об авторе поста (Bootstrap колонка) #}
+                    <div class="col-12 col-md-2 bg-light p-2 p-md-3 border-end-md text-center text-md-start"> {# Уменьшил padding на мобильных (p-2) #}
+                        {# Используем Flex для горизонтального расположения на мобильных (до md) #}
+                        {# d-flex: включить flex #}
+                        {# flex-row: направление по горизонтали #}
+                        {# align-items-center: выровнять по центру по вертикали #}
+                        {# d-md-block: на экранах md и больше - отключаем flex, элементы пойдут друг под другом #}
+                        {# text-center text-md-start: центрируем на мобильных, по левому краю на десктопе #}
+                        <div class="d-flex flex-row align-items-center d-md-block">
+                    
+                            {# Аватар #}
+                            {% set avatar_path = post.author.avatar if post.author.avatar else 'avatars/default.png' %}
+                            {# Уменьшим аватар на мобильных, добавим отступ справа me-2, уберем его на md (me-md-0), оставим mx-md-auto для центровки на десктопе #}
+                            <img src="{{ url_for('static', filename=avatar_path) }}" alt="{{ post.author.name }}"
+                                 class="rounded-circle shadow-sm me-2 me-md-0 mx-md-auto mb-md-2"
+                                 style="width: 48px; height: 48px; object-fit: cover;"> {# Уменьшил размер до 48px #}
+                    
+                            {# Блок с текстом автора (имя, роль) #}
+                            <div class="author-text-mobile"> {# Добавил div для группировки текста #}
+                                <p class="fw-semibold mb-0 small text-primary">
+                                    <a href="#" class="text-decoration-none">{{ post.author.name }}</a> {# TODO: Ссылка на профиль #}
+                                </p>
+                                {% if post.author.role %}
+                                    <p class="small text-muted text-capitalize mb-0 d-none d-md-block">{{ post.author.role }}</p> {# Скрываем роль на xs экранах (d-none d-md-block) #}
+                                {% endif %}
+                                 {# TODO: Добавить другую инфо? #}
+                            </div>
+                    
+                        </div> {# Конец flex контейнера #}
+                    </div> {# Конец колонки автора #}
+                    
+                    {# Содержимое поста (Bootstrap колонка) #}
+                    <div class="col-12 col-md-10">
+                        <div class="card-body p-2 p-md-4"> {# Уменьшили паддинг на мобильных #}                            {# Мета-информация поста #}
+                             <div class="text-muted small border-bottom pb-2 mb-3 d-flex justify-content-between">
+                                 <span><i class="bi bi-clock"></i> <span title="{{ post.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">{{ post.timestamp.strftime('%d %b %Y, %H:%M') }}</span></span>
+                                 <a href="#post-{{ post.id }}" class="text-decoration-none text-muted">#{{ loop.index + pagination.per_page * (pagination.page - 1) if pagination else loop.index }}</a>
+                             </div>
+
+                            {# Сам текст поста #}
+                             <div class="card-text post-content"> {# Убрали Tailwind классы отсюда #}
+                                 {{ post.content | safe }}
+                             </div>
+
+                            {# Блок кнопок действий #}
+                             <div class="post-actions text-end small mt-3 pt-2 border-top"> {# Используем Bootstrap классы для кнопок #}
+                                 <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 me-2" title="Поблагодарить">
+                                     <i class="bi bi-heart"></i> <span class="like-count">0</span>
+                                 </button>
+                                 {% if current_user.is_authenticated and (current_user.id == post.author.id or current_user.is_admin) %}
+                                     <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 me-2" title="Редактировать">
+                                         <i class="bi bi-pencil-square"></i>
+                                     </button>
+                                     <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1" title="Удалить">
+                                          <i class="bi bi-trash3"></i>
+                                     </button>
+                                 {% endif %}
+                             </div>
+                        </div> {# end card-body #}
+                    </div> {# end col-md-10 #}
+
+                </div> {# end row #}
+            </div> {# --- Конец блока одного поста --- #}
+            {% endfor %}
+        {% else %}
+             <div class="alert alert-secondary text-center">В этой теме пока нет сообщений.</div>
+        {% endif %}
+    </div>
+
+    {# Пагинация для постов #}
+    {% if pagination and pagination.pages > 1 %}
+        {{ render_pagination(pagination, 'forum.view_topic') }} {# Используем Bootstrap макрос #}
+    {% endif %}
+
+    {# Форма ответа #}
+    {% if current_user.is_authenticated %}
+        <div class="card shadow-sm mt-4">
+             <div class="card-header">
+                 <h5 class="mb-0">Ваш ответ:</h5>
+             </div>
+            <div class="card-body">
+                {# Используем Bootstrap классы для формы #}
+                <form method="POST" action="{{ url_for('forum_bp.view_topic', lang=lang, topic_id=topic.id, page=page) }}" novalidate>
+                    {{ form.hidden_tag() }} {# CSRF токен #}
+                    <div class="mb-3">
+                        {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else ""), rows="5", placeholder="Напишите ваш ответ здесь...") }}
+                        {% if form.content.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.content.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.submit(class="btn btn-primary fw-semibold") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-light text-center mt-4">
+            <a href="{{ url_for('auth.login', lang=lang, next=request.url) }}" class="fw-semibold">Войдите</a> или <a href="{{ url_for('auth.register', lang=lang, next=request.url) }}" class="fw-semibold">зарегистрируйтесь</a>, чтобы оставить ответ.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

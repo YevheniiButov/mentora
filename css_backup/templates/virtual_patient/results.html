@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Подключаем современный CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/virtual_patient_results.css') }}">
+
+<!-- SVG градиенты для диаграмм и эффектов -->
+<svg width="0" height="0" style="position: absolute;">
+  <defs>
+    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3ECDC1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2bb8ac;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="successGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="container py-4">
+    <!-- Заголовок с современными анимациями -->
+    <div class="text-center mb-4 scroll-reveal">
+        <h1 class="gradient-text">{{ t('clinical_case_analysis', lang) }}</h1>
+        <h2 class="text-muted">{{ scenario_data_for_lang.patient_info.name }}</h2>
+        <p class="lead">{{ scenario.title }}</p>
+    </div>
+
+    <!-- Основной контент с новой сеткой -->
+    <div class="results-container">
+        <!-- Левая колонка - основной контент -->
+        <div class="results-main">
+            
+            <!-- Блок общего результата с улучшенными стилями -->
+            <div class="performance-overview card-base scroll-reveal">
+                <h3>{{ t('overall_performance', lang) }}</h3>
+                
+                <!-- Улучшенный круговой индикатор с анимациями -->
+                <div class="score-circle">
+                    <svg viewBox="0 0 120 120">
+                        <circle class="background-ring" cx="60" cy="60" r="52"></circle>
+                        <circle class="progress-ring" cx="60" cy="60" r="52" 
+                                stroke="url(#scoreGradient)"
+                                stroke-dasharray="326.73" 
+                                stroke-dashoffset="{{ 326.73 - (326.73 * ((attempt.score / scenario.max_score) * 100) / 100) }}"
+                                data-metric="total-score" data-max-score="{{ scenario.max_score }}">
+                        </circle>
+                    </svg>
+                    <div class="score-display">
+                        <div class="score-value">{{ attempt.score }}/{{ scenario.max_score }}</div>
+                        <div class="score-label">{{ t('points', lang) }}</div>
+                    </div>
+                </div>
+
+                <!-- Оценка и рекомендации -->
+                <div class="result-description">
+                    <h4>{{ result_display.title }}</h4>
+                    <p>{{ result_display.text }}</p>
+                </div>
+
+                <!-- Современная сетка метрик с интерактивными эффектами -->
+                <div class="metrics-grid">
+                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="{{ t('total_score_tooltip', lang) }}">
+                        <div class="metric-value">{{ attempt.score }}</div>
+                        <div class="metric-label">{{ t('total_score', lang) }}</div>
+                    </div>
+                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="{{ t('decisions_made_tooltip', lang) }}">
+                        <div class="metric-value">{{ history.decisions|length }}</div>
+                        <div class="metric-label">{{ t('decisions_made', lang) }}</div>
+                    </div>
+                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="{{ t('scenario_time_tooltip', lang) }}">
+                        <div class="metric-value">{{ "%.0f"|format(attempt.time_spent or 0) }}</div>
+                        <div class="metric-label">{{ t('scenario_time', lang) }}</div>
+                    </div>
+                    <div class="metric-card magnetic-hover interactive-glow" data-tooltip="{{ t('avg_decision_time_tooltip', lang) }}">
+                        <div class="metric-value">{{ "%.0f"|format((attempt.time_spent or 360) / (history.decisions|length or 1)) }}</div>
+                        <div class="metric-label">{{ t('avg_decision_time', lang) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Улучшенная временная линия решений -->
+            <div class="decision-timeline scroll-reveal">
+                <h3>📋 {{ t('decision_timeline', lang) }}</h3>
+                {% for decision in history.decisions %}
+                <div class="decision-item animate-on-scroll">
+                    <div class="decision-content">
+                        <p class="decision-text">{{ decision.option_text }}</p>
+                    </div>
+                    <div class="decision-score {{ 'positive' if decision.score_awarded > 0 else ('negative' if decision.score_awarded < 0 else 'neutral') }}"
+                         data-tooltip="{{ t('points_for_decision', lang) }}">
+                        {% if decision.score_awarded > 0 %}+{% endif %}{{ decision.score_awarded }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Правая колонка - статистика и график -->
+        <div class="results-sidebar">
+            
+            <!-- Блок наград с современными эффектами -->
+            <div class="rewards-section scroll-reveal">
+                <h3>🎉 {{ t('completion_rewards', lang) }}</h3>
+                
+                <div class="rewards-grid">
+                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="{{ t('xp_for_completion_tooltip', lang) }}">
+                        <div class="reward-value">+{{ calculate_base_experience_points(((attempt.score / scenario.max_score) * 100) if scenario.max_score > 0 else 0) }} XP</div>
+                        <div class="reward-label">{{ t('experience_points', lang) }}</div>
+                    </div>
+                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="{{ t('current_level_tooltip', lang) }}">
+                        <div class="reward-value">LVL {{ gamification_data.current_level }}</div>
+                        <div class="reward-label">{{ t('your_level', lang) }}</div>
+                    </div>
+                    <div class="reward-card magnetic-hover button-ripple" data-tooltip="{{ t('completed_scenarios_tooltip', lang) }}">
+                        <div class="reward-value">{{ gamification_data.scenarios_completed }}</div>
+                        <div class="reward-label">{{ t('scenarios_completed', lang) }}</div>
+                    </div>
+                </div>
+                
+                <!-- Прогресс до следующего уровня с анимацией -->
+                <div class="level-progress">
+                    <div>{{ t('to_level', lang) }} {{ gamification_data.current_level + 1 }}: {{ gamification_data.points_to_next_level }} XP</div>
+                    <div class="progress-bar">
+                        {% set progress_percentage = ((gamification_data.total_xp - (100 if gamification_data.current_level > 1 else 0)) / (250 - (100 if gamification_data.current_level > 1 else 0))) * 100 if gamification_data.current_level <= 2 else 50 %}
+                        <div class="progress-fill" style="width: {{ progress_percentage }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Анализ компетенций с интерактивной диаграммой -->
+            <div class="competency-analysis scroll-reveal">
+                <h3>📊 {{ t('competency_analysis', lang) }}</h3>
+                
+                <!-- Контейнер для интерактивной диаграммы -->
+                <div class="competency-chart-container">
+                    <canvas id="competencyChart"></canvas>
+                </div>
+
+                <!-- Детальные оценки с улучшенным дизайном -->
+                <div class="competency-scores">
+                    <div class="competency-metric magnetic-hover" data-competency="empathy" data-tooltip="{{ t('empathy_tooltip', lang) }}">
+                        <span class="competency-name">{{ t('empathy', lang) }}</span>
+                        <span class="competency-score">{{ calculate_empathy_score(history) }}</span>
+                    </div>
+                    <div class="competency-metric magnetic-hover" data-competency="clinical" data-tooltip="{{ t('clinical_skills_tooltip', lang) }}">
+                        <span class="competency-name">{{ t('clinical_skills', lang) }}</span>
+                        <span class="competency-score">{{ calculate_clinical_score(history) }}</span>
+                    </div>
+                    <div class="competency-metric magnetic-hover" data-competency="communication" data-tooltip="{{ t('communication_tooltip', lang) }}">
+                        <span class="competency-name">{{ t('communication', lang) }}</span>
+                        <span class="competency-score">{{ calculate_communication_score(history) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Система частиц для атмосферы (создается автоматически JS) -->
+<div class="particle-container"></div>
+
+{% endblock %}
+
+{% block body_scripts %}
+{{ super() }}
+<!-- Chart.js для интерактивных диаграмм -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+
+<!-- Наш улучшенный JavaScript -->
+<script src="{{ url_for('static', filename='js/virtual_patient_results.js') }}"></script>
+
+<!-- Инициализация специальных эффектов -->
+<script>
+// Делаем функцию t() доступной в JavaScript
+window.t = function(key, lang) {
+    const translations = {{ translations|tojson|safe }};
+    return translations[lang] && translations[lang][key] 
+        ? translations[lang][key] 
+        : key;
+};
+window.lang = '{{ lang }}';
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем классы для анимаций
+    const cards = document.querySelectorAll('.metric-card, .reward-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 150}ms`;
+        card.classList.add('fade-in');
+    });
+    
+    // Анимация появления элементов при скролле
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                
+                // Специальная анимация для карточек метрик
+                if (entry.target.classList.contains('metric-card')) {
+                    setTimeout(() => {
+                        entry.target.style.transform = 'translateY(0) scale(1)';
+                    }, 100);
+                }
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.scroll-reveal').forEach(element => {
+        observer.observe(element);
+    });
+});
+</script>
+{% endblock %}

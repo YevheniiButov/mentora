@@ -1,0 +1,122 @@
+/* big-info.css - Стили для страницы с информацией о BIG регистрации */
+
+/* Градиентный фон для страницы */
+.main-content {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: calc(100vh - 70px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Плавающие фоновые элементы */
+.main-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(62, 205, 193, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(108, 92, 231, 0.15) 0%, transparent 50%);
+  z-index: 0;
+}
+
+#big-info-content {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 0;
+}
+
+/* Улучшенные карточки с glassmorphism эффектом */
+.step {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 3.5rem;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.step::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 70%);
+  pointer-events: none;
+}
+
+/* Заголовок страницы */
+#big-info-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+  }
+  
+  #big-info-content h1:after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background-color: var(--color-primary);
+    border-radius: 3px;
+  }
+  
+  /* Шаги процедуры */
+  .step h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+    border-left: 4px solid var(--color-primary);
+  }
+  
+  .step p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+  }
+  
+  /* Стили для ссылок */
+  .step a {
+    color: var(--color-primary);
+    font-weight: 500;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+  }
+  
+  .step a:hover {
+    color: var(--color-primary-dark);
+  }
+  
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    #big-info-content h1 {
+      font-size: 2rem;
+    }
+    
+    .step {
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    
+    .step h2 {
+      font-size: 1.3rem;
+    }
+    
+    .step p {
+      font-size: 1rem;
+    }
+  }

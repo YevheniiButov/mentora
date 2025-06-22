@@ -1312,6 +1312,11 @@ def test_themes():
     """Тестовая страница для демонстрации новой системы тем"""
     return render_template('test_themes.html')
 
+@app.route('/index-new')
+def index_new():
+    """Новая версия главной страницы с системой тем"""
+    return render_template('index_new.html')
+
 if __name__ == '__main__':
     # Дополнительная отладочная информация при запуске
     print("\n" + "="*50)

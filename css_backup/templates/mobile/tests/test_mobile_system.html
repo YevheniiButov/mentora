@@ -1,0 +1,684 @@
+{% extends "mobile_base.html" %}
+
+{% set nav_config = get_navigation_config('tests',
+    show_logo=True,
+    show_back_button=False,
+    show_bottom_nav=True,
+    show_profile_button=True,
+    show_settings_button=True,
+    show_language_selector=True,
+    page_title=t('test_system', lang)
+) %}
+
+{% block title %}{{ t('test_system', lang) }} - {{ t('dental_academy', lang) }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== TEST SYSTEM В СТИЛИСТИКЕ AI ===== */
+    
+    /* Заголовочный статус бар */
+    .test-status-bar {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .test-status-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+    }
+    
+    .test-status-icon {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #3ECDC1;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .test-system-badge {
+        padding: 4px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Приветственный текст */
+    .welcome-message {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: white;
+        animation: slideInMessage 0.3s ease-out;
+    }
+    
+    @keyframes slideInMessage {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .welcome-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    
+    .welcome-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #ffffff, #3ECDC1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .welcome-description {
+        opacity: 0.9;
+        line-height: 1.5;
+        font-size: 1rem;
+    }
+    
+    /* Опции тестов в стиле AI чата */
+    .test-options-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .test-option-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .test-option-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(62, 205, 193, 0.4);
+        box-shadow: 0 10px 30px rgba(62, 205, 193, 0.2);
+        color: white;
+    }
+    
+    .test-option-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .test-option-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #3ECDC1, #2B9E94);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 4px 15px rgba(62, 205, 193, 0.3);
+    }
+    
+    .test-option-info {
+        flex: 1;
+    }
+    
+    .test-option-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: white;
+    }
+    
+    .test-option-meta {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .test-option-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .test-option-description {
+        font-size: 0.95rem;
+        line-height: 1.4;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+    }
+    
+    .test-option-features {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .test-feature-badge {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Кастомная форма в стиле AI */
+    .custom-test-panel {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: slideInMessage 0.3s ease-out;
+        display: none;
+    }
+    
+    .custom-test-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+    
+    .custom-test-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .form-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        color: white;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+    }
+    
+    /* Селектор категорий в стиле AI */
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .category-chip {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 0.75rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        color: white;
+    }
+    
+    .category-chip:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(62, 205, 193, 0.4);
+    }
+    
+    .category-chip.selected {
+        background: linear-gradient(135deg, #3ECDC1, #2B9E94);
+        border-color: #3ECDC1;
+        box-shadow: 0 4px 15px rgba(62, 205, 193, 0.3);
+    }
+    
+    /* Селектор количества вопросов */
+    .question-count-selector {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .count-option {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        color: white;
+        min-width: 60px;
+        text-align: center;
+    }
+    
+    .count-option:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(62, 205, 193, 0.4);
+    }
+    
+    .count-option.selected {
+        background: linear-gradient(135deg, #3ECDC1, #2B9E94);
+        border-color: #3ECDC1;
+        box-shadow: 0 4px 15px rgba(62, 205, 193, 0.3);
+    }
+    
+    /* Кнопка запуска в стиле AI */
+    .start-test-button {
+        width: 100%;
+        background: linear-gradient(135deg, #3ECDC1, #2B9E94);
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .start-test-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(62, 205, 193, 0.4);
+    }
+    
+    .start-test-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Дополнительные AI эффекты */
+    .ai-glow {
+        position: relative;
+    }
+    
+    .ai-glow::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #3ECDC1, #2B9E94, #3ECDC1);
+        border-radius: inherit;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .ai-glow:hover::before {
+        opacity: 0.3;
+    }
+    
+    /* Статистика в верхней части */
+    .test-stats-mini {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-around;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-mini {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .stat-mini-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #3ECDC1;
+    }
+    
+    .stat-mini-label {
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+
+    .category-selector-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        width: 90%;
+        max-width: 500px;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .modal-header h3 {
+        color: white;
+        margin: 0;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- AI-style Status Bar -->
+<div class="test-status-bar">
+    <div class="test-status-info">
+        <div class="test-status-icon"></div>
+        <span>{{ t('test_system_online', lang) or 'Система тестирования онлайн' }}</span>
+    </div>
+    <div class="test-system-badge">
+        <i class="bi bi-cpu"></i> Smart Tests
+    </div>
+</div>
+
+<!-- Welcome Message в стиле AI -->
+<div class="welcome-message">
+    <div class="welcome-icon">🤖</div>
+    <div class="welcome-title">
+        {{ t('ai_test_welcome', lang) or 'Умная система тестирования' }}
+    </div>
+    <div class="welcome-description">
+        {{ t('ai_test_description', lang) or 'Выберите подходящий тип теста. Система адаптируется под ваш уровень знаний.' }}
+    </div>
+    
+    <!-- Mini Stats -->
+    <div class="test-stats-mini">
+        <div class="stat-mini">
+            <div class="stat-mini-value">{{ total_tests_available or '50+' }}</div>
+            <div class="stat-mini-label">{{ t('tests_available', lang) or 'тестов' }}</div>
+        </div>
+        <div class="stat-mini">
+            <div class="stat-mini-value">{{ subjects_count or '9' }}</div>
+            <div class="stat-mini-label">{{ t('subjects', lang) or 'предметов' }}</div>
+        </div>
+        <div class="stat-mini">
+            <div class="stat-mini-value">{{ avg_score or '85%' }}</div>
+            <div class="stat-mini-label">{{ t('avg_score', lang) or 'средний балл' }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Options в стиле AI чата -->
+<div class="test-options-container">
+    <!-- Quick Test -->
+    <a href="{{ url_for('tests_bp.mobile_setup_test', lang=lang) }}" class="test-option-card ai-glow" onclick="showCategorySelector('quick')">
+        <form method="POST" action="{{ url_for('tests_bp.mobile_setup_test', lang=lang) }}" id="quickTestForm" style="display: none;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="test_type" value="quick">
+            <input type="hidden" name="category" id="quickTestCategory">
+        </form>
+        <div class="test-option-header">
+            <div class="test-option-icon">
+                <i class="bi bi-lightning-charge"></i>
+            </div>
+            <div class="test-option-info">
+                <div class="test-option-title">{{ t('quick_test', lang) or 'Быстрый тест' }}</div>
+                <div class="test-option-meta">
+                    <span><i class="bi bi-clock"></i> 5-15 мин</span>
+                    <span><i class="bi bi-question-circle"></i> 5-10 вопросов</span>
+                </div>
+            </div>
+        </div>
+        <div class="test-option-description">
+            {{ t('quick_test_desc', lang) or 'Быстрая проверка ключевых знаний. Идеально для повторения перед занятием.' }}
+        </div>
+        <div class="test-option-features">
+            <span class="test-feature-badge">{{ t('adaptive', lang) or 'Адаптивный' }}</span>
+            <span class="test-feature-badge">{{ t('instant_results', lang) or 'Мгновенные результаты' }}</span>
+        </div>
+    </a>
+    
+    <!-- Full Test -->
+    <a href="{{ url_for('tests_bp.mobile_setup_test', lang=lang) }}" class="test-option-card ai-glow" onclick="showCategorySelector('comprehensive')">
+        <form method="POST" action="{{ url_for('tests_bp.mobile_setup_test', lang=lang) }}" id="comprehensiveTestForm" style="display: none;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="test_type" value="comprehensive">
+            <input type="hidden" name="category" id="comprehensiveTestCategory">
+        </form>
+        <div class="test-option-header">
+            <div class="test-option-icon">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+            <div class="test-option-info">
+                <div class="test-option-title">{{ t('comprehensive_test', lang) or 'Полный тест' }}</div>
+                <div class="test-option-meta">
+                    <span><i class="bi bi-clock"></i> 20-45 мин</span>
+                    <span><i class="bi bi-question-circle"></i> 20-30 вопросов</span>
+                </div>
+            </div>
+        </div>
+        <div class="test-option-description">
+            {{ t('comprehensive_test_desc', lang) or 'Глубокая оценка знаний по всем аспектам темы. Подробная обратная связь.' }}
+        </div>
+        <div class="test-option-features">
+            <span class="test-feature-badge">{{ t('detailed_analysis', lang) or 'Детальный анализ' }}</span>
+            <span class="test-feature-badge">{{ t('progress_tracking', lang) or 'Отслеживание прогресса' }}</span>
+        </div>
+    </a>
+    
+    <!-- Custom Test -->
+    <div class="test-option-card ai-glow" onclick="toggleCustomTest()">
+        <div class="test-option-header">
+            <div class="test-option-icon">
+                <i class="bi bi-gear"></i>
+            </div>
+            <div class="test-option-info">
+                <div class="test-option-title">{{ t('custom_test', lang) or 'Настроить тест' }}</div>
+                <div class="test-option-meta">
+                    <span><i class="bi bi-sliders"></i> {{ t('customizable', lang) or 'Настраиваемый' }}</span>
+                    <span><i class="bi bi-bullseye"></i> {{ t('targeted', lang) or 'Целевой' }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="test-option-description">
+            {{ t('custom_test_desc', lang) or 'Создайте тест под свои потребности: выберите тему, сложность и количество вопросов.' }}
+        </div>
+        <div class="test-option-features">
+            <span class="test-feature-badge">{{ t('flexible', lang) or 'Гибкий' }}</span>
+            <span class="test-feature-badge">{{ t('topic_focused', lang) or 'Фокус на теме' }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Test Panel -->
+<div class="custom-test-panel" id="customTestPanel">
+    <div class="custom-test-header">
+        <i class="bi bi-robot"></i>
+        <span class="custom-test-title">{{ t('ai_test_configurator', lang) or 'AI Конфигуратор теста' }}</span>
+    </div>
+    
+    <form method="POST" action="{{ url_for('tests_bp.mobile_start_custom_test', lang=lang) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-section">
+            <label class="form-label">
+                <i class="bi bi-folder"></i> {{ t('select_category', lang) or 'Выберите категорию:' }}
+            </label>
+            <div class="category-grid">
+                {% for category in categories %}
+                <div class="category-chip" onclick="selectCategory(this, '{{ category.name }}')" data-category="{{ category.name }}">
+                    {{ category.name }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <label class="form-label">
+                <i class="bi bi-hash"></i> {{ t('question_count', lang) or 'Количество вопросов:' }}
+            </label>
+            <div class="question-count-selector">
+                <div class="count-option" onclick="selectCount(this, 5)">5</div>
+                <div class="count-option selected" onclick="selectCount(this, 10)">10</div>
+                <div class="count-option" onclick="selectCount(this, 15)">15</div>
+                <div class="count-option" onclick="selectCount(this, 20)">20</div>
+                <div class="count-option" onclick="selectCount(this, 30)">30</div>
+            </div>
+        </div>
+        
+        <input type="hidden" name="category" id="selectedCategory">
+        <input type="hidden" name="length" id="selectedLength" value="10">
+        
+        <button type="submit" class="start-test-button" id="startCustomTest" disabled>
+            <i class="bi bi-play-fill"></i>
+            {{ t('start_ai_test', lang) or 'Запустить AI тест' }}
+        </button>
+    </form>
+</div>
+
+<!-- Category Selector Modal -->
+<div class="category-selector-modal" id="categorySelectorModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>{{ t('select_category', lang) or 'Выберите категорию' }}</h3>
+            <button onclick="closeCategorySelector()" class="close-btn">&times;</button>
+        </div>
+        <div class="category-grid">
+            {% for category in categories %}
+            <div class="category-chip" onclick="selectCategoryForTest('{{ category }}')">
+                {{ category }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Переключение кастомной панели
+function toggleCustomTest() {
+    const panel = document.getElementById('customTestPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+let currentTestType = null;
+
+function showCategorySelector(testType) {
+    event.preventDefault();
+    currentTestType = testType;
+    document.getElementById('categorySelectorModal').style.display = 'block';
+}
+
+function closeCategorySelector() {
+    document.getElementById('categorySelectorModal').style.display = 'none';
+    currentTestType = null;
+}
+
+function selectCategoryForTest(category) {
+    if (currentTestType === 'quick') {
+        document.getElementById('quickTestCategory').value = category;
+        document.getElementById('quickTestForm').submit();
+    } else if (currentTestType === 'comprehensive') {
+        document.getElementById('comprehensiveTestCategory').value = category;
+        document.getElementById('comprehensiveTestForm').submit();
+    }
+    closeCategorySelector();
+}
+
+// Выбор категории
+function selectCategory(element, category) {
+    document.querySelectorAll('.category-chip').forEach(chip => {
+        chip.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    document.getElementById('selectedCategory').value = category;
+    checkFormValidity();
+}
+
+// Выбор количества вопросов
+function selectCount(element, count) {
+    document.querySelectorAll('.count-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    document.getElementById('selectedLength').value = count;
+    checkFormValidity();
+}
+
+// Проверка валидности формы
+function checkFormValidity() {
+    const category = document.getElementById('selectedCategory').value;
+    const count = document.getElementById('selectedLength').value;
+    const button = document.getElementById('startCustomTest');
+    
+    button.disabled = !category || !count;
+}
+
+// Добавляем тактильную обратную связь
+document.querySelectorAll('.test-option-card, .category-chip, .count-option').forEach(element => {
+    element.addEventListener('touchstart', function() {
+        if (navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+    });
+});
+
+console.log('🤖 AI Test System - готов!');
+</script>
+{% endblock %} 

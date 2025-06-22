@@ -1,0 +1,255 @@
+<!-- ===== THEME SWITCHER COMPONENT ===== -->
+<!-- templates/includes/_theme_switcher.html -->
+
+<div class="theme-switcher-container">
+    <div class="theme-switcher">
+        <button class="theme-btn" onclick="switchTheme('light')" data-theme="light" title="Светлая тема">
+            <i class="bi bi-sun"></i>
+            <span>Светлая</span>
+        </button>
+        <button class="theme-btn" onclick="switchTheme('dark')" data-theme="dark" title="Темная тема">
+            <i class="bi bi-moon"></i>
+            <span>Темная</span>
+        </button>
+        <button class="theme-btn" onclick="switchTheme('gradient')" data-theme="gradient" title="Градиентная тема">
+            <i class="bi bi-palette"></i>
+            <span>Градиентная</span>
+        </button>
+    </div>
+</div>
+
+<style>
+/* ===== THEME SWITCHER STYLES ===== */
+.theme-switcher-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.theme-switcher {
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    box-shadow: var(--theme-shadow-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--theme-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.theme-btn:hover {
+    background: var(--theme-secondary);
+    color: var(--theme-text);
+    transform: translateY(-1px);
+}
+
+.theme-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(62, 205, 193, 0.3);
+}
+
+.theme-btn i {
+    font-size: 14px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .theme-switcher-container {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .theme-switcher {
+        flex-direction: column;
+        gap: 2px;
+        padding: 4px;
+    }
+    
+    .theme-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+    
+    .theme-btn span {
+        display: none;
+    }
+    
+    .theme-btn i {
+        font-size: 16px;
+    }
+}
+
+/* ===== COMPACT MODE ===== */
+.theme-switcher.compact {
+    flex-direction: row;
+    gap: 2px;
+    padding: 4px;
+}
+
+.theme-switcher.compact .theme-btn {
+    padding: 6px;
+    min-width: auto;
+}
+
+.theme-switcher.compact .theme-btn span {
+    display: none;
+}
+</style>
+
+<script>
+/* ===== THEME SWITCHER FUNCTIONALITY ===== */
+
+// Инициализация системы тем
+document.addEventListener('DOMContentLoaded', function() {
+    initializeThemeSystem();
+});
+
+function initializeThemeSystem() {
+    // Получаем сохраненную тему или используем светлую по умолчанию
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    
+    // Применяем тему
+    applyTheme(savedTheme);
+    
+    // Отмечаем активную кнопку
+    updateActiveThemeButton(savedTheme);
+    
+    // Добавляем обработчики событий
+    setupThemeEventListeners();
+}
+
+function switchTheme(themeName) {
+    console.log(`Switching to theme: ${themeName}`);
+    
+    // Применяем новую тему
+    applyTheme(themeName);
+    
+    // Сохраняем в localStorage
+    localStorage.setItem('theme', themeName);
+    
+    // Обновляем активную кнопку
+    updateActiveThemeButton(themeName);
+    
+    // Уведомляем другие компоненты о смене темы
+    dispatchThemeChangeEvent(themeName);
+    
+    // Анимация переключения
+    animateThemeSwitch();
+}
+
+function applyTheme(themeName) {
+    // Устанавливаем атрибут data-theme на html элемент
+    document.documentElement.setAttribute('data-theme', themeName);
+    
+    // Обновляем meta theme-color для мобильных браузеров
+    updateMetaThemeColor(themeName);
+}
+
+function updateActiveThemeButton(themeName) {
+    // Убираем active со всех кнопок
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Добавляем active к выбранной кнопке
+    const activeBtn = document.querySelector(`[data-theme="${themeName}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+}
+
+function updateMetaThemeColor(themeName) {
+    let themeColor;
+    
+    switch(themeName) {
+        case 'dark':
+            themeColor = '#0f172a';
+            break;
+        case 'gradient':
+            themeColor = '#667eea';
+            break;
+        default: // light
+            themeColor = '#ffffff';
+    }
+    
+    // Обновляем или создаем meta theme-color
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (!metaThemeColor) {
+        metaThemeColor = document.createElement('meta');
+        metaThemeColor.name = 'theme-color';
+        document.head.appendChild(metaThemeColor);
+    }
+    metaThemeColor.content = themeColor;
+}
+
+function dispatchThemeChangeEvent(themeName) {
+    // Создаем кастомное событие для других компонентов
+    const event = new CustomEvent('themeChanged', { 
+        detail: { 
+            theme: themeName,
+            timestamp: Date.now()
+        }
+    });
+    
+    window.dispatchEvent(event);
+}
+
+function animateThemeSwitch() {
+    // Добавляем класс для анимации
+    document.body.classList.add('theme-switching');
+    
+    // Убираем класс через короткое время
+    setTimeout(() => {
+        document.body.classList.remove('theme-switching');
+    }, 300);
+}
+
+function setupThemeEventListeners() {
+    // Слушаем системные изменения темы (если пользователь меняет в ОС)
+    if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addListener(handleSystemThemeChange);
+    }
+    
+    // Слушаем изменения в localStorage (синхронизация между табами)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'theme') {
+            const newTheme = e.newValue || 'light';
+            applyTheme(newTheme);
+            updateActiveThemeButton(newTheme);
+        }
+    });
+}
+
+function handleSystemThemeChange(e) {
+    // Автоматически переключаем на системную тему только если не задана пользовательская
+    const savedTheme = localStorage.getItem('theme');
+    if (!savedTheme) {
+        const systemTheme = e.matches ? 'dark' : 'light';
+        switchTheme(systemTheme);
+    }
+}
+
+// Экспортируем функции в глобальную область
+window.switchTheme = switchTheme;
+window.getCurrentTheme = () => localStorage.getItem('theme') || 'light';
+</script> 

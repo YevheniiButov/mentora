@@ -1,0 +1,391 @@
+{# templates/auth/register_new.html #}
+{% extends "base.html" %}
+
+{# --- SEO --- #}
+{% block title %}
+    {% if lang == 'ru' %}Регистрация - Become a Tandarts{% elif lang == 'uk' %}Реєстрація - Become a Tandarts{% elif lang == 'nl' %}Registratie - Become a Tandarts{% elif lang == 'es' %}Registro - Become a Tandarts{% elif lang == 'tr' %}Kayıt - Become a Tandarts{% elif lang == 'fa' %}ثبت نام - Become a Tandarts{% else %}Register - Become a Tandarts{% endif %}
+{% endblock %}
+
+{% block meta_description %}
+    {% if lang == 'ru' %}Создайте аккаунт на платформе Become a Tandarts для доступа к учебным материалам.{% elif lang == 'uk' %}Створіть обліковий запис на платформі Become a Tandarts для доступу до навчальних матеріалів.{% elif lang == 'nl' %}Maak een account aan op het Become a Tandarts platform om toegang te krijgen tot leermateriaal.{% elif lang == 'es' %}Crea una cuenta en la plataforma Become a Tandarts para acceder a los materiales de aprendizaje.{% elif lang == 'tr' %}Öğrenim materyallerine erişmek için Become a Tandarts platformunda bir hesap oluşturun.{% elif lang == 'fa' %}برای دسترسی به مطالب آموزشی، یک حساب کاربری در پلتفرم Become a Tandarts ایجاد کنید.{% else %}Create an account on the Become a Tandarts platform to access learning materials.{% endif %}
+{% endblock %}
+{# --- End SEO --- #}
+
+{% block styles %}
+{{ super() }}
+{# Подключаем новую систему тем #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
+<style>
+  /* Стили для страницы регистрации с использованием CSS переменных */
+  .register-container {
+    position: relative;
+    padding: 3rem 0;
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    background: var(--page-gradient);
+    overflow: hidden;
+    transition: var(--theme-transition);
+  }
+  
+  /* Анимированные плавающие фигуры на фоне */
+  .register-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--floating-background);
+    z-index: 0;
+  }
+  
+  .register-container::after {
+    content: '';
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    background: var(--floating-shape-2);
+    border-radius: 50%;
+    filter: blur(90px);
+    bottom: -150px;
+    right: -150px;
+    animation: float-2 18s infinite alternate ease-in-out;
+    z-index: 0;
+  }
+  
+  /* Дополнительные плавающие элементы на фоне */
+  .bg-floating-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(50px);
+    z-index: 0;
+    opacity: var(--floating-opacity);
+    pointer-events: none;
+    transition: var(--theme-transition);
+  }
+  
+  .shape-1 {
+    width: 200px;
+    height: 200px;
+    background: var(--floating-shape-1);
+    top: 15%;
+    right: 10%;
+    animation: float-shape-1 20s infinite alternate ease-in-out;
+  }
+  
+  .shape-2 {
+    width: 150px;
+    height: 150px;
+    background: var(--floating-shape-2);
+    bottom: 20%;
+    left: 10%;
+    animation: float-shape-2 17s infinite alternate ease-in-out;
+  }
+  
+  .shape-3 {
+    width: 100px;
+    height: 100px;
+    background: var(--floating-shape-3);
+    top: 30%;
+    left: 20%;
+    animation: float-shape-3 15s infinite alternate ease-in-out;
+  }
+  
+  .shape-4 {
+    width: 120px;
+    height: 120px;
+    background: var(--floating-shape-1);
+    bottom: 30%;
+    right: 20%;
+    animation: float-shape-4 19s infinite alternate ease-in-out;
+  }
+  
+  @keyframes float-shape-1 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(40px, -30px) rotate(10deg) scale(1.1); }
+  }
+  
+  @keyframes float-shape-2 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(-30px, 40px) rotate(-15deg) scale(1.2); }
+  }
+  
+  @keyframes float-shape-3 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(20px, 20px) rotate(5deg) scale(0.9); }
+  }
+  
+  @keyframes float-shape-4 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(-20px, -10px) rotate(-5deg) scale(1.1); }
+  }
+  
+  @keyframes float-2 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(-100px, -50px) rotate(-15deg); }
+  }
+  
+  .register-card {
+    border: var(--card-border);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: var(--theme-transition);
+    position: relative;
+    z-index: 1;
+    background: var(--card-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+  }
+  
+  .register-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+  }
+  
+  /* Заголовок */
+  .register-title {
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  
+  .register-subtitle {
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  /* Поля формы */
+  .form-floating > .form-control {
+    background-color: var(--input-bg);
+    border: var(--input-border);
+    color: var(--text-primary);
+    border-radius: var(--border-radius);
+    transition: var(--theme-transition);
+  }
+  
+  .form-floating > .form-control:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--primary);
+    box-shadow: var(--input-focus-shadow);
+  }
+  
+  .form-floating > label {
+    color: var(--text-secondary);
+  }
+  
+  .form-floating > .form-control:focus ~ label,
+  .form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--primary);
+  }
+  
+  /* Кнопки */
+  .btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    box-shadow: var(--button-shadow);
+    border-radius: var(--border-radius);
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: var(--theme-transition);
+    color: var(--text-white);
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--button-hover-shadow);
+    background: var(--primary-hover-gradient);
+  }
+  
+  .btn-outline-secondary {
+    border: var(--secondary-border);
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+    border-radius: var(--border-radius);
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: var(--theme-transition);
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: var(--secondary-hover-bg);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+  }
+  
+  /* Ошибки валидации */
+  .is-invalid {
+    border-color: var(--danger) !important;
+  }
+  
+  .invalid-feedback {
+    color: var(--danger);
+  }
+  
+  /* Ссылки */
+  a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: var(--theme-transition);
+  }
+  
+  a:hover {
+    color: var(--primary-hover);
+  }
+  
+  .text-muted {
+    color: var(--text-secondary) !important;
+  }
+  
+  /* Разделитель */
+  .separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 1.5rem 0;
+  }
+  
+  .separator::before,
+  .separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--separator-color);
+  }
+  
+  .separator span {
+    padding: 0 1rem;
+  }
+  
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .bg-floating-shape {
+      opacity: 0.3;
+    }
+    
+    .register-container {
+      padding: 1rem 0;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+{# Добавляем переключатель тем #}
+{% include 'includes/_theme_switcher.html' %}
+
+<div class="register-container">
+  <!-- Плавающие фоновые элементы -->
+  <div class="bg-floating-shape shape-1"></div>
+  <div class="bg-floating-shape shape-2"></div>
+  <div class="bg-floating-shape shape-3"></div>
+  <div class="bg-floating-shape shape-4"></div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="register-card card">
+          <div class="card-body p-4 p-sm-5">
+            <h2 class="register-title">
+              {% if lang == 'ru' %}Создать аккаунт{% elif lang == 'uk' %}Створити обліковий запис{% elif lang == 'nl' %}Account maken{% elif lang == 'es' %}Crear cuenta{% elif lang == 'tr' %}Hesap oluştur{% elif lang == 'fa' %}ایجاد حساب کاربری{% else %}Create Account{% endif %}
+            </h2>
+            
+            <p class="register-subtitle">
+              {% if lang == 'ru' %}Присоединяйтесь к сообществу будущих стоматологов{% elif lang == 'uk' %}Приєднуйтеся до спільноти майбутніх стоматологів{% elif lang == 'nl' %}Word lid van de gemeenschap van toekomstige tandartsen{% elif lang == 'es' %}Únete a la comunidad de futuros dentistas{% elif lang == 'tr' %}Gelecekteki diş hekimlerinin topluluğuna katılın{% elif lang == 'fa' %}به جامعه دندانپزشکان آینده بپیوندید{% else %}Join the community of future dentists{% endif %}
+            </p>
+
+            {# Отображение flash-сообщений #}
+            {% include '_flash_messages.html' ignore missing %}
+
+            {# Форма регистрации #}
+            <form method="POST" action="{{ url_for('auth_bp.register', lang=lang) }}" novalidate>
+              {{ form.hidden_tag() }}
+
+              <div class="mb-3">
+                <div class="form-floating">
+                  {% if form.name.errors %}
+                    {{ form.name(class="form-control form-control-lg is-invalid", placeholder="Ваше имя") }}
+                    <div class="invalid-feedback">
+                      {% for error in form.name.errors %}<span>{{ error }}</span>{% endfor %}
+                    </div>
+                  {% else %}
+                    {{ form.name(class="form-control form-control-lg", placeholder="Ваше имя") }}
+                  {% endif %}
+                  {{ form.name.label(class="") }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="form-floating">
+                  {% if form.email.errors %}
+                    {{ form.email(class="form-control form-control-lg is-invalid", placeholder="your@email.com") }}
+                    <div class="invalid-feedback">
+                      {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
+                    </div>
+                  {% else %}
+                    {{ form.email(class="form-control form-control-lg", placeholder="your@email.com") }}
+                  {% endif %}
+                  {{ form.email.label(class="") }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="form-floating">
+                  {% if form.password.errors %}
+                    {{ form.password(class="form-control form-control-lg is-invalid", placeholder="Пароль") }}
+                    <div class="invalid-feedback">
+                      {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                    </div>
+                  {% else %}
+                    {{ form.password(class="form-control form-control-lg", placeholder="Пароль") }}
+                  {% endif %}
+                  {{ form.password.label(class="") }}
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="form-floating">
+                  {% if form.confirm_password.errors %}
+                    {{ form.confirm_password(class="form-control form-control-lg is-invalid", placeholder="Подтвердите пароль") }}
+                    <div class="invalid-feedback">
+                      {% for error in form.confirm_password.errors %}<span>{{ error }}</span>{% endfor %}
+                    </div>
+                  {% else %}
+                    {{ form.confirm_password(class="form-control form-control-lg", placeholder="Подтвердите пароль") }}
+                  {% endif %}
+                  {{ form.confirm_password.label(class="") }}
+                </div>
+              </div>
+
+              <div class="d-grid mb-3">
+                {{ form.submit(class="btn btn-primary btn-lg") }}
+              </div>
+
+              <div class="text-center small">
+                {% if lang == 'ru' %}Уже есть аккаунт?{% elif lang == 'uk' %}Вже є обліковий запис?{% elif lang == 'nl' %}Heb je al een account?{% elif lang == 'es' %}¿Ya tienes una cuenta?{% elif lang == 'tr' %}Zaten hesabınız var mı?{% elif lang == 'fa' %}آیا قبلاً حساب کاربری دارید؟{% else %}Already have an account?{% endif %}
+                <a href="{{ url_for('auth_bp.login', lang=lang) }}">
+                  {% if lang == 'ru' %}Войти{% elif lang == 'uk' %}Увійти{% elif lang == 'nl' %}Inloggen{% elif lang == 'es' %}Iniciar sesión{% elif lang == 'tr' %}Giriş yap{% elif lang == 'fa' %}ورود{% else %}Sign In{% endif %}
+                </a>
+              </div>
+
+              {# Разделитель и кнопка Google (заглушка) #}
+              <div class="text-center">
+                <div class="separator">
+                  <span>
+                    {% if lang == 'ru' %}ИЛИ{% elif lang == 'uk' %}АБО{% elif lang == 'nl' %}OF{% elif lang == 'es' %}O{% elif lang == 'tr' %}VEYA{% elif lang == 'fa' %}یا{% else %}OR{% endif %}
+                  </span>
+                </div>
+                <button class="btn btn-outline-secondary w-100 disabled" type="button" aria-disabled="true">
+                  <i class="bi bi-google me-2"></i>
+                  {% if lang == 'ru' %}Продолжить с Google (скоро){% elif lang == 'uk' %}Продовжити з Google (незабаром){% elif lang == 'nl' %}Doorgaan met Google (binnenkort){% elif lang == 'es' %}Continuar con Google (próximamente){% elif lang == 'tr' %}Google ile devam et (yakında){% elif lang == 'fa' %}ادامه با گوگل (به زودی){% else %}Continue with Google (soon){% endif %}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

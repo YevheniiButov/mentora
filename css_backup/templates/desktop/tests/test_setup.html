@@ -1,0 +1,315 @@
+{% extends "desktop_base.html" %}
+
+{% block title %}{{ t('test_setup', lang) }} - {{ t('dental_academy', lang) }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .setup-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .test-types {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .test-type-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .test-type-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(62, 205, 193, 0.4);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    
+    .test-type-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .test-type-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(62, 205, 193, 0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #3ECDC1;
+    }
+    
+    .test-type-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .test-type-description {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+        line-height: 1.6;
+        flex-grow: 1;
+    }
+    
+    .test-type-meta {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .recent-tests {
+        margin-top: 3rem;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+    }
+    
+    .view-all {
+        color: #3ECDC1;
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .view-all:hover {
+        text-decoration: underline;
+    }
+    
+    .recent-tests-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+    
+    .recent-test-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .recent-test-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+    }
+    
+    .recent-test-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .recent-test-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: white;
+        margin: 0;
+    }
+    
+    .recent-test-date {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .recent-test-stats {
+        display: flex;
+        gap: 2rem;
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .stat-value {
+        color: #3ECDC1;
+        font-weight: 500;
+    }
+    
+    .progress-chart {
+        margin-top: 1rem;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        background: #3ECDC1;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="setup-container">
+    <div class="test-types">
+        <a href="{{ url_for('tests_bp.start_quick_test', lang=lang) }}" class="test-type-card">
+            <div class="test-type-header">
+                <div class="test-type-icon">
+                    <i class="bi bi-lightning-fill"></i>
+                </div>
+                <div>
+                    <h3 class="test-type-title">{{ t('quick_test', lang) }}</h3>
+                    <p class="test-type-description">{{ t('quick_test_description', lang) }}</p>
+                </div>
+            </div>
+            <div class="test-type-meta">
+                <div class="meta-item">
+                    <i class="bi bi-clock"></i>
+                    <span>5-10 {{ t('minutes', lang) }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="bi bi-question-circle"></i>
+                    <span>5-10 {{ t('questions', lang) }}</span>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('tests_bp.start_comprehensive_test', lang=lang) }}" class="test-type-card">
+            <div class="test-type-header">
+                <div class="test-type-icon">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div>
+                    <h3 class="test-type-title">{{ t('comprehensive_test', lang) }}</h3>
+                    <p class="test-type-description">{{ t('comprehensive_test_description', lang) }}</p>
+                </div>
+            </div>
+            <div class="test-type-meta">
+                <div class="meta-item">
+                    <i class="bi bi-clock"></i>
+                    <span>20-30 {{ t('minutes', lang) }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="bi bi-question-circle"></i>
+                    <span>20-30 {{ t('questions', lang) }}</span>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('tests_bp.start_custom_test', lang=lang) }}" class="test-type-card">
+            <div class="test-type-header">
+                <div class="test-type-icon">
+                    <i class="bi bi-gear"></i>
+                </div>
+                <div>
+                    <h3 class="test-type-title">{{ t('custom_test', lang) }}</h3>
+                    <p class="test-type-description">{{ t('custom_test_description', lang) }}</p>
+                </div>
+            </div>
+            <div class="test-type-meta">
+                <div class="meta-item">
+                    <i class="bi bi-sliders"></i>
+                    <span>{{ t('customizable', lang) }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="bi bi-tags"></i>
+                    <span>{{ t('multiple_categories', lang) }}</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    {% if recent_tests %}
+    <div class="recent-tests">
+        <div class="section-header">
+            <h2 class="section-title">{{ t('recent_tests', lang) }}</h2>
+            <a href="{{ url_for('tests_bp.test_history', lang=lang) }}" class="view-all">
+                {{ t('view_all', lang) }}
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        <div class="recent-tests-grid">
+            {% for test in recent_tests %}
+            <div class="recent-test-card">
+                <div class="recent-test-header">
+                    <h3 class="recent-test-title">{{ test.title }}</h3>
+                    <span class="recent-test-date">{{ test.date }}</span>
+                </div>
+                <div class="recent-test-stats">
+                    <div class="stat-item">
+                        <i class="bi bi-check-circle"></i>
+                        <span class="stat-value">{{ test.score }}/{{ test.total }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="bi bi-percent"></i>
+                        <span class="stat-value">{{ "%.1f"|format(test.accuracy) }}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="bi bi-clock"></i>
+                        <span>{{ test.duration }}</span>
+                    </div>
+                </div>
+                <div class="progress-chart">
+                    <div class="progress-bar" style="width: {{ test.accuracy }}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация прогресс-баров
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 100);
+    });
+});
+</script>
+{% endblock %} 
