@@ -1307,6 +1307,10 @@ def pwa_share_target():
         flash('Error processing shared content', 'error')
         return redirect(url_for('main_bp.index'))
 
+@app.route('/test-themes')
+def test_themes():
+    """Тестовая страница для демонстрации новой системы тем"""
+    return render_template('test_themes.html')
 
 if __name__ == '__main__':
     # Дополнительная отладочная информация при запуске
