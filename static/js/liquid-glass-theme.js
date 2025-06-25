@@ -103,9 +103,9 @@ class LiquidGlassTheme {
         
         // Добавляем CSS анимацию если её нет
         if (!document.querySelector('#liquid-wave-styles')) {
-            const style = document.createElement('style');
-            style.id = 'liquid-wave-styles';
-            style.textContent = `
+            const liquidWaveStyle = document.createElement('style');
+            liquidWaveStyle.id = 'liquid-wave-styles';
+            liquidWaveStyle.textContent = `
                 @keyframes liquidWave {
                     0% { 
                         opacity: 0;
@@ -128,7 +128,7 @@ class LiquidGlassTheme {
                                box-shadow 0.3s ease !important;
                 }
             `;
-            document.head.appendChild(style);
+            document.head.appendChild(liquidWaveStyle);
         }
         
         document.body.appendChild(wave);
@@ -257,9 +257,9 @@ class LiquidGlassTheme {
         
         // Добавляем CSS для анимации волны
         if (!document.querySelector('#liquid-ripple-styles')) {
-            const style = document.createElement('style');
-            style.id = 'liquid-ripple-styles';
-            style.textContent = `
+            const liquidRippleStyle = document.createElement('style');
+            liquidRippleStyle.id = 'liquid-ripple-styles';
+            liquidRippleStyle.textContent = `
                 @keyframes liquidRipple {
                     to {
                         transform: scale(2);
@@ -267,7 +267,7 @@ class LiquidGlassTheme {
                     }
                 }
             `;
-            document.head.appendChild(style);
+            document.head.appendChild(liquidRippleStyle);
         }
         
         element.style.position = 'relative';
@@ -317,9 +317,9 @@ class LiquidGlassTheme {
         
         // Добавляем CSS для анимации частиц
         if (!document.querySelector('#liquid-particles-styles')) {
-            const style = document.createElement('style');
-            style.id = 'liquid-particles-styles';
-            style.textContent = `
+            const liquidParticlesStyle = document.createElement('style');
+            liquidParticlesStyle.id = 'liquid-particles-styles';
+            liquidParticlesStyle.textContent = `
                 @keyframes liquidFloat {
                     0%, 100% {
                         transform: translateY(0px) rotate(0deg);
@@ -333,7 +333,7 @@ class LiquidGlassTheme {
                     }
                 }
             `;
-            document.head.appendChild(style);
+            document.head.appendChild(liquidParticlesStyle);
         }
         
         document.body.appendChild(particlesContainer);
@@ -447,7 +447,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // Добавляем дополнительные CSS стили для анимаций
-const additionalStyles = `
+const liquidGlassStyles = `
     .liquid-animate-in {
         animation: liquidSlideIn 0.6s ease-out forwards;
     }
@@ -483,8 +483,8 @@ const additionalStyles = `
 
 // Добавляем стили в head
 if (!document.querySelector('#liquid-glass-theme-styles')) {
-    const style = document.createElement('style');
-    style.id = 'liquid-glass-theme-styles';
-    style.textContent = additionalStyles;
-    document.head.appendChild(style);
+    const liquidThemeStyle = document.createElement('style');
+    liquidThemeStyle.id = 'liquid-glass-theme-styles';
+    liquidThemeStyle.textContent = liquidGlassStyles;
+    document.head.appendChild(liquidThemeStyle);
 } 

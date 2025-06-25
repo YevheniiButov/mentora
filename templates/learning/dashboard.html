@@ -6,1172 +6,264 @@
 
 {% block styles %}
     {{ super() }}
+    <!-- Унифицированная система стилей -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/category-navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_dashboard.css') }}">
-    <style>
-        /* === ТЕМНАЯ ТЕМА И ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ === */
-        
-
-        [data-theme="dark"] {
-            /* Темная тема */
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-card: #334155;
-            --bg-overlay: rgba(15, 23, 42, 0.95);
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-color: #475569;
-            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            --shadow-heavy: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-            --gradient-primary: linear-gradient(135deg, #3ECDC1 0%, #6C5CE7 100%);
-            --gradient-secondary: linear-gradient(135deg, #4c1d95 0%, #1e293b 100%);
-            --gradient-card: linear-gradient(145deg, #334155 0%, #1e293b 100%);
-        }
-
-        /* === ОСНОВНЫЕ СТИЛИ === */
-        body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
-        .learning-dashboard {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* === АНИМИРОВАННЫЕ ФОНОВЫЕ ЭЛЕМЕНТЫ === */
-        .dashboard-floating-shape {
-            position: absolute;
-            opacity: 0.1;
-            animation: float 6s ease-in-out infinite;
-            z-index: 1;
-        }
-
-        .dashboard-shape-1 {
-            width: 300px;
-            height: 300px;
-            background: var(--gradient-primary);
-            border-radius: 50%;
-            top: 10%;
-            right: -10%;
-            animation-delay: 0s;
-        }
-
-        .dashboard-shape-2 {
-            width: 200px;
-            height: 200px;
-            background: var(--gradient-secondary);
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            bottom: 20%;
-            left: -5%;
-            animation-delay: -2s;
-        }
-
-        .dashboard-shape-3 {
-            width: 150px;
-            height: 150px;
-            background: linear-gradient(45deg, #FDCB6E, #E17055);
-            border-radius: 50%;
-            top: 60%;
-            right: 20%;
-            animation-delay: -4s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-        }
-
-        /* === КОНТЕЙНЕР === */
-        .container {
-            position: relative;
-            z-index: 2;
-            max-width: 1200px;
-        }
-
-        /* === ЗАГОЛОВОК === */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 2rem 0;
-            background: var(--bg-overlay);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .dashboard-title h1 {
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 0;
-            padding: 0 2rem;
-        }
-
-        .dashboard-cta {
-            padding: 0 2rem;
-        }
-
-        /* === ПРОГРЕСС СЕКЦИЯ === */
-        .progress-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .progress-card {
-            background: var(--gradient-card);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(60, 205, 193, 0.1), transparent);
-            transform: rotate(-45deg);
-            transition: all 0.6s ease;
-            opacity: 0;
-        }
-
-        .progress-card:hover::before {
-            opacity: 1;
-            animation: shimmer 1s ease-in-out;
-        }
-
-        .progress-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-heavy);
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(-45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(-45deg); }
-        }
-
-        /* === КРУГОВОЙ ПРОГРЕСС === */
-        .progress-circle-wrapper {
-            text-align: center;
-        }
-
-        .progress-circle-outer {
-            position: relative;
-            display: inline-block;
-        }
-
-        .progress-circle-inner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .progress-percentage span {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .progress-circle-bg {
-            fill: none;
-            stroke: var(--border-color);
-            stroke-width: 12;
-        }
-
-        .progress-circle-progress {
-            fill: none;
-            stroke: url(#progressGradient);
-            stroke-width: 12;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 2s ease-in-out;
-        }
-
-        .progress-label {
-            margin-top: 1rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        /* === КАРТОЧКИ СТАТИСТИКИ === */
-        .card-title {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-value {
-            color: var(--text-primary);
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .progress-bar-container {
-            margin-top: 1rem;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: var(--border-color);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--gradient-primary);
-            border-radius: 10px;
-            transition: width 2s ease-in-out;
-        }
-
-        /* === КАЛЕНДАРЬ АКТИВНОСТИ === */
-        .activity-calendar {
-            background: var(--bg-card);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-light);
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 3px;
-            margin-top: 1rem;
-        }
-
-        .calendar-day {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-            background: var(--border-color);
-            transition: all 0.2s ease;
-        }
-
-        .calendar-day.active-1 { background: rgba(60, 205, 193, 0.3); }
-        .calendar-day.active-2 { background: rgba(60, 205, 193, 0.6); }
-        .calendar-day.active-3 { background: rgba(60, 205, 193, 0.8); }
-        .calendar-day.active-4 { background: rgba(60, 205, 193, 1); }
-
-        /* === МОДУЛИ === */
-        .recommended-section, .all-modules-section {
-            margin: 2rem 0;
-        }
-
-        .section-title {
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .module-card {
-            background: var(--gradient-card);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
-        }
-
-        .module-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-heavy);
-        }
-
-        .module-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .module-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-primary);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            color: white;
-            font-size: 1.5rem;
-        }
-
-        .module-title {
-            color: var(--text-primary);
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .module-description {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-
-        .module-progress {
-            margin-bottom: 1.5rem;
-        }
-
-        .progress-bar-bg {
-            height: 8px;
-            background: var(--border-color);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 0.5rem;
-        }
-
-        .module-progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-        }
-
-        .module-progress-value {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .module-progress-total {
-            color: var(--text-muted);
-        }
-
-        /* === СЕТКА МОДУЛЕЙ === */
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-        }
-
-        .module-small-card {
-            background: var(--bg-card);
-            border-radius: 15px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-light);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-
-        .module-small-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .module-small-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--gradient-primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .module-small-content {
-            flex: 1;
-        }
-
-        .module-small-title {
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-weight: 600;
-            margin: 0 0 0.5rem 0;
-        }
-
-        .module-small-progress {
-            display: flex;
-            align-items: center;
-        }
-
-        .progress-small-bar-bg {
-            height: 6px;
-            background: var(--border-color);
-            border-radius: 10px;
-            overflow: hidden;
-            flex: 1;
-            margin-right: 0.5rem;
-        }
-
-        .progress-small-bar-fill {
-            height: 100%;
-            background: var(--gradient-primary);
-            border-radius: 10px;
-            transition: width 1s ease-in-out;
-        }
-
-        .module-small-percentage {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            font-weight: 600;
-            min-width: 35px;
-        }
-
-        /* === КНОПКИ === */
-        .btn {
-            border-radius: 12px;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-            box-shadow: 0 4px 15px rgba(60, 205, 193, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(60, 205, 193, 0.4);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-outline-primary {
-            background: transparent;
-            color: #3ECDC1;
-            border: 2px solid #3ECDC1;
-        }
-
-        .btn-outline-secondary {
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-        }
-
-        /* === ПОДПИСКА === */
-        .subscription-section {
-            margin: 2rem 0;
-        }
-
-        .subscription-section .card {
-            background: var(--gradient-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .subscription-section .card-body {
-            padding: 2rem;
-        }
-
-        /* === МОДАЛЬНОЕ ОКНО === */
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            box-shadow: var(--shadow-heavy);
-        }
-
-        .modal-header, .modal-footer {
-            border-color: var(--border-color);
-        }
-
-        .modal-title {
-            color: var(--text-primary);
-        }
-
-        .form-control {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            border-radius: 12px;
-        }
-
-        .form-control:focus {
-            background: var(--bg-primary);
-            border-color: #3ECDC1;
-            box-shadow: 0 0 0 0.2rem rgba(60, 205, 193, 0.25);
-            color: var(--text-primary);
-        }
-
-        /* === АДАПТИВНОСТЬ === */
-        @media (max-width: 768px) {
-            .progress-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .dashboard-header {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-            }
-            
-            .dashboard-title h1 {
-                font-size: 2rem;
-            }
-            
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-            
-            .modules-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .module-small-card {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .module-small-icon {
-                margin-right: 0;
-                margin-bottom: 1rem;
-            }
-        }
-
-        /* === АНИМАЦИИ ПОЯВЛЕНИЯ === */
-        .fade-in-up {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        .fade-in-up:nth-child(1) { animation-delay: 0.1s; }
-        .fade-in-up:nth-child(2) { animation-delay: 0.2s; }
-        .fade-in-up:nth-child(3) { animation-delay: 0.3s; }
-        .fade-in-up:nth-child(4) { animation-delay: 0.4s; }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* === СТИЛИЗАЦИЯ СЧЕТЧИКОВ === */
-        .counter {
-            display: inline-block;
-        }
-
-        /* === ГРАДИЕНТЫ ДЛЯ SVG === */
-        .progress-gradient {
-            --start-color: #3ECDC1;
-            --end-color: #6C5CE7;
-        }
-    </style>
 {% endblock %}
 
 {% block content %}
-<div id="login-page-content" class="container main-content-padding">
-<section class="learning-dashboard">
-    <!-- Анимированные фоновые элементы -->
-    <div class="dashboard-floating-shape dashboard-shape-1"></div>
-    <div class="dashboard-floating-shape dashboard-shape-2"></div>
-    <div class="dashboard-floating-shape dashboard-shape-3"></div>
+<div class="learning-map-container">
+    <!-- Анимированные декоративные элементы -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
     
-    <div class="container">
-        <!-- Шапка дашборда -->
-        <div class="dashboard-header fade-in-up">
-            <div class="dashboard-title">
-                <h1>Dental Academy</h1>
+    <div class="main-container">
+        <!-- Левая колонка с навигацией -->
+        <div class="left-column">
+            <div class="section-header">
+                <h2>{{ t('quick_navigation', lang) | default('Быстрая навигация') }}</h2>
+        </div>
+
+            <div class="learning-paths">
+                <div class="learning-path-item">
+                    <button class="learning-path-button knowledge-center" onclick="scrollToSection('overview')">
+                        <div class="path-button-content">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                            <span>{{ t('overview', lang) | default('Обзор') }}</span>
+                        </div>
+                    </button>
+                </div>
+                
+                <div class="learning-path-item">
+                    <button class="learning-path-button communication" onclick="scrollToSection('progress')">
+                        <div class="path-button-content">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                <circle cx="12" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" fill="none" stroke="currentColor" stroke-width="2"></polyline>
+                            </svg>
+                            <span>{{ t('progress', lang) | default('Прогресс') }}</span>
             </div>
-            <div class="dashboard-cta">
-                <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-primary">
-                    <i class="bi bi-play-circle me-2"></i>
-                    {{ t('continue_learning', lang) }}
-                </a>
+                    </button>
+                </div>
+                
+                <div class="learning-path-item">
+                    <button class="learning-path-button preclinical" onclick="scrollToSection('modules')">
+                        <div class="path-button-content">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"></line>
+                                <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"></line>
+                            </svg>
+                            <span>{{ t('modules', lang) | default('Модули') }}</span>
+                    </div>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Секция прогресса -->
-        <div class="progress-section">
-            <!-- Круговой индикатор прогресса -->
-            <div class="progress-card fade-in-up">
-                <div class="progress-circle-wrapper">
-                    <div class="progress-circle-outer">
-                        <div class="progress-circle-inner">
-                            <div class="progress-percentage">
-                                <span id="progress-value" class="counter">{{ stats.overall_progress if stats and stats.overall_progress else 32 }}</span>%
+        <!-- Основной контент дашборда -->
+        <div class="middle-column">
+            <div class="page-header">
+                <div class="breadcrumb">
+                    <span class="active">{{ t('learning_dashboard', lang) | default('Дашборд обучения') }}</span>
+                </div>
+                <h1>{{ t('welcome_back', lang) | default('Добро пожаловать обратно') }}{% if current_user.first_name %}, {{ current_user.first_name }}{% endif %}!</h1>
+                <p>{{ t('dashboard_subtitle', lang) | default('Продолжайте свой путь к успешной сдаче экзамена') }}</p>
+            </div>
+
+            <!-- Секция обзора -->
+            <div id="overview" class="dashboard-section">
+                <div class="stats-section glass-effect">
+                    <div class="stats-cards">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="8" r="7"></circle>
+                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                                </svg>
+                </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ overall_stats.completed_lessons|default(0) }}</div>
+                                <div class="stat-label">{{ t('lessons_completed', lang) | default('Уроков завершено') }}</div>
+            </div>
+                </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ overall_stats.total_time_spent|default(0) }}</div>
+                                <div class="stat-label">{{ t('hours_studied', lang) | default('Часов изучено') }}</div>
+            </div>
+        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ overall_stats.streak_days|default(0) }}</div>
+                                <div class="stat-label">{{ t('day_streak', lang) | default('Дней подряд') }}</div>
                             </div>
                         </div>
-                        <svg class="progress-circle-svg" width="160" height="160" viewBox="0 0 160 160">
-                            <defs>
-                                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#3ECDC1;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#6C5CE7;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                            <circle class="progress-circle-bg" cx="80" cy="80" r="70" stroke-width="12" />
-                            <circle class="progress-circle-progress" cx="80" cy="80" r="70" stroke-width="12" 
-                                   stroke-dasharray="439.6" 
-                                   stroke-dashoffset="439.6" />
-                        </svg>
-                    </div>
-                    <div class="progress-label">
-                        {{ t('your_progress', lang) }}
                     </div>
                 </div>
             </div>
 
-            <!-- Дни активности -->
-            <div class="progress-card fade-in-up">
-                <h3 class="card-title">{{ t('activity_days', lang) }}</h3>
-                <div class="card-value">
-                    <span class="counter">{{ stats.active_days if stats and stats.active_days else 14 }}</span>
-                    <small style="font-size: 0.7em; color: var(--text-muted);">{{ t('days_short', lang) }}</small>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar">
-                        <div class="progress-bar-fill" data-width="{{ (stats.active_days if stats and stats.active_days else 14) / 30 * 100 }}"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Дата экзамена -->
-            <div class="progress-card fade-in-up">
-                <h3 class="card-title">{{ t('exam_date', lang) }}</h3>
-                <div class="card-value" style="font-size: 1.2rem;">
-                    {{ stats.next_exam_date if stats and stats.next_exam_date else t('exam_date_placeholder', lang) }}
-                </div>
-                <button id="changeExamDateBtn" class="btn btn-outline-secondary btn-sm mt-2">
-                    <i class="bi bi-calendar-event me-1"></i>
-                    {{ t('change_date', lang) }}
-                </button>
-            </div>
-        </div>
-
-        <!-- Календарь активности -->
-        <div class="activity-calendar fade-in-up">
-            <h3 class="section-title">
-                <i class="bi bi-calendar3 me-2"></i>
-                {{ t('activity_calendar', lang) }}
-            </h3>
-            <div class="calendar-grid" id="activityCalendar">
-                <!-- Генерируется JavaScript -->
-            </div>
-        </div>
-
-        <!-- Быстрая статистика -->
-        <div class="quick-stats fade-in-up" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0;">
-            <div class="stat-card" style="background: var(--bg-card); padding: 1.5rem; border-radius: 15px; text-align: center; border: 1px solid var(--border-color);">
-                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">
-                    <span class="counter">{{ stats.lessons_completed if stats and stats.lessons_completed else 24 }}</span>
-                </div>
-                <div style="color: var(--text-secondary); font-size: 0.9rem;">{{ t('lessons_completed', lang) }}</div>
-            </div>
-            <div class="stat-card" style="background: var(--bg-card); padding: 1.5rem; border-radius: 15px; text-align: center; border: 1px solid var(--border-color);">
-                <div style="font-size: 2rem; margin-bottom: 0.5rem;">⏱️</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">
-                    <span class="counter">{{ stats.study_hours if stats and stats.study_hours else 45 }}</span>{{ t('hours_short', lang) }}
-                </div>
-                <div style="color: var(--text-secondary); font-size: 0.9rem;">{{ t('study_time', lang) }}</div>
-            </div>
-            <div class="stat-card" style="background: var(--bg-card); padding: 1.5rem; border-radius: 15px; text-align: center; border: 1px solid var(--border-color);">
-                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔥</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">
-                    <span class="counter">{{ stats.streak_days if stats and stats.streak_days else 7 }}</span>
-                </div>
-                <div style="color: var(--text-secondary); font-size: 0.9rem;">{{ t('day_streak', lang) }}</div>
-            </div>
-            <div class="stat-card" style="background: var(--bg-card); padding: 1.5rem; border-radius: 15px; text-align: center; border: 1px solid var(--border-color);">
-                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">
-                    <span class="counter">{{ stats.average_score if stats and stats.average_score else 87 }}</span>%
-                </div>
-                <div style="color: var(--text-secondary); font-size: 0.9rem;">{{ t('average_score', lang) }}</div>
-            </div>
-        </div>
-
-        <!-- Подписка (если нет премиума) -->
-        {% if not user.has_subscription %}
-        <div class="subscription-section fade-in-up">
-            <div class="card bg-light mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4 class="mb-1">
-                                <i class="bi bi-star-fill me-2" style="color: #FDCB6E;"></i>
-                                {{ t('unlock_all_features', lang) }}
-                            </h4>
-                            <p class="mb-0" style="color: var(--text-muted);">{{ t('upgrade_premium_description', lang) }}</p>
-                        </div>
-                        <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="btn btn-primary">
-                            <i class="bi bi-arrow-up-circle me-1"></i>
-                            {{ t('subscribe_now', lang) }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Рекомендуемый модуль -->
-        <div class="recommended-section fade-in-up">
-            <h2 class="section-title">
-                <i class="bi bi-lightbulb me-2"></i>
-                {{ t('recommended_module', lang) }}
-            </h2>
+            <!-- Секция прогресса -->
+            <div id="progress" class="dashboard-section">
+                <h2>{{ t('learning_progress', lang) | default('Прогресс обучения') }}</h2>
             
-            {% if recommended_module %}
-            <div class="module-card">
-                <div class="module-header">
-                    <div class="module-icon">
-                        <i class="bi bi-book"></i>
+                {% if learning_paths %}
+                <div class="progress-grid">
+                    {% for path in learning_paths %}
+                    <div class="progress-card content-card">
+                        <div class="progress-header">
+                            <h3>{{ path.name }}</h3>
+                            <span class="progress-percentage">{{ path.progress }}%</span>
+                </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ path.progress }}%"></div>
+                </div>
+                        <div class="progress-details">
+                            <span>{{ path.completed_modules }}/{{ path.total_modules }} модулей</span>
+                            <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=path.id) }}">{{ t('continue', lang) | default('Продолжить') }}</a>
                     </div>
-                    <h3 class="module-title">
-                        {{ recommended_module.title }}
-                    </h3>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 </div>
                 
-                <div class="module-description">
-                    {{ recommended_module.description }}
-                </div>
+            <!-- Секция модулей -->
+            <div id="modules" class="dashboard-section">
+                <h2>{{ t('recent_modules', lang) | default('Недавние модули') }}</h2>
                 
-                <div class="module-progress">
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" data-width="{{ recommended_module.progress }}"></div>
-                    </div>
-                    <div class="module-progress-text">
-                        <span class="module-progress-value">{{ recommended_module.progress }}%</span>
-                        <span class="module-progress-total">{{ recommended_module.completed_lessons }}/{{ recommended_module.total_lessons }} {{ t('sections', lang) }}</span>
-                    </div>
-                </div>
-                
-                <div class="module-cta">
-                    <a href="{{ url_for('learning_map_bp.start_module_redirect', module_id=recommended_module.id, lang=lang) }}" class="btn btn-primary">
-                        <i class="bi bi-play-fill me-2"></i>
-                        {{ t('continue_this_module', lang) }}
-                    </a>
-                </div>
-            </div>
-            {% else %}
-            <div class="module-card">
-                <div class="module-header">
-                    <div class="module-icon">
-                        <i class="bi bi-tooth"></i>
-                    </div>
-                    <h3 class="module-title">
-                        {{ t('dental_anatomy', lang) }}
-                    </h3>
-                </div>
-                
-                <div class="module-description">
-                    {{ t('dental_anatomy_description', lang) }}
-                </div>
-                
-                <div class="module-progress">
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" data-width="86"></div>
-                    </div>
-                    <div class="module-progress-text">
-                        <span class="module-progress-value">86%</span>
-                        <span class="module-progress-total">3/5 {{ t('sections', lang) }}</span>
-                    </div>
-                </div>
-                
-                <div class="module-cta">
-                    <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-primary">
-                        <i class="bi bi-arrow-right me-2"></i>
-                        {{ t('go_to_learning', lang) }}
-                    </a>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Все модули -->
-        <div class="all-modules-section fade-in-up">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="bi bi-collection me-2"></i>
-                    {{ t('your_modules', lang) }}
-                </h2>
-                <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-grid me-1"></i>
-                    {{ t('all_modules', lang) }}
-                </a>
-            </div>
-            
-            <div class="modules-grid">
                 {% if recent_modules %}
+                <div class="modules-grid">
                     {% for module in recent_modules %}
-                    <div class="module-small-card fade-in-up">
-                        <div class="module-small-icon">
-                            <i class="bi {{ module.icon if module.icon else 'bi-book' }}"></i>
+                    <div class="module-card" data-module-id="{{ module.id }}">
+                        <div class="module-card-content">
+                            <div class="module-icon">
+                                <svg class="icon" width="24" height="24" viewBox="0 0 24 24">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            </div>
+                            <div class="module-info">
+                                <h3>{{ module.title }}</h3>
+                                <p>{{ module.description|default('')|truncate(80) }}</p>
+                                <div class="module-footer">
+                                    <div class="module-progress">
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar-fill" style="width: {{ module.progress }}%;"></div>
                         </div>
-                        <div class="module-small-content">
-                            <h4 class="module-small-title">
-                                {{ module.title }}
-                            </h4>
-                            <div class="module-small-progress">
-                                <div class="progress-small-bar-bg">
-                                    <div class="progress-small-bar-fill" data-width="{{ module.progress }}"></div>
+                                        <div class="progress-text">
+                                            <span>{{ module.progress }}%</span>
+                                            <span>{{ module.completed_lessons }}/{{ module.total_lessons }}</span>
+                            </div>
+                        </div>
+                                    <a href="{{ url_for('learning_map_bp.start_module_redirect', lang=lang, module_id=module.id) }}" class="module-btn">
+                                        {% if module.progress == 100 %}{{ t('repeat', lang) }}{% elif module.progress > 0 %}{{ t('continue', lang) }}{% else %}{{ t('start', lang) }}{% endif %}
+                                    </a>
                                 </div>
-                                <span class="module-small-percentage">{{ module.progress }}%</span>
                             </div>
                         </div>
                     </div>
                     {% endfor %}
-                {% else %}
-                    <!-- Примеры модулей -->
-                    <div class="module-small-card fade-in-up">
-                        <div class="module-small-icon">
-                            <i class="bi bi-book-half"></i>
-                        </div>
-                        <div class="module-small-content">
-                            <h4 class="module-small-title">
-                                {{ t('terminology', lang) }}
-                            </h4>
-                            <div class="module-small-progress">
-                                <div class="progress-small-bar-bg">
-                                    <div class="progress-small-bar-fill" data-width="45"></div>
-                                </div>
-                                <span class="module-small-percentage">45%</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="module-small-card fade-in-up">
-                        <div class="module-small-icon">
-                            <i class="bi bi-lungs"></i>
-                        </div>
-                        <div class="module-small-content">
-                            <h4 class="module-small-title">
-                                {{ t('physiology', lang) }}
-                            </h4>
-                            <div class="module-small-progress">
-                                <div class="progress-small-bar-bg">
-                                    <div class="progress-small-bar-fill" data-width="30"></div>
-                                </div>
-                                <span class="module-small-percentage">30%</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="module-small-card fade-in-up">
-                        <div class="module-small-icon">
-                            <i class="bi bi-x-ray"></i>
-                        </div>
-                        <div class="module-small-content">
-                            <h4 class="module-small-title">
-                                {{ t('radiology', lang) }}
-                            </h4>
-                            <div class="module-small-progress">
-                                <div class="progress-small-bar-bg">
-                                    <div class="progress-small-bar-fill" data-width="12"></div>
-                                </div>
-                                <span class="module-small-percentage">12%</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="module-small-card fade-in-up">
-                        <div class="module-small-icon">
-                            <i class="bi bi-file-medical"></i>
-                        </div>
-                        <div class="module-small-content">
-                            <h4 class="module-small-title">
-                                {{ t('diagnostics', lang) }}
-                            </h4>
-                            <div class="module-small-progress">
-                                <div class="progress-small-bar-bg">
-                                    <div class="progress-small-bar-fill" data-width="5"></div>
-                                </div>
-                                <span class="module-small-percentage">5%</span>
-                            </div>
-                        </div>
                     </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Модальное окно для изменения даты экзамена -->
-        <div class="modal fade" id="examDateModal" tabindex="-1" aria-labelledby="examDateModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="examDateModalLabel">
-                            <i class="bi bi-calendar-check me-2"></i>
-                            {{ t('set_exam_date', lang) }}
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Правая колонка со статистикой -->
+        <div class="right-column">
+            <div class="stats-section">
+                <h2>{{ t('overall_progress', lang) | default('Общий прогресс') }}</h2>
+                <div class="progress-circle-container">
+                    <div class="progress-circle" data-progress="{{ overall_stats.overall_progress|default(0) }}">
+                        <div class="circle-background"></div>
+                        <div class="circle-progress" style="transform: rotate({{ overall_stats.overall_progress|default(0) * 1.8 }}deg)"></div>
+                        <div class="circle-text">{{ overall_stats.overall_progress|default(0) }}%</div>
                     </div>
-                    <div class="modal-body">
-                        <form id="examDateForm">
-                            <div class="mb-3">
-                                <label for="examDate" class="form-label">
-                                    {{ t('select_date', lang) }}
-                                </label>
-                                <input type="date" class="form-control" id="examDate" name="examDate">
+                </div>
+            </div>
+            
+            <div class="countdown-section">
+                <h2>{{ t('countdown', lang) | default('Обратный отсчет') }}</h2>
+                <div class="day-counter">
+                    <span class="days-number">{{ overall_stats.days_until_exam|default(0) }}</span>
+                    <span class="days-label">{{ t('days_until_exam', lang) | default('дней до экзамена') }}</span>
+                </div>
+            </div>
+            
+            <div class="recommendations-section">
+                <h2>{{ t('recommendations', lang) | default('Рекомендации') }}</h2>
+                <div class="recommendations-list">
+                    {% if recommendations and recommendations|length > 0 %}
+                        {% for rec in recommendations %}
+                        <div class="recommendation-item">
+                            <div class="rec-icon {% if loop.index % 2 == 0 %}purple{% else %}blue{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
                             </div>
-                        </form>
+                            <div class="rec-info">
+                                <h4>{{ rec.title }}</h4>
+                                <span>{{ rec.subject_name }}</span>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            {{ t('cancel', lang) }}
+                            <button class="rec-action" onclick="startModule({{ rec.module_id }})">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
                         </button>
-                        <button type="button" class="btn btn-primary" id="saveExamDate">
-                            <i class="bi bi-check-lg me-1"></i>
-                            {{ t('save', lang) }}
-                        </button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-recommendations">
+                        <p>{{ t('no_recommendations', lang) | default('Рекомендации будут доступны после начала обучения') }}</p>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-</section>
 </div>
 {% endblock %}
 
-{% block body_scripts %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
 <script>
+// Инициализация системы категорий
 document.addEventListener('DOMContentLoaded', function() {
-    // === АНИМАЦИЯ ЧИСЕЛ (СЧЕТЧИКИ) ===
-    function animateCounters() {
-        const counters = document.querySelectorAll('.counter');
-        
-        counters.forEach(counter => {
-            const target = parseInt(counter.textContent);
-            const duration = 2000;
-            const increment = target / (duration / 16);
-            let current = 0;
-            
-            const updateCounter = () => {
-                if (current < target) {
-                    current += increment;
-                    counter.textContent = Math.floor(current);
-                    requestAnimationFrame(updateCounter);
-                } else {
-                    counter.textContent = target;
-                }
-            };
-            
-            // Запускаем анимацию с задержкой
-            setTimeout(updateCounter, 500);
-        });
-    }
-    
-    // === АНИМАЦИЯ ПРОГРЕСС-БАРОВ ===
-    function animateProgressBars() {
-        const progressBars = document.querySelectorAll('[data-width]');
-        
-        progressBars.forEach(bar => {
-            const targetWidth = bar.getAttribute('data-width');
-            bar.style.width = '0%';
-            
-            setTimeout(() => {
-                bar.style.width = targetWidth + '%';
-            }, 800);
-        });
-    }
-    
-    // === КРУГОВОЙ ПРОГРЕСС ===
-    function animateCircularProgress() {
-        const progressCircle = document.querySelector('.progress-circle-progress');
-        if (progressCircle) {
-            const progressValue = parseFloat(document.getElementById('progress-value').textContent);
-            const radius = progressCircle.getAttribute('r');
-            const circumference = 2 * Math.PI * radius;
-            
-            progressCircle.style.strokeDasharray = circumference;
-            progressCircle.style.strokeDashoffset = circumference;
-            
-            setTimeout(() => {
-                const offset = circumference - (circumference * progressValue / 100);
-                progressCircle.style.strokeDashoffset = offset;
-            }, 1000);
-        }
-    }
-    
-    // === КАЛЕНДАРЬ АКТИВНОСТИ ===
-    function generateActivityCalendar() {
-        const calendar = document.getElementById('activityCalendar');
-        if (!calendar) return;
-        
-        const days = 91; // 13 недель
-        const today = new Date();
-        
-        for (let i = days - 1; i >= 0; i--) {
-            const day = document.createElement('div');
-            day.className = 'calendar-day';
-            
-            // Случайная активность для демонстрации
-            const activity = Math.random();
-            if (activity > 0.8) day.classList.add('active-4');
-            else if (activity > 0.6) day.classList.add('active-3');
-            else if (activity > 0.4) day.classList.add('active-2');
-            else if (activity > 0.2) day.classList.add('active-1');
-            
-            // Добавляем дату в атрибут для tooltip
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            day.setAttribute('title', date.toLocaleDateString('{{ lang }}'));
-            
-            calendar.appendChild(day);
-        }
-    }
-    
-    // === МОДАЛЬНОЕ ОКНО ДАТЫ ЭКЗАМЕНА ===
-    function setupExamDateModal() {
-        const changeExamDateBtn = document.getElementById('changeExamDateBtn');
-        const saveExamDateBtn = document.getElementById('saveExamDate');
-        
-        if (changeExamDateBtn && saveExamDateBtn) {
-            changeExamDateBtn.addEventListener('click', function() {
-                const examDateModal = new bootstrap.Modal(document.getElementById('examDateModal'));
-                examDateModal.show();
-            });
-            
-            saveExamDateBtn.addEventListener('click', function() {
-                const examDateInput = document.getElementById('examDate');
-                if (examDateInput && examDateInput.value) {
-                    const examDate = new Date(examDateInput.value);
-                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                    const formattedDate = examDate.toLocaleDateString('{{ lang }}', options);
-                    
-                    const cardValue = document.querySelector('.progress-card:nth-child(3) .card-value');
-                    if (cardValue) {
-                        cardValue.textContent = formattedDate;
-                    }
-                    
-                    // Отправка на сервер
-                    fetch('{{ url_for("dashboard_bp.save_exam_date", lang=lang) }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
-                        },
-                        body: JSON.stringify({ 
-                            examDate: examDateInput.value 
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            bootstrap.Modal.getInstance(document.getElementById('examDateModal')).hide();
-                            showNotification('{{ t("exam_date_saved", lang) }}', 'success');
-                        } else {
-                            showNotification('{{ t("error_saving_date", lang) }}', 'danger');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showNotification('{{ t("server_error", lang) }}', 'danger');
-                    });
-                }
-            });
-        }
-    }
-    
-    // === УВЕДОМЛЕНИЯ ===
-    function showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-        notification.style.zIndex = '9999';
-        notification.innerHTML = `
-            <i class="bi bi-check-circle me-2"></i>
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            const bootstrapAlert = bootstrap.Alert.getOrCreateInstance(notification);
-            bootstrapAlert.close();
-        }, 5000);
-    }
-    
-    // === HOVER ЭФФЕКТЫ ДЛЯ КАРТОЧЕК ===
-    function setupCardHoverEffects() {
-        const cards = document.querySelectorAll('.progress-card, .module-card, .module-small-card');
-        
-        cards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px) scale(1.02)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        });
-    }
-    
-    // === ИНИЦИАЛИЗАЦИЯ ===
-    // Запускаем все анимации
-    setTimeout(animateCounters, 300);
-    setTimeout(animateProgressBars, 600);
-    setTimeout(animateCircularProgress, 500);
-    
-    // Генерируем календарь
-    generateActivityCalendar();
-    
-    // Настраиваем интерактивность
-    setupExamDateModal();
-    setupCardHoverEffects();
-    
-    // Intersection Observer для анимаций появления
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-    
-    // Наблюдаем за элементами с анимацией
-    document.querySelectorAll('.fade-in-up').forEach(el => {
-        observer.observe(el);
-    });
+    // Система автоматически инициализируется через universal-category-system.js
+    // Дополнительная настройка не требуется
 });
+
+function scrollToSection(sectionId) {
+    document.getElementById(sectionId).scrollIntoView({ 
+        behavior: 'smooth' 
+    });
+}
+
+function startModule(moduleId) {
+    window.location.href = '/{{ lang }}/learning-map/module/' + moduleId + '/start';
+            }
 </script>
 {% endblock %}

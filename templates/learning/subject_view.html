@@ -168,31 +168,25 @@
             {% if selected_subject %}
             <div class="subject-content">
                 {% if subject_modules %}
-                <div class="modules-grid">
+                <!-- Компактные модули без статистики -->
+                <div class="modules-grid-compact">
                     {% for module in subject_modules %}
-                    <div class="module-card" data-module-id="{{ module.id }}">
-                        <div class="module-card-content">
-                            <div class="module-icon">
-                                <svg class="icon" width="24" height="24" viewBox="0 0 24 24">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                </svg>
-                            </div>
-                            <div class="module-info">
-                                <h3>{{ module.title }}</h3>
-                                <p>{{ module.description|default('')|truncate(80) }}</p>
-                                <div class="module-footer">
-                                    <div class="module-progress">
-                                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: {{ module.progress }}%;"></div></div>
-                                        <div class="progress-text"><span>{{ module.progress }}%</span><span>{{ module.completed_lessons }}/{{ module.total_lessons }}</span></div>
-                                    </div>
-                                    {% if module.is_premium and not user.has_subscription %}<span class="badge premium-badge">{{ t('premium', lang) }}</span>{% endif %}
-                                    <a href="{{ url_for('learning_map_bp.start_module_redirect', lang=lang, module_id=module.id) }}" class="module-btn">
-                                        {% if module.progress == 100 %}{{ t('repeat', lang) }}{% elif module.progress > 0 %}{{ t('continue', lang) }}{% else %}{{ t('start', lang) }}{% endif %}
-                                    </a>
-                                </div>
-                            </div>
+                    <div class="module-card-compact" data-module-id="{{ module.id }}">
+                        <div class="module-icon-compact">
+                            <i class="bi bi-book"></i>
                         </div>
+                        <div class="module-info-compact">
+                            <h3>{{ module.title }}</h3>
+                            {% if module.is_premium and not user.has_subscription %}
+                                <span class="badge premium-badge">{{ t('premium', lang) }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('learning_map_bp.start_module_redirect', lang=lang, module_id=module.id) }}" 
+                           class="module-btn-compact">
+                            {% if module.progress == 100 %}{{ t('repeat', lang) }}
+                            {% elif module.progress > 0 %}{{ t('continue', lang) }}
+                            {% else %}{{ t('start', lang) }}{% endif %}
+                        </a>
                     </div>
                     {% endfor %}
                 </div>

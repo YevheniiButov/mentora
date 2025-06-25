@@ -12,6 +12,12 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import sys
 import os
 
+# Условный импорт termios только для Unix-систем
+try:
+    import termios
+except ImportError:
+    termios = None
+
 # Добавляем текущую директорию в PYTHONPATH
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -33,11 +39,9 @@ from routes.main_routes import main_bp
 from routes.auth_routes import auth_bp
 from routes.admin_routes import admin_bp
 from routes.admin import admin_unified_bp  # Новая единая админка
-from routes.admin_unified import admin_unified_bp as admin_simple_bp  # Простая админка
 from routes.forum_routes import forum_bp
 from routes.virtual_patient_routes import virtual_patient_bp
 from routes.api_routes import api_bp
-from routes.learn_bp import lesson_bp as learning_bp
 from routes.tests_routes import tests_bp
 from routes.learning_map_routes import learning_map_bp
 from routes.dashboard_routes import dashboard_bp
@@ -286,6 +290,14 @@ def create_app(test_config=None):
         instance_relative_config=True
     )
     
+    # Импорт blueprints в начале функции
+    from routes import (
+        auth_bp, main_bp, learning_map_bp, lesson_bp, modules_bp, 
+        tests_bp, content_bp, forum_bp, virtual_patient_bp, subject_view_bp,
+        api_bp, admin_bp, admin_unified_bp, ai_bp, mobile_bp,
+        virtual_patient_api_bp, content_nav_bp, dashboard_bp
+    )
+    
     # Загрузка конфигурации
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
@@ -326,6 +338,26 @@ def create_app(test_config=None):
     login_manager.login_message = "Please log in to access this page."
     login_manager.refresh_view = 'auth_bp.login'
     login_manager.needs_refresh_message = "Please log in again to confirm your identity"
+    
+    # Регистрация blueprints
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(main_bp)
+    app.register_blueprint(learning_map_bp)
+    app.register_blueprint(lesson_bp)
+    app.register_blueprint(modules_bp)
+    app.register_blueprint(tests_bp)
+    app.register_blueprint(content_bp)
+    app.register_blueprint(forum_bp)
+    app.register_blueprint(virtual_patient_bp)
+    app.register_blueprint(subject_view_bp)
+    app.register_blueprint(api_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(admin_unified_bp)
+    app.register_blueprint(ai_bp)
+    app.register_blueprint(mobile_bp)
+    app.register_blueprint(virtual_patient_api_bp)
+    app.register_blueprint(content_nav_bp)
+    app.register_blueprint(dashboard_bp)
     
     @login_manager.user_loader
     def load_user(user_id):
@@ -725,37 +757,6 @@ def create_app(test_config=None):
         except ValueError:
             print("❌ Please enter a valid number")
 
-    # Регистрация остальных маршрутов
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(main_bp)
-    
-    # Условная регистрация blueprint'ов
-    if learning_bp:
-        app.register_blueprint(learning_bp)
-    
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(admin_unified_bp)  # Регистрируем единую админку
-    app.register_blueprint(admin_simple_bp)  # Регистрируем простую админку
-    app.register_blueprint(forum_bp)
-
-    # Регистрируем новый blueprint для навигации по контенту
-    from routes.content_navigation import content_nav_bp
-    app.register_blueprint(content_nav_bp)             # Навигация по контенту
-
-    # Регистрируем универсальный загрузчик контента
-    from routes.admin.uploader_routes import uploader_bp
-    app.register_blueprint(uploader_bp)                # Универсальный загрузчик
-
-    app.register_blueprint(tests_bp)
-    app.register_blueprint(learning_map_bp)
-    app.register_blueprint(dashboard_bp)
-    app.register_blueprint(modules_bp)  
-    app.register_blueprint(subject_view_bp)
-    app.register_blueprint(mobile_bp)
-    app.register_blueprint(ai_bp)
-    app.register_blueprint(virtual_patient_bp)
-    app.register_blueprint(api_bp)
-
     # Инициализация мобильной интеграции
     init_mobile_integration(app)
     
@@ -958,12 +959,12 @@ def create_app(test_config=None):
             logger.error(f"❌ Error creating database tables: {e}")
 
     print("="*50)
-    print("🌐 Starting Flask development server...")
+    print("🌐 Flask application configured successfully!")
     print("💡 Available CLI commands:")
     print("   - flask import-content  : Import JSON files to database")
     print("   - flask clear-content   : Clear all imported content")
     print("   - flask show-modules    : Show all modules in database")
-    print("="*50 + "\n")
+    print("="*50)
 
     return app
 
@@ -1315,56 +1316,24 @@ def test_themes():
 @app.route('/index-new')
 def index_new():
     """Новая версия главной страницы с системой тем"""
-    return render_template('index_new.html')
+    lang = getattr(g, 'lang', session.get('lang', DEFAULT_LANGUAGE))
+    translations = setup_translations(app)
+    return render_template('index_new.html', 
+                         lang=lang, 
+                         translations=translations,
+                         user=current_user)
 
 if __name__ == '__main__':
-    # Дополнительная отладочная информация при запуске
-    print("\n" + "="*50)
-    print("🚀 STARTING BECOME A TANDARTS APPLICATION")
-    print("="*50)
-    
-    # Проверяем структуру каталогов
-    cards_dir = os.path.join(os.getcwd(), 'cards')
-    print(f"📂 Cards directory: {cards_dir}")
-    print(f"📂 Directory exists: {os.path.exists(cards_dir)}")
-    
-    if os.path.exists(cards_dir):
-        subdirs = [d for d in os.listdir(cards_dir) if os.path.isdir(os.path.join(cards_dir, d))]
-        print(f"📁 Available topic folders: {subdirs}")
-        
-        for subdir in subdirs:
-            subdir_path = os.path.join(cards_dir, subdir)
-            files = os.listdir(subdir_path)
-            json_files = [f for f in files if f.endswith('.json')]
-            print(f"   📁 {subdir}/: {json_files}")
-    else:
-        print("⚠️  WARNING: Cards directory not found!")
-        print(f"   Current working directory: {os.getcwd()}")
-        print(f"   Expected directory: {cards_dir}")
-        print("   💡 To import content, create the cards/ directory with JSON files")
-        print("      Then run: flask import-content")
-    
-    # Показываем информацию о модулях в БД
-    with app.app_context():
-        try:
-            modules = Module.query.all()
-            print(f"\n📚 Database modules ({len(modules)} total):")
-            for module in modules:
-                lessons_count = Lesson.query.filter_by(module_id=module.id).count()
-                print(f"   - ID {module.id}: {module.title} ({lessons_count} lessons)")
-            
-            if len(modules) == 0:
-                print("   ℹ️  No modules found in database.")
-                print("      To import content from JSON files, run: flask import-content")
-        except Exception as e:
-            print(f"❌ Error querying database: {e}")
-    
-    print("="*50)
     print("🌐 Starting Flask development server...")
-    print("💡 Available CLI commands:")
-    print("   - flask import-content  : Import JSON files to database")
-    print("   - flask clear-content   : Clear all imported content")
-    print("   - flask show-modules    : Show all modules in database")
-    print("="*50 + "\n")
-    
-    app.run(debug=True, port=8081)
+    # Запуск с защитой от проблем с терминалом
+    try:
+        app.run(debug=True, port=8082, use_reloader=True)
+    except (OSError, termios.error if termios else OSError) as e:
+        print(f"⚠️  Debug mode error: {e}")
+        print("🔄 Trying without reloader...")
+        try:
+            app.run(debug=False, port=8082, use_reloader=False)
+        except Exception as e2:
+            print(f"❌ Fatal error: {e2}")
+            print("💡 Try running with: python app.py --no-debug")
+            sys.exit(1)

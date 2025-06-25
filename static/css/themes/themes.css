@@ -1,12 +1,29 @@
+/* ===== THEME SYSTEM - MAIN IMPORT FILE ===== */
+/* static/css/themes/themes.css */
+
+/* 1. Сначала базовые переменные (НЕЙТРАЛЬНЫЕ) */
+@import url('./core-variables.css');
+
+/* 2. Потом темы (в порядке специфичности - светлая ПЕРВОЙ!) */
+@import url('./light-theme.css');    /* Первой для правильного cascade! */
+@import url('./dark-theme.css');
+@import url('./gradient-theme.css');
+
+/* 3. Затем компоненты */
+@import url('./theme-components.css');
+
+/* 4. ПРИНУДИТЕЛЬНОЕ переопределение для светлой темы (для отладки) */
+[data-theme="light"] {
+  --bg-primary: #ffffff !important;    /* Белый фон */
+  --bg-secondary: #f8fafc !important;  /* Очень светлый */
+  --text-primary: #0f172a !important;  /* Очень темный текст */
+  --border-color: #e2e8f0 !important;  /* Светлая граница */
+  --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #f0f4ff 50%, #fef7f0 75%, #fff7ed 100%) !important;  /* Уникальный светлый градиент */
+  --hero-bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #f0f4ff 50%, #fef7f0 75%, #fff7ed 100%) !important;  /* ПРАВИЛЬНАЯ ПЕРЕМЕННАЯ! */
+}
+
 /* ===== DENTAL ACADEMY THEMES SYSTEM ===== */
 /* static/css/themes/themes.css - ЕДИНСТВЕННАЯ ТОЧКА ПОДКЛЮЧЕНИЯ */
-
-/* ===== CORE IMPORTS (строгий порядок!) ===== */
-@import url('./core-variables.css');    /* 1. Базовые переменные */
-@import url('./light-theme.css');       /* 2. Светлая тема (по умолчанию) */
-@import url('./dark-theme.css');        /* 3. Темная тема */
-@import url('./gradient-theme.css');    /* 4. Градиентная тема */
-@import url('./theme-components.css');  /* 5. Универсальные компоненты */
 
 /* ===== THEME INITIALIZATION ===== */
 /* Устанавливаем светлую тему по умолчанию если не задана */

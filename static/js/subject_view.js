@@ -132,6 +132,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Отправляем запрос к API
     fetch(`/${currentLang}/learning-map/api/start-module/${moduleId}`)
       .then(response => {
+        // Проверяем, не является ли ответ перенаправлением
+        if (response.redirected) {
+          console.warn('API вернул перенаправление, возможно пользователь не авторизован');
+          throw new Error('Перенаправление на страницу входа');
+        }
+        
         if (!response.ok) {
           return response.json().then(errData => {
             throw new Error(errData.message || `API вернул статус ${response.status}`);

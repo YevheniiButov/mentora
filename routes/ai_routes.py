@@ -728,65 +728,145 @@ def get_analytics_dashboard_data(lang):
 
 # ===== СПЕЦИАЛИЗИРОВАННЫЕ AI ENDPOINTS ДЛЯ UI ВИДЖЕТОВ =====
 
+# Безопасная функция получения статистики пользователя
+def get_user_stats_safe(user_id):
+    """Безопасное получение статистики пользователя с fallback данными."""
+    try:
+        # Пытаемся импортировать функцию из разных модулей
+        try:
+            from routes.learning_map_routes import get_user_stats
+            return get_user_stats(user_id)
+        except ImportError:
+            try:
+                from routes.dashboard_routes import get_user_stats
+                return get_user_stats(user_id)
+            except ImportError:
+                try:
+                    from routes.mobile_routes import get_user_stats
+                    return get_user_stats(user_id)
+                except ImportError:
+                    # Если все импорты не удались, создаем базовую статистику
+                    current_app.logger.warning(f"Could not import get_user_stats, using fallback for user {user_id}")
+                    return create_fallback_user_stats(user_id)
+    except Exception as e:
+        current_app.logger.error(f"Error getting user stats for user {user_id}: {e}", exc_info=True)
+        return create_fallback_user_stats(user_id)
+
+def create_fallback_user_stats(user_id):
+    """Создает fallback статистику пользователя."""
+    try:
+        # Получаем базовую информацию из базы данных
+        total_lessons = db.session.query(Lesson).count()
+        user_progress_count = db.session.query(UserProgress).filter_by(user_id=user_id).count()
+        
+        return {
+            'total_progress': 0,
+            'completed_lessons': user_progress_count,
+            'total_lessons': max(total_lessons, 1),  # Избегаем деления на ноль
+            'completion_rate': user_progress_count / max(total_lessons, 1) if total_lessons > 0 else 0,
+            'current_level': 1,
+            'study_time': 0.0,
+            'active_days': 0,
+            'fallback_mode': True
+        }
+    except Exception as e:
+        current_app.logger.error(f"Error creating fallback stats for user {user_id}: {e}", exc_info=True)
+        # Минимальная fallback статистика
+        return {
+            'total_progress': 0,
+            'completed_lessons': 0,
+            'total_lessons': 1,
+            'completion_rate': 0,
+            'current_level': 1,
+            'study_time': 0.0,
+            'active_days': 0,
+            'fallback_mode': True
+        }
+
 @ai_bp.route('/predict-exam', methods=['POST'])
 @login_required
 @csrf.exempt
 def predict_exam(lang):
     """Предсказание экзаменационных результатов на основе прогресса пользователя."""
     try:
-        data = request.get_json() if request.is_json else {}
+        # Безопасная обработка JSON с защитой от пустых запросов
+        try:
+            if request.is_json and request.get_data():
+                data = request.get_json()
+            else:
+                data = {}
+        except Exception as json_error:
+            current_app.logger.warning(f"JSON parsing error for user {current_user.id}: {json_error}")
+            data = {}
         
-        # Получаем данные пользователя для анализа
-        from routes.learning_map_routes import get_user_stats
-        user_stats = get_user_stats(current_user.id)
+        # Получаем данные пользователя для анализа БЕЗОПАСНО
+        user_stats = get_user_stats_safe(current_user.id)
         
-        # Простая логика предсказания на основе статистики
+        # Безопасное извлечение данных с проверкой типов
         total_progress = user_stats.get('total_progress', 0)
         completed_lessons = user_stats.get('completed_lessons', 0)
-        total_lessons = user_stats.get('total_lessons', 1)
+        total_lessons = max(user_stats.get('total_lessons', 1), 1)  # Избегаем деления на ноль
         completion_rate = completed_lessons / total_lessons if total_lessons > 0 else 0
+        fallback_mode = user_stats.get('fallback_mode', False)
         
-        # Вычисляем предсказания
-        exam_readiness = min(100, max(0, (completion_rate * 100) + random.randint(-15, 15)))
-        success_probability = min(100, max(20, exam_readiness + random.randint(-10, 10)))
+        # Вычисляем предсказания с защитой от ошибок
+        try:
+            exam_readiness = min(100, max(0, (completion_rate * 100) + random.randint(-15, 15)))
+            success_probability = min(100, max(20, exam_readiness + random.randint(-10, 10)))
+        except (TypeError, ValueError) as e:
+            current_app.logger.warning(f"Error calculating readiness for user {current_user.id}: {e}")
+            exam_readiness = 75.0
+            success_probability = 80.0
         
         # Определяем слабые места (случайный выбор для демонстрации)
         potential_topics = [
             "Анатомия зубов", "Пародонтология", "Эндодонтия", 
             "Ортодонтия", "Хирургия", "Терапия"
         ]
-        weak_areas = random.sample(potential_topics, min(3, len(potential_topics)))
+        
+        try:
+            weak_areas = random.sample(potential_topics, min(3, len(potential_topics)))
+        except (ValueError, TypeError):
+            weak_areas = ["Требуется больше практики"]
         
         # Рекомендации по улучшению
         recommendations = []
-        if exam_readiness < 70:
-            recommendations.extend([
-                "Изучите основные модули перед экзаменом",
-                "Пройдите дополнительные тесты",
-                "Повторите слабые темы"
-            ])
-        elif exam_readiness < 85:
-            recommendations.extend([
-                "Закрепите знания практическими заданиями",
-                "Изучите сложные случаи"
-            ])
-        else:
-            recommendations.extend([
-                "Вы хорошо подготовлены!",
-                "Повторите ключевые концепции"
-            ])
+        try:
+            if exam_readiness < 70:
+                recommendations.extend([
+                    "Изучите основные модули перед экзаменом",
+                    "Пройдите дополнительные тесты",
+                    "Повторите слабые темы"
+                ])
+            elif exam_readiness < 85:
+                recommendations.extend([
+                    "Закрепите знания практическими заданиями",
+                    "Изучите сложные случаи"
+                ])
+            else:
+                recommendations.extend([
+                    "Вы хорошо подготовлены!",
+                    "Повторите ключевые концепции"
+                ])
+        except Exception as e:
+            current_app.logger.warning(f"Error generating recommendations: {e}")
+            recommendations = ["Продолжайте изучение материалов"]
         
         # Временная оценка до готовности
-        days_to_ready = max(1, int((100 - exam_readiness) / 10))
+        try:
+            days_to_ready = max(1, int((100 - exam_readiness) / 10))
+        except (TypeError, ValueError, ZeroDivisionError):
+            days_to_ready = 7
         
         prediction_result = {
-            'exam_readiness': round(exam_readiness, 1),
-            'success_probability': round(success_probability, 1),
+            'exam_readiness': round(float(exam_readiness), 1),
+            'success_probability': round(float(success_probability), 1),
             'weak_areas': weak_areas,
             'recommendations': recommendations,
             'estimated_study_time': f"{days_to_ready} дней",
             'confidence_level': 'high' if completion_rate > 0.7 else 'medium' if completion_rate > 0.3 else 'low',
             'last_updated': datetime.utcnow().isoformat(),
+            'fallback_mode': fallback_mode,
             'user_stats': {
                 'total_progress': total_progress,
                 'completion_rate': round(completion_rate * 100, 1),
@@ -805,16 +885,33 @@ def predict_exam(lang):
         })
         
     except Exception as e:
-        current_app.logger.error(f"Exam prediction error: {e}", exc_info=True)
-        return jsonify({
-            'success': False,
-            'error': 'Prediction service temporarily unavailable',
-            'fallback': {
-                'exam_readiness': 75.0,
-                'success_probability': 80.0,
-                'message': 'Using fallback prediction data'
+        current_app.logger.error(f"Exam prediction error for user {current_user.id}: {e}", exc_info=True)
+        
+        # Возвращаем fallback данные вместо ошибки
+        fallback_prediction = {
+            'exam_readiness': 75.0,
+            'success_probability': 80.0,
+            'weak_areas': ['Требуется больше практики'],
+            'recommendations': ['Продолжайте изучение материалов'],
+            'estimated_study_time': '7 дней',
+            'confidence_level': 'medium',
+            'last_updated': datetime.utcnow().isoformat(),
+            'fallback_mode': True,
+            'user_stats': {
+                'total_progress': 0,
+                'completion_rate': 0,
+                'lessons_completed': 0,
+                'total_lessons': 1
             }
-        }), 500
+        }
+        
+        return jsonify({
+            'success': True,
+            'prediction': fallback_prediction,
+            'generated_at': datetime.utcnow().isoformat(),
+            'fallback_mode': True,
+            'message': 'Using fallback prediction data'
+        })
 
 @ai_bp.route('/recommend-content', methods=['POST'])
 @login_required
@@ -822,100 +919,137 @@ def predict_exam(lang):
 def recommend_content(lang):
     """Рекомендации контента на основе прогресса и предпочтений пользователя."""
     try:
-        data = request.get_json() if request.is_json else {}
+        # Безопасная обработка JSON с защитой от пустых запросов
+        try:
+            if request.is_json and request.get_data():
+                data = request.get_json()
+            else:
+                data = {}
+        except Exception as json_error:
+            current_app.logger.warning(f"JSON parsing error for user {current_user.id}: {json_error}")
+            data = {}
         
-        # Получаем параметры запроса
+        # Получаем параметры запроса с безопасными значениями по умолчанию
         content_type = data.get('content_type', 'all')  # 'lessons', 'tests', 'virtual_patients', 'all'
         difficulty = data.get('difficulty', 'adaptive')  # 'beginner', 'intermediate', 'advanced', 'adaptive'
-        limit = min(data.get('limit', 5), 20)  # Максимум 20 рекомендаций
+        limit = min(max(data.get('limit', 5), 1), 20)  # Минимум 1, максимум 20 рекомендаций
         
-        # Получаем статистику пользователя
-        from routes.learning_map_routes import get_user_stats
-        user_stats = get_user_stats(current_user.id)
-        
-        # Получаем модули и предметы для рекомендаций
-        from models import Module, Subject, VirtualPatientScenario, Test
+        # Получаем статистику пользователя БЕЗОПАСНО
+        user_stats = get_user_stats_safe(current_user.id)
+        fallback_mode = user_stats.get('fallback_mode', False)
         
         recommendations = []
         
-        # Рекомендации модулей
-        if content_type in ['lessons', 'modules', 'all']:
-            modules = Module.query.limit(10).all()
-            for module in modules[:3]:
-                recommendations.append({
-                    'type': 'module',
-                    'id': module.id,
-                    'title': module.title,
-                    'description': getattr(module, 'description', 'Изучите этот модуль'),
-                    'difficulty': 'intermediate',
-                    'estimated_time': '30 мин',
-                    'reason': 'Подходит для вашего уровня',
-                    'url': url_for('mobile.module_view', lang=lang, module_id=module.id),
-                    'category': 'learning'
-                })
+        try:
+            # Рекомендации модулей
+            if content_type in ['lessons', 'modules', 'all']:
+                try:
+                    modules = Module.query.limit(10).all()
+                    for module in modules[:3]:
+                        recommendations.append({
+                            'type': 'module',
+                            'id': module.id,
+                            'title': getattr(module, 'title', 'Модуль обучения'),
+                            'description': getattr(module, 'description', 'Изучите этот модуль'),
+                            'difficulty': 'intermediate',
+                            'estimated_time': '30 мин',
+                            'reason': 'Подходит для вашего уровня',
+                            'url': url_for('mobile.module_view', lang=lang, module_id=module.id),
+                            'category': 'learning'
+                        })
+                except Exception as e:
+                    current_app.logger.warning(f"Error getting modules: {e}")
+            
+            # Рекомендации виртуальных пациентов
+            if content_type in ['virtual_patients', 'patients', 'all']:
+                try:
+                    scenarios = VirtualPatientScenario.query.filter_by(is_published=True).limit(5).all()
+                    for scenario in scenarios[:2]:
+                        recommendations.append({
+                            'type': 'virtual_patient',
+                            'id': scenario.id,
+                            'title': getattr(scenario, 'title', 'Клинический случай'),
+                            'description': getattr(scenario, 'description', 'Клинический случай'),
+                            'difficulty': getattr(scenario, 'difficulty', 'medium'),
+                            'estimated_time': '15 мин',
+                            'reason': 'Практический опыт',
+                            'url': f"/{lang}/virtual-patient/interact/{scenario.id}",
+                            'category': 'practice'
+                        })
+                except Exception as e:
+                    current_app.logger.warning(f"Error getting virtual patients: {e}")
+            
+            # Рекомендации тестов
+            if content_type in ['tests', 'quizzes', 'all']:
+                try:
+                    tests = Test.query.limit(5).all()
+                    for test in tests[:2]:
+                        recommendations.append({
+                            'type': 'test',
+                            'id': test.id,
+                            'title': getattr(test, 'title', 'Тест'),
+                            'description': getattr(test, 'description', 'Проверьте свои знания'),
+                            'difficulty': 'medium',
+                            'estimated_time': '10 мин',
+                            'reason': 'Закрепление знаний',
+                            'url': f"/{lang}/test/{test.id}",
+                            'category': 'assessment'
+                        })
+                except Exception as e:
+                    current_app.logger.warning(f"Error getting tests: {e}")
+            
+            # Если рекомендаций мало, добавляем общие
+            if len(recommendations) < limit:
+                try:
+                    subjects = Subject.query.limit(5).all()
+                    for subject in subjects[:limit - len(recommendations)]:
+                        recommendations.append({
+                            'type': 'subject',
+                            'id': subject.id,
+                            'title': getattr(subject, 'name', 'Предмет'),
+                            'description': getattr(subject, 'description', 'Изучите этот предмет'),
+                            'difficulty': 'adaptive',
+                            'estimated_time': '2 часа',
+                            'reason': 'Рекомендуется для изучения',
+                            'url': url_for('mobile.subject_view', lang=lang, subject_id=subject.id),
+                            'category': 'comprehensive'
+                        })
+                except Exception as e:
+                    current_app.logger.warning(f"Error getting subjects: {e}")
         
-        # Рекомендации виртуальных пациентов
-        if content_type in ['virtual_patients', 'patients', 'all']:
-            scenarios = VirtualPatientScenario.query.filter_by(is_published=True).limit(5).all()
-            for scenario in scenarios[:2]:
-                recommendations.append({
-                    'type': 'virtual_patient',
-                    'id': scenario.id,
-                    'title': scenario.title,
-                    'description': getattr(scenario, 'description', 'Клинический случай'),
-                    'difficulty': scenario.difficulty if hasattr(scenario, 'difficulty') else 'medium',
-                    'estimated_time': '15 мин',
-                    'reason': 'Практический опыт',
-                    'url': f"/{lang}/virtual-patient/interact/{scenario.id}",
-                    'category': 'practice'
-                })
+        except Exception as e:
+            current_app.logger.error(f"Error building recommendations: {e}", exc_info=True)
         
-        # Рекомендации тестов
-        if content_type in ['tests', 'quizzes', 'all']:
-            tests = Test.query.limit(5).all()
-            for test in tests[:2]:
-                recommendations.append({
-                    'type': 'test',
-                    'id': test.id,
-                    'title': test.title,
-                    'description': getattr(test, 'description', 'Проверьте свои знания'),
-                    'difficulty': 'medium',
-                    'estimated_time': '10 мин',
-                    'reason': 'Закрепление знаний',
-                    'url': f"/{lang}/test/{test.id}",
-                    'category': 'assessment'
-                })
+        # Если рекомендаций нет, создаем fallback
+        if not recommendations:
+            recommendations = [{
+                'type': 'general',
+                'id': 1,
+                'title': 'Начните обучение',
+                'description': 'Изучите основные материалы для получения персональных рекомендаций',
+                'difficulty': 'beginner',
+                'estimated_time': '30 мин',
+                'reason': 'Рекомендуется для начинающих',
+                'url': f"/{lang}/learning-map",
+                'category': 'getting_started'
+            }]
         
-        # Если рекомендаций мало, добавляем общие
-        if len(recommendations) < limit:
-            subjects = Subject.query.limit(5).all()
-            for subject in subjects[:limit - len(recommendations)]:
-                recommendations.append({
-                    'type': 'subject',
-                    'id': subject.id,
-                    'title': subject.name,
-                    'description': getattr(subject, 'description', 'Изучите этот предмет'),
-                    'difficulty': 'adaptive',
-                    'estimated_time': '2 часа',
-                    'reason': 'Рекомендуется для изучения',
-                    'url': url_for('mobile.subject_view', lang=lang, subject_id=subject.id),
-                    'category': 'comprehensive'
-                })
-        
-        # Сортируем по приоритету
+        # Сортируем по приоритету и обрезаем до лимита
         recommendations = recommendations[:limit]
         
         # Добавляем персонализированную информацию
         for rec in recommendations:
-            rec['personalized'] = True
-            rec['confidence'] = random.uniform(0.7, 0.95)  # Уверенность в рекомендации
-            rec['tags'] = ['recommended', 'personalized']
+            rec['personalized'] = not fallback_mode
+            rec['confidence'] = random.uniform(0.7, 0.95) if not fallback_mode else 0.5
+            rec['tags'] = ['recommended', 'personalized'] if not fallback_mode else ['general']
+            rec['fallback_mode'] = fallback_mode
         
         recommendation_result = {
             'recommendations': recommendations,
             'total_count': len(recommendations),
             'content_type': content_type,
             'difficulty': difficulty,
+            'fallback_mode': fallback_mode,
             'personalization_factors': {
                 'user_level': user_stats.get('current_level', 1),
                 'completion_rate': user_stats.get('total_progress', 0),
@@ -931,37 +1065,39 @@ def recommend_content(lang):
         
         return jsonify({
             'success': True,
-            'recommendations': recommendation_result,
-            'cached': False
+            **recommendation_result
         })
         
     except Exception as e:
-        current_app.logger.error(f"Content recommendation error: {e}", exc_info=True)
+        current_app.logger.error(f"Content recommendation error for user {current_user.id}: {e}", exc_info=True)
         
-        # Fallback рекомендации
-        fallback_recommendations = [
-            {
-                'type': 'general',
-                'id': 1,
-                'title': 'Основы стоматологии',
-                'description': 'Изучите базовые концепции',
-                'difficulty': 'beginner',
-                'estimated_time': '45 мин',
-                'reason': 'Рекомендуется для начинающих',
-                'url': f"/{lang}/learning-map",
-                'category': 'foundation',
-                'personalized': False,
-                'confidence': 0.8,
-                'tags': ['fallback', 'general']
-            }
-        ]
+        # Возвращаем fallback рекомендации
+        fallback_recommendations = [{
+            'type': 'fallback',
+            'id': 1,
+            'title': 'Продолжайте обучение',
+            'description': 'Персональные рекомендации появятся после изучения материалов',
+            'difficulty': 'adaptive',
+            'estimated_time': '30 мин',
+            'reason': 'Общая рекомендация',
+            'url': f"/{lang}/learning-map",
+            'category': 'general',
+            'personalized': False,
+            'confidence': 0.5,
+            'tags': ['general'],
+            'fallback_mode': True
+        }]
         
         return jsonify({
-            'success': False,
-            'error': 'Recommendation service temporarily unavailable',
-            'fallback_recommendations': fallback_recommendations,
-            'using_fallback': True
-        }), 500
+            'success': True,
+            'recommendations': fallback_recommendations,
+            'total_count': len(fallback_recommendations),
+            'content_type': 'all',
+            'difficulty': 'adaptive',
+            'fallback_mode': True,
+            'generated_at': datetime.utcnow().isoformat(),
+            'message': 'Using fallback recommendation data'
+        })
 
 # ===== HEALTH CHECK ENDPOINT =====
 

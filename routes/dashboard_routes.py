@@ -65,13 +65,43 @@ def learning_dashboard(lang):
         return render_template(
             "learning/dashboard.html",
             title='Learning Dashboard',
-            stats=stats,
+            overall_stats=stats,
             recommended_module=recommended_module,
             recent_modules=recent_modules,
             user=current_user  # Добавляем current_user в шаблон
         )
     except Exception as e:
         current_app.logger.error(f"Общая ошибка при загрузке дашборда: {str(e)}", exc_info=True)
+        flash(f"Произошла ошибка при загрузке дашборда: {str(e)}", "danger")
+        return redirect(url_for('main_bp.home', lang=current_lang))
+
+# Тестовый маршрут для нового дашборда
+@dashboard_bp.route("/new")
+@login_required
+def learning_dashboard_new(lang):
+    """Отображает новую версию дашборда обучения с темами."""
+    current_lang = g.lang
+    
+    try:
+        # Получаем статистику обучения пользователя
+        stats = get_user_stats(current_user.id)
+        
+        # Получаем рекомендуемый модуль
+        recommended_module = get_recommended_module(current_user.id)
+        
+        # Получаем недавние модули пользователя
+        recent_modules = get_recent_modules(current_user.id)
+        
+        return render_template(
+            "learning/dashboard_new.html",
+            title='Learning Dashboard',
+            overall_stats=stats,
+            recommended_module=recommended_module,
+            recent_modules=recent_modules,
+            user=current_user  # Добавляем current_user в шаблон
+        )
+    except Exception as e:
+        current_app.logger.error(f"Общая ошибка при загрузке нового дашборда: {str(e)}", exc_info=True)
         flash(f"Произошла ошибка при загрузке дашборда: {str(e)}", "danger")
         return redirect(url_for('main_bp.home', lang=current_lang))
 
@@ -102,6 +132,8 @@ def get_user_stats(user_id):
             'total_lessons': 0,
             'total_time_spent': 0,
             'active_days': 0,
+            'streak_days': 0,
+            'days_until_exam': 0,
             'next_exam_date': None
         }
 

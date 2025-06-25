@@ -295,6 +295,13 @@ def update_lesson_progress(user_id, lesson_id, time_spent=None, viewed=False, co
         # Сохраняем изменения
         db.session.commit()
         
+        # Очищаем кэш статистики пользователя
+        try:
+            from routes.learning_map_routes import clear_user_stats_cache
+            clear_user_stats_cache(user_id)
+        except ImportError:
+            pass  # Игнорируем ошибки импорта
+        
         return True
     except Exception as e:
         db.session.rollback()

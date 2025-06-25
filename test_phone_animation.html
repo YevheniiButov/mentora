@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест анимации телефона</title>
+    <style>
+        /* Базовые стили для тестирования */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .device-mockup {
+            width: 300px;
+            height: 600px;
+            background: #333;
+            border-radius: 30px;
+            padding: 20px;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .device-screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .screen-slides {
+            display: flex;
+            width: 400%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .screen-content {
+            width: 25%;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        
+        .screen-content.screen-2 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .screen-content.screen-3 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .screen-content.screen-4 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .screen-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 20;
+        }
+        
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .indicator.active {
+            background: white;
+            transform: scale(1.3);
+        }
+        
+        .test-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .test-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .test-btn:hover {
+            background: #0056b3;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Тест анимации телефона</h1>
+        
+        <div class="test-controls">
+            <button class="test-btn" onclick="testManualControl()">Тест ручного управления</button>
+            <button class="test-btn" onclick="testAutoAdvance()">Тест авто-переключения</button>
+            <button class="test-btn" onclick="testIndicators()">Тест индикаторов</button>
+        </div>
+        
+        <div class="device-mockup">
+            <div class="device-screen">
+                <div class="screen-slides" id="screenSlides">
+                    <div class="screen-content">
+                        <h3>Экран 1</h3>
+                        <p>Основные функции</p>
+                    </div>
+                    <div class="screen-content screen-2">
+                        <h3>Экран 2</h3>
+                        <p>Дашборд</p>
+                    </div>
+                    <div class="screen-content screen-3">
+                        <h3>Экран 3</h3>
+                        <p>Тестирование</p>
+                    </div>
+                    <div class="screen-content screen-4">
+                        <h3>Экран 4</h3>
+                        <p>Виртуальный пациент</p>
+                    </div>
+                </div>
+                
+                <div class="screen-indicators">
+                    <div class="indicator active" data-screen="0"></div>
+                    <div class="indicator" data-screen="1"></div>
+                    <div class="indicator" data-screen="2"></div>
+                    <div class="indicator" data-screen="3"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-info" id="debugInfo">
+            <strong>Отладочная информация:</strong><br>
+            <div id="debugContent">Ожидание инициализации...</div>
+        </div>
+    </div>
+
+    <script>
+        // Простая версия анимации для тестирования
+        class SimplePhoneAnimation {
+            constructor() {
+                this.currentScreen = 0;
+                this.totalScreens = 4;
+                this.screenSlides = document.getElementById('screenSlides');
+                this.indicators = document.querySelectorAll('.indicator');
+                this.autoAdvanceInterval = null;
+                
+                this.init();
+            }
+            
+            init() {
+                if (!this.screenSlides || !this.indicators.length) {
+                    this.log('Ошибка: элементы не найдены');
+                    return;
+                }
+                
+                this.setupEventListeners();
+                this.startAutoAdvance();
+                this.log('Анимация инициализирована');
+            }
+            
+            setupEventListeners() {
+                this.indicators.forEach((indicator, index) => {
+                    indicator.addEventListener('click', () => {
+                        this.goToScreen(index);
+                    });
+                });
+            }
+            
+            goToScreen(screenIndex) {
+                if (screenIndex < 0 || screenIndex >= this.totalScreens) return;
+                
+                this.currentScreen = screenIndex;
+                this.updateScreen();
+                this.log(`Переключение на экран ${screenIndex + 1}`);
+            }
+            
+            updateScreen() {
+                const offset = -this.currentScreen * 25;
+                this.screenSlides.style.transform = `translateX(${offset}%)`;
+                
+                this.indicators.forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === this.currentScreen);
+                });
+            }
+            
+            nextScreen() {
+                this.currentScreen = (this.currentScreen + 1) % this.totalScreens;
+                this.updateScreen();
+                this.log(`Авто-переключение на экран ${this.currentScreen + 1}`);
+            }
+            
+            startAutoAdvance() {
+                this.pauseAutoAdvance();
+                this.autoAdvanceInterval = setInterval(() => {
+                    this.nextScreen();
+                }, 3000);
+                this.log('Авто-переключение запущено');
+            }
+            
+            pauseAutoAdvance() {
+                if (this.autoAdvanceInterval) {
+                    clearInterval(this.autoAdvanceInterval);
+                    this.autoAdvanceInterval = null;
+                }
+            }
+            
+            log(message) {
+                const debugContent = document.getElementById('debugContent');
+                const timestamp = new Date().toLocaleTimeString();
+                debugContent.innerHTML += `<br>[${timestamp}] ${message}`;
+                console.log(`[Phone Animation] ${message}`);
+            }
+        }
+        
+        // Глобальные функции для тестирования
+        let phoneAnimation;
+        
+        function testManualControl() {
+            if (!phoneAnimation) {
+                alert('Анимация не инициализирована');
+                return;
+            }
+            phoneAnimation.pauseAutoAdvance();
+            phoneAnimation.goToScreen(1);
+        }
+        
+        function testAutoAdvance() {
+            if (!phoneAnimation) {
+                alert('Анимация не инициализирована');
+                return;
+            }
+            phoneAnimation.startAutoAdvance();
+        }
+        
+        function testIndicators() {
+            if (!phoneAnimation) {
+                alert('Анимация не инициализирована');
+                return;
+            }
+            phoneAnimation.pauseAutoAdvance();
+            phoneAnimation.goToScreen(2);
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            phoneAnimation = new SimplePhoneAnimation();
+        });
+    </script>
+</body>
+</html> 

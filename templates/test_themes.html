@@ -61,10 +61,10 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <i class="bi bi-palette"></i> Градиентная тема
+                            <i class="bi bi-droplet"></i> Стеклянная тема
                         </h5>
                         <p class="card-text">
-                            Стильная градиентная тема с эффектами стекла для создания современного интерфейса.
+                            Современная стеклянная тема с градиентами и эффектами размытия для стильного интерфейса.
                         </p>
                         <button class="btn-outline" onclick="switchTheme('gradient')">
                             Переключить
@@ -263,6 +263,50 @@
             </a>
         </nav>
         
+        <!-- ===== THEME VISUAL DIAGNOSTIC ===== -->
+        <div style="
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            padding: 30px; 
+            margin: 20px;
+            border: 3px solid var(--primary-color);
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            transition: all 0.3s ease;
+        ">
+            <h2>🎨 ТЕСТ СИСТЕМЫ ТЕМ</h2>
+            <div style="margin: 20px 0; font-size: 18px;">
+                <p><strong>Background:</strong> <code>var(--bg-primary)</code> = <span id="bg-value"></span></p>
+                <p><strong>Text Color:</strong> <code>var(--text-primary)</code> = <span id="text-value"></span></p>
+                <p><strong>Primary Color:</strong> <code>var(--primary-color)</code> = <span id="primary-value"></span></p>
+                <p><strong>Active Theme:</strong> <code>data-theme</code> = <span id="theme-value"></span></p>
+            </div>
+            
+            <div style="
+                background: var(--bg-secondary); 
+                color: var(--text-secondary); 
+                padding: 15px; 
+                margin: 15px 0;
+                border-radius: 10px;
+                border: 2px solid var(--border-color);
+            ">
+                <h4>Вторичные цвета</h4>
+                <p>Background: var(--bg-secondary) | Text: var(--text-secondary)</p>
+            </div>
+            
+            <button onclick="refreshDiagnostic()" style="
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                margin: 10px;
+                font-size: 16px;
+            ">🔄 Обновить диагностику</button>
+        </div>
+        
     </div>
     
     <style>
@@ -422,6 +466,29 @@
                     notification.remove();
                 }, 300);
             }, 3000);
+        });
+        
+        function refreshDiagnostic() {
+            const root = document.documentElement;
+            const computed = getComputedStyle(root);
+            
+            document.getElementById('bg-value').textContent = computed.getPropertyValue('--bg-primary').trim();
+            document.getElementById('text-value').textContent = computed.getPropertyValue('--text-primary').trim();
+            document.getElementById('primary-value').textContent = computed.getPropertyValue('--primary-color').trim();
+            document.getElementById('theme-value').textContent = root.getAttribute('data-theme') || 'none';
+            
+            console.log('🔍 Manual diagnostic refresh:');
+            console.log('Theme:', root.getAttribute('data-theme'));
+            console.log('--bg-primary:', computed.getPropertyValue('--bg-primary').trim());
+            console.log('--text-primary:', computed.getPropertyValue('--text-primary').trim());
+        }
+        
+        // Автообновление при смене темы
+        window.addEventListener('themeChanged', refreshDiagnostic);
+        
+        // Обновляем при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(refreshDiagnostic, 500);
         });
     </script>
     

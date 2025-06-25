@@ -271,6 +271,13 @@ def complete_lesson(lang, lesson_id):
         
         db.session.commit()
         
+        # Очищаем кэш статистики пользователя
+        try:
+            from routes.learning_map_routes import clear_user_stats_cache
+            clear_user_stats_cache(current_user.id)
+        except ImportError:
+            pass  # Игнорируем ошибки импорта
+        
         return jsonify({
             'success': True,
             'message': t('lesson_completed', lang)

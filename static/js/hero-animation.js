@@ -1,5 +1,5 @@
 // ===== АНИМИРОВАННЫЙ ТЕЛЕФОН И ЧАСТИЦЫ =====
-// Добавьте этот код в ваш файл static/js/main.js или создайте новый файл hero-animation.js
+// HeroPhoneAnimation class for phone screen switching
 
 class HeroPhoneAnimation {
     constructor() {
@@ -289,31 +289,45 @@ class HeroPhoneAnimation {
         if (this.particlesContainer) {
             this.particlesContainer.innerHTML = '';
         }
-    }
-}
-
-// ===== INITIALIZATION =====
-let heroPhoneAnimation = null;
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHeroAnimation);
-} else {
-    initHeroAnimation();
-}
-
-function initHeroAnimation() {
-    // Only initialize if hero section exists
-    const heroSection = document.querySelector('.hero-section');
-    const screenSlides = document.getElementById('screenSlides');
-    
-    if (heroSection && screenSlides) {
-        heroPhoneAnimation = new HeroPhoneAnimation();
         
-        // Make it globally accessible for debugging
-        window.heroPhoneAnimation = heroPhoneAnimation;
+        console.log('🧹 Hero phone animation destroyed');
     }
 }
+
+// ===== GLOBAL EXPORT FOR COMPATIBILITY =====
+// Делаем класс доступным глобально для совместимости
+if (typeof window !== 'undefined') {
+    window.HeroPhoneAnimation = HeroPhoneAnimation;
+}
+
+// ===== UTILITY FUNCTIONS =====
+
+// Function to manually control the phone animation
+window.controlHeroPhone = {
+    goToScreen: (index) => {
+        if (window.heroPhoneAnimation) {
+            window.heroPhoneAnimation.goToScreen(index);
+        }
+    },
+    
+    play: () => {
+        if (window.heroPhoneAnimation) {
+            window.heroPhoneAnimation.play();
+        }
+    },
+    
+    pause: () => {
+        if (window.heroPhoneAnimation) {
+            window.heroPhoneAnimation.pause();
+        }
+    },
+    
+    next: () => {
+        if (window.heroPhoneAnimation) {
+            window.heroPhoneAnimation.nextScreen();
+        }
+    }
+};
 
 // ===== PERFORMANCE OPTIMIZATIONS =====
 
@@ -327,60 +341,31 @@ function respectsReducedMotion() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-// ===== UTILITY FUNCTIONS =====
-
-// Function to manually control the phone animation
-window.controlHeroPhone = {
-    goToScreen: (index) => {
-        if (heroPhoneAnimation) {
-            heroPhoneAnimation.goToScreen(index);
-        }
-    },
-    
-    play: () => {
-        if (heroPhoneAnimation) {
-            heroPhoneAnimation.play();
-        }
-    },
-    
-    pause: () => {
-        if (heroPhoneAnimation) {
-            heroPhoneAnimation.pause();
-        }
-    },
-    
-    next: () => {
-        if (heroPhoneAnimation) {
-            heroPhoneAnimation.nextScreen();
-        }
-    }
-};
-
 // ===== EVENT LISTENERS FOR ACCESSIBILITY =====
 
 // Keyboard navigation for screen switching
 document.addEventListener('keydown', (e) => {
-    if (!heroPhoneAnimation) return;
+    if (!window.heroPhoneAnimation) return;
     
     // Only if hero section is in focus
     const heroSection = document.querySelector('.hero-section');
-    if (!heroSection || !heroPhoneAnimation.isElementInViewport(heroSection)) return;
+    if (!heroSection || !window.heroPhoneAnimation.isElementInViewport(heroSection)) return;
     
     switch(e.key) {
         case 'ArrowLeft':
             e.preventDefault();
-            heroPhoneAnimation.goToScreen(Math.max(0, heroPhoneAnimation.currentScreen - 1));
+            window.heroPhoneAnimation.goToScreen(Math.max(0, window.heroPhoneAnimation.currentScreen - 1));
             break;
         case 'ArrowRight':
             e.preventDefault();
-            heroPhoneAnimation.goToScreen(Math.min(heroPhoneAnimation.totalScreens - 1, heroPhoneAnimation.currentScreen + 1));
+            window.heroPhoneAnimation.goToScreen(Math.min(window.heroPhoneAnimation.totalScreens - 1, window.heroPhoneAnimation.currentScreen + 1));
             break;
         case ' ':
         case 'Enter':
             if (e.target.classList.contains('indicator')) {
                 e.preventDefault();
                 const screenIndex = parseInt(e.target.dataset.screen);
-                heroPhoneAnimation.goToScreen(screenIndex);
+                window.heroPhoneAnimation.goToScreen(screenIndex);
             }
             break;
     }
@@ -388,7 +373,7 @@ document.addEventListener('keydown', (e) => {
 
 // ===== CLEANUP ON PAGE UNLOAD =====
 window.addEventListener('beforeunload', () => {
-    if (heroPhoneAnimation) {
-        heroPhoneAnimation.destroy();
+    if (window.heroPhoneAnimation) {
+        window.heroPhoneAnimation.destroy();
     }
 });

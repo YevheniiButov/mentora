@@ -31,10 +31,12 @@ DEFAULT_LANGUAGE = 'en'
 
 @learning_map_bp.before_request
 def before_request_learning_map():
-    """
-    Извлекает и валидирует язык из URL.
-    """
-    # Получаем lang из аргументов URL
+    """Выполняется перед каждым запросом к learning_map"""
+    # Очищаем кэш статистики при каждом запросе для актуальности данных
+    if hasattr(current_user, 'id') and current_user.is_authenticated:
+        clear_user_stats_cache(current_user.id)
+    
+    # Извлекаем и валидируем язык из URL
     lang_from_url = request.view_args.get('lang') if request.view_args else None
 
     # Валидация и установка языка в g
@@ -708,8 +710,23 @@ def get_module_stats(module_id, user_id):
             "total_lessons": 0
         }
 
+# Простое кэширование для get_user_stats
+_user_stats_cache = {}
+
+def clear_user_stats_cache(user_id=None):
+    """Очищает кэш статистики пользователя"""
+    global _user_stats_cache
+    if user_id is None:
+        _user_stats_cache.clear()
+    else:
+        _user_stats_cache.pop(user_id, None)
+
 def get_user_stats(user_id):
-    """Получает статистику обучения пользователя"""
+    """Получает статистику обучения пользователя с кэшированием"""
+    # Проверяем кэш
+    if user_id in _user_stats_cache:
+        return _user_stats_cache[user_id]
+    
     try:
         current_app.logger.info(f"=== Начало получения статистики для пользователя {user_id} ===")
         
@@ -822,6 +839,9 @@ def get_user_stats(user_id):
         
         current_app.logger.info(f"=== Статистика успешно получена для пользователя {user_id} ===")
         current_app.logger.info(f"Итоговая статистика: {stats}")
+        
+        # Сохраняем в кэш
+        _user_stats_cache[user_id] = stats
         
         return stats
     except Exception as e:

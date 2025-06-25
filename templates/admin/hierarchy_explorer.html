@@ -1,1318 +1,358 @@
-{% extends "admin/base_admin.html" %}
+{% extends "base.html" %}
 
-{% block title %}Структура обучения{% endblock %}
+{% block title %}{{ t('hierarchy_explorer', lang) | default('Исследователь иерархии') }} - Dental Academy{% endblock %}
 
 {% block styles %}
 {{ super() }}
-<style>
-    .explorer-container {
-        height: calc(100vh - 150px);
-        display: flex;
-        background-color: #f8f9fa;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        overflow: hidden;
-    }
-    
-    .tree-view {
-        width: 300px;
-        border-right: 1px solid #ddd;
-        overflow-y: auto;
-        padding: 10px;
-        background-color: #fff;
-    }
-    
-    .content-view {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 15px;
-        background-color: #fff;
-    }
-    
-    .tree-item {
-        padding: 6px 8px;
-        cursor: pointer;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        margin-bottom: 2px;
-    }
-    
-    .tree-item:hover {
-        background-color: #f0f0f0;
-    }
-    
-    .tree-item.active {
-        background-color: #e7f1ff;
-        font-weight: 500;
-    }
-    
-    .tree-icon {
-        margin-right: 8px;
-        width: 20px;
-        text-align: center;
-    }
-    
-    .content-item {
-        display: flex;
-        align-items: center;
-        padding: 12px;
-        border-radius: 5px;
-        border: 1px solid #eee;
-        margin-bottom: 10px;
-        background-color: #fff;
-        cursor: grab;
-    }
-    
-    .content-item:hover {
-        background-color: #f8f9fa;
-        border-color: #ddd;
-    }
-    
-    .content-item .item-icon {
-        font-size: 24px;
-        margin-right: 15px;
-        color: #0d6efd;
-        width: 40px;
-        text-align: center;
-    }
-    
-    .content-item .item-content {
-        flex-grow: 1;
-    }
-    
-    .content-item .item-actions {
-        display: flex;
-        gap: 5px;
-    }
-    
-    .children-container {
-        padding-left: 20px;
-    }
-    
-    .toggle-icon {
-        cursor: pointer;
-        width: 16px;
-        display: inline-block;
-        text-align: center;
-    }
-    
-    .toolbar {
-        padding: 10px;
-        background-color: #f0f0f0;
-        border-bottom: 1px solid #ddd;
-        display: flex;
-        align-items: center;
-    }
-    
-    .breadcrumb {
-        margin-bottom: 0;
-        flex-grow: 1;
-    }
-    
-    .drag-over {
-        background-color: #e2f0ff !important;
-        border: 2px dashed #0d6efd !important;
-    }
-    
-    /* Стили для перетаскивания */
-    .dragging {
-        opacity: 0.5;
-        cursor: grabbing;
-    }
-    
-    .drop-indicator {
-        height: 2px;
-        background-color: #0d6efd;
-        margin: 5px 0;
-        display: none;
-    }
-    
-    .drop-indicator.active {
-        display: block;
-    }
-
-    .drop-before {
-    border-top: 2px dashed #0d6efd;
-}
-
-.drop-after {
-    border-bottom: 2px dashed #0d6efd;
-}
-
-.content-item[data-parent],
-.tree-item[data-parent] {
-    position: relative;
-}
-
-.content-item[data-parent]::before,
-.tree-item[data-parent]::before {
-    content: attr(data-parent);
-    position: absolute;
-    right: 5px;
-    top: -5px;
-    font-size: 0.6rem;
-    color: #6c757d;
-    opacity: 0.6;
-    display: none; /* Скрыто по умолчанию, можно включить для отладки */
-}
-    
-    /* Стили для контекстного меню */
-    .context-menu {
-        position: absolute;
-        z-index: 1000;
-        background-color: white;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        padding: 5px 0;
-        min-width: 150px;
-        display: none;
-    }
-    
-    .context-menu-item {
-        padding: 8px 12px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-    }
-    
-    .context-menu-item:hover {
-        background-color: #f0f0f0;
-    }
-    
-    .context-menu-item i {
-        margin-right: 8px;
-        width: 20px;
-        text-align: center;
-    }
-    
-    /* Стили для поиска */
-    .search-highlight {
-        background-color: rgba(255, 255, 0, 0.3);
-        padding: 2px;
-        border-radius: 2px;
-    }
-</style>
+    <!-- Унифицированная система стилей -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/category-navigation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-unified.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid my-3">
-    <h1 class="mb-3">Структура обучения</h1>
+<div class="learning-map-container">
+    <!-- Анимированные декоративные элементы -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
     
-    <!-- Поиск -->
-    <div class="input-group mb-3">
-        <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input type="text" class="form-control" id="search-input" placeholder="Поиск по названию...">
-        <button class="btn btn-outline-secondary" type="button" id="search-btn">Найти</button>
+    <div class="main-container">
+        <!-- Левая колонка с деревом структуры -->
+        <div class="left-column">
+            <div class="section-header">
+                <h2>{{ t('content_structure', lang) | default('Структура контента') }}</h2>
     </div>
-    
-    <div class="explorer-container">
-        <!-- Древовидная навигация (как в проводнике) -->
-        <div class="tree-view">
-            <h5 class="mb-3">Иерархия</h5>
             
-            <div id="tree-root">
-                {% for path in learning_paths %}
-                <div class="tree-node">
-                    <div class="tree-item" data-type="path" data-id="{{ path.id }}" draggable="true">
-                        <span class="toggle-icon"><i class="bi bi-caret-right-fill"></i></span>
-                        <span class="tree-icon"><i class="bi bi-{{ path.icon }}"></i></span>
-                        <span class="tree-label">{{ path.name }}</span>
-                    </div>
-                    <div class="children-container" style="display: none;">
-                        {% for subject in path.subjects %}
-                        <div class="tree-node">
-                            <div class="tree-item" data-type="subject" data-id="{{ subject.id }}" draggable="true">
-                                <span class="toggle-icon"><i class="bi bi-caret-right-fill"></i></span>
-                                <span class="tree-icon"><i class="bi bi-{{ subject.icon }}"></i></span>
-                                <span class="tree-label">{{ subject.name }}</span>
-                            </div>
-                            <div class="children-container" style="display: none;">
-                                {% for module in subject.modules %}
-                                <div class="tree-item" data-type="module" data-id="{{ module.id }}" draggable="true">
-                                    <span class="toggle-icon invisible"><i class="bi bi-caret-right-fill"></i></span>
-                                    <span class="tree-icon"><i class="bi bi-{{ module.icon }}"></i></span>
-                                    <span class="tree-label">{{ module.title }}</span>
-                                </div>
-                                {% endfor %}
-                            </div>
+            <div class="learning-paths">
+                <div class="learning-path-item">
+                    <button class="learning-path-button knowledge-center" onclick="loadLevel('learning_path')">
+                        <div class="path-button-content">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                            <span>{{ t('learning_paths', lang) | default('Пути обучения') }}</span>
                         </div>
-                        {% endfor %}
+                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24">
+                            <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="subject-list" id="learning-paths-list">
+                        <!-- Динамически загружаемый список путей обучения -->
                     </div>
                 </div>
-                {% endfor %}
+                
+                <div class="learning-path-item">
+                    <button class="learning-path-button communication" onclick="loadLevel('subject')">
+                        <div class="path-button-content">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                            <span>{{ t('subjects', lang) | default('Предметы') }}</span>
+                            </div>
+                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24">
+                            <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="subject-list" id="subjects-list">
+                        <!-- Динамически загружаемый список предметов -->
+                                </div>
+                            </div>
+                
+                <div class="learning-path-item">
+                    <button class="learning-path-button preclinical" onclick="loadLevel('module')">
+                        <div class="path-button-content">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"></line>
+                                <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"></line>
+                            </svg>
+                            <span>{{ t('modules', lang) | default('Модули') }}</span>
+                        </div>
+                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24">
+                            <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="subject-list" id="modules-list">
+                        <!-- Динамически загружаемый список модулей -->
+                    </div>
+                </div>
             </div>
         </div>
         
-        <!-- Панель содержимого (справа) -->
-        <div class="content-wrapper flex-grow-1 d-flex flex-column">
-            <!-- Панель навигации и инструментов -->
-            <div class="toolbar">
-                <nav aria-label="breadcrumb" class="me-3">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#" id="root-breadcrumb">Корень</a></li>
-                        <li class="breadcrumb-item active" id="current-folder">Все категории</li>
-                    </ol>
-                </nav>
-                
-                <div class="btn-group">
-                    <button type="button" id="new-item-btn" class="btn btn-sm btn-primary">
-                        <i class="bi bi-plus-circle"></i> Создать
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-sort-alpha-down"></i> Сортировка
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item sort-option" href="#" data-sort="name-asc">По алфавиту (А-Я)</a></li>
-                        <li><a class="dropdown-item sort-option" href="#" data-sort="name-desc">По алфавиту (Я-А)</a></li>
-                        <li><a class="dropdown-item sort-option" href="#" data-sort="order-asc">По порядку (0-9)</a></li>
-                        <li><a class="dropdown-item sort-option" href="#" data-sort="order-desc">По порядку (9-0)</a></li>
-                    </ul>
+        <!-- Основная рабочая область -->
+        <div class="middle-column">
+            <div class="page-header">
+                <div class="breadcrumb">
+                    <span class="active">{{ t('hierarchy_explorer', lang) | default('Исследователь иерархии') }}</span>
                 </div>
+                <h1>{{ t('content_hierarchy_explorer', lang) | default('Исследователь иерархии контента') }}</h1>
+                <p>{{ t('explore_content_structure', lang) | default('Исследуйте и управляйте структурой образовательного контента') }}</p>
             </div>
             
             <!-- Область отображения содержимого -->
-            <div class="content-view" id="content-container">
-                <!-- Содержимое загружается динамически через AJAX -->
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Загрузка...</span>
+            <div class="content-explorer glass-effect">
+                <div class="explorer-toolbar">
+                    <div class="toolbar-section">
+                        <select id="content-type-filter" class="form-select">
+                            <option value="">{{ t('all_types', lang) | default('Все типы') }}</option>
+                            <option value="learning_path">{{ t('learning_paths', lang) | default('Пути обучения') }}</option>
+                            <option value="subject">{{ t('subjects', lang) | default('Предметы') }}</option>
+                            <option value="module">{{ t('modules', lang) | default('Модули') }}</option>
+                            <option value="topic">{{ t('topics', lang) | default('Темы') }}</option>
+                            <option value="subtopic">{{ t('subtopics', lang) | default('Подтемы') }}</option>
+                            <option value="lesson">{{ t('lessons', lang) | default('Уроки') }}</option>
+                        </select>
                     </div>
-                    <p class="mt-2">Загрузка содержимого...</p>
+                    
+                    <div class="toolbar-section">
+                        <button class="btn btn-primary" onclick="refreshExplorer()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            {{ t('refresh', lang) | default('Обновить') }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="explorer-content" id="explorer-content">
+                    <!-- Динамически загружаемое содержимое -->
+                    <div class="explorer-welcome">
+                        <div class="welcome-icon">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3>{{ t('welcome_to_explorer', lang) | default('Добро пожаловать в исследователь иерархии') }}</h3>
+                        <p>{{ t('select_structure_element', lang) | default('Выберите элемент структуры слева для начала работы') }}</p>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Правая колонка со свойствами -->
+        <div class="right-column">
+            <div class="stats-section">
+                <h2>{{ t('element_properties', lang) | default('Свойства элемента') }}</h2>
+                
+                <div class="properties-panel glass-effect" id="properties-panel">
+                    <div class="no-selection">
+                        <p>{{ t('no_element_selected', lang) | default('Элемент не выбран') }}</p>
     </div>
 </div>
-
-<!-- Контекстное меню -->
-<div class="context-menu" id="context-menu">
-    <div class="context-menu-item" id="context-edit">
-        <i class="bi bi-pencil"></i> Редактировать
-    </div>
-    <div class="context-menu-item" id="context-delete">
-        <i class="bi bi-trash"></i> Удалить
-    </div>
-    <div class="context-menu-item" id="context-new">
-        <i class="bi bi-plus-circle"></i> Создать
-    </div>
-</div>
-
-<!-- Модальное окно для создания нового элемента -->
-<div class="modal fade" id="createItemModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Создать новый элемент</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <!-- Содержимое загружается динамически -->
+            
+            <div class="actions-section">
+                <h2>{{ t('quick_actions', lang) | default('Быстрые действия') }}</h2>
+                
+                <div class="actions-list">
+                    <button class="btn btn-primary btn-sm" onclick="createNewElement()">
+                        <i class="bi bi-plus-circle"></i>
+                        {{ t('create_new', lang) | default('Создать новый') }}
+                    </button>
+                    
+                    <button class="btn btn-secondary btn-sm" onclick="exportStructure()">
+                        <i class="bi bi-download"></i>
+                        {{ t('export', lang) | default('Экспорт') }}
+                    </button>
+                    
+                    <button class="btn btn-info btn-sm" onclick="showStatistics()">
+                        <i class="bi bi-graph-up"></i>
+                        {{ t('statistics', lang) | default('Статистика') }}
+                    </button>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для редактирования элемента -->
-<div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Редактирование</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Содержимое загружается динамически -->
             </div>
         </div>
     </div>
 </div>
-
-{% include "admin/modals/path_modal.html" %}
-{% include "admin/modals/subject_modal.html" %}
-{% include "admin/modals/module_modal.html" %}
 {% endblock %}
 
-{% block body_scripts %}
-{{ super() }}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
 <script>
+// Инициализация системы категорий
     document.addEventListener('DOMContentLoaded', function() {
-        // Глобальные переменные для хранения текущего состояния
-        let currentType = 'root';
-        let currentId = null;
-        let contextTarget = null; // Элемент, на котором было вызвано контекстное меню
-        
-        // Функция для запоминания состояния дерева
-        function saveTreeState() {
-            const expandedNodes = [];
-            document.querySelectorAll('.toggle-icon i.bi-caret-down-fill').forEach(icon => {
-                const treeItem = icon.closest('.tree-item');
-                if (treeItem) {
-                    expandedNodes.push({
-                        type: treeItem.dataset.type,
-                        id: treeItem.dataset.id
-                    });
-                }
-            });
-            localStorage.setItem('expandedNodes', JSON.stringify(expandedNodes));
-        }
-        
-        // Функция для восстановления состояния дерева
-        function restoreTreeState() {
-            try {
-                const expandedNodes = JSON.parse(localStorage.getItem('expandedNodes')) || [];
-                expandedNodes.forEach(node => {
-                    const treeItem = document.querySelector(`.tree-item[data-type="${node.type}"][data-id="${node.id}"]`);
-                    if (treeItem) {
-                        const toggleIcon = treeItem.querySelector('.toggle-icon i');
-                        const childrenContainer = treeItem.nextElementSibling;
-                        if (toggleIcon && childrenContainer) {
-                            toggleIcon.classList.replace('bi-caret-right-fill', 'bi-caret-down-fill');
-                            childrenContainer.style.display = 'block';
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error('Error restoring tree state:', e);
-            }
-        }
-        
-        // Обработка кликов по элементам дерева
-        document.querySelectorAll('.tree-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                // Если клик был по иконке сворачивания/разворачивания
-                if (e.target.closest('.toggle-icon')) {
-                    const childrenContainer = this.nextElementSibling;
-                    if (childrenContainer && childrenContainer.classList.contains('children-container')) {
-                        const toggleIcon = this.querySelector('.toggle-icon i');
-                        if (childrenContainer.style.display === 'none') {
-                            childrenContainer.style.display = 'block';
-                            toggleIcon.classList.replace('bi-caret-right-fill', 'bi-caret-down-fill');
-                        } else {
-                            childrenContainer.style.display = 'none';
-                            toggleIcon.classList.replace('bi-caret-down-fill', 'bi-caret-right-fill');
-                        }
-                        // Сохраняем состояние дерева
-                        saveTreeState();
-                    }
-                    return;
-                }
-                
-                // Снимаем выделение со всех элементов
-                document.querySelectorAll('.tree-item').forEach(el => {
-                    el.classList.remove('active');
-                });
-                
-                // Выделяем текущий элемент
-                this.classList.add('active');
-                
-                // Загружаем содержимое в правую панель
-                const itemType = this.dataset.type;
-                const itemId = this.dataset.id;
-                
-                // Обновляем текущее состояние
-                currentType = itemType;
-                currentId = itemId;
-                
-                loadContent(itemType, itemId);
-                
-                // Обновляем "хлебные крошки"
-                updateBreadcrumbs(this);
-            });
-            
-            // Отменяем переход по ссылкам в дереве
-            item.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', e => e.preventDefault());
-            });
-            
-            // Обработка контекстного меню
-            item.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                showContextMenu(e, this);
-            });
-            
-            // Drag and Drop для дерева
-            setupDragAndDrop(item);
-        });
-        
-        // Обработка клика по корневому хлебному крошку
-        document.getElementById('root-breadcrumb').addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Снимаем выделение со всех элементов дерева
-            document.querySelectorAll('.tree-item').forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            // Обновляем текущее состояние
-            currentType = 'root';
-            currentId = null;
-            
-            // Загружаем корневой контент
-            loadContent('root', null);
-            
-            // Обновляем хлебные крошки
-            document.getElementById('current-folder').textContent = 'Все категории';
-        });
-        
-        // Обработка клика по кнопке "Создать"
-        document.getElementById('new-item-btn').addEventListener('click', function() {
-            // Определяем, какой тип элемента нужно создать
-            let modalType = 'path'; // По умолчанию создаем категорию
-            
-            // В зависимости от текущего выбранного элемента
-            if (currentType === 'path') {
-                modalType = 'subject';
-            } else if (currentType === 'subject') {
-                modalType = 'module';
-            } else if (currentType === 'module') {
-                modalType = 'lesson';
-            }
-            
-            // Открываем соответствующее модальное окно
-            openCreateModal(modalType, currentId);
-        });
-        
-        // Обработка поиска
-        document.getElementById('search-btn').addEventListener('click', function() {
-            performSearch();
-        });
-        
-        document.getElementById('search-input').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-        
-        // Обработка сортировки
-        document.querySelectorAll('.sort-option').forEach(option => {
-            option.addEventListener('click', function(e) {
-                e.preventDefault();
-                const sortType = this.dataset.sort;
-                sortContent(sortType);
-            });
-        });
-        
-        // Обработка контекстного меню
-        document.getElementById('context-edit').addEventListener('click', function() {
-            if (contextTarget) {
-                // Симулируем нажатие на кнопку редактирования
-                const editBtn = contextTarget.querySelector('.edit-btn');
-                if (editBtn) {
-                    editBtn.click();
-                } else {
-                    // Для элементов дерева
-                    const itemType = contextTarget.dataset.type;
-                    const itemId = contextTarget.dataset.id;
-                    openEditModal(itemType, itemId);
-                }
-            }
-            hideContextMenu();
-        });
-        
-        document.getElementById('context-delete').addEventListener('click', function() {
-            if (contextTarget) {
-                // Симулируем нажатие на кнопку удаления
-                const deleteBtn = contextTarget.querySelector('.delete-btn');
-                if (deleteBtn) {
-                    deleteBtn.click();
-                } else {
-                    // Для элементов дерева
-                    const itemType = contextTarget.dataset.type;
-                    const itemId = contextTarget.dataset.id;
-                    if (confirm(`Вы уверены, что хотите удалить этот ${itemType}?`)) {
-                        deleteItem(itemType, itemId);
-                    }
-                }
-            }
-            hideContextMenu();
-        });
-        
-        document.getElementById('context-new').addEventListener('click', function() {
-            if (contextTarget) {
-                const itemType = contextTarget.dataset.type;
-                const itemId = contextTarget.dataset.id;
-                
-                let newType = 'path';
-                if (itemType === 'path') {
-                    newType = 'subject';
-                } else if (itemType === 'subject') {
-                    newType = 'module';
-                } else if (itemType === 'module') {
-                    newType = 'lesson';
-                }
-                
-                openCreateModal(newType, itemId);
-            }
-            hideContextMenu();
-        });
-        
-        // Закрытие контекстного меню при клике вне его
-        document.addEventListener('click', function() {
-            hideContextMenu();
-        });
-        
-        // Загрузка содержимого по умолчанию (все категории)
-        loadContent('root', null);
-        
-        // Восстановление состояния дерева
-        restoreTreeState();
-        
-        // Функция поиска
-        function performSearch() {
-            const searchText = document.getElementById('search-input').value.toLowerCase();
-            if (!searchText) return;
-            
-            // Сначала снимаем все предыдущие подсветки
-            document.querySelectorAll('.search-highlight').forEach(el => {
-                el.outerHTML = el.textContent;
-            });
-            
-            // Ищем в дереве
-            let found = false;
-            document.querySelectorAll('.tree-item').forEach(item => {
-                const labelEl = item.querySelector('.tree-label');
-                const label = labelEl.textContent.toLowerCase();
-                
-                if (label.includes(searchText)) {
-                    // Нашли совпадение
-                    found = true;
-                    
-                    // Раскрываем все родительские узлы
-                    let parent = item.parentElement;
-                    while (parent) {
-                        if (parent.classList.contains('children-container')) {
-                            parent.style.display = 'block';
-                            const toggleIcon = parent.previousElementSibling.querySelector('.toggle-icon i');
-                            if (toggleIcon) {
-                                toggleIcon.classList.replace('bi-caret-right-fill', 'bi-caret-down-fill');
-                            }
-                        }
-                        parent = parent.parentElement;
-                    }
-                    
-                    // Подсвечиваем найденный текст
-                    const regex = new RegExp(`(${searchText})`, 'gi');
-                    labelEl.innerHTML = labelEl.textContent.replace(regex, '<span class="search-highlight">$1</span>');
-                    
-                    // Выделяем найденный элемент
-                    document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
-                    item.classList.add('active');
-                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Загружаем содержимое
-                    loadContent(item.dataset.type, item.dataset.id);
-                    
-                    // Обновляем хлебные крошки
-                    updateBreadcrumbs(item);
-                    
-                    // Сохраняем состояние дерева
-                    saveTreeState();
-                    
-                    // Останавливаем поиск после первого совпадения
-                    return;
-                }
-            });
-            
-            if (!found) {
-                alert('Ничего не найдено');
-            }
-        }
-        
-        // Функция сортировки
-        function sortContent(sortType) {
-            const container = document.getElementById('content-container');
-            const items = Array.from(container.querySelectorAll('.content-item'));
-            
-            if (items.length <= 1) return; // Нечего сортировать
-            
-            items.sort((a, b) => {
-                if (sortType === 'name-asc') {
-                    const textA = a.querySelector('h5').textContent.toLowerCase();
-                    const textB = b.querySelector('h5').textContent.toLowerCase();
-                    return textA.localeCompare(textB);
-                } else if (sortType === 'name-desc') {
-                    const textA = a.querySelector('h5').textContent.toLowerCase();
-                    const textB = b.querySelector('h5').textContent.toLowerCase();
-                    return textB.localeCompare(textA);
-                } else if (sortType === 'order-asc') {
-                    const orderA = parseInt(a.dataset.order || '0');
-                    const orderB = parseInt(b.dataset.order || '0');
-                    return orderA - orderB;
-                } else if (sortType === 'order-desc') {
-                    const orderA = parseInt(a.dataset.order || '0');
-                    const orderB = parseInt(b.dataset.order || '0');
-                    return orderB - orderA;
-                }
-                return 0;
-            });
-            
-            // Удаляем все элементы кроме кнопки добавления и заголовка
-            const heading = container.querySelector('h4');
-            const addButton = container.querySelector('.add-new-btn');
-            container.innerHTML = '';
-            
-            // Добавляем заголовок обратно
-            if (heading) {
-                container.appendChild(heading);
-            }
-            
-            // Добавляем отсортированные элементы
-            items.forEach(item => {
-                container.appendChild(item);
-            });
-            
-            // Добавляем кнопку добавления в конец
-            if (addButton) {
-                container.appendChild(addButton.parentElement);
-            }
-            
-            // Обновляем обработчики после сортировки
-            setupContentItemHandlers();
-        }
-        
-        // Показать контекстное меню
-        function showContextMenu(e, element) {
-            const menu = document.getElementById('context-menu');
-            menu.style.display = 'block';
-            menu.style.left = `${e.pageX}px`;
-            menu.style.top = `${e.pageY}px`;
-            
-            // Запоминаем элемент, на котором было вызвано меню
-            contextTarget = element;
-            
-            // Останавливаем всплытие события
-            e.stopPropagation();
-        }
-        
-        // Скрыть контекстное меню
-        function hideContextMenu() {
-            const menu = document.getElementById('context-menu');
-            menu.style.display = 'none';
-            contextTarget = null;
-        }
-        
-        // Настройка Drag and Drop для эффективного перемещения элементов
-        function setupDragAndDrop(element) {
-            if (!element.getAttribute('draggable')) {
-                element.setAttribute('draggable', 'true');
-            }
+    // Система автоматически инициализируется через universal-category-system.js
+    loadInitialData();
+});
 
-            // Событие начала перетаскивания
-            element.addEventListener('dragstart', function(e) {
-                e.dataTransfer.setData('text/plain', JSON.stringify({
-                    id: this.dataset.id,
-                    type: this.dataset.type,
-                    parent: this.dataset.parent || null
-                }));
-                
-                this.classList.add('dragging');
-                
-                // Добавляем полупрозрачное изображение при перетаскивании
-                const dragImage = this.cloneNode(true);
-                dragImage.style.position = 'absolute';
-                dragImage.style.top = '-1000px';
-                document.body.appendChild(dragImage);
-                e.dataTransfer.setDragImage(dragImage, 0, 0);
-                setTimeout(() => document.body.removeChild(dragImage), 0);
-            });
-            
-            // Событие окончания перетаскивания
-            element.addEventListener('dragend', function() {
-                this.classList.remove('dragging');
-                // Удаляем все индикаторы
-                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-                document.querySelectorAll('.drop-indicator').forEach(el => el.classList.remove('active'));
-                document.querySelectorAll('.drop-before').forEach(el => el.classList.remove('drop-before'));
-                document.querySelectorAll('.drop-after').forEach(el => el.classList.remove('drop-after'));
-            });
-            
-            // Событие, когда элемент находится над целью
-            element.addEventListener('dragover', function(e) {
-                e.preventDefault(); // Необходимо для работы drop
-                
-                // Получаем данные о перетаскиваемом элементе
-                let dragData;
-                try {
-                    dragData = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
-                } catch(err) {
-                    dragData = {};
-                }
-                
-                // Если данные пусты (возможно, первый вызов dragover), не продолжаем
-                if (!dragData.id || !dragData.type) return;
-                
-                const dragType = dragData.type;
-                const targetType = this.dataset.type;
-                
-                // Показываем индикаторы перетаскивания только если перетаскивание разрешено
-                if (canDrop(dragType, targetType, dragData, this.dataset)) {
-                    this.classList.add('drag-over');
-                    
-                    // Показываем индикатор позиции (сверху или снизу)
-                    const rect = this.getBoundingClientRect();
-                    const posY = e.clientY - rect.top;
-                    
-                    // Если курсор в верхней половине, добавляем класс "drop-before"
-                    if (posY < rect.height / 2) {
-                        this.classList.add('drop-before');
-                        this.classList.remove('drop-after');
-                    } else {
-                        this.classList.add('drop-after');
-                        this.classList.remove('drop-before');
-                    }
-                }
-            });
-            
-            // Событие, когда курсор входит в зону элемента
-            element.addEventListener('dragenter', function(e) {
-                e.preventDefault();
-            });
-            
-            // Событие, когда курсор покидает зону элемента
-            element.addEventListener('dragleave', function() {
-                this.classList.remove('drag-over', 'drop-before', 'drop-after');
-            });
-            
-            // Событие сброса перетаскиваемого элемента
-            element.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.classList.remove('drag-over', 'drop-before', 'drop-after');
-                
-                try {
-                    const dragData = JSON.parse(e.dataTransfer.getData('text/plain'));
-                    const dragId = dragData.id;
-                    const dragType = dragData.type;
-                    const dragParent = dragData.parent;
-                    
-                    const targetId = this.dataset.id;
-                    const targetType = this.dataset.type;
-                    const targetParent = this.dataset.parent;
-                    
-                    // Предотвращаем перетаскивание элемента на себя
-                    if (dragId === targetId && dragType === targetType) {
-                        return;
-                    }
-                    
-                    // Определяем, нужно переместить или изменить порядок
-                    if (canChangeParent(dragType, targetType)) {
-                        // Перемещение между родителями
-                        const dropPosition = this.classList.contains('drop-before') ? 'before' : 'after';
-                        moveItem(dragType, dragId, targetType, targetId, dragParent, targetParent, dropPosition);
-                    } else if (canReorder(dragType, targetType)) {
-                        // Изменение порядка в пределах одного родителя
-                        const dropPosition = this.classList.contains('drop-before') ? 'before' : 'after';
-                        reorderItem(dragType, dragId, targetId, dropPosition);
-                    }
-                } catch (err) {
-                    console.error('Error during drop:', err);
-                }
-            });
-        }
+// Загрузка начальных данных
+function loadInitialData() {
+    // Загружаем пути обучения при инициализации
+    loadLevel('learning_path');
+}
 
-        // Проверка возможности перетаскивания элемента
-        function canDrop(dragType, targetType, dragData, targetData) {
-            // Проверка на возможность изменения родителя
-            if (canChangeParent(dragType, targetType)) {
-                return true;
-            }
-            
-            // Проверка на возможность изменения порядка
-            if (canReorder(dragType, targetType)) {
-                // Дополнительная проверка, что элементы находятся в одном родителе
-                return dragData.parent === targetData.parent;
-            }
-            
-            return false;
-        }
-
-        // Проверка возможности изменения родителя
-        function canChangeParent(dragType, targetType) {
-            // Правила перемещения между родителями
-            const parentingRules = {
-                'path': [], // Категория не может быть перемещена в другие типы
-                'subject': ['path'], // Предмет может быть перемещен только в категорию
-                'module': ['subject'], // Модуль может быть перемещен только в предмет
-                'lesson': ['module'] // Урок может быть перемещен только в модуль
-            };
-            
-            return parentingRules[dragType] && parentingRules[dragType].includes(targetType);
-        }
-
-        // Проверка возможности изменения порядка
-        function canReorder(dragType, targetType) {
-            // Элементы одного типа могут менять порядок между собой
-            return dragType === targetType;
-        }
-
-        // Перемещение элемента (с одного родителя на другой)
-        function moveItem(itemType, itemId, targetType, targetId, sourceParentId, targetParentId, position) {
-            // Формируем данные для запроса
-            const requestData = {
-                source_parent_id: sourceParentId,
-                target_parent_id: targetParentId,
-                position: position,
-                target_id: targetId
-            };
-            
-            // Отправляем AJAX запрос
-            fetch(`/${currentLang}/admin/api/move-${itemType}/${itemId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify(requestData)
-            })
+// Загрузка уровня иерархии
+function loadLevel(level) {
+    fetch(`{{ url_for('admin_bp.get_hierarchy_level', lang=lang) }}?level=${level}`)
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    // Перезагружаем страницу для обновления интерфейса
-                    // В идеале, следует обновить DOM без перезагрузки
-                    location.reload();
-                } else {
-                    alert(`Ошибка: ${data.message}`);
-                }
+            displayLevelContent(level, data);
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Произошла ошибка при перемещении элемента');
-            });
-        }
+            console.error('Error loading level:', error);
+            showNotification('{{ t("error_loading_data", lang) | default("Ошибка загрузки данных") }}', 'error');
+        });
+}
 
-        // Изменение порядка элементов в пределах одного родителя
-        function reorderItem(itemType, itemId, targetId, position) {
-            // Формируем данные для запроса
-            const requestData = {
-                target_id: targetId,
-                position: position
-            };
-            
-            // Отправляем AJAX запрос
-            fetch(`/${currentLang}/admin/api/reorder-${itemType}/${itemId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Перезагружаем страницу для обновления интерфейса
-                    // В идеале, следует обновить DOM без перезагрузки
-                    location.reload();
-                } else {
-                    alert(`Ошибка: ${data.message}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Произошла ошибка при изменении порядка элементов');
-            });
-        }
-        
-        // Удаление элемента
-        function deleteItem(itemType, itemId) {
-            // Отправляем AJAX запрос на удаление
-            fetch(`/${currentLang}/admin/api/delete-${itemType}/${itemId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Удаляем элемент из DOM
-                    const treeItem = document.querySelector(`.tree-item[data-type="${itemType}"][data-id="${itemId}"]`);
-                    if (treeItem) {
-                        // Если это элемент с дочерними элементами, удаляем весь узел
-                        const treeNode = treeItem.closest('.tree-node');
-                        if (treeNode) {
-                            treeNode.remove();
-                        } else {
-                            treeItem.remove();
-                        }
-                    }
-                    
-                    // Обновляем содержимое
-                    loadContent(currentType, currentId);
-                    
-                    // Показываем сообщение об успехе
-                    alert('Элемент успешно удален');
-                } else {
-                    alert(`Ошибка: ${data.message}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Произошла ошибка при удалении');
-            });
-        }
-        
-        // Функция загрузки содержимого
-        function loadContent(type, id) {
-            const container = document.getElementById('content-container');
-            
-            // Показываем индикатор загрузки
-            container.innerHTML = `
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Загрузка...</span>
-                    </div>
-                    <p class="mt-2">Загрузка содержимого...</p>
+// Отображение содержимого уровня
+function displayLevelContent(level, data) {
+    const explorerContent = document.getElementById('explorer-content');
+    
+    let html = `<div class="level-header">
+        <h3>${getLevelTitle(level)}</h3>
+        <div class="level-stats">
+            <span class="stat-item">${data.length} элементов</span>
+        </div>
+    </div>`;
+    
+    html += '<div class="content-grid">';
+    
+    data.forEach(item => {
+        html += `
+            <div class="content-card" onclick="selectElement('${level}', ${item.id})">
+                <div class="card-icon">
+                    ${getLevelIcon(level)}
                 </div>
-            `;
-            
-            // В реальном проекте здесь будет AJAX запрос к API
-            // Для демонстрации используем имитацию AJAX через setTimeout
-            setTimeout(() => {
-                let content = '';
-                
-                // В зависимости от типа, загружаем соответствующий контент
-                if (type === 'root') {
-                    // Показываем все категории
-                    content = `<h4>Все категории обучения</h4>`;
-                    {% for path in learning_paths %}
-                    content += `
-                        <div class="content-item" data-type="path" data-id="{{ path.id }}" data-order="{{ path.order|default(0) }}" draggable="true">
-                            <div class="item-icon"><i class="bi bi-{{ path.icon }}"></i></div>
-                            <div class="item-content">
-                                <h5 class="mb-1">{{ path.name }}</h5>
-                                <p class="text-muted small mb-0">{{ path.description }}</p>
+                <div class="card-content">
+                    <h4>${item.name || item.title}</h4>
+                    <p>${item.description || ''}</p>
+                    <div class="card-meta">
+                        <span class="meta-item">ID: ${item.id}</span>
+                        ${item.children_count ? `<span class="meta-item">${item.children_count} дочерних</span>` : ''}
                             </div>
-                            <div class="item-actions">
-                                <button class="btn btn-sm btn-outline-secondary edit-btn" data-id="{{ path.id }}" data-type="path">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ path.id }}" data-type="path">
-                                    <i class="bi bi-trash"></i>
-                                </button>
                             </div>
                         </div>
                     `;
-                    {% endfor %}
-                    
-                    // Кнопка для добавления новой категории
-                    content += `
-                        <div class="text-center mt-3">
-                            <button class="btn btn-primary add-new-btn" data-type="path">
-                                <i class="bi bi-plus-circle"></i> Добавить категорию
-                            </button>
-                        </div>
-                    `;
-                } else if (type === 'path') {
-                    // Показываем предметы в выбранной категории
-                    {% for path in learning_paths %}
-                    if ("{{ path.id }}" === id) {
-                        content = `<h4>{{ path.name }} - Предметы</h4>`;
-                        {% for subject in path.subjects %}
-                        content += `
-                            <div class="content-item" data-type="subject" data-id="{{ subject.id }}" data-order="{{ subject.order|default(0) }}" data-parent="{{ path.id }}" draggable="true">
-                                <div class="item-icon"><i class="bi bi-{{ subject.icon }}"></i></div>
-                                <div class="item-content">
-                                    <h5 class="mb-1">{{ subject.name }}</h5>
-                                    <p class="text-muted small mb-0">{{ subject.description }}</p>
-                                </div>
-                                <div class="item-actions">
-                                    <button class="btn btn-sm btn-outline-secondary edit-btn" data-id="{{ subject.id }}" data-type="subject">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ subject.id }}" data-type="subject">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        {% endfor %}
-                        
-                        // Кнопка для добавления нового предмета
-                        content += `
-                            <div class="text-center mt-3">
-                                <button class="btn btn-primary add-new-btn" data-type="subject" data-parent-id="${id}">
-                                    <i class="bi bi-plus-circle"></i> Добавить предмет
-                                </button>
-                            </div>
-                        `;
-                    }
-                    {% endfor %}
-                } else if (type === 'subject') {
-                    // Показываем модули в выбранном предмете
-                    {% for subject in subjects %}
-                    if ("{{ subject.id }}" === id) {
-                        content = `<h4>{{ subject.name }} - Модули</h4>`;
-                        {% for module in subject.modules %}
-                        content += `
-                            <div class="content-item" data-type="module" data-id="{{ module.id }}" data-order="{{ module.order|default(0) }}" data-parent="{{ subject.id }}" draggable="true">
-                                <div class="item-icon"><i class="bi bi-{{ module.icon }}"></i></div>
-                                <div class="item-content">
-                                    <h5 class="mb-1">{{ module.title }}</h5>
-                                    <p class="text-muted small mb-0">{{ module.description }}</p>
-                                </div>
-                                <div class="item-actions">
-                                    <button class="btn btn-sm btn-outline-secondary edit-btn" data-id="{{ module.id }}" data-type="module">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ module.id }}" data-type="module">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        {% endfor %}
-                        
-                        // Кнопка для добавления нового модуля
-                        content += `
-                            <div class="text-center mt-3">
-                                <button class="btn btn-primary add-new-btn" data-type="module" data-parent-id="${id}">
-                                    <i class="bi bi-plus-circle"></i> Добавить модуль
-                                </button>
-                            </div>
-                        `;
-                    }
-                    {% endfor %}
-                } else if (type === 'module') {
-                    // Показываем уроки в выбранном модуле
-                    {% for module in modules %}
-                    if ("{{ module.id }}" === id) {
-                        content = `<h4>{{ module.title }} - Уроки</h4>`;
-                        
-                        {% if module.lessons|default([]) %}
-                        {% for lesson in module.lessons %}
-                        content += `
-                            <div class="content-item" data-type="lesson" data-id="{{ lesson.id }}" data-order="{{ lesson.order|default(0) }}" data-parent="{{ module.id }}" draggable="true">
-                                <div class="item-icon"><i class="bi bi-file-earmark-text"></i></div>
-                                <div class="item-content">
-                                    <h5 class="mb-1">{{ lesson.title }}</h5>
-                                    <p class="text-muted small mb-0">Тип: {{ lesson.content_type }}</p>
-                                </div>
-                                <div class="item-actions">
-                                    <button class="btn btn-sm btn-outline-secondary edit-btn" data-id="{{ lesson.id }}" data-type="lesson">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ lesson.id }}" data-type="lesson">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        {% endfor %}
-                        {% else %}
-                        content += `<div class="alert alert-info">В этом модуле пока нет уроков</div>`;
-                        {% endif %}
-                        
-                        // Кнопка для добавления нового урока
-                        content += `
-                            <div class="text-center mt-3">
-                                <button class="btn btn-primary add-new-btn" data-type="lesson" data-parent-id="${id}">
-                                    <i class="bi bi-plus-circle"></i> Добавить урок
-                                </button>
-                            </div>
-                        `;
-                    }
-                    {% endfor %}
-                }
-                
-                // Если почему-то контент не сгенерировался
-                if (!content) {
-                    content = `<div class="alert alert-warning">Не удалось загрузить содержимое для ${type} с ID ${id}</div>`;
-                }
-                
-                // Устанавливаем содержимое в контейнер
-                container.innerHTML = content;
-                
-                // Добавляем обработчики для элементов контента
-                setupContentItemHandlers();
-            }, 300);
-        }
-        
-        // Обновление хлебных крошек
-        function updateBreadcrumbs(element) {
-            const currentFolder = document.getElementById('current-folder');
-            
-            // Тип и название элемента
-            const itemLabel = element.querySelector('.tree-label').textContent;
-            
-            // Обновляем текущую папку
-            currentFolder.textContent = itemLabel;
-        }
-        
-        // Открытие модального окна для создания
-        function openCreateModal(type, parentId) {
-            let modalTitle = '';
-            let modalId = '';
-            
-            // Определяем, какое модальное окно открыть
-            if (type === 'path') {
-                modalTitle = 'Добавить категорию обучения';
-                modalId = 'addPathModal';
-            } else if (type === 'subject') {
-                modalTitle = 'Добавить предмет';
-                modalId = 'addSubjectModal';
-                // Устанавливаем родительскую категорию, если есть
-                if (parentId) {
-                    document.getElementById('subject-path').value = parentId;
-                }
-            } else if (type === 'module') {
-                modalTitle = 'Добавить модуль';
-                modalId = 'addModuleModal';
-                // Устанавливаем родительский предмет, если есть
-                if (parentId) {
-                    document.getElementById('module-subject').value = parentId;
-                }
-            } else if (type === 'lesson') {
-                // Для уроков можно создать отдельное модальное окно или редирект
-                alert('Функционал добавления уроков пока в разработке');
-                return;
-            }
-            
-            // Открываем соответствующее модальное окно
-            const modal = new bootstrap.Modal(document.getElementById(modalId));
-            modal.show();
-        }
-        
-        // Открытие модального окна для редактирования
-        function openEditModal(type, id) {
-            let modalId = '';
-            
-            // Определяем, какое модальное окно открыть
-            if (type === 'path') {
-                modalId = 'editPathModal';
-                
-                // Находим данные элемента
-                const pathItem = document.querySelector(`.tree-item[data-type="path"][data-id="${id}"]`);
-                if (pathItem) {
-                    const pathName = pathItem.querySelector('.tree-label').textContent;
-                    
-                    // Заполняем форму редактирования
-                    document.getElementById('edit-path-id').value = id;
-                    document.getElementById('edit-path-name').value = pathName;
-                }
-            } else if (type === 'subject') {
-                modalId = 'editSubjectModal';
-                
-                // Находим данные элемента
-                const subjectItem = document.querySelector(`.tree-item[data-type="subject"][data-id="${id}"]`);
-                if (subjectItem) {
-                    const subjectName = subjectItem.querySelector('.tree-label').textContent;
-                    
-                    // Заполняем форму редактирования
-                    document.getElementById('edit-subject-id').value = id;
-                    document.getElementById('edit-subject-name').value = subjectName;
-                }
-            } else if (type === 'module') {
-                modalId = 'editModuleModal';
-                
-                // Находим данные элемента
-                const moduleItem = document.querySelector(`.tree-item[data-type="module"][data-id="${id}"]`);
-                if (moduleItem) {
-                    const moduleTitle = moduleItem.querySelector('.tree-label').textContent;
-                    
-                    // Заполняем форму редактирования
-                    document.getElementById('edit-module-id').value = id;
-                    document.getElementById('edit-module-title').value = moduleTitle;
-                }
-            }
-            
-            // Открываем соответствующее модальное окно
-            if (modalId) {
-                const modal = new bootstrap.Modal(document.getElementById(modalId));
-                modal.show();
-            }
-        }
-        
-        // Настройка обработчиков для элементов контента
-        function setupContentItemHandlers() {
-            // Обработчики для элементов контента (клик для открытия)
-            document.querySelectorAll('.content-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    // Не реагируем на клик по кнопкам
-                    if (e.target.closest('.item-actions')) {
-                        return;
-                    }
-                    
-                    const itemType = this.dataset.type;
-                    const itemId = this.dataset.id;
-                    
-                    // Находим соответствующий элемент в дереве и кликаем по нему
-                    const treeItem = document.querySelector(`.tree-item[data-type="${itemType}"][data-id="${itemId}"]`);
-                    if (treeItem) {
-                        // Раскрываем родителей, если они свёрнуты
-                        let parent = treeItem.parentElement;
-                        while (parent) {
-                            if (parent.classList.contains('children-container') && parent.style.display === 'none') {
-                                parent.style.display = 'block';
-                                const toggleIcon = parent.previousElementSibling.querySelector('.toggle-icon i');
-                                if (toggleIcon) {
-                                    toggleIcon.classList.replace('bi-caret-right-fill', 'bi-caret-down-fill');
-                                }
-                            }
-                            parent = parent.parentElement;
-                        }
-                        
-                        // Кликаем по элементу в дереве
-                        treeItem.click();
-                    } else {
-                        // Если элемент не найден в дереве, загружаем содержимое напрямую
-                        loadContent(itemType, itemId);
-                    }
-                });
-                
-                // Отменяем переход по ссылкам
-                item.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', e => e.preventDefault());
-                });
-                
-                // Добавляем обработчик контекстного меню
-                item.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    showContextMenu(e, this);
-                });
-                
-                // Настройка Drag and Drop
-                setupDragAndDrop(item);
-            });
-            
-            // Обработчики для кнопок редактирования
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Предотвращаем всплытие события
-                    
-                    const itemType = this.dataset.type;
-                    const itemId = this.dataset.id;
-                    
-                    openEditModal(itemType, itemId);
-                });
-            });
-            
-            // Обработчики для кнопок удаления
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Предотвращаем всплытие события
-                    
-                    const itemType = this.dataset.type;
-                    const itemId = this.dataset.id;
-                    
-                    if (confirm(`Вы уверены, что хотите удалить этот ${itemType}?`)) {
-                        deleteItem(itemType, itemId);
-                    }
-                });
-            });
-            
-            // Обработчики для кнопок добавления
-            document.querySelectorAll('.add-new-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const itemType = this.dataset.type;
-                    const parentId = this.dataset.parentId || null;
-                    
-                    // Открываем модальное окно для создания
-                    openCreateModal(itemType, parentId);
-                });
-            });
-        }
     });
+    
+    html += '</div>';
+    explorerContent.innerHTML = html;
+}
+
+// Выбор элемента
+function selectElement(level, id) {
+    fetch(`{{ url_for('admin_bp.get_element_details', lang=lang) }}?level=${level}&id=${id}`)
+        .then(response => response.json())
+        .then(data => {
+            displayElementProperties(data);
+        })
+        .catch(error => {
+            console.error('Error loading element details:', error);
+        });
+}
+
+// Отображение свойств элемента
+function displayElementProperties(element) {
+    const propertiesPanel = document.getElementById('properties-panel');
+    
+    let html = `
+        <div class="property-group">
+            <h4>{{ t('basic_info', lang) | default('Основная информация') }}</h4>
+            <div class="property-item">
+                <label>{{ t('name', lang) | default('Название') }}:</label>
+                <span>${element.name || element.title}</span>
+                            </div>
+            <div class="property-item">
+                <label>{{ t('type', lang) | default('Тип') }}:</label>
+                <span>${element.type}</span>
+                                </div>
+            <div class="property-item">
+                <label>ID:</label>
+                <span>${element.id}</span>
+                                </div>
+                            </div>
+                        `;
+    
+    if (element.description) {
+        html += `
+            <div class="property-group">
+                <h4>{{ t('description', lang) | default('Описание') }}</h4>
+                <p>${element.description}</p>
+                            </div>
+                        `;
+    }
+    
+    if (element.children && element.children.length > 0) {
+        html += `
+            <div class="property-group">
+                <h4>{{ t('children', lang) | default('Дочерние элементы') }} (${element.children.length})</h4>
+                <div class="children-list">
+        `;
+        
+        element.children.forEach(child => {
+            html += `<div class="child-item">${child.name || child.title}</div>`;
+        });
+        
+        html += '</div></div>';
+    }
+    
+    propertiesPanel.innerHTML = html;
+}
+
+// Утилитарные функции
+function getLevelTitle(level) {
+    const titles = {
+        'learning_path': '{{ t("learning_paths", lang) | default("Пути обучения") }}',
+        'subject': '{{ t("subjects", lang) | default("Предметы") }}',
+        'module': '{{ t("modules", lang) | default("Модули") }}',
+        'topic': '{{ t("topics", lang) | default("Темы") }}',
+        'subtopic': '{{ t("subtopics", lang) | default("Подтемы") }}',
+        'lesson': '{{ t("lessons", lang) | default("Уроки") }}'
+    };
+    return titles[level] || level;
+}
+
+function getLevelIcon(level) {
+    const icons = {
+        'learning_path': '<i class="bi bi-diagram-3"></i>',
+        'subject': '<i class="bi bi-book"></i>',
+        'module': '<i class="bi bi-collection"></i>',
+        'topic': '<i class="bi bi-file-text"></i>',
+        'subtopic': '<i class="bi bi-file"></i>',
+        'lesson': '<i class="bi bi-play-circle"></i>'
+    };
+    return icons[level] || '<i class="bi bi-question-circle"></i>';
+}
+
+function refreshExplorer() {
+    const currentLevel = document.querySelector('.learning-path-button.active')?.dataset.level || 'learning_path';
+    loadLevel(currentLevel);
+}
+
+function createNewElement() {
+    // Заглушка для создания нового элемента
+    showNotification('{{ t("feature_coming_soon", lang) | default("Функция скоро появится") }}', 'info');
+}
+
+function exportStructure() {
+    // Заглушка для экспорта структуры
+    showNotification('{{ t("feature_coming_soon", lang) | default("Функция скоро появится") }}', 'info');
+}
+
+function showStatistics() {
+    // Заглушка для показа статистики
+    showNotification('{{ t("feature_coming_soon", lang) | default("Функция скоро появится") }}', 'info');
+}
+
+function showNotification(message, type) {
+    // Простое уведомление
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+    notification.style.zIndex = '9999';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
 </script>
 {% endblock %}

@@ -2,8 +2,9 @@
 import json
 from flask import Blueprint, jsonify, g, request, current_app, session
 from flask_login import login_required, current_user
-from models import db, Lesson, UserProgress, Module, ContentTopic, ContentSubcategory, User
+from models import db, Lesson, UserProgress, Module, ContentTopic, ContentSubcategory, User, UserExamDate, ContentCategory, UserStats
 from translations_new import get_translation as t
+from datetime import datetime
 from extensions import csrf
 import logging
 
@@ -367,6 +368,13 @@ def save_progress(lang):
         db.session.commit()
         current_app.logger.info(f"Progress saved for user {current_user.id}, lesson {lesson_id_int}. Message: {message}")
 
+        # Очищаем кэш статистики пользователя
+        try:
+            from routes.learning_map_routes import clear_user_stats_cache
+            clear_user_stats_cache(current_user.id)
+        except ImportError:
+            pass  # Игнорируем ошибки импорта
+
         # Рассчитываем текущую статистику модуля
         module_stats = calculate_module_stats(module_id, current_user.id)
 
@@ -429,6 +437,191 @@ def calculate_module_stats(module_id, user_id):
             "completed_lessons": 0,
             "total_lessons": 0
         }
+
+
+
+api_bp = Blueprint('api', __name__, url_prefix='/api')
+
+@api_bp.route('/save-progress', methods=['POST'])
+@login_required
+def save_progress():
+    """Сохраняет прогресс пользователя по завершению урока."""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        module_id = data.get('module_id')
+        subtopic_slug = data.get('subtopic_slug')
+        completed = data.get('completed', False)
+        score = data.get('score', 0)
+        time_spent = data.get('time_spent', 0)
+        correct_answers = data.get('correct_answers', 0)
+        total_questions = data.get('total_questions', 0)
+        
+        if not module_id or not subtopic_slug:
+            return jsonify({'error': 'Module ID and subtopic slug are required'}), 400
+        
+        # Получаем все уроки подтемы
+        lessons = Lesson.query.filter_by(
+            module_id=module_id,
+            subtopic_slug=subtopic_slug
+        ).all()
+        
+        if not lessons:
+            return jsonify({'error': 'No lessons found for this subtopic'}), 404
+        
+        # Обновляем прогресс для всех уроков подтемы
+        updated_lessons = 0
+        for lesson in lessons:
+            # Проверяем существующий прогресс
+            progress = UserProgress.query.filter_by(
+                user_id=current_user.id,
+                lesson_id=lesson.id
+            ).first()
+            
+            if not progress:
+                # Создаем новый прогресс
+                progress = UserProgress(
+                    user_id=current_user.id,
+                    lesson_id=lesson.id,
+                    completed=completed,
+                    timestamp=datetime.utcnow(),
+                    time_spent=time_spent,
+                    last_accessed=datetime.utcnow()
+                )
+                db.session.add(progress)
+            else:
+                # Обновляем существующий прогресс
+                progress.completed = completed
+                progress.timestamp = datetime.utcnow()
+                progress.time_spent = max(progress.time_spent or 0, time_spent)
+                progress.last_accessed = datetime.utcnow()
+            
+            updated_lessons += 1
+        
+        # Обновляем статистику пользователя
+        user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
+        if not user_stats:
+            user_stats = UserStats(
+                user_id=current_user.id,
+                total_scenarios_completed=0,
+                total_score_earned=0,
+                average_score_percentage=0,
+                total_time_spent_minutes=0,
+                current_streak_days=0,
+                longest_streak_days=0,
+                last_activity_date=datetime.utcnow().date(),
+                perfect_scores_count=0,
+                total_experience_points=0,
+                current_level=1,
+                points_to_next_level=100
+            )
+            db.session.add(user_stats)
+        
+        # Обновляем статистику
+        if completed:
+            user_stats.total_scenarios_completed += 1
+            user_stats.total_score_earned += score
+            user_stats.total_time_spent_minutes += time_spent
+            user_stats.last_activity_date = datetime.utcnow().date()
+            
+            # Обновляем средний процент
+            if user_stats.total_scenarios_completed > 0:
+                user_stats.average_score_percentage = int(
+                    user_stats.total_score_earned / user_stats.total_scenarios_completed
+                )
+            
+            # Проверяем идеальный результат
+            if score == 100:
+                user_stats.perfect_scores_count += 1
+            
+            # Добавляем очки опыта
+            experience_points = score + (10 if score == 100 else 0)
+            user_stats.total_experience_points += experience_points
+            
+            # Обновляем уровень (каждые 500 очков = новый уровень)
+            new_level = (user_stats.total_experience_points // 500) + 1
+            if new_level > user_stats.current_level:
+                user_stats.current_level = new_level
+            
+            user_stats.points_to_next_level = 500 - (user_stats.total_experience_points % 500)
+        
+        # Сохраняем изменения
+        db.session.commit()
+        
+        current_app.logger.info(
+            f"Progress saved for user {current_user.id}: "
+            f"module {module_id}, subtopic '{subtopic_slug}', "
+            f"score {score}%, time {time_spent}min, "
+            f"correct {correct_answers}/{total_questions}"
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': 'Progress saved successfully',
+            'lessons_updated': updated_lessons,
+            'stats': {
+                'total_completed': user_stats.total_scenarios_completed,
+                'average_score': user_stats.average_score_percentage,
+                'total_time': user_stats.total_time_spent_minutes,
+                'current_level': user_stats.current_level,
+                'experience_points': user_stats.total_experience_points
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error saving progress: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to save progress'}), 500
+
+
+@api_bp.route('/get-next-topics/<int:module_id>')
+@login_required
+def get_next_topics(module_id):
+    """Возвращает рекомендуемые следующие темы для изучения."""
+    try:
+        from models import Module, Subject, Lesson
+        
+        # Получаем текущий модуль
+        current_module = Module.query.get_or_404(module_id)
+        
+        # Получаем другие модули того же предмета
+        subject_modules = Module.query.filter_by(
+            subject_id=current_module.subject_id
+        ).filter(Module.id != module_id).order_by(Module.order).all()
+        
+        next_topics = []
+        for module in subject_modules[:3]:  # Максимум 3 рекомендации
+            # Подсчитываем прогресс модуля
+            module_lessons = Lesson.query.filter_by(module_id=module.id).all()
+            if module_lessons:
+                completed_lessons = UserProgress.query.filter_by(
+                    user_id=current_user.id,
+                    completed=True
+                ).filter(UserProgress.lesson_id.in_([l.id for l in module_lessons])).count()
+                
+                progress = int((completed_lessons / len(module_lessons)) * 100)
+            else:
+                progress = 0
+            
+            next_topics.append({
+                'id': module.id,
+                'title': module.title,
+                'description': module.description or '',
+                'progress': progress,
+                'is_premium': module.is_premium or False
+            })
+        
+        return jsonify({
+            'success': True,
+            'next_topics': next_topics
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting next topics: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to get next topics'}), 500
 
 # Тестовый маршрут для отладки прогресса
 @api_bp.route("/debug/progress")

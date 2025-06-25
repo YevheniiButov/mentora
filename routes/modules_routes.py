@@ -1,7 +1,7 @@
 # routes/modules_routes.py
 from flask import Blueprint, render_template, redirect, url_for, g, flash, current_app, request
 from flask_login import login_required, current_user
-from models import db, Module, Lesson, UserProgress
+from models import db, Module, Lesson, UserProgress, Subject
 import json
 from collections import defaultdict
 import logging
@@ -99,7 +99,6 @@ def modules_list(lang):
     return render_template('learning/modules_list.html', 
                            categories=categorized_modules, 
                            user=user)
-
 @modules_bp.route("/<int:module_id>")
 @login_required
 def module_view(lang, module_id):
@@ -107,53 +106,49 @@ def module_view(lang, module_id):
     try:
         module = Module.query.get_or_404(module_id)
         
-        # Получаем все модули для левого столбца (группируем по предмету если есть)
-        if hasattr(module, 'subject_id') and module.subject_id:
-            # Получаем модули того же предмета
-            all_modules = Module.query.filter_by(subject_id=module.subject_id).order_by(Module.order).all()
-        else:
-            # Если нет subject_id, получаем все модули
-            all_modules = Module.query.order_by(Module.title).all()
+        # Получаем текущий Subject
+        current_subject = Subject.query.get(module.subject_id) if module.subject_id else None
         
-        # Добавляем прогресс для каждого модуля
-        modules_with_progress = []
-        for mod in all_modules:
-            # Получаем все уроки модуля
-            module_lessons = Lesson.query.filter_by(module_id=mod.id).all()
-            total_lessons = len(module_lessons)
+        # Получаем все Subject'ы для левой колонки
+        all_subjects = Subject.query.all()
+        
+        # Добавляем модули и прогресс для каждого Subject
+        subjects_with_data = []
+        for subject in all_subjects:
+            # Получаем модули Subject'а
+            subject_modules = Module.query.filter_by(subject_id=subject.id).all()
             
-            # Получаем завершенные уроки
+            # Вычисляем прогресс Subject'а
+            total_lessons = 0
             completed_lessons = 0
-            if total_lessons > 0:
-                lesson_ids = [lesson.id for lesson in module_lessons]
-                completed_lessons = UserProgress.query.filter_by(
-                    user_id=current_user.id,
-                    completed=True
-                ).filter(UserProgress.lesson_id.in_(lesson_ids)).count()
             
-            # Вычисляем прогресс
+            for mod in subject_modules:
+                module_lessons = Lesson.query.filter_by(module_id=mod.id).all()
+                total_lessons += len(module_lessons)
+                
+                if module_lessons:
+                    lesson_ids = [lesson.id for lesson in module_lessons]
+                    completed_lessons += UserProgress.query.filter_by(
+                        user_id=current_user.id,
+                        completed=True
+                    ).filter(UserProgress.lesson_id.in_(lesson_ids)).count()
+            
+            # Вычисляем прогресс в процентах
             progress = int((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
             
-            modules_with_progress.append({
-                'module': mod,
-                'progress': progress,
-                'completed_lessons': completed_lessons,
-                'total_lessons': total_lessons,
-                'is_current': mod.id == module_id
-            })
+            # Добавляем вычисленные данные
+            subject.modules = subject_modules  # Добавляем модули к объекту subject
+            subject.progress = progress
+            subject.total_lessons = total_lessons
+            subject.completed_lessons = completed_lessons
+            
+            subjects_with_data.append(subject)
         
         # Получаем все уроки модуля
         lessons = Lesson.query.filter_by(module_id=module.id).order_by(Lesson.order).all()
         current_app.logger.info(f"Module '{module.title}' has {len(lessons)} lessons")
         
-        # Сначала проверяем наличие полей subtopic в уроках
-        has_subtopic_fields = False
-        for lesson in lessons:
-            if lesson.subtopic and lesson.subtopic_slug:
-                has_subtopic_fields = True
-                break
-        
-        # Группируем уроки по подтемам
+        # Группируем уроки по подтемам (существующая логика)
         subtopics = defaultdict(list)
         
         for lesson in lessons:
@@ -161,7 +156,7 @@ def module_view(lang, module_id):
             subtopic_slug = None
             
             # Если поля subtopic и subtopic_slug заполнены, используем их
-            if has_subtopic_fields and lesson.subtopic and lesson.subtopic_slug:
+            if lesson.subtopic and lesson.subtopic_slug:
                 subtopic_name = lesson.subtopic
                 subtopic_slug = lesson.subtopic_slug
             else:
@@ -181,7 +176,6 @@ def module_view(lang, module_id):
                         subtopic_name = f"{module.title} - Общие материалы"
                     subtopic_slug = create_slug(subtopic_name)
             
-            # Добавляем ключ slug к хранимым данным
             lesson_with_slug = {
                 'lesson': lesson,
                 'slug': subtopic_slug
@@ -190,22 +184,29 @@ def module_view(lang, module_id):
         
         # Преобразуем в формат для шаблона
         topics_with_subtopics = []
+        
+        # Получаем все уроки для всех подтем за один запрос
+        all_lessons_for_progress = []
+        for subtopic_lessons in subtopics.values():
+            all_lessons_for_progress.extend([item['lesson'] for item in subtopic_lessons])
+        
+        # Получаем весь прогресс пользователя за один запрос
+        lesson_ids = [lesson.id for lesson in all_lessons_for_progress]
+        progress_dict = {}
+        
+        if lesson_ids:
+            progress_entries = UserProgress.query.filter(
+                UserProgress.user_id == current_user.id,
+                UserProgress.lesson_id.in_(lesson_ids)
+            ).all()
+            progress_dict = {entry.lesson_id: entry.completed for entry in progress_entries}
+        
         for subtopic_name, subtopic_lessons in subtopics.items():
-            # Получаем слаг из первого урока
             subtopic_slug = subtopic_lessons[0]['slug']
-            
-            # Выделяем объекты уроков для подсчета прогресса
             lessons_only = [item['lesson'] for item in subtopic_lessons]
             
-            # Подсчитываем прогресс
-            completed_lessons = 0
-            for lesson in lessons_only:
-                progress = UserProgress.query.filter_by(
-                    user_id=current_user.id,
-                    lesson_id=lesson.id
-                ).first()
-                if progress and progress.completed:
-                    completed_lessons += 1
+            # Подсчитываем прогресс (оптимизированная версия)
+            completed_lessons = sum(1 for lesson in lessons_only if progress_dict.get(lesson.id, False))
             
             topic_data = {
                 'topic': {
@@ -222,38 +223,95 @@ def module_view(lang, module_id):
         
         # Сортируем подтемы по номеру модуля из card_id первой карточки
         def get_module_order(topic_data):
-            """Извлекает номер модуля из card_id первой карточки для сортировки"""
             try:
-                # Получаем первый урок темы
                 first_lesson = topic_data['lessons'][0] if topic_data['lessons'] else None
                 if not first_lesson or not first_lesson.content:
-                    return 999  # Fallback для тем без контента
+                    return 999
                 
-                # Парсим JSON контент
                 content_data = json.loads(first_lesson.content)
                 if 'cards' in content_data and content_data['cards']:
                     first_card = content_data['cards'][0]
                     card_id = first_card.get('card_id', '')
                     
-                    # Извлекаем номер модуля из card_id (например: "caries_m1_l1" -> 1)
                     import re
                     match = re.search(r'_m(\d+)_', card_id)
                     if match:
                         return int(match.group(1))
                 
-                return 999  # Fallback если не найден номер модуля
+                return 999
             except (json.JSONDecodeError, KeyError, ValueError, IndexError):
-                return 999  # Fallback при ошибках
+                return 999
         
         topics_with_subtopics.sort(key=get_module_order)
         
         current_app.logger.info(f"Grouped into {len(topics_with_subtopics)} subtopics: {[t['topic']['name'] for t in topics_with_subtopics]}")
         
+        # Получаем статистику пользователя (добавляем этот импорт если его нет)
+        from routes.learning_map_routes import get_user_stats
+        stats = get_user_stats(current_user.id)
+        
+        # Получаем рекомендации (добавляем этот импорт если его нет) 
+        from routes.subject_view_routes import get_user_recommendations
+        recommendations = get_user_recommendations(current_user.id)
+        
+        # Получаем все модули с прогрессом для левой колонки (оптимизированная версия)
+        all_modules = Module.query.filter_by(subject_id=module.subject_id).order_by(Module.order).all()
+        modules_with_progress = []
+        
+        if all_modules:
+            # Получаем все уроки для всех модулей за один запрос
+            module_ids = [mod.id for mod in all_modules]
+            all_lessons = Lesson.query.filter(Lesson.module_id.in_(module_ids)).all()
+            
+            # Группируем уроки по модулям
+            lessons_by_module = {}
+            for lesson in all_lessons:
+                if lesson.module_id not in lessons_by_module:
+                    lessons_by_module[lesson.module_id] = []
+                lessons_by_module[lesson.module_id].append(lesson)
+            
+            # Получаем весь прогресс пользователя за один запрос
+            all_lesson_ids = [lesson.id for lesson in all_lessons]
+            completed_progress = UserProgress.query.filter(
+                UserProgress.user_id == current_user.id,
+                UserProgress.lesson_id.in_(all_lesson_ids),
+                UserProgress.completed == True
+            ).with_entities(UserProgress.lesson_id).all()
+            
+            completed_lesson_ids = {entry.lesson_id for entry in completed_progress}
+            
+            # Рассчитываем прогресс для каждого модуля
+            for mod in all_modules:
+                module_lessons = lessons_by_module.get(mod.id, [])
+                total_lessons = len(module_lessons)
+                
+                if total_lessons > 0:
+                    module_lesson_ids = {lesson.id for lesson in module_lessons}
+                    completed_lessons = len(module_lesson_ids.intersection(completed_lesson_ids))
+                    progress = int((completed_lessons / total_lessons) * 100)
+                else:
+                    completed_lessons = 0
+                    progress = 0
+                
+                modules_with_progress.append({
+                    'module': mod,
+                    'progress': progress,
+                    'completed_lessons': completed_lessons,
+                    'total_lessons': total_lessons,
+                    'is_current': mod.id == module.id
+                })
+        else:
+            modules_with_progress = []
+
         return render_template(
             "learning/module.html",
             module=module,
-            modules_with_progress=modules_with_progress,  # Новый параметр для левого столбца
+            current_subject=current_subject,
+            subjects=subjects_with_data,  # Передаем subjects с данными
+            modules_with_progress=modules_with_progress,  # Добавляем модули с прогрессом
             topics_with_subtopics=topics_with_subtopics,
+            stats=stats,  # Добавляем статистику
+            recommendations=recommendations,  # Добавляем рекомендации
             title=module.title,
             lang=lang
         )
@@ -261,106 +319,45 @@ def module_view(lang, module_id):
         current_app.logger.error(f"Error loading module {module_id}: {e}", exc_info=True)
         flash(f"Error loading module: {e}", "danger")
         return redirect(url_for('modules_bp.modules_list', lang=lang))
-
 @modules_bp.route("/<int:module_id>/subtopic/<slug>")
 @login_required
 def subtopic_lessons_list(lang, module_id, slug):
-    """Отображает список уроков для конкретной подтемы с интерактивными элементами."""
+    """Интерактивное обучение по подтеме с унифицированным дизайном."""
     try:
         module = Module.query.get_or_404(module_id)
-        
-        # Получаем все модули для левого столбца (группируем по предмету если есть)
-        if hasattr(module, 'subject_id') and module.subject_id:
-            # Получаем модули того же предмета
-            all_modules = Module.query.filter_by(subject_id=module.subject_id).order_by(Module.order).all()
-        else:
-            # Если нет subject_id, получаем все модули
-            all_modules = Module.query.order_by(Module.title).all()
-        
-        # Добавляем прогресс для каждого модуля
-        modules_with_progress = []
-        for mod in all_modules:
-            # Получаем все уроки модуля
-            module_lessons = Lesson.query.filter_by(module_id=mod.id).all()
-            total_lessons = len(module_lessons)
-            
-            # Получаем завершенные уроки
-            completed_lessons = 0
-            if total_lessons > 0:
-                lesson_ids = [lesson.id for lesson in module_lessons]
-                completed_lessons = UserProgress.query.filter_by(
-                    user_id=current_user.id,
-                    completed=True
-                ).filter(UserProgress.lesson_id.in_(lesson_ids)).count()
-            
-            # Вычисляем прогресс
-            progress = int((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
-            
-            modules_with_progress.append({
-                'module': mod,
-                'progress': progress,
-                'completed_lessons': completed_lessons,
-                'total_lessons': total_lessons,
-                'is_current': mod.id == module_id
-            })
         
         # Получаем уроки подтемы
         subtopic_lessons = Lesson.query.filter_by(
             module_id=module_id,
             subtopic_slug=slug
         ).order_by(Lesson.subtopic_order, Lesson.order).all()
-        
+
         if not subtopic_lessons:
-            # Если уроки не найдены по subtopic_slug, попробуем найти по извлеченному module_title
-            all_lessons = Lesson.query.filter_by(module_id=module_id).order_by(Lesson.order).all()
-            subtopic_lessons = []
-            
-            for lesson in all_lessons:
-                extracted_title = extract_module_title(lesson)
-                if extracted_title and create_slug(extracted_title) == slug:
-                    subtopic_lessons.append(lesson)
-            
-            if not subtopic_lessons:
-                flash("Подтема не найдена" if lang == 'ru' else "Subtopic not found", "danger")
-                return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module.id))
-        
-        # Название подтемы
-        subtopic_name = subtopic_lessons[0].subtopic if subtopic_lessons[0].subtopic else "Подтема"
-        
-        # Подготовка карточек и тестов для интерактивного отображения
+            flash("Subtopic not found", "error")
+            return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module_id))
+
+        subtopic_name = subtopic_lessons[0].subtopic if subtopic_lessons else "Unknown Subtopic"
+
+        # Парсим контент и разделяем карточки и тесты
         cards = []
         tests = []
-        
+
         for lesson in subtopic_lessons:
-            if lesson.content_type == 'learning_card' and lesson.content:
-                try:
+            try:
+                if lesson.content:
                     content_data = json.loads(lesson.content)
-                    if 'cards' in content_data:
-                        # Сортируем карточки по card_id для правильного порядка
-                        lesson_cards = content_data['cards']
-                        
-                        # Сортируем по card_id если он есть, иначе по порядку в массиве
-                        lesson_cards.sort(key=lambda card: card.get('card_id', ''))
-                        
-                        for card in lesson_cards:
+                    
+                    if lesson.content_type == 'learning_card' and 'cards' in content_data:
+                        for card in content_data['cards']:
                             cards.append({
                                 'question': card.get('question', ''),
                                 'answer': card.get('answer', ''),
                                 'card_id': card.get('card_id', ''),
                                 'lesson_id': lesson.id
                             })
-                except (json.JSONDecodeError, KeyError, AttributeError) as e:
-                    current_app.logger.error(f"Error parsing card content: {e}")
                     
-            elif lesson.content_type in ['quiz', 'test_question'] and lesson.content:
-                try:
-                    content_data = json.loads(lesson.content)
-                    if 'questions' in content_data:
-                        # Сортируем вопросы по card_id если есть
-                        lesson_questions = content_data['questions']
-                        lesson_questions.sort(key=lambda q: q.get('card_id', ''))
-                        
-                        for question in lesson_questions:
+                    elif lesson.content_type in ['quiz', 'test_question'] and 'questions' in content_data:
+                        for question in content_data['questions']:
                             tests.append({
                                 'question': question.get('question', ''),
                                 'options': question.get('options', []),
@@ -369,15 +366,15 @@ def subtopic_lessons_list(lang, module_id, slug):
                                 'card_id': question.get('card_id', ''),
                                 'lesson_id': lesson.id
                             })
-                except (json.JSONDecodeError, KeyError, AttributeError) as e:
-                    current_app.logger.error(f"Error parsing test content: {e}")
-        
-        # Чередуем карточки и тесты (2 карточки, 1 тест)
+            except (json.JSONDecodeError, KeyError) as e:
+                current_app.logger.warning(f"Error parsing lesson {lesson.id}: {e}")
+                continue
+
+        # Чередуем контент: 2 карточки → 1 тест
         interleaved_content = []
         card_index = 0
         test_index = 0
-        
-        # Чередование контента
+
         while card_index < len(cards) or test_index < len(tests):
             # Добавляем до 2 карточек
             for _ in range(2):
@@ -387,7 +384,7 @@ def subtopic_lessons_list(lang, module_id, slug):
                         'data': cards[card_index]
                     })
                     card_index += 1
-            
+
             # Добавляем 1 тест
             if test_index < len(tests):
                 interleaved_content.append({
@@ -395,32 +392,92 @@ def subtopic_lessons_list(lang, module_id, slug):
                     'data': tests[test_index]
                 })
                 test_index += 1
+
+        # Получаем все модули с прогрессом для левой колонки (оптимизированная версия)
+        all_modules = Module.query.filter_by(subject_id=module.subject_id).order_by(Module.order).all()
+        modules_with_progress = []
         
-        # Получаем прогресс пользователя для уроков
+        if all_modules:
+            # Получаем все уроки для всех модулей за один запрос
+            module_ids = [mod.id for mod in all_modules]
+            all_lessons = Lesson.query.filter(Lesson.module_id.in_(module_ids)).all()
+            
+            # Группируем уроки по модулям
+            lessons_by_module = {}
+            for lesson in all_lessons:
+                if lesson.module_id not in lessons_by_module:
+                    lessons_by_module[lesson.module_id] = []
+                lessons_by_module[lesson.module_id].append(lesson)
+            
+            # Получаем весь прогресс пользователя за один запрос
+            all_lesson_ids = [lesson.id for lesson in all_lessons]
+            completed_progress = UserProgress.query.filter(
+                UserProgress.user_id == current_user.id,
+                UserProgress.lesson_id.in_(all_lesson_ids),
+                UserProgress.completed == True
+            ).with_entities(UserProgress.lesson_id).all()
+            
+            completed_lesson_ids = {entry.lesson_id for entry in completed_progress}
+            
+            # Рассчитываем прогресс для каждого модуля
+            for mod in all_modules:
+                module_lessons = lessons_by_module.get(mod.id, [])
+                total_lessons = len(module_lessons)
+                
+                if total_lessons > 0:
+                    module_lesson_ids = {lesson.id for lesson in module_lessons}
+                    completed_lessons = len(module_lesson_ids.intersection(completed_lesson_ids))
+                    progress = int((completed_lessons / total_lessons) * 100)
+                else:
+                    completed_lessons = 0
+                    progress = 0
+                
+                modules_with_progress.append({
+                    'module': mod,
+                    'progress': progress,
+                    'completed_lessons': completed_lessons,
+                    'total_lessons': total_lessons,
+                    'is_current': mod.id == module.id
+                })
+        else:
+            modules_with_progress = []
+
+        # Получаем прогресс пользователя для уроков подтемы (оптимизированная версия)
+        lesson_ids = [lesson.id for lesson in subtopic_lessons]
         user_progress = {}
-        for lesson in subtopic_lessons:
-            progress = UserProgress.query.filter_by(
-                user_id=current_user.id,
-                lesson_id=lesson.id
-            ).first()
-            user_progress[lesson.id] = progress.completed if progress else False
         
-        current_app.logger.info(f"Prepared {len(interleaved_content)} items for display")
-        
-        # Используем специальный шаблон для интерактивного отображения
+        if lesson_ids:
+            # Получаем весь прогресс за один запрос
+            progress_entries = UserProgress.query.filter(
+                UserProgress.user_id == current_user.id,
+                UserProgress.lesson_id.in_(lesson_ids)
+            ).all()
+            
+            # Создаем словарь для быстрого доступа
+            progress_dict = {entry.lesson_id: entry.completed for entry in progress_entries}
+            
+            # Заполняем user_progress
+            for lesson in subtopic_lessons:
+                user_progress[lesson.id] = progress_dict.get(lesson.id, False)
+        else:
+            # Если нет уроков, создаем пустой словарь
+            user_progress = {}
+
+        current_app.logger.info(f"Subtopic '{subtopic_name}' loaded with {len(interleaved_content)} items")
+
         return render_template(
             "learning/interactive_subtopic.html",
             module=module,
-            modules_with_progress=modules_with_progress,  # Новый параметр
             subtopic_name=subtopic_name,
-            subtopic_slug=slug,  # Добавляем slug для навигации
             content=interleaved_content,
-            lessons=subtopic_lessons,
-            user_progress=user_progress,
             total_items=len(interleaved_content),
+            modules_with_progress=modules_with_progress,
+            user_progress=user_progress,
+            current_item=1,  # Для прогресса
             lang=lang
         )
+
     except Exception as e:
         current_app.logger.error(f"Error in subtopic_lessons_list: {e}", exc_info=True)
-        flash(f"Error loading subtopic: {e}", "danger")
-        return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module.id))
+        flash("Error loading subtopic content", "error")
+        return redirect(url_for('modules_bp.module_view', lang=lang, module_id=module_id))

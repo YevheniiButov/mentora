@@ -18,6 +18,9 @@ class ThemeController {
 
         // Добавляем переключатель темы в DOM
         this.addThemeToggle();
+
+        // Инициализируем эффекты скролла для стеклянной темы
+        this.initGlassEffects();
     }
 
     setTheme(theme) {
@@ -81,6 +84,129 @@ class ThemeController {
         });
         window.dispatchEvent(event);
     }
+
+    initGlassEffects() {
+        // Эффект скролла для стеклянной шапки
+        this.initHeaderScrollEffect();
+        
+        // Дополнительные эффекты для стеклянной темы
+        this.initGlassInteractions();
+    }
+
+    initHeaderScrollEffect() {
+        let lastScrollY = window.scrollY;
+        let isScrollingDown = false;
+        
+        const header = document.querySelector('.modern-header');
+        if (!header) return;
+
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            isScrollingDown = currentScrollY > lastScrollY;
+            
+            // Добавляем класс 'scrolled' при скролле вниз
+            if (currentScrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            
+            // Дополнительные эффекты для градиентной темы
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'gradient') {
+                this.applyGlassScrollEffects(header, currentScrollY, isScrollingDown);
+            }
+            
+            lastScrollY = currentScrollY;
+        };
+
+        // Throttle функция для оптимизации
+        let ticking = false;
+        const throttledScroll = () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    handleScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', throttledScroll, { passive: true });
+    }
+
+    applyGlassScrollEffects(header, scrollY, isScrollingDown) {
+        // Динамическое изменение прозрачности и размытия
+        const maxScroll = 200;
+        const scrollProgress = Math.min(scrollY / maxScroll, 1);
+        
+        // Увеличиваем эффект матового стекла при скролле
+        const blurAmount = 20 + (scrollProgress * 10); // от 20px до 30px
+        const opacity = 0.1 + (scrollProgress * 0.1); // от 0.1 до 0.2
+        const saturation = 180 + (scrollProgress * 20); // от 180% до 200%
+        
+        header.style.setProperty('--glass-blur', `${blurAmount}px`);
+        header.style.setProperty('--glass-opacity', opacity);
+        header.style.setProperty('--glass-saturation', `${saturation}%`);
+        
+        // Применяем стили
+        const glassStyle = `
+            rgba(255, 255, 255, ${opacity}) !important
+        `;
+        const backdropStyle = `
+            blur(${blurAmount}px) saturate(${saturation}%) !important
+        `;
+        
+        header.style.background = glassStyle;
+        header.style.backdropFilter = backdropStyle;
+        header.style.webkitBackdropFilter = backdropStyle;
+    }
+
+    initGlassInteractions() {
+        // Добавляем интерактивные эффекты для элементов навигации
+        const navLinks = document.querySelectorAll('.modern-header .nav-link, .modern-header .btn');
+        
+        navLinks.forEach(link => {
+            // Эффект пульсации при наведении
+            link.addEventListener('mouseenter', (e) => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                if (currentTheme === 'gradient') {
+                    this.addGlassRippleEffect(e.target);
+                }
+            });
+        });
+    }
+
+    addGlassRippleEffect(element) {
+        // Создаем эффект пульсации
+        element.style.position = 'relative';
+        element.style.overflow = 'hidden';
+        
+        const ripple = document.createElement('span');
+        ripple.className = 'glass-ripple';
+        ripple.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            animation: glassRipple 0.6s ease-out;
+            pointer-events: none;
+            z-index: 1;
+        `;
+        
+        element.appendChild(ripple);
+        
+        // Удаляем эффект после анимации
+        setTimeout(() => {
+            if (ripple.parentNode) {
+                ripple.parentNode.removeChild(ripple);
+            }
+        }, 600);
+    }
 }
 
 // Инициализация контроллера
@@ -89,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Дополнительные стили для анимаций
-const additionalStyles = `
+const themeControllerStyles = `
 @keyframes slideOutUp {
     from {
         transform: translateY(0);
@@ -113,9 +239,9 @@ const additionalStyles = `
 `;
 
 // Добавляем стили
-const style = document.createElement('style');
-style.textContent = additionalStyles;
-document.head.appendChild(style);
+const themeControllerStylesElement = document.createElement('style');
+themeControllerStylesElement.textContent = themeControllerStyles;
+document.head.appendChild(themeControllerStylesElement);
 
 // Экспорт для использования в других модулях
 if (typeof module !== 'undefined' && module.exports) {

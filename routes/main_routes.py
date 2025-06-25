@@ -127,6 +127,17 @@ def profile(lang):
         user_progress_list = []
     return render_template("profile/profile.html", user=user, progress=user_progress_list)
 
+@main_bp.route("/<string:lang>/test-themes")
+def test_themes(lang):
+    """Демонстрационная страница для тестирования всех тем."""
+    current_lang = getattr(g, 'lang', lang)
+    return render_template("test_themes.html", lang=current_lang)
+
+@main_bp.route("/<string:lang>/theme-test-simple")
+def theme_test_simple(lang):
+    """Простая страница для тестирования тем без лишних стилей."""
+    current_lang = getattr(g, 'lang', lang)
+    return render_template("theme_test_simple.html", lang=current_lang)
 
 @main_bp.route("/<string:lang>/learn")
 @login_required

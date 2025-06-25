@@ -581,14 +581,16 @@ section {
 }
 
 .app-title {
-  font-size: 1.6rem;
-  font-weight: featu700;
-  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  color: var(--text-primary);
 }
 
 .app-subtitle {
   opacity: 0.9;
-  font-size: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
 }
 
 .re-cards {
@@ -872,12 +874,12 @@ section {
 
 .screen-content {
     width: 25%; /* Each screen takes 1/4 of total width */
-    padding: 2.5rem;
+    padding: 1.8rem; /* Уменьшено с 2.5rem */
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    color: white;
+    color: var(--text-primary);
     flex-shrink: 0;
 }
 
@@ -1123,7 +1125,7 @@ section {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    color: white;
+    color: var(--text-primary);
     flex-shrink: 0;
 }
 
@@ -1136,11 +1138,13 @@ section {
     font-size: 1.3rem; /* Уменьшено с 1.6rem */
     font-weight: 700;
     margin-bottom: 0.3rem;
+    color: var(--text-primary);
 }
 
 .app-subtitle {
     opacity: 0.9;
     font-size: 0.85rem; /* Уменьшено */
+    color: var(--text-secondary);
 }
 
 .feature-cards {
@@ -1176,12 +1180,14 @@ section {
     font-size: 0.95rem; /* Уменьшено */
     margin-bottom: 0.3rem;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .feature-card p {
     font-size: 0.8rem; /* Уменьшено */
     opacity: 0.9;
     line-height: 1.3;
+    color: var(--text-secondary);
 }
 
 /* ===== RESPONSIVE - МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
@@ -1292,4 +1298,73 @@ section {
     .indicator.active {
         border-color: white;
     }
+}
+
+/* ===== THEME ADJUSTMENTS FOR PHONE SCREEN ===== */
+/* Светлая тема: темный текст на светлом экране */
+[data-theme="light"] .screen-content {
+    color: #0f172a;
+}
+
+[data-theme="light"] .app-title {
+    color: #0f172a;
+}
+
+[data-theme="light"] .app-subtitle {
+    color: #334155;
+}
+
+[data-theme="light"] .feature-card h4 {
+    color: #0f172a;
+}
+
+[data-theme="light"] .feature-card p {
+    color: #475569;
+}
+
+/* Темная тема: светлый текст на темном экране */
+[data-theme="dark"] .screen-content {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .app-title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .app-subtitle {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .feature-card h4 {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .feature-card p {
+    color: #cbd5e1;
+}
+
+/* Градиентная тема: адаптивный контрастный текст */
+[data-theme="gradient"] .screen-content {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="gradient"] .app-title {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="gradient"] .app-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="gradient"] .feature-card h4 {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="gradient"] .feature-card p {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
