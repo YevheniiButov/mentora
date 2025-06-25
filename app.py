@@ -32,7 +32,10 @@ from flask import send_from_directory, Response
 from extensions import db, login_manager, bcrypt, babel, cache, csrf
 
 # Import models
-from models import User, Module, Lesson, UserProgress, Subject, LearningPath, VirtualPatientScenario
+from models import (
+    User, Module, Lesson, UserProgress, Subject, LearningPath, VirtualPatientScenario,
+    AssessmentCategory, AssessmentQuestion, PreAssessmentAttempt, PreAssessmentAnswer, LearningPlan
+)
 
 # Import routes
 from routes.main_routes import main_bp

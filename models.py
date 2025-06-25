@@ -1083,3 +1083,192 @@ class RAGCache(db.Model):
     
     def __repr__(self):
         return f'<RAGCache {self.query_hash[:8]}... ({self.hit_count} hits)>'    
+
+# ============================================================================
+# ASSESSMENT SYSTEM MODELS
+# ============================================================================
+
+class AssessmentCategory(db.Model):
+    """Категории для оценки знаний"""
+    __tablename__ = 'assessment_categories'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    weight = db.Column(db.Float, default=1.0)  # Вес категории в общей оценке
+    min_questions = db.Column(db.Integer, default=5)  # Минимум вопросов
+    max_questions = db.Column(db.Integer, default=15)  # Максимум вопросов
+    color = db.Column(db.String(7), default='#3ECDC1')  # Цвет для UI
+    icon = db.Column(db.String(50), default='book')
+    
+    # Связи
+    questions = db.relationship('AssessmentQuestion', backref='category', lazy='dynamic')
+    
+    def __repr__(self):
+        return f'<AssessmentCategory {self.name}>'
+
+class AssessmentQuestion(db.Model):
+    """Вопросы для предварительной оценки"""
+    __tablename__ = 'assessment_questions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('assessment_categories.id'), nullable=False)
+    
+    # Контент вопроса
+    question_text = db.Column(db.Text, nullable=False)
+    question_type = db.Column(db.String(20), default='multiple_choice')  # multiple_choice, true_false, scale
+    
+    # Варианты ответов (JSON)
+    options = db.Column(db.Text)  # JSON список опций
+    correct_answer = db.Column(db.Integer)  # Индекс правильного ответа
+    explanation = db.Column(db.Text)  # Объяснение ответа
+    
+    # Метаданные
+    difficulty_level = db.Column(db.Integer, default=1)  # 1-5 (новичок-эксперт)
+    time_limit = db.Column(db.Integer, default=60)  # секунды
+    points = db.Column(db.Integer, default=1)
+    
+    # Связанные модули обучения
+    related_modules = db.Column(db.Text)  # JSON список ID модулей
+    
+    # Статистика
+    times_asked = db.Column(db.Integer, default=0)
+    times_correct = db.Column(db.Integer, default=0)
+    
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def get_options(self):
+        """Получить варианты ответов как список"""
+        return json.loads(self.options) if self.options else []
+    
+    def set_options(self, options_list):
+        """Установить варианты ответов"""
+        self.options = json.dumps(options_list, ensure_ascii=False)
+    
+    def get_related_modules(self):
+        """Получить связанные модули"""
+        return json.loads(self.related_modules) if self.related_modules else []
+    
+    def __repr__(self):
+        return f'<AssessmentQuestion {self.id}: {self.question_text[:50]}>'
+
+class PreAssessmentAttempt(db.Model):
+    """Попытки прохождения предварительной оценки"""
+    __tablename__ = 'pre_assessment_attempts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Результаты
+    total_questions = db.Column(db.Integer, nullable=False)
+    correct_answers = db.Column(db.Integer, default=0)
+    total_score = db.Column(db.Float, default=0.0)  # Общий балл (0-100)
+    
+    # Результаты по категориям (JSON)
+    category_scores = db.Column(db.Text)  # {category_id: {score, correct, total}}
+    
+    # Временные метрики
+    started_at = db.Column(db.DateTime, nullable=False)
+    completed_at = db.Column(db.DateTime)
+    time_spent = db.Column(db.Integer)  # секунды
+    
+    # Рекомендованный план
+    recommended_plan = db.Column(db.Text)  # JSON с планом обучения
+    
+    is_completed = db.Column(db.Boolean, default=False)
+    
+    # Связи
+    answers = db.relationship('PreAssessmentAnswer', backref='attempt', lazy='dynamic')
+    user = db.relationship('User', backref='assessment_attempts')
+    
+    def get_category_scores(self):
+        """Получить результаты по категориям"""
+        return json.loads(self.category_scores) if self.category_scores else {}
+    
+    def set_category_scores(self, scores_dict):
+        """Установить результаты по категориям"""
+        self.category_scores = json.dumps(scores_dict)
+    
+    def get_recommended_plan(self):
+        """Получить рекомендованный план"""
+        return json.loads(self.recommended_plan) if self.recommended_plan else {}
+    
+    def set_recommended_plan(self, plan_dict):
+        """Установить рекомендованный план"""
+        self.recommended_plan = json.dumps(plan_dict, ensure_ascii=False)
+    
+    def __repr__(self):
+        return f'<PreAssessmentAttempt {self.id}: User {self.user_id}>'
+
+class PreAssessmentAnswer(db.Model):
+    """Ответы пользователя на вопросы оценки"""
+    __tablename__ = 'pre_assessment_answers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    attempt_id = db.Column(db.Integer, db.ForeignKey('pre_assessment_attempts.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('assessment_questions.id'), nullable=False)
+    
+    # Ответ пользователя
+    user_answer = db.Column(db.Integer)  # Индекс выбранного ответа
+    is_correct = db.Column(db.Boolean, default=False)
+    points_earned = db.Column(db.Float, default=0.0)
+    
+    # Время ответа
+    time_spent = db.Column(db.Integer)  # секунды на вопрос
+    answered_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Связи
+    question = db.relationship('AssessmentQuestion', backref='user_answers')
+    
+    def __repr__(self):
+        return f'<PreAssessmentAnswer {self.id}: Q{self.question_id}>'
+
+class LearningPlan(db.Model):
+    """Персонализированные планы обучения"""
+    __tablename__ = 'learning_plans'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    assessment_attempt_id = db.Column(db.Integer, db.ForeignKey('pre_assessment_attempts.id'))
+    
+    # Метаданные плана
+    plan_name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    difficulty_level = db.Column(db.String(20))  # beginner, intermediate, advanced
+    estimated_duration = db.Column(db.Integer)  # часы
+    
+    # Структура плана (JSON)
+    plan_structure = db.Column(db.Text)  # Детальная структура плана
+    
+    # Прогресс
+    total_modules = db.Column(db.Integer, default=0)
+    completed_modules = db.Column(db.Integer, default=0)
+    
+    # Статус
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    
+    # Связи
+    user = db.relationship('User', backref='learning_plans')
+    assessment_attempt = db.relationship('PreAssessmentAttempt', backref='learning_plan')
+    
+    def get_plan_structure(self):
+        """Получить структуру плана"""
+        return json.loads(self.plan_structure) if self.plan_structure else {}
+    
+    def set_plan_structure(self, structure_dict):
+        """Установить структуру плана"""
+        self.plan_structure = json.dumps(structure_dict, ensure_ascii=False)
+    
+    def calculate_progress(self):
+        """Вычислить прогресс выполнения плана"""
+        if self.total_modules == 0:
+            return 0
+        return round((self.completed_modules / self.total_modules) * 100, 1)
+    
+    def __repr__(self):
+        return f'<LearningPlan {self.id}: {self.plan_name}>'    
