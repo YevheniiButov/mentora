@@ -52,6 +52,7 @@ from routes.modules_routes import modules_bp
 from routes.subject_view_routes import subject_view_bp
 from routes.mobile_routes import mobile_bp
 from routes.ai_routes import ai_bp
+from routes.assessment_routes import assessment_bp
 
 # Настройка логирования
 logging.basicConfig(
@@ -298,7 +299,7 @@ def create_app(test_config=None):
         auth_bp, main_bp, learning_map_bp, lesson_bp, modules_bp, 
         tests_bp, content_bp, forum_bp, virtual_patient_bp, subject_view_bp,
         api_bp, admin_bp, admin_unified_bp, ai_bp, mobile_bp,
-        virtual_patient_api_bp, content_nav_bp, dashboard_bp
+        virtual_patient_api_bp, content_nav_bp, dashboard_bp, assessment_bp
     )
     
     # Загрузка конфигурации
@@ -353,6 +354,7 @@ def create_app(test_config=None):
     app.register_blueprint(forum_bp)
     app.register_blueprint(virtual_patient_bp)
     app.register_blueprint(subject_view_bp)
+    app.register_blueprint(assessment_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(admin_unified_bp)

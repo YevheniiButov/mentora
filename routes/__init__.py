@@ -11,6 +11,7 @@ from .content_routes import content_bp
 from .forum_routes import forum_bp
 from .virtual_patient_routes import virtual_patient_bp
 from .subject_view_routes import subject_view_bp
+from .assessment_routes import assessment_bp
 
 # API маршруты
 from .api_routes import api_bp
@@ -46,6 +47,7 @@ __all__ = [
     'forum_bp',
     'virtual_patient_bp',
     'subject_view_bp',
+    'assessment_bp',
     'api_bp',
     'admin_bp',
     'admin_unified_bp',
