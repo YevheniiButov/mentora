@@ -1,0 +1,223 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}{{ t('question', lang) | default('Вопрос') }} {{ question_num }} {{ t('of', lang) | default('из') }} {{ total_questions }} - Dental Academy{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/assessment.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="assessment-container">
+    <div class="assessment-card">
+        <!-- Заголовок с прогрессом -->
+        <div class="assessment-header">
+            <h1>{{ t('assessment_title', lang) | default('Оценка знаний') }}</h1>
+            <p>{{ t('question_progress', lang) | default('Вопрос') }} {{ question_num }} {{ t('of', lang) | default('из') }} {{ total_questions }}</p>
+        </div>
+        
+        <!-- Прогресс секция -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <div class="progress-info">
+                    <div class="progress-circle">
+                        <span>{{ (question_num / total_questions * 100) | round }}%</span>
+                    </div>
+                    <div class="progress-text">
+                        <div class="progress-title">{{ t('progress', lang) | default('Прогресс') }}</div>
+                        <div class="progress-subtitle">{{ question_num }} / {{ total_questions }}</div>
+                    </div>
+                </div>
+                <div class="timer-badge" id="timer">
+                    <i class="bi bi-clock"></i>
+                    <span id="time-remaining">
+                        <span id="minutes">--</span>:<span id="seconds">--</span>
+                    </span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ (question_num / total_questions * 100) | round }}%"></div>
+            </div>
+        </div>
+        
+        <!-- Контент вопроса -->
+        <div class="question-section">
+            <div class="question-header">
+                <div class="question-number">{{ question_num }}</div>
+                <div class="question-category">{{ question.category }}</div>
+                <div class="question-difficulty difficulty-{{ question.difficulty | default('medium') }}">
+                    {{ question.difficulty | default('medium') | title }}
+                </div>
+            </div>
+            
+            <div class="question-text">
+                {{ question.question_text }}
+            </div>
+            
+            <div class="options-grid">
+                {% for option in question.get_options() %}
+                <div class="option" onclick="selectOption(this, {{ loop.index0 }})">
+                    <div class="option-letter">{{ ['A', 'B', 'C', 'D'][loop.index0] }}</div>
+                    <div class="option-text">{{ option }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Контрольные кнопки -->
+        <div class="controls-section">
+            {% if question_num > 1 %}
+            <button class="btn btn-secondary" onclick="previousQuestion()">
+                <i class="bi bi-arrow-left"></i>
+                {{ t('previous', lang) | default('Назад') }}
+            </button>
+            {% else %}
+            <button class="btn btn-secondary" onclick="exitAssessment()">
+                <i class="bi bi-x-circle"></i>
+                {{ t('exit', lang) | default('Выйти') }}
+            </button>
+            {% endif %}
+            
+            <div class="question-counter">
+                {{ question_num }} / {{ total_questions }}
+            </div>
+            
+            {% if question_num < total_questions %}
+            <button class="btn btn-primary" id="next-btn" disabled onclick="nextQuestion()">
+                {{ t('next', lang) | default('Далее') }}
+                <i class="bi bi-arrow-right"></i>
+            </button>
+            {% else %}
+            <button class="btn btn-success" id="finish-btn" disabled onclick="finishAssessment()">
+                {{ t('finish', lang) | default('Завершить') }}
+                <i class="bi bi-check-circle"></i>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedOption = null;
+let startTime = Date.now();
+let timeLimit = {{ time_limit | default(1200) }}; // 20 минут по умолчанию
+
+// Инициализация таймера
+function initTimer() {
+    updateTimer();
+    setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const remaining = timeLimit - elapsed;
+    
+    if (remaining <= 0) {
+        finishAssessment();
+        return;
+    }
+    
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+    
+    document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+    document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+    
+    // Изменение цвета таймера при приближении к концу
+    const timer = document.getElementById('timer');
+    timer.classList.remove('warning', 'danger');
+    if (remaining <= 300) { // 5 минут
+        timer.classList.add('danger');
+    } else if (remaining <= 600) { // 10 минут
+        timer.classList.add('warning');
+    }
+}
+
+// Выбор варианта ответа
+function selectOption(element, optionIndex) {
+    // Убираем выделение со всех опций
+    document.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    
+    // Выделяем выбранную опцию
+    element.classList.add('selected');
+    selectedOption = optionIndex;
+    
+    // Активируем кнопку "Далее"
+    const nextBtn = document.getElementById('next-btn');
+    const finishBtn = document.getElementById('finish-btn');
+    if (nextBtn) nextBtn.disabled = false;
+    if (finishBtn) finishBtn.disabled = false;
+}
+
+// Навигация по вопросам
+function nextQuestion() {
+    if (selectedOption === null) return;
+    
+    saveAnswer();
+    window.location.href = '{{ url_for("assessment_bp.question", lang=lang, question_num=question_num + 1) }}';
+}
+
+function previousQuestion() {
+    window.location.href = '{{ url_for("assessment_bp.question", lang=lang, question_num=question_num - 1) }}';
+}
+
+function finishAssessment() {
+    if (selectedOption !== null) {
+        saveAnswer();
+    }
+    window.location.href = '{{ url_for("assessment_bp.complete", lang=lang) }}';
+}
+
+function exitAssessment() {
+    if (confirm('{{ t("exit_confirmation", lang) | default("Вы уверены, что хотите выйти? Прогресс будет потерян.") }}')) {
+        window.location.href = '{{ url_for("assessment_bp.intro", lang=lang) }}';
+    }
+}
+
+// Сохранение ответа
+function saveAnswer() {
+    fetch('{{ url_for("assessment_bp.submit_answer", lang=lang) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            question_id: {{ question.id }},
+            answer: selectedOption,
+            time_spent: Math.floor((Date.now() - startTime) / 1000)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error('Error saving answer:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Предотвращение случайного выхода
+window.addEventListener('beforeunload', function(e) {
+    if (selectedOption !== null) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    initTimer();
+    
+    // Восстанавливаем выбранный ответ, если он был
+    const savedAnswer = {{ saved_answer | default('null') }};
+    if (savedAnswer !== null) {
+        selectOption(document.querySelectorAll('.option')[savedAnswer], savedAnswer);
+    }
+});
+</script>
+{% endblock %}

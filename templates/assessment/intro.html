@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('assessment_intro_title', lang) | default('Предварительная оценка знаний') }} - Dental Academy{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/assessment.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+<style>
+    .assessment-intro {
+        background: var(--bg-gradient);
+        min-height: 100vh;
+        padding: var(--space-xl) 0;
+    }
+    
+    .intro-container {
+        max-width: var(--container-lg);
+        margin: 0 auto;
+        padding: 0 var(--space-md);
+    }
+    
+    .intro-card {
+        background: var(--bg-surface-alpha);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+    
+    .intro-header {
+        background: var(--primary-gradient);
+        color: var(--text-inverse);
+        padding: var(--space-xl) var(--space-md);
+        text-align: center;
+    }
+    
+    .intro-header h1 {
+        font-size: var(--text-2xl);
+        font-weight: var(--font-bold);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .intro-content {
+        padding: var(--space-xl) var(--space-md);
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: var(--space-md);
+        margin: var(--space-lg) 0;
+    }
+    
+    .feature-card {
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        text-align: center;
+        border: 1px solid var(--border-color);
+        transition: all var(--transition-normal);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+        border-color: var(--primary-color);
+    }
+    
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--primary-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-sm);
+        color: var(--text-inverse);
+        font-size: var(--text-lg);
+    }
+    
+    .stats-section {
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin: var(--space-lg) 0;
+        border: 1px solid var(--border-color);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: var(--space-md);
+        text-align: center;
+    }
+    
+    .stat-item {
+        padding: var(--space-sm);
+    }
+    
+    .stat-value {
+        font-size: var(--text-2xl);
+        font-weight: var(--font-bold);
+        color: var(--primary-color);
+        margin-bottom: var(--space-xs);
+    }
+    
+    .categories-preview {
+        margin: var(--space-lg) 0;
+    }
+    
+    .category-item {
+        display: flex;
+        align-items: center;
+        padding: var(--space-sm);
+        margin-bottom: var(--space-xs);
+        background: var(--bg-surface);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        transition: all var(--transition-normal);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .category-item:hover {
+        border-color: var(--primary-color);
+        background: var(--primary-50);
+        transform: translateX(2px);
+    }
+    
+    .category-item.selected {
+        border-color: var(--primary-color);
+        background: var(--primary-100);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .category-item.selected::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary-color);
+    }
+    
+    .category-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-inverse);
+        margin-right: var(--space-sm);
+        font-size: var(--text-sm);
+        transition: all var(--transition-normal);
+    }
+    
+    .category-item.selected .category-icon {
+        transform: scale(1.1);
+    }
+    
+    .category-content {
+        flex: 1;
+    }
+    
+    .category-name {
+        font-weight: var(--font-semibold);
+        font-size: var(--text-sm);
+        margin-bottom: 2px;
+    }
+    
+    .category-description {
+        font-size: var(--text-xs);
+        color: var(--text-secondary);
+    }
+    
+    .category-checkbox {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: var(--space-sm);
+        transition: all var(--transition-normal);
+    }
+    
+    .category-item.selected .category-checkbox {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+    
+    .start-section {
+        text-align: center;
+        padding: var(--space-md);
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        margin-top: var(--space-lg);
+        border: 1px solid var(--border-color);
+    }
+    
+    .btn-start {
+        background: var(--primary-gradient);
+        color: var(--text-inverse);
+        border: none;
+        padding: var(--space-sm) var(--space-xl);
+        border-radius: var(--radius-full);
+        font-size: var(--text-base);
+        font-weight: var(--font-semibold);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .btn-start:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .btn-start:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .previous-attempt {
+        background: var(--warning-50);
+        border: 1px solid var(--warning-200);
+        border-radius: var(--radius-sm);
+        padding: var(--space-sm);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .alert-info {
+        background: var(--info-50);
+        border: 1px solid var(--info-200);
+        border-radius: var(--radius-sm);
+        padding: var(--space-sm);
+        margin: var(--space-sm) 0;
+    }
+    
+    .categories-info {
+        background: var(--success-50);
+        border: 1px solid var(--success-200);
+        border-radius: var(--radius-sm);
+        padding: var(--space-sm);
+        margin: var(--space-sm) 0;
+        font-size: var(--text-sm);
+    }
+    
+    @media (max-width: 768px) {
+        .intro-container {
+            padding: 0 var(--space-sm);
+        }
+        
+        .intro-content {
+            padding: var(--space-md) var(--space-sm);
+        }
+        
+        .intro-header h1 {
+            font-size: var(--text-xl);
+        }
+        
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="assessment-intro">
+    <div class="intro-container">
+        <div class="intro-card">
+            <div class="intro-header">
+                <h1>{{ t('assessment_intro_title', lang) | default('Предварительная оценка знаний') }}</h1>
+                <p>{{ t('assessment_intro_subtitle', lang) | default('Определите свой текущий уровень и получите персонализированный план обучения') }}</p>
+            </div>
+            
+            <div class="intro-content">
+                {% if previous_attempt %}
+                <div class="previous-attempt">
+                    <h4>{{ t('previous_attempt', lang) | default('Предыдущая попытка') }}</h4>
+                    <p>{{ t('last_assessment_date', lang) | default('Дата последней оценки') }}: {{ previous_attempt.date }}</p>
+                    <p>{{ t('previous_score', lang) | default('Предыдущий результат') }}: {{ previous_attempt.total_score }}%</p>
+                </div>
+                {% endif %}
+                
+                <div class="alert-info">
+                    <p>{{ t('assessment_info', lang) | default('Оценка займет примерно 15-20 минут и включает вопросы по всем основным разделам стоматологии.') }}</p>
+                </div>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h3>{{ t('personalized_plan', lang) | default('Персонализированный план') }}</h3>
+                        <p>{{ t('personalized_plan_desc', lang) | default('Получите индивидуальную программу обучения на основе ваших результатов') }}</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                        <h3>{{ t('quick_assessment', lang) | default('Быстрая оценка') }}</h3>
+                        <p>{{ t('quick_assessment_desc', lang) | default('Завершите оценку за 15-20 минут в удобном для вас темпе') }}</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-target"></i>
+                        </div>
+                        <h3>{{ t('detailed_analysis', lang) | default('Детальный анализ') }}</h3>
+                        <p>{{ t('detailed_analysis_desc', lang) | default('Узнайте свои сильные и слабые стороны в каждой области') }}</p>
+                    </div>
+                </div>
+                
+                <div class="stats-section">
+                    <h3>{{ t('assessment_stats', lang) | default('Статистика оценок') }}</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ total_assessments }}</div>
+                            <div class="stat-label">{{ t('total_assessments', lang) | default('Всего оценок') }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ avg_score }}%</div>
+                            <div class="stat-label">{{ t('average_score', lang) | default('Средний балл') }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ total_questions }}</div>
+                            <div class="stat-label">{{ t('total_questions', lang) | default('Вопросов') }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="categories-preview">
+                    <h3>{{ t('assessment_categories', lang) | default('Категории оценки') }}</h3>
+                    <div class="categories-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        {{ t('select_categories_info', lang) | default('Выберите категории, которые хотите включить в оценку. По умолчанию включены все категории.') }}
+                    </div>
+                    
+                    {% for category in categories %}
+                    <div class="category-item" data-category="{{ category.slug }}" onclick="toggleCategory(this, '{{ category.slug }}')">
+                        <div class="category-icon" style="background: {{ category.color }};">
+                            <i class="bi bi-{{ category.icon }}"></i>
+                        </div>
+                        <div class="category-content">
+                            <div class="category-name">{{ category.name }}</div>
+                            <div class="category-description">{{ category.description }}</div>
+                        </div>
+                        <div class="category-checkbox">
+                            <i class="bi bi-check" style="display: none;"></i>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="start-section">
+                    <h3>{{ t('ready_to_start', lang) | default('Готовы начать?') }}</h3>
+                    <p>{{ t('start_assessment_desc', lang) | default('Нажмите кнопку ниже, чтобы начать оценку ваших знаний') }}</p>
+                    <button class="btn-start" onclick="startAssessment()" id="start-btn">
+                        <i class="bi bi-play-circle"></i>
+                        {{ t('start_assessment', lang) | default('Начать оценку') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Глобальная переменная для хранения выбранных категорий
+let selectedCategories = [{% for category in categories %}'{{ category.slug }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+
+function toggleCategory(element, category) {
+    const checkbox = element.querySelector('.category-checkbox i');
+    const isSelected = element.classList.contains('selected');
+    
+    if (isSelected) {
+        // Убираем категорию из выбранных
+        element.classList.remove('selected');
+        checkbox.style.display = 'none';
+        selectedCategories = selectedCategories.filter(cat => cat !== category);
+    } else {
+        // Добавляем категорию к выбранным
+        element.classList.add('selected');
+        checkbox.style.display = 'block';
+        if (!selectedCategories.includes(category)) {
+            selectedCategories.push(category);
+        }
+    }
+    
+    // Обновляем текст кнопки в зависимости от количества выбранных категорий
+    updateStartButton();
+}
+
+function updateStartButton() {
+    const btn = document.getElementById('start-btn');
+    const totalCategories = {{ categories|length }};
+    const selectedCount = selectedCategories.length;
+    
+    if (selectedCount === 0) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-exclamation-triangle"></i> {{ t("select_at_least_one_category", lang) | default("Выберите хотя бы одну категорию") }}';
+    } else if (selectedCount === totalCategories) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-play-circle"></i> {{ t("start_assessment", lang) | default("Начать оценку") }} ({{ t("all_categories", lang) | default("все категории") }})';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-play-circle"></i> {{ t("start_assessment", lang) | default("Начать оценку") }} (${selectedCount}/${totalCategories})`;
+    }
+}
+
+function startAssessment() {
+    const btn = document.getElementById('start-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> {{ t("loading", lang) | default("Загрузка...") }}';
+    
+    // Получаем CSRF токен
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                     document.querySelector('input[name="csrf_token"]')?.value;
+    
+    // Отправляем запрос на инициализацию попытки с выбранными категориями
+    fetch('{{ url_for("assessment_bp.start_assessment", lang=lang) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            selected_categories: selectedCategories
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Перенаправляем на первый вопрос
+            window.location.href = data.redirect_url;
+        } else {
+            // Показываем ошибку
+            alert(data.error || '{{ t("error_starting_assessment", lang) | default("Ошибка при запуске оценки") }}');
+            btn.disabled = false;
+            updateStartButton();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('{{ t("error_starting_assessment", lang) | default("Ошибка при запуске оценки") }}');
+        btn.disabled = false;
+        updateStartButton();
+    });
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // По умолчанию все категории выбраны
+    document.querySelectorAll('.category-item').forEach(item => {
+        item.classList.add('selected');
+        item.querySelector('.category-checkbox i').style.display = 'block';
+    });
+    
+    updateStartButton();
+    
+    // Анимация появления элементов
+    const elements = document.querySelectorAll('.feature-card, .stat-item, .category-item');
+    elements.forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            el.style.transition = 'all 0.5s ease';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %} 

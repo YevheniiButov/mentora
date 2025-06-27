@@ -78,6 +78,11 @@
             <span>{{ t('learning_map', lang) }}</span>
         </a>
         
+        <a href="{{ url_for('assessment_bp.intro') }}" class="sidebar-link {% if 'assessment' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-clipboard-check"></i>
+            <span>{{ t('navigation.assessment', lang)|default('Assessment') }}</span>
+        </a>
+        
         <a href="{{ url_for('tests_bp.tests') }}" class="sidebar-link {% if 'tests' in request.endpoint %}active{% endif %}">
             <i class="bi bi-list-check"></i>
             <span>{{ t('tests', lang) }}</span>

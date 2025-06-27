@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Тест интеграции тем с Interactive Subtopic</title>
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- СИСТЕМА ТЕМ (обязательно первой) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
+    
+    <!-- УНИВЕРСАЛЬНЫЕ СТИЛИ -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+    
+    <!-- СТРАНИЧНЫЕ СТИЛИ -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/interactive_subtopic.css') }}">
+    
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--theme-surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--theme-shadow);
+        }
+        
+        .theme-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .theme-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .theme-btn:not(.active) {
+            background: var(--theme-surface);
+            color: var(--theme-text);
+            border: 1px solid var(--theme-border);
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Переключатель тем -->
+    <div class="theme-switcher">
+        <button class="theme-btn active" onclick="switchTheme('light')">☀️ Светлая</button>
+        <button class="theme-btn" onclick="switchTheme('dark')">🌙 Темная</button>
+        <button class="theme-btn" onclick="switchTheme('gradient')">🌈 Градиент</button>
+    </div>
+
+    <div class="test-container">
+        <h1>🎨 Тест интеграции тем с Interactive Subtopic</h1>
+        <p>Проверка читабельности тестовых опций во всех темах</p>
+        
+        <div class="universal-card">
+            <h3>Тестовый вопрос</h3>
+            <p>Какой из следующих методов является наиболее эффективным для лечения кариеса?</p>
+            
+            <div class="test-options">
+                <div class="test-option" data-correct="false" data-index="0">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Фторирование зубов</span>
+                </div>
+                <div class="test-option" data-correct="false" data-index="1">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Регулярная чистка зубов</span>
+                </div>
+                <div class="test-option" data-correct="true" data-index="2">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Пломбирование кариозных полостей</span>
+                </div>
+                <div class="test-option" data-correct="false" data-index="3">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Все вышеперечисленное</span>
+                </div>
+            </div>
+            
+            <div class="debug-info" id="debug-info">
+                <strong>Отладочная информация:</strong><br>
+                Нажмите на любой вариант ответа для проверки логики
+            </div>
+        </div>
+        
+        <div class="universal-card" style="margin-top: 2rem;">
+            <h3>Состояния тестовых опций</h3>
+            
+            <h4>Обычное состояние:</h4>
+            <div class="test-options">
+                <div class="test-option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Обычная опция</span>
+                </div>
+            </div>
+            
+            <h4>Выбранная опция:</h4>
+            <div class="test-options">
+                <div class="test-option selected">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Выбранная опция</span>
+                </div>
+            </div>
+            
+            <h4>Правильный ответ:</h4>
+            <div class="test-options">
+                <div class="test-option correct">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Правильный ответ</span>
+                </div>
+            </div>
+            
+            <h4>Неправильный ответ:</h4>
+            <div class="test-options">
+                <div class="test-option incorrect">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Неправильный ответ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // Добавляем интерактивность к тестовым опциям с отладкой
+        document.querySelectorAll('.test-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const debugInfo = document.getElementById('debug-info');
+                const allOptions = this.closest('.test-options').querySelectorAll('.test-option');
+                
+                // Убираем выделение со всех опций в этой группе
+                allOptions.forEach(opt => {
+                    opt.classList.remove('selected', 'correct', 'incorrect');
+                });
+                
+                // Добавляем выделение к выбранной опции
+                this.classList.add('selected');
+                
+                // Имитируем логику тестирования
+                setTimeout(() => {
+                    const isCorrect = this.dataset.correct === 'true';
+                    
+                    allOptions.forEach(opt => {
+                        opt.style.pointerEvents = 'none';
+                        
+                        if (opt.dataset.correct === 'true') {
+                            opt.classList.add('correct');
+                        } else if (opt.classList.contains('selected') && !isCorrect) {
+                            opt.classList.add('incorrect');
+                        }
+                    });
+                    
+                    // Обновляем отладочную информацию
+                    debugInfo.innerHTML = `
+                        <strong>Отладочная информация:</strong><br>
+                        Выбранная опция: ${this.querySelector('.option-text').textContent}<br>
+                        data-correct: "${this.dataset.correct}"<br>
+                        isCorrect: ${isCorrect}<br>
+                        Правильный ответ подсвечен: ${isCorrect ? 'зеленым' : 'зеленым (правильный) + красным (выбранный)'}
+                    `;
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html> 

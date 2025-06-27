@@ -336,6 +336,7 @@ translations = {
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
         'language_name_fa': 'فارسی',
+        'language_name_ar': 'العربية',
         
         # UI элементы
         'select_language': 'Select Language',
@@ -716,6 +717,7 @@ translations = {
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
         'language_name_fa': 'فارسی',
+        'language_name_ar': 'العربية',
         
         # UI элементы
         'select_language': 'Выбрать Язык',
@@ -1100,6 +1102,7 @@ translations = {
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
         'language_name_fa': 'فارسی',
+        'language_name_ar': 'العربية',
         
         # UI элементы
         'select_language': 'Selecteer Taal',
@@ -1434,6 +1437,7 @@ translations = {
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
         'language_name_fa': 'فارسی',
+        'language_name_ar': 'العربية',
         
         # UI элементы
         'select_language': 'Seleccionar Idioma',
@@ -1768,6 +1772,7 @@ translations = {
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
         'language_name_fa': 'فارسی',
+        'language_name_ar': 'العربية',
         
         # UI элементы
         'select_language': 'Selecionar Idioma',
@@ -2102,6 +2107,7 @@ translations = {
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
         'language_name_fa': 'Farsça', # Corrected to Farsça
+        'language_name_ar': 'العربية',
         
         # UI элементы
         'select_language': 'Dil Seç',
@@ -2436,6 +2442,7 @@ translations = {
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
         'language_name_fa': 'Farsça', # Corrected to Farsça
+        'language_name_ar': 'العربية',
         
         # UI элементы
         'select_language': 'Dil Seç',
@@ -2770,6 +2777,7 @@ translations = {
         'language_name_pt': 'Português',
         'language_name_tr': 'Türkçe',
         'language_name_fa': 'Farsça', # Corrected to Farsça
+        'language_name_ar': 'العربية',
         
         # UI элементы
         'select_language': 'Dil Seç',

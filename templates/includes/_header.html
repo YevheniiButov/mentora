@@ -42,7 +42,34 @@
               {{ t('dashboard', lang) }}
             </a>
           </li>
-          {% endif %}
+
+          <!-- Assessment Dropdown Menu -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {{ 'active' if 'assessment_bp.' in request.endpoint }}" 
+               href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+               title="{{ t('navigation.assessment_desc', lang)|default('Knowledge assessment and personalized learning plan') }}">
+              <i class="bi bi-clipboard-check me-1"></i>
+              {{ t('navigation.assessment', lang)|default('Assessment') }}
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{{ url_for('assessment_bp.intro', lang=lang) }}">
+                <i class="bi bi-clipboard-data me-2"></i>
+                {{ t('general_assessment', lang)|default('Общая оценка знаний') }}
+              </a></li>
+              
+              <!-- Добавить в существующее меню Assessment -->
+              <div class="dropdown-divider"></div>
+              <h6 class="dropdown-header">🇳🇱 {{ t('for_netherlands_work', lang)|default('Для работы в Нидерландах') }}</h6>
+              <li><a class="dropdown-item" href="{{ url_for('assessment_bp.dutch_intro', lang=lang) }}">
+                <i class="bi bi-flag-fill text-warning me-2"></i>
+                {{ t('dutch_assessment_title', lang)|default('Оценка готовности к работе в NL') }}
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url_for('assessment_bp.big_exam_prep', lang=lang) }}">
+                <i class="bi bi-heart-pulse text-danger me-2"></i>
+                {{ t('big_exam_prep', lang)|default('Подготовка к BIG экзамену') }}
+              </a></li>
+            </ul>
+          </li>
           
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('main_bp.big_info', lang=lang) }}">
@@ -50,6 +77,7 @@
               {{ t('about_big', lang) }}
             </a>
           </li>
+          {% endif %}
         </ul>
         
         <!-- Right Side Actions -->
@@ -103,6 +131,11 @@
                      href="{{ language_url('tr') }}"
                      onclick="console.log('Switching to Turkish');">
                 🇹🇷 Türkçe
+              </a></li>
+              <li><a class="dropdown-item {% if lang == 'ar' %}active{% endif %}" 
+                     href="{{ language_url('ar') }}"
+                     onclick="console.log('Switching to Arabic');">
+                🇸🇦 العربية
               </a></li>
             </ul>
           </div>

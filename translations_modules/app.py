@@ -9,6 +9,10 @@ optimized_app_translations = {
             'why_choose_us': 'Why Choose Dental Academy?',
             'why_choose_dental_academy': 'Why choose Dental Academy?',
             'our_approach': 'Our approach to <span class="text-accent">BIG exam</span> preparation'
+        },
+        'navigation': {
+            'assessment': 'Assessment',
+            'assessment_desc': 'Knowledge assessment and personalized learning plan'
         }
     },
     'ru': {
@@ -21,6 +25,10 @@ optimized_app_translations = {
             'why_choose_us': 'Почему выбирают Dental Academy?',
             'why_choose_dental_academy': 'Почему выбирают Dental Academy?',
             'our_approach': 'Наш подход к подготовке к <span class="text-accent">BIG-экзамену</span>'
+        },
+        'navigation': {
+            'assessment': 'Оценка знаний',
+            'assessment_desc': 'Оценка знаний и персональный план обучения'
         }
     },
     'nl': {
@@ -33,6 +41,10 @@ optimized_app_translations = {
             'why_choose_us': 'Waarom Kiezen voor Dental Academy?',
             'why_choose_dental_academy': 'Waarom kiezen voor Dental Academy?',
             'our_approach': 'Onze aanpak voor de voorbereiding op het <span class="text-accent">BIG-examen</span>'
+        },
+        'navigation': {
+            'assessment': 'Kennisbeoordeling',
+            'assessment_desc': 'Kennisbeoordeling en persoonlijk leertraject'
         }
     },
     'es': {
@@ -45,6 +57,10 @@ optimized_app_translations = {
             'why_choose_us': '¿Por qué elegir Dental Academy?',
             'why_choose_dental_academy': '¿Por qué elegir Dental Academy?',
             'our_approach': 'Nuestro enfoque para la preparación del <span class="text-accent">examen BIG</span>'
+        },
+        'navigation': {
+            'assessment': 'Evaluación',
+            'assessment_desc': 'Evaluación de conocimientos y plan de aprendizaje personalizado'
         }
     },
     'pt': {
@@ -57,6 +73,10 @@ optimized_app_translations = {
             'why_choose_us': 'Por que escolher a Dental Academy?',
             'why_choose_dental_academy': 'Por que escolher a Dental Academy?',
             'our_approach': 'Nossa abordagem para a preparação do <span class="text-accent">exame BIG</span>'
+        },
+        'navigation': {
+            'assessment': 'Avaliação',
+            'assessment_desc': 'Avaliação de conhecimentos e plano de aprendizagem personalizado'
         }
     },
     'uk': {
@@ -69,6 +89,10 @@ optimized_app_translations = {
             'why_choose_us': 'Чому обирають Dental Academy?',
             'why_choose_dental_academy': 'Чому обирають Dental Academy?',
             'our_approach': 'Наш підхід до підготовки до <span class="text-accent">BIG-іспиту</span>'
+        },
+        'navigation': {
+            'assessment': 'Оцінка знань',
+            'assessment_desc': 'Оцінка знань та персональний план навчання'
         }
     },
     'fa': {
@@ -81,6 +105,10 @@ optimized_app_translations = {
             'why_choose_us': 'چرا آکادمی دندانپزشکی را انتخاب کنیم؟',
             'why_choose_dental_academy': 'چرا آکادمی دندانپزشکی را انتخاب کنیم؟',
             'our_approach': 'رویکرد ما برای آمادگی <span class="text-accent">آزمون BIG</span>'
+        },
+        'navigation': {
+            'assessment': 'ارزیابی دانش',
+            'assessment_desc': 'ارزیابی دانش و برنامه یادگیری شخصی‌سازی شده'
         }
     },
     'tr': {
@@ -93,6 +121,10 @@ optimized_app_translations = {
             'why_choose_us': "Neden Dental Academy'yi Seçmelisiniz?",
             'why_choose_dental_academy': "Neden Dental Academy'yi Seçmelisiniz?",
             'our_approach': '<span class="text-accent">BIG sınavına</span> hazırlık yaklaşımımız'
+        },
+        'navigation': {
+            'assessment': 'Bilgi Değerlendirmesi',
+            'assessment_desc': 'Bilgi değerlendirmesi ve kişiselleştirilmiş öğrenme planı'
         }
     },
     'ar': {
@@ -105,6 +137,10 @@ optimized_app_translations = {
             'why_choose_us': 'لماذا تختارنا؟',
             'why_choose_dental_academy': 'لماذا تختار أكاديمية الأسنان؟',
             'our_approach': 'نهجنا في التحضير <span class="text-accent">لامتحان BIG</span>'
+        },
+        'navigation': {
+            'assessment': 'تقييم المعرفة',
+            'assessment_desc': 'تقييم المعرفة وخطة التعلم الشخصية'
         }
     }
 }

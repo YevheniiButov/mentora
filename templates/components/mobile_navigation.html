@@ -135,10 +135,17 @@
             <span>{{ t('learning', lang) or 'Learning' }}</span>
         </a>
         
+        <a href="{{ url_for('assessment_bp.intro', lang=lang) if lang else url_for('assessment_bp.intro', lang='en') }}" 
+           class="nav-item {{ 'active' if active_section == 'assessment' else '' }}"
+           aria-label="{{ t('navigation.assessment', lang) or 'Assessment' }}">
+            <i class="bi bi-clipboard-check"></i>
+            <span>{{ t('navigation.assessment', lang) or 'Assessment' }}</span>
+        </a>
+        
         <a href="{{ url_for('mobile.tests', lang=lang) if lang else url_for('mobile.tests', lang='en') }}" 
            class="nav-item {{ 'active' if active_section == 'tests' else '' }}"
            aria-label="{{ t('tests', lang) or 'Tests' }}">
-            <i class="bi bi-clipboard-check"></i>
+            <i class="bi bi-list-check"></i>
             <span>{{ t('tests', lang) or 'Tests' }}</span>
         </a>
         

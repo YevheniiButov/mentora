@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, render_template, request, jsonify, redirect, url_for, g, flash, session, current_app
+    Blueprint, render_template, request, jsonify, redirect, url_for, g, flash, session, current_app, abort
 )
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
@@ -11,6 +11,7 @@ from models import (
     PreAssessmentAnswer, LearningPlan, User
 )
 from translations_new import get_translation as t
+from data.dutch_assessment_categories import REGIONAL_FOCUS
 
 assessment_bp = Blueprint(
     "assessment_bp",
@@ -59,9 +60,12 @@ def intro(lang):
     
     # Статистика оценки
     total_questions = AssessmentQuestion.query.filter_by(is_active=True).count()
-    categories = AssessmentCategory.query.order_by(AssessmentCategory.name).all()
     
-    # Средняя статистика прохождения
+    # Получаем категории для предварительной оценки (не нидерландские)
+    categories = AssessmentCategory.query.filter_by(is_dutch_specific=False).order_by(AssessmentCategory.name).all()
+    
+    # Общая статистика прохождения
+    total_assessments = PreAssessmentAttempt.query.filter_by(is_completed=True).count()
     avg_stats = db.session.query(
         db.func.avg(PreAssessmentAttempt.time_spent).label('avg_time'),
         db.func.avg(PreAssessmentAttempt.total_score).label('avg_score')
@@ -73,6 +77,7 @@ def intro(lang):
         total_questions=total_questions,
         categories=categories,
         previous_attempt=previous_attempt,
+        total_assessments=total_assessments,
         avg_time=int(avg_stats.avg_time / 60) if avg_stats.avg_time else 45,
         avg_score=int(avg_stats.avg_score) if avg_stats.avg_score else 70,
         estimated_time=60  # минут
@@ -85,6 +90,10 @@ def start_assessment(lang):
     g.lang = lang
     
     try:
+        # Получаем данные из запроса
+        data = request.get_json() or {}
+        selected_categories = data.get('selected_categories', ['knowledge', 'communication', 'preclinical', 'workstation'])
+        
         # Проверяем, нет ли незавершенной попытки
         existing_attempt = PreAssessmentAttempt.query.filter_by(
             user_id=current_user.id,
@@ -106,14 +115,15 @@ def start_assessment(lang):
         db.session.add(attempt)
         db.session.flush()  # Получаем ID
         
-        # Выбираем вопросы для оценки
-        selected_questions = select_assessment_questions()
+        # Выбираем вопросы для оценки с учетом выбранных категорий
+        selected_questions = select_assessment_questions(selected_categories)
         
         # Сохраняем порядок вопросов в сессии
         session['assessment_attempt_id'] = attempt.id
         session['assessment_questions'] = [q.id for q in selected_questions]
         session['current_question_index'] = 0
         session['assessment_start_time'] = datetime.utcnow().isoformat()
+        session['selected_categories'] = selected_categories
         
         db.session.commit()
         
@@ -145,8 +155,9 @@ def question(lang, question_num):
     attempt_id = session['assessment_attempt_id']
     question_ids = session.get('assessment_questions', [])
     
-    if question_num < 1 or question_num > len(question_ids):
-        flash(t('invalid_question_number', lang=g.lang), 'error')
+    # Усиленная защита: если вопросов нет или номер некорректен
+    if not question_ids or question_num < 1 or question_num > len(question_ids):
+        flash(t('invalid_question_number', lang=g.lang) + '. ' + t('start_new_attempt', lang=g.lang), 'error')
         return redirect(url_for('assessment_bp.intro', lang=g.lang))
     
     # Получаем вопрос
@@ -174,8 +185,7 @@ def question(lang, question_num):
         total_questions=len(question_ids),
         progress=round(progress, 1),
         remaining_time=int(remaining_time),
-        existing_answer=existing_answer,
-        category=question.category
+        existing_answer=existing_answer
     )
 
 @assessment_bp.route('/answer', methods=['POST'])
@@ -345,8 +355,8 @@ def results(lang, attempt_id):
         is_completed=True
     ).first_or_404()
     
-    # Получаем анализ результатов
-    analysis = attempt.get_recommended_plan()
+    # Получаем анализ результатов с правильным форматом рекомендаций
+    analysis = analyze_assessment_results(attempt)
     category_scores = attempt.get_category_scores()
     
     # Форматируем данные для отображения
@@ -355,9 +365,13 @@ def results(lang, attempt_id):
         'correct_answers': attempt.correct_answers,
         'total_questions': attempt.total_questions,
         'time_spent': format_time_spent(attempt.time_spent),
+        'completion_time': format_time_spent(attempt.time_spent),
+        'accuracy': round((attempt.correct_answers / attempt.total_questions) * 100, 1),
         'completion_date': attempt.completed_at,
         'category_results': format_category_results(category_scores),
+        'categories': format_category_results(category_scores),
         'skill_level': analysis.get('overall_level', 'intermediate'),
+        'skill_description': analysis.get('skill_description', 'Средний уровень подготовки'),
         'strengths': analysis.get('strengths', []),
         'weaknesses': analysis.get('weaknesses', []),
         'recommendations': analysis.get('recommendations', [])[:5],  # Топ-5
@@ -389,12 +403,14 @@ def create_learning_plan(lang, attempt_id):
         return render_template(
             'assessment/plan_preferences.html',
             attempt=attempt,
+            preferences={},  # Пустой словарь для новых предпочтений
             title=t('create_learning_plan_title', lang=g.lang)
         )
     
     try:
-        # Получаем предпочтения пользователя
-        form_data = request.get_json() or request.form
+        # Получаем предпочтения пользователя из формы
+        # Обычная HTML-форма отправляется как form-data, не JSON
+        form_data = request.form.to_dict()
         
         # Создаем простой план обучения
         plan_name = f"Персонализированный план - {datetime.utcnow().strftime('%d.%m.%Y')}"
@@ -452,23 +468,20 @@ def create_learning_plan(lang, attempt_id):
         db.session.add(plan)
         db.session.commit()
         
-        if request.is_json:
-            return jsonify({
-                'success': True,
-                'plan_id': plan.id,
-                'redirect_url': url_for('assessment_bp.view_plan', lang=g.lang, plan_id=plan.id)
-            })
-        else:
-            flash(t('learning_plan_created_success', lang=g.lang), 'success')
-            return redirect(url_for('assessment_bp.view_plan', lang=g.lang, plan_id=plan.id))
+        # Для обычной HTML-формы всегда делаем редирект
+        flash(t('learning_plan_created_success', lang=g.lang), 'success')
+        return redirect(url_for('assessment_bp.view_plan', lang=g.lang, plan_id=plan.id))
         
     except Exception as e:
         current_app.logger.error(f"Error creating learning plan: {e}")
-        if request.is_json:
-            return jsonify({'success': False, 'error': str(e)}), 500
-        else:
-            flash(t('error_creating_plan', lang=g.lang), 'error')
-            return redirect(url_for('assessment_bp.results', lang=g.lang, attempt_id=attempt_id))
+        flash(t('error_creating_plan', lang=g.lang), 'error')
+        # При ошибке возвращаемся к форме с пустыми предпочтениями
+        return render_template(
+            'assessment/plan_preferences.html',
+            attempt=attempt,
+            preferences={},  # Пустой словарь для избежания UndefinedError
+            title=t('create_learning_plan_title', lang=g.lang)
+        )
 
 @assessment_bp.route('/plan/<int:plan_id>')
 @login_required
@@ -568,46 +581,47 @@ def api_assessment_statistics(lang):
 
 # Вспомогательные функции
 
-def select_assessment_questions():
-    """Выбор вопросов для оценки с обеспечением баланса по категориям"""
+def select_assessment_questions(selected_categories):
+    """Выбор вопросов для оценки с учетом выбранных категорий"""
     
     categories = AssessmentCategory.query.all()
     selected_questions = []
     
     for category in categories:
-        # Количество вопросов из каждой категории
-        questions_needed = min(category.max_questions, 
-                             max(category.min_questions, 
-                                 int(50 * (category.weight / sum(c.weight for c in categories)))))
-        
-        # Получаем вопросы категории
-        category_questions = AssessmentQuestion.query.filter_by(
-            category_id=category.id,
-            is_active=True
-        ).all()
-        
-        if len(category_questions) > questions_needed:
-            # Выбираем случайные вопросы, но с балансом по сложности
-            easy = [q for q in category_questions if q.difficulty_level <= 2]
-            medium = [q for q in category_questions if q.difficulty_level == 3]
-            hard = [q for q in category_questions if q.difficulty_level >= 4]
+        if category.slug in selected_categories:
+            # Количество вопросов из каждой категории
+            questions_needed = min(category.max_questions, 
+                                 max(category.min_questions, 
+                                     int(50 * (category.weight / sum(c.weight for c in categories)))))
             
-            selected = []
+            # Получаем вопросы категории
+            category_questions = AssessmentQuestion.query.filter_by(
+                category_id=category.id,
+                is_active=True
+            ).all()
             
-            # 40% легких, 40% средних, 20% сложных
-            selected.extend(random.sample(easy, min(len(easy), int(questions_needed * 0.4))))
-            selected.extend(random.sample(medium, min(len(medium), int(questions_needed * 0.4))))
-            selected.extend(random.sample(hard, min(len(hard), int(questions_needed * 0.2))))
-            
-            # Добираем до нужного количества если нужно
-            remaining = questions_needed - len(selected)
-            if remaining > 0:
-                available = [q for q in category_questions if q not in selected]
-                selected.extend(random.sample(available, min(len(available), remaining)))
-            
-            selected_questions.extend(selected[:questions_needed])
-        else:
-            selected_questions.extend(category_questions)
+            if len(category_questions) > questions_needed:
+                # Выбираем случайные вопросы, но с балансом по сложности
+                easy = [q for q in category_questions if q.difficulty_level <= 2]
+                medium = [q for q in category_questions if q.difficulty_level == 3]
+                hard = [q for q in category_questions if q.difficulty_level >= 4]
+                
+                selected = []
+                
+                # 40% легких, 40% средних, 20% сложных
+                selected.extend(random.sample(easy, min(len(easy), int(questions_needed * 0.4))))
+                selected.extend(random.sample(medium, min(len(medium), int(questions_needed * 0.4))))
+                selected.extend(random.sample(hard, min(len(hard), int(questions_needed * 0.2))))
+                
+                # Добираем до нужного количества если нужно
+                remaining = questions_needed - len(selected)
+                if remaining > 0:
+                    available = [q for q in category_questions if q not in selected]
+                    selected.extend(random.sample(available, min(len(available), remaining)))
+                
+                selected_questions.extend(selected[:questions_needed])
+            else:
+                selected_questions.extend(category_questions)
     
     # Перемешиваем порядок вопросов
     random.shuffle(selected_questions)
@@ -690,13 +704,53 @@ def analyze_assessment_results(attempt):
     # Создаем рекомендации
     recommendations = []
     if weaknesses:
-        recommendations.append(f"Сосредоточьтесь на изучении: {', '.join(weaknesses[:3])}")
+        recommendations.append({
+            'title': 'Сосредоточьтесь на слабых областях',
+            'description': f"Рекомендуется углубленное изучение: {', '.join(weaknesses[:3])}",
+            'gradient': 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
+            'icon': 'exclamation-triangle',
+            'duration': '20-30 часов',
+            'difficulty': 'Средний'
+        })
     
     if overall_score < 70:
-        recommendations.append("Рекомендуется пройти базовый курс для укрепления фундамента")
+        recommendations.append({
+            'title': 'Базовый курс',
+            'description': 'Рекомендуется пройти базовый курс для укрепления фундамента знаний',
+            'gradient': 'linear-gradient(135deg, #4ecdc4, #44a08d)',
+            'icon': 'book',
+            'duration': '40-60 часов',
+            'difficulty': 'Начинающий'
+        })
     
     if strengths:
-        recommendations.append(f"Ваши сильные стороны: {', '.join(strengths[:2])}")
+        recommendations.append({
+            'title': 'Развитие сильных сторон',
+            'description': f"Продолжайте развивать ваши сильные области: {', '.join(strengths[:2])}",
+            'gradient': 'linear-gradient(135deg, #a8edea, #fed6e3)',
+            'icon': 'star',
+            'duration': '15-25 часов',
+            'difficulty': 'Продвинутый'
+        })
+    
+    # Добавляем общие рекомендации
+    recommendations.append({
+        'title': 'Практические занятия',
+        'description': 'Регулярно проходите практические тесты для закрепления материала',
+        'gradient': 'linear-gradient(135deg, #667eea, #764ba2)',
+        'icon': 'clipboard-check',
+        'duration': '10-15 часов',
+        'difficulty': 'Любой уровень'
+    })
+    
+    recommendations.append({
+        'title': 'Повторение материала',
+        'description': 'Систематически повторяйте изученный материал для лучшего запоминания',
+        'gradient': 'linear-gradient(135deg, #f093fb, #f5576c)',
+        'icon': 'arrow-clockwise',
+        'duration': '5-10 часов',
+        'difficulty': 'Любой уровень'
+    })
     
     # Оценка времени обучения
     study_time_estimate = {
@@ -786,4 +840,301 @@ def calculate_plan_progress(plan):
         'days_active': 0,  # Количество дней с активностью
         'current_phase': 1,  # Текущая фаза обучения
         'next_milestone': 'Завершение базовых модулей'  # Ближайшая цель
-    } 
+    }
+
+# ===== DUTCH ASSESSMENT ROUTES =====
+
+@assessment_bp.route('/dutch-intro')
+@login_required 
+def dutch_intro(lang):
+    """Введение в оценку для работы в Нидерландах"""
+    g.lang = lang
+    
+    # Получаем нидерландские категории
+    dutch_categories = AssessmentCategory.query.filter_by(is_dutch_specific=True).all()
+    
+    # Предыдущие попытки пользователя
+    previous_attempts = PreAssessmentAttempt.query.filter_by(
+        user_id=current_user.id,
+        is_completed=True
+    ).order_by(PreAssessmentAttempt.completed_at.desc()).limit(3).all()
+    
+    return render_template('assessment/dutch_intro.html',
+                         dutch_categories=dutch_categories,
+                         previous_attempts=previous_attempts,
+                         title=t('dutch_assessment_title', lang=g.lang))
+
+@assessment_bp.route('/dutch-start', methods=['POST'])
+@login_required
+def start_dutch_assessment(lang):
+    """Начало нидерландской оценки"""
+    g.lang = lang
+    
+    try:
+        # Получаем данные из JSON или form
+        if request.is_json:
+            data = request.get_json()
+            regional_focus = data.get('regional_focus', 'general')
+            include_big_exam = data.get('include_big_exam', False)
+        else:
+            regional_focus = request.form.get('regional_focus', 'general')
+            include_big_exam = request.form.get('include_big_exam', False)
+        
+        # Проверяем, нет ли незавершенной попытки
+        existing_attempt = PreAssessmentAttempt.query.filter_by(
+            user_id=current_user.id,
+            is_completed=False
+        ).first()
+        
+        if existing_attempt:
+            # Удаляем незавершенную попытку
+            PreAssessmentAnswer.query.filter_by(attempt_id=existing_attempt.id).delete()
+            db.session.delete(existing_attempt)
+        
+        # Создаем попытку с нидерландскими вопросами
+        attempt = PreAssessmentAttempt(
+            user_id=current_user.id,
+            started_at=datetime.utcnow(),
+            is_completed=False
+        )
+        
+        # Выбираем вопросы из нидерландских категорий
+        questions = _select_dutch_questions(include_big_exam, regional_focus)
+        attempt.total_questions = len(questions)
+        
+        db.session.add(attempt)
+        db.session.flush()
+        
+        # Сохраняем в сессии информацию о нидерландской оценке
+        session['dutch_assessment'] = {
+            'attempt_id': attempt.id,
+            'questions': [q.id for q in questions],
+            'regional_focus': regional_focus,
+            'include_big_exam': include_big_exam,
+            'current_question': 0
+        }
+        
+        # Также сохраняем для совместимости с существующими маршрутами
+        session['assessment_attempt_id'] = attempt.id
+        session['assessment_questions'] = [q.id for q in questions]
+        session['current_question_index'] = 0
+        session['assessment_start_time'] = datetime.utcnow().isoformat()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'attempt_id': attempt.id,
+            'redirect_url': url_for('assessment_bp.question', lang=g.lang, question_num=1)
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error starting Dutch assessment: {e}")
+        return jsonify({
+            'success': False,
+            'error': t('error_starting_assessment', lang=g.lang)
+        }), 500
+
+@assessment_bp.route('/dutch-results/<int:attempt_id>')
+@login_required
+def dutch_results(lang, attempt_id):
+    """Результаты нидерландской оценки с специализированным анализом"""
+    g.lang = lang
+    
+    attempt = PreAssessmentAttempt.query.get_or_404(attempt_id)
+    
+    if attempt.user_id != current_user.id:
+        abort(403)
+    
+    # Используем нидерландский анализатор
+    from services.dutch_assessment_analyzer import DutchAssessmentAnalyzer
+    
+    analyzer = DutchAssessmentAnalyzer()
+    regional_focus = session.get('dutch_assessment', {}).get('regional_focus')
+    analysis = analyzer.analyze_dutch_competency(attempt, regional_focus)
+    
+    # Сохраняем результат
+    from models import DutchAssessmentResult
+    dutch_result = DutchAssessmentResult(
+        user_id=current_user.id,
+        attempt_id=attempt_id,
+        competency_level=analysis['competency_level']['level'],
+        overall_score=analysis['overall_score'],
+        critical_areas_score=analysis['competency_level']['critical_areas_score'],
+        can_work_supervised=analysis['practice_readiness']['supervised_practice']['ready'],
+        can_work_independently=analysis['practice_readiness']['independent_general']['ready'],
+        regional_focus=regional_focus,
+        certification_pathway=json.dumps(analysis['certification_pathway']),
+        next_steps=json.dumps(analysis['next_steps']),
+        category_scores=json.dumps(analysis.get('category_analyses', []))
+    )
+    
+    db.session.add(dutch_result)
+    db.session.commit()
+    
+    return render_template('assessment/dutch_results.html',
+                         attempt=attempt,
+                         analysis=analysis,
+                         dutch_result=dutch_result,
+                         title=t('dutch_assessment_results_title', lang=g.lang))
+
+def _select_dutch_questions(include_big_exam=False, regional_focus='general'):
+    """Выбор вопросов для нидерландской оценки"""
+    
+    # Получаем нидерландские категории
+    dutch_categories = AssessmentCategory.query.filter_by(is_dutch_specific=True).all()
+    
+    if include_big_exam:
+        # Добавляем BIG экзаменационные категории
+        big_categories = AssessmentCategory.query.filter(
+            AssessmentCategory.slug.like('big_%')
+        ).all()
+        dutch_categories.extend(big_categories)
+    
+    selected_questions = []
+    
+    for category in dutch_categories:
+        # Применяем региональные веса
+        question_count = category.min_questions
+        if regional_focus in REGIONAL_FOCUS:
+            weight = REGIONAL_FOCUS[regional_focus].get('additional_weight', {}).get(category.slug, 1.0)
+            if weight > 1.0:
+                question_count = min(category.max_questions, int(question_count * weight))
+        
+        # Выбираем вопросы категории
+        questions = AssessmentQuestion.query.filter_by(
+            category_id=category.id,
+            is_active=True
+        ).order_by(db.func.random()).limit(question_count).all()
+        
+        selected_questions.extend(questions)
+    
+    # Перемешиваем порядок вопросов
+    random.shuffle(selected_questions)
+    
+    return selected_questions[:60]  # Ограничиваем до 60 вопросов для Dutch assessment 
+
+@assessment_bp.route('/big-exam-prep')
+@login_required
+def big_exam_prep(lang):
+    """Страница подготовки к BIG экзамену"""
+    g.lang = lang
+    
+    # Получаем BIG экзаменационные категории
+    big_categories = AssessmentCategory.query.filter(
+        AssessmentCategory.slug.like('big_%')
+    ).all()
+    
+    # Получаем статистику по BIG экзамену
+    previous_attempts = PreAssessmentAttempt.query.filter(
+        PreAssessmentAttempt.user_id == current_user.id,
+        PreAssessmentAttempt.is_completed == True
+    ).order_by(PreAssessmentAttempt.completed_at.desc()).limit(5).all()
+    
+    return render_template('assessment/big_exam_prep.html',
+                         big_categories=big_categories,
+                         previous_attempts=previous_attempts,
+                         format_time_spent=format_time_spent,
+                         title=t('big_exam_prep', lang=g.lang))
+
+@assessment_bp.route('/test-options')
+def test_options(lang):
+    """Тестовый маршрут для проверки опций"""
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Тест опций</title>
+        <style>
+            .option {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 12px;
+                padding: 16px;
+                border: 2px solid #e5e7eb;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                background: white;
+                margin-bottom: 8px;
+            }
+            .option:hover {
+                border-color: #93c5fd;
+                background: #eff6ff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+            .option.selected {
+                border-color: #3b82f6;
+                background: #eff6ff;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            }
+            .option-letter {
+                width: 32px;
+                height: 32px;
+                background: #f3f4f6;
+                color: #374151;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+                font-size: 14px;
+                transition: all 0.15s ease;
+            }
+            .option.selected .option-letter {
+                background: #3b82f6;
+                color: white;
+            }
+            .option-text {
+                font-size: 16px;
+                color: #111827;
+                line-height: 1.5;
+                align-self: center;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Тест опций</h1>
+        <div class="options-grid">
+            <div class="option" onclick="selectOption(this, 0)">
+                <div class="option-letter">A</div>
+                <div class="option-text">Первый вариант ответа</div>
+            </div>
+            <div class="option" onclick="selectOption(this, 1)">
+                <div class="option-letter">B</div>
+                <div class="option-text">Второй вариант ответа</div>
+            </div>
+            <div class="option" onclick="selectOption(this, 2)">
+                <div class="option-letter">C</div>
+                <div class="option-text">Третий вариант ответа</div>
+            </div>
+            <div class="option" onclick="selectOption(this, 3)">
+                <div class="option-letter">D</div>
+                <div class="option-text">Четвертый вариант ответа</div>
+            </div>
+        </div>
+        <button id="next-btn" disabled onclick="alert('Кнопка работает!')">Далее</button>
+        <div id="debug">Ожидание клика...</div>
+        
+        <script>
+            let selectedOption = null;
+            
+            function selectOption(element, optionIndex) {
+                console.log('selectOption called with:', element, optionIndex);
+                
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                element.classList.add('selected');
+                selectedOption = optionIndex;
+                
+                document.getElementById('next-btn').disabled = false;
+                document.getElementById('debug').textContent = 'Выбран вариант ' + optionIndex;
+            }
+        </script>
+    </body>
+    </html>
+    ''' 

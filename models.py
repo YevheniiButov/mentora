@@ -1102,6 +1102,13 @@ class AssessmentCategory(db.Model):
     color = db.Column(db.String(7), default='#3ECDC1')  # Цвет для UI
     icon = db.Column(db.String(50), default='book')
     
+    # Голландские специфичные поля
+    is_dutch_specific = db.Column(db.Boolean, default=False)  # Специфично для Нидерландов
+    dutch_weight = db.Column(db.Float, default=1.0)  # Вес для голландской оценки
+    critical_for_netherlands = db.Column(db.Boolean, default=False)  # Критично для работы в Нидерландах
+    name_en = db.Column(db.String(100))  # Английский перевод названия
+    name_ru = db.Column(db.String(100))  # Русский перевод названия
+    
     # Связи
     questions = db.relationship('AssessmentQuestion', backref='category', lazy='dynamic')
     
@@ -1272,3 +1279,82 @@ class LearningPlan(db.Model):
     
     def __repr__(self):
         return f'<LearningPlan {self.id}: {self.plan_name}>'    
+
+# ============================================================================
+# DUTCH ASSESSMENT SYSTEM MODELS
+# ============================================================================
+
+class DutchCompetencyLevel(db.Model):
+    """Уровни компетенции для голландской системы оценки"""
+    __tablename__ = 'dutch_competency_levels'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    level_name = db.Column(db.String(20), nullable=False)  # insufficient, basic, competent, proficient
+    threshold = db.Column(db.Float, nullable=False)  # Пороговое значение для уровня
+    description = db.Column(db.Text)  # Описание уровня
+    recommendation = db.Column(db.Text)  # Рекомендации для достижения уровня
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<DutchCompetencyLevel {self.level_name}>'
+
+class DutchAssessmentResult(db.Model):
+    """Результаты голландской оценки знаний"""
+    __tablename__ = 'dutch_assessment_results'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    attempt_id = db.Column(db.Integer, db.ForeignKey('pre_assessment_attempts.id'), nullable=False)
+    
+    # Результаты оценки
+    competency_level = db.Column(db.String(20), nullable=False)  # insufficient, basic, competent, proficient
+    overall_score = db.Column(db.Float, nullable=False)  # Общий балл
+    critical_areas_score = db.Column(db.Float, nullable=False)  # Балл по критическим областям
+    
+    # Возможности работы
+    can_work_supervised = db.Column(db.Boolean, default=False)  # Может работать под надзором
+    can_work_independently = db.Column(db.Boolean, default=False)  # Может работать самостоятельно
+    
+    # Региональная специфика
+    regional_focus = db.Column(db.String(20))  # urban, rural - фокус на городскую или сельскую практику
+    
+    # Сертификация и следующие шаги
+    certification_pathway = db.Column(db.Text)  # JSON с путем сертификации
+    next_steps = db.Column(db.Text)  # JSON с следующими шагами
+    
+    # Детальные результаты по категориям
+    category_scores = db.Column(db.Text)  # JSON с результатами по категориям
+    
+    # Метаданные
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Связи
+    user = db.relationship('User', backref='dutch_assessments')
+    attempt = db.relationship('PreAssessmentAttempt', backref='dutch_result')
+    
+    def get_certification_pathway(self):
+        """Получить путь сертификации"""
+        return json.loads(self.certification_pathway) if self.certification_pathway else {}
+    
+    def set_certification_pathway(self, pathway_dict):
+        """Установить путь сертификации"""
+        self.certification_pathway = json.dumps(pathway_dict, ensure_ascii=False)
+    
+    def get_next_steps(self):
+        """Получить следующие шаги"""
+        return json.loads(self.next_steps) if self.next_steps else {}
+    
+    def set_next_steps(self, steps_dict):
+        """Установить следующие шаги"""
+        self.next_steps = json.dumps(steps_dict, ensure_ascii=False)
+    
+    def get_category_scores(self):
+        """Получить результаты по категориям"""
+        return json.loads(self.category_scores) if self.category_scores else {}
+    
+    def set_category_scores(self, scores_dict):
+        """Установить результаты по категориям"""
+        self.category_scores = json.dumps(scores_dict, ensure_ascii=False)
+    
+    def __repr__(self):
+        return f'<DutchAssessmentResult {self.id}: User {self.user_id}, Level {self.competency_level}>'    

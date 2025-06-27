@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('assessment_intro_title', lang) | default('Предварительная оценка знаний') }} - Dental Academy</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3ECDC1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary-color: #3ECDC1;
+            --secondary-color: #6C5CE7;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --bg-light: #f8fafc;
+            --border-color: #e2e8f0;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 12px;
+            --space-lg: 16px;
+            --space-xl: 20px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: var(--text-primary);
+        }
+        
+        .mobile-container {
+            max-width: 100%;
+            padding: var(--space-sm);
+            min-height: 100vh;
+        }
+        
+        .mobile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-bottom: var(--space-sm);
+            border: 1px solid var(--border-color);
+        }
+        
+        .mobile-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: var(--space-lg) var(--space-md);
+            text-align: center;
+        }
+        
+        .mobile-header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .mobile-header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .mobile-content {
+            padding: var(--space-md);
+        }
+        
+        .previous-attempt-mobile {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+        
+        .previous-attempt-mobile h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+            color: var(--warning-color);
+        }
+        
+        .previous-attempt-mobile p {
+            font-size: 0.75rem;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+            color: var(--text-primary);
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            padding: var(--space-sm);
+            margin-bottom: var(--space-xs);
+            background: white;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+        
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: var(--space-sm);
+            font-size: 0.875rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+        
+        .feature-content {
+            flex: 1;
+        }
+        
+        .feature-title {
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 2px;
+        }
+        
+        .feature-description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+            margin: var(--space-sm) 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        
+        .stat-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .categories-section {
+            margin: var(--space-sm) 0;
+        }
+        
+        .category-item {
+            display: flex;
+            align-items: center;
+            padding: var(--space-sm);
+            margin-bottom: var(--space-xs);
+            background: white;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+        
+        .category-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: var(--space-sm);
+            font-size: 0.75rem;
+        }
+        
+        .category-name {
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .alert-mobile {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm);
+            margin: var(--space-sm) 0;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .alert-icon {
+            color: #3b82f6;
+            margin-right: var(--space-sm);
+            font-size: 1rem;
+            margin-top: 2px;
+        }
+        
+        .alert-text {
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+        
+        .start-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+        
+        .start-button:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .start-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .footer-info {
+            text-align: center;
+            margin-top: var(--space-sm);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .privacy-icon {
+            margin-right: var(--space-xs);
+            color: var(--success-color);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .touchable {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        
+        .touchable:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mobile-container">
+        <!-- Header Card -->
+        <div class="mobile-card">
+            <div class="mobile-header">
+                <h1><i class="bi bi-clipboard-check me-2"></i>{{ t('assessment_intro_title', lang) | default('Предварительная оценка знаний') }}</h1>
+                <p>{{ t('assessment_intro_subtitle', lang) | default('Определите свой уровень знаний и получите персональный план') }}</p>
+            </div>
+        </div>
+        
+        <!-- Previous Attempt Alert -->
+        {% if previous_attempt %}
+        <div class="mobile-card">
+            <div class="mobile-content">
+                <div class="previous-attempt-mobile">
+                    <h4><i class="bi bi-info-circle me-2"></i>{{ t('previous_attempt_title', lang) | default('У вас уже есть результат') }}</h4>
+                    <p class="mb-2">{{ t('last_completion', lang) | default('Последнее прохождение') }}: {{ previous_attempt.completed_at.strftime('%d.%m.%Y') }}</p>
+                    <p class="mb-2">{{ t('result', lang) | default('Результат') }}: <strong>{{ previous_attempt.total_score }}%</strong></p>
+                    <a href="{{ url_for('assessment_bp.results', lang=lang, attempt_id=previous_attempt.id) }}" 
+                       class="btn btn-sm btn-outline-warning">{{ t('view_results', lang) | default('Посмотреть результаты') }}</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Features Card -->
+        <div class="mobile-card">
+            <div class="mobile-content">
+                <div class="section-title">{{ t('what_to_expect', lang) | default('Что вас ждет') }}:</div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="bi bi-question-circle"></i>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-title">{{ total_questions }} {{ t('questions', lang) | default('вопросов') }}</div>
+                        <div class="feature-description">{{ t('comprehensive_assessment', lang) | default('Всесторонняя оценка по основным разделам стоматологии') }}</div>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-title">{{ estimated_time }} {{ t('minutes', lang) | default('минут') }}</div>
+                        <div class="feature-description">{{ t('optimal_time', lang) | default('Оптимальное время для качественной оценки') }}</div>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-title">{{ t('personalized_plan', lang) | default('Персональный план') }}</div>
+                        <div class="feature-description">{{ t('personalized_plan_desc', lang) | default('Индивидуальная программа обучения на основе результатов') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Card -->
+        <div class="mobile-card">
+            <div class="mobile-content">
+                <div class="section-title">{{ t('statistics', lang) | default('Статистика') }}</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ avg_score }}%</div>
+                        <div class="stat-label">{{ t('average_result', lang) | default('Средний результат') }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ avg_time }}</div>
+                        <div class="stat-label">{{ t('average_time', lang) | default('Среднее время') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Categories Card -->
+        <div class="mobile-card">
+            <div class="mobile-content">
+                <div class="categories-section">
+                    <div class="section-title">{{ t('assessment_sections', lang) | default('Разделы оценки') }}:</div>
+                    {% for category in categories %}
+                    <div class="category-item">
+                        <div class="category-icon" style="background: {{ category.color }};">
+                            <i class="bi bi-{{ category.icon }}"></i>
+                        </div>
+                        <div class="category-name">{{ category.name }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info Alert -->
+        <div class="mobile-card">
+            <div class="mobile-content">
+                <div class="alert-mobile">
+                    <i class="bi bi-lightbulb alert-icon"></i>
+                    <span class="alert-text">
+                        <strong>{{ t('tip', lang) | default('Совет') }}:</strong> {{ t('assessment_tip', lang) | default('Отвечайте честно и не используйте дополнительные материалы. Это поможет создать максимально точный план обучения.') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Start Button -->
+        <div class="mobile-card">
+            <div class="mobile-content">
+                <button class="start-button touchable" id="start-assessment-btn">
+                    <i class="bi bi-play-fill me-2"></i>{{ t('start_assessment', lang) | default('Начать оценку') }}
+                </button>
+                <div class="footer-info">
+                    <i class="bi bi-shield-check privacy-icon"></i>
+                    {{ t('results_confidential', lang) | default('Результаты конфиденциальны и используются только для формирования вашего плана обучения') }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile-specific configurations
+        window.AppConfig = {
+            currentLanguage: '{{ lang }}',
+            isMobile: true,
+            apiBaseUrl: '/{{ lang }}/api'
+        };
+        
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Start assessment functionality
+        document.getElementById('start-assessment-btn').addEventListener('click', function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner me-2"></span>{{ t("creating_assessment", lang) | default("Создание оценки...") }}';
+            
+            // Add vibration feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+            
+            fetch(`/${window.AppConfig?.currentLanguage || '{{ lang }}'}/assessment/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.content || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Success vibration
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([100, 50, 100]);
+                    }
+                    window.location.href = data.redirect_url;
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Error vibration
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([50, 50, 50]);
+                }
+                
+                alert('{{ t("error", lang) | default("Ошибка") }}: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-play-fill me-2"></i>{{ t("start_assessment", lang) | default("Начать оценку") }}';
+            });
+        });
+    </script>
+</body>
+</html> 

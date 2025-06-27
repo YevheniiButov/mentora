@@ -377,7 +377,8 @@ def create_app(test_config=None):
     # ОБЪЕДИНЕННЫЙ обработчик для языка и безопасности сессии
     @app.before_request
     def handle_language_and_redirect():
-        """Комбинированный обработчик запросов: установка языка, проверка сессии и перенаправление."""
+        if getattr(g, 'force_desktop', False):
+            return None  # Не делаем редирект, не меняем язык, не трогаем сессию
         # Игнорируем статические файлы, API запросы и т.д.
         if request.path.startswith('/static/') or request.path == '/routes' or request.path == '/':
             return None
@@ -1314,9 +1315,16 @@ def pwa_share_target():
         return redirect(url_for('main_bp.index'))
 
 @app.route('/test-themes')
-def test_themes():
-    """Тестовая страница для демонстрации новой системы тем"""
+@app.route('/<lang>/test-themes')
+def test_themes(lang=None):
+    g.force_desktop = True
     return render_template('test_themes.html')
+
+@app.route('/test-interactive')
+@app.route('/<lang>/test-interactive')
+def test_interactive(lang=None):
+    g.force_desktop = True
+    return render_template('theme_test_interactive.html')
 
 @app.route('/index-new')
 def index_new():
