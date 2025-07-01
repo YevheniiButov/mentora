@@ -1829,3 +1829,220 @@ class GrapesJSTemplate(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
+
+
+class EditablePageTemplate(db.Model):
+    """
+    Модель для редактируемых шаблонов страниц с поддержкой GrapesJS
+    Model for editable page templates with GrapesJS support
+    
+    Позволяет администраторам редактировать существующие Jinja2 шаблоны
+    через интерфейс GrapesJS, сохраняя при этом логику шаблонов.
+    Allows administrators to edit existing Jinja2 templates through
+    GrapesJS interface while preserving template logic.
+    """
+    __tablename__ = 'editable_page_templates'
+    
+    # Основные поля / Primary fields
+    id = db.Column(db.Integer, primary_key=True)
+    template_path = db.Column(db.String(500), nullable=False, index=True)  # Путь к Jinja2 шаблону / Path to Jinja2 template
+    original_content = db.Column(db.Text, nullable=False)  # Оригинальное содержимое шаблона / Original template content
+    grapesjs_content = db.Column(db.Text, nullable=True)  # Контент отредактированный в GrapesJS / Content edited in GrapesJS
+    css_overrides = db.Column(db.Text, nullable=True)  # CSS переопределения / CSS overrides
+    js_modifications = db.Column(db.Text, nullable=True)  # JavaScript модификации / JavaScript modifications
+    is_live = db.Column(db.Boolean, default=False, index=True)  # Активен ли шаблон / Is template active
+    language = db.Column(db.String(5), default='en', index=True)  # Язык шаблона (en/ru) / Template language
+    
+    # Связи / Relationships
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    
+    # Временные метки / Timestamps
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Дополнительные метаданные / Additional metadata
+    template_name = db.Column(db.String(255), nullable=True)  # Человекочитаемое имя / Human-readable name
+    description = db.Column(db.Text, nullable=True)  # Описание шаблона / Template description
+    category = db.Column(db.String(100), default='general', index=True)  # Категория шаблона / Template category
+    version = db.Column(db.String(20), default='1.0')  # Версия шаблона / Template version
+    is_system = db.Column(db.Boolean, default=False, index=True)  # Системный шаблон / System template
+    
+    # Индексы для производительности / Performance indexes
+    __table_args__ = (
+        db.Index('idx_editable_templates_path_lang', 'template_path', 'language'),
+        db.Index('idx_editable_templates_live', 'is_live'),
+        db.Index('idx_editable_templates_category', 'category'),
+        db.Index('idx_editable_templates_created_by', 'created_by'),
+    )
+    
+    # Отношения / Relationships
+    creator = db.relationship('User', backref=db.backref('editable_templates', lazy='dynamic'))
+    
+    def __repr__(self):
+        """Строковое представление модели / String representation of the model"""
+        return f'<EditablePageTemplate {self.template_path} ({self.language})>'
+    
+    def to_dict(self):
+        """
+        Сериализация в словарь / Serialize to dictionary
+        
+        Returns:
+            dict: Словарь с данными шаблона / Dictionary with template data
+        """
+        return {
+            'id': self.id,
+            'template_path': self.template_path,
+            'template_name': self.template_name,
+            'description': self.description,
+            'original_content': self.original_content,
+            'grapesjs_content': self.grapesjs_content,
+            'css_overrides': self.css_overrides,
+            'js_modifications': self.js_modifications,
+            'is_live': self.is_live,
+            'language': self.language,
+            'category': self.category,
+            'version': self.version,
+            'is_system': self.is_system,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+    
+    def backup(self):
+        """
+        Создание резервной копии шаблона / Create template backup
+        
+        Returns:
+            dict: Резервная копия данных шаблона / Template data backup
+        """
+        return {
+            'template_path': self.template_path,
+            'original_content': self.original_content,
+            'grapesjs_content': self.grapesjs_content,
+            'css_overrides': self.css_overrides,
+            'js_modifications': self.js_modifications,
+            'language': self.language,
+            'version': self.version,
+            'backup_created_at': datetime.now(timezone.utc).isoformat(),
+        }
+    
+    def restore(self, backup_data):
+        """
+        Восстановление шаблона из резервной копии / Restore template from backup
+        
+        Args:
+            backup_data (dict): Данные резервной копии / Backup data
+            
+        Returns:
+            bool: True если восстановление успешно / True if restore successful
+        """
+        try:
+            self.original_content = backup_data.get('original_content', self.original_content)
+            self.grapesjs_content = backup_data.get('grapesjs_content', self.grapesjs_content)
+            self.css_overrides = backup_data.get('css_overrides', self.css_overrides)
+            self.js_modifications = backup_data.get('js_modifications', self.js_modifications)
+            self.language = backup_data.get('language', self.language)
+            self.version = backup_data.get('version', self.version)
+            self.updated_at = datetime.now(timezone.utc)
+            return True
+        except Exception as e:
+            print(f"Ошибка восстановления шаблона / Template restore error: {e}")
+            return False
+    
+    def get_effective_content(self):
+        """
+        Получение эффективного содержимого шаблона / Get effective template content
+        
+        Returns:
+            str: Эффективное содержимое (GrapesJS или оригинальное) / Effective content (GrapesJS or original)
+        """
+        return self.grapesjs_content if self.grapesjs_content else self.original_content
+    
+    def has_modifications(self):
+        """
+        Проверка наличия модификаций / Check if template has modifications
+        
+        Returns:
+            bool: True если есть модификации / True if has modifications
+        """
+        return bool(self.grapesjs_content or self.css_overrides or self.js_modifications)
+    
+    def reset_to_original(self):
+        """
+        Сброс к оригинальному содержимому / Reset to original content
+        
+        Returns:
+            bool: True если сброс успешен / True if reset successful
+        """
+        try:
+            self.grapesjs_content = None
+            self.css_overrides = None
+            self.js_modifications = None
+            self.updated_at = datetime.now(timezone.utc)
+            return True
+        except Exception as e:
+            print(f"Ошибка сброса шаблона / Template reset error: {e}")
+            return False
+    
+    @classmethod
+    def get_by_path_and_language(cls, template_path, language='en'):
+        """
+        Получение шаблона по пути и языку / Get template by path and language
+        
+        Args:
+            template_path (str): Путь к шаблону / Template path
+            language (str): Язык шаблона / Template language
+            
+        Returns:
+            EditablePageTemplate: Найденный шаблон или None / Found template or None
+        """
+        return cls.query.filter_by(
+            template_path=template_path,
+            language=language
+        ).first()
+    
+    @classmethod
+    def get_live_templates(cls, language='en'):
+        """
+        Получение активных шаблонов / Get live templates
+        
+        Args:
+            language (str): Язык шаблонов / Template language
+            
+        Returns:
+            list: Список активных шаблонов / List of live templates
+        """
+        return cls.query.filter_by(
+            is_live=True,
+            language=language
+        ).all()
+    
+    def activate(self):
+        """
+        Активация шаблона / Activate template
+        
+        Returns:
+            bool: True если активация успешна / True if activation successful
+        """
+        try:
+            self.is_live = True
+            self.updated_at = datetime.now(timezone.utc)
+            return True
+        except Exception as e:
+            print(f"Ошибка активации шаблона / Template activation error: {e}")
+            return False
+    
+    def deactivate(self):
+        """
+        Деактивация шаблона / Deactivate template
+        
+        Returns:
+            bool: True если деактивация успешна / True if deactivation successful
+        """
+        try:
+            self.is_live = False
+            self.updated_at = datetime.now(timezone.utc)
+            return True
+        except Exception as e:
+            print(f"Ошибка деактивации шаблона / Template deactivation error: {e}")
+            return False
