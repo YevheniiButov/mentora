@@ -333,10 +333,15 @@ def create_app(test_config=None):
     app.config['SUPPORTED_LANGUAGES'] = SUPPORTED_LANGUAGES
     app.config['DEFAULT_LANGUAGE'] = DEFAULT_LANGUAGE
     app.config['CACHE_TYPE'] = 'SimpleCache'
-    app.config['SESSION_COOKIE_NAME'] = 'tandarts_session'  # Добавлено: уникальное имя для cookie сессии
+    
+    # Улучшенная конфигурация сессий
+    app.config['SESSION_COOKIE_NAME'] = 'tandarts_session'
     app.config['SESSION_COOKIE_SECURE'] = False  # Установите True в production с HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Увеличено время жизни сессии
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+    app.config['SESSION_REFRESH_EACH_REQUEST'] = True
+    app.config['SESSION_COOKIE_PATH'] = '/'
     
     # Настройки для загрузки файлов GrapesJS
     app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -404,9 +409,17 @@ def create_app(test_config=None):
     else:
         print("⚠️ AI routes not available")
     
+    # Deployment API blueprint
+    try:
+        from routes.deployment_routes import deployment_bp
+        app.register_blueprint(deployment_bp)
+        print("✅ Deployment API routes registered")
+    except ImportError as e:
+        print(f"⚠️ Deployment API routes not available: {e}")
+    
     # Условная регистрация Content Editor Blueprint
-    from routes import register_content_editor_blueprint
-    register_content_editor_blueprint(app)
+    from routes import register_content_editor_blueprints
+    register_content_editor_blueprints(app)
     
     # Initialize Flask-Admin
     admin = init_admin(app, db)
@@ -427,8 +440,15 @@ def create_app(test_config=None):
     def handle_language_and_redirect():
         if getattr(g, 'force_desktop', False):
             return None  # Не делаем редирект, не меняем язык, не трогаем сессию
-        # Игнорируем статические файлы, API запросы и т.д.
-        if request.path.startswith('/static/') or request.path == '/routes' or request.path == '/':
+        
+        # Игнорируем статические файлы, API запросы и другие системные пути
+        if (request.path.startswith('/static/') or 
+            request.path == '/routes' or 
+            request.path == '/' or
+            request.path.startswith('/api/') or
+            request.path.startswith('/debug-') or
+            request.path.startswith('/sw.js') or
+            request.path.startswith('/manifest.json')):
             return None
         
         # Получение языка из URL-параметра
@@ -477,7 +497,16 @@ def create_app(test_config=None):
     # Улучшенный обработчик для неавторизованных запросов
     @login_manager.unauthorized_handler
     def unauthorized():
-        # Использование языка из g для сохранения контекста, иначе из сессии
+        # Для API запросов возвращаем JSON ошибку
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': 'Authentication required',
+                'code': 401,
+                'message': 'Please log in to access this resource'
+            }), 401
+        
+        # Для обычных запросов делаем редирект
         lang = g.get('lang', session.get('lang', DEFAULT_LANGUAGE))
         app.logger.warning(f"Unauthorized access attempt to: {request.path}, redirecting to login")
         # Сохраняем URL в параметре next для возврата после авторизации
@@ -491,8 +520,12 @@ def create_app(test_config=None):
             'session_data': {k: v for k, v in session.items() if k != '_csrf_token'},
             'is_authenticated': hasattr(current_user, 'is_authenticated') and current_user.is_authenticated,
             'user_id': getattr(current_user, 'id', None) if hasattr(current_user, 'id') else None,
+            'user_role': getattr(current_user, 'role', None) if hasattr(current_user, 'role') else None,
+            'user_is_admin': getattr(current_user, 'is_admin', None) if hasattr(current_user, 'is_admin') else None,
             'request_path': request.path,
-            'g_data': {'lang': g.get('lang', 'not set')}
+            'g_data': {'lang': g.get('lang', 'not set')},
+            'cookies': dict(request.cookies),
+            'headers': dict(request.headers)
         }
         
         return jsonify(debug_info)

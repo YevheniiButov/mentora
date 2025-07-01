@@ -9,19 +9,550 @@ import logging
 import os
 import time
 import uuid
+import shutil
+from pathlib import Path
 from werkzeug.utils import secure_filename
 import mimetypes
 from sqlalchemy import or_, desc
 from flask_wtf.csrf import generate_csrf
 
 from extensions import db
-from models import ContentTemplate, User, ContentPage, GrapesJSPage, GrapesJSAsset, GrapesJSTemplate, Lesson, Module
-from utils.decorators import admin_required
+from models import ContentTemplate, User, ContentPage, GrapesJSPage, GrapesJSAsset, GrapesJSTemplate, Lesson, Module, EditablePageTemplate
+from utils.decorators import admin_required, api_login_required, api_admin_required
+from utils.template_parser import Jinja2ToGrapesJSConverter
 
 logger = logging.getLogger(__name__)
 
-# Создаем Blueprint
+# Создаем Blueprint для основного интерфейса
 content_editor_bp = Blueprint('content_editor', __name__, url_prefix='/<lang>/admin/content-editor')
+
+# Создаем отдельный Blueprint для API редактора
+content_editor_api_bp = Blueprint('content_editor_api', __name__, url_prefix='/api/content-editor')
+
+# Функция для получения сообщений об ошибках
+def get_error_message(error: str, lang: str = 'en') -> str:
+    """Получение сообщения об ошибке на нужном языке"""
+    messages = {
+        'en': {
+            'template_not_found': 'Template not found',
+            'invalid_request': 'Invalid request data',
+            'permission_denied': 'Permission denied',
+            'server_error': 'Internal server error',
+            'file_not_found': 'File not found',
+            'invalid_template': 'Invalid template format',
+            'save_failed': 'Failed to save template',
+            'parse_failed': 'Failed to parse template',
+            'deploy_failed': 'Failed to deploy template',
+            'preview_failed': 'Failed to generate preview'
+        },
+        'ru': {
+            'template_not_found': 'Шаблон не найден',
+            'invalid_request': 'Неверные данные запроса',
+            'permission_denied': 'Доступ запрещен',
+            'server_error': 'Внутренняя ошибка сервера',
+            'file_not_found': 'Файл не найден',
+            'invalid_template': 'Неверный формат шаблона',
+            'save_failed': 'Не удалось сохранить шаблон',
+            'parse_failed': 'Не удалось разобрать шаблон',
+            'deploy_failed': 'Не удалось опубликовать шаблон',
+            'preview_failed': 'Не удалось создать предпросмотр'
+        }
+    }
+    return messages.get(lang, messages['en']).get(error, error)
+
+# Функция для получения сообщений об успехе
+def get_success_message(message: str, lang: str = 'en') -> str:
+    """Получение сообщения об успехе на нужном языке"""
+    messages = {
+        'en': {
+            'template_saved': 'Template saved successfully',
+            'template_loaded': 'Template loaded successfully',
+            'template_parsed': 'Template parsed successfully',
+            'template_deployed': 'Template deployed successfully',
+            'preview_generated': 'Preview generated successfully',
+            'css_updated': 'CSS variables updated successfully'
+        },
+        'ru': {
+            'template_saved': 'Шаблон успешно сохранен',
+            'template_loaded': 'Шаблон успешно загружен',
+            'template_parsed': 'Шаблон успешно разобран',
+            'template_deployed': 'Шаблон успешно опубликован',
+            'preview_generated': 'Предпросмотр успешно создан',
+            'css_updated': 'CSS переменные успешно обновлены'
+        }
+    }
+    return messages.get(lang, messages['en']).get(message, message)
+
+# API роуты для редактора (без языкового префикса)
+@content_editor_api_bp.route('/templates', methods=['GET'])
+@api_login_required
+@api_admin_required
+def api_get_templates():
+    """API для получения списка шаблонов"""
+    try:
+        logger.info(f"API: Getting templates for user {current_user.id}")
+        
+        # Определяем язык из заголовка или параметра
+        lang = request.args.get('lang', 'en')
+        category = request.args.get('category')
+        
+        query = ContentTemplate.query.filter_by(language=lang)
+        if category:
+            query = query.filter_by(category=category)
+        
+        templates = query.all()
+        
+        result = []
+        for template in templates:
+            result.append({
+                'id': template.id,
+                'template_id': template.template_id,
+                'name': template.name,
+                'description': template.description,
+                'category': template.category,
+                'content': template.content,
+                'type': template.type or 'html',
+                'structure': json.loads(template.structure) if template.structure else [],
+                'template_metadata': json.loads(template.template_metadata) if template.template_metadata else {},
+                'tags': json.loads(template.tags) if template.tags else [],
+                'is_system': template.is_system,
+                'created_at': template.created_at.isoformat() if template.created_at else None
+            })
+        
+        logger.info(f"API: Found {len(result)} templates")
+        
+        return jsonify({
+            'success': True,
+            'templates': result,
+            'message': get_success_message('templates_loaded', lang)
+        })
+    except Exception as e:
+        logger.error(f"API Error getting templates: {e}")
+        return jsonify({
+            'success': False,
+            'error': get_error_message('server_error', 'en'),
+            'details': str(e)
+        }), 500
+
+@content_editor_api_bp.route('/template/<template_id>', methods=['GET'])
+@api_login_required
+@api_admin_required
+def api_get_template(template_id):
+    """API для получения конкретного шаблона"""
+    try:
+        logger.info(f"API: Getting template {template_id} for user {current_user.id}")
+        
+        # Определяем язык из заголовка или параметра
+        lang = request.args.get('lang', 'en')
+        
+        template = ContentTemplate.query.get_or_404(template_id)
+        
+        return jsonify({
+            'success': True,
+            'template': {
+                'id': template.id,
+                'template_id': template.template_id,
+                'name': template.name,
+                'description': template.description,
+                'category': template.category,
+                'content': template.content,
+                'type': template.type or 'html',
+                'structure': json.loads(template.structure) if template.structure else [],
+                'template_metadata': json.loads(template.template_metadata) if template.template_metadata else {},
+                'tags': json.loads(template.tags) if template.tags else [],
+                'is_system': template.is_system,
+                'language': template.language,
+                'created_at': template.created_at.isoformat() if template.created_at else None
+            },
+            'message': get_success_message('template_loaded', lang)
+        })
+    except Exception as e:
+        logger.error(f"API Error getting template {template_id}: {e}")
+        return jsonify({
+            'success': False,
+            'error': get_error_message('template_not_found', 'en'),
+            'details': str(e)
+        }), 404
+
+@content_editor_api_bp.route('/parse', methods=['POST'])
+@api_login_required
+@api_admin_required
+def api_parse_template():
+    """API для парсинга шаблона"""
+    try:
+        logger.info(f"API: Parsing template for user {current_user.id}")
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        template_content = data.get('template_content')
+        template_type = data.get('template_type', 'html')
+        
+        if not template_content:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        # Используем парсер шаблонов
+        converter = Jinja2ToGrapesJSConverter()
+        
+        if template_type == 'jinja2':
+            # Парсим Jinja2 шаблон
+            parsed = converter.parse_template(template_content)
+            css_variables = converter.extract_css_variables(template_content)
+        else:
+            # Обычный HTML
+            parsed = {
+                'html': template_content,
+                'css': '',
+                'components': []
+            }
+            css_variables = {}
+        
+        logger.info(f"API: Template parsed successfully")
+        
+        return jsonify({
+            'success': True,
+            'html': parsed.get('html', template_content),
+            'css': parsed.get('css', ''),
+            'components': parsed.get('components', []),
+            'css_variables': css_variables,
+            'message': get_success_message('template_parsed', 'en')
+        })
+    except Exception as e:
+        logger.error(f"API Error parsing template: {e}")
+        return jsonify({
+            'success': False,
+            'error': get_error_message('parse_failed', 'en'),
+            'details': str(e)
+        }), 500
+
+@content_editor_api_bp.route('/save', methods=['POST'])
+@api_login_required
+@api_admin_required
+def api_save_template():
+    """API для сохранения шаблона"""
+    try:
+        logger.info(f"API: Saving template for user {current_user.id}")
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        html = data.get('html')
+        css = data.get('css', '')
+        components = data.get('components', [])
+        page_id = data.get('page_id')
+        
+        if not html:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        # Создаем резервную копию
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        # Сохраняем в базу данных или файл
+        if page_id:
+            # Сохраняем как страницу
+            page = ContentPage.query.get(page_id)
+            if not page:
+                page = ContentPage(
+                    id=page_id,
+                    title=f"Page {page_id}",
+                    content=html,
+                    css=css,
+                    created_by=current_user.id
+                )
+                db.session.add(page)
+            else:
+                page.content = html
+                page.css = css
+                page.updated_at = datetime.now()
+            
+            db.session.commit()
+            logger.info(f"API: Page {page_id} saved successfully")
+        else:
+            # Сохраняем как шаблон
+            template = ContentTemplate(
+                name=f"Template {timestamp}",
+                content=html,
+                css=css,
+                type='html',
+                language='en',
+                created_by=current_user.id
+            )
+            db.session.add(template)
+            db.session.commit()
+            logger.info(f"API: Template saved with ID {template.id}")
+        
+        return jsonify({
+            'success': True,
+            'message': get_success_message('template_saved', 'en'),
+            'timestamp': timestamp
+        })
+    except Exception as e:
+        logger.error(f"API Error saving template: {e}")
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': get_error_message('save_failed', 'en'),
+            'details': str(e)
+        }), 500
+
+@content_editor_api_bp.route('/preview', methods=['POST'])
+@api_login_required
+@api_admin_required
+def api_preview_template():
+    """API для создания предпросмотра"""
+    try:
+        logger.info(f"API: Generating preview for user {current_user.id}")
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        html = data.get('html')
+        css = data.get('css', '')
+        
+        if not html:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        # Создаем полную HTML страницу для предпросмотра
+        full_html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Preview</title>
+    <style>
+        {css}
+    </style>
+</head>
+<body>
+    {html}
+</body>
+</html>
+        """
+        
+        logger.info(f"API: Preview generated successfully")
+        
+        return jsonify({
+            'success': True,
+            'html': full_html,
+            'message': get_success_message('preview_generated', 'en')
+        })
+    except Exception as e:
+        logger.error(f"API Error generating preview: {e}")
+        return jsonify({
+            'success': False,
+            'error': get_error_message('preview_failed', 'en'),
+            'details': str(e)
+        }), 500
+
+@content_editor_api_bp.route('/deploy', methods=['POST'])
+@api_login_required
+@api_admin_required
+def api_deploy_template():
+    """API для публикации шаблона"""
+    try:
+        logger.info(f"API: Deploying template for user {current_user.id}")
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        html = data.get('html')
+        css = data.get('css', '')
+        page_id = data.get('page_id')
+        
+        if not html:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        # Здесь должна быть логика публикации в продакшн
+        # Пока что просто сохраняем как опубликованную версию
+        
+        if page_id:
+            page = ContentPage.query.get(page_id)
+            if page:
+                page.content = html
+                page.css = css
+                page.is_published = True
+                page.published_at = datetime.now()
+                page.updated_at = datetime.now()
+                db.session.commit()
+        
+        logger.info(f"API: Template deployed successfully")
+        
+        return jsonify({
+            'success': True,
+            'message': get_success_message('template_deployed', 'en'),
+            'deployed_at': datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"API Error deploying template: {e}")
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': get_error_message('deploy_failed', 'en'),
+            'details': str(e)
+        }), 500
+
+@content_editor_api_bp.route('/css-variables', methods=['GET'])
+@api_login_required
+@api_admin_required
+def api_get_css_variables():
+    """API для получения CSS переменных"""
+    try:
+        logger.info(f"API: Getting CSS variables for user {current_user.id}")
+        
+        # Загружаем CSS переменные из файла или базы данных
+        css_vars_file = Path('static/css/themes/core-variables.css')
+        
+        if css_vars_file.exists():
+            content = css_vars_file.read_text(encoding='utf-8')
+            # Простой парсинг CSS переменных
+            variables = {}
+            for line in content.split('\n'):
+                if line.strip().startswith('--'):
+                    parts = line.strip().split(':')
+                    if len(parts) == 2:
+                        var_name = parts[0].strip()
+                        var_value = parts[1].strip().rstrip(';')
+                        variables[var_name] = var_value
+        else:
+            # Дефолтные переменные
+            variables = {
+                '--primary-color': '#667eea',
+                '--secondary-color': '#764ba2',
+                '--accent-color': '#f093fb',
+                '--text-color': '#333333',
+                '--background-color': '#ffffff',
+                '--border-radius': '5px'
+            }
+        
+        logger.info(f"API: Found {len(variables)} CSS variables")
+        
+        return jsonify({
+            'success': True,
+            'variables': variables,
+            'message': 'CSS variables loaded successfully'
+        })
+    except Exception as e:
+        logger.error(f"API Error getting CSS variables: {e}")
+        return jsonify({
+            'success': False,
+            'error': get_error_message('server_error', 'en'),
+            'details': str(e)
+        }), 500
+
+@content_editor_api_bp.route('/css-variables', methods=['PUT', 'POST'])
+@api_login_required
+@api_admin_required
+def api_update_css_variables():
+    """API для обновления CSS переменных"""
+    try:
+        logger.info(f"API: Updating CSS variables for user {current_user.id}")
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        variables = data.get('variables', {})
+        
+        if not variables:
+            return jsonify({
+                'success': False,
+                'error': get_error_message('invalid_request', 'en')
+            }), 400
+        
+        # Обновляем CSS переменные в файле
+        css_vars_file = Path('static/css/themes/core-variables.css')
+        
+        # Создаем директорию если не существует
+        css_vars_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Формируем CSS контент
+        css_content = ":root {\n"
+        for var_name, var_value in variables.items():
+            css_content += f"    {var_name}: {var_value};\n"
+        css_content += "}\n"
+        
+        # Создаем резервную копию
+        if css_vars_file.exists():
+            backup_file = css_vars_file.with_suffix('.css.backup')
+            shutil.copy2(css_vars_file, backup_file)
+        
+        # Сохраняем новые переменные
+        css_vars_file.write_text(css_content, encoding='utf-8')
+        
+        logger.info(f"API: CSS variables updated successfully")
+        
+        return jsonify({
+            'success': True,
+            'message': get_success_message('css_updated', 'en'),
+            'variables': variables
+        })
+    except Exception as e:
+        logger.error(f"API Error updating CSS variables: {e}")
+        return jsonify({
+            'success': False,
+            'error': get_error_message('server_error', 'en'),
+            'details': str(e)
+        }), 500
+
+# Обработчик ошибок для API
+@content_editor_api_bp.errorhandler(403)
+def forbidden_error(error):
+    logger.warning(f"API: 403 Forbidden error - User: {current_user.id if current_user.is_authenticated else 'Anonymous'}")
+    return jsonify({
+        'success': False,
+        'error': get_error_message('permission_denied', 'en'),
+        'details': 'Access denied. Please check your permissions.'
+    }), 403
+
+@content_editor_api_bp.errorhandler(404)
+def not_found_error(error):
+    logger.warning(f"API: 404 Not Found error - User: {current_user.id if current_user.is_authenticated else 'Anonymous'}")
+    return jsonify({
+        'success': False,
+        'error': get_error_message('file_not_found', 'en'),
+        'details': 'Resource not found.'
+    }), 404
+
+@content_editor_api_bp.errorhandler(500)
+def internal_error(error):
+    logger.error(f"API: 500 Internal Server Error - User: {current_user.id if current_user.is_authenticated else 'Anonymous'}")
+    return jsonify({
+        'success': False,
+        'error': get_error_message('server_error', 'en'),
+        'details': 'Internal server error occurred.'
+    }), 500
 
 @content_editor_bp.route('/')
 @login_required
@@ -1385,3 +1916,565 @@ def grapejs_test(lang):
                                    csrf_token='test')
     except Exception as e:
         return f"Error: {str(e)}", 500
+
+
+# ===== НОВЫЕ API РОУТЫ ДЛЯ РЕДАКТОРА СТРАНИЦ =====
+# ===== NEW API ROUTES FOR PAGE EDITOR =====
+
+def create_backup(file_path: str) -> str:
+    """
+    Создание резервной копии файла
+    Create backup of file
+    
+    Args:
+        file_path (str): Путь к файлу / Path to file
+        
+    Returns:
+        str: Путь к резервной копии / Path to backup
+    """
+    try:
+        backup_dir = Path("backup/templates")
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = Path(file_path).name
+        backup_path = backup_dir / f"{filename}.backup_{timestamp}"
+        
+        shutil.copy2(file_path, backup_path)
+        logger.info(f"Backup created: {backup_path}")
+        return str(backup_path)
+    except Exception as e:
+        logger.error(f"Error creating backup for {file_path}: {e}")
+        return None
+
+
+@content_editor_bp.route('/api/editor/templates')
+@login_required
+@admin_required
+def api_editor_templates(lang):
+    """
+    GET /api/editor/templates - список всех редактируемых шаблонов
+    GET /api/editor/templates - list all editable templates
+    """
+    try:
+        # Получаем все шаблоны из базы данных
+        templates = EditablePageTemplate.query.filter_by(language=lang).all()
+        
+        # Получаем список файлов шаблонов из папки templates
+        templates_dir = Path("templates")
+        template_files = []
+        
+        if templates_dir.exists():
+            for template_file in templates_dir.rglob("*.html"):
+                relative_path = str(template_file.relative_to(templates_dir))
+                
+                # Проверяем, есть ли уже запись в базе
+                db_template = EditablePageTemplate.query.filter_by(
+                    template_path=relative_path,
+                    language=lang
+                ).first()
+                
+                template_files.append({
+                    'path': relative_path,
+                    'name': template_file.stem,
+                    'size': template_file.stat().st_size,
+                    'modified': datetime.fromtimestamp(template_file.stat().st_mtime).isoformat(),
+                    'is_live': db_template.is_live if db_template else False,
+                    'has_backup': db_template is not None,
+                    'template_id': db_template.id if db_template else None
+                })
+        
+        return jsonify({
+            'success': True,
+            'message': f'Found {len(template_files)} templates',
+            'data': {
+                'templates': template_files,
+                'total': len(template_files)
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting editor templates: {e}")
+        return jsonify({
+            'success': False,
+            'message': get_error_message('template_not_found', lang),
+            'error': str(e)
+        }), 500
+
+
+@content_editor_bp.route('/api/editor/template/<path:template_path>')
+@login_required
+@admin_required
+def api_editor_template(lang, template_path):
+    """
+    GET /api/editor/template/<path> - получить конкретный шаблон для редактирования
+    GET /api/editor/template/<path> - get specific template for editing
+    """
+    try:
+        # Проверяем безопасность пути
+        if '..' in template_path or template_path.startswith('/'):
+            return jsonify({
+                'success': False,
+                'message': get_error_message('invalid_template_path', lang)
+            }), 400
+        
+        full_path = Path("templates") / template_path
+        
+        if not full_path.exists():
+            return jsonify({
+                'success': False,
+                'message': get_error_message('template_not_found', lang)
+            }), 404
+        
+        # Читаем содержимое файла
+        with open(full_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Получаем или создаем запись в базе данных
+        db_template = EditablePageTemplate.query.filter_by(
+            template_path=template_path,
+            language=lang
+        ).first()
+        
+        if not db_template:
+            db_template = EditablePageTemplate(
+                template_path=template_path,
+                original_content=content,
+                grapesjs_content='',
+                css_overrides='',
+                js_modifications='',
+                is_live=False,
+                language=lang,
+                created_by=current_user.id
+            )
+            db.session.add(db_template)
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Template loaded successfully',
+            'data': {
+                'template': db_template.to_dict(),
+                'file_content': content,
+                'file_size': len(content),
+                'last_modified': datetime.fromtimestamp(full_path.stat().st_mtime).isoformat()
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting editor template {template_path}: {e}")
+        return jsonify({
+            'success': False,
+            'message': get_error_message('template_not_found', lang),
+            'error': str(e)
+        }), 500
+
+
+@content_editor_bp.route('/api/editor/template/parse', methods=['POST'])
+@login_required
+@admin_required
+def api_editor_template_parse(lang):
+    """
+    POST /api/editor/template/parse - парсинг Jinja2 шаблона в GrapesJS
+    POST /api/editor/template/parse - parse Jinja2 template to GrapesJS
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('template_path'):
+            return jsonify({
+                'success': False,
+                'message': get_error_message('invalid_data', lang)
+            }), 400
+        
+        template_path = data['template_path']
+        
+        # Создаем конвертер
+        converter = Jinja2ToGrapesJSConverter()
+        
+        # Парсим шаблон
+        result = converter.parse_template(template_path)
+        
+        # Сохраняем результат в базу данных
+        db_template = EditablePageTemplate.query.filter_by(
+            template_path=template_path,
+            language=lang
+        ).first()
+        
+        if db_template:
+            db_template.grapesjs_content = json.dumps(result['components'])
+            db_template.css_overrides = json.dumps(result['css_variables'])
+            db_template.updated_at = datetime.now(timezone.utc)
+        else:
+            db_template = EditablePageTemplate(
+                template_path=template_path,
+                original_content=result['original_content'],
+                grapesjs_content=json.dumps(result['components']),
+                css_overrides=json.dumps(result['css_variables']),
+                js_modifications='',
+                is_live=False,
+                language=lang,
+                created_by=current_user.id
+            )
+            db.session.add(db_template)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': get_success_message('template_parsed', lang),
+            'data': result
+        })
+        
+    except Exception as e:
+        logger.error(f"Error parsing template: {e}")
+        return jsonify({
+            'success': False,
+            'message': get_error_message('parse_error', lang),
+            'error': str(e)
+        }), 500
+
+
+@content_editor_bp.route('/api/editor/template/save', methods=['POST'])
+@login_required
+@admin_required
+def api_editor_template_save(lang):
+    """
+    POST /api/editor/template/save - сохранить отредактированный шаблон
+    POST /api/editor/template/save - save edited template
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('template_path'):
+            return jsonify({
+                'success': False,
+                'message': get_error_message('invalid_data', lang)
+            }), 400
+        
+        template_path = data['template_path']
+        grapesjs_content = data.get('grapesjs_content', '')
+        css_overrides = data.get('css_overrides', '')
+        js_modifications = data.get('js_modifications', '')
+        
+        # Создаем резервную копию
+        full_path = Path("templates") / template_path
+        backup_path = None
+        
+        if full_path.exists():
+            backup_path = create_backup(str(full_path))
+        
+        # Обновляем запись в базе данных
+        db_template = EditablePageTemplate.query.filter_by(
+            template_path=template_path,
+            language=lang
+        ).first()
+        
+        if db_template:
+            db_template.grapesjs_content = grapesjs_content
+            db_template.css_overrides = css_overrides
+            db_template.js_modifications = js_modifications
+            db_template.updated_at = datetime.now(timezone.utc)
+        else:
+            db_template = EditablePageTemplate(
+                template_path=template_path,
+                original_content='',
+                grapesjs_content=grapesjs_content,
+                css_overrides=css_overrides,
+                js_modifications=js_modifications,
+                is_live=False,
+                language=lang,
+                created_by=current_user.id
+            )
+            db.session.add(db_template)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': get_success_message('template_saved', lang),
+            'data': {
+                'template_id': db_template.id,
+                'backup_path': backup_path,
+                'updated_at': db_template.updated_at.isoformat()
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error saving template: {e}")
+        return jsonify({
+            'success': False,
+            'message': get_error_message('save_error', lang),
+            'error': str(e)
+        }), 500
+
+
+@content_editor_bp.route('/api/editor/template/preview', methods=['POST'])
+@login_required
+@admin_required
+def api_editor_template_preview(lang):
+    """
+    POST /api/editor/template/preview - создать превью-версию шаблона
+    POST /api/editor/template/preview - create preview version
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('template_path'):
+            return jsonify({
+                'success': False,
+                'message': get_error_message('invalid_data', lang)
+            }), 400
+        
+        template_path = data['template_path']
+        preview_content = data.get('preview_content', '')
+        
+        # Создаем временный файл для превью
+        preview_dir = Path("static/preview")
+        preview_dir.mkdir(parents=True, exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        preview_filename = f"preview_{Path(template_path).stem}_{timestamp}.html"
+        preview_path = preview_dir / preview_filename
+        
+        # Создаем HTML с базовой структурой
+        preview_html = f"""
+<!DOCTYPE html>
+<html lang="{lang}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview - {Path(template_path).stem}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        {preview_content}
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        {preview_content}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+        """
+        
+        with open(preview_path, 'w', encoding='utf-8') as f:
+            f.write(preview_html)
+        
+        return jsonify({
+            'success': True,
+            'message': get_success_message('template_preview_created', lang),
+            'data': {
+                'preview_url': f'/static/preview/{preview_filename}',
+                'preview_path': str(preview_path)
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating preview: {e}")
+        return jsonify({
+            'success': False,
+            'message': get_error_message('save_error', lang),
+            'error': str(e)
+        }), 500
+
+
+@content_editor_bp.route('/api/editor/template/deploy', methods=['POST'])
+@login_required
+@admin_required
+def api_editor_template_deploy(lang):
+    """
+    POST /api/editor/template/deploy - опубликовать шаблон в продакшн
+    POST /api/editor/template/deploy - deploy template to production
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('template_path'):
+            return jsonify({
+                'success': False,
+                'message': get_error_message('invalid_data', lang)
+            }), 400
+        
+        template_path = data['template_path']
+        deploy_content = data.get('deploy_content', '')
+        
+        # Создаем резервную копию
+        full_path = Path("templates") / template_path
+        backup_path = None
+        
+        if full_path.exists():
+            backup_path = create_backup(str(full_path))
+        
+        # Записываем новый контент в файл
+        with open(full_path, 'w', encoding='utf-8') as f:
+            f.write(deploy_content)
+        
+        # Обновляем статус в базе данных
+        db_template = EditablePageTemplate.query.filter_by(
+            template_path=template_path,
+            language=lang
+        ).first()
+        
+        if db_template:
+            db_template.is_live = True
+            db_template.updated_at = datetime.now(timezone.utc)
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': get_success_message('template_deployed', lang),
+            'data': {
+                'template_path': template_path,
+                'backup_path': backup_path,
+                'deployed_at': datetime.now(timezone.utc).isoformat()
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error deploying template: {e}")
+        return jsonify({
+            'success': False,
+            'message': get_error_message('deploy_error', lang),
+            'error': str(e)
+        }), 500
+
+
+@content_editor_bp.route('/api/editor/css-variables')
+@login_required
+@admin_required
+def api_editor_css_variables(lang):
+    """
+    GET /api/editor/css-variables - получить CSS переменные проекта
+    GET /api/editor/css-variables - get project CSS variables
+    """
+    try:
+        # Создаем конвертер для получения CSS переменных
+        converter = Jinja2ToGrapesJSConverter()
+        
+        # Получаем все CSS файлы проекта
+        css_files = []
+        static_css_dir = Path("static/css")
+        
+        if static_css_dir.exists():
+            for css_file in static_css_dir.rglob("*.css"):
+                relative_path = str(css_file.relative_to(Path("static")))
+                
+                try:
+                    with open(css_file, 'r', encoding='utf-8') as f:
+                        css_content = f.read()
+                    
+                    # Извлекаем CSS переменные
+                    css_vars = converter.extract_css_variables(css_content)
+                    
+                    css_files.append({
+                        'path': relative_path,
+                        'name': css_file.stem,
+                        'variables': css_vars,
+                        'variables_count': len(css_vars)
+                    })
+                except Exception as e:
+                    logger.warning(f"Error reading CSS file {css_file}: {e}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Found {len(css_files)} CSS files',
+            'data': {
+                'css_files': css_files,
+                'total_files': len(css_files),
+                'total_variables': sum(len(f['variables']) for f in css_files)
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting CSS variables: {e}")
+        return jsonify({
+            'success': False,
+            'message': get_error_message('css_variables_error', lang),
+            'error': str(e)
+        }), 500
+
+
+@content_editor_bp.route('/api/editor/css-variables', methods=['POST'])
+@login_required
+@admin_required
+def api_editor_update_css_variables(lang):
+    """
+    POST /api/editor/css-variables - обновить CSS переменные
+    POST /api/editor/css-variables - update CSS variables
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('css_file') or not data.get('variables'):
+            return jsonify({
+                'success': False,
+                'message': get_error_message('invalid_data', lang)
+            }), 400
+        
+        css_file_path = data['css_file']
+        variables = data['variables']
+        
+        # Проверяем безопасность пути
+        if '..' in css_file_path or css_file_path.startswith('/'):
+            return jsonify({
+                'success': False,
+                'message': get_error_message('invalid_template_path', lang)
+            }), 400
+        
+        full_path = Path("static") / css_file_path
+        
+        if not full_path.exists():
+            return jsonify({
+                'success': False,
+                'message': 'CSS file not found'
+            }), 404
+        
+        # Создаем резервную копию
+        backup_path = create_backup(str(full_path))
+        
+        # Читаем текущий CSS файл
+        with open(full_path, 'r', encoding='utf-8') as f:
+            css_content = f.read()
+        
+        # Обновляем переменные
+        for var_name, var_value in variables.items():
+            # Ищем существующую переменную
+            pattern = rf'({re.escape(var_name)}:\s*)([^;]+);'
+            replacement = rf'\1{var_value};'
+            
+            if re.search(pattern, css_content):
+                css_content = re.sub(pattern, replacement, css_content)
+            else:
+                # Добавляем новую переменную в :root
+                root_pattern = r'(:root\s*\{)'
+                if re.search(root_pattern, css_content):
+                    css_content = re.sub(root_pattern, rf'\1\n  {var_name}: {var_value};', css_content)
+                else:
+                    # Добавляем :root блок в начало файла
+                    css_content = f':root {{\n  {var_name}: {var_value};\n}}\n\n{css_content}'
+        
+        # Записываем обновленный CSS файл
+        with open(full_path, 'w', encoding='utf-8') as f:
+            f.write(css_content)
+        
+        return jsonify({
+            'success': True,
+            'message': get_success_message('css_variables_updated', lang),
+            'data': {
+                'css_file': css_file_path,
+                'backup_path': backup_path,
+                'updated_variables': len(variables),
+                'updated_at': datetime.now(timezone.utc).isoformat()
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating CSS variables: {e}")
+        return jsonify({
+            'success': False,
+            'message': get_error_message('css_variables_error', lang),
+            'error': str(e)
+        }), 500
