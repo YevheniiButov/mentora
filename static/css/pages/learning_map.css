@@ -917,19 +917,17 @@ div[id^="category-"].expanded {
   transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.circle-text {
+.progress-circle-text {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 1.5rem;
   font-weight: 700;
-  color: white;
+  color: var(--subject-view-text, white);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  pointer-events: none;
 }
 
 /* Stats Cards */
@@ -1745,8 +1743,8 @@ body.learning-map-page .main-content {
     color: #333 !important;
 }
 
-[data-theme="light"] .circle-text {
-    color: #333 !important;
+[data-theme="light"] .progress-circle-text {
+    color: var(--text-primary, #333);
 }
 
 [data-theme="light"] .stat-label {
@@ -1884,7 +1882,7 @@ body.learning-map-page .main-content {
     font-weight: 600;
 }
 
-[data-theme="gradient"] .circle-text {
+[data-theme="gradient"] .progress-circle-text {
     color: #333 !important;
     font-weight: 700;
 }

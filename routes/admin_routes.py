@@ -6,7 +6,7 @@ from flask import (
     make_response, send_file # Добавлены jsonify, make_response, send_file
     )
 from flask_login import login_required, current_user
-from models import db, User, Module, Lesson, LearningPath, Subject # Добавлены LearningPath, Subject
+from models import db, User, Module, Lesson, LearningPath, Subject, Question # Убраны несуществующие модели
 from werkzeug.utils import secure_filename # Добавлено для работы с xray_upload
 import os
 import json
@@ -61,22 +61,46 @@ def inject_admin_context():
 @admin_bp.route("/dashboard")
 def dashboard(lang):
     """Отображает главную панель админки с краткой статистикой."""
-    # Получаем статистику для дашборда
-    learning_paths = LearningPath.query.all()
-    subjects = Subject.query.all()
-    modules = Module.query.all()
-    lessons = Lesson.query.all()
+    g.lang = lang
+    
+    # Получаем статистику
+    total_users = User.query.count()
+    total_modules = Module.query.count()
+    total_lessons = Lesson.query.count()
+    total_questions = Question.query.count()
+    total_learning_paths = LearningPath.query.count()
+    total_subjects = Subject.query.count()
+    virtual_patients = VirtualPatientScenario.query.count()
+    achievements = 0  # Пока не реализовано
+    
+    # Статистика форума (пока заглушка)
+    forum_topics = 0
+    forum_posts = 0
     
     # Последние 5 зарегистрированных пользователей
-    latest_users = User.query.order_by(User.created_at.desc()).limit(5).all()
+    recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
+    
+    # Популярные модули (пока заглушка)
+    popular_modules = []
+    
+    stats = {
+        'total_users': total_users,
+        'total_modules': total_modules,
+        'total_lessons': total_lessons,
+        'total_questions': total_questions,
+        'total_learning_paths': total_learning_paths,
+        'total_subjects': total_subjects,
+        'virtual_patients': virtual_patients,
+        'achievements': achievements,
+        'forum_topics': forum_topics,
+        'forum_posts': forum_posts
+    }
     
     return render_template(
-        "dashboard.html",
-        learning_paths=learning_paths,
-        subjects=subjects,
-        modules=modules,
-        lessons=lessons,
-        latest_users=latest_users
+        "admin/dashboard.html",
+        stats=stats,
+        recent_users=recent_users,
+        popular_modules=popular_modules
     )
 
 # Путь: /<lang>/admin/ai-analytics
@@ -1385,7 +1409,7 @@ def modules(lang): # Функция ПРИНИМАЕТ lang
     all_modules = Module.query.order_by(Module.title).all()
     # lang и current_user доступны в шаблоне через context_processor
     # Нужен шаблон admin/modules.html
-    return render_template("modules.html", modules=all_modules)
+    return render_template("admin/modules.html", modules=all_modules)
 
 
 # Путь: /<lang>/admin/modules/create
@@ -1408,7 +1432,7 @@ def create_module(lang): # Функция ПРИНИМАЕТ lang
         if not title:
              flash("Module title is required.", "danger")
              # Передаем введенные данные обратно в форму для удобства пользователя
-             return render_template("create_module.html", form_data=request.form)
+             return render_template("admin/create_module.html", form_data=request.form)
 
         try:
             # Создаем модуль
@@ -1452,11 +1476,11 @@ def create_module(lang): # Функция ПРИНИМАЕТ lang
             current_app.logger.error(f"Error creating module '{title}': {e}", exc_info=True)
             flash(f"❌ Error creating module: {e}", "danger")
             # Возвращаем на форму с предзаполненными данными
-            return render_template("create_module.html", form_data=request.form)
+            return render_template("admin/create_module.html", form_data=request.form)
 
      # Отображение формы для GET запроса
      # Нужен шаблон admin/create_module.html
-     return render_template("create_module.html")
+     return render_template("admin/create_module.html")
 
 
 # Путь: /<lang>/admin/modules/<module_id>/delete
@@ -1541,6 +1565,15 @@ def xray_save_annotations(lang):
     except Exception as e:
         return {"success": False, "message": str(e)}, 500
     
+# Веб-редактор контента
+@admin_bp.route('/content-editor')
+@login_required
+@admin_required
+def content_editor(lang):
+    """Веб-редактор для создания и редактирования контента."""
+    g.lang = lang
+    return render_template('admin/content_editor/grapesjs_builder.html', lang=lang)
+
 # Раздел виртуальных пациентов
 @admin_bp.route('/virtual-patients', methods=['GET'])
 @login_required

@@ -16,6 +16,7 @@ import json
 import os
 import subprocess
 from datetime import datetime
+from utils.unified_stats import get_unified_user_stats, get_module_stats_unified, get_subject_stats_unified, clear_stats_cache
 
 # Создаем Blueprint для карты обучения
 learning_map_bp = Blueprint(
@@ -174,7 +175,7 @@ def learning_map(lang, path_id=None):
             
             for module in modules:
                 # Получаем статистику модуля
-                module_stats = get_module_stats(module.id, current_user.id)
+                module_stats = get_module_stats_unified(module.id, current_user.id)
                 
                 # Добавляем модуль с прогрессом
                 processed_modules.append({
@@ -208,7 +209,7 @@ def learning_map(lang, path_id=None):
             all_subjects.append(subject_data)
         
         # Статистика пользователя
-        stats = get_user_stats(current_user.id)
+        stats = get_unified_user_stats(current_user.id)
 
         # Загружаем категории контента с подкатегориями и темами
         content_categories = ContentCategory.query.order_by(ContentCategory.order).all()
@@ -512,7 +513,7 @@ def get_learning_map_data(lang, path_id):
             # Добавляем информацию о каждом модуле
             for module in modules:
                 # Получаем статистику для модуля
-                module_stats = get_module_stats(module.id, current_user.id)
+                module_stats = get_module_stats_unified(module.id, current_user.id)
                 
                 module_data = {
                     "id": module.id,
@@ -545,34 +546,11 @@ def get_learning_map_data(lang, path_id):
 
 # Полная версия функций для расчета и отображения прогресса
 def calculate_subject_progress(subject_id, user_id):
-    """Рассчитывает прогресс предмета для пользователя"""
-    try:
-        # Получаем все уроки для данного предмета через JOIN
-        subject_lessons = db.session.query(Lesson.id).join(
-            Module, Module.id == Lesson.module_id
-        ).filter(
-            Module.subject_id == subject_id
-        ).all()
-        
-        # Преобразуем результат в список ID уроков
-        lesson_ids = [lesson[0] for lesson in subject_lessons]
-        total_lessons = len(lesson_ids)
-        
-        if total_lessons == 0:
-            return 0
-        
-        # Получаем все завершенные уроки за один запрос
-        completed_lessons_count = UserProgress.query.filter(
-            UserProgress.user_id == user_id,
-            UserProgress.lesson_id.in_(lesson_ids),
-            UserProgress.completed == True
-        ).count()
-        
-        # Расчет прогресса для данного предмета
-        return round((completed_lessons_count / total_lessons) * 100) if total_lessons > 0 else 0
-    except Exception as e:
-        current_app.logger.error(f"Ошибка в calculate_subject_progress: {str(e)}", exc_info=True)
-        return 0
+    """
+    Обертка для обратной совместимости
+    Использует унифицированную систему статистики
+    """
+    return get_subject_stats_unified(subject_id, user_id)
 
 def get_user_recommendations(user_id, limit=3):
     """
@@ -673,42 +651,11 @@ def get_user_recommendations(user_id, limit=3):
         return []
     
 def get_module_stats(module_id, user_id):
-    """Рассчитывает статистику модуля для пользователя (оптимизированная версия)"""
-    try:
-        # Получаем все уроки в модуле
-        lessons = Lesson.query.filter_by(module_id=module_id).with_entities(Lesson.id).all()
-        lesson_ids = [lesson.id for lesson in lessons]
-        total_lessons = len(lesson_ids)
-        
-        if total_lessons == 0:
-            return {
-                "progress": 0,
-                "completed_lessons": 0,
-                "total_lessons": 0
-            }
-        
-        # Получаем количество завершенных уроков за один запрос
-        completed_lessons = UserProgress.query.filter(
-            UserProgress.user_id == user_id,
-            UserProgress.lesson_id.in_(lesson_ids),
-            UserProgress.completed == True
-        ).count()
-        
-        # Рассчитываем прогресс
-        progress = (completed_lessons / total_lessons) * 100 if total_lessons > 0 else 0
-        
-        return {
-            "progress": round(progress),
-            "completed_lessons": completed_lessons,
-            "total_lessons": total_lessons
-        }
-    except Exception as e:
-        current_app.logger.error(f"Ошибка в get_module_stats: {str(e)}", exc_info=True)
-        return {
-            "progress": 0,
-            "completed_lessons": 0,
-            "total_lessons": 0
-        }
+    """
+    Обертка для обратной совместимости
+    Использует унифицированную систему статистики
+    """
+    return get_module_stats_unified(module_id, user_id)
 
 # Простое кэширование для get_user_stats
 _user_stats_cache = {}
@@ -722,141 +669,11 @@ def clear_user_stats_cache(user_id=None):
         _user_stats_cache.pop(user_id, None)
 
 def get_user_stats(user_id):
-    """Получает статистику обучения пользователя с кэшированием"""
-    # Проверяем кэш
-    if user_id in _user_stats_cache:
-        return _user_stats_cache[user_id]
-    
-    try:
-        current_app.logger.info(f"=== Начало получения статистики для пользователя {user_id} ===")
-        
-        # Включаем логирование SQL-запросов
-        import logging
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-        
-        # Общее количество завершенных уроков
-        current_app.logger.info("Выполняем запрос на получение завершенных уроков...")
-        completed_lessons_count = UserProgress.query.filter_by(
-            user_id=user_id,
-            completed=True
-        ).count()
-        current_app.logger.info(f"Завершенных уроков: {completed_lessons_count}")
-        
-        # Общее количество уроков
-        current_app.logger.info("Выполняем запрос на получение общего количества уроков...")
-        total_lessons_count = Lesson.query.count()
-        current_app.logger.info(f"Всего уроков: {total_lessons_count}")
-        
-        # Расчет общего прогресса
-        overall_progress = round((completed_lessons_count / total_lessons_count) * 100) if total_lessons_count > 0 else 0
-        current_app.logger.info(f"Общий прогресс: {overall_progress}%")
-        
-        # Общее время обучения (в минутах)
-        current_app.logger.info("Выполняем запрос на получение общего времени обучения...")
-        total_time_spent = db.session.query(
-            func.sum(UserProgress.time_spent)
-        ).filter_by(
-            user_id=user_id
-        ).scalar() or 0
-        current_app.logger.info(f"Общее время обучения: {total_time_spent} минут")
-        
-        # Количество дней активности
-        current_app.logger.info("Выполняем запрос на получение количества дней активности...")
-        active_days_count = db.session.query(
-            func.count(func.distinct(func.date(UserProgress.last_accessed)))
-        ).filter_by(
-            user_id=user_id
-        ).scalar() or 0
-        current_app.logger.info(f"Дней активности: {active_days_count}")
-        
-        # Получаем дату последнего экзамена, если есть
-        next_exam_date = None
-        try:
-            if hasattr(current_user, 'exam_dates') and current_user.exam_dates:
-                current_app.logger.info("Выполняем запрос на получение даты следующего экзамена...")
-                next_exam = db.session.query(UserExamDate).filter(
-                    UserExamDate.user_id == user_id,
-                    UserExamDate.exam_date > datetime.utcnow()
-                ).order_by(UserExamDate.exam_date).first()
-                
-                if next_exam:
-                    next_exam_date = next_exam.exam_date.strftime('%d.%m.%Y')
-                    current_app.logger.info(f"Дата следующего экзамена: {next_exam_date}")
-        except Exception as e:
-            current_app.logger.error(f"Ошибка при получении даты экзамена: {e}")
-        
-        # Статистика по путям обучения
-        learning_paths_stats = []
-        current_app.logger.info("Выполняем запрос на получение путей обучения...")
-        for path in LearningPath.query.all():
-            current_app.logger.info(f"Обработка пути обучения: {path.name}")
-            
-            # Получаем все уроки для данного пути обучения через JOIN
-            current_app.logger.info(f"Выполняем JOIN-запрос для пути {path.name}...")
-            path_lessons = db.session.query(Lesson.id).join(
-                Module, Module.id == Lesson.module_id
-            ).join(
-                Subject, Subject.id == Module.subject_id
-            ).filter(
-                Subject.learning_path_id == path.id
-            ).all()
-            
-            # Преобразуем результат в список ID уроков
-            path_lesson_ids = [lesson[0] for lesson in path_lessons]
-            path_total_lessons = len(path_lesson_ids)
-            current_app.logger.info(f"Всего уроков в пути {path.name}: {path_total_lessons}")
-            
-            # Количество завершенных уроков для этого пути
-            current_app.logger.info(f"Выполняем запрос на получение завершенных уроков для пути {path.name}...")
-            path_completed_lessons = UserProgress.query.filter(
-                UserProgress.user_id == user_id,
-                UserProgress.lesson_id.in_(path_lesson_ids),
-                UserProgress.completed == True
-            ).count() if path_lesson_ids else 0
-            current_app.logger.info(f"Завершенных уроков в пути {path.name}: {path_completed_lessons}")
-            
-            # Расчет прогресса для данного пути
-            path_progress = round((path_completed_lessons / path_total_lessons) * 100) if path_total_lessons > 0 else 0
-            current_app.logger.info(f"Прогресс в пути {path.name}: {path_progress}%")
-            
-            learning_paths_stats.append({
-                'id': path.id,
-                'name': path.name,
-                'progress': path_progress,
-                'completed_lessons': path_completed_lessons,
-                'total_lessons': path_total_lessons
-            })
-        
-        stats = {
-            'overall_progress': overall_progress,
-            'completed_lessons': completed_lessons_count,
-            'total_lessons': total_lessons_count,
-            'total_time_spent': round(float(total_time_spent), 1),
-            'active_days': active_days_count,
-            'next_exam_date': next_exam_date,
-            'learning_paths': learning_paths_stats
-        }
-        
-        current_app.logger.info(f"=== Статистика успешно получена для пользователя {user_id} ===")
-        current_app.logger.info(f"Итоговая статистика: {stats}")
-        
-        # Сохраняем в кэш
-        _user_stats_cache[user_id] = stats
-        
-        return stats
-    except Exception as e:
-        current_app.logger.error(f"Ошибка в get_user_stats: {str(e)}", exc_info=True)
-        current_app.logger.error(f"Тип ошибки: {type(e).__name__}")
-        current_app.logger.error(f"Детали ошибки: {str(e)}")
-        return {
-            'overall_progress': 0,
-            'completed_lessons': 0,
-            'total_lessons': 0,
-            'total_time_spent': 0,
-            'active_days': 0,
-            'next_exam_date': None,
-            'learning_paths': []
-        }
+    """
+    Обертка для обратной совместимости
+    Использует унифицированную систему статистики
+    """
+    return get_unified_user_stats(user_id)
 
 def get_virtual_patients_stats(user_id):
     """Получает статистику виртуальных пациентов для пользователя"""
@@ -958,7 +775,7 @@ def debug_add_progress(lang):
         db.session.commit()
         
         # Получаем обновленную статистику пользователя
-        stats = get_user_stats(current_user.id)
+        stats = get_unified_user_stats(current_user.id)
         
         # Отображаем подробную страницу с информацией о прогрессе
         return render_template(
@@ -990,7 +807,7 @@ def debug_progress_status(lang):
         incomplete_entries = [p for p in progress_entries if not p.completed]
         
         # Получаем статистику
-        stats = get_user_stats(current_user.id)
+        stats = get_unified_user_stats(current_user.id)
         
         # Подробная информация о прогрессе уроков
         lessons_progress = []
@@ -1011,7 +828,7 @@ def debug_progress_status(lang):
         # Статистика модулей
         modules_stats = []
         for module in Module.query.all():
-            module_stats = get_module_stats(module.id, current_user.id)
+            module_stats = get_module_stats_unified(module.id, current_user.id)
             modules_stats.append({
                 'id': module.id,
                 'title': module.title,
@@ -1118,7 +935,7 @@ def view_path(lang, path_id):
         content_categories = ContentCategory.query.order_by(ContentCategory.order).all()
         
         # Получаем статистику пользователя
-        stats = get_user_stats(current_user.id)
+        stats = get_unified_user_stats(current_user.id)
         
         # Получаем рекомендации
         recommendations = get_user_recommendations(current_user.id)

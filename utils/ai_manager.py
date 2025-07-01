@@ -36,10 +36,19 @@ class EncryptionManager:
             if not key:
                 # Генерируем новый ключ и сохраняем в .env
                 key = Fernet.generate_key().decode()
-                # В продакшене ключ должен храниться в безопасном месте
+                
+                # Сохраняем ключ в файл .env
+                env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+                try:
+                    with open(env_file, 'a') as f:
+                        f.write(f'\nENCRYPTION_KEY={key}\n')
+                    print("✅ Ключ шифрования сохранен в .env файл")
+                except Exception as e:
+                    print(f"⚠️ Не удалось сохранить ключ в .env: {e}")
+                    print(f"⚠️ Сохраните ключ вручную: ENCRYPTION_KEY={key}")
+                
+                # Устанавливаем переменную среды
                 os.environ['ENCRYPTION_KEY'] = key
-                print(f"⚠️  Новый ключ шифрования: {key}")
-                print("⚠️  Сохраните его в переменной среды ENCRYPTION_KEY")
             
             self.cipher = Fernet(key.encode())
     

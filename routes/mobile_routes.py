@@ -13,6 +13,7 @@ from translations_new import get_translation as t
 from extensions import bcrypt, babel, csrf
 from forms import LoginForm, RegistrationForm
 from datetime import datetime, timedelta
+from utils.unified_stats import get_unified_user_stats, get_module_stats_unified, track_lesson_progress
 
 # Импорты других маршрутов
 try:
@@ -337,7 +338,7 @@ def learning_map(lang):
                 subject.category = 'general'
         
         # Получаем статистику пользователя
-        user_stats = get_user_stats(current_user.id)
+        user_stats = get_unified_user_stats(current_user.id)
         
         return render_template(
             'mobile/learning/learning_map_mobile.html',
@@ -359,79 +360,38 @@ def learning_map(lang):
 def subject_view(lang, subject_id):
     """Мобильная страница просмотра предмета."""
     try:
-        nav_config = get_navigation_config('subject_view')
+        # Получаем предмет
+        subject = Subject.query.get_or_404(subject_id)
         
-        selected_subject = Subject.query.get_or_404(subject_id)
-        subject_modules = Module.query.filter_by(subject_id=subject_id).order_by(Module.order).all()
-
-        # Обрабатываем модули
-        for module in subject_modules:
-            module_stats = get_module_stats(module.id, current_user.id)
-            module.progress = module_stats.get("progress", 0)
-            module.completed_lessons = module_stats.get("completed_lessons", 0)
-            module.total_lessons = module_stats.get("total_lessons", 0)
-            
-            # Добавляем дополнительные атрибуты для шаблона
-            if module.total_lessons > 0:
-                module.progress_percentage = int((module.completed_lessons / module.total_lessons) * 100)
-            else:
-                module.progress_percentage = 0
-                
-            module.is_completed = module.progress_percentage >= 100
-            module.is_locked = False  # Пока все модули доступны
-            module.is_available = True  # Все модули доступны по умолчанию
-            module.estimated_time = f"{max(1, module.total_lessons * 5)}min"  # 5 мин на урок
-            module.difficulty = getattr(module, 'difficulty', 'Средний')
-            module.has_test = True  # Предполагаем что у всех модулей есть тест
-            
-            # Исправляем проблему с lessons - подсчитываем количество уроков
-            try:
-                if hasattr(module, 'lessons') and module.lessons:
-                    module.lessons_count = module.lessons.count()
-                else:
-                    module.lessons_count = module.total_lessons
-            except:
-                module.lessons_count = module.total_lessons
-
-        # Получаем данные
-        virtual_patients = get_virtual_patients_for_subject(selected_subject, current_user.id)
-        stats = get_user_stats(current_user.id)
-        recommendations = get_user_recommendations(current_user.id)
+        # Получаем модули предмета
+        modules = Module.query.filter_by(subject_id=subject_id).order_by(Module.order).all()
         
-        # Вычисляем прогресс предмета
-        total_lessons = sum(module.total_lessons for module in subject_modules)
-        completed_lessons = sum(module.completed_lessons for module in subject_modules)
+        # Получаем статистику пользователя через унифицированную систему
+        user_stats = get_unified_user_stats(current_user.id)
         
-        if total_lessons > 0:
-            selected_subject.progress_percentage = int((completed_lessons / total_lessons) * 100)
-        else:
-            selected_subject.progress_percentage = 0
-            
-        selected_subject.total_lessons = total_lessons
-        selected_subject.completed_lessons = completed_lessons
-        selected_subject.estimated_time = f"{max(1, total_lessons // 10)}h"
-
+        # Получаем статистику для каждого модуля
+        modules_with_stats = []
+        for module in modules:
+            module_stats = get_module_stats_unified(module.id, current_user.id)
+            modules_with_stats.append({
+                'module': module,
+                'stats': module_stats
+            })
+        
+        nav_config = get_navigation_config('subject', page_title=subject.title)
+        
         return render_template(
             'mobile/learning/subject_view_mobile.html',
-            title=selected_subject.name,
-            subject=selected_subject,
-            selected_subject=selected_subject,
-            subject_modules=subject_modules,
-            modules=subject_modules,
-            total_lessons=selected_subject.total_lessons,
-            completed_lessons=selected_subject.completed_lessons,
-            progress_percentage=selected_subject.progress_percentage,
-            estimated_time=selected_subject.estimated_time,
-            virtual_patients=virtual_patients,
-            stats=stats,
-            recommendations=recommendations,
+            subject=subject,
+            modules=modules_with_stats,
+            user_stats=user_stats,
             current_language=lang,
             nav_config=nav_config
         )
-
+        
     except Exception as e:
         current_app.logger.error(f"Error in mobile subject_view: {e}", exc_info=True)
-        flash(t("error_occurred_loading_data", lang=lang), "danger")
+        flash("Ошибка при загрузке предмета", "danger")
         return redirect(url_for('mobile.learning_map', lang=lang))
 
 @mobile_bp.route('/public/subject/<int:subject_id>')
@@ -629,6 +589,9 @@ def module_view(lang, module_id):
 @login_required
 def lesson_view(lang, lesson_id):
     """Мобильная страница просмотра урока."""
+    print(f"🚀 ВЫЗВАН mobile_routes.lesson_view: lesson_id={lesson_id}, user_id={current_user.id}")
+    current_app.logger.info(f"🚀 ВЫЗВАН mobile_routes.lesson_view: lesson_id={lesson_id}, user_id={current_user.id}")
+    
     try:
         current_app.logger.info(f"🔍 Открываем урок {lesson_id} для пользователя {current_user.id}")
         
@@ -636,6 +599,7 @@ def lesson_view(lang, lesson_id):
         
         lesson = Lesson.query.get_or_404(lesson_id)
         current_app.logger.info(f"✅ Урок найден: {lesson.title}")
+        print(f"✅ Урок найден: {lesson.title}")
         
         module = Module.query.get_or_404(lesson.module_id)
         current_app.logger.info(f"✅ Модуль найден: {module.title}")
@@ -678,6 +642,10 @@ def lesson_view(lang, lesson_id):
                 processed_content = {'type': 'text', 'content': lesson.content}
         
         current_app.logger.info(f"✅ Контент обработан: тип={processed_content.get('type') if processed_content else 'none'}")
+        
+        print(f"🔥 ВЫЗЫВАЕМ track_lesson_progress для урока {lesson_id}")
+        # Отслеживаем прогресс урока
+        track_lesson_progress(current_user.id, lesson_id)
         
         # Обновляем прогресс (делаем это опционально)
         try:

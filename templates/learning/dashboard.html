@@ -92,7 +92,7 @@
                                 </svg>
                 </div>
                             <div class="stat-content">
-                                <div class="stat-value">{{ overall_stats.completed_lessons|default(0) }}</div>
+                                <div class="stat-value" data-stat="completed-lessons">{{ overall_stats.completed_lessons|default(0) }}</div>
                                 <div class="stat-label">{{ t('lessons_completed', lang) | default('Уроков завершено') }}</div>
             </div>
                 </div>
@@ -105,7 +105,7 @@
                                 </svg>
             </div>
                             <div class="stat-content">
-                                <div class="stat-value">{{ overall_stats.total_time_spent|default(0) }}</div>
+                                <div class="stat-value" data-stat="time-spent">{{ overall_stats.total_time_spent|default(0) }}</div>
                                 <div class="stat-label">{{ t('hours_studied', lang) | default('Часов изучено') }}</div>
             </div>
         </div>
@@ -117,7 +117,7 @@
                                 </svg>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-value">{{ overall_stats.streak_days|default(0) }}</div>
+                                <div class="stat-value" data-stat="active-days">{{ overall_stats.streak_days|default(0) }}</div>
                                 <div class="stat-label">{{ t('day_streak', lang) | default('Дней подряд') }}</div>
                             </div>
                         </div>
@@ -196,10 +196,17 @@
             <div class="stats-section">
                 <h2>{{ t('overall_progress', lang) | default('Общий прогресс') }}</h2>
                 <div class="progress-circle-container">
-                    <div class="progress-circle" data-progress="{{ overall_stats.overall_progress|default(0) }}">
+                    <div class="progress-circle" 
+                         data-progress="{{ overall_stats.overall_progress|default(0) }}"
+                         data-stat="overall-progress"
+                         role="progressbar" 
+                         aria-valuenow="{{ overall_stats.overall_progress|default(0) }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"
+                         aria-label="Overall progress">
                         <div class="circle-background"></div>
                         <div class="circle-progress" style="transform: rotate({{ overall_stats.overall_progress|default(0) * 1.8 }}deg)"></div>
-                        <div class="circle-text">{{ overall_stats.overall_progress|default(0) }}%</div>
+                        <div class="progress-circle-text" data-stat="overall-progress">{{ overall_stats.overall_progress|default(0) }}%</div>
                     </div>
                 </div>
             </div>
@@ -249,6 +256,7 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
+<script src="{{ url_for('static', filename='js/unified-stats.js') }}"></script>
 <script>
 // Инициализация системы категорий
 document.addEventListener('DOMContentLoaded', function() {

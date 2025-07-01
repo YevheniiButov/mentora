@@ -6,6 +6,11 @@
 {# --- SEO --- #}
 {% block title %}{% if lang == 'ru' %}Вход - Become a Tandarts{% else %}Login - Become a Tandarts{% endif %}{% endblock %}
 {% block meta_description %}{% if lang == 'ru' %}Войдите в свой аккаунт на платформе Become a Tandarts для доступа к учебным материалам и тестам.{% else %}Login to your Become a Tandarts account to access learning materials and tests.{% endif %}{% endblock %}
+
+{# --- Anti-cache meta tags --- #}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 {# --- End SEO --- #}
 
 {% block styles %}
@@ -260,4 +265,46 @@
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Очистка формы при загрузке страницы для предотвращения кэширования
+document.addEventListener('DOMContentLoaded', function() {
+    // Очищаем поля формы
+    const emailField = document.querySelector('input[type="email"]');
+    const passwordField = document.querySelector('input[type="password"]');
+    
+    if (emailField) emailField.value = '';
+    if (passwordField) passwordField.value = '';
+    
+    // Очищаем чекбокс "Запомнить меня"
+    const rememberMeCheckbox = document.querySelector('input[type="checkbox"]');
+    if (rememberMeCheckbox) rememberMeCheckbox.checked = false;
+    
+    // Принудительно обновляем CSRF токен
+    const csrfToken = document.querySelector('input[name="csrf_token"]');
+    if (csrfToken) {
+        // Генерируем новый токен или обновляем существующий
+        fetch('/en/api/refresh-csrf', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.csrf_token) {
+                    csrfToken.value = data.csrf_token;
+                }
+            })
+            .catch(error => console.log('CSRF refresh failed:', error));
+    }
+    
+    console.log('✅ Login form cleared and ready for fresh input');
+});
+
+// Предотвращаем автозаполнение браузера
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        // Страница загружена из кэша браузера
+        window.location.reload();
+    }
+});
+</script>
 {% endblock %}

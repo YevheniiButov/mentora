@@ -1,0 +1,673 @@
+/* Dental Academy GrapesJS Theme */
+
+/* 1. Скрыть админский сайдбар и панель только на странице GrapesJS */
+#sidebar, .sidebar, .admin-header, .admin-navbar, .admin-panel, .admin-footer {
+    display: none !important;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #f8f9fa;
+}
+
+/* 2. Full-width, full-height layout для редактора */
+#gjs {
+    min-height: 100vh;
+    height: 100vh;
+    width: 100vw;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 3. Dental Toolbar */
+.gjs-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #3ECDC1;
+    color: #fff;
+    padding: 0 24px;
+    height: 56px;
+    box-shadow: 0 2px 8px rgba(62,205,193,0.08);
+    z-index: 10001;
+}
+.gjs-toolbar .toolbar-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+}
+.gjs-toolbar .toolbar-actions {
+    display: flex;
+    gap: 12px;
+}
+.gjs-toolbar .btn-action {
+    background: #6C5CE7;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 1px 2px rgba(108,92,231,0.08);
+}
+.gjs-toolbar .btn-action:hover {
+    background: #4834d4;
+}
+.gjs-toolbar .btn-action i {
+    margin-right: 6px;
+}
+
+/* 4. Три панели: блоки, канвас, стили */
+.gjs-editor-row {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: calc(100vh - 56px);
+}
+.gjs-blocks-c {
+    width: 260px;
+    min-width: 180px;
+    max-width: 320px;
+    background: #f8f9fa;
+    border-right: 2px solid #3ECDC1;
+    padding: 0 8px;
+    overflow-y: auto;
+}
+.gjs-cv-canvas {
+    flex: 1 1 auto;
+    background: #fff;
+    min-width: 0;
+    border-right: 2px solid #6C5CE7;
+    box-shadow: 0 0 0 1px #e0e0e0;
+}
+.gjs-pn-panel.gjs-pn-views {
+    width: 320px;
+    min-width: 180px;
+    max-width: 400px;
+    background: #f8f9fa;
+    border-left: 2px solid #6C5CE7;
+    overflow-y: auto;
+}
+
+/* 5. Responsive */
+@media (max-width: 1200px) {
+    .gjs-blocks-c, .gjs-pn-panel.gjs-pn-views {
+        width: 180px;
+        min-width: 120px;
+    }
+}
+@media (max-width: 900px) {
+    .gjs-blocks-c, .gjs-pn-panel.gjs-pn-views {
+        display: none;
+    }
+    .gjs-editor-row {
+        flex-direction: column;
+    }
+    .gjs-cv-canvas {
+        border: none;
+    }
+}
+@media (max-width: 600px) {
+    .gjs-toolbar {
+        flex-direction: column;
+        height: auto;
+        padding: 8px 4px;
+    }
+    .gjs-toolbar .toolbar-title {
+        font-size: 16px;
+    }
+    .gjs-toolbar .btn-action {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
+/* 6. Dental theme colors for GrapesJS UI */
+.gjs-pn-panels, .gjs-pn-panel {
+    background: #f8f9fa !important;
+}
+.gjs-pn-btn {
+    color: #6C5CE7 !important;
+    border-color: #3ECDC1 !important;
+}
+.gjs-pn-btn:hover, .gjs-pn-btn.gjs-pn-active {
+    background: #3ECDC1 !important;
+    color: #fff !important;
+}
+.gjs-block {
+    border: 1px solid #3ECDC1;
+    border-radius: 6px;
+    margin: 8px 0;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+.gjs-block:hover {
+    border-color: #6C5CE7;
+}
+.gjs-block-label {
+    color: #6C5CE7;
+    font-weight: 600;
+}
+.gjs-sm-sector {
+    background: #fff;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.gjs-sm-property {
+    border-bottom: 1px solid #e0e0e0;
+}
+.gjs-lm-layer {
+    background: #fff;
+}
+
+/* Scrollbars */
+.gjs-blocks-c, .gjs-pn-panel.gjs-pn-views {
+    scrollbar-width: thin;
+    scrollbar-color: #3ECDC1 #f8f9fa;
+}
+.gjs-blocks-c::-webkit-scrollbar, .gjs-pn-panel.gjs-pn-views::-webkit-scrollbar {
+    width: 8px;
+    background: #f8f9fa;
+}
+.gjs-blocks-c::-webkit-scrollbar-thumb, .gjs-pn-panel.gjs-pn-views::-webkit-scrollbar-thumb {
+    background: #3ECDC1;
+    border-radius: 4px;
+}
+
+/* GrapesJS кастомизация для Dental Academy */
+:root {
+    --dental-primary: #3ECDC1;
+    --dental-secondary: #6C5CE7;
+    --dental-accent: #FDCB6E;
+    --dental-success: #00D68F;
+    --dental-warning: #FFC107;
+    --dental-error: #FF3333;
+}
+
+/* Основные стили */
+.gjs-editor {
+    height: calc(100vh - 120px);
+    font-family: 'Inter', sans-serif;
+}
+
+.gjs-toolbar {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.gjs-custom-buttons button {
+    margin: 0 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.gjs-custom-buttons button:hover {
+    transform: translateY(-1px);
+}
+
+/* Стоматологические блоки */
+.dental-chart-block {
+    background: linear-gradient(135deg, var(--dental-primary) 0%, #2ba89e 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+    box-shadow: 0 8px 32px rgba(62, 205, 193, 0.3);
+}
+
+.teeth-container {
+    margin: 1.5rem 0;
+}
+
+.teeth-row {
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.jaw-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.teeth-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    margin: 0.5rem 0;
+    justify-items: center;
+}
+
+.tooth {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 2px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.tooth:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.tooth.healthy { background: #4CAF50; }
+.tooth.caries { background: #F44336; }
+.tooth.filled { background: #FF9800; }
+.tooth.missing { background: #9E9E9E; opacity: 0.6; }
+.tooth.crown { background: #2196F3; }
+.tooth.implant { background: #9C27B0; }
+
+.tooth-number {
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+/* Клинический случай */
+.case-study-block {
+    background: linear-gradient(135deg, var(--dental-secondary) 0%, #5a4fcf 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+    box-shadow: 0 8px 32px rgba(108, 92, 231, 0.3);
+}
+
+.case-study-block h3 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.case-study-block .row {
+    margin-top: 1rem;
+}
+
+.case-study-block h4 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.case-study-block p {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.case-study-block strong {
+    color: #ffffff;
+    margin-right: 0.5rem;
+}
+
+/* Рентген блок */
+.xray-viewer-block {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+    box-shadow: 0 8px 32px rgba(44, 62, 80, 0.3);
+}
+
+.xray-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.xray-image-placeholder {
+    background: rgba(255,255,255,0.1);
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.xray-image-placeholder:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.5);
+}
+
+/* Прогресс лечения */
+.treatment-progress-block {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin: 1rem 0;
+}
+
+.progress-items {
+    margin-top: 1.5rem;
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.progress-item.completed {
+    background: rgba(76, 175, 80, 0.1);
+    border-left-color: #4CAF50;
+}
+
+.progress-item.current {
+    background: rgba(255, 152, 0, 0.1);
+    border-left-color: #FF9800;
+}
+
+.progress-item.pending {
+    background: rgba(158, 158, 158, 0.1);
+    border-left-color: #9E9E9E;
+}
+
+.progress-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Тест блок */
+.quiz-container {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin: 1rem 0;
+}
+
+.quiz-options {
+    margin: 1.5rem 0;
+}
+
+.quiz-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quiz-option:hover {
+    border-color: var(--dental-primary);
+    background: rgba(62, 205, 193, 0.05);
+}
+
+.quiz-option input[type="radio"] {
+    margin: 0;
+    accent-color: var(--dental-primary);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .gjs-toolbar {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .gjs-toolbar h4 {
+        font-size: 1.1rem;
+    }
+    
+    .gjs-custom-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .teeth-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+    }
+    
+    .tooth {
+        width: 30px;
+        height: 30px;
+        font-size: 0.6rem;
+    }
+    
+    .xray-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .dental-chart-block,
+    .case-study-block,
+    .xray-viewer-block {
+        padding: 1rem;
+    }
+}
+
+/* Темная тема поддержка */
+[data-theme="dark"] {
+    --bs-body-bg: #1a1a1a;
+    --bs-body-color: #ffffff;
+}
+
+[data-theme="dark"] .gjs-toolbar {
+    background: #2d2d2d;
+    border-bottom-color: #404040;
+    color: white;
+}
+
+[data-theme="dark"] .treatment-progress-block,
+[data-theme="dark"] .quiz-container {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: white;
+}
+
+/* Анимации */
+@keyframes toothPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.tooth.active {
+    animation: toothPulse 1s infinite;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dental-chart-block,
+.case-study-block,
+.xray-viewer-block,
+.treatment-progress-block,
+.quiz-container {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* GrapesJS панели кастомизация */
+.gjs-pn-panel.gjs-pn-views-container {
+    background: var(--dental-primary);
+}
+
+.gjs-pn-btn.gjs-pn-active {
+    background: var(--dental-primary);
+}
+
+.gjs-blocks-c .gjs-block {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.gjs-blocks-c .gjs-block:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Контейнер редактора */
+.grapesjs-container {
+    height: calc(100vh - 150px);
+    position: relative;
+    background: #f8f9fa;
+}
+
+/* Тулбар */
+.gjs-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    gap: 10px;
+}
+
+.toolbar-center {
+    flex: 1;
+    text-align: center;
+}
+
+.page-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.btn-action {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.btn-action:hover {
+    background: #2980b9;
+}
+
+.btn-action i {
+    margin-right: 5px;
+}
+
+/* GrapesJS Editor */
+#gjs {
+    height: calc(100% - 60px);
+    overflow: hidden;
+}
+
+/* Переопределение стилей GrapesJS */
+.gjs-pn-panels {
+    background: #2c3e50 !important;
+}
+
+.gjs-pn-panel {
+    background: transparent !important;
+}
+
+.gjs-pn-btn {
+    color: #ecf0f1 !important;
+    border-color: #34495e !important;
+}
+
+.gjs-pn-btn:hover {
+    background: #34495e !important;
+}
+
+.gjs-pn-active {
+    background: #3498db !important;
+}
+
+/* Canvas */
+.gjs-cv-canvas {
+    background: #ffffff;
+}
+
+/* Блоки */
+.gjs-blocks-c {
+    background: #ffffff;
+    border-right: 1px solid #e9ecef;
+}
+
+.gjs-block {
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    margin: 5px;
+    transition: border-color 0.3s;
+}
+
+.gjs-block:hover {
+    border-color: #3498db;
+}
+
+/* Стили */
+.gjs-sm-sector {
+    background: #ffffff;
+}
+
+.gjs-sm-property {
+    border-bottom: 1px solid #f1f3f4;
+}
+
+/* Слои */
+.gjs-lm-layer {
+    background: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .gjs-toolbar {
+        padding: 5px 10px;
+    }
+    
+    .btn-action {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .btn-action i {
+        margin-right: 3px;
+    }
+} 

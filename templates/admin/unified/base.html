@@ -55,7 +55,7 @@
             <!-- Dashboard -->
             <div class="sidebar-menu-section">
                 <div class="sidebar-menu-title">Главное</div>
-                <a href="{{ url_for('admin_unified.unified_dashboard', lang=lang) }}" 
+                <a href="{{ url_for('admin_simple.dashboard', lang=lang) }}" 
                    class="sidebar-menu-item active">
                     <i class="bi bi-speedometer2"></i>
                     <span>Дашборд</span>
@@ -66,22 +66,55 @@
             <div class="sidebar-menu-section">
                 <div class="sidebar-menu-title">Контент</div>
                 
-                <a href="{{ url_for('admin_unified.content_admin.content_dashboard', lang=lang) }}" 
+                <a href="{{ url_for('admin_simple.content_manager', lang=lang) }}" 
                    class="sidebar-menu-item">
                     <i class="bi bi-files"></i>
                     <span>Обзор контента</span>
                 </a>
                 
-                <a href="{{ url_for('admin_unified.content_admin.hierarchy_manager', lang=lang) }}" 
+                <a href="{{ url_for('admin_simple.content_manager', lang=lang) }}" 
                    class="sidebar-menu-item">
                     <i class="bi bi-diagram-3"></i>
                     <span>Иерархия курсов</span>
                 </a>
                 
-                <a href="{{ url_for('admin_unified.content_admin.learning_paths_list', lang=lang) }}" 
+                <a href="{{ url_for('admin_simple.content_manager', lang=lang) }}" 
                    class="sidebar-menu-item">
                     <i class="bi bi-signpost-split"></i>
                     <span>Категории</span>
+                </a>
+            </div>
+
+            <!-- Content Editor Section -->
+            <div class="sidebar-menu-section">
+                <div class="sidebar-menu-title">Визуальный редактор</div>
+                
+                <a href="{{ url_for('content_editor.dashboard', lang=lang) }}" 
+                   class="sidebar-menu-item">
+                    <i class="bi bi-palette"></i>
+                    <span>Content Editor</span>
+                </a>
+                <a href="{{ url_for('content_editor.grapesjs_builder_new', lang=lang) }}" class="sidebar-menu-item">
+                    <i class="bi bi-palette"></i>
+                    <span>Visual Builder</span>
+                    <span class="badge bg-success ms-2">NEW</span>
+                </a>
+                <a href="{{ url_for('content_editor.visual_builder', lang=lang) }}" 
+                   class="sidebar-menu-item">
+                    <i class="bi bi-layout-text-window"></i>
+                    <span>Visual Page Builder</span>
+                </a>
+                
+                <a href="{{ url_for('content_editor.pages_list', lang=lang) }}" 
+                   class="sidebar-menu-item">
+                    <i class="bi bi-file-text"></i>
+                    <span>Страницы</span>
+                </a>
+                
+                <a href="{{ url_for('content_editor.templates_list', lang=lang) }}" 
+                   class="sidebar-menu-item">
+                    <i class="bi bi-layers"></i>
+                    <span>Шаблоны</span>
                 </a>
             </div>
         </div>
@@ -112,7 +145,7 @@
                     <ol class="breadcrumb">
                         {% block breadcrumbs %}
                         <li class="breadcrumb-item">
-                            <a href="{{ url_for('admin_unified.unified_dashboard', lang=lang) }}">
+                            <a href="{{ url_for('admin_simple.dashboard', lang=lang) }}">
                                 <i class="bi bi-house"></i>
                             </a>
                         </li>

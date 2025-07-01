@@ -69,7 +69,20 @@
 
             <!-- Основной контент урока -->
             <div class="lesson-content">
-                <h1>{{ lesson.title }}</h1>
+                <div class="lesson-header-actions">
+                    <h1>{{ lesson.title }}</h1>
+                    
+                    {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.role == 'content_admin' or current_user.role == 'super_admin') %}
+                    <div class="lesson-admin-actions">
+                        <a href="{{ url_for('content_editor.editor_interface', lang=lang, lesson_id=lesson.id) }}" 
+                           class="btn btn-outline-primary btn-sm" 
+                           title="{% if lang == 'ru' %}Редактировать в визуальном редакторе{% else %}Edit with Visual Editor{% endif %}">
+                            <i class="bi bi-palette"></i>
+                            {% if lang == 'ru' %}Визуальный редактор{% else %}Visual Editor{% endif %}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
                 
                 {% if processed_content and processed_content.type == 'learning_cards' %}
                     <!-- Отображение обучающих карточек -->

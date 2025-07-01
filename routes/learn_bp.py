@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, g, flash, current_app, request
 from flask_login import login_required, current_user
 from models import db, Lesson, Module, UserProgress
+from utils.unified_stats import track_lesson_progress
 import json
 
 # Создаем Blueprint
@@ -49,6 +50,9 @@ def lesson_view(lang, module_id, lesson_index):
             # Здесь логика обработки ответов на квиз
             # ...
             pass
+        
+        # Отслеживаем прогресс урока
+        track_lesson_progress(current_user.id, lesson.id)
         
         # Перенесенный шаблон
         return render_template(

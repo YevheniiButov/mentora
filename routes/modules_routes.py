@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, g, flash, current_app, request
 from flask_login import login_required, current_user
 from models import db, Module, Lesson, UserProgress, Subject
+from utils.unified_stats import get_unified_user_stats, get_module_stats_unified
 import json
 from collections import defaultdict
 import logging
@@ -246,9 +247,8 @@ def module_view(lang, module_id):
         
         current_app.logger.info(f"Grouped into {len(topics_with_subtopics)} subtopics: {[t['topic']['name'] for t in topics_with_subtopics]}")
         
-        # Получаем статистику пользователя (добавляем этот импорт если его нет)
-        from routes.learning_map_routes import get_user_stats
-        stats = get_user_stats(current_user.id)
+        # Получаем статистику пользователя через унифицированную систему
+        stats = get_unified_user_stats(current_user.id)
         
         # Получаем рекомендации (добавляем этот импорт если его нет) 
         from routes.subject_view_routes import get_user_recommendations

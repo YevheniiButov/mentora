@@ -9,6 +9,7 @@ from models import db, Module, Lesson, UserProgress
 from datetime import datetime
 import json
 import logging
+from utils.unified_stats import track_lesson_progress, clear_stats_cache
 
 # Создаем Blueprint для уроков
 lesson_bp = Blueprint(
@@ -187,6 +188,9 @@ def lesson_view(lang, module_id, lesson_index):
         # Обработка формы квиза (пока упростим)
         quiz_result = None
         
+        # Отслеживаем прогресс урока
+        track_lesson_progress(current_user.id, lesson.id)
+        
         # Обновляем прогресс пользователя
         update_lesson_progress(current_user.id, lesson.id, viewed=True)
         
@@ -264,49 +268,11 @@ def save_lesson_progress(lang, module_id, lesson_id):
 # Вспомогательные функции
 
 def update_lesson_progress(user_id, lesson_id, time_spent=None, viewed=False, completed=False):
-    """Обновляет прогресс пользователя по уроку."""
-    try:
-        # Найти существующую запись прогресса или создать новую
-        progress = UserProgress.query.filter_by(
-            user_id=user_id, 
-            lesson_id=lesson_id
-        ).first()
-        
-        if not progress:
-            progress = UserProgress(
-                user_id=user_id,
-                lesson_id=lesson_id,
-                completed=False,
-                time_spent=0
-            )
-            db.session.add(progress)
-        
-        # Обновляем время последнего доступа
-        progress.last_accessed = datetime.utcnow()
-        
-        # Обновляем время, если оно предоставлено
-        if time_spent is not None:
-            progress.time_spent = (progress.time_spent or 0) + float(time_spent)
-        
-        # Если урок должен быть отмечен как завершенный
-        if completed:
-            progress.completed = True
-        
-        # Сохраняем изменения
-        db.session.commit()
-        
-        # Очищаем кэш статистики пользователя
-        try:
-            from routes.learning_map_routes import clear_user_stats_cache
-            clear_user_stats_cache(user_id)
-        except ImportError:
-            pass  # Игнорируем ошибки импорта
-        
-        return True
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Error updating lesson progress: {e}", exc_info=True)
-        return False
+    """
+    Обертка для обратной совместимости
+    Использует унифицированную систему отслеживания прогресса
+    """
+    return track_lesson_progress(user_id, lesson_id, time_spent, completed)
 
 def get_lesson_progress(user_id, lesson_id):
     """Получает информацию о прогрессе пользователя по уроку."""

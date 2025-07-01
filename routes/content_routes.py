@@ -8,9 +8,13 @@ import json
 
 from models import db, ContentCategory, ContentSubcategory, ContentTopic, Lesson, UserProgress, LearningPath, Subject, Module
 from utils.translations import t
+from utils.unified_stats import track_lesson_progress
 
 # Создаем blueprint для контента
 content_bp = Blueprint('content', __name__, url_prefix='/<lang>/content')
+
+# Импортируем CSRF из основного приложения
+from extensions import csrf
 
 @content_bp.before_request
 def before_request_content():
@@ -172,7 +176,13 @@ def view_topic(lang, category_slug, subcategory_slug, topic_slug):
                 lesson_id=lesson.id
             ).first()
             lesson.is_completed = progress.completed if progress else False
-            lesson.progress_percentage = progress.progress_percentage if progress else 0
+            # Рассчитываем процент прогресса на основе времени или статуса
+            if progress and progress.completed:
+                lesson.progress_percentage = 100
+            elif progress and progress.time_spent:
+                lesson.progress_percentage = min(int(progress.time_spent / 10 * 100), 99)  # Примерный расчет
+            else:
+                lesson.progress_percentage = 0
         
         return render_template(
             "content/topic_view.html",
@@ -193,8 +203,12 @@ def view_topic(lang, category_slug, subcategory_slug, topic_slug):
 @login_required
 def view_lesson(lang, lesson_id):
     """Просмотр конкретного урока"""
+    print(f"🚀 ВЫЗВАН content_routes.view_lesson: lesson_id={lesson_id}, user_id={current_user.id}")
+    current_app.logger.info(f"🚀 ВЫЗВАН content_routes.view_lesson: lesson_id={lesson_id}, user_id={current_user.id}")
+    
     try:
         lesson = Lesson.query.get_or_404(lesson_id)
+        print(f"✅ Урок найден: {lesson.title}")
         
         # Получаем связанную тему (если есть)
         topic = None
@@ -214,7 +228,15 @@ def view_lesson(lang, lesson_id):
         ).first()
         
         is_completed = progress.completed if progress else False
-        progress_percentage = progress.progress_percentage if progress else 0
+        # Рассчитываем процент прогресса на основе времени или статуса
+        if progress and progress.completed:
+            progress_percentage = 100
+        elif progress and progress.time_spent:
+            progress_percentage = min(int(progress.time_spent / 10 * 100), 99)  # Примерный расчет
+        else:
+            progress_percentage = 0
+        
+        print(f"📊 Текущий прогресс: completed={is_completed}, percentage={progress_percentage}")
         
         # Парсим контент урока
         lesson_content = None
@@ -223,6 +245,9 @@ def view_lesson(lang, lesson_id):
                 lesson_content = json.loads(lesson.content)
             except:
                 lesson_content = {"error": "Ошибка парсинга контента"}
+        
+        print(f"🔥 ВЫЗЫВАЕМ track_lesson_progress для урока {lesson_id}")
+        track_lesson_progress(current_user.id, lesson_id)
         
         return render_template(
             "content/lesson_view.html",
@@ -238,6 +263,7 @@ def view_lesson(lang, lesson_id):
         )
         
     except Exception as e:
+        print(f"❌ ОШИБКА в content_routes.view_lesson: {e}")
         current_app.logger.error(f"Ошибка в view_lesson ({lesson_id}): {e}", exc_info=True)
         flash(t("error_loading_lesson", lang), "danger")
         return redirect(url_for('.content_home', lang=lang))
@@ -246,37 +272,14 @@ def view_lesson(lang, lesson_id):
 
 @content_bp.route("/api/lesson/<int:lesson_id>/complete", methods=['POST'])
 @login_required
+@csrf.exempt
 def complete_lesson(lang, lesson_id):
     """Отметить урок как завершенный"""
     try:
         lesson = Lesson.query.get_or_404(lesson_id)
         
-        # Получаем или создаем запись о прогрессе
-        progress = UserProgress.query.filter_by(
-            user_id=current_user.id,
-            lesson_id=lesson_id
-        ).first()
-        
-        if not progress:
-            progress = UserProgress(
-                user_id=current_user.id,
-                lesson_id=lesson_id,
-                module_id=lesson.module_id
-            )
-            db.session.add(progress)
-        
-        progress.completed = True
-        progress.progress_percentage = 100
-        progress.completed_at = db.func.now()
-        
-        db.session.commit()
-        
-        # Очищаем кэш статистики пользователя
-        try:
-            from routes.learning_map_routes import clear_user_stats_cache
-            clear_user_stats_cache(current_user.id)
-        except ImportError:
-            pass  # Игнорируем ошибки импорта
+        # Используем унифицированную функцию для отслеживания прогресса
+        track_lesson_progress(current_user.id, lesson_id, completed=True)
         
         return jsonify({
             'success': True,
@@ -284,7 +287,6 @@ def complete_lesson(lang, lesson_id):
         })
         
     except Exception as e:
-        db.session.rollback()
         current_app.logger.error(f"Ошибка в complete_lesson ({lesson_id}): {e}", exc_info=True)
         return jsonify({
             'success': False,

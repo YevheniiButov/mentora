@@ -732,22 +732,26 @@ def get_analytics_dashboard_data(lang):
 def get_user_stats_safe(user_id):
     """Безопасное получение статистики пользователя с fallback данными."""
     try:
-        # Пытаемся импортировать функцию из разных модулей
+        # Пытаемся импортировать функцию из унифицированной системы
         try:
-            from routes.learning_map_routes import get_user_stats
-            return get_user_stats(user_id)
+            from utils.unified_stats import get_unified_user_stats
+            return get_unified_user_stats(user_id)
         except ImportError:
             try:
-                from routes.dashboard_routes import get_user_stats
+                from routes.learning_map_routes import get_user_stats
                 return get_user_stats(user_id)
             except ImportError:
                 try:
-                    from routes.mobile_routes import get_user_stats
+                    from routes.dashboard_routes import get_user_stats
                     return get_user_stats(user_id)
                 except ImportError:
-                    # Если все импорты не удались, создаем базовую статистику
-                    current_app.logger.warning(f"Could not import get_user_stats, using fallback for user {user_id}")
-                    return create_fallback_user_stats(user_id)
+                    try:
+                        from routes.mobile_routes import get_user_stats
+                        return get_user_stats(user_id)
+                    except ImportError:
+                        # Если все импорты не удались, создаем базовую статистику
+                        current_app.logger.warning(f"Could not import get_user_stats, using fallback for user {user_id}")
+                        return create_fallback_user_stats(user_id)
     except Exception as e:
         current_app.logger.error(f"Error getting user stats for user {user_id}: {e}", exc_info=True)
         return create_fallback_user_stats(user_id)
@@ -1180,7 +1184,7 @@ def get_progress_stats(lang):
             'average_test_score': round(avg_test_score, 1),
             'total_test_attempts': len(test_attempts),
             'weak_areas': weak_areas,
-            'last_activity': max([p.updated_at for p in user_progress], default=datetime.utcnow()).isoformat() if user_progress else None
+            'last_activity': max([p.last_accessed for p in user_progress], default=datetime.utcnow()).isoformat() if user_progress else None
         }
         
         return jsonify({

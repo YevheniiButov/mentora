@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/category-navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+    <!-- Унифицированная система статистики -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/unified-stats.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -56,8 +58,29 @@
                     <span class="separator">/</span>
                     <span class="active">{{ module.title }}</span>
                 </div>
+                <div class="module-header-actions">
+                    <div>
                 <h1>{{ module.title }}</h1>
                 <p>{{ module.description|default('') }}</p>
+                    </div>
+                    
+                    {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.role == 'content_admin' or current_user.role == 'super_admin') %}
+                    <div class="module-admin-actions">
+                        <a href="{{ url_for('content_editor.editor_interface', lang=lang, module_id=module.id) }}" 
+                           class="btn btn-outline-primary btn-sm" 
+                           title="{% if lang == 'ru' %}Создать контент для модуля{% else %}Create content for module{% endif %}">
+                            <i class="bi bi-plus-circle"></i>
+                            {% if lang == 'ru' %}Создать контент{% else %}Create Content{% endif %}
+                        </a>
+                        <a href="{{ url_for('content_editor.pages_list', lang=lang, module_id=module.id) }}" 
+                           class="btn btn-outline-secondary btn-sm" 
+                           title="{% if lang == 'ru' %}Управление страницами модуля{% else %}Manage module pages{% endif %}">
+                            <i class="bi bi-file-text"></i>
+                            {% if lang == 'ru' %}Страницы{% else %}Pages{% endif %}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Содержимое модуля -->
@@ -101,11 +124,16 @@
             <div class="stats-section">
                 <h2>{{ t('overall_progress', lang) }}</h2>
                 <div class="progress-circle-container">
-                    {% set overall_progress = ((topics_with_subtopics|sum(attribute='completed_lessons') / topics_with_subtopics|sum(attribute='total_lessons')) * 100)|round|int if topics_with_subtopics|sum(attribute='total_lessons') > 0 else 0 %}
-                    <div class="progress-circle" data-progress="{{ overall_progress }}">
+                    <div class="progress-circle" 
+                         data-progress="{{ stats.overall_progress|default(0) }}"
+                         role="progressbar" 
+                         aria-valuenow="{{ stats.overall_progress|default(0) }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"
+                         aria-label="Overall progress">
                         <div class="circle-background"></div>
-                        <div class="circle-progress"></div>
-                        <div class="circle-text">{{ overall_progress }}%</div>
+                        <div class="circle-progress" style="transform: rotate({{ (stats.overall_progress|default(0)) * 1.8 }}deg)"></div>
+                        <div class="progress-circle-text">{{ stats.overall_progress|default(0) }}%</div>
                     </div>
                 </div>
                 <div class="stats-cards">
@@ -115,7 +143,7 @@
                         </div>
                         <div class="stat-content">
                             <div class="stat-label">{{ t('lessons_completed', lang) }}</div>
-                            <div class="stat-value">{{ topics_with_subtopics|sum(attribute='completed_lessons')|default(0) }}/{{ topics_with_subtopics|sum(attribute='total_lessons')|default(0) }}</div>
+                            <div class="stat-value" data-stat="completed-lessons">{{ stats.completed_lessons|default(0) }}/{{ stats.total_lessons|default(0) }}</div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -124,7 +152,7 @@
                         </div>
                         <div class="stat-content">
                             <div class="stat-label">{{ t('total_time', lang) }}</div>
-                            <div class="stat-value">{{ stats.total_time_spent|default(0) }} {{ t('min', lang) }}</div>
+                            <div class="stat-value" data-stat="time-spent">{{ stats.total_time_spent|default(0) }} {{ t('min', lang) }}</div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -133,7 +161,7 @@
                         </div>
                         <div class="stat-content">
                             <div class="stat-label">{{ t('days_active', lang) }}</div>
-                            <div class="stat-value">{{ stats.active_days|default(0) }}</div>
+                            <div class="stat-value" data-stat="active-days">{{ stats.active_days|default(0) }}</div>
                         </div>
                     </div>
                 </div>
@@ -190,4 +218,6 @@
 <!-- Используем ТЕ ЖЕ скрипты -->
 <script src="{{ url_for('static', filename='js/subject_view.js') }}"></script>
 <script src="{{ url_for('static', filename='js/subject-navigation.js') }}"></script>
+<!-- Унифицированная система статистики -->
+<script src="{{ url_for('static', filename='js/unified-stats.js') }}"></script>
 {% endblock %}

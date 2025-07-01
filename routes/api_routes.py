@@ -7,6 +7,7 @@ from translations_new import get_translation as t
 from datetime import datetime
 from extensions import csrf
 import logging
+from utils.unified_stats import get_unified_user_stats, clear_stats_cache
 
 # Создаем Blueprint с префиксом /<lang>/api
 api_bp = Blueprint(
@@ -438,148 +439,9 @@ def calculate_module_stats(module_id, user_id):
             "total_lessons": 0
         }
 
-
-
-api_bp = Blueprint('api', __name__, url_prefix='/api')
-
-@api_bp.route('/save-progress', methods=['POST'])
-@login_required
-def save_progress():
-    """Сохраняет прогресс пользователя по завершению урока."""
-    try:
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({'error': 'No data provided'}), 400
-        
-        module_id = data.get('module_id')
-        subtopic_slug = data.get('subtopic_slug')
-        completed = data.get('completed', False)
-        score = data.get('score', 0)
-        time_spent = data.get('time_spent', 0)
-        correct_answers = data.get('correct_answers', 0)
-        total_questions = data.get('total_questions', 0)
-        
-        if not module_id or not subtopic_slug:
-            return jsonify({'error': 'Module ID and subtopic slug are required'}), 400
-        
-        # Получаем все уроки подтемы
-        lessons = Lesson.query.filter_by(
-            module_id=module_id,
-            subtopic_slug=subtopic_slug
-        ).all()
-        
-        if not lessons:
-            return jsonify({'error': 'No lessons found for this subtopic'}), 404
-        
-        # Обновляем прогресс для всех уроков подтемы
-        updated_lessons = 0
-        for lesson in lessons:
-            # Проверяем существующий прогресс
-            progress = UserProgress.query.filter_by(
-                user_id=current_user.id,
-                lesson_id=lesson.id
-            ).first()
-            
-            if not progress:
-                # Создаем новый прогресс
-                progress = UserProgress(
-                    user_id=current_user.id,
-                    lesson_id=lesson.id,
-                    completed=completed,
-                    timestamp=datetime.utcnow(),
-                    time_spent=time_spent,
-                    last_accessed=datetime.utcnow()
-                )
-                db.session.add(progress)
-            else:
-                # Обновляем существующий прогресс
-                progress.completed = completed
-                progress.timestamp = datetime.utcnow()
-                progress.time_spent = max(progress.time_spent or 0, time_spent)
-                progress.last_accessed = datetime.utcnow()
-            
-            updated_lessons += 1
-        
-        # Обновляем статистику пользователя
-        user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
-        if not user_stats:
-            user_stats = UserStats(
-                user_id=current_user.id,
-                total_scenarios_completed=0,
-                total_score_earned=0,
-                average_score_percentage=0,
-                total_time_spent_minutes=0,
-                current_streak_days=0,
-                longest_streak_days=0,
-                last_activity_date=datetime.utcnow().date(),
-                perfect_scores_count=0,
-                total_experience_points=0,
-                current_level=1,
-                points_to_next_level=100
-            )
-            db.session.add(user_stats)
-        
-        # Обновляем статистику
-        if completed:
-            user_stats.total_scenarios_completed += 1
-            user_stats.total_score_earned += score
-            user_stats.total_time_spent_minutes += time_spent
-            user_stats.last_activity_date = datetime.utcnow().date()
-            
-            # Обновляем средний процент
-            if user_stats.total_scenarios_completed > 0:
-                user_stats.average_score_percentage = int(
-                    user_stats.total_score_earned / user_stats.total_scenarios_completed
-                )
-            
-            # Проверяем идеальный результат
-            if score == 100:
-                user_stats.perfect_scores_count += 1
-            
-            # Добавляем очки опыта
-            experience_points = score + (10 if score == 100 else 0)
-            user_stats.total_experience_points += experience_points
-            
-            # Обновляем уровень (каждые 500 очков = новый уровень)
-            new_level = (user_stats.total_experience_points // 500) + 1
-            if new_level > user_stats.current_level:
-                user_stats.current_level = new_level
-            
-            user_stats.points_to_next_level = 500 - (user_stats.total_experience_points % 500)
-        
-        # Сохраняем изменения
-        db.session.commit()
-        
-        current_app.logger.info(
-            f"Progress saved for user {current_user.id}: "
-            f"module {module_id}, subtopic '{subtopic_slug}', "
-            f"score {score}%, time {time_spent}min, "
-            f"correct {correct_answers}/{total_questions}"
-        )
-        
-        return jsonify({
-            'success': True,
-            'message': 'Progress saved successfully',
-            'lessons_updated': updated_lessons,
-            'stats': {
-                'total_completed': user_stats.total_scenarios_completed,
-                'average_score': user_stats.average_score_percentage,
-                'total_time': user_stats.total_time_spent_minutes,
-                'current_level': user_stats.current_level,
-                'experience_points': user_stats.total_experience_points
-            }
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Error saving progress: {e}", exc_info=True)
-        return jsonify({'error': 'Failed to save progress'}), 500
-
-
 @api_bp.route('/get-next-topics/<int:module_id>')
 @login_required
-def get_next_topics(module_id):
+def get_next_topics(lang, module_id):
     """Возвращает рекомендуемые следующие темы для изучения."""
     try:
         from models import Module, Subject, Lesson
@@ -906,6 +768,266 @@ def save_exam_date(lang):
         return jsonify({
             'success': False,
             'message': f"Ошибка при сохранении даты: {str(e)}"
-        }), 500   
+        }), 500
+
+@api_bp.route('/update-stats', methods=['POST'])
+@login_required
+@csrf.exempt
+def update_stats(lang):
+    """
+    AJAX endpoint для обновления статистики в реальном времени
+    Вызывается после завершения урока
+    """
+    try:
+        # Очищаем кэш для текущего пользователя
+        clear_stats_cache(current_user.id)
+        
+        # Получаем обновленную статистику
+        stats = get_unified_user_stats(current_user.id)
+        
+        return jsonify({
+            'success': True,
+            'stats': stats,
+            'message': 'Статистика обновлена'
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Ошибка обновления статистики: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'Ошибка обновления статистики: {str(e)}'
+        }), 500
+
+@api_bp.route('/test-progress/<int:lesson_id>', methods=['POST'])
+@login_required
+@csrf.exempt
+def test_progress(lang, lesson_id):
+    """
+    Тестовый endpoint для проверки работы track_lesson_progress
+    """
+    try:
+        print(f"🧪 ТЕСТОВЫЙ ВЫЗОВ track_lesson_progress: user={current_user.id}, lesson={lesson_id}")
+        current_app.logger.info(f"🧪 ТЕСТОВЫЙ ВЫЗОВ track_lesson_progress: user={current_user.id}, lesson={lesson_id}")
+        
+        # Проверяем, существует ли урок
+        lesson = Lesson.query.get_or_404(lesson_id)
+        print(f"✅ Урок найден: {lesson.title}")
+        
+        # Вызываем track_lesson_progress
+        result = track_lesson_progress(current_user.id, lesson_id, completed=True)
+        
+        # Получаем обновленную статистику
+        stats = get_unified_user_stats(current_user.id)
+        
+        return jsonify({
+            'success': result,
+            'lesson_id': lesson_id,
+            'lesson_title': lesson.title,
+            'stats': stats,
+            'message': 'Тестовый вызов track_lesson_progress выполнен'
+        })
+        
+    except Exception as e:
+        print(f"❌ ОШИБКА в тестовом endpoint: {e}")
+        current_app.logger.error(f"❌ ОШИБКА в test_progress: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@api_bp.route('/debug-user-progress/<int:user_id>')
+@login_required
+def debug_user_progress(lang, user_id):
+    """
+    Debug endpoint для проверки прогресса пользователя в БД
+    """
+    try:
+        print(f"🔍 DEBUG: Проверяем прогресс пользователя {user_id}")
+        
+        # Получаем последние 10 записей прогресса
+        recent_progress = UserProgress.query.filter_by(user_id=user_id).order_by(UserProgress.id.desc()).limit(10).all()
+        
+        progress_data = []
+        for p in recent_progress:
+            progress_data.append({
+                'id': p.id,
+                'lesson_id': p.lesson_id,
+                'completed': p.completed,
+                'time_spent': p.time_spent,
+                'last_accessed': p.last_accessed.isoformat() if p.last_accessed else None,
+                'timestamp': p.timestamp.isoformat() if p.timestamp else None
+            })
+            print(f"📊 Урок {p.lesson_id}, время: {p.last_accessed}, завершен: {p.completed}")
+        
+        # Получаем общую статистику
+        total_lessons = Lesson.query.count()
+        completed_lessons = UserProgress.query.filter_by(user_id=user_id, completed=True).count()
+        
+        return jsonify({
+            'user_id': user_id,
+            'total_lessons': total_lessons,
+            'completed_lessons': completed_lessons,
+            'progress_percentage': round((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0,
+            'recent_progress': progress_data
+        })
+        
+    except Exception as e:
+        print(f"❌ ОШИБКА в debug_user_progress: {e}")
+        current_app.logger.error(f"❌ ОШИБКА в debug_user_progress: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+    
+@api_bp.route('/test-progress-page')
+def test_progress_page(lang):
+    """Тестовая страница для проверки системы прогресса"""
+    return '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Тест системы прогресса</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+            .success { background-color: #d4edda; border-color: #c3e6cb; }
+            .error { background-color: #f8d7da; border-color: #f5c6cb; }
+            button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+            pre { background: #f8f9fa; padding: 10px; overflow-x: auto; }
+        </style>
+    </head>
+    <body>
+        <h1>🧪 Тест системы прогресса уроков</h1>
+        
+        <div class="test-section">
+            <h3>1️⃣ Тест открытия урока</h3>
+            <button onclick="testOpenLesson()">Открыть урок 1</button>
+            <div id="openResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2️⃣ Тест завершения урока</h3>
+            <button onclick="testCompleteLesson()">Завершить урок 1</button>
+            <div id="completeResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3️⃣ Тест получения статистики</h3>
+            <button onclick="testGetStats()">Получить статистику</button>
+            <div id="statsResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4️⃣ Тест API статистики</h3>
+            <button onclick="testApiStats()">API статистика</button>
+            <div id="apiStatsResult"></div>
+        </div>
+
+        <script>
+            const LESSON_ID = 1;
+            
+            function showResult(elementId, success, message, data = null) {
+                const element = document.getElementById(elementId);
+                element.className = success ? 'success' : 'error';
+                element.innerHTML = `
+                    <h4>${success ? '✅ Успех' : '❌ Ошибка'}</h4>
+                    <p>${message}</p>
+                    ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+                `;
+            }
+            
+            async function testOpenLesson() {
+                try {
+                    const response = await fetch(`/en/content/lesson/${LESSON_ID}`);
+                    const success = response.ok;
+                    const data = success ? await response.text() : await response.text();
+                    
+                    showResult('openResult', success, 
+                        success ? 'Урок открыт успешно' : `Ошибка ${response.status}`,
+                        success ? { status: response.status, size: data.length } : data
+                    );
+                } catch (error) {
+                    showResult('openResult', false, `Ошибка сети: ${error.message}`);
+                }
+            }
+            
+            async function testCompleteLesson() {
+                try {
+                    const response = await fetch(`/en/content/api/lesson/${LESSON_ID}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            completed: true,
+                            time_spent: 30.0
+                        })
+                    });
+                    
+                    const success = response.ok;
+                    const data = success ? await response.json() : await response.text();
+                    
+                    showResult('completeResult', success,
+                        success ? 'Урок завершен успешно' : `Ошибка ${response.status}`,
+                        data
+                    );
+                } catch (error) {
+                    showResult('completeResult', false, `Ошибка сети: ${error.message}`);
+                }
+            }
+            
+            async function testGetStats() {
+                try {
+                    const response = await fetch('/en/learning-map');
+                    const success = response.ok;
+                    const data = await response.text();
+                    
+                    showResult('statsResult', success,
+                        success ? 'Статистика загружена' : `Ошибка ${response.status}`,
+                        {
+                            status: response.status,
+                            size: data.length,
+                            hasCompletedLessons: data.includes('completed_lessons'),
+                            hasProgress: data.includes('progress')
+                        }
+                    );
+                } catch (error) {
+                    showResult('statsResult', false, `Ошибка сети: ${error.message}`);
+                }
+            }
+            
+            async function testApiStats() {
+                try {
+                    const response = await fetch('/en/api/user-stats');
+                    const success = response.ok;
+                    const data = success ? await response.json() : await response.text();
+                    
+                    showResult('apiStatsResult', success,
+                        success ? 'API статистика получена' : `Ошибка ${response.status}`,
+                        data
+                    );
+                } catch (error) {
+                    showResult('apiStatsResult', false, `Ошибка сети: ${error.message}`);
+                }
+            }
+        </script>
+    </body>
+    </html>
+    '''
+
+@api_bp.route('/user-stats')
+@login_required
+def get_user_stats(lang):
+    """Получает унифицированную статистику пользователя"""
+    try:
+        # Получаем унифицированную статистику
+        stats = get_unified_user_stats(current_user.id)
+        
+        return jsonify({
+            'status': 'success',
+            'stats': stats
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error getting user stats: {e}", exc_info=True)
+        return jsonify({'status': 'error', 'message': str(e)}), 500
     
     

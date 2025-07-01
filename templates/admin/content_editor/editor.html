@@ -1,0 +1,447 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ title }} - Content Editor{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/content-editor.css') }}">
+<style>
+    .editor-container {
+        height: calc(100vh - 200px);
+        display: flex;
+        gap: 20px;
+    }
+    
+    .components-panel {
+        width: 300px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    
+    .editor-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .editor-toolbar {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .editor-canvas {
+        flex: 1;
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        min-height: 400px;
+    }
+    
+    .component-item {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 10px;
+        cursor: grab;
+        transition: all 0.2s;
+    }
+    
+    .component-item:hover {
+        border-color: #007bff;
+        box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+    }
+    
+    .component-item:active {
+        cursor: grabbing;
+    }
+    
+    .component-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 8px;
+    }
+    
+    .editor-dropzone {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        color: #6c757d;
+        transition: all 0.2s;
+    }
+    
+    .editor-dropzone.dragover {
+        border-color: #007bff;
+        background-color: rgba(0,123,255,0.05);
+    }
+    
+    .content-block {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+        position: relative;
+        transition: all 0.2s;
+    }
+    
+    .content-block:hover {
+        border-color: #007bff;
+        box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+    }
+    
+    .content-block.selected {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+    }
+    
+    .block-actions {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        display: none;
+    }
+    
+    .content-block:hover .block-actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .block-action-btn {
+        width: 24px;
+        height: 24px;
+        border: none;
+        border-radius: 4px;
+        background: #f8f9fa;
+        color: #6c757d;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+    
+    .block-action-btn:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .block-action-btn.delete:hover {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .preview-panel {
+        width: 300px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    
+    .preview-frame {
+        width: 100%;
+        height: 400px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        background: white;
+        overflow: hidden;
+    }
+    
+    .property-editor {
+        background: white;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    .property-group {
+        margin-bottom: 15px;
+    }
+    
+    .property-label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+    
+    .property-input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .property-input:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+    }
+    
+    .color-picker {
+        width: 100%;
+        height: 40px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .save-indicator {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s;
+    }
+    
+    .save-indicator.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .save-indicator.saving {
+        background: #ffc107;
+    }
+    
+    .save-indicator.error {
+        background: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('admin_bp.dashboard', lang=lang) }}" class="btn btn-secondary">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('content_editor.dashboard', lang=lang) }}">Content Editor</a>
+            </li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Editor Container -->
+    <div class="editor-container">
+        <!-- Components Panel -->
+        <div class="components-panel">
+            <h5 class="mb-3">
+                <i class="bi bi-puzzle"></i>
+                Компоненты
+            </h5>
+            
+            <div class="component-categories">
+                <!-- Text Components -->
+                <div class="component-category mb-3">
+                    <h6 class="text-muted mb-2">Текст</h6>
+                    <div class="component-item" data-component="text">
+                        <i class="bi bi-type component-icon"></i>
+                        <span>Текстовый блок</span>
+                    </div>
+                    <div class="component-item" data-component="heading">
+                        <i class="bi bi-heading component-icon"></i>
+                        <span>Заголовок</span>
+                    </div>
+                    <div class="component-item" data-component="paragraph">
+                        <i class="bi bi-text-paragraph component-icon"></i>
+                        <span>Параграф</span>
+                    </div>
+                </div>
+                
+                <!-- Media Components -->
+                <div class="component-category mb-3">
+                    <h6 class="text-muted mb-2">Медиа</h6>
+                    <div class="component-item" data-component="image">
+                        <i class="bi bi-image component-icon"></i>
+                        <span>Изображение</span>
+                    </div>
+                    <div class="component-item" data-component="video">
+                        <i class="bi bi-play-circle component-icon"></i>
+                        <span>Видео</span>
+                    </div>
+                    <div class="component-item" data-component="audio">
+                        <i class="bi bi-music-note component-icon"></i>
+                        <span>Аудио</span>
+                    </div>
+                </div>
+                
+                <!-- Interactive Components -->
+                <div class="component-category mb-3">
+                    <h6 class="text-muted mb-2">Интерактивность</h6>
+                    <div class="component-item" data-component="button">
+                        <i class="bi bi-button component-icon"></i>
+                        <span>Кнопка</span>
+                    </div>
+                    <div class="component-item" data-component="card">
+                        <i class="bi bi-card-text component-icon"></i>
+                        <span>Карточка</span>
+                    </div>
+                    <div class="component-item" data-component="accordion">
+                        <i class="bi bi-chevron-down component-icon"></i>
+                        <span>Аккордеон</span>
+                    </div>
+                </div>
+                
+                <!-- Layout Components -->
+                <div class="component-category mb-3">
+                    <h6 class="text-muted mb-2">Макет</h6>
+                    <div class="component-item" data-component="divider">
+                        <i class="bi bi-dash component-icon"></i>
+                        <span>Разделитель</span>
+                    </div>
+                    <div class="component-item" data-component="table">
+                        <i class="bi bi-table component-icon"></i>
+                        <span>Таблица</span>
+                    </div>
+                    <div class="component-item" data-component="columns">
+                        <i class="bi bi-layout-three-columns component-icon"></i>
+                        <span>Колонки</span>
+                    </div>
+                </div>
+                
+                <!-- Code Components -->
+                <div class="component-category mb-3">
+                    <h6 class="text-muted mb-2">Код</h6>
+                    <div class="component-item" data-component="code">
+                        <i class="bi bi-code component-icon"></i>
+                        <span>Блок кода</span>
+                    </div>
+                    <div class="component-item" data-component="inline-code">
+                        <i class="bi bi-code-slash component-icon"></i>
+                        <span>Строка кода</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Editor -->
+        <div class="editor-main">
+            <!-- Toolbar -->
+            <div class="editor-toolbar">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="toolbar-left">
+                        <button class="btn btn-outline-secondary btn-sm me-2" id="undoBtn" disabled>
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Отменить
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm me-2" id="redoBtn" disabled>
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Повторить
+                        </button>
+                        <span class="text-muted ms-3">
+                            <i class="bi bi-keyboard"></i>
+                            Ctrl+S для сохранения, Ctrl+Z для отмены
+                        </span>
+                    </div>
+                    
+                    <div class="toolbar-right">
+                        <button class="btn btn-outline-primary btn-sm me-2" id="previewBtn">
+                            <i class="bi bi-eye"></i>
+                            Предварительный просмотр
+                        </button>
+                        <button class="btn btn-success btn-sm" id="saveBtn">
+                            <i class="bi bi-check-circle"></i>
+                            Сохранить
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Canvas -->
+            <div class="editor-canvas" id="editorCanvas">
+                <div class="editor-dropzone" id="editorDropzone">
+                    <i class="bi bi-arrow-down-circle fs-1 text-muted mb-3"></i>
+                    <h5 class="text-muted">Перетащите компоненты сюда</h5>
+                    <p class="text-muted mb-0">или выберите компонент из панели слева</p>
+                </div>
+                
+                <div id="contentBlocks">
+                    <!-- Content blocks will be added here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview Panel -->
+        <div class="preview-panel" id="previewPanel" style="display: none;">
+            <h5 class="mb-3">
+                <i class="bi bi-eye"></i>
+                Предварительный просмотр
+            </h5>
+            
+            <div class="preview-frame" id="previewFrame">
+                <!-- Preview content will be rendered here -->
+            </div>
+            
+            <!-- Property Editor -->
+            <div class="property-editor" id="propertyEditor" style="display: none;">
+                <h6 class="mb-3">Свойства компонента</h6>
+                <div id="propertyFields">
+                    <!-- Property fields will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Indicator -->
+<div class="save-indicator" id="saveIndicator">
+    <i class="bi bi-check-circle me-2"></i>
+    <span id="saveMessage">Сохранено</span>
+</div>
+
+<!-- Hidden inputs for data -->
+<input type="hidden" id="lessonId" value="{{ lesson_id or '' }}">
+<input type="hidden" id="moduleId" value="{{ module_id or '' }}">
+<input type="hidden" id="pageId" value="{{ page_id or '' }}">
+<input type="hidden" id="initialContent" value="{{ content_data or '{}' }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/content-editor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/editor-components.js') }}"></script>
+<script>
+    // Initialize Content Editor
+    document.addEventListener('DOMContentLoaded', function() {
+        const editor = new ContentEditor({
+            container: '#editorCanvas',
+            componentsPanel: '.components-panel',
+            previewPanel: '#previewPanel',
+            propertyEditor: '#propertyEditor',
+            saveIndicator: '#saveIndicator',
+            lessonId: document.getElementById('lessonId').value,
+            moduleId: document.getElementById('moduleId').value,
+            pageId: document.getElementById('pageId').value,
+            initialContent: document.getElementById('initialContent').value
+        });
+        
+        // Initialize Editor Components
+        const components = new EditorComponents();
+        
+        // Global editor instance
+        window.contentEditor = editor;
+        window.editorComponents = components;
+    });
+</script>
+{% endblock %} 

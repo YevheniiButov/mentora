@@ -2,6 +2,8 @@
 import json
 import random
 import os # Добавлен импорт os
+from datetime import datetime, timedelta
+import traceback
 from flask import Blueprint, render_template, request, session, redirect, url_for, g, flash, current_app, jsonify
 from flask_login import login_required, current_user
 from extensions import db
@@ -11,7 +13,7 @@ from models import (
     ContentCategory, ContentSubcategory, ContentTopic, VirtualPatientAttempt
 )
 from translations_new import get_translation as t
-from routes.learning_map_routes import get_module_stats, get_user_stats, calculate_subject_progress
+from utils.unified_stats import get_unified_user_stats, get_module_stats_unified, get_subject_stats_unified
 
 subject_view_bp = Blueprint(
     "subject_view_bp",
@@ -194,13 +196,13 @@ def view_subject(lang, subject_id):
 
         # Обрабатываем модули текущего предмета
         for module in subject_modules:
-            module_stats = get_module_stats(module.id, current_user.id)
+            module_stats = get_module_stats_unified(module.id, current_user.id)
             module.progress = module_stats.get("progress", 0)
             module.completed_lessons = module_stats.get("completed_lessons", 0)
             module.total_lessons = module_stats.get("total_lessons", 0)
 
         virtual_patients = get_virtual_patients_for_subject(selected_subject, current_user.id)
-        stats = get_user_stats(current_user.id)
+        stats = get_unified_user_stats(current_user.id)
         recommendations = get_user_recommendations(current_user.id)
         random_fact = get_random_fact(g.lang)
 
@@ -214,7 +216,7 @@ def view_subject(lang, subject_id):
                 completed_lessons = 0
                 
                 for module in current_subject_modules:
-                    module_stats = get_module_stats(module.id, current_user.id)
+                    module_stats = get_module_stats_unified(module.id, current_user.id)
                     total_lessons += module_stats.get("total_lessons", 0)
                     completed_lessons += module_stats.get("completed_lessons", 0)
                 
@@ -322,7 +324,7 @@ def all_virtual_patients(lang):
             
             categorized_scenarios[category_name].append(scenario)
         
-        stats = get_user_stats(current_user.id)
+        stats = get_unified_user_stats(current_user.id)
         recommendations = get_user_recommendations(current_user.id)
         
         return render_template(
@@ -345,65 +347,81 @@ def all_virtual_patients(lang):
 # Оставляем их здесь, так как они были частью "старой" (более полной) версии файла.
 
 def get_user_recommendations(user_id, limit=3):
-    """Возвращает рекомендуемые модули для пользователя."""
+    """Получает рекомендации модулей для пользователя на основе его прогресса."""
     try:
-        in_progress_lesson_ids_query = db.session.query(UserProgress.lesson_id).filter(
-            UserProgress.user_id == user_id,
-            UserProgress.completed == False
-        )
-        in_progress_lesson_ids = [item[0] for item in in_progress_lesson_ids_query.all()]
+        recommendations = []
         
-        in_progress_modules_formatted = []
-        processed_module_ids = set()
-
-        if in_progress_lesson_ids:
-            in_progress_modules_data = db.session.query(
+        # Получаем завершенные уроки пользователя
+        completed_lessons = UserProgress.query.filter_by(
+            user_id=user_id, 
+            completed=True
+        ).all()
+        
+        if not completed_lessons:
+            # Если нет завершенных уроков, рекомендуем первые модули
+            first_modules = db.session.query(
                 Module, Subject.name.label('subject_name')
             ).join(
-                Lesson, Lesson.module_id == Module.id
-            ).join(
                 Subject, Subject.id == Module.subject_id
-            ).filter(
-                Lesson.id.in_(in_progress_lesson_ids)
-            ).distinct(Module.id).limit(limit).all()
+            ).order_by(
+                Module.order, Module.id
+            ).limit(limit).all()
             
-            for mod, subj_name in in_progress_modules_data:
-                in_progress_modules_formatted.append({
+            for mod, subj_name in first_modules:
+                recommendations.append({
                     'module_id': mod.id,
-                    'title': mod.title, 
+                    'title': mod.title,
                     'icon': getattr(mod, 'icon', 'journal-text'),
                     'subject_name': subj_name
                 })
-                processed_module_ids.add(mod.id)
-
-        recommendations = list(in_progress_modules_formatted)
-        
-        if len(recommendations) < limit:
-            remaining_limit = limit - len(recommendations)
             
-            completed_lesson_ids = [row[0] for row in db.session.query(UserProgress.lesson_id).filter(
-                UserProgress.user_id == user_id,
-                UserProgress.completed == True
-            ).all()]
-
-            # Модули, где все уроки завершены
-            # Это упрощенная логика; для точного определения завершенности модуля может потребоваться более сложный запрос
-            if completed_lesson_ids:
-                fully_completed_modules_q = db.session.query(Module.id)\
-                    .join(Lesson, Module.id == Lesson.module_id)\
-                    .filter(Lesson.id.in_(completed_lesson_ids))\
-                    .group_by(Module.id)\
-                    .having(db.func.count(Lesson.id) == db.session.query(db.func.count(Lesson.id)).filter(Lesson.module_id == Module.id).scalar_subquery()) # Проверяем, что все уроки модуля завершены
-                
-                fully_completed_module_ids = [row[0] for row in fully_completed_modules_q.all()]
-                processed_module_ids.update(fully_completed_module_ids)
-
+            return recommendations
+        
+        # Получаем ID завершенных уроков
+        completed_lesson_ids = [lesson.lesson_id for lesson in completed_lessons]
+        
+        # Получаем модули с завершенными уроками
+        modules_with_completed_lessons = db.session.query(
+            Module.id, Module.title, Module.icon, Subject.name.label('subject_name'),
+            db.func.count(Lesson.id).label('total_lessons'),
+            db.func.count(db.case((Lesson.id.in_(completed_lesson_ids), 1))).label('completed_lessons')
+        ).join(
+            Lesson, Module.id == Lesson.module_id
+        ).join(
+            Subject, Subject.id == Module.subject_id
+        ).group_by(
+            Module.id, Module.title, Module.icon, Subject.name
+        ).having(
+            db.func.count(db.case((Lesson.id.in_(completed_lesson_ids), 1))) > 0
+        ).all()
+        
+        # Обрабатываем модули с прогрессом
+        processed_module_ids = set()
+        for module_data in modules_with_completed_lessons:
+            module_id, title, icon, subject_name, total_lessons, completed_lessons = module_data
+            
+            if completed_lessons == total_lessons:
+                # Модуль полностью завершен
+                processed_module_ids.add(module_id)
+            else:
+                # Модуль частично завершен - добавляем в рекомендации
+                recommendations.append({
+                    'module_id': module_id,
+                    'title': title,
+                    'icon': icon or 'journal-text',
+                    'subject_name': subject_name,
+                    'progress': f"{completed_lessons}/{total_lessons}"
+                })
+        
+        # Если нужно больше рекомендаций, добавляем новые модули
+        remaining_limit = limit - len(recommendations)
+        if remaining_limit > 0:
             next_modules_data = db.session.query(
                 Module, Subject.name.label('subject_name')
             ).join(
                 Subject, Subject.id == Module.subject_id
             ).filter(
-                ~Module.id.in_(list(processed_module_ids)) 
+                ~Module.id.in_(list(processed_module_ids))
             ).order_by(
                 Module.order, Module.id 
             ).limit(remaining_limit).all()
@@ -466,7 +484,7 @@ def learning_hierarchy_view(lang):
             # Передаем категории под другим именем, чтобы основной шаблон знал, что отображать
             content_categories_for_hierarchy=categories, 
             selected_subject=None, 
-            stats=get_user_stats(current_user.id),
+            stats=get_unified_user_stats(current_user.id),
             recommendations=get_user_recommendations(current_user.id),
             random_fact=get_random_fact(g.lang),
             user=current_user,
@@ -569,7 +587,7 @@ def view_category(lang, category_id):
             title=category.name,
             category=category,
             subcategories=subcategories,
-            stats=get_user_stats(current_user.id),
+            stats=get_unified_user_stats(current_user.id),
             recommendations=get_user_recommendations(current_user.id),
             random_fact=get_random_fact(g.lang),
             user=current_user,
@@ -625,7 +643,7 @@ def force_mobile_subject(lang, subject_id):
         subject_modules = Module.query.filter_by(subject_id=subject_id).order_by(Module.order).all()
 
         virtual_patients = get_virtual_patients_for_subject(selected_subject, current_user.id)
-        stats = get_user_stats(current_user.id)
+        stats = get_unified_user_stats(current_user.id)
         recommendations = get_user_recommendations(current_user.id)
         random_fact = get_random_fact(g.lang)
 
@@ -694,7 +712,7 @@ def debug_view_subject(lang, subject_id):
             for i, module in enumerate(subject_modules):
                 # Получаем статистику модуля
                 try:
-                    module_stats = get_module_stats(module.id, current_user.id)
+                    module_stats = get_module_stats_unified(module.id, current_user.id)
                     
                     html.append(f"""
                     <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
@@ -781,3 +799,231 @@ def debug_view_subject(lang, subject_id):
     except Exception as e:
         import traceback
         return f"<h1>❌ Ошибка отладки</h1><p>{str(e)}</p><pre>{traceback.format_exc()}</pre>"    
+
+# Добавляем debug маршрут для диагностики статистики
+@subject_view_bp.route("/debug/stats/<int:subject_id>")
+@login_required
+def debug_stats_view(lang, subject_id):
+    """Debug версия для диагностики проблемы со статистикой"""
+    try:
+        current_app.logger.info(f"=== DEBUG STATS: Начало диагностики для пользователя {current_user.id} ===")
+        
+        # 1. Проверка авторизации
+        current_app.logger.info(f"1. АВТОРИЗАЦИЯ:")
+        current_app.logger.info(f"   - current_user: {current_user}")
+        current_app.logger.info(f"   - current_user.id: {current_user.id}")
+        current_app.logger.info(f"   - current_user.is_authenticated: {current_user.is_authenticated}")
+        
+        # 2. Проверка данных в базе
+        current_app.logger.info(f"2. ДАННЫЕ В БАЗЕ:")
+        
+        # Проверяем записи UserProgress
+        user_progress_count = UserProgress.query.filter_by(user_id=current_user.id).count()
+        completed_progress_count = UserProgress.query.filter_by(user_id=current_user.id, completed=True).count()
+        
+        current_app.logger.info(f"   - Всего записей UserProgress: {user_progress_count}")
+        current_app.logger.info(f"   - Завершенных уроков: {completed_progress_count}")
+        
+        # Проверяем уроки в базе
+        total_lessons = Lesson.query.count()
+        current_app.logger.info(f"   - Всего уроков в базе: {total_lessons}")
+        
+        # 3. Вызов функции get_unified_user_stats
+        current_app.logger.info(f"3. ВЫЗОВ get_unified_user_stats:")
+        stats = get_unified_user_stats(current_user.id)
+        current_app.logger.info(f"   - Результат get_unified_user_stats: {stats}")
+        
+        # 4. Проверка конкретных значений
+        current_app.logger.info(f"4. ПРОВЕРКА ЗНАЧЕНИЙ:")
+        current_app.logger.info(f"   - stats.overall_progress: {stats.get('overall_progress', 'НЕТ')}")
+        current_app.logger.info(f"   - stats.completed_lessons: {stats.get('completed_lessons', 'НЕТ')}")
+        current_app.logger.info(f"   - stats.total_lessons: {stats.get('total_lessons', 'НЕТ')}")
+        current_app.logger.info(f"   - stats.total_time_spent: {stats.get('total_time_spent', 'НЕТ')}")
+        current_app.logger.info(f"   - stats.active_days: {stats.get('active_days', 'НЕТ')}")
+        
+        # 5. Проверка предмета
+        selected_subject = Subject.query.get(subject_id)
+        current_app.logger.info(f"5. ПРЕДМЕТ:")
+        current_app.logger.info(f"   - selected_subject: {selected_subject}")
+        if selected_subject:
+            current_app.logger.info(f"   - subject.name: {selected_subject.name}")
+            current_app.logger.info(f"   - subject.id: {selected_subject.id}")
+        
+        # 6. Проверка модулей предмета
+        subject_modules = Module.query.filter_by(subject_id=subject_id).all()
+        current_app.logger.info(f"6. МОДУЛИ ПРЕДМЕТА:")
+        current_app.logger.info(f"   - Количество модулей: {len(subject_modules)}")
+        
+        for i, module in enumerate(subject_modules[:3]):  # Показываем первые 3
+            module_stats = get_module_stats_unified(module.id, current_user.id)
+            current_app.logger.info(f"   - Модуль {i+1}: {module.title}")
+            current_app.logger.info(f"     * progress: {module_stats.get('progress', 0)}%")
+            current_app.logger.info(f"     * completed_lessons: {module_stats.get('completed_lessons', 0)}")
+            current_app.logger.info(f"     * total_lessons: {module_stats.get('total_lessons', 0)}")
+        
+        # 7. Формируем HTML для отображения результатов
+        html = []
+        html.append(f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Debug Stats - Subject {subject_id}</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                .debug-section {{ margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }}
+                .success {{ background-color: #d4edda; border-color: #c3e6cb; }}
+                .warning {{ background-color: #fff3cd; border-color: #ffeaa7; }}
+                .error {{ background-color: #f8d7da; border-color: #f5c6cb; }}
+                .info {{ background-color: #d1ecf1; border-color: #bee5eb; }}
+                pre {{ background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }}
+                .stat-item {{ margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }}
+                .stat-label {{ font-weight: bold; color: #495057; }}
+                .stat-value {{ color: #28a745; font-size: 1.2em; }}
+            </style>
+        </head>
+        <body>
+            <h1>🔍 Debug Statistics - Subject {subject_id}</h1>
+            <p><strong>User:</strong> {current_user.username} (ID: {current_user.id})</p>
+            <p><strong>Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        """)
+        
+        # Секция авторизации
+        html.append(f"""
+        <div class="debug-section success">
+            <h3>✅ 1. Авторизация</h3>
+            <div class="stat-item">
+                <div class="stat-label">Пользователь:</div>
+                <div class="stat-value">{current_user.username}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">ID пользователя:</div>
+                <div class="stat-value">{current_user.id}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Авторизован:</div>
+                <div class="stat-value">{current_user.is_authenticated}</div>
+            </div>
+        </div>
+        """)
+        
+        # Секция данных в базе
+        html.append(f"""
+        <div class="debug-section info">
+            <h3>📊 2. Данные в базе</h3>
+            <div class="stat-item">
+                <div class="stat-label">Всего записей UserProgress:</div>
+                <div class="stat-value">{user_progress_count}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Завершенных уроков:</div>
+                <div class="stat-value">{completed_progress_count}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Всего уроков в базе:</div>
+                <div class="stat-value">{total_lessons}</div>
+            </div>
+        </div>
+        """)
+        
+        # Секция статистики
+        html.append(f"""
+        <div class="debug-section {'success' if stats.get('overall_progress', 0) > 0 else 'warning'}">
+            <h3>📈 3. Статистика пользователя</h3>
+            <div class="stat-item">
+                <div class="stat-label">Общий прогресс:</div>
+                <div class="stat-value">{stats.get('overall_progress', 0)}%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Завершенных уроков:</div>
+                <div class="stat-value">{stats.get('completed_lessons', 0)}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Всего уроков:</div>
+                <div class="stat-value">{stats.get('total_lessons', 0)}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Время обучения (мин):</div>
+                <div class="stat-value">{stats.get('total_time_spent', 0)}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Дней активности:</div>
+                <div class="stat-value">{stats.get('active_days', 0)}</div>
+            </div>
+        </div>
+        """)
+        
+        # Секция предмета
+        if selected_subject:
+            html.append(f"""
+            <div class="debug-section info">
+                <h3>📚 4. Предмет</h3>
+                <div class="stat-item">
+                    <div class="stat-label">Название:</div>
+                    <div class="stat-value">{selected_subject.name}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">ID:</div>
+                    <div class="stat-value">{selected_subject.id}</div>
+                </div>
+            </div>
+            """)
+        
+        # Секция модулей
+        html.append(f"""
+        <div class="debug-section info">
+            <h3>📖 5. Модули предмета ({len(subject_modules)})</h3>
+        """)
+        
+        for i, module in enumerate(subject_modules[:5]):  # Показываем первые 5
+            module_stats = get_module_stats_unified(module.id, current_user.id)
+            html.append(f"""
+            <div class="stat-item">
+                <div class="stat-label">Модуль {i+1}: {module.title}</div>
+                <div class="stat-value">
+                    Прогресс: {module_stats.get('progress', 0)}% 
+                    ({module_stats.get('completed_lessons', 0)}/{module_stats.get('total_lessons', 0)})
+                </div>
+            </div>
+            """)
+        
+        if len(subject_modules) > 5:
+            html.append(f"<p><em>... и еще {len(subject_modules) - 5} модулей</em></p>")
+        
+        html.append("</div>")
+        
+        # Секция действий
+        html.append(f"""
+        <div class="debug-section warning">
+            <h3>🔧 6. Действия</h3>
+            <p><a href="{url_for('learning_map_bp.debug_add_progress', lang=lang)}" 
+                  style="background: #007bff; color: white; padding: 10px; text-decoration: none; border-radius: 3px;">
+                ➕ Добавить тестовый прогресс
+            </a></p>
+            <p><a href="{url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_id)}" 
+                  style="background: #28a745; color: white; padding: 10px; text-decoration: none; border-radius: 3px;">
+                🎯 Открыть оригинальную страницу
+            </a></p>
+        </div>
+        """)
+        
+        # Секция сырых данных
+        html.append(f"""
+        <div class="debug-section">
+            <h3>🔍 7. Сырые данные</h3>
+            <pre>{json.dumps(stats, indent=2, ensure_ascii=False)}</pre>
+        </div>
+        """)
+        
+        html.append("</body></html>")
+        
+        current_app.logger.info(f"=== DEBUG STATS: Диагностика завершена ===")
+        
+        return "".join(html)
+        
+    except Exception as e:
+        current_app.logger.error(f"Ошибка в debug_stats_view: {e}", exc_info=True)
+        return f"""
+        <h1>❌ Ошибка диагностики</h1>
+        <p><strong>Ошибка:</strong> {str(e)}</p>
+        <pre>{traceback.format_exc()}</pre>
+        """    

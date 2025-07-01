@@ -4,7 +4,7 @@
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item">
-    <a href="{{ url_for('admin_unified.unified_dashboard', lang=lang) }}">
+    <a href="{{ url_for('admin_simple.dashboard', lang=lang) }}">
         <i class="bi bi-house"></i>
     </a>
 </li>
@@ -316,26 +316,26 @@
             </div>
             <div class="card-body">
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ url_for('admin_unified.content_admin.learning_paths_list', lang=lang) }}" 
+                    <a href="{{ url_for('admin_simple.content_manager', lang=lang) }}" 
                        class="btn btn-outline-primary btn-sm">
                         <i class="bi bi-plus-circle"></i>
                         Добавить категорию
                     </a>
                     
-                    <a href="{{ url_for('admin_unified.user_admin.users_list', lang=lang) }}" 
+                    <a href="{{ url_for('admin_simple.users_manager', lang=lang) }}" 
                        class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-people"></i>
                         Управление пользователями
                     </a>
                     
-                    <a href="{{ url_for('admin_unified.analytics_admin.analytics_dashboard', lang=lang) }}" 
+                    <a href="{{ url_for('admin_simple.analytics', lang=lang) }}" 
                        class="btn btn-outline-info btn-sm">
                         <i class="bi bi-graph-up"></i>
                         Открыть аналитику
                     </a>
                     
                     {% if 'all' in admin_roles.get(current_user.role, []) %}
-                    <a href="{{ url_for('admin_unified.system_admin.backup_page', lang=lang) }}" 
+                    <a href="{{ url_for('admin_simple.settings', lang=lang) }}" 
                        class="btn btn-outline-warning btn-sm">
                         <i class="bi bi-archive"></i>
                         Создать backup
@@ -353,15 +353,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Автообновление статистики каждую минуту
     setInterval(function() {
-        fetch('{{ url_for("admin_unified.dashboard_stats_api", lang=lang) }}')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Статистика обновлена:', data.stats);
-                    // Здесь можно обновить элементы на странице
-                }
-            })
-            .catch(error => console.error('Ошибка обновления статистики:', error));
+        // Временно отключено - endpoint не существует
+        console.log('Автообновление статистики отключено');
     }, 60000);
 });
 </script>

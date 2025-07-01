@@ -4,7 +4,12 @@ import os
 import time
 import json
 import logging
+import warnings
 from datetime import datetime, timedelta
+
+# Подавляем предупреждение о pkg_resources
+warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
+
 from flask import Flask, flash, render_template, redirect, url_for, g, request, session, jsonify, current_app
 from flask_login import current_user
 from flask_migrate import Migrate
@@ -37,22 +42,43 @@ from models import (
     AssessmentCategory, AssessmentQuestion, PreAssessmentAttempt, PreAssessmentAnswer, LearningPlan
 )
 
-# Import routes
-from routes.main_routes import main_bp
-from routes.auth_routes import auth_bp
-from routes.admin_routes import admin_bp
-from routes.admin import admin_unified_bp  # Новая единая админка
-from routes.forum_routes import forum_bp
-from routes.virtual_patient_routes import virtual_patient_bp
-from routes.api_routes import api_bp
-from routes.tests_routes import tests_bp
-from routes.learning_map_routes import learning_map_bp
-from routes.dashboard_routes import dashboard_bp
-from routes.modules_routes import modules_bp
-from routes.subject_view_routes import subject_view_bp
-from routes.mobile_routes import mobile_bp
-from routes.ai_routes import ai_bp
-from routes.assessment_routes import assessment_bp
+# Import Flask-Admin
+from admin.admin_config import init_admin
+
+# Временно отключаем AI для быстрого запуска
+try:
+    from routes.main_routes import main_bp
+    from routes.admin_routes import admin_bp
+    from routes.auth_routes import auth_bp
+    from routes.learning_map_routes import learning_map_bp as learning_bp
+    from routes.tests_routes import tests_bp as test_routes
+    from routes.virtual_patient_routes import virtual_patient_bp
+    from routes.forum_routes import forum_bp
+    from routes.assessment_routes import assessment_bp
+    from routes.mobile_routes import mobile_bp
+    from routes.import_export_routes import import_export_bp
+    
+    # AI маршруты
+    from routes.ai_routes import ai_bp
+    big_info_bp = None  # big_info routes пока не используются
+    print("✅ AI routes loaded successfully")
+    
+except ImportError as e:
+    print(f"❌ Error importing routes: {e}")
+    # Создаем заглушки для критических маршрутов
+    from flask import Blueprint
+    main_bp = Blueprint('main', __name__)
+    admin_bp = Blueprint('admin', __name__)
+    auth_bp = Blueprint('auth', __name__)
+    learning_bp = Blueprint('learning', __name__)
+    test_routes = Blueprint('tests', __name__)
+    virtual_patient_bp = Blueprint('virtual_patient', __name__)
+    forum_bp = Blueprint('forum', __name__)
+    assessment_bp = Blueprint('assessment', __name__)
+    big_info_bp = Blueprint('big_info', __name__)
+    mobile_bp = Blueprint('mobile', __name__)
+    import_export_bp = Blueprint('import_export', __name__)
+    ai_bp = None
 
 # Настройка логирования
 logging.basicConfig(
@@ -294,14 +320,6 @@ def create_app(test_config=None):
         instance_relative_config=True
     )
     
-    # Импорт blueprints в начале функции
-    from routes import (
-        auth_bp, main_bp, learning_map_bp, lesson_bp, modules_bp, 
-        tests_bp, content_bp, forum_bp, virtual_patient_bp, subject_view_bp,
-        api_bp, admin_bp, admin_unified_bp, ai_bp, mobile_bp,
-        virtual_patient_api_bp, content_nav_bp, dashboard_bp, assessment_bp
-    )
-    
     # Загрузка конфигурации
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
@@ -319,6 +337,14 @@ def create_app(test_config=None):
     app.config['SESSION_COOKIE_SECURE'] = False  # Установите True в production с HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Увеличено время жизни сессии
+    
+    # Настройки для загрузки файлов GrapesJS
+    app.config['UPLOAD_FOLDER'] = 'static/uploads'
+    app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
+    
+    # Создаем папки для загрузок если не существуют
+    for folder in ['static/uploads', 'static/uploads/grapejs']:
+        os.makedirs(folder, exist_ok=True)
     
     # Настройки CSRF для предотвращения истечения токенов
     app.config['WTF_CSRF_TIME_LIMIT'] = 7200  # 2 часа вместо стандартного 1 часа
@@ -344,25 +370,47 @@ def create_app(test_config=None):
     login_manager.needs_refresh_message = "Please log in again to confirm your identity"
     
     # Регистрация blueprints
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(main_bp)
-    app.register_blueprint(learning_map_bp)
-    app.register_blueprint(lesson_bp)
-    app.register_blueprint(modules_bp)
-    app.register_blueprint(tests_bp)
-    app.register_blueprint(content_bp)
-    app.register_blueprint(forum_bp)
-    app.register_blueprint(virtual_patient_bp)
-    app.register_blueprint(subject_view_bp)
-    app.register_blueprint(assessment_bp)
-    app.register_blueprint(api_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(admin_unified_bp)
-    app.register_blueprint(ai_bp)
-    app.register_blueprint(mobile_bp)
-    app.register_blueprint(virtual_patient_api_bp)
-    app.register_blueprint(content_nav_bp)
+    if auth_bp:
+        app.register_blueprint(auth_bp)
+    if main_bp:
+        app.register_blueprint(main_bp)
+    if admin_bp:
+        app.register_blueprint(admin_bp)
+    from routes import uploader_bp
+    app.register_blueprint(uploader_bp)
+    from routes import dashboard_bp
     app.register_blueprint(dashboard_bp)
+    if learning_bp:
+        app.register_blueprint(learning_bp)
+    if test_routes:
+        app.register_blueprint(test_routes)
+    if virtual_patient_bp:
+        app.register_blueprint(virtual_patient_bp)
+    if forum_bp:
+        app.register_blueprint(forum_bp)
+    if assessment_bp:
+        app.register_blueprint(assessment_bp)
+    if big_info_bp:
+        app.register_blueprint(big_info_bp)
+    if mobile_bp:
+        app.register_blueprint(mobile_bp)
+    if import_export_bp:
+        app.register_blueprint(import_export_bp)  # Регистрируем новые маршруты импорта/экспорта
+    
+    # AI blueprint регистрируем только если доступен
+    if ai_bp:
+        app.register_blueprint(ai_bp)
+        print("✅ AI routes registered")
+    else:
+        print("⚠️ AI routes not available")
+    
+    # Условная регистрация Content Editor Blueprint
+    from routes import register_content_editor_blueprint
+    register_content_editor_blueprint(app)
+    
+    # Initialize Flask-Admin
+    admin = init_admin(app, db)
+    print("✅ Flask-Admin initialized")
     
     @login_manager.user_loader
     def load_user(user_id):
@@ -473,6 +521,48 @@ def create_app(test_config=None):
             lessons_count = Lesson.query.filter_by(module_id=module.id).count()
             print(f"   - {module.id}: {module.title} ({lessons_count} lessons)")
 
+    @app.cli.command()
+    def create_admin():
+        """Создает тестового админа для GrapesJS"""
+        from create_test_admin import create_test_admin, create_test_user
+        
+        print("🔧 Создание тестовых пользователей для GrapesJS...")
+        print("=" * 50)
+        
+        try:
+            # Создаем админа
+            admin = create_test_admin()
+            print()
+            
+            # Создаем обычного пользователя
+            user = create_test_user()
+            print()
+            
+            print("🎉 Все тестовые пользователи созданы!")
+            print("=" * 50)
+            print("📋 ДАННЫЕ ДЛЯ ВХОДА:")
+            print()
+            print("👑 АДМИН:")
+            print(f"   URL: http://localhost:8082/en/login")
+            print(f"   Email: {admin.email}")
+            print(f"   Пароль: admin123")
+            print()
+            print("👤 ПОЛЬЗОВАТЕЛЬ:")
+            print(f"   URL: http://localhost:8082/en/login")
+            print(f"   Email: {user.email}")
+            print(f"   Пароль: user123")
+            print()
+            print("🔗 ССЫЛКИ ДЛЯ ТЕСТИРОВАНИЯ:")
+            print(f"   GrapesJS редактор: http://localhost:8082/en/admin/content-editor/visual-builder-grapejs")
+            print(f"   Создание шаблонов: http://localhost:8082/en/admin/content-editor/api/grapejs/create-default-templates")
+            print(f"   Админ панель: http://localhost:8082/en/admin/dashboard")
+            
+        except Exception as e:
+            print(f"❌ Ошибка создания пользователей: {e}")
+            return 1
+        
+        return 0
+    
     @app.cli.command()
     def debug_lessons():
         """Показывает структуру уроков в БД для отладки"""
@@ -859,7 +949,7 @@ def create_app(test_config=None):
             'get_active_nav_item': get_active_nav_item
         }
 
-    print(f"Registered blueprint: {subject_view_bp.name} with url_prefix: {subject_view_bp.url_prefix}")
+    print(f"Registered blueprint: {virtual_patient_bp.name} with url_prefix: {virtual_patient_bp.url_prefix}")
 
     @app.route('/routes')
     def list_routes():
@@ -972,6 +1062,12 @@ def create_app(test_config=None):
     print("   - flask show-modules    : Show all modules in database")
     print("="*50)
 
+    # Инициализация мобильных помощников
+    init_mobile_helpers(app)
+    
+    # Инициализация HMR сервера
+    # init_hmr_server(app)  # Временно отключено для тестирования
+    
     return app
 
 # Создание экземпляра приложения
@@ -1326,6 +1422,14 @@ def test_interactive(lang=None):
     g.force_desktop = True
     return render_template('theme_test_interactive.html')
 
+@app.route('/learning-dashboard')
+@app.route('/<lang>/learning-dashboard')
+def learning_dashboard_redirect(lang=None):
+    """Редирект с /learning-dashboard на /dashboard"""
+    if lang is None:
+        lang = g.get('lang', session.get('lang', DEFAULT_LANGUAGE))
+    return redirect(f'/{lang}/dashboard')
+
 @app.route('/index-new')
 def index_new():
     """Новая версия главной страницы с системой тем"""
@@ -1338,15 +1442,9 @@ def index_new():
 
 if __name__ == '__main__':
     print("🌐 Starting Flask development server...")
-    # Запуск с защитой от проблем с терминалом
-    try:
-        app.run(debug=True, port=8082, use_reloader=True)
-    except (OSError, termios.error if termios else OSError) as e:
-        print(f"⚠️  Debug mode error: {e}")
-        print("🔄 Trying without reloader...")
-        try:
-            app.run(debug=False, port=8082, use_reloader=False)
-        except Exception as e2:
-            print(f"❌ Fatal error: {e2}")
-            print("💡 Try running with: python app.py --no-debug")
-            sys.exit(1)
+    app.run(
+        host='127.0.0.1',
+        port=8083,  # Изменили порт на 8083
+        debug=True,
+        use_reloader=False  # Отключаем reloader для избежания конфликтов
+    )

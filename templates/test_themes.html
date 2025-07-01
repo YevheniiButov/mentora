@@ -99,13 +99,13 @@
                         <div class="card-body">
                             <h5 class="card-title">Прогресс-бары</h5>
                             <div class="progress mb-2">
-                                <div class="progress-bar" style="width: 75%"></div>
+                                <div class="progress-bar" style="width: {{ stats.overall_progress|default(75) }}%"></div>
                             </div>
                             <div class="progress mb-2">
-                                <div class="progress-bar" style="width: 50%"></div>
+                                <div class="progress-bar" style="width: {{ stats.completed_lessons|default(50) }}%"></div>
                             </div>
                             <div class="progress">
-                                <div class="progress-bar" style="width: 25%"></div>
+                                <div class="progress-bar" style="width: {{ stats.total_lessons|default(25) }}%"></div>
                             </div>
                         </div>
                     </div>
@@ -128,7 +128,7 @@
                                 Теоретические основы стоматологии
                             </p>
                             <div class="progress mb-3">
-                                <div class="progress-bar" style="width: 80%"></div>
+                                <div class="progress-bar" style="width: {{ stats.anatomy_progress|default(80) }}%"></div>
                             </div>
                             <button class="btn-primary">Продолжить</button>
                         </div>
@@ -145,7 +145,7 @@
                                 Навыки общения с пациентами
                             </p>
                             <div class="progress mb-3">
-                                <div class="progress-bar" style="width: 60%"></div>
+                                <div class="progress-bar" style="width: {{ stats.communication_progress|default(60) }}%"></div>
                             </div>
                             <button class="btn-primary">Продолжить</button>
                         </div>
@@ -162,7 +162,7 @@
                                 Практические навыки и процедуры
                             </p>
                             <div class="progress mb-3">
-                                <div class="progress-bar" style="width: 40%"></div>
+                                <div class="progress-bar" style="width: {{ stats.practice_progress|default(40) }}%"></div>
                             </div>
                             <button class="btn-primary">Продолжить</button>
                         </div>

@@ -1,0 +1,278 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Content Editor Dashboard{% endblock %}
+{% block page_title %}Content Editor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('admin_bp.dashboard', lang=lang) }}">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Content Editor</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2">Content Editor Dashboard</h1>
+                    <p class="text-muted mb-0">Визуальный редактор контента для создания интерактивных уроков</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('content_editor.templates_page', lang=lang) }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Создать новый контент
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-icon">
+                        <i class="bi bi-layers text-primary"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ total_templates }}</h3>
+                        <p>Всего шаблонов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-icon">
+                        <i class="bi bi-gear text-success"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ system_templates }}</h3>
+                        <p>Системных шаблонов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-icon">
+                        <i class="bi bi-person text-warning"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ user_templates }}</h3>
+                        <p>Пользовательских шаблонов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('content_editor.templates_page', lang=lang) }}" class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-layers me-2"></i>
+                                Управление шаблонами
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('content_editor.pages_list', lang=lang) }}" class="btn btn-success w-100 mb-2">
+                                <i class="bi bi-file-text me-2"></i>
+                                Управление страницами
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('content_editor.grapejs_builder', lang=lang) }}" class="btn btn-warning w-100 mb-2">
+                                <i class="bi bi-palette me-2"></i>
+                                Visual Page Builder
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('content_editor.grapejs_builder', lang=lang) }}" class="btn btn-danger w-100 mb-2">
+                                <i class="bi bi-code-square me-2"></i>
+                                GrapesJS Editor
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <button class="btn btn-info w-100 mb-2" onclick="createNewTemplate()">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Создать шаблон
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-secondary w-100 mb-2" onclick="importTemplates()">
+                                <i class="bi bi-download me-2"></i>
+                                Импорт шаблонов
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-primary w-100 mb-2" onclick="exportTemplates()">
+                                <i class="bi bi-upload me-2"></i>
+                                Экспорт шаблонов
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-success w-100 mb-2" onclick="showAnalytics()">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Аналитика
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-info w-100 mb-2" onclick="showSettings()">
+                                <i class="bi bi-gear me-2"></i>
+                                Настройки
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние шаблоны -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Последние шаблоны</h5>
+                    <a href="{{ url_for('content_editor.templates_page', lang=lang) }}" class="btn btn-sm btn-outline-primary">
+                        Показать все
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_templates %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Название</th>
+                                        <th>Категория</th>
+                                        <th>Тип</th>
+                                        <th>Создан</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for template in recent_templates %}
+                                    <tr>
+                                        <td>
+                                            {% if template.name is mapping %}
+                                                {{ template.name.get(lang, template.name.get('en', template.template_id)) }}
+                                            {% else %}
+                                                {{ template.name }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ template.category }}</span>
+                                        </td>
+                                        <td>
+                                            {% if template.is_system %}
+                                                <span class="badge bg-success">Системный</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Пользовательский</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ template.created_at.strftime('%d.%m.%Y %H:%M') if template.created_at else 'N/A' }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary" onclick="viewTemplate({{ template.id }})">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button class="btn btn-outline-warning" onclick="editTemplate({{ template.id }})">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                {% if not template.is_system %}
+                                                <button class="btn btn-outline-danger" onclick="deleteTemplate({{ template.id }})">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-layers text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">Шаблоны не найдены</p>
+                            <a href="{{ url_for('content_editor.templates_page', lang=lang) }}" class="btn btn-primary">
+                                Создать первый шаблон
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function createNewTemplate() {
+    // Перенаправляем на страницу создания шаблона
+    window.location.href = "{{ url_for('content_editor.templates_page', lang=lang) }}";
+}
+
+function importTemplates() {
+    // Показываем модальное окно импорта
+    alert('Функция импорта шаблонов будет добавлена позже');
+}
+
+function viewTemplate(templateId) {
+    // Показываем детали шаблона
+    window.open(`{{ url_for('content_editor.api_get_template', lang=lang, template_id=0) }}`.replace('0', templateId), '_blank');
+}
+
+function editTemplate(templateId) {
+    // Редактируем шаблон
+    window.location.href = `{{ url_for('content_editor.templates_page', lang=lang) }}?edit=${templateId}`;
+}
+
+function deleteTemplate(templateId) {
+    if (confirm('Вы уверены, что хотите удалить этот шаблон?')) {
+        fetch(`{{ url_for('content_editor.api_delete_template', lang=lang, template_id=0) }}`.replace('0', templateId), {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при удалении: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении шаблона');
+        });
+    }
+}
+</script>
+{% endblock %} 

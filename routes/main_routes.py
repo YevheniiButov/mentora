@@ -10,7 +10,8 @@ import json
 import random
 from datetime import datetime
 from mobile_integration import render_adaptive_template, mobile_template_manager  
-from utils.mobile_detection import get_user_stats, get_app_stats, get_mobile_detector
+from utils.mobile_detection import get_user_stats, get_mobile_detector
+from utils.unified_stats import get_unified_user_stats
 
 
 from models import db, User, Module, Lesson, UserProgress
@@ -46,7 +47,19 @@ def home(lang):
     g.current_language = lang  # Для совместимости с mobile_base.html
     
     # Получаем статистику
-    stats = get_app_stats()
+    if current_user.is_authenticated:
+        stats = get_unified_user_stats(current_user.id)
+    else:
+        # Для неавторизованных пользователей показываем демо-статистику
+        stats = {
+            'overall_progress': 75,
+            'completed_lessons': 24,
+            'total_lessons': 156,
+            'average_score': 89,
+            'anatomy_progress': 92,
+            'physiology_progress': 78,
+            'radiology_progress': 65
+        }
     user_data = get_user_stats()
     
     # Получаем информацию об устройстве
@@ -131,7 +144,22 @@ def profile(lang):
 def test_themes(lang):
     """Демонстрационная страница для тестирования всех тем."""
     current_lang = getattr(g, 'lang', lang)
-    return render_template("test_themes.html", lang=current_lang)
+    
+    # Получаем статистику для демо-данных
+    if current_user.is_authenticated:
+        stats = get_unified_user_stats(current_user.id)
+    else:
+        # Для неавторизованных пользователей показываем демо-статистику
+        stats = {
+            'overall_progress': 75,
+            'completed_lessons': 50,
+            'total_lessons': 25,
+            'anatomy_progress': 80,
+            'communication_progress': 60,
+            'practice_progress': 40
+        }
+    
+    return render_template("test_themes.html", lang=current_lang, stats=stats)
 
 @main_bp.route("/<string:lang>/theme-test-simple")
 def theme_test_simple(lang):

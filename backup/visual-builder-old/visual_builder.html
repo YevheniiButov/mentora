@@ -1,0 +1,631 @@
+{% extends "admin/unified/base.html" %}
+{% block title %}Visual Page Builder - Dental Academy{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/visual-builder.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/visual-builder/file-browser.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/live-editor.css') }}" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Advanced Editors CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/advanced-editors.css') }}">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<!-- Data attributes for JavaScript -->
+<div data-page-id="{{ page.id|default('') }}" data-user-id="{{ current_user.id|default('') }}" style="display: none;"></div>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<div class="visual-builder" id="visualBuilder" data-theme="light">
+    <!-- Toolbar -->
+    <header class="toolbar">
+        <div class="toolbar-section">
+            <div class="toolbar-title">
+                <i class="bi bi-palette"></i>
+                Visual Page Builder
+                <span class="version-badge">v2.0</span>
+            </div>
+        </div>
+        
+        <div class="toolbar-section">
+            <!-- Theme Toggle -->
+            <button class="btn btn-ghost" onclick="visualBuilder.toggleTheme()" aria-label="Переключить тему">
+                <i class="bi bi-moon" id="theme-icon"></i>
+            </button>
+            
+            <!-- View Controls -->
+            <div class="btn-group">
+                <button class="btn btn-ghost" onclick="visualBuilder.zoomOut()" title="Уменьшить">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+                <span class="zoom-indicator" id="zoomIndicator">100%</span>
+                <button class="btn btn-ghost" onclick="visualBuilder.zoomIn()" title="Увеличить">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
+                <button class="btn btn-ghost" onclick="visualBuilder.resetZoom()" title="Сбросить">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+            </div>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- History Controls -->
+            <button class="btn btn-secondary" id="undoBtn" onclick="visualBuilder.undo()" disabled title="Отменить (Ctrl+Z)">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Отменить
+            </button>
+            <button class="btn btn-secondary" id="redoBtn" onclick="visualBuilder.redo()" disabled title="Повторить (Ctrl+Y)">
+                <i class="bi bi-arrow-clockwise"></i>
+                Повторить
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- Panel Controls -->
+            <button class="btn btn-secondary" onclick="visualBuilder.togglePropertiesPanel()" title="Панель свойств">
+                <i class="bi bi-sliders"></i>
+                Свойства
+            </button>
+            <button class="btn btn-secondary" onclick="visualBuilder.toggleLayersPanel()" title="Панель слоёв">
+                <i class="bi bi-layers"></i>
+                Слои
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- Template Management -->
+            <button class="btn btn-secondary" onclick="visualBuilder.openTemplateLibrary()" title="Библиотека шаблонов">
+                <i class="bi bi-collection"></i>
+                Шаблоны
+            </button>
+            <button class="btn btn-secondary" onclick="visualBuilder.loadPage()" title="Загрузить страницу">
+                <i class="bi bi-folder-open"></i>
+                Загрузить
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- Page Actions -->
+            <button class="btn btn-warning" onclick="visualBuilder.clearCanvas()" title="Очистить холст">
+                <i class="bi bi-trash"></i>
+                Очистить
+            </button>
+            <button class="btn btn-info" onclick="visualBuilder.previewPage()" title="Предпросмотр">
+                <i class="bi bi-eye"></i>
+                Просмотр
+            </button>
+            <button class="btn btn-success" onclick="visualBuilder.savePage()" title="Сохранить (Ctrl+S)">
+                <i class="bi bi-save"></i>
+                Сохранить
+            </button>
+            <button class="btn btn-primary" onclick="visualBuilder.exportPage()" title="Экспорт">
+                <i class="bi bi-download"></i>
+                Экспорт
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Components Sidebar -->
+        <aside class="sidebar" id="componentsSidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">
+                    <i class="bi bi-puzzle"></i>
+                    Компоненты
+                </h2>
+                <div class="sidebar-search">
+                    <input type="text" class="form-control form-control-sm" placeholder="Поиск компонентов..." id="componentSearch">
+                </div>
+            </div>
+            
+            <div class="components-grid" id="componentsGrid">
+                <!-- Basic Elements -->
+                <div class="component-category">
+                    <h3 class="category-title">
+                        <i class="bi bi-type"></i>
+                        Основные элементы
+                    </h3>
+                    
+                    <div class="component-item" draggable="true" data-type="text" tabindex="0">
+                        <div class="component-icon text-icon">
+                            <i class="bi bi-type"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Текст</h4>
+                            <p>Блок текста с форматированием</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="heading" tabindex="0">
+                        <div class="component-icon heading-icon">
+                            <i class="bi bi-type-h1"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Заголовок</h4>
+                            <p>H1, H2, H3 заголовки</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="image" tabindex="0">
+                        <div class="component-icon image-icon">
+                            <i class="bi bi-image"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Изображение</h4>
+                            <p>Загрузка и отображение изображений</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="button" tabindex="0">
+                        <div class="component-icon button-icon">
+                            <i class="bi bi-ui-radios"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Кнопка</h4>
+                            <p>Интерактивная кнопка</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Media Elements -->
+                <div class="component-category">
+                    <h3 class="category-title">
+                        <i class="bi bi-camera-video"></i>
+                        Медиа элементы
+                    </h3>
+                    
+                    <div class="component-item" draggable="true" data-type="video" tabindex="0">
+                        <div class="component-icon video-icon">
+                            <i class="bi bi-play-circle"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Видео</h4>
+                            <p>Встраивание видео и плеер</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="audio" tabindex="0">
+                        <div class="component-icon audio-icon">
+                            <i class="bi bi-music-note"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Аудио</h4>
+                            <p>Аудио плеер</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="gallery" tabindex="0">
+                        <div class="component-icon gallery-icon">
+                            <i class="bi bi-images"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Галерея</h4>
+                            <p>Галерея изображений</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Elements -->
+                <div class="component-category">
+                    <h3 class="category-title">
+                        <i class="bi bi-gear"></i>
+                        Интерактивные
+                    </h3>
+                    
+                    <div class="component-item" draggable="true" data-type="quiz" tabindex="0">
+                        <div class="component-icon quiz-icon">
+                            <i class="bi bi-question-circle"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Тест</h4>
+                            <p>Интерактивный тест</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="form" tabindex="0">
+                        <div class="component-icon form-icon">
+                            <i class="bi bi-card-text"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Форма</h4>
+                            <p>Форма обратной связи</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="accordion" tabindex="0">
+                        <div class="component-icon accordion-icon">
+                            <i class="bi bi-list"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Аккордеон</h4>
+                            <p>Складывающиеся блоки</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="tabs" tabindex="0">
+                        <div class="component-icon tabs-icon">
+                            <i class="bi bi-segmented-nav"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Вкладки</h4>
+                            <p>Переключаемые разделы</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="flashcard" tabindex="0">
+                        <div class="component-icon flashcard-icon">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Флэшкарта</h4>
+                            <p>Карточка с переворотом</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Layout Elements -->
+                <div class="component-category">
+                    <h3 class="category-title">
+                        <i class="bi bi-grid"></i>
+                        Макет
+                    </h3>
+                    
+                    <div class="component-item" draggable="true" data-type="container" tabindex="0">
+                        <div class="component-icon container-icon">
+                            <i class="bi bi-box"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Контейнер</h4>
+                            <p>Блок-контейнер</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="grid" tabindex="0">
+                        <div class="component-icon grid-icon">
+                            <i class="bi bi-grid-3x3"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Сетка</h4>
+                            <p>Grid layout</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="columns" tabindex="0">
+                        <div class="component-icon columns-icon">
+                            <i class="bi bi-columns"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Колонки</h4>
+                            <p>Многоколоночный макет</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="divider" tabindex="0">
+                        <div class="component-icon divider-icon">
+                            <i class="bi bi-dash-lg"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Разделитель</h4>
+                            <p>Линия разделения</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical Components -->
+                <div class="component-category">
+                    <h3 class="category-title">
+                        <i class="bi bi-heart-pulse"></i>
+                        Стоматология
+                    </h3>
+                    
+                    <div class="component-item" draggable="true" data-type="dental-chart" tabindex="0">
+                        <div class="component-icon dental-icon">
+                            <i class="bi bi-diagram-3"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Зубная формула</h4>
+                            <p>Интерактивная зубная формула</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="case-study" tabindex="0">
+                        <div class="component-icon case-icon">
+                            <i class="bi bi-file-medical"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Клинический случай</h4>
+                            <p>Разбор клинического случая</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="xray-viewer" tabindex="0">
+                        <div class="component-icon xray-icon">
+                            <i class="bi bi-camera"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Рентген просмотр</h4>
+                            <p>Просмотр рентгеновских снимков</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ready Blocks -->
+                <div class="component-category">
+                    <h3 class="category-title">
+                        <i class="bi bi-bookmark-star"></i>
+                        Готовые блоки
+                    </h3>
+                    
+                    <div class="component-item" draggable="true" data-type="hero" tabindex="0">
+                        <div class="component-icon hero-icon">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Hero секция</h4>
+                            <p>Главный блок страницы</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="feature" tabindex="0">
+                        <div class="component-icon feature-icon">
+                            <i class="bi bi-lightning"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Преимущества</h4>
+                            <p>Блок с преимуществами</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="testimonial" tabindex="0">
+                        <div class="component-icon testimonial-icon">
+                            <i class="bi bi-chat-quote"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Отзывы</h4>
+                            <p>Блок отзывов</p>
+                        </div>
+                    </div>
+                    
+                    <div class="component-item" draggable="true" data-type="cta" tabindex="0">
+                        <div class="component-icon cta-icon">
+                            <i class="bi bi-megaphone"></i>
+                        </div>
+                        <div class="component-info">
+                            <h4>Призыв к действию</h4>
+                            <p>Call-to-action блок</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Canvas Area -->
+        <main class="canvas-area">
+            <div class="canvas-header">
+                <div class="canvas-title">
+                    <h1>Создание страницы</h1>
+                    <div class="canvas-meta">
+                        <span class="page-info" id="pageInfo">Новая страница</span>
+                        <span class="last-saved" id="lastSaved">Автосохранение: выключено</span>
+                    </div>
+                </div>
+                
+                <div class="canvas-actions">
+                    <div class="responsive-preview">
+                        <button class="btn btn-sm btn-ghost active" data-device="desktop" title="Десктоп">
+                            <i class="bi bi-display"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost" data-device="tablet" title="Планшет">
+                            <i class="bi bi-tablet"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost" data-device="mobile" title="Мобильный">
+                            <i class="bi bi-phone"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="view-options">
+                        <button class="btn btn-sm btn-ghost" onclick="visualBuilder.toggleGrid()" title="Сетка">
+                            <i class="bi bi-grid"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost" onclick="visualBuilder.toggleRulers()" title="Линейки">
+                            <i class="bi bi-rulers"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost" onclick="visualBuilder.toggleSnapToGrid()" title="Привязка к сетке">
+                            <i class="bi bi-magnet"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="canvas-container" id="canvasContainer">
+                <div class="canvas-rulers" id="canvasRulers" style="display: none;">
+                    <div class="ruler ruler-horizontal"></div>
+                    <div class="ruler ruler-vertical"></div>
+                </div>
+                
+                <div class="canvas-wrapper">
+                    <div class="canvas" id="canvas" data-device="desktop">
+                        <div class="canvas-empty">
+                            <div class="canvas-empty-icon">
+                                <i class="bi bi-palette"></i>
+                            </div>
+                            <div class="canvas-empty-content">
+                                <h3>Начните создавать страницу</h3>
+                                <p>Перетащите компоненты из левой панели сюда или выберите готовый шаблон</p>
+                                <div class="empty-actions">
+                                    <button class="btn btn-primary" onclick="visualBuilder.openTemplateLibrary()">
+                                        <i class="bi bi-collection"></i>
+                                        Выбрать шаблон
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="visualBuilder.showTutorial()">
+                                        <i class="bi bi-question-circle"></i>
+                                        Как начать?
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Layers Panel -->
+        <aside class="layers-panel" id="layersPanel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-layers"></i>
+                    Слои
+                </h2>
+                <div class="panel-actions">
+                    <button class="btn btn-sm btn-ghost" onclick="visualBuilder.collapseAllLayers()" title="Свернуть все">
+                        <i class="bi bi-arrows-collapse"></i>
+                    </button>
+                    <button class="btn btn-sm btn-ghost" onclick="visualBuilder.expandAllLayers()" title="Развернуть все">
+                        <i class="bi bi-arrows-expand"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="panel-content">
+                <div class="layers-list" id="layersList">
+                    <div class="layers-empty">
+                        <i class="bi bi-layers"></i>
+                        <p>Нет элементов</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Properties Panel -->
+        <aside class="properties-panel" id="propertiesPanel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-sliders"></i>
+                    Свойства
+                </h2>
+                <div class="panel-actions">
+                    <button class="btn btn-sm btn-primary" onclick="visualBuilder.openAdvancedStyleEditor()" title="Advanced Style Editor">
+                        <i class="bi bi-palette2"></i>
+                        Advanced
+                    </button>
+                    <button class="btn btn-sm btn-ghost" onclick="visualBuilder.togglePropertiesPanel()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="panel-content" id="propertiesContent">
+                <div class="properties-empty">
+                    <i class="bi bi-sliders"></i>
+                    <p>Выберите элемент для редактирования его свойств</p>
+                    <div class="mt-3">
+                        <button class="btn btn-primary btn-sm" onclick="visualBuilder.openAdvancedStyleEditor()">
+                            <i class="bi bi-palette2"></i>
+                            Открыть Advanced Style Editor
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <p>Загрузка...</p>
+        </div>
+    </div>
+
+    <!-- Индикатор автосохранения Live Editor -->
+    <div id="saveIndicator" class="save-indicator" style="display: none;"></div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu" style="display: none;">
+        <div class="context-menu-item" data-action="copy">
+            <i class="bi bi-copy"></i>
+            Копировать
+        </div>
+        <div class="context-menu-item" data-action="duplicate">
+            <i class="bi bi-files"></i>
+            Дублировать
+        </div>
+        <div class="context-menu-item" data-action="edit">
+            <i class="bi bi-pencil"></i>
+            Редактировать
+        </div>
+        <hr class="context-menu-divider">
+        <div class="context-menu-item" data-action="move-up">
+            <i class="bi bi-arrow-up"></i>
+            Переместить вверх
+        </div>
+        <div class="context-menu-item" data-action="move-down">
+            <i class="bi bi-arrow-down"></i>
+            Переместить вниз
+        </div>
+        <hr class="context-menu-divider">
+        <div class="context-menu-item text-danger" data-action="delete">
+            <i class="bi bi-trash"></i>
+            Удалить
+        </div>
+    </div>
+</div>
+
+<!-- Modals will be loaded dynamically -->
+<div id="modalContainer"></div>
+
+<!-- Flash Messages -->
+<div class="flash-messages" id="flashMessages"></div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- External Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<!-- Visual Builder Scripts -->
+<script src="{{ url_for('static', filename='js/visual-builder.js') }}"></script>
+<script src="{{ url_for('static', filename='js/live-editor.js') }}"></script>
+
+<!-- Advanced Design System Modules -->
+<script src="{{ url_for('static', filename='js/visual-builder/advanced-style-editor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/visual-builder/box-model-visualizer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/visual-builder/color-system.js') }}"></script>
+<script src="{{ url_for('static', filename='js/visual-builder/typography-system.js') }}"></script>
+
+<!-- File Browser -->
+<script src="{{ url_for('static', filename='js/visual-builder/file-browser.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Visual Builder with basic configuration
+    window.visualBuilder = new VisualBuilder({
+        apiEndpoint: '/api/visual-builder',
+        mediaEndpoint: '/api/visual-builder/media',
+        templatesEndpoint: '/api/visual-builder/templates',
+        currentPageId: getCurrentPageId(),
+        currentUserId: getCurrentUserId(),
+        csrfToken: getCSRFToken()
+    });
+});
+
+// Helper functions
+function getCurrentPageId() {
+    return document.querySelector('[data-page-id]')?.dataset.pageId || null;
+}
+
+function getCurrentUserId() {
+    return parseInt(document.querySelector('[data-user-id]')?.dataset.userId) || null;
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+</script>
+{% endblock %}

@@ -35,28 +35,58 @@ document.addEventListener('DOMContentLoaded', function() {
     const circles = document.querySelectorAll('.progress-circle');
     
     circles.forEach(circle => {
-      const progressValue = parseInt(circle.getAttribute('data-progress') || 0);
-      const circleSize = circle.classList.contains('small') ? 40 : 
-                          circle.classList.contains('large') ? 50 : 45;
-      const circumference = 2 * Math.PI * circleSize;
-      const dashOffset = circumference - (circumference * progressValue / 100);
-      
-      const svg = `
-        <svg viewBox="0 0 100 100">
-          <circle class="progress-circle-bg" cx="50" cy="50" r="${circleSize}" />
-          <circle 
-            class="progress-circle-value" 
-            cx="50" 
-            cy="50" 
-            r="${circleSize}"
-            stroke-dasharray="${circumference}"
-            stroke-dashoffset="${dashOffset}"
-          />
-        </svg>
-        <div class="progress-circle-text">${progressValue}%</div>
-      `;
-      
-      circle.innerHTML = svg;
+      try {
+        const progressValue = parseInt(circle.getAttribute('data-progress') || 0);
+        
+        // Проверяем, не инициализирован ли уже
+        if (circle.classList.contains('initialized')) return;
+        
+        // Обновляем атрибуты доступности
+        circle.setAttribute('aria-valuenow', progressValue);
+        
+        // Создаем или находим контейнер для текста
+        let textElement = circle.querySelector('.progress-circle-text');
+        if (!textElement) {
+          textElement = document.createElement('div');
+          textElement.className = 'progress-circle-text';
+          circle.appendChild(textElement);
+        }
+        
+        // Обновляем текст
+        textElement.textContent = `${progressValue}%`;
+        
+        // Анимация SVG (если нужна)
+        let svg = circle.querySelector('svg');
+        if (!svg && progressValue > 0) {
+          const circleSize = circle.classList.contains('small') ? 40 : 
+                           circle.classList.contains('large') ? 50 : 45;
+          const circumference = 2 * Math.PI * circleSize;
+          const dashOffset = circumference - (circumference * progressValue / 100);
+          
+          svg = document.createElement('div');
+          svg.innerHTML = `
+            <svg viewBox="0 0 100 100" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+              <circle class="progress-circle-bg" cx="50" cy="50" r="${circleSize}" />
+              <circle 
+                class="progress-circle-value" 
+                cx="50" 
+                cy="50" 
+                r="${circleSize}"
+                stroke-dasharray="${circumference}"
+                stroke-dashoffset="${dashOffset}"
+                style="transition: stroke-dashoffset 0.5s ease-in-out;"
+              />
+            </svg>
+          `;
+          circle.insertBefore(svg.firstElementChild, textElement);
+        }
+        
+        // Помечаем как инициализированный
+        circle.classList.add('initialized');
+        
+      } catch (error) {
+        console.error('Error initializing circular progress:', error);
+      }
     });
   }
   
@@ -596,8 +626,33 @@ document.addEventListener('DOMContentLoaded', function() {
    * Скрытие индикатора загрузки
    */
   function hideLoadingIndicator() {
-    const loader = document.getElementById('global-loader');
-    if (loader) {
-      loader.style.display = 'none';
+    const indicator = document.querySelector('.loading-indicator');
+    if (indicator) {
+      indicator.style.display = 'none';
     }
   }
+  
+  /**
+   * Обновление статистики прогресса
+   * @param {Object} newData - Новые данные статистики
+   */
+  function updateProgressStats(newData) {
+    if (newData.overall_progress !== undefined) {
+      const progressCircle = document.querySelector('[data-progress]');
+      if (progressCircle) {
+        progressCircle.setAttribute('data-progress', newData.overall_progress);
+        progressCircle.setAttribute('aria-valuenow', newData.overall_progress);
+        progressCircle.classList.remove('initialized'); // Сбрасываем флаг
+        initCircularProgress(); // Переинициализируем
+      }
+    }
+  }
+
+  // Безопасная инициализация при загрузке
+  document.addEventListener('DOMContentLoaded', function() {
+    initCircularProgress();
+  });
+  
+  // Экспортируем функции для использования в других модулях
+  window.updateProgressStats = updateProgressStats;
+  window.initCircularProgress = initCircularProgress;

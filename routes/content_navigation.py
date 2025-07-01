@@ -3,9 +3,9 @@
 
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, g, current_app
 from flask_login import login_required, current_user
-import json
-
 from models import db, ContentCategory, ContentSubcategory, ContentTopic, Lesson, UserProgress
+from utils.unified_stats import track_lesson_progress
+import json
 
 # Создаем blueprint для контента
 content_nav_bp = Blueprint('content_nav', __name__, url_prefix='/<lang>/learn')
@@ -155,6 +155,9 @@ def view_lesson(lang, lesson_id):
                 lesson_content = json.loads(lesson.content)
             except:
                 lesson_content = {"error": "Ошибка парсинга контента"}
+        
+        # Отслеживаем прогресс урока
+        track_lesson_progress(current_user.id, lesson_id)
         
         return render_template(
             "content/lesson_view.html",

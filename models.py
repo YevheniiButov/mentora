@@ -1358,3 +1358,474 @@ class DutchAssessmentResult(db.Model):
     
     def __repr__(self):
         return f'<DutchAssessmentResult {self.id}: User {self.user_id}, Level {self.competency_level}>'    
+
+# ============================================================================
+# CONTENT EDITOR MODELS
+# ============================================================================
+
+class ContentTemplate(db.Model):
+    """Модель для хранения шаблонов контента"""
+    __tablename__ = 'content_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    template_id = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    name = db.Column(db.JSON, nullable=False)  # Многоязычные названия
+    description = db.Column(db.JSON, nullable=True)  # Многоязычные описания
+    category = db.Column(db.String(50), nullable=False, index=True)
+    icon = db.Column(db.String(50), nullable=True)
+    version = db.Column(db.String(20), default='1.0')
+    structure = db.Column(db.JSON, nullable=False)  # JSON структура шаблона
+    template_metadata = db.Column(db.JSON, nullable=True)  # Дополнительные метаданные
+    tags = db.Column(db.JSON, nullable=True)  # Теги для поиска
+    author = db.Column(db.String(100), default='Dental Academy')
+    is_active = db.Column(db.Boolean, default=True)
+    is_public = db.Column(db.Boolean, default=True)
+    is_system = db.Column(db.Boolean, default=False, index=True)  # Системный шаблон
+    language = db.Column(db.String(5), default='en', index=True)  # Основной язык шаблона
+    usage_count = db.Column(db.Integer, default=0)
+    rating = db.Column(db.Float, default=0.0)
+    rating_count = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Связи
+    creator = db.relationship('User', backref='created_templates', foreign_keys=[created_by])
+    
+    def __repr__(self):
+        return f'<ContentTemplate {self.template_id}>'
+    
+    def get_name(self, lang='ru'):
+        """Получить название на указанном языке"""
+        if isinstance(self.name, dict):
+            return self.name.get(lang, self.name.get('ru', self.template_id))
+        return self.name
+    
+    def get_description(self, lang='ru'):
+        """Получить описание на указанном языке"""
+        if isinstance(self.description, dict):
+            return self.description.get(lang, self.description.get('ru', ''))
+        return self.description or ''
+    
+    def increment_usage(self):
+        """Увеличить счетчик использования"""
+        self.usage_count += 1
+        db.session.commit()
+    
+    def update_rating(self, new_rating):
+        """Обновить рейтинг шаблона"""
+        total_rating = self.rating * self.rating_count + new_rating
+        self.rating_count += 1
+        self.rating = total_rating / self.rating_count
+        db.session.commit()
+    
+    def to_dict(self, lang='ru'):
+        """Преобразовать в словарь для API"""
+        return {
+            'id': self.id,
+            'template_id': self.template_id,
+            'name': self.get_name(lang),
+            'description': self.get_description(lang),
+            'category': self.category,
+            'icon': self.icon,
+            'version': self.version,
+            'structure': self.structure,
+            'metadata': self.template_metadata,
+            'tags': self.tags,
+            'author': self.author,
+            'is_active': self.is_active,
+            'is_public': self.is_public,
+            'usage_count': self.usage_count,
+            'rating': self.rating,
+            'rating_count': self.rating_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'created_by': self.created_by
+        }
+    
+    @classmethod
+    def get_by_category(cls, category, lang='ru', limit=None):
+        """Получить шаблоны по категории"""
+        query = cls.query.filter_by(category=category, is_active=True, is_public=True)
+        if limit:
+            query = query.limit(limit)
+        return query.all()
+    
+    @classmethod
+    def search(cls, query, lang='ru', limit=None):
+        """Поиск шаблонов по названию, описанию или тегам"""
+        search_term = f'%{query}%'
+        results = cls.query.filter(
+            db.or_(
+                cls.name.contains({lang: search_term}),
+                cls.description.contains({lang: search_term}),
+                cls.tags.contains([query])
+            ),
+            cls.is_active == True,
+            cls.is_public == True
+        )
+        if limit:
+            results = results.limit(limit)
+        return results.all()
+
+class ContentPage(db.Model):
+    """Основная модель для страниц редактора контента"""
+    __tablename__ = 'content_pages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False, index=True)
+    slug = db.Column(db.String(255), nullable=False, index=True)
+    description = db.Column(db.Text, nullable=True)
+    
+    # Тип контента и связь с существующими моделями
+    content_type = db.Column(db.String(50), nullable=False, index=True)  # lesson, module, subject, custom
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), nullable=True, index=True)
+    module_id = db.Column(db.Integer, db.ForeignKey('module.id'), nullable=True, index=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=True, index=True)
+    
+    # Контент страницы
+    content_data = db.Column(db.Text, nullable=False)  # JSON с контентом страницы
+    page_metadata = db.Column(db.Text, nullable=True)  # JSON с метаданными
+    
+    # Шаблон
+    template_id = db.Column(db.Integer, db.ForeignKey('content_templates.id'), nullable=True, index=True)
+    
+    # Статус и публикация
+    status = db.Column(db.String(20), default='draft', index=True)  # draft, published, archived
+    is_published = db.Column(db.Boolean, default=False, index=True)
+    published_at = db.Column(db.DateTime, nullable=True, index=True)
+    
+    # Мультиязычность
+    language = db.Column(db.String(5), default='en', index=True)
+    original_page_id = db.Column(db.Integer, db.ForeignKey('content_pages.id'), nullable=True, index=True)  # Для переводов
+    
+    # SEO и навигация
+    seo_title = db.Column(db.String(255), nullable=True)
+    seo_description = db.Column(db.Text, nullable=True)
+    seo_keywords = db.Column(db.String(500), nullable=True)
+    canonical_url = db.Column(db.String(500), nullable=True)
+    
+    # Создатель и время
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Отношения
+    creator = db.relationship('User', foreign_keys=[created_by], backref=db.backref('created_content_pages', lazy='dynamic'))
+    updater = db.relationship('User', foreign_keys=[updated_by], backref=db.backref('updated_content_pages', lazy='dynamic'))
+    lesson = db.relationship('Lesson', backref=db.backref('content_pages', lazy='dynamic'))
+    module = db.relationship('Module', backref=db.backref('content_pages', lazy='dynamic'))
+    subject = db.relationship('Subject', backref=db.backref('content_pages', lazy='dynamic'))
+    original_page = db.relationship('ContentPage', remote_side=[id], backref=db.backref('translations', lazy='dynamic'))
+    versions = db.relationship('ContentPageVersion', backref='content_page', lazy='dynamic', cascade='all, delete-orphan')
+    
+    # Индексы для производительности
+    __table_args__ = (
+        db.Index('idx_content_type_status', 'content_type', 'status'),
+        db.Index('idx_language_published', 'language', 'is_published'),
+        db.Index('idx_created_by_status', 'created_by', 'status'),
+        db.Index('idx_slug_language', 'slug', 'language'),
+        db.UniqueConstraint('slug', 'language', name='uc_content_page_slug_language'),
+    )
+    
+    def get_content_data(self):
+        """Получить данные контента"""
+        return json.loads(self.content_data) if self.content_data else {}
+    
+    def set_content_data(self, content_dict):
+        """Установить данные контента"""
+        self.content_data = json.dumps(content_dict, ensure_ascii=False)
+    
+    def get_page_metadata(self):
+        """Получить метаданные страницы"""
+        return json.loads(self.page_metadata) if self.page_metadata else {}
+    
+    def set_page_metadata(self, metadata_dict):
+        """Установить метаданные страницы"""
+        self.page_metadata = json.dumps(metadata_dict, ensure_ascii=False)
+    
+    def publish(self):
+        """Опубликовать страницу"""
+        self.status = 'published'
+        self.is_published = True
+        self.published_at = datetime.now(timezone.utc)
+    
+    def archive(self):
+        """Архивировать страницу"""
+        self.status = 'archived'
+        self.is_published = False
+    
+    def create_version(self, user_id, version_notes=None):
+        """Создать новую версию страницы"""
+        version = ContentPageVersion(
+            content_page_id=self.id,
+            version_number=self.versions.count() + 1,
+            title=self.title,
+            content_data=self.content_data,
+            version_metadata=self.page_metadata,
+            created_by=user_id,
+            version_notes=version_notes
+        )
+        return version
+    
+    def get_latest_version(self):
+        """Получить последнюю версию"""
+        return self.versions.order_by(ContentPageVersion.version_number.desc()).first()
+    
+    def __repr__(self):
+        return f'<ContentPage {self.id}: {self.title} ({self.content_type})>'
+
+class ContentPageVersion(db.Model):
+    """Версионирование страниц контента"""
+    __tablename__ = 'content_page_versions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    content_page_id = db.Column(db.Integer, db.ForeignKey('content_pages.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Версия
+    version_number = db.Column(db.Integer, nullable=False, index=True)
+    version_notes = db.Column(db.Text, nullable=True)  # Заметки о версии
+    
+    # Данные версии
+    title = db.Column(db.String(255), nullable=False)
+    content_data = db.Column(db.Text, nullable=False)  # JSON с контентом на момент версии
+    version_metadata = db.Column(db.Text, nullable=True)  # JSON с метаданными на момент версии
+    
+    # Создатель и время
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    
+    # Отношения
+    creator = db.relationship('User', backref=db.backref('content_page_versions', lazy='dynamic'))
+    
+    # Индексы для производительности
+    __table_args__ = (
+        db.Index('idx_page_version_number', 'content_page_id', 'version_number'),
+        db.Index('idx_version_created_at', 'created_at'),
+        db.UniqueConstraint('content_page_id', 'version_number', name='uc_content_page_version'),
+    )
+    
+    def get_content_data(self):
+        """Получить данные контента версии"""
+        return json.loads(self.content_data) if self.content_data else {}
+    
+    def get_version_metadata(self):
+        """Получить метаданные версии"""
+        return json.loads(self.version_metadata) if self.version_metadata else {}
+    
+    def restore_to_page(self, target_page):
+        """Восстановить эту версию в целевую страницу"""
+        target_page.title = self.title
+        target_page.content_data = self.content_data
+        target_page.version_metadata = self.version_metadata
+        target_page.updated_at = datetime.now(timezone.utc)
+        target_page.updated_by = target_page.created_by  # Или передать текущего пользователя
+    
+    def __repr__(self):
+        return f'<ContentPageVersion {self.id}: Page {self.content_page_id}, v{self.version_number}>'    
+
+# ===== GRAPESJS MODELS =====
+
+class GrapesJSPage(db.Model):
+    """Модель для страниц созданных в GrapesJS"""
+    __tablename__ = 'grapejs_pages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False, default='Новая страница')
+    slug = db.Column(db.String(255), unique=True, nullable=True)
+    
+    # Контент GrapesJS
+    html = db.Column(db.Text)
+    css = db.Column(db.Text)
+    components = db.Column(db.Text)  # JSON строка компонентов GrapesJS
+    styles = db.Column(db.Text)      # JSON строка стилей GrapesJS
+    
+    # Связи
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), nullable=True)
+    module_id = db.Column(db.Integer, db.ForeignKey('module.id'), nullable=True)
+    
+    # Метаданные
+    is_published = db.Column(db.Boolean, default=False)
+    is_template = db.Column(db.Boolean, default=False)
+    category = db.Column(db.String(100), default='general')
+    description = db.Column(db.Text)
+    
+    # Временные метки
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    published_at = db.Column(db.DateTime, nullable=True)
+    
+    # Индексы
+    __table_args__ = (
+        db.Index('idx_grapejs_pages_user_id', 'user_id'),
+        db.Index('idx_grapejs_pages_lesson_id', 'lesson_id'),
+        db.Index('idx_grapejs_pages_published', 'is_published'),
+        db.Index('idx_grapejs_pages_template', 'is_template'),
+    )
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('grapejs_pages', lazy='dynamic'))
+    lesson = db.relationship('Lesson', backref=db.backref('grapejs_pages', lazy='dynamic'))
+    module = db.relationship('Module', backref=db.backref('grapejs_pages', lazy='dynamic'))
+    
+    def __repr__(self):
+        return f'<GrapesJSPage {self.title}>'
+    
+    def to_dict(self):
+        """Сериализация в словарь"""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'slug': self.slug,
+            'html': self.html,
+            'css': self.css,
+            'components': self.components,
+            'styles': self.styles,
+            'user_id': self.user_id,
+            'lesson_id': self.lesson_id,
+            'module_id': self.module_id,
+            'is_published': self.is_published,
+            'is_template': self.is_template,
+            'category': self.category,
+            'description': self.description,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'published_at': self.published_at.isoformat() if self.published_at else None,
+        }
+    
+    @staticmethod
+    def generate_slug(title):
+        """Генерация slug из заголовка"""
+        import re
+        try:
+            import unidecode
+            slug = unidecode.unidecode(title).lower()
+        except ImportError:
+            # Fallback без unidecode
+            slug = title.lower()
+        
+        slug = re.sub(r'[^a-z0-9\-]', '-', slug)
+        slug = re.sub(r'-+', '-', slug).strip('-')
+        return slug[:100]  # Ограничиваем длину
+
+
+class GrapesJSAsset(db.Model):
+    """Модель для медиа ресурсов GrapesJS"""
+    __tablename__ = 'grapejs_assets'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    original_name = db.Column(db.String(255), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)
+    file_size = db.Column(db.Integer)
+    mime_type = db.Column(db.String(100))
+    width = db.Column(db.Integer, nullable=True)
+    height = db.Column(db.Integer, nullable=True)
+    
+    # Связи
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    page_id = db.Column(db.Integer, db.ForeignKey('grapejs_pages.id'), nullable=True)
+    
+    # Метаданные
+    alt_text = db.Column(db.String(255))
+    description = db.Column(db.Text)
+    is_public = db.Column(db.Boolean, default=False)
+    
+    # Временные метки
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Индексы
+    __table_args__ = (
+        db.Index('idx_grapejs_assets_user_id', 'user_id'),
+        db.Index('idx_grapejs_assets_page_id', 'page_id'),
+        db.Index('idx_grapejs_assets_public', 'is_public'),
+    )
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('grapejs_assets', lazy='dynamic'))
+    page = db.relationship('GrapesJSPage', backref=db.backref('assets', lazy='dynamic'))
+    
+    def __repr__(self):
+        return f'<GrapesJSAsset {self.original_name}>'
+    
+    def to_dict(self):
+        """Сериализация в словарь"""
+        return {
+            'id': self.id,
+            'filename': self.filename,
+            'original_name': self.original_name,
+            'file_path': self.file_path,
+            'file_size': self.file_size,
+            'mime_type': self.mime_type,
+            'width': self.width,
+            'height': self.height,
+            'alt_text': self.alt_text,
+            'description': self.description,
+            'is_public': self.is_public,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'url': f'/static/uploads/grapejs/{self.filename}'
+        }
+
+
+class GrapesJSTemplate(db.Model):
+    """Модель для шаблонов GrapesJS"""
+    __tablename__ = 'grapejs_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    preview_image = db.Column(db.String(255))
+    
+    # Контент шаблона
+    html = db.Column(db.Text)
+    css = db.Column(db.Text)
+    components = db.Column(db.Text)
+    styles = db.Column(db.Text)
+    
+    # Метаданные
+    category = db.Column(db.String(100), default='general')
+    is_public = db.Column(db.Boolean, default=False)
+    is_official = db.Column(db.Boolean, default=False)
+    usage_count = db.Column(db.Integer, default=0)
+    
+    # Связи
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Временные метки
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Индексы
+    __table_args__ = (
+        db.Index('idx_grapejs_templates_category', 'category'),
+        db.Index('idx_grapejs_templates_public', 'is_public'),
+        db.Index('idx_grapejs_templates_official', 'is_official'),
+    )
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('grapejs_templates', lazy='dynamic'))
+    
+    def __repr__(self):
+        return f'<GrapesJSTemplate {self.name}>'
+    
+    def to_dict(self):
+        """Сериализация в словарь"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'preview_image': self.preview_image,
+            'html': self.html,
+            'css': self.css,
+            'components': self.components,
+            'styles': self.styles,
+            'category': self.category,
+            'is_public': self.is_public,
+            'is_official': self.is_official,
+            'usage_count': self.usage_count,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }

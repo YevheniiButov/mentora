@@ -75,6 +75,13 @@ def learning_dashboard(lang):
         flash(f"Произошла ошибка при загрузке дашборда: {str(e)}", "danger")
         return redirect(url_for('main_bp.home', lang=current_lang))
 
+# Редирект с неправильного URL на правильный
+@dashboard_bp.route("/learning-dashboard")
+@login_required
+def learning_dashboard_redirect(lang):
+    """Редирект с /learning-dashboard на /dashboard"""
+    return redirect(url_for('dashboard_bp.learning_dashboard'))
+
 # Тестовый маршрут для нового дашборда
 @dashboard_bp.route("/new")
 @login_required
@@ -109,9 +116,9 @@ def learning_dashboard_new(lang):
 def get_user_stats(user_id):
     """Получает статистику обучения пользователя"""
     try:
-        # Используем существующую функцию из learning_map_routes.py
-        from routes.learning_map_routes import get_user_stats as get_map_user_stats
-        stats = get_map_user_stats(user_id)
+        # Используем унифицированную систему статистики
+        from utils.unified_stats import get_unified_user_stats
+        stats = get_unified_user_stats(user_id)
         
         # Получаем дату экзамена из сессии, если она есть
         if 'exam_date' in session:
@@ -146,9 +153,9 @@ def get_recommended_module(user_id):
         highest_progress = -1
         
         for module in modules:
-            # Получаем статистику модуля
-            from routes.learning_map_routes import get_module_stats
-            stats = get_module_stats(module.id, user_id)
+            # Получаем статистику модуля через унифицированную систему
+            from utils.unified_stats import get_module_stats_unified
+            stats = get_module_stats_unified(module.id, user_id)
             
             # Если прогресс больше 0%, но меньше 100%, и больше предыдущего
             if 0 < stats["progress"] < 100 and stats["progress"] > highest_progress:
@@ -161,8 +168,8 @@ def get_recommended_module(user_id):
             
         # Если есть модуль, добавляем к нему информацию о прогрессе
         if best_module:
-            from routes.learning_map_routes import get_module_stats
-            module_stats = get_module_stats(best_module.id, user_id)
+            from utils.unified_stats import get_module_stats_unified
+            module_stats = get_module_stats_unified(best_module.id, user_id)
             return {
                 'id': best_module.id,
                 'title': best_module.title,
@@ -198,13 +205,13 @@ def get_recent_modules(user_id, limit=4):
             modules = Module.query.limit(limit).all()
             module_ids = [module.id for module in modules]
         
-        # Получаем модули с прогрессом
+        # Получаем модули с прогрессом через унифицированную систему
         recent_modules = []
         for module_id in module_ids:
             module = Module.query.get(module_id)
             if module:
-                from routes.learning_map_routes import get_module_stats
-                module_stats = get_module_stats(module.id, user_id)
+                from utils.unified_stats import get_module_stats_unified
+                module_stats = get_module_stats_unified(module.id, user_id)
                 recent_modules.append({
                     'id': module.id,
                     'title': module.title,

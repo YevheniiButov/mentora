@@ -19,6 +19,7 @@ from .api_routes import api_bp
 # Административные маршруты
 from .admin_routes import admin_bp
 from .admin_unified import admin_unified_bp
+from .admin.uploader_routes import uploader_bp
 
 # AI маршруты
 from .ai_routes import ai_bp
@@ -34,6 +35,9 @@ from .content_navigation import content_nav_bp
 
 # Дашборд
 from .dashboard_routes import dashboard_bp
+
+# Закомментируем импорт content_editor до тех пор, пока не будут созданы все зависимости
+from .content_editor import content_editor_bp
 
 # Экспорт всех blueprints
 __all__ = [
@@ -51,9 +55,22 @@ __all__ = [
     'api_bp',
     'admin_bp',
     'admin_unified_bp',
+    'uploader_bp',
     'ai_bp',
     'mobile_bp',
     'virtual_patient_api_bp',
     'content_nav_bp',
-    'dashboard_bp'
+    'dashboard_bp',
+    'content_editor_bp',
 ]
+
+def register_content_editor_blueprint(app):
+    """Регистрирует Blueprint редактора контента"""
+    try:
+        from .content_editor import content_editor_bp
+        app.register_blueprint(content_editor_bp)
+        print("✅ Content Editor Blueprint registered successfully")
+    except ImportError as e:
+        print(f"⚠️ Content Editor Blueprint not available: {e}")
+    except Exception as e:
+        print(f"❌ Error registering Content Editor Blueprint: {e}")

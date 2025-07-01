@@ -370,19 +370,19 @@ section {
             
             <div class="dashboard-stats">
               <div class="stat-card">
-                <div class="stat-number">75%</div>
+                <div class="stat-number">{{ stats.overall_progress|default(75) }}%</div>
                 <div class="stat-label">{{ t('completed', g.lang)|default('Завершено') }}</div>
               </div>
               <div class="stat-card">
-                <div class="stat-number">24</div>
+                <div class="stat-number">{{ stats.completed_lessons|default(24) }}</div>
                 <div class="stat-label">{{ t('modules', g.lang)|default('Модулей') }}</div>
               </div>
               <div class="stat-card">
-                <div class="stat-number">156</div>
+                <div class="stat-number">{{ stats.total_lessons|default(156) }}</div>
                 <div class="stat-label">{{ t('cards', g.lang)|default('Карточек') }}</div>
               </div>
               <div class="stat-card">
-                <div class="stat-number">89%</div>
+                <div class="stat-number">{{ stats.average_score|default(89) }}%</div>
                 <div class="stat-label">{{ t('accuracy', g.lang)|default('Точность') }}</div>
               </div>
             </div>
@@ -391,28 +391,28 @@ section {
               <div class="progress-item">
                 <div class="progress-header">
                   <span>{{ t('anatomy', g.lang)|default('Анатомия') }}</span>
-                  <span>92%</span>
+                  <span>{{ stats.anatomy_progress|default(92) }}%</span>
                 </div>
                 <div class="progress-bar">
-                  <div class="progress-fill" style="width: 92%"></div>
+                  <div class="progress-fill" style="width: {{ stats.anatomy_progress|default(92) }}%"></div>
                 </div>
               </div>
               <div class="progress-item">
                 <div class="progress-header">
                   <span>{{ t('physiology', g.lang)|default('Физиология') }}</span>
-                  <span>78%</span>
+                  <span>{{ stats.physiology_progress|default(78) }}%</span>
                 </div>
                 <div class="progress-bar">
-                  <div class="progress-fill" style="width: 78%"></div>
+                  <div class="progress-fill" style="width: {{ stats.physiology_progress|default(78) }}%"></div>
                 </div>
               </div>
               <div class="progress-item">
                 <div class="progress-header">
                   <span>{{ t('radiology', g.lang)|default('Радиология') }}</span>
-                  <span>65%</span>
+                  <span>{{ stats.radiology_progress|default(65) }}%</span>
                 </div>
                 <div class="progress-bar">
-                  <div class="progress-fill" style="width: 65%"></div>
+                  <div class="progress-fill" style="width: {{ stats.radiology_progress|default(65) }}%"></div>
                 </div>
               </div>
             </div>

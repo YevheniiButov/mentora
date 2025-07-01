@@ -1,4 +1,4 @@
-/* ===== ФИНАЛЬНАЯ РАБОЧАЯ ВЕРСИЯ THEME-SYSTEM.JS ===== */
+
 /* static/js/theme-system.js */
 
 (function() {

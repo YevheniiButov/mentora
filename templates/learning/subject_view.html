@@ -381,10 +381,16 @@
             <div class="stats-section">
                 <h2>{{ t('overall_progress', lang) }}</h2>
                 <div class="progress-circle-container">
-                    <div class="progress-circle" data-progress="{{ stats.overall_progress|default(0) }}">
+                    <div class="progress-circle" 
+                         data-progress="{{ stats.overall_progress|default(0) }}"
+                         role="progressbar" 
+                         aria-valuenow="{{ stats.overall_progress|default(0) }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"
+                         aria-label="Overall progress">
                         <div class="circle-background"></div>
                         <div class="circle-progress" style="transform: rotate({{ stats.overall_progress|default(0) * 1.8 }}deg)"></div>
-                        <div class="circle-text">{{ stats.overall_progress|default(0) }}%</div>
+                        <div class="progress-circle-text">{{ stats.overall_progress|default(0) }}%</div>
                     </div>
                 </div>
                 <div class="stats-cards">
@@ -482,6 +488,7 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
+<script src="{{ url_for('static', filename='js/subject_view.js') }}"></script>
 <script>
 // Инициализация системы категорий
 document.addEventListener('DOMContentLoaded', function() {

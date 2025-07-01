@@ -1,6 +1,6 @@
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash, session, g, current_app,
-    jsonify
+    jsonify, make_response
 )
 from flask_login import (
     login_user, logout_user, login_required, current_user
@@ -85,7 +85,11 @@ def login(lang):
             current_app.logger.error(f"Password hash error for user {form.email.data}: {e}")
             flash("Authentication error. Please contact support.", "danger")
     
-    return render_template("auth/login.html", form=form, title="Login")
+    response = make_response(render_template("auth/login.html", form=form, title="Login"))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 # --- Тестовый маршрут для новой версии логина ---
 @auth_bp.route("/login-new", methods=["GET", "POST"])
