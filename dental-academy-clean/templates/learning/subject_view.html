@@ -20,7 +20,29 @@
     
     <div class="main-container">
         <div class="left-column">
-            <div class="learning-paths">
+            <!-- ЭТАП 1: До диагностики - показываем только кнопку проверки знаний -->
+            {% if learning_state and not learning_state.diagnostic_completed %}
+            <div class="learning-paths pre-diagnostic-stage">
+                <div class="learning-path-item">
+                    <a href="{{ url_for('diagnostic_routes.diagnostic_type_selector', lang=lang) }}" 
+                       class="learning-path-button knowledge-assessment">
+                        <div class="path-button-content">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                <path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M12 3c0 1-1 2-2 2s-2-1-2-2 1-2 2-2 2 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M12 21c0-1 1-2 2-2s2 1 2 2-1 2-2 2-2-1-2-2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                            <span>{{ t('knowledge_assessment', lang) }}</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- ЭТАП 2: После диагностики - показываем все пункты обучения -->
+            {% else %}
+            <div class="learning-paths post-diagnostic-stage">
                 {% for path in learning_paths %}
                 <div class="learning-path-item">
                     {% if path.url %}
@@ -132,6 +154,7 @@
                 </div>
                 {% endif %}
             </div>
+            {% endif %}
             
             <!-- Секция с контентом -->
             {% set categories = content_categories if content_categories else content_categories_for_hierarchy %}

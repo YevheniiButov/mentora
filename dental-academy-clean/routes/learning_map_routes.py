@@ -8,7 +8,7 @@ from flask_login import login_required, current_user
 from extensions import db
 from models import (
     VirtualPatientScenario, VirtualPatientAttempt, LearningPath, Subject, Module, Lesson, UserProgress, Test, UserExamDate, ContentCategory, ContentSubcategory, ContentTopic,
-    User, Question, TestAttempt, QuestionCategory
+    User, Question, TestAttempt, QuestionCategory, DiagnosticSession
 )
 from translations import get_translation as t  # предполагаем, что функция называется get_translation
 from sqlalchemy import func
@@ -766,6 +766,9 @@ def profession_learning_map(lang, profession):
             'is_own_profession': user_profession == requested_profession
         }
         
+        # Получаем состояние обучения пользователя
+        learning_state = get_user_learning_state(current_user.id)
+        
         return render_template(
             "learning/subject_view.html",
             title=f'Leerkaart - {PROFESSION_NAMES[profession]}',
@@ -779,7 +782,8 @@ def profession_learning_map(lang, profession):
             recommendations=get_user_recommendations(current_user.id),
             content_categories=processed_categories,
             content_categories_for_hierarchy=processed_categories,  # Добавляем эту переменную
-            profession_context=profession_context
+            profession_context=profession_context,
+            learning_state=learning_state
         )
     except Exception as e:
         import traceback
@@ -2073,4 +2077,54 @@ def subject_tests(lang, subject_id):
         current_app.logger.error(f"Ошибка при отображении тестов: {str(e)}")
         flash("Er is een fout opgetreden bij het laden van de tests.", "error")
         return redirect(url_for('learning_map_bp.learning_map', lang=g.lang))
+
+# === ФУНКЦИИ ПРОВЕРКИ СОСТОЯНИЯ === #
+
+def check_diagnostic_completed(user_id):
+    """Проверить, прошел ли пользователь диагностику"""
+    try:
+        # Проверяем наличие завершенной диагностической сессии
+        diagnostic_session = DiagnosticSession.query.filter_by(
+            user_id=user_id,
+            status='completed'
+        ).order_by(DiagnosticSession.created_at.desc()).first()
+        
+        return diagnostic_session is not None
+    except Exception as e:
+        print(f"Error checking diagnostic completion: {e}")
+        return False
+
+def check_learning_progress(user_id):
+    """Проверить, есть ли прогресс в обучении"""
+    try:
+        # Проверяем наличие прогресса в уроках
+        lesson_progress = UserProgress.query.filter_by(
+            user_id=user_id
+        ).filter(UserProgress.progress > 0).first()
+        
+        # Проверяем наличие прогресса в тестах
+        test_progress = TestAttempt.query.filter_by(
+            user_id=user_id
+        ).first()
+        
+        # Проверяем наличие прогресса в виртуальных пациентах
+        vp_progress = VirtualPatientAttempt.query.filter_by(
+            user_id=user_id
+        ).first()
+        
+        return lesson_progress is not None or test_progress is not None or vp_progress is not None
+    except Exception as e:
+        print(f"Error checking learning progress: {e}")
+        return False
+
+def get_user_learning_state(user_id):
+    """Получить полное состояние обучения пользователя"""
+    diagnostic_completed = check_diagnostic_completed(user_id)
+    learning_progress = check_learning_progress(user_id)
+    
+    return {
+        'diagnostic_completed': diagnostic_completed,
+        'learning_progress': learning_progress,
+        'stage': 'post_diagnostic' if diagnostic_completed else 'pre_diagnostic'
+    }
 

@@ -302,4 +302,14 @@ translations = {
     'attempts_short': 'попыток',
     'in_progress_attempts': '{count} попыток',
     'completed': 'Завершено',
+    
+    # Two-stage learning process
+    'knowledge_assessment': 'Проверка знаний',
+    'diagnostic_required_message': 'Чтобы начать обучение, сначала необходимо пройти проверку знаний для определения текущего уровня.',
+    'start_learning': 'Начать обучение',
+    'continue_learning': 'Продолжить обучение',
+    'diagnostic_not_completed': 'Диагностика не завершена',
+    'diagnostic_completed': 'Диагностика завершена',
+    'learning_progress': 'Прогресс обучения',
+    'no_learning_progress': 'Прогресс обучения отсутствует',
 } 

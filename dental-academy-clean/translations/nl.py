@@ -289,4 +289,14 @@ translations = {
     'attempts_short': 'pogingen',
     'in_progress_attempts': '{count} pogingen',
     'completed': 'Voltooid',
+    
+    # Two-stage learning process
+    'knowledge_assessment': 'Kennistest',
+    'diagnostic_required_message': 'Om te beginnen met leren, moet u eerst een kennistest afleggen om uw huidige niveau te bepalen.',
+    'start_learning': 'Beginnen met leren',
+    'continue_learning': 'Doorgaan met leren',
+    'diagnostic_not_completed': 'Diagnostiek niet voltooid',
+    'diagnostic_completed': 'Diagnostiek voltooid',
+    'learning_progress': 'Leervoortgang',
+    'no_learning_progress': 'Nog geen leervoortgang',
 } 

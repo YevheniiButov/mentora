@@ -169,6 +169,16 @@ translations = {
     'learning_dashboard': 'Learning dashboard',
     'your_progress': 'Your progress',
     'completed': 'Completed',
+    
+    # Two-stage learning process
+    'knowledge_assessment': 'Knowledge Assessment',
+    'diagnostic_required_message': 'To start learning, you must first take a knowledge test to determine your current level.',
+    'start_learning': 'Start Learning',
+    'continue_learning': 'Continue Learning',
+    'diagnostic_not_completed': 'Diagnostic not completed',
+    'diagnostic_completed': 'Diagnostic completed',
+    'learning_progress': 'Learning progress',
+    'no_learning_progress': 'No learning progress yet',
     'modules': 'Modules',
     'cards': 'Cards',
     'accuracy': 'Accuracy',
