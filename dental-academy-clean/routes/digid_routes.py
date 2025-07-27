@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 
 from extensions import db
 from models import User, DigiDSession, create_digid_user
+from translations import get_translation as t
 
 # Импорт для отключения CSRF
 from flask_wtf import CSRFProtect
@@ -94,7 +95,8 @@ def digid_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_digid_user():
-            flash('Требуется DigiD-аутентификация', 'warning')
+            lang = session.get('lang', 'nl')
+            flash(t('digid_auth_required', lang), 'warning')
             return redirect('/digid/login')
         return f(*args, **kwargs)
     return decorated_function
@@ -324,7 +326,10 @@ def logout():
             db.session.commit()
     logout_user()
     session.pop('digid_username', None)
-    flash('Вы вышли из DigiD', 'info')
+    
+    # Получаем язык из сессии или используем дефолтный
+    lang = session.get('lang', 'nl')
+    flash(t('logged_out_digid', lang), 'info')
     return redirect('/digid/login')
 
 # Пример защищённого роутера
@@ -394,7 +399,9 @@ def test_auth(username):
         session['digid_username'] = username
         login_user(user, remember=True)
         
-        flash(f'Test login successful: {user.get_display_name()}', 'success')
+        # Получаем язык из сессии или используем дефолтный
+        lang = session.get('lang', 'nl')
+        flash(f'{t("test_login_successful", lang)}: {user.get_display_name()}', 'success')
         
         # Определяем куда перенаправить пользователя
         if user.is_admin:

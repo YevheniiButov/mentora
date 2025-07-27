@@ -74,6 +74,26 @@ translations = {
     'fill_category_name': 'Voer categorienaam in.',
     'fill_required_fields': 'Vul alle verplichte velden in.',
     
+    # DigiD Messages
+    'logged_out_digid': 'U bent uitgelogd van DigiD',
+    'test_login_successful': 'Test login succesvol',
+    'digid_auth_required': 'DigiD authenticatie vereist',
+    'user_not_found_mock': 'Gebruiker niet gevonden (mock DigiD)',
+    'digid_error_user_not_selected': 'DigiD fout: gebruiker niet geselecteerd',
+    'digid_error_user_not_found': 'DigiD fout: gebruiker niet gevonden',
+    'digid_error_user_creation': 'Fout bij het maken van DigiD gebruiker',
+    'welcome_digid': 'Welkom',
+    'digid_auth_processing_error': 'Fout bij het verwerken van DigiD authenticatie',
+    'digid_users_only': 'Toegang alleen voor DigiD gebruikers',
+    'select_profession': 'Selecteer beroep',
+    'upload_diploma': 'Upload diploma',
+    'diploma_must_be_pdf': 'Diploma moet in PDF-formaat zijn',
+    'diploma_size_limit': 'Diploma bestandsgrootte mag niet meer dan 5MB zijn',
+    'language_cert_must_be_pdf': 'Taalcertificaat moet in PDF-formaat zijn',
+    'language_cert_size_limit': 'Taalcertificaat bestandsgrootte mag niet meer dan 5MB zijn',
+    'registration_completed_successfully': 'Registratie succesvol voltooid!',
+    'registration_completion_error': 'Fout bij het voltooien van registratie',
+    
     # Medische terminologie
     'dental_caries': 'Tandbederf',
     'periodontitis': 'Parodontitis',

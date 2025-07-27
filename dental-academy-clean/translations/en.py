@@ -74,6 +74,26 @@ translations = {
     'fill_category_name': 'Enter category name.',
     'fill_required_fields': 'Fill in all required fields.',
     
+    # DigiD Messages
+    'logged_out_digid': 'You have logged out of DigiD',
+    'test_login_successful': 'Test login successful',
+    'digid_auth_required': 'DigiD authentication required',
+    'user_not_found_mock': 'User not found (mock DigiD)',
+    'digid_error_user_not_selected': 'DigiD error: user not selected',
+    'digid_error_user_not_found': 'DigiD error: user not found',
+    'digid_error_user_creation': 'Error creating DigiD user',
+    'welcome_digid': 'Welcome',
+    'digid_auth_processing_error': 'Error processing DigiD authentication',
+    'digid_users_only': 'Access only for DigiD users',
+    'select_profession': 'Select profession',
+    'upload_diploma': 'Upload diploma',
+    'diploma_must_be_pdf': 'Diploma must be in PDF format',
+    'diploma_size_limit': 'Diploma file size must not exceed 5MB',
+    'language_cert_must_be_pdf': 'Language certificate must be in PDF format',
+    'language_cert_size_limit': 'Language certificate file size must not exceed 5MB',
+    'registration_completed_successfully': 'Registration completed successfully!',
+    'registration_completion_error': 'Error completing registration',
+    
     # Medical terminology
     'dental_caries': 'Dental caries',
     'periodontitis': 'Periodontitis',

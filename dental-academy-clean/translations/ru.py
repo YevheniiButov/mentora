@@ -74,6 +74,26 @@ translations = {
     'fill_category_name': 'Введите название категории.',
     'fill_required_fields': 'Заполните все обязательные поля.',
     
+    # DigiD Messages
+    'logged_out_digid': 'Вы вышли из DigiD',
+    'test_login_successful': 'Тестовый вход выполнен успешно',
+    'digid_auth_required': 'Требуется DigiD-аутентификация',
+    'user_not_found_mock': 'Пользователь не найден (мок DigiD)',
+    'digid_error_user_not_selected': 'Ошибка DigiD: пользователь не выбран',
+    'digid_error_user_not_found': 'Ошибка DigiD: пользователь не найден',
+    'digid_error_user_creation': 'Ошибка создания пользователя DigiD',
+    'welcome_digid': 'Добро пожаловать',
+    'digid_auth_processing_error': 'Произошла ошибка при обработке DigiD аутентификации',
+    'digid_users_only': 'Доступ только для DigiD пользователей',
+    'select_profession': 'Выберите профессию',
+    'upload_diploma': 'Загрузите диплом',
+    'diploma_must_be_pdf': 'Диплом должен быть в формате PDF',
+    'diploma_size_limit': 'Размер файла диплома не должен превышать 5MB',
+    'language_cert_must_be_pdf': 'Сертификат языка должен быть в формате PDF',
+    'language_cert_size_limit': 'Размер файла сертификата не должен превышать 5MB',
+    'registration_completed_successfully': 'Регистрация завершена успешно!',
+    'registration_completion_error': 'Ошибка при завершении регистрации',
+    
     # Медицинская терминология
     'dental_caries': 'Кариес зубов',
     'periodontitis': 'Пародонтит',
