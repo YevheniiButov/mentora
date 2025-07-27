@@ -1,0 +1,752 @@
+{% extends "base.html" %}
+
+{% block title %}{% if subject %}{{ subject.name }} | {% endif %}{{ t('learning_map', lang) }}{% endblock %}
+
+{% block body_class %}learning-map-page{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/category-navigation.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="learning-map-container">
+    <!-- Анимированные декоративные элементы - убираем для устранения полосы внизу -->
+    <!-- <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div> -->
+    
+    <div class="main-container">
+        <div class="left-column">
+            <div class="learning-paths">
+                {% for path in learning_paths %}
+                <div class="learning-path-item">
+                    {% if path.url %}
+                    <a href="{{ path.url }}" class="learning-path-button {{ path.css_class if path.css_class else (path.id == 1 and 'knowledge-center' or path.id == 2 and 'communication' or path.id == 3 and 'preclinical' or path.id == 4 and 'workstation' or path.id == 5 and 'bi-toets' or path.id == 6 and 'virtual-patients' or '') }}">
+                        <div class="path-button-content">
+                            {% if path.css_class %}
+                                <!-- Для фармацевтических путей используем CSS-иконки -->
+                                <div class="icon"></div>
+                            {% elif path.id == 1 %}
+                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            {% elif path.id == 2 %}
+                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            {% endif %}
+                            <span>{{ path.name }}</span>
+                        </div>
+                    </a>
+                    {% else %}
+                    <button class="learning-path-button {{ path.css_class if path.css_class else (path.id == 1 and 'knowledge-center' or path.id == 2 and 'communication' or path.id == 3 and 'preclinical' or path.id == 4 and 'workstation' or path.id == 5 and 'bi-toets' or path.id == 6 and 'virtual-patients' or '') }}" data-path="{{ path.id }}">
+                        <div class="path-button-content">
+                            {% if path.css_class %}
+                                <!-- Для фармацевтических путей используем CSS-иконки -->
+                                <div class="icon"></div>
+                            {% elif path.id == 1 %}
+                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            {% elif path.id == 2 %}
+                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            {% endif %}
+                            <span>{{ path.name }}</span>
+                        </div>
+                    </button>
+                    {% endif %}
+                    
+                    <div class="subject-list {% if selected_subject and selected_subject.learning_path_id == path.id %}expanded{% endif %}" id="path-{{ path.id }}-subjects">
+                        {% if path.id == 6 %}
+                            <a href="{{ url_for('virtual_patient.list_scenarios', lang=lang) }}" class="subject-item">
+                                <span class="subject-name">{{ t('clinical_cases', lang) | default('Клинические случаи') }}</span>
+                                <div class="subject-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ path.vp_stats.percentage if path.vp_stats else 0 }}%"></div>
+                                    </div>
+                                    <span class="progress-percent">
+                                        {% if path.vp_stats %}
+                                            {{ path.vp_stats.completed }}/{{ path.vp_stats.total }}
+                                        {% else %}
+                                            {{ t('view_all', lang) | default('Показать все') }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </a>
+                        {% else %}
+                            {% for subject_item in subjects if subject_item.learning_path_id == path.id %}
+                            <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item.id) }}" 
+                               class="subject-item {% if selected_subject and selected_subject.id == subject_item.id %}active{% endif %}">
+                                <span class="subject-name">{{ subject_item.name }}</span>
+                                <div class="subject-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ subject_item.progress|default(0) }}%"></div>
+                                    </div>
+                                    <span class="progress-percent">{{ subject_item.progress|default(0) }}%</span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Добавляем Interacties & Contraindicaties в секцию exam -->
+                {% if profession_context and profession_context.profession_slug == 'farmacie' %}
+                <div class="learning-path-item">
+                    <button class="learning-path-button interactions" data-category="pharmacy-tools">
+                        <div class="path-button-content">
+                            <div class="icon"></div>
+                            <span>Interacties & Contraindicaties</span>
+                        </div>
+                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24">
+                            <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="subject-list" id="category-pharmacy-tools-subcategories">
+                        <div class="subcategory-item">
+                            <a href="#" class="subject-item" onclick="showDrugInteractionChecker(event)">
+                                <span class="subject-name">Drug Interaction Checker</span>
+                                <div class="subject-progress">
+                                    <span class="progress-percent">Interactief</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="subcategory-item">
+                            <a href="/{{ lang }}/farmacie/advanced-drug-checker" class="subject-item">
+                                <span class="subject-name">Geavanceerde Drug Checker</span>
+                                <div class="subject-progress">
+                                    <span class="progress-percent">Uitgebreid</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Секция с контентом -->
+            {% set categories = content_categories if content_categories else content_categories_for_hierarchy %}
+            {% if categories %}
+            <div class="section-header" style="margin-top: 2rem;">
+                <h2>{{ t('content', lang)|default('Контент') }}</h2>
+            </div>
+            
+            <div class="learning-paths">
+                {% for category in categories %}
+                <div class="learning-path-item">
+                    <button class="learning-path-button content-category" data-category="{{ category.id }}">
+                        <div class="path-button-content">
+                            <i class="{{ category.icon }}"></i>
+                            <span>{{ category.name }}</span>
+                        </div>
+                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24">
+                            <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="subject-list" id="category-{{ category.id }}-subcategories">
+                        {% for subcategory in category.subcategories %}
+                        <div class="subcategory-item">
+                            <a href="{{ subcategory.url }}" class="subject-item">
+                                <span class="subject-name">{{ subcategory.name }}</span>
+                                <div class="subject-progress">
+                                    <span class="progress-percent">{{ subcategory.topics_count }} тем</span>
+                                </div>
+                            </a>
+                            
+                            <!-- Темы подкатегории -->
+                            <div class="topics-list" style="padding-left: 1rem; display: none;">
+                                {% for topic in subcategory.topics %}
+                                <a href="{{ topic.url }}" class="topic-item" style="display: block; padding: 0.5rem; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem;">
+                                    <span>{{ topic.name }}</span>
+                                    <span style="float: right; font-size: 0.8rem; opacity: 0.7;">{{ topic.lessons_count }} уроков</span>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="middle-column">
+            <div class="page-header">
+                {% if profession_context and profession_context.readonly_mode %}
+                <div class="readonly-indicator">
+                    <span class="readonly-badge">{{ t('readonly', lang)|default('Только просмотр') }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="breadcrumb">
+                    {% if selected_subject and selected_subject.learning_path %}
+                        <span>{{ selected_subject.learning_path.name }}</span>
+                        <span class="separator">/</span>
+                        <span class="active">{{ selected_subject.name }}</span>
+                    {% elif selected_path %}
+                        <span class="active">{{ selected_path.name }}</span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            {% if selected_subject %}
+            <div class="subject-content">
+                {% if subject_modules %}
+                <!-- Компактные модули без статистики -->
+                <div class="modules-grid-compact">
+                    {% for module in subject_modules %}
+                    <div class="module-card-compact" data-module-id="{{ module.id }}">
+                        <div class="module-icon-compact">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="module-info-compact">
+                            <h3>{{ module.title }}</h3>
+                            {% if module.is_premium and not user.has_subscription %}
+                                <span class="badge premium-badge">{{ t('premium', lang) }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('learning_map_bp.start_module_redirect', lang=lang, module_id=module.id) }}" 
+                           class="module-btn-compact">
+                            {% if module.progress == 100 %}{{ t('repeat', lang) }}
+                            {% elif module.progress > 0 %}{{ t('continue', lang) }}
+                            {% else %}{{ t('start', lang) }}{% endif %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if virtual_patients %}
+                <div class="virtual-patients-section">
+                    <h3 class="virtual-patients-title">
+                        <div class="vp-icon">
+                            <i class="bi bi-person-hearts"></i>
+                        </div>
+                        {{ t('virtual_patients_title', lang) | default('Виртуальные пациенты') }}
+                    </h3>
+                    
+                    <div class="virtual-patients-grid">
+                        {% for scenario in virtual_patients %}
+                        <div class="vp-card">
+                            <div>
+                                <div class="vp-card-header">
+                                    <div class="vp-title">{{ scenario.title }}</div>
+                                    <div class="vp-difficulty difficulty-{{ scenario.difficulty|default('medium')|lower }}">
+                                        {{ scenario.difficulty|default('medium')|title }}
+                                    </div>
+                                </div>
+                                
+                                <div class="vp-description">
+                                    {{ scenario.description|default('')|truncate(120) }}
+                                </div>
+                                
+                                {% if scenario.user_progress and scenario.user_progress.attempts_count > 0 %}
+                                <div class="vp-progress">
+                                    <div class="vp-progress-bar">
+                                        <div class="vp-progress-fill" style="width: {{ scenario.user_progress.percentage|default(0) }}%"></div>
+                                    </div>
+                                    <div class="vp-progress-text">
+                                        <span>
+                                            {% if scenario.user_progress.completed %}
+                                                {{ t('completed', lang) }}
+                                            {% else %}
+                                                {{ t('in_progress_attempts', lang, count=scenario.user_progress.attempts_count) | default(scenario.user_progress.attempts_count ~ " " ~ t('attempts_short', lang)) }}
+                                            {% endif %}
+                                        </span>
+                                        <span>{{ scenario.user_progress.score|default(0) }}/{{ scenario.user_progress.max_score|default(100) }}</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="vp-actions">
+                                {% if scenario.is_premium and not user.has_subscription %}
+                                <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="vp-btn premium">
+                                    <i class="bi bi-star-fill me-1"></i> {{ t('premium', lang) }}
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('virtual_patient.start_scenario', lang=lang, scenario_id=scenario.id) }}" 
+                                   class="vp-btn {% if scenario.user_progress and scenario.user_progress.completed %}completed{% endif %}">
+                                    <i class="bi bi-play-fill me-1"></i>
+                                    {% if scenario.user_progress and scenario.user_progress.completed %}
+                                        {{ t('try_again', lang) }}
+                                    {% elif scenario.user_progress and scenario.user_progress.attempts_count > 0 %}
+                                        {{ t('continue_vp', lang) | default(t('continue', lang)) }}
+                                    {% else %}
+                                        {{ t('start', lang) }}
+                                    {% endif %}
+                                </a>
+                                {% endif %}
+                                
+                                {% if scenario.user_progress and scenario.user_progress.completed and scenario.user_progress.best_attempt_id %}
+                                <a href="{{ url_for('virtual_patient.scenario_results', lang=lang, attempt_id=scenario.user_progress.best_attempt_id) }}" 
+                                   class="vp-btn">
+                                    <i class="bi bi-chart-line me-1"></i> {{ t('results', lang) }}
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="view-all-vp">
+                        <a href="{{ url_for('subject_view_bp.all_virtual_patients', lang=lang) }}">
+                            {{ t('view_all_scenarios', lang) }} <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            {# === Интерактивный Drug Interaction Checker для категории Interacties & Contraindicaties === #}
+            <div id="interacties-checker-block" style="display: none; margin: 2rem 0;">
+              <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                  <h6 class="mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Live Drug Checker
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="drug-checker-widget">
+                    <div class="form-floating mb-2">
+                      <input type="text" class="form-control" placeholder="Medicijn 1..." id="drug1">
+                      <label for="drug1">Medicijn 1</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                      <input type="text" class="form-control" placeholder="Medicijn 2..." id="drug2">
+                      <label for="drug2">Medicijn 2</label>
+                    </div>
+                    <button class="btn btn-warning w-100" onclick="quickInteractionCheck()">
+                      <i class="bi bi-search me-1"></i>
+                      Check Interactie
+                    </button>
+                    <div id="quickResult" class="mt-3"></div>
+                  </div>
+                  <hr>
+                  <a href="/{{ lang }}/farmacie/advanced-drug-checker" class="btn btn-outline-warning w-100" id="advanced-checker-link">
+                    <i class="bi bi-gear me-1"></i>
+                    Geavanceerde Checker
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            {% if subject.id == 101 %}
+            <div class="test-section mt-4">
+                <h3>BIG-toets Voorbereiding</h3>
+                <p>Bereid je voor op je BIG-registratie met onze oefentests</p>
+                <a href="{{ url_for('learning_map_bp.subject_tests', lang=lang, subject_id=subject.id) }}" class="btn btn-primary">
+                    <i class="bi bi-journal-check"></i> Naar Tests
+                </a>
+            </div>
+            {% endif %}
+            {% elif selected_path %}
+            <div class="subjects-grid">
+                {% set filtered_subjects = subjects|selectattr("learning_path_id", "equalto", selected_path.id)|list %}
+                {% if filtered_subjects %}
+                    {% for subject_item_path_filtered in filtered_subjects %}
+                    <div class="subject-card">
+                        <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item_path_filtered.id) }}" class="subject-link">
+                            <div class="card-content">
+                                <div class="card-icon">
+                                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    </svg>
+                                </div>
+                                <div class="card-info">
+                                    <h3>{{ subject_item_path_filtered.name }}</h3>
+                                    <p>{{ subject_item_path_filtered.description|default('')|truncate(80) }}</p>
+                                    <div class="card-footer">
+                                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: {{ subject_item_path_filtered.progress|default(0) }}%;"></div></div>
+                                        <span>{{ subject_item_path_filtered.progress|default(0) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="welcome-screen">
+              <div class="welcome-header">
+                <div class="welcome-icon">
+                  <img src="{{ url_for('static', filename='favicon.png') }}" alt="Mentora" class="static-favicon-logo">
+                </div>
+                <h2>{{ t('welcome_title', lang)|default('Добро пожаловать в Mentora!') }}</h2>
+                <p class="welcome-subtitle">{{ t('welcome_subtitle', lang)|default('Ваш путь к успешной подготовке к BIG экзамену') }}</p>
+              </div>
+              
+              <div class="welcome-content">
+                <div class="welcome-description">
+                  <p>{{ t('welcome_description', lang)|default('Наша интерактивная платформа поможет вам эффективно подготовиться к экзамену. Выберите раздел для начала обучения или ознакомьтесь с рекомендуемыми темами.') }}</p>
+                </div>
+                
+                <div class="welcome-steps">
+                  <h3>{{ t('getting_started', lang)|default('С чего начать?') }}</h3>
+                  <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                        </div>
+                        <div class="step-content">
+                            <h4>{{ t('knowledge_center', lang)|default('Центр знаний') }}</h4>
+                            <p>{{ t('knowledge_center_desc', lang)|default('Теоретические основы и ключевые концепции') }}</p>
+                            <button class="btn-start" data-path="1">{{ t('start', lang)|default('Начать') }}</button>
+                        </div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                        </div>
+                        <div class="step-content">
+                            <h4>{{ t('communication', lang)|default('Коммуникация') }}</h4>
+                            <p>{{ t('communication_desc', lang)|default('Отработка навыков общения с пациентами') }}</p>
+                            <button class="btn-start" data-path="2">{{ t('start', lang)|default('Начать') }}</button>
+                        </div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M9 3h6v2H9zM8 3h8l-1 9-2 2h-2l-2-2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M8 14v.5A5.5 5.5 0 0 0 13.5 20h1a5.5 5.5 0 0 0 5.5-5.5V14" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                        </div>
+                        <div class="step-content">
+                            <h4>{{ t('preclinical_skills', lang)|default('Доклинические навыки') }}</h4>
+                            <p>{{ t('preclinical_desc', lang)|default('Базовые стоматологические процедуры') }}</p>
+                            <button class="btn-start" data-path="3">{{ t('start', lang)|default('Начать') }}</button>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {% if current_user.is_authenticated and stats and stats.completed_lessons > 0 %}
+                <div class="welcome-stats">
+                  <h3>{{ t('your_progress', lang)|default('Ваш прогресс') }}</h3>
+                  <div class="stats-summary">
+                    <div class="stat-item"><div class="stat-value">{{ stats.completed_lessons }}</div><div class="stat-label">{{ t('lessons_completed', lang)|default('уроков завершено') }}</div></div>
+                    <div class="stat-item"><div class="stat-value">{{ stats.overall_progress }}%</div><div class="stat-label">{{ t('overall_progress', lang)|default('общий прогресс') }}</div></div>
+                    <div class="stat-item"><div class="stat-value">{{ stats.active_days }}</div><div class="stat-label">{{ t('days_active', lang)|default('дней активности') }}</div></div>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="right-column">
+            <div class="stats-section">
+                <h2>{{ t('overall_progress', lang) }}</h2>
+                <div class="progress-circle-container">
+                    <div class="progress-circle" 
+                         data-progress="{{ stats.overall_progress|default(0) }}"
+                         role="progressbar" 
+                         aria-valuenow="{{ stats.overall_progress|default(0) }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"
+                         aria-label="Overall progress">
+                        <div class="circle-background"></div>
+                        <div class="circle-progress" style="transform: rotate({{ stats.overall_progress|default(0) * 1.8 }}deg)"></div>
+                        <div class="progress-circle-text">{{ stats.overall_progress|default(0) }}%</div>
+                    </div>
+                </div>
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="8" r="7"></circle>
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">{{ t('lessons_completed', lang) }}</div>
+                            <div class="stat-value">{{ stats.completed_lessons|default(0) }}/{{ stats.total_lessons|default(0) }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">{{ t('total_time', lang) }}</div>
+                            <div class="stat-value">{{ stats.total_time_spent|default(0) }} {{ t('min', lang) }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">{{ t('days_active', lang) }}</div>
+                            <div class="stat-value">{{ stats.active_days|default(0) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Кнопка диагностики BI-toets -->
+            <div class="diagnostic-section">
+                <h2>{{ t('bi_toets_diagnostic', lang)|default('Диагностика BI-toets') }}</h2>
+                <div class="diagnostic-card">
+                    <div class="diagnostic-icon">
+                        <i class="bi bi-clipboard-pulse"></i>
+                    </div>
+                    <div class="diagnostic-content">
+                        <h3>{{ t('adaptive_testing', lang)|default('Адаптивное тестирование') }}</h3>
+                        <p>{{ t('diagnostic_description', lang)|default('Оцените свой уровень подготовки к экзамену BI-toets с помощью адаптивного тестирования') }}</p>
+                        <a href="{{ url_for('diagnostic.choose_diagnostic_type', lang=lang) }}" class="diagnostic-btn">
+                            <i class="bi bi-clipboard-pulse"></i>
+                            {{ t('choose_diagnostic_type', lang)|default('Выбрать тип диагностики') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recommendations-section">
+                <h2>{{ t('recommendations', lang) }}</h2>
+                <div class="recommendations-list">
+                    {% if recommendations and recommendations|length > 0 %}
+                        {% for rec in recommendations %}
+                        <div class="recommendation-item">
+                            <div class="rec-icon {% if loop.index % 2 == 0 %}purple{% else %}blue{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            </div>
+                            <div class="rec-info">
+                                <h4>{{ rec.title }}</h4>
+                                <span>{{ rec.subject_name }}</span>
+                            </div>
+                            <button class="rec-action" onclick="startModule({{ rec.module_id }})">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-recommendations">
+                        <p>{{ t('no_recommendations', lang) }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
+<script src="{{ url_for('static', filename='js/subject_view.js') }}"></script>
+<script src="{{ url_for('static', filename='js/drug-checker.js') }}"></script>
+<script>
+// Инициализация системы категорий
+document.addEventListener('DOMContentLoaded', function() {
+    // Система автоматически инициализируется через universal-category-system.js
+    // Дополнительная настройка не требуется
+    
+    // Инициализация кнопок для фармацевтических инструментов
+    const pharmacyToolsButton = document.querySelector('[data-category="pharmacy-tools"]');
+    if (pharmacyToolsButton) {
+        pharmacyToolsButton.addEventListener('click', function() {
+            const targetId = 'category-pharmacy-tools-subcategories';
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                // Переключаем класс expanded для отображения/скрытия списка
+                targetElement.classList.toggle('expanded');
+                
+                // Обновляем стиль кнопки
+                this.classList.toggle('active');
+            }
+        });
+    }
+    
+    // Автоматически показываем Drug Interaction Checker, если в URL есть "interacties"
+    if (window.location.href.toLowerCase().includes('interacties') || 
+        window.location.href.toLowerCase().includes('contraindicaties')) {
+        const interactiesBlock = document.getElementById('interacties-checker-block');
+        if (interactiesBlock) {
+            interactiesBlock.style.display = 'block';
+            
+            // Плавная прокрутка к блоку
+            setTimeout(() => {
+                interactiesBlock.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 500);
+        }
+    }
+});
+
+function startModule(moduleId) {
+    window.location.href = '/{{ lang }}/learning-map/module/' + moduleId + '/start';
+}
+
+// Функция для показа Drug Interaction Checker
+function showDrugInteractionChecker(event) {
+  event.preventDefault();
+  
+  const interactiesBlock = document.getElementById('interacties-checker-block');
+  if (interactiesBlock) {
+      interactiesBlock.style.display = 'block';
+  
+  // Плавная прокрутка к блоку
+  interactiesBlock.scrollIntoView({ 
+    behavior: 'smooth', 
+    block: 'start' 
+  });
+}
+}
+
+// Функция для быстрой проверки взаимодействий
+function quickInteractionCheck() {
+  const drug1 = document.getElementById('drug1').value.trim();
+  const drug2 = document.getElementById('drug2').value.trim();
+  const resultElement = document.getElementById('quickResult');
+  
+  if (!drug1 || !drug2) {
+    resultElement.innerHTML = `
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        Vul beide medicijnen in om interacties te controleren
+      </div>
+    `;
+    return;
+  }
+  
+  // База данных взаимодействий (можно расширить)
+  const knownInteractions = {
+    'warfarine+ibuprofen': {
+      severity: 'MAJOR', 
+      warning: '⚠️ MAJOR: Verhoogd bloedingsrisico',
+      description: 'Verhoogd risico op bloedingen door remming van bloedplaatjesaggregatie'
+    },
+    'digoxine+furosemide': {
+      severity: 'MAJOR', 
+      warning: '⚠️ MAJOR: Digitalis toxiciteit risico',
+      description: 'Verhoogd risico op digitalis toxiciteit door hypokaliëmie'
+    },
+    'amiodarone+digoxine': {
+      severity: 'MAJOR', 
+      warning: '⚠️ MAJOR: Verhoogde digoxine concentratie',
+      description: 'Verhoogde digoxine concentratie door remming van uitscheiding'
+    },
+    'simvastatine+amiodarone': {
+      severity: 'MAJOR', 
+      warning: '⚠️ MAJOR: Verhoogd risico op rhabdomyolyse',
+      description: 'Verhoogd risico op spierschade door CYP3A4 remming'
+    },
+    'metoprolol+verapamil': {
+      severity: 'MODERATE', 
+      warning: '⚠️ MODERATE: Verhoogd risico op bradycardie',
+      description: 'Additieve cardiodepressieve effecten'
+    },
+    'aspirine+clopidogrel': {
+      severity: 'MAJOR', 
+      warning: '⚠️ MAJOR: Verhoogd bloedingsrisico',
+      description: 'Dubbele antiplaatjeswerking verhoogt bloedingsrisico'
+    },
+    'paracetamol+ibuprofen': {
+      severity: 'MINOR', 
+      warning: 'ℹ️ MINOR: Geen klinisch relevante interactie',
+      description: 'Combinatie wordt vaak gebruikt voor pijnbestrijding'
+    },
+    'omeprazol+clopidogrel': {
+      severity: 'MODERATE', 
+      warning: '⚠️ MODERATE: Verminderde effectiviteit clopidogrel',
+      description: 'CYP2C19 remming vermindert activatie van clopidogrel'
+    }
+  };
+  
+  // Проверяем взаимодействие
+  const key1 = `${drug1.toLowerCase()}+${drug2.toLowerCase()}`;
+  const key2 = `${drug2.toLowerCase()}+${drug1.toLowerCase()}`;
+  const interaction = knownInteractions[key1] || knownInteractions[key2];
+  
+  if (interaction) {
+    // Определяем класс для уровня опасности
+    let alertClass = 'alert-info';
+    let icon = 'bi-info-circle';
+    
+    if (interaction.severity === 'MAJOR') {
+      alertClass = 'alert-danger';
+      icon = 'bi-exclamation-triangle-fill';
+    } else if (interaction.severity === 'MODERATE') {
+      alertClass = 'alert-warning';
+      icon = 'bi-exclamation-triangle';
+    } else if (interaction.severity === 'MINOR') {
+      alertClass = 'alert-success';
+      icon = 'bi-check-circle';
+    }
+    
+    resultElement.innerHTML = `
+      <div class="alert ${alertClass}">
+        <div class="d-flex align-items-center">
+          <i class="${icon} me-2" style="font-size: 1.5rem;"></i>
+          <div>
+            <h6 class="mb-1">${interaction.warning}</h6>
+            <p class="mb-0">${interaction.description}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    resultElement.innerHTML = `
+      <div class="alert alert-success">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-check-circle me-2" style="font-size: 1.5rem;"></i>
+          <div>
+            <h6 class="mb-1">Geen bekende interactie gevonden</h6>
+            <p class="mb-0">Er is geen significante interactie bekend tussen deze medicijnen.</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Показываем результат с анимацией
+  resultElement.style.opacity = '0';
+  resultElement.style.display = 'block';
+  setTimeout(() => {
+    resultElement.style.transition = 'opacity 0.3s ease';
+    resultElement.style.opacity = '1';
+  }, 10);
+}
+
+// JS для показа блока только при выборе нужной категории
+</script>
+{% endblock %}

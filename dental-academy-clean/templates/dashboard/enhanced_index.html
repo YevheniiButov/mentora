@@ -1,0 +1,567 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Mentora{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/pages/enhanced_dashboard.css') }}" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+        <div class="welcome-section">
+            <div class="welcome-content">
+                <h1 class="welcome-title">
+                    Welkom terug, {{ user.get_display_name() }}!
+                    {% if user.is_digid_user() %}
+                        <span class="digid-badge">
+                            <i class="bi bi-shield-check"></i>
+                            DigiD
+                        </span>
+                    {% endif %}
+                </h1>
+                <p class="welcome-subtitle">
+                    {{ user.get_profession_display() }}
+                    {% if user.big_number %}
+                        • BIG: {{ user.big_number }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="user-avatar">
+                {% if user.profile_photo %}
+                    <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_photo) }}" 
+                         alt="{{ user.get_display_name() }}" class="avatar-image">
+                {% else %}
+                    <div class="avatar-placeholder">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Level and XP Progress -->
+        <div class="level-progress-section">
+            <div class="level-info">
+                <div class="level-badge">
+                    <i class="bi bi-star-fill"></i>
+                    Level {{ stats.level }}
+                </div>
+                <div class="xp-info">
+                    {{ stats.xp }} XP
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" data-progress="{{ stats.level_progress }}">
+                    <div class="progress-fill" style="width: {{ stats.level_progress }}%"></div>
+                </div>
+                <span class="progress-text">{{ "%.0f"|format(stats.level_progress) }}% naar level {{ stats.level + 1 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Left Column -->
+        <div class="dashboard-left">
+            <!-- Today's Goals Widget -->
+            <div class="widget goals-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-target"></i> Dagelijkse doelen</h3>
+                </div>
+                <div class="widget-content">
+                    <div class="goals-grid">
+                        <div class="goal-item">
+                            <div class="goal-icon lessons-icon">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <div class="goal-content">
+                                <div class="goal-title">Lessen</div>
+                                <div class="goal-progress">
+                                    <span class="goal-current">{{ today_goals.lessons_completed }}</span>
+                                    <span class="goal-separator">/</span>
+                                    <span class="goal-target">{{ today_goals.lessons_target }}</span>
+                                </div>
+                                <div class="goal-progress-bar">
+                                    <div class="goal-progress-fill" style="width: {{ today_goals.lessons_progress }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-item">
+                            <div class="goal-icon time-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div class="goal-content">
+                                <div class="goal-title">Tijd</div>
+                                <div class="goal-progress">
+                                    <span class="goal-current">{{ "%.0f"|format(today_goals.time_spent) }}</span>
+                                    <span class="goal-separator">/</span>
+                                    <span class="goal-target">{{ today_goals.time_target }} min</span>
+                                </div>
+                                <div class="goal-progress-bar">
+                                    <div class="goal-progress-fill" style="width: {{ today_goals.time_progress }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-item">
+                            <div class="goal-icon xp-icon">
+                                <i class="bi bi-lightning"></i>
+                            </div>
+                            <div class="goal-content">
+                                <div class="goal-title">XP</div>
+                                <div class="goal-progress">
+                                    <span class="goal-current">{{ today_goals.xp_earned }}</span>
+                                    <span class="goal-separator">/</span>
+                                    <span class="goal-target">{{ today_goals.xp_target }}</span>
+                                </div>
+                                <div class="goal-progress-bar">
+                                    <div class="goal-progress-fill" style="width: {{ today_goals.xp_progress }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon completed-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.completed_lessons }}</div>
+                        <div class="stat-label">Lessen voltooid</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon progress-icon">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.completion_rate }}%</div>
+                        <div class="stat-label">Totale voortgang</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon streak-icon">
+                        <i class="bi bi-fire"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.current_streak }}</div>
+                        <div class="stat-label">Dagen streak</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon time-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ "%.0f"|format(stats.total_time_spent / 60) }}</div>
+                        <div class="stat-label">Uren geleerd</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Chart -->
+            <div class="widget activity-chart-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-graph-up"></i> Activiteit van deze week</h3>
+                </div>
+                <div class="widget-content">
+                    <canvas id="activityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Learning Paths Progress -->
+            <div class="widget learning-paths-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-map"></i> Leerpaden voortgang</h3>
+                </div>
+                <div class="widget-content">
+                    {% for path in learning_paths %}
+                    <div class="learning-path-item">
+                        <div class="path-info">
+                            <div class="path-icon">
+                                <i class="bi {{ path.icon }}"></i>
+                            </div>
+                            <div class="path-content">
+                                <div class="path-title">{{ path.name }}</div>
+                                <div class="path-meta">{{ path.subjects_count }} onderwerpen</div>
+                            </div>
+                        </div>
+                        <div class="path-progress">
+                            <div class="path-progress-bar">
+                                <div class="path-progress-fill" style="width: {{ path.progress_percent }}%"></div>
+                            </div>
+                            <div class="path-progress-text">{{ path.progress_percent }}%</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="dashboard-right">
+            <!-- BIG Exam Status -->
+            <div class="widget big-exam-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-award"></i> BIG-toets voorbereiding</h3>
+                </div>
+                <div class="widget-content">
+                    <div class="big-exam-status {{ big_exam_status.readiness }}">
+                        <div class="exam-progress-circle">
+                            <div class="circle-progress" data-progress="{{ big_exam_status.progress }}">
+                                <div class="circle-inner">
+                                    <span class="progress-percentage">{{ big_exam_status.progress }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exam-status-text">
+                            {% if big_exam_status.readiness == 'ready' %}
+                                <span class="status-badge ready">Klaar voor examen</span>
+                            {% elif big_exam_status.readiness == 'almost_ready' %}
+                                <span class="status-badge almost-ready">Bijna klaar</span>
+                            {% elif big_exam_status.readiness == 'in_progress' %}
+                                <span class="status-badge in-progress">In voorbereiding</span>
+                            {% else %}
+                                <span class="status-badge getting-started">Aan het beginnen</span>
+                            {% endif %}
+                        </div>
+                        {% if big_exam_status.exam_date %}
+                        <div class="exam-date">
+                            <i class="bi bi-calendar-event"></i>
+                            Examen: {{ big_exam_status.exam_date.strftime('%d %B %Y') }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Plan Widget -->
+            {% if active_plan %}
+            <div class="widget learning-plan-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-journal-text"></i> Mijn leerplan</h3>
+                    <a href="{{ url_for('dashboard.learning_plan', plan_id=active_plan.id) }}" class="widget-link">Bekijk volledig</a>
+                </div>
+                <div class="widget-content">
+                    <div class="plan-overview">
+                        <div class="plan-progress">
+                            <div class="plan-progress-circle">
+                                <div class="circle-progress" data-progress="{{ "%.0f"|format(active_plan.overall_progress) }}">
+                                    <div class="circle-inner">
+                                        <span class="progress-percentage">{{ "%.0f"|format(active_plan.overall_progress) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="plan-status">
+                                {% if active_plan.estimated_readiness and active_plan.estimated_readiness > 0.7 %}
+                                    <span class="status-badge ready">Klaar voor examen</span>
+                                {% elif active_plan.estimated_readiness and active_plan.estimated_readiness > 0.5 %}
+                                    <span class="status-badge almost-ready">Bijna klaar</span>
+                                {% else %}
+                                    <span class="status-badge in-progress">In voorbereiding</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="plan-stats-mini">
+                            <div class="plan-stat">
+                                <span class="stat-number">{{ active_plan.study_sessions.filter_by(status='completed').count() }}</span>
+                                <span class="stat-label">Voltooide sessies</span>
+                            </div>
+                            <div class="plan-stat">
+                                <span class="stat-number">{{ "%.0f"|format(active_plan.estimated_readiness * 100) if active_plan.estimated_readiness else 0 }}%</span>
+                                <span class="stat-label">Examenklaarheid</span>
+                            </div>
+                        </div>
+                        
+                        {% if active_plan.exam_date %}
+                        <div class="exam-countdown">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>{{ (active_plan.exam_date - today).days }} dagen tot examen</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="widget learning-plan-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-journal-text"></i> Leerplan</h3>
+                </div>
+                <div class="widget-content">
+                    <div class="no-plan">
+                        <i class="bi bi-plus-circle"></i>
+                        <p>Maak een persoonlijk leerplan aan</p>
+                        <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" class="btn-create-plan">
+                            <i class="bi bi-magic"></i>
+                            Diagnose maken
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Achievements -->
+            <div class="widget achievements-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-trophy"></i> Recente prestaties</h3>
+                    <a href="{{ url_for('dashboard.achievements') }}" class="widget-link">Alle bekijken</a>
+                </div>
+                <div class="widget-content">
+                    {% if recent_achievements %}
+                        {% for achievement in recent_achievements %}
+                        <div class="achievement-item">
+                            <div class="achievement-icon {{ achievement.badge_color }}">
+                                <i class="bi bi-{{ achievement.icon }}"></i>
+                            </div>
+                            <div class="achievement-content">
+                                <div class="achievement-title">{{ achievement.name }}</div>
+                                <div class="achievement-description">{{ achievement.description }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-achievements">
+                            <i class="bi bi-star"></i>
+                            <p>Begin met leren om prestaties te ontgrendelen!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Next Recommended Modules -->
+            <div class="widget recommended-modules-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-lightbulb"></i> Aanbevolen modules</h3>
+                </div>
+                <div class="widget-content">
+                    {% for item in recommended_modules %}
+                    <div class="recommended-module-item">
+                        <div class="module-info">
+                            <div class="module-icon">
+                                <i class="bi {{ item.module.icon }}"></i>
+                            </div>
+                            <div class="module-content">
+                                <div class="module-title">{{ item.module.title }}</div>
+                                <div class="module-path">{{ item.path.name }} → {{ item.subject.name }}</div>
+                            </div>
+                        </div>
+                        <div class="module-progress">
+                            <div class="module-progress-bar">
+                                <div class="module-progress-fill" style="width: {{ item.progress.progress_percent }}%"></div>
+                            </div>
+                            <a href="{{ url_for('learning.module', module_id=item.module.id) }}" class="continue-btn">
+                                <i class="bi bi-play-fill"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="widget recent-activity-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-clock-history"></i> Recente activiteit</h3>
+                </div>
+                <div class="widget-content">
+                    {% if recent_activity %}
+                        {% for activity in recent_activity %}
+                        <div class="activity-item">
+                            <div class="activity-date">
+                                {{ activity.activity_date.strftime('%d %b') }}
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-stats">
+                                    <span class="activity-lessons">{{ activity.lessons_completed }} lessen</span>
+                                    <span class="activity-time">{{ "%.0f"|format(activity.time_spent) }} min</span>
+                                    <span class="activity-xp">+{{ activity.xp_earned }} XP</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-activity">
+                            <i class="bi bi-calendar-x"></i>
+                            <p>Geen recente activiteit</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reminders -->
+            {% if upcoming_reminders %}
+            <div class="widget reminders-widget">
+                <div class="widget-header">
+                    <h3><i class="bi bi-bell"></i> Komende herinneringen</h3>
+                    <a href="{{ url_for('dashboard.reminders') }}" class="widget-link">Alle bekijken</a>
+                </div>
+                <div class="widget-content">
+                    {% for reminder in upcoming_reminders %}
+                    <div class="reminder-item">
+                        <div class="reminder-icon {{ reminder.reminder_type }}">
+                            <i class="bi bi-{% if reminder.reminder_type == 'exam' %}award{% elif reminder.reminder_type == 'deadline' %}exclamation-triangle{% else %}bell{% endif %}"></i>
+                        </div>
+                        <div class="reminder-content">
+                            <div class="reminder-title">{{ reminder.title }}</div>
+                            <div class="reminder-date">{{ reminder.reminder_date.strftime('%d %B %Y om %H:%M') }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <a href="{{ url_for('learning.index') }}" class="quick-action-btn primary">
+            <i class="bi bi-play-circle"></i>
+            Doorgaan met leren
+        </a>
+        <a href="{{ url_for('tests.index') }}" class="quick-action-btn success">
+            <i class="bi bi-clipboard-check"></i>
+            Test maken
+        </a>
+        {% if active_plan %}
+        <a href="{{ url_for('dashboard.learning_plan', plan_id=active_plan.id) }}" class="quick-action-btn info">
+            <i class="bi bi-journal-text"></i>
+            Mijn leerplan
+        </a>
+        {% else %}
+                            <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" class="quick-action-btn info">
+            <i class="bi bi-magic"></i>
+            Leerplan maken
+        </a>
+        {% endif %}
+        <a href="{{ url_for('virtual_patient.list_scenarios') }}" class="quick-action-btn warning">
+            <i class="bi bi-person-heart"></i>
+            Virtuele patiënt
+        </a>
+        <a href="{{ url_for('dashboard.achievements') }}" class="quick-action-btn secondary">
+            <i class="bi bi-trophy"></i>
+            Prestaties
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard-button-fix.js') }}"></script>
+<script>
+// Activity Chart
+const ctx = document.getElementById('activityChart').getContext('2d');
+const activityChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ chart_data.labels | tojson }},
+        datasets: [{
+            label: 'Lessen voltooid',
+            data: {{ chart_data.lessons | tojson }},
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            fill: true,
+            tension: 0.4
+        }, {
+            label: 'Tijd besteed (min)',
+            data: {{ chart_data.time | tojson }},
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        },
+        elements: {
+            point: {
+                radius: 0
+            }
+        }
+    }
+});
+
+// Progress bar animations
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const progress = bar.getAttribute('data-progress');
+        if (progress) {
+            setTimeout(() => {
+                bar.style.transition = 'width 1s ease-in-out';
+            }, 100);
+        }
+    });
+});
+
+// Activity logging function
+function logActivity(activityData) {
+    fetch('/dashboard/api/activity-log', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(activityData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.new_achievements.length > 0) {
+            // Show achievement notification
+            data.new_achievements.forEach(achievement => {
+                showAchievementNotification(achievement);
+            });
+        }
+    });
+}
+
+// Achievement notification
+function showAchievementNotification(achievement) {
+    const notification = document.createElement('div');
+    notification.className = 'achievement-notification';
+    notification.innerHTML = `
+        <div class="achievement-notification-content">
+            <i class="bi bi-trophy"></i>
+            <div>
+                <strong>Prestatie ontgrendeld!</strong>
+                <p>${achievement.name}</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+</script>
+{% endblock %} 

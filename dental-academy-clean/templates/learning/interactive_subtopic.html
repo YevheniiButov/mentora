@@ -1,0 +1,768 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subtopic_name }} - {{ module.title }} - Mentora{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <!-- СИСТЕМА ТЕМ (обязательно первой) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}?v=2.0">
+    
+    <!-- УНИВЕРСАЛЬНЫЕ СТИЛИ -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}?v=2.0">
+    
+    <!-- СТРАНИЧНЫЕ СТИЛИ -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}?v=2.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/interactive_subtopic.css') }}?v=2.6">
+    
+    <!-- Стили для Drug Interaction Checker -->
+    <style>
+        .interactive-tools-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: var(--theme-surface, #ffffff);
+            border-radius: 12px;
+            border: 1px solid var(--theme-border, #e2e8f0);
+            box-shadow: 0 4px 6px var(--theme-shadow, rgba(0, 0, 0, 0.1));
+        }
+        
+        .theory-content {
+            padding-right: 1rem;
+        }
+        
+        .theory-content h4 {
+            color: var(--theme-text, #2c3e50);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .drug-checker-widget {
+            padding: 1rem;
+        }
+        
+        .drug-checker-widget input {
+            border: 2px solid var(--theme-border, #e2e8f0);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .drug-checker-widget input:focus {
+            border-color: var(--theme-primary, #007bff);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+        
+        .drug-checker-widget .btn {
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .drug-checker-widget .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        #quickResult {
+            margin-top: 1rem;
+        }
+        
+        #quickResult .alert {
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            border: none;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #51cf66, #40c057);
+            color: white;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #ffd43b, #fcc419);
+            color: #212529;
+        }
+        
+        .card.border-warning {
+            border-color: #ffc107 !important;
+        }
+        
+        .card-header.bg-warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+            color: #212529 !important;
+            border-bottom: 1px solid #e0a800;
+        }
+        
+        .btn-outline-warning {
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+        
+        .btn-outline-warning:hover {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+        
+        @media (max-width: 768px) {
+            .interactive-tools-section .row {
+                flex-direction: column;
+            }
+            
+            .theory-content {
+                padding-right: 0;
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<!-- Сфокусированный дизайн без отвлекающих элементов -->
+<div class="focused-learning-container">
+    <!-- Декоративные элементы -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
+    
+    <div class="focused-main-container">
+        <!-- ОСНОВНОЙ КОНТЕНТ: Занимает больше места -->
+        <div class="content-column">
+            <div class="learning-content-wrapper">
+                <!-- Экран завершения урока -->
+                <div class="completion-screen universal-card" id="completion-screen" style="display: none;">
+                    <div class="completion-content">
+                        <!-- Анимация поздравления -->
+                        <div class="celebration-animation">
+                            <div class="confetti"></div>
+                            <div class="trophy-icon">
+                                <i class="bi bi-trophy-fill"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Заголовок поздравления -->
+                        <div class="completion-header">
+                            <h2>🎉 {{ t('congratulations', lang) }}!</h2>
+                            <p>{{ t('subtopic_completed', lang) }}: <strong>{{ subtopic_name }}</strong></p>
+                        </div>
+                        
+                        <!-- Статистика прохождения -->
+                        <div class="completion-stats">
+                            <div class="stat-grid">
+                                <div class="completion-stat">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <div class="stat-value" id="correct-answers">-</div>
+                                        <div class="stat-label">{{ t('correct_answers', lang) }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="completion-stat">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-clock-fill"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <div class="stat-value" id="time-spent">-</div>
+                                        <div class="stat-label">{{ t('time_spent', lang) }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="completion-stat">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-star-fill"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <div class="stat-value" id="completion-score">-</div>
+                                        <div class="stat-label">{{ t('score', lang) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Достижения -->
+                        <div class="achievements-section" id="achievements-section" style="display: none;">
+                            <h3>🏆 {{ t('achievements_unlocked', lang) }}</h3>
+                            <div class="achievements-list" id="achievements-list"></div>
+                        </div>
+                        
+                        <!-- Действия после завершения -->
+                        <div class="completion-actions">
+                            <div class="primary-actions">
+                                <button class="universal-button success" id="continue-learning-btn" 
+                                        data-module-url="/{{ lang }}/modules/{{ module.id }}">
+                                    <i class="bi bi-arrow-right"></i>
+                                    {{ t('continue_learning', lang) }}
+                                </button>
+                                <button class="universal-button primary" onclick="window.location.href='{{ url_for('modules_bp.module_view', lang=lang, module_id=module.id) }}'">
+                                    <i class="bi bi-grid"></i>
+                                    {{ t('back_to_module', lang) }}
+                                </button>
+                            </div>
+                            
+                            <div class="secondary-actions">
+                                <button class="universal-button secondary" id="review-mistakes-btn" style="display: none;">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    {{ t('review_mistakes', lang) }}
+                                </button>
+                                <button class="universal-button secondary" onclick="window.location.reload()">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                    {{ t('retake_lesson', lang) }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if content %}
+                    {% for item in content %}
+                        <div class="content-item universal-card {% if loop.index0 == 0 %}active{% endif %}" 
+                             data-index="{{ loop.index0 }}" data-type="{{ item.type }}">
+                            
+                            {% if item.type == 'card' %}
+                                <!-- Карточка обучения -->
+                                <div class="learning-card-content">
+                                    <div class="card-question">{{ item.data.question }}</div>
+                                    
+                                    <!-- Прогресс между вопросом и ответом (без цифр) -->
+                                    <div class="inline-progress">
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar-fill" id="learning-progress-{{ loop.index0 }}" style="width: {{ ((loop.index0 + 1) / content|length * 100)|round }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-answer">{{ item.data.answer|safe }}</div>
+                                    
+                                    <!-- Интерактивный Drug Interaction Checker для раздела "Interacties & Contraindicaties" -->
+                                    {% if "interacties" in subtopic_name.lower() or "contraindicaties" in subtopic_name.lower() %}
+                                        <div class="interactive-tools-section">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <!-- Существующий теоретический контент остается -->
+                                                    <div class="theory-content">
+                                                        <h4>Теория взаимодействий лекарств</h4>
+                                                        <p>Изучите основные принципы лекарственных взаимодействий и противопоказаний. Используйте интерактивный инструмент справа для быстрой проверки совместимости препаратов.</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-4">
+                                                    <!-- НОВЫЙ интерактивный инструмент -->
+                                                    <div class="card border-warning">
+                                                        <div class="card-header bg-warning text-dark">
+                                                            <h6 class="mb-0">
+                                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                                Live Drug Checker
+                                                            </h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="drug-checker-widget">
+                                                                <input type="text" class="form-control mb-2" 
+                                                                       placeholder="Medicijn 1..." id="drug1">
+                                                                <input type="text" class="form-control mb-3" 
+                                                                       placeholder="Medicijn 2..." id="drug2">
+                                                                <button class="btn btn-warning w-100" onclick="quickInteractionCheck()">
+                                                                    <i class="bi bi-search me-1"></i>
+                                                                    Check Interactie
+                                                                </button>
+                                                                <div id="quickResult" class="mt-2"></div>
+                                                            </div>
+                                                            
+                                                            <hr>
+                                                            
+                                                            <a href="{{ url_for('pharmacy_tools.advanced_drug_checker', lang=lang) }}" class="btn btn-outline-warning w-100">
+                                                                <i class="bi bi-gear me-1"></i>
+                                                                Geavanceerde Checker
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <!-- Тестовый вопрос -->
+                                <div class="test-content" data-answered="false">
+                                    <div class="card-question">{{ item.data.question }}</div>
+                                    
+                                    <!-- Прогресс между вопросом и вариантами ответа (без цифр) -->
+                                    <div class="inline-progress">
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar-fill" id="learning-progress-{{ loop.index0 }}" style="width: {{ ((loop.index0 + 1) / content|length * 100)|round }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="test-options">
+                                        {% for option in item.data.options %}
+                                            <div class="universal-button test-option" 
+                                                 data-index="{{ loop.index0 }}" 
+                                                 data-correct="{{ 'true' if loop.index0 == (item.data.correct_answer|int) else 'false' }}">
+                                                <span class="option-letter">{{ ['A', 'B', 'C', 'D'][loop.index0] }}</span>
+                                                <span class="option-text">{{ option }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                
+                                    {% if item.data.explanation %}
+                                        <div class="explanation universal-card" style="display: none;">
+                                            <div class="explanation-header">
+                                                <i class="bi bi-info-circle"></i>
+                                                <strong>{{ t('explanation', lang) }}:</strong>
+                                            </div>
+                                            <p>{{ item.data.explanation }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Навигационные кнопки -->
+                            <div class="navigation-controls">
+                                {% if loop.index0 > 0 %}
+                                    <button class="universal-button secondary prev-btn">
+                                        <i class="bi bi-arrow-left"></i>
+                                        {{ t('previous', lang) }}
+                                    </button>
+                                {% else %}
+                                    <button class="universal-button secondary prev-btn" 
+                                            onclick="window.location.href='{{ url_for('modules_bp.module_view', lang=lang, module_id=module.id) }}'">
+                                        <i class="bi bi-arrow-left"></i>
+                                        {{ t('back_to_module', lang) }}
+                                    </button>
+                                {% endif %}
+                                
+                                {% if item.type == 'test' %}
+                                    <button class="universal-button success next-btn" style="display: none;" 
+                                            id="test-next-{{ loop.index0 }}" 
+                                            data-is-last="{% if loop.index0 >= content|length - 1 %}true{% else %}false{% endif %}">
+                                        {% if loop.index0 < content|length - 1 %}{{ t('next', lang) }}{% else %}{{ t('complete', lang) }}{% endif %}
+                                        <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                {% else %}
+                                    {% if loop.index0 < content|length - 1 %}
+                                        <button class="universal-button primary next-btn" data-is-last="false">
+                                            {{ t('next', lang) }}
+                                            <i class="bi bi-arrow-right"></i>
+                                        </button>
+                                    {% else %}
+                                        <button class="universal-button success next-btn" data-is-last="true">
+                                            {{ t('complete', lang) }}
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="universal-card">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <h3>{{ t('no_content', lang) }}</h3>
+                            <p>{{ t('no_content_description', lang) }}</p>
+                            <a href="{{ url_for('modules_bp.module_view', lang=lang, module_id=module.id) }}" 
+                               class="universal-button primary">
+                                {{ t('back_to_module', lang) }}
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- КОМПАКТНАЯ ПРАВАЯ КОЛОНКА: Только релевантная информация -->
+        <div class="info-sidebar">
+            <!-- Информация о текущем уроке -->
+            <div class="current-lesson-info">
+                <div class="lesson-header">
+                    <div class="lesson-type-badge" id="current-lesson-type">
+                        <i class="bi bi-lightbulb"></i>
+                        {{ t('learning_card', lang) }}
+                    </div>
+                    <h3 id="current-lesson-title">{{ subtopic_name }}</h3>
+                </div>
+            </div>
+            
+            <!-- Статистика текущей сессии -->
+            <div class="session-stats">
+                <h4>{{ t('session_progress', lang) }}</h4>
+                
+                <div class="session-stat">
+                    <div class="stat-icon blue">
+                        <i class="bi bi-collection"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value"><span id="current-item">1</span>/{{ total_items }}</div>
+                        <div class="stat-label">{{ t('items_progress', lang) }}</div>
+                    </div>
+                </div>
+                    
+                <div class="session-stat">
+                    <div class="stat-icon purple">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value"><span id="correct-count">0</span>/<span id="total-questions">{{ content|selectattr('type', 'equalto', 'test')|list|length }}</span></div>
+                        <div class="stat-label">{{ t('correct_answers', lang) }}</div>
+                    </div>
+                </div>
+                    
+                <div class="session-stat">
+                    <div class="stat-icon green">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value"><span id="session-time">0</span> {{ t('min', lang) }}</div>
+                        <div class="stat-label">{{ t('session_time', lang) }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Быстрые действия -->
+            <div class="quick-actions">
+                <h4>{{ t('quick_actions', lang) }}</h4>
+                <button class="universal-button secondary" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-repeat"></i>
+                    {{ t('restart_lesson', lang) }}
+                </button>
+                <button class="universal-button secondary" onclick="window.location.href='{{ url_for('modules_bp.module_view', lang=lang, module_id=module.id) }}'">
+                    <i class="bi bi-grid"></i>
+                    {{ t('back_to_module', lang) }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Drug Interaction Checker Function
+function quickInteractionCheck() {
+    const drug1 = document.getElementById('drug1').value;
+    const drug2 = document.getElementById('drug2').value;
+    
+    if (!drug1 || !drug2) {
+        alert('Vul beide medicijnen in');
+        return;
+    }
+    
+    // Quick check logic
+    const knownInteractions = {
+        'warfarine+ibuprofen': {
+            severity: 'MAJOR',
+            warning: '⚠️ MAJOR: Verhoogd bloedingsrisico'
+        },
+        'digoxine+furosemide': {
+            severity: 'MAJOR', 
+            warning: '⚠️ MAJOR: Digitalis toxiciteit risico'
+        },
+        'amiodarone+digoxine': {
+            severity: 'MAJOR',
+            warning: '⚠️ MAJOR: Verhoogde digoxine concentratie'
+        },
+        'simvastatine+amiodarone': {
+            severity: 'MAJOR',
+            warning: '⚠️ MAJOR: Verhoogd risico op rhabdomyolyse'
+        },
+        'metoprolol+verapamil': {
+            severity: 'MODERATE',
+            warning: '⚠️ MODERATE: Verhoogd risico op bradycardie'
+        },
+        'aspirine+clopidogrel': {
+            severity: 'MAJOR',
+            warning: '⚠️ MAJOR: Verhoogd bloedingsrisico'
+        },
+        'paracetamol+ibuprofen': {
+            severity: 'MINOR',
+            warning: 'ℹ️ MINOR: Geen klinisch relevante interactie'
+        },
+        'omeprazol+clopidogrel': {
+            severity: 'MODERATE',
+            warning: '⚠️ MODERATE: Verminderde effectiviteit clopidogrel'
+        }
+    };
+    
+    const key = (drug1.toLowerCase() + '+' + drug2.toLowerCase());
+    const interaction = knownInteractions[key] || knownInteractions[drug2.toLowerCase() + '+' + drug1.toLowerCase()];
+    
+    if (interaction) {
+        document.getElementById('quickResult').innerHTML = `
+            <div class="alert alert-${interaction.severity === 'MAJOR' ? 'danger' : interaction.severity === 'MODERATE' ? 'warning' : 'success'}">
+                ${interaction.warning}
+            </div>
+        `;
+    } else {
+        document.getElementById('quickResult').innerHTML = `
+            <div class="alert alert-success">
+                ✅ Geen bekende interactie gevonden
+            </div>
+        `;
+    }
+}
+
+// Оригинальный JavaScript для интерактивного обучения
+document.addEventListener('DOMContentLoaded', function() {
+    const contentItems = document.querySelectorAll('.content-item');
+    const currentItemSpan = document.getElementById('current-item');
+    const correctCountSpan = document.getElementById('correct-count');
+    const sessionTimeSpan = document.getElementById('session-time');
+    const currentLessonType = document.getElementById('current-lesson-type');
+    const totalItems = contentItems.length;
+    
+    let currentIndex = 0;
+    let correctAnswers = 0;
+    let totalQuestions = document.querySelectorAll('[data-type="test"]').length;
+    let incorrectQuestions = [];
+    let startTime = Date.now();
+    
+    // Обновление времени сессии каждую минуту
+    setInterval(updateSessionTime, 60000);
+    
+    function updateSessionTime() {
+        const elapsed = Math.floor((Date.now() - startTime) / 60000);
+        if (sessionTimeSpan) {
+            sessionTimeSpan.textContent = elapsed;
+        }
+    }
+    
+    function updateProgress() {
+        if (currentItemSpan) {
+            currentItemSpan.textContent = currentIndex + 1;
+        }
+        if (correctCountSpan) {
+            correctCountSpan.textContent = correctAnswers;
+        }
+        updateSessionTime();
+        updateLessonTypeIndicator();
+    }
+    
+    function updateLessonTypeIndicator() {
+        const currentItem = contentItems[currentIndex];
+        if (!currentItem || !currentLessonType) return;
+        
+        const isTest = currentItem.dataset.type === 'test';
+        
+        if (isTest) {
+            currentLessonType.innerHTML = `
+                <i class="bi bi-question-circle"></i>
+                {{ t('test_question', lang) }}
+            `;
+            currentLessonType.className = 'lesson-type-badge test-badge';
+        } else {
+            currentLessonType.innerHTML = `
+                <i class="bi bi-lightbulb"></i>
+                {{ t('learning_card', lang) }}
+            `;
+            currentLessonType.className = 'lesson-type-badge card-badge';
+        }
+    }
+    
+    function showItem(index) {
+        contentItems.forEach((item, i) => {
+            if (i === index) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        currentIndex = index;
+        updateProgress();
+    }
+    
+    function showCompletionScreen() {
+        console.log('showCompletionScreen called');
+        
+        const completionScreen = document.getElementById('completion-screen');
+        if (!completionScreen) {
+            console.error('Completion screen element not found!');
+            alert('Урок завершен! Возвращаемся к модулю...');
+            window.location.href = '/{{ lang }}/modules/{{ module.id }}';
+            return;
+        }
+        
+        // Скрываем все элементы контента
+        contentItems.forEach(item => {
+            item.classList.remove('active');
+            item.style.display = 'none';
+        });
+        
+        // Показываем экран завершения
+        completionScreen.style.display = 'block';
+        completionScreen.classList.add('show');
+        
+        // Заполняем статистику
+        const endTime = Date.now();
+        const timeSpent = Math.floor((endTime - startTime) / 1000 / 60);
+        const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 100;
+        
+        const correctAnswersEl = document.getElementById('correct-answers');
+        const timeSpentEl = document.getElementById('time-spent');
+        const completionScoreEl = document.getElementById('completion-score');
+        
+        if (correctAnswersEl) correctAnswersEl.textContent = `${correctAnswers}/${totalQuestions}`;
+        if (timeSpentEl) timeSpentEl.textContent = `${timeSpent} мин`;
+        if (completionScoreEl) completionScoreEl.textContent = `${score}%`;
+        
+        showAchievements(score, timeSpent);
+        
+        if (incorrectQuestions.length > 0) {
+            const reviewBtn = document.getElementById('review-mistakes-btn');
+            if (reviewBtn) {
+                reviewBtn.style.display = 'inline-flex';
+            }
+        }
+    }
+    
+    function showAchievements(score, timeSpent) {
+        const achievementsSection = document.getElementById('achievements-section');
+        const achievementsList = document.getElementById('achievements-list');
+        const achievements = [];
+        
+        if (score === 100) {
+            achievements.push({ icon: '🏆', text: 'Идеальный результат!' });
+        } else if (score >= 80) {
+            achievements.push({ icon: '🌟', text: 'Отличный результат!' });
+        }
+        
+        if (timeSpent <= 5) {
+            achievements.push({ icon: '⚡', text: 'Быстрое обучение!' });
+        }
+        
+        if (correctAnswers >= 5) {
+            achievements.push({ icon: '🎯', text: 'Мастер тестов!' });
+        }
+        
+        if (achievements.length > 0) {
+            achievementsList.innerHTML = achievements.map(achievement => 
+                `<div class="achievement-badge">
+                    <span>${achievement.icon}</span>
+                    <span>${achievement.text}</span>
+                </div>`
+            ).join('');
+            achievementsSection.style.display = 'block';
+        }
+    }
+    
+    function handleTestOption(option, testContent) {
+        // Проверяем, не отвечен ли уже вопрос
+        if (testContent.dataset.answered === 'true') {
+            return;
+        }
+        
+        const isCorrect = option.dataset.correct === 'true';
+        const allOptions = testContent.querySelectorAll('.test-option');
+        
+        // Отключаем все опции
+        allOptions.forEach(opt => {
+            opt.style.pointerEvents = 'none';
+        });
+        
+        // Показываем правильный ответ
+        setTimeout(() => {
+            allOptions.forEach(opt => {
+                if (opt.dataset.correct === 'true') {
+                    opt.classList.add('correct');
+                } else if (opt === option && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+            });
+            
+            const explanation = testContent.querySelector('.explanation');
+            if (explanation) {
+                explanation.style.display = 'block';
+            }
+            
+            testContent.dataset.answered = 'true';
+            
+            if (isCorrect) {
+                correctAnswers++;
+            } else {
+                incorrectQuestions.push(currentIndex);
+            }
+            
+            // Показываем кнопку "Далее" для тестов
+            const testNextBtn = testContent.closest('.content-item').querySelector('[id^="test-next-"]');
+            if (testNextBtn) {
+                testNextBtn.style.display = 'inline-flex';
+            }
+            
+            updateProgress();
+        }, 200);
+    }
+    
+    // Обработчик событий
+    document.addEventListener('click', function(e) {
+        const target = e.target;
+        const button = target.closest('button');
+        
+        if (target.closest('.universal-button.test-option')) {
+            e.preventDefault();
+            const option = target.closest('.universal-button.test-option');
+            const testContent = option.closest('.test-content');
+            
+            console.log('Test option clicked:', {
+                option: option,
+                dataCorrect: option.dataset.correct,
+                dataIndex: option.dataset.index,
+                optionText: option.querySelector('.option-text')?.textContent
+            });
+            
+            handleTestOption(option, testContent);
+            return;
+        }
+        
+        if (!button) return;
+        
+        if (button.classList.contains('prev-btn') && !button.hasAttribute('onclick')) {
+            e.preventDefault();
+            if (currentIndex > 0) {
+                showItem(currentIndex - 1);
+            }
+            return;
+        }
+        
+        if ((button.classList.contains('next-btn') || button.id && button.id.startsWith('test-next-')) && !button.hasAttribute('onclick')) {
+            e.preventDefault();
+            
+            const isLastButton = button.getAttribute('data-is-last') === 'true';
+            
+            if (currentIndex < totalItems - 1 && !isLastButton) {
+                showItem(currentIndex + 1);
+            } else {
+                showCompletionScreen();
+            }
+            return;
+        }
+        
+        if (button.id === 'continue-learning-btn') {
+            e.preventDefault();
+            const moduleUrl = button.getAttribute('data-module-url');
+            if (moduleUrl) {
+                window.location.href = moduleUrl;
+            }
+            return;
+        }
+    });
+    
+    // Инициализация
+    updateProgress();
+    
+    // Функция для тестирования экрана завершения
+    window.testCompletionScreen = function() {
+        correctAnswers = 5;
+        totalQuestions = 7;
+        showCompletionScreen();
+    };
+    
+    console.log('Focused interactive learning initialized with', totalItems, 'items and', totalQuestions, 'questions');
+});
+</script>
+{% endblock %}

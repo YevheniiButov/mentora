@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('learning_plan_title', lang) | default('План обучения') }} - Mentora{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/assessment.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="assessment-container">
+    <div class="assessment-card">
+        <!-- Заголовок плана -->
+        <div class="assessment-header">
+            <h1>{{ t('learning_plan_title', lang) | default('План обучения') }}</h1>
+            <p>{{ plan.name }} - {{ t('created_on', lang) | default('Создан') }} {{ plan.created_at.strftime('%d.%m.%Y') }}</p>
+        </div>
+        
+        <!-- Информация о плане -->
+        <div class="results-section">
+            <div class="results-grid">
+                <div class="score-overview">
+                    <div class="score-circle-modern" style="--score-angle: {{ plan.progress * 3.6 }}deg">
+                        <div class="score-value">{{ plan.progress }}%</div>
+                    </div>
+                    <div class="score-status status-{{ 'good' if plan.progress > 50 else 'average' }}">
+                        <i class="bi bi-flag"></i>
+                        {{ t('progress', lang) | default('Прогресс') }}
+                    </div>
+                </div>
+                
+                <div class="quick-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ plan.total_modules }}</div>
+                        <div class="stat-label">{{ t('modules', lang) | default('Модулей') }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ plan.completed_modules }}</div>
+                        <div class="stat-label">{{ t('completed', lang) | default('Завершено') }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ plan.estimated_hours }}</div>
+                        <div class="stat-label">{{ t('hours', lang) | default('Часов') }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ plan.difficulty }}</div>
+                        <div class="stat-label">{{ t('difficulty', lang) | default('Сложность') }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Структура плана -->
+            <div class="category-breakdown">
+                <h3>{{ t('plan_structure', lang) | default('Структура плана') }}</h3>
+                {% for module in plan.modules %}
+                <div class="category-item">
+                    <div class="category-icon" style="background: {{ module.color }};">
+                        <i class="bi bi-{{ module.icon }}"></i>
+                    </div>
+                    <div class="category-info">
+                        <div class="category-name">{{ module.name }}</div>
+                        <div class="category-bar">
+                            <div class="category-fill" style="width: {{ module.progress }}%"></div>
+                        </div>
+                    </div>
+                    <div class="category-score">{{ module.progress }}%</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Рекомендации -->
+            <div class="recommendations-section">
+                <h3>{{ t('recommendations', lang) | default('Рекомендации') }}</h3>
+                {% for recommendation in plan.recommendations %}
+                <div class="recommendation-item">
+                    <div class="recommendation-icon" style="background: {{ recommendation.gradient }};">
+                        <i class="bi bi-{{ recommendation.icon }}"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <div class="recommendation-title">{{ recommendation.title }}</div>
+                        <div class="recommendation-description">{{ recommendation.description }}</div>
+                        <div class="recommendation-meta">
+                            <span><i class="bi bi-clock"></i> {{ recommendation.duration }}</span>
+                            <span><i class="bi bi-people"></i> {{ recommendation.difficulty }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Действия -->
+            <div class="actions-section">
+                <button class="btn-create-plan" onclick="startModule()">
+                    <i class="bi bi-play-circle"></i>
+                    {{ t('start_learning', lang) | default('Начать обучение') }}
+                </button>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="editPlan()">
+                        <i class="bi bi-pencil"></i>
+                        {{ t('edit_plan', lang) | default('Редактировать план') }}
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="downloadPlan()">
+                        <i class="bi bi-download"></i>
+                        {{ t('download_plan', lang) | default('Скачать план') }}
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="sharePlan()">
+                        <i class="bi bi-share"></i>
+                        {{ t('share_plan', lang) | default('Поделиться') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Функции действий
+function startModule() {
+    // Переход к первому модулю или текущему активному
+    window.location.href = '{{ url_for("dashboard_bp.learning_dashboard", lang=lang) }}';
+}
+
+function editPlan() {
+    // Переход к редактированию плана
+    window.location.href = '{{ url_for("assessment_bp.create_learning_plan", lang=lang, attempt_id=attempt.id) }}';
+}
+
+function downloadPlan() {
+    // Скачивание плана в PDF
+    window.open('{{ url_for("assessment_bp.download_plan", lang=lang, plan_id=plan.id) }}', '_blank');
+}
+
+function sharePlan() {
+    // Поделиться планом
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ plan.name }}',
+            text: '{{ t("check_out_my_learning_plan", lang) | default("Посмотрите мой план обучения") }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback для браузеров без поддержки Web Share API
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('{{ t("link_copied", lang) | default("Ссылка скопирована в буфер обмена") }}');
+        });
+    }
+}
+
+// Анимация появления элементов
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация прогресс-баров
+    const progressBars = document.querySelectorAll('.category-fill');
+    progressBars.forEach((bar, index) => {
+        setTimeout(() => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 100);
+        }, index * 200);
+    });
+    
+    // Анимация появления карточек
+    const cards = document.querySelectorAll('.category-item, .recommendation-item');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

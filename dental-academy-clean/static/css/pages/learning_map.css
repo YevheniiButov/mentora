@@ -1,0 +1,2835 @@
+/* ===== MODERN Mentora LEARNING MAP STYLES ===== */
+/* Обновленный дизайн карты обучения в стиле главной страницы */
+
+/* === ОСНОВНОЙ КОНТЕЙНЕР === */
+.learning-map-container {
+  height: calc(100vh - var(--header-height, 72px));
+  background: var(--subject-view-bg, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  transition: background var(--transition-normal, 0.3s ease);
+}
+
+/* Декоративные анимированные элементы */
+.learning-map-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 20% 20%, var(--subject-view-border, rgba(255, 255, 255, 0.1)) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(62, 205, 193, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
+  animation: gentle-float 20s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.learning-map-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(45deg, transparent 30%, var(--subject-view-border, rgba(255,255,255,0.02)) 50%, transparent 70%);
+  animation: shimmer 15s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-20px, -20px) rotate(1deg); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* === LAYOUT STRUCTURE === */
+.main-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+}
+
+/* === ЛЕВАЯ КОЛОНКА === */
+.left-column {
+  width: 320px;
+  background: var(--subject-view-left-column-bg, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.2));
+  padding: 2rem 1.5rem;
+  padding-bottom: 4rem; /* Добавляем отступ снизу для контента */
+  overflow-y: auto;
+  height: calc(100vh - var(--header-height, 72px));
+  min-height: calc(100vh - var(--header-height, 72px));
+  flex-shrink: 0;
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-normal, 0.3s ease);
+}
+
+.section-header {
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.1));
+  background: var(--subject-view-button-bg, rgba(255, 255, 255, 0.05));
+  transition: all var(--transition-normal, 0.3s ease);
+}
+
+.section-header h2 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--subject-view-text, rgba(255, 255, 255, 0.9));
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: color var(--transition-normal, 0.3s ease);
+}
+
+.learning-paths {
+  padding: 1rem;
+}
+
+.learning-path-item {
+  margin-bottom: 0.75rem;
+}
+
+/* === NAVIGATION BUTTONS === */
+.learning-path-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--subject-view-button-bg, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.2));
+  border-radius: 16px;
+  color: var(--subject-view-button-text, white);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.learning-path-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--subject-view-button-hover-bg, rgba(255, 255, 255, 0.1)), var(--subject-view-button-bg, rgba(255, 255, 255, 0.05)));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.learning-path-button:hover::before {
+  opacity: 1;
+}
+
+.learning-path-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: var(--subject-view-border-hover, rgba(255, 255, 255, 0.4));
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.15),
+    0 0 0 1px var(--subject-view-border, rgba(255, 255, 255, 0.1));
+}
+
+/* === CATEGORY GRADIENTS === */
+.learning-path-button[data-path="1"], 
+.learning-path-button.knowledge-center {
+  background: var(--category-knowledge, linear-gradient(135deg, #3498db, #2980b9));
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.learning-path-button[data-path="2"], 
+.learning-path-button.communication {
+  background: var(--category-communication, linear-gradient(135deg, #9b59b6, #8e44ad));
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+}
+
+.learning-path-button[data-path="3"], 
+.learning-path-button.preclinical {
+  background: var(--category-preclinical, linear-gradient(135deg, #1abc9c, #16a085));
+  box-shadow: 0 4px 15px rgba(26, 188, 156, 0.3);
+}
+
+.learning-path-button[data-path="4"], 
+.learning-path-button.workstation {
+  background: var(--category-workstation, linear-gradient(135deg, #e74c3c, #c0392b));
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.learning-path-button[data-path="5"], 
+.learning-path-button.bi-toets {
+  background: var(--category-bi-toets, linear-gradient(135deg, #f39c12, #e67e22));
+  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+.learning-path-button[data-path="6"], 
+.learning-path-button.virtual-patients {
+  background: var(--category-virtual-patients, linear-gradient(135deg, #667eea, #764ba2));
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.learning-path-button:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 
+    0 12px 35px rgba(0, 0, 0, 0.2),
+    0 0 0 1px var(--subject-view-border, rgba(255, 255, 255, 0.1));
+}
+
+.path-button-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.path-button-content .icon {
+  width: 22px;
+  height: 22px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.chevron-icon {
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.learning-path-button[data-expanded="true"] .chevron-icon {
+  transform: rotate(90deg);
+}
+
+/* === SUBJECT LISTS === */
+.subject-list {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0;
+  transform: translateY(-10px);
+}
+
+.subject-list.expanded {
+  max-height: 800px !important; /* Достаточно для большинства списков */
+  opacity: 1 !important;
+  margin-top: 0.75rem;
+  overflow: visible !important; /* Разрешаем показ содержимого */
+  transform: translateY(0);
+}
+
+/* Более специфичные правила для категорий из админки */
+.content-category + .subject-list.expanded {
+  max-height: 800px !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  margin-top: 0.75rem !important;
+  transform: translateY(0) !important;
+}
+
+/* Дополнительные правила для отладки */
+div[id^="category-"].expanded {
+  max-height: 800px !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  margin-top: 0.75rem !important;
+  transform: translateY(0) !important;
+  display: block !important;
+}
+
+/* Улучшения для кнопок категорий */
+.content-category {
+  cursor: pointer !important;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.content-category:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.content-category.active {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1)) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Анимация стрелки */
+.chevron-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.content-category.active .chevron-icon {
+  transform: rotate(90deg) !important;
+}
+
+/* Отладочные стили */
+.content-category[data-category] {
+  border: 2px solid transparent;
+}
+
+.content-category[data-category]:focus {
+  outline: 2px solid #3ECDC1;
+  outline-offset: 2px;
+}
+
+/* Анимация появления подкатегорий */
+.subcategory-item {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.3s ease;
+}
+
+.subject-list.expanded .subcategory-item {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.subject-list.expanded .subcategory-item:nth-child(1) { transition-delay: 0.1s; }
+.subject-list.expanded .subcategory-item:nth-child(2) { transition-delay: 0.2s; }
+.subject-list.expanded .subcategory-item:nth-child(3) { transition-delay: 0.3s; }
+.subject-list.expanded .subcategory-item:nth-child(4) { transition-delay: 0.4s; }
+.subject-list.expanded .subcategory-item:nth-child(5) { transition-delay: 0.5s; }
+
+.subject-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem 0.875rem 2.5rem;
+  margin: 0.5rem 0;
+  background: var(--subject-view-card-bg, rgba(255, 255, 255, 0.08));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  color: var(--subject-view-text, rgba(255, 255, 255, 0.9));
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.subject-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--subject-view-border-hover, rgba(255, 255, 255, 0.6)), var(--subject-view-border, rgba(255, 255, 255, 0.2)));
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.subject-item:hover {
+  background: var(--subject-view-card-hover-bg, rgba(255, 255, 255, 0.15));
+  color: var(--subject-view-text, white);
+  transform: translateX(8px);
+  border-color: var(--subject-view-border-hover, rgba(255, 255, 255, 0.3));
+  box-shadow: var(--subject-view-shadow-hover, 0 4px 20px rgba(0, 0, 0, 0.1));
+}
+
+.subject-item:hover::before {
+  transform: scaleY(1);
+}
+
+.subject-item.active {
+  background: var(--subject-view-card-hover-bg, rgba(255, 255, 255, 0.2));
+  color: var(--subject-view-text, white);
+  font-weight: 600;
+  border-color: var(--subject-view-border-hover, rgba(255, 255, 255, 0.4));
+  box-shadow: var(--subject-view-shadow-hover, 0 4px 25px rgba(0, 0, 0, 0.15));
+}
+
+.subject-item.active::before {
+  transform: scaleY(1);
+  background: linear-gradient(to bottom, #3ECDC1, #2BB6AC);
+}
+
+.subject-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-bar {
+  width: 50px;
+  height: 4px;
+  background: var(--subject-view-border, rgba(255, 255, 255, 0.2));
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--subject-view-border-hover, rgba(255, 255, 255, 0.8));
+  border-radius: 20px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-percent {
+  font-size: 0.75rem;
+  color: var(--subject-view-text-secondary, rgba(255, 255, 255, 0.7));
+  min-width: max-content;
+}
+
+/* === СРЕДНЯЯ КОЛОНКА === */
+.middle-column {
+  flex: 1;
+  background: var(--subject-view-card-bg, rgba(255, 255, 255, 0.08));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 2rem;
+  padding-bottom: 4rem; /* Добавляем отступ снизу для контента */
+  overflow-y: auto;
+  height: calc(100vh - var(--header-height, 72px));
+  min-height: calc(100vh - var(--header-height, 72px));
+}
+
+.page-header {
+  margin-bottom: 2rem;
+  color: var(--subject-view-text, white);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--subject-view-text-secondary, rgba(255, 255, 255, 0.7));
+}
+
+.breadcrumb .separator {
+  color: var(--subject-view-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.breadcrumb .active {
+  color: var(--subject-view-text, white);
+  font-weight: 600;
+}
+
+.page-header h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--subject-view-text, white);
+  margin-bottom: 0.5rem;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.page-header p {
+  font-size: 1.125rem;
+  color: var(--subject-view-text-secondary, rgba(255, 255, 255, 0.8));
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* === КАРТОЧКИ И СЕТКИ === */
+.subjects-grid,
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.subject-card,
+.module-card {
+  background: var(--subject-view-card-bg, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.2));
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    var(--subject-view-shadow, 0 8px 32px rgba(0, 0, 0, 0.1)),
+    inset 0 1px 0 var(--subject-view-border, rgba(255, 255, 255, 0.1));
+  position: relative;
+}
+
+.subject-card::before,
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--subject-view-button-bg, rgba(255, 255, 255, 0.05)), var(--subject-view-card-bg, rgba(255, 255, 255, 0.01)));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.subject-card:hover::before,
+.module-card:hover::before {
+  opacity: 1;
+}
+
+.subject-card:hover,
+.module-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--subject-view-border-hover, rgba(255, 255, 255, 0.3));
+  box-shadow: 
+    var(--subject-view-shadow-hover, 0 20px 40px rgba(0, 0, 0, 0.2)),
+    inset 0 1px 0 var(--subject-view-border, rgba(255, 255, 255, 0.2));
+}
+
+.card-content,
+.module-card-content {
+  padding: 2rem;
+  color: var(--subject-view-text, white);
+  position: relative;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-content::after,
+.module-card-content::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, var(--subject-view-border, rgba(255,255,255,0.1)) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.card-icon,
+.module-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--subject-view-button-bg, rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: var(--subject-view-text, white);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--subject-view-shadow, 0 4px 16px rgba(0, 0, 0, 0.1));
+}
+
+.card:hover .card-icon,
+.module-card:hover .module-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: var(--subject-view-button-hover-bg, rgba(255, 255, 255, 0.25));
+  box-shadow: var(--subject-view-shadow-hover, 0 8px 25px rgba(0, 0, 0, 0.15));
+}
+
+.card-info h3,
+.module-info h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--subject-view-text, white);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.card-info p,
+.module-info p {
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  flex-grow: 1;
+  color: var(--subject-view-text-secondary, rgba(255, 255, 255, 0.8));
+}
+
+.card-footer,
+.module-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: 1rem;
+}
+
+.card-link,
+.subject-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Progress Bars */
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background-color: var(--subject-view-border, rgba(255, 255, 255, 0.2));
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--subject-view-border-hover, rgba(255, 255, 255, 0.8));
+  border-radius: 20px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--subject-view-text-secondary, rgba(255, 255, 255, 0.9));
+}
+
+/* Badges */
+.badge,
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--subject-view-button-bg, rgba(255, 255, 255, 0.15));
+  color: var(--subject-view-text, white);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+}
+
+/* Buttons */
+.module-btn,
+.card-action,
+.btn-start {
+  padding: 0.75rem 1.5rem;
+  background: var(--subject-view-button-bg, rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(10px);
+  color: var(--subject-view-button-text, white);
+  border: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.2));
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.module-btn:hover,
+.card-action:hover,
+.btn-start:hover {
+  background: var(--subject-view-button-hover-bg, rgba(255, 255, 255, 0.25));
+  color: var(--subject-view-button-text, white);
+  transform: translateY(-2px);
+  box-shadow: var(--subject-view-shadow-hover, 0 8px 25px rgba(0, 0, 0, 0.2));
+  border-color: var(--subject-view-border-hover, rgba(255, 255, 255, 0.4));
+}
+
+/* === ПРИВЕТСТВЕННЫЙ ЭКРАН === */
+.welcome-screen {
+  background: var(--subject-view-card-bg, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.2));
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    var(--subject-view-shadow, 0 20px 40px rgba(0, 0, 0, 0.1)),
+    inset 0 1px 0 var(--subject-view-border, rgba(255, 255, 255, 0.1));
+  margin: 0 auto;
+  max-width: 1000px;
+  position: relative;
+}
+
+.welcome-header {
+  background: linear-gradient(135deg, var(--subject-view-button-bg, rgba(255, 255, 255, 0.1)), var(--subject-view-card-bg, rgba(255, 255, 255, 0.05)));
+  padding: 3rem 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.welcome-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 30% 30%, var(--subject-view-border, rgba(255, 255, 255, 0.1)) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(62, 205, 193, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.welcome-icon {
+  margin: 0 auto 2rem;
+  position: relative;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.static-favicon-logo {
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: gentle-pulse 3s ease-in-out infinite;
+  display: block;
+  margin: 0 auto;
+}
+
+@keyframes gentle-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+  50% { 
+    transform: scale(1.05);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.welcome-header h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: white;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-subtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-content {
+  padding: 2rem;
+  color: white;
+}
+
+.welcome-description {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.125rem;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Welcome Steps */
+.welcome-steps {
+  margin-bottom: 3rem;
+}
+
+.welcome-steps h3 {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.step-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.step-card:hover::before {
+  opacity: 1;
+}
+
+.step-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.step-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 1.5rem;
+  color: white;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-card:hover .step-icon {
+  transform: scale(1.1) rotate(10deg);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.step-content h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.step-content p {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+/* === ПРАВАЯ КОЛОНКА === */
+.right-column {
+  width: 320px;
+  background: var(--subject-view-left-column-bg, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.2));
+  padding: 2rem 1.5rem;
+  padding-bottom: 4rem; /* Добавляем отступ снизу для контента */
+  overflow-y: auto;
+  height: calc(100vh - var(--header-height, 72px));
+  min-height: calc(100vh - var(--header-height, 72px));
+  flex-shrink: 0;
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.1);
+  color: var(--subject-view-text, white);
+}
+
+.right-column h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+  color: var(--subject-view-text, white);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.stats-section,
+.countdown-section,
+.recommendations-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.1));
+}
+
+.stats-section:last-child,
+.countdown-section:last-child,
+.recommendations-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Progress Circle */
+.progress-circle-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.progress-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.circle-background,
+.circle-progress {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.circle-background {
+  border: 8px solid rgba(255, 255, 255, 0.2);
+}
+
+.circle-progress {
+  border: 8px solid transparent;
+  border-top: 8px solid #3ECDC1;
+  border-right: 8px solid #3ECDC1;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-circle-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--subject-view-text, white);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Stats Cards */
+.stats-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: var(--subject-view-card-bg, rgba(255, 255, 255, 0.08));
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover {
+  background: var(--subject-view-card-hover-bg, rgba(255, 255, 255, 0.15));
+  transform: translateY(-2px);
+  box-shadow: var(--subject-view-shadow-hover, 0 8px 25px rgba(0, 0, 0, 0.1));
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+}
+
+.stat-icon.blue {
+  background: rgba(52, 152, 219, 0.3);
+  color: #3498db;
+}
+
+.stat-icon.purple {
+  background: rgba(155, 89, 182, 0.3);
+  color: #9b59b6;
+}
+
+.stat-icon.green {
+  background: rgba(26, 188, 156, 0.3);
+  color: #1abc9c;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--subject-view-text-secondary, rgba(255, 255, 255, 0.7));
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-weight: 700;
+  color: var(--subject-view-text, white);
+  font-size: 1.125rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Countdown Section */
+.day-counter {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.days-number {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #3ECDC1;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.days-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.exam-date {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.schedule-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.schedule-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+}
+
+/* Recommendations */
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recommendation-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.rec-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.875rem;
+}
+
+.rec-icon.blue {
+  background: rgba(52, 152, 219, 0.3);
+  color: #3498db;
+}
+
+.rec-icon.purple {
+  background: rgba(155, 89, 182, 0.3);
+  color: #9b59b6;
+}
+
+.rec-info {
+  flex: 1;
+}
+
+.rec-info h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: white;
+}
+
+.rec-info span {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rec-action {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(62, 205, 193, 0.2);
+  color: #3ECDC1;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rec-action:hover {
+  background: rgba(62, 205, 193, 0.3);
+  transform: scale(1.1);
+}
+
+.empty-recommendations {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+/* === ВИРТУАЛЬНЫЕ ПАЦИЕНТЫ === */
+.virtual-patients-section {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.virtual-patients-section::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: gentle-pulse 4s ease-in-out infinite;
+}
+
+.virtual-patients-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.vp-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.virtual-patients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.vp-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.vp-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.vp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.vp-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  flex-grow: 1;
+  margin-right: 0.5rem;
+}
+
+.vp-difficulty {
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.difficulty-easy {
+  background: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.difficulty-medium {
+  background: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.difficulty-hard {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.vp-description {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+.vp-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.vp-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(4px);
+}
+
+.vp-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.vp-empty-state {
+  text-align: center;
+  padding: 2rem;
+  opacity: 0.7;
+}
+
+.vp-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.view-all-vp {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.view-all-vp a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-all-vp a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+}
+
+/* === FLOATING SHAPES === */
+.floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent);
+  animation: float 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shape-1 {
+  width: 80px;
+  height: 80px;
+  top: 10%;
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.shape-2 {
+  width: 120px;
+  height: 120px;
+  top: 60%;
+  right: 10%;
+  animation-delay: -5s;
+}
+
+.shape-3 {
+  width: 60px;
+  height: 60px;
+  bottom: 20%;
+  left: 15%;
+  animation-delay: -10s;
+}
+
+.shape-4 {
+  width: 100px;
+  height: 100px;
+  top: 30%;
+  right: 20%;
+  animation-delay: -15s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.6;
+  }
+}
+
+/* === EMPTY STATES === */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-icon {
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.empty-state p {
+  max-width: 400px;
+  margin: 0;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 1024px) {
+  .right-column {
+    display: none;
+  }
+  
+  .middle-column {
+    padding-bottom: 3rem; /* Добавляем отступ для планшетов */
+  }
+  
+  .left-column {
+    padding-bottom: 3rem; /* Добавляем отступ для планшетов */
+  }
+}
+
+@media (max-width: 768px) {
+  .left-column {
+    display: none;
+  }
+  
+  .middle-column {
+    padding: 1rem;
+    padding-bottom: 3rem; /* Уменьшаем отступ для мобильных */
+    height: calc(100vh - var(--header-height, 72px));
+    margin: 0;
+    -webkit-overflow-scrolling: touch; /* Улучшенный скроллинг для iOS */
+  }
+  
+  .right-column {
+    padding: 1rem;
+    padding-bottom: 3rem; /* Уменьшаем отступ для мобильных */
+    -webkit-overflow-scrolling: touch; /* Улучшенный скроллинг для iOS */
+  }
+  
+  .subjects-grid,
+  .modules-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .welcome-header h2 {
+    font-size: 2rem;
+  }
+  
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .virtual-patients-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === ACCESSIBILITY === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+*:focus-visible {
+  outline: 2px solid #3ECDC1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* === SCROLLBARS === */
+.left-column::-webkit-scrollbar,
+.middle-column::-webkit-scrollbar,
+.right-column::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-column::-webkit-scrollbar-track,
+.middle-column::-webkit-scrollbar-track,
+.right-column::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.left-column::-webkit-scrollbar-thumb,
+.middle-column::-webkit-scrollbar-thumb,
+.right-column::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.left-column::-webkit-scrollbar-thumb:hover,
+.middle-column::-webkit-scrollbar-thumb:hover,
+.right-column::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.learning-map-page .main-content {
+    margin-top: 0 !important;
+    padding: 0 !important;
+}
+
+/* Убираем верхний отступ для страницы карты обучения */
+body.learning-map-page .main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* СКРЫВАЕМ ПОДВАЛ НА СТРАНИЦЕ КАРТЫ ОБУЧЕНИЯ */
+.learning-map-page .footer {
+    display: none !important;
+}
+
+/* Обеспечиваем правильную высоту контейнера без подвала */
+.learning-map-page .learning-map-container {
+    height: 100vh !important;
+    min-height: 100vh !important;
+}
+
+/* Улучшаем скроллинг в колонках */
+.left-column::-webkit-scrollbar,
+.middle-column::-webkit-scrollbar,
+.right-column::-webkit-scrollbar {
+    width: 6px;
+}
+
+.left-column::-webkit-scrollbar-track,
+.middle-column::-webkit-scrollbar-track,
+.right-column::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.left-column::-webkit-scrollbar-thumb,
+.middle-column::-webkit-scrollbar-thumb,
+.right-column::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.left-column::-webkit-scrollbar-thumb:hover,
+.middle-column::-webkit-scrollbar-thumb:hover,
+.right-column::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Плавный скроллинг */
+.left-column,
+.middle-column,
+.right-column {
+    scroll-behavior: smooth;
+}
+
+/* Исправляем цвет кнопок навигации в шапке для страницы карты обучения */
+.learning-map-page .nav-link {
+    color: var(--color-text-primary) !important;
+}
+
+.learning-map-page .nav-link:hover {
+    color: var(--color-text-primary) !important;
+}
+
+.learning-map-page .nav-link.active {
+    color: #3ECDC1 !important;
+}
+
+/* Исправляем цвет активных кнопок модулей */
+.module-btn.active,
+.card-action.active,
+.btn-start.active {
+  background: linear-gradient(135deg, #3ECDC1, #2BB6AC) !important;
+  color: white !important;
+  border-color: #3ECDC1 !important;
+}
+
+/* Исправляем цвет активных кнопок в левой колонке */
+.learning-path-button.active {
+  background: linear-gradient(135deg, #3ECDC1, #2BB6AC) !important;
+  color: white !important;
+  border-color: #3ECDC1 !important;
+  box-shadow: 0 4px 15px rgba(62, 205, 193, 0.4) !important;
+}
+
+/* ===== КОМПАКТНЫЕ МОДУЛИ ===== */
+.modules-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.module-card-compact {
+    background: var(--card-bg, rgba(255, 255, 255, 0.1));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
+    border-radius: var(--radius-lg, 16px);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.1));
+    min-height: 180px;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.module-card-compact:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg, 0 8px 25px rgba(0, 0, 0, 0.15));
+    border-color: var(--primary-color, #667eea);
+}
+
+.module-icon-compact {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-color, #667eea), var(--secondary-color, #764ba2));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.module-info-compact {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.module-info-compact h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary, white);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.module-btn-compact {
+    background: linear-gradient(135deg, var(--primary-color, #667eea), var(--secondary-color, #764ba2));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md, 12px);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.module-btn-compact:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md, 0 6px 20px rgba(0, 0, 0, 0.15));
+    color: white;
+    text-decoration: none;
+}
+
+.premium-badge {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full, 20px);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 1200px) {
+    .modules-grid-compact {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .modules-grid-compact {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .module-card-compact {
+        padding: 1.25rem;
+        min-height: 160px;
+    }
+}
+
+/* ===== ТЕМЫ ===== */
+[data-theme="dark"] .module-card-compact {
+    background: var(--theme-surface, rgba(255, 255, 255, 0.05));
+    border-color: var(--theme-border, rgba(255, 255, 255, 0.1));
+}
+
+[data-theme="dark"] .module-card-compact:hover {
+    border-color: var(--primary-color, #667eea);
+}
+
+[data-theme="dark"] .module-info-compact h3 {
+    color: var(--theme-text, white);
+}
+
+/* ===== СВЕТЛАЯ ТЕМА - ИСПРАВЛЕНИЯ ЦВЕТОВ ===== */
+[data-theme="light"] .welcome-description {
+    color: #333 !important;
+}
+
+[data-theme="light"] .welcome-steps h3 {
+    color: #333 !important;
+}
+
+[data-theme="light"] .step-content h4 {
+    color: #333 !important;
+}
+
+[data-theme="light"] .step-content p {
+    color: #666 !important;
+}
+
+[data-theme="light"] .right-column {
+    color: #333 !important;
+}
+
+[data-theme="light"] .right-column h2 {
+    color: #333 !important;
+}
+
+[data-theme="light"] .progress-circle-text {
+    color: var(--text-primary, #333);
+}
+
+[data-theme="light"] .stat-label {
+    color: #666 !important;
+}
+
+[data-theme="light"] .stat-value {
+    color: #333 !important;
+}
+
+[data-theme="light"] .rec-info h4 {
+    color: #333 !important;
+}
+
+[data-theme="light"] .rec-info span {
+    color: #666 !important;
+}
+
+[data-theme="light"] .recommendation-item {
+    color: #333 !important;
+}
+
+[data-theme="light"] .recommendation-item span {
+    color: #666 !important;
+}
+
+[data-theme="light"] .countdown-number {
+    color: #333 !important;
+}
+
+[data-theme="light"] .countdown-label {
+    color: #666 !important;
+}
+
+[data-theme="light"] .days-number {
+    color: #333 !important;
+}
+
+[data-theme="light"] .days-label {
+    color: #666 !important;
+}
+
+[data-theme="light"] .exam-date {
+    color: #333 !important;
+}
+
+/* ===== ГРАДИЕНТНАЯ ТЕМА - РЕКОМЕНДАЦИИ ===== */
+[data-theme="gradient"] .recommendations-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="gradient"] .recommendations-section h3 {
+    color: #333 !important;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+[data-theme="gradient"] .recommendation-item {
+    color: #333 !important;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+[data-theme="gradient"] .recommendation-item:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="gradient"] .recommendation-item span {
+    color: #333 !important;
+    font-weight: 500;
+}
+
+[data-theme="gradient"] .rec-icon {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+[data-theme="gradient"] .rec-info h4 {
+    color: #333 !important;
+    font-weight: 600;
+}
+
+[data-theme="gradient"] .rec-info span {
+    color: #555 !important;
+}
+
+[data-theme="gradient"] .rec-action {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+}
+
+[data-theme="gradient"] .rec-action:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== ГРАДИЕНТНАЯ ТЕМА - ДРУГИЕ БЛОКИ ПРАВОЙ КОЛОНКИ ===== */
+[data-theme="gradient"] .stats-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="gradient"] .countdown-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="gradient"] .stats-section h2,
+[data-theme="gradient"] .countdown-section h3 {
+    color: #333 !important;
+    font-weight: 600;
+}
+
+[data-theme="gradient"] .progress-circle-text {
+    color: #333 !important;
+    font-weight: 700;
+}
+
+[data-theme="gradient"] .stat-label {
+    color: #555 !important;
+}
+
+[data-theme="gradient"] .stat-value {
+    color: #333 !important;
+    font-weight: 600;
+}
+
+[data-theme="gradient"] .countdown-number {
+    color: #333 !important;
+    font-weight: 700;
+}
+
+[data-theme="gradient"] .countdown-label {
+    color: #555 !important;
+}
+
+[data-theme="gradient"] .days-number {
+    color: #333 !important;
+    font-weight: 700;
+}
+
+[data-theme="gradient"] .days-label {
+    color: #555 !important;
+}
+
+[data-theme="gradient"] .exam-date {
+    color: #333 !important;
+}
+
+/* === ФАРМАЦЕВТИЧЕСКИЕ КАТЕГОРИИ === */
+/* Специальные стили для фармацевтических путей обучения */
+
+.learning-path-button.big-preparation {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.big-preparation:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+}
+
+.learning-path-button.medication-guidance {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.medication-guidance:hover {
+    background: linear-gradient(135deg, #0f8a80 0%, #32d86a 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4) !important;
+}
+
+.learning-path-button.pharmacology {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.pharmacology:hover {
+    background: linear-gradient(135deg, #ff5252 0%, #ff9500 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4) !important;
+}
+
+.learning-path-button.interactions {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.interactions:hover {
+    background: linear-gradient(135deg, #ee82f5 0%, #f44556 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4) !important;
+}
+
+.learning-path-button.dosage-calculations {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.dosage-calculations:hover {
+    background: linear-gradient(135deg, #3d94fe 0%, #00e6fe 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4) !important;
+}
+
+.learning-path-button.patient-communication {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.patient-communication:hover {
+    background: linear-gradient(135deg, #f95d8a 0%, #fed130 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(250, 112, 154, 0.4) !important;
+}
+
+.learning-path-button.legislation-ethics {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
+    color: #2d3748 !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.legislation-ethics:hover {
+    background: linear-gradient(135deg, #9ae6e3 0%, #fed0df 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(168, 237, 234, 0.4) !important;
+}
+
+/* Активные состояния для фармацевтических категорий */
+.learning-path-button.big-preparation.active,
+.learning-path-button.medication-guidance.active,
+.learning-path-button.pharmacology.active,
+.learning-path-button.interactions.active,
+.learning-path-button.dosage-calculations.active,
+.learning-path-button.patient-communication.active,
+.learning-path-button.legislation-ethics.active {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Фармацевтические иконки */
+.learning-path-button.big-preparation .icon::before {
+    content: "🎓";
+    font-size: 16px;
+}
+
+.learning-path-button.medication-guidance .icon::before {
+    content: "💊";
+    font-size: 16px;
+}
+
+.learning-path-button.pharmacology .icon::before {
+    content: "🧪";
+    font-size: 16px;
+}
+
+.learning-path-button.interactions .icon::before {
+    content: "⚠️";
+    font-size: 16px;
+}
+
+.learning-path-button.dosage-calculations .icon::before {
+    content: "🧮";
+    font-size: 16px;
+}
+
+.learning-path-button.patient-communication .icon::before {
+    content: "💬";
+    font-size: 16px;
+}
+
+.learning-path-button.legislation-ethics .icon::before {
+    content: "⚖️";
+    font-size: 16px;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .modules-grid-compact {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .learning-path-button.big-preparation,
+    .learning-path-button.medication-guidance,
+    .learning-path-button.pharmacology,
+    .learning-path-button.interactions,
+    .learning-path-button.dosage-calculations,
+    .learning-path-button.patient-communication,
+    .learning-path-button.legislation-ethics {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .profession-indicator {
+        margin-bottom: 1rem;
+    }
+    
+    .profession-badge {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* === ИНДИКАТОР ПРОФЕССИИ === */
+/* Стили для отображения профессии пользователя */
+
+.profession-indicator {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.profession-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    padding: 0.75rem 1.25rem;
+    color: white;
+    font-weight: 500;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.profession-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+}
+
+.profession-emoji {
+    font-size: 1.25rem;
+    display: inline-block;
+    line-height: 1;
+}
+
+.profession-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.readonly-badge {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Профессиональные цвета для badges */
+.profession-badge[data-profession="farmacie"] {
+    background: linear-gradient(135deg, rgba(17, 153, 142, 0.9), rgba(56, 239, 125, 0.9));
+    border-color: rgba(17, 153, 142, 0.3);
+}
+
+.profession-badge[data-profession="tandheelkunde"] {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.9), rgba(0, 242, 254, 0.9));
+    border-color: rgba(79, 172, 254, 0.3);
+}
+
+.profession-badge[data-profession="huisartsgeneeskunde"] {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.profession-badge[data-profession="verpleegkunde"] {
+    background: linear-gradient(135deg, rgba(250, 112, 154, 0.9), rgba(254, 225, 64, 0.9));
+    border-color: rgba(250, 112, 154, 0.3);
+}
+
+/* === ВРАЧИ ОБЩЕЙ ПРАКТИКИ (GP) === */
+/* Специальные стили для путей обучения врачей */
+
+.learning-path-button.gp-big-preparation {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.gp-big-preparation:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+}
+
+.learning-path-button.gp-nhg-guidelines {
+    background: linear-gradient(135deg, #4c6ef5 0%, #228be6 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.gp-nhg-guidelines:hover {
+    background: linear-gradient(135deg, #364fc7 0%, #1971c2 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76, 110, 245, 0.4) !important;
+}
+
+.learning-path-button.gp-diagnostics {
+    background: linear-gradient(135deg, #37b24d 0%, #51cf66 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.gp-diagnostics:hover {
+    background: linear-gradient(135deg, #2b8a3e 0%, #40c057 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(55, 178, 77, 0.4) !important;
+}
+
+.learning-path-button.gp-referral-protocols {
+    background: linear-gradient(135deg, #fd7e14 0%, #fab005 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.gp-referral-protocols:hover {
+    background: linear-gradient(135deg, #e8590c 0%, #f08c00 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(253, 126, 20, 0.4) !important;
+}
+
+.learning-path-button.gp-preventive-care {
+    background: linear-gradient(135deg, #7950f2 0%, #9775fa 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.gp-preventive-care:hover {
+    background: linear-gradient(135deg, #6741d9 0%, #8ce99a 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(121, 80, 242, 0.4) !important;
+}
+
+.learning-path-button.gp-chronic-diseases {
+    background: linear-gradient(135deg, #e64980 0%, #f06292 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.gp-chronic-diseases:hover {
+    background: linear-gradient(135deg, #d6336c 0%, #ec407a 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(230, 73, 128, 0.4) !important;
+}
+
+.learning-path-button.gp-acute-care {
+    background: linear-gradient(135deg, #f03e3e 0%, #ff6b6b 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.gp-acute-care:hover {
+    background: linear-gradient(135deg, #e03131 0%, #ff5252 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(240, 62, 62, 0.4) !important;
+}
+
+/* Активные состояния для врачей */
+.learning-path-button.gp-big-preparation.active,
+.learning-path-button.gp-nhg-guidelines.active,
+.learning-path-button.gp-diagnostics.active,
+.learning-path-button.gp-referral-protocols.active,
+.learning-path-button.gp-preventive-care.active,
+.learning-path-button.gp-chronic-diseases.active,
+.learning-path-button.gp-acute-care.active {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Иконки для врачей */
+.learning-path-button.gp-big-preparation .icon::before {
+    content: "🎓";
+    font-size: 16px;
+}
+
+.learning-path-button.gp-nhg-guidelines .icon::before {
+    content: "📋";
+    font-size: 16px;
+}
+
+.learning-path-button.gp-diagnostics .icon::before {
+    content: "🩺";
+    font-size: 16px;
+}
+
+.learning-path-button.gp-referral-protocols .icon::before {
+    content: "➡️";
+    font-size: 16px;
+}
+
+.learning-path-button.gp-preventive-care .icon::before {
+    content: "🛡️";
+    font-size: 16px;
+}
+
+.learning-path-button.gp-chronic-diseases .icon::before {
+    content: "📅";
+    font-size: 16px;
+}
+
+.learning-path-button.gp-acute-care .icon::before {
+    content: "🚨";
+    font-size: 16px;
+}
+
+/* === МЕДСЕСТРЫ (NURSING) === */
+/* Специальные стили для путей обучения медсестер */
+
+.learning-path-button.nursing-big-preparation {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.nursing-big-preparation:hover {
+    background: linear-gradient(135deg, #f95d8a 0%, #fed130 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(250, 112, 154, 0.4) !important;
+}
+
+.learning-path-button.nursing-skv-accreditation {
+    background: linear-gradient(135deg, #ffd60a 0%, #ffbe0b 100%) !important;
+    color: #2d3748 !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.nursing-skv-accreditation:hover {
+    background: linear-gradient(135deg, #ffcf00 0%, #ffaa00 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 214, 10, 0.4) !important;
+}
+
+.learning-path-button.nursing-patient-care {
+    background: linear-gradient(135deg, #f72585 0%, #fb8500 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.nursing-patient-care:hover {
+    background: linear-gradient(135deg, #d00000 0%, #e85d00 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(247, 37, 133, 0.4) !important;
+}
+
+.learning-path-button.nursing-specializations {
+    background: linear-gradient(135deg, #7209b7 0%, #a663cc 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.nursing-specializations:hover {
+    background: linear-gradient(135deg, #560bad 0%, #9c36b5 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(114, 9, 183, 0.4) !important;
+}
+
+.learning-path-button.nursing-medication {
+    background: linear-gradient(135deg, #06ffa5 0%, #4fb3d9 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.nursing-medication:hover {
+    background: linear-gradient(135deg, #00f5a0 0%, #4895d6 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(6, 255, 165, 0.4) !important;
+}
+
+.learning-path-button.nursing-communication {
+    background: linear-gradient(135deg, #ff8500 0%, #ffb700 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.nursing-communication:hover {
+    background: linear-gradient(135deg, #e67700 0%, #e6a500 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 133, 0, 0.4) !important;
+}
+
+.learning-path-button.nursing-ebp {
+    background: linear-gradient(135deg, #003566 0%, #0077b6 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.nursing-ebp:hover {
+    background: linear-gradient(135deg, #001d3d 0%, #0096c7 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 53, 102, 0.4) !important;
+}
+
+/* Активные состояния для медсестер */
+.learning-path-button.nursing-big-preparation.active,
+.learning-path-button.nursing-skv-accreditation.active,
+.learning-path-button.nursing-patient-care.active,
+.learning-path-button.nursing-specializations.active,
+.learning-path-button.nursing-medication.active,
+.learning-path-button.nursing-communication.active,
+.learning-path-button.nursing-ebp.active {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Иконки для медсестер */
+.learning-path-button.nursing-big-preparation .icon::before {
+    content: "🎓";
+    font-size: 16px;
+}
+
+.learning-path-button.nursing-skv-accreditation .icon::before {
+    content: "🏆";
+    font-size: 16px;
+}
+
+.learning-path-button.nursing-patient-care .icon::before {
+    content: "❤️";
+    font-size: 16px;
+}
+
+.learning-path-button.nursing-specializations .icon::before {
+    content: "🏥";
+    font-size: 16px;
+}
+
+.learning-path-button.nursing-medication .icon::before {
+    content: "💉";
+    font-size: 16px;
+}
+
+.learning-path-button.nursing-communication .icon::before {
+    content: "💬";
+    font-size: 16px;
+}
+
+.learning-path-button.nursing-ebp .icon::before {
+    content: "🔬";
+    font-size: 16px;
+}
+
+/* Адаптивность для мобильных устройств - обновленная */
+@media (max-width: 768px) {
+    .modules-grid-compact {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .learning-path-button.big-preparation,
+    .learning-path-button.medication-guidance,
+    .learning-path-button.pharmacology,
+    .learning-path-button.interactions,
+    .learning-path-button.dosage-calculations,
+    .learning-path-button.patient-communication,
+    .learning-path-button.legislation-ethics,
+    .learning-path-button.gp-big-preparation,
+    .learning-path-button.gp-nhg-guidelines,
+    .learning-path-button.gp-diagnostics,
+    .learning-path-button.gp-referral-protocols,
+    .learning-path-button.gp-preventive-care,
+    .learning-path-button.gp-chronic-diseases,
+    .learning-path-button.gp-acute-care,
+    .learning-path-button.nursing-big-preparation,
+    .learning-path-button.nursing-skv-accreditation,
+    .learning-path-button.nursing-patient-care,
+    .learning-path-button.nursing-specializations,
+    .learning-path-button.nursing-medication,
+    .learning-path-button.nursing-communication,
+    .learning-path-button.nursing-ebp,
+    .learning-path-button.dentistry-big-preparation,
+    .learning-path-button.dentistry-general,
+    .learning-path-button.dentistry-endodontics,
+    .learning-path-button.dentistry-periodontology,
+    .learning-path-button.dentistry-surgery,
+    .learning-path-button.dentistry-prosthetics,
+    .learning-path-button.dentistry-orthodontics {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .profession-indicator {
+        margin-bottom: 1rem;
+    }
+    
+    .profession-badge {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* === СТОМАТОЛОГИЯ (DENTISTRY) === */
+/* Специальные стили для путей обучения стоматологов */
+
+.learning-path-button.dentistry-big-preparation {
+    background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.dentistry-big-preparation:hover {
+    background: linear-gradient(135deg, #29b6f6 0%, #039be5 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 195, 247, 0.4) !important;
+}
+
+.learning-path-button.dentistry-general {
+    background: linear-gradient(135deg, #26c6da 0%, #00acc1 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.dentistry-general:hover {
+    background: linear-gradient(135deg, #00acc1 0%, #0097a7 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(38, 198, 218, 0.4) !important;
+}
+
+.learning-path-button.dentistry-endodontics {
+    background: linear-gradient(135deg, #ff7043 0%, #ff5722 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.dentistry-endodontics:hover {
+    background: linear-gradient(135deg, #ff5722 0%, #f4511e 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 112, 67, 0.4) !important;
+}
+
+.learning-path-button.dentistry-periodontology {
+    background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.dentistry-periodontology:hover {
+    background: linear-gradient(135deg, #4caf50 0%, #43a047 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 187, 106, 0.4) !important;
+}
+
+.learning-path-button.dentistry-surgery {
+    background: linear-gradient(135deg, #ef5350 0%, #f44336 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.dentistry-surgery:hover {
+    background: linear-gradient(135deg, #f44336 0%, #e53935 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 83, 80, 0.4) !important;
+}
+
+.learning-path-button.dentistry-prosthetics {
+    background: linear-gradient(135deg, #ab47bc 0%, #9c27b0 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.dentistry-prosthetics:hover {
+    background: linear-gradient(135deg, #9c27b0 0%, #8e24aa 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(171, 71, 188, 0.4) !important;
+}
+
+.learning-path-button.dentistry-orthodontics {
+    background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.learning-path-button.dentistry-orthodontics:hover {
+    background: linear-gradient(135deg, #3f51b5 0%, #3949ab 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(92, 107, 192, 0.4) !important;
+}
+
+/* Активные состояния для стоматологов */
+.learning-path-button.dentistry-big-preparation.active,
+.learning-path-button.dentistry-general.active,
+.learning-path-button.dentistry-endodontics.active,
+.learning-path-button.dentistry-periodontology.active,
+.learning-path-button.dentistry-surgery.active,
+.learning-path-button.dentistry-prosthetics.active,
+.learning-path-button.dentistry-orthodontics.active {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Иконки для стоматологов */
+.learning-path-button.dentistry-big-preparation .icon::before {
+    content: "🎓";
+    font-size: 16px;
+}
+
+.learning-path-button.dentistry-general .icon::before {
+    content: "🦷";
+    font-size: 16px;
+}
+
+.learning-path-button.dentistry-endodontics .icon::before {
+    content: "🩹";
+    font-size: 16px;
+}
+
+.learning-path-button.dentistry-periodontology .icon::before {
+    content: "🛡️";
+    font-size: 16px;
+}
+
+.learning-path-button.dentistry-surgery .icon::before {
+    content: "🔪";
+    font-size: 16px;
+}
+
+.learning-path-button.dentistry-prosthetics .icon::before {
+    content: "👑";
+    font-size: 16px;
+}
+
+.learning-path-button.dentistry-orthodontics .icon::before {
+    content: "🦾";
+    font-size: 16px;
+}
+
+/* Адаптивность для мобильных устройств - обновленная */
+@media (max-width: 768px) {
+    .modules-grid-compact {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .learning-path-button.big-preparation,
+    .learning-path-button.medication-guidance,
+    .learning-path-button.pharmacology,
+    .learning-path-button.interactions,
+    .learning-path-button.dosage-calculations,
+    .learning-path-button.patient-communication,
+    .learning-path-button.legislation-ethics,
+    .learning-path-button.gp-big-preparation,
+    .learning-path-button.gp-nhg-guidelines,
+    .learning-path-button.gp-diagnostics,
+    .learning-path-button.gp-referral-protocols,
+    .learning-path-button.gp-preventive-care,
+    .learning-path-button.gp-chronic-diseases,
+    .learning-path-button.gp-acute-care,
+    .learning-path-button.nursing-big-preparation,
+    .learning-path-button.nursing-skv-accreditation,
+    .learning-path-button.nursing-patient-care,
+    .learning-path-button.nursing-specializations,
+    .learning-path-button.nursing-medication,
+    .learning-path-button.nursing-communication,
+    .learning-path-button.nursing-ebp,
+    .learning-path-button.dentistry-big-preparation,
+    .learning-path-button.dentistry-general,
+    .learning-path-button.dentistry-endodontics,
+    .learning-path-button.dentistry-periodontology,
+    .learning-path-button.dentistry-surgery,
+    .learning-path-button.dentistry-prosthetics,
+    .learning-path-button.dentistry-orthodontics {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .profession-indicator {
+        margin-bottom: 1rem;
+    }
+    
+    .profession-badge {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Устранение полосы внизу страницы */
+.learning-map-page .learning-map-container {
+    min-height: calc(100vh - var(--header-height));
+    margin: 0;
+    padding: 0;
+    border-bottom: 0;
+    overflow: hidden;
+}
+
+/* Скрываем подвал на странице карты обучения */
+.learning-map-page .footer {
+    display: none;
+}
+
+/* Убираем все декоративные элементы, которые могут создавать полосу внизу */
+.learning-map-container::after,
+.learning-map-container::before {
+    content: none !important;
+}
+
+/* Убираем отступы у контейнера */
+.learning-map-page .main-content {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* === СЕКЦИЯ ДИАГНОСТИКИ BI-TOETS === */
+.diagnostic-section {
+    margin-bottom: 2rem;
+}
+
+.diagnostic-section h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--subject-view-text, white);
+}
+
+.diagnostic-card {
+    background: var(--subject-view-card-bg, rgba(255, 255, 255, 0.1));
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--subject-view-border, rgba(255, 255, 255, 0.2));
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.diagnostic-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.diagnostic-card:hover::before {
+    opacity: 1;
+}
+
+.diagnostic-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border-color: var(--subject-view-border-hover, rgba(255, 255, 255, 0.3));
+}
+
+.diagnostic-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.diagnostic-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.diagnostic-card:hover .diagnostic-icon {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.diagnostic-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--subject-view-text, white);
+}
+
+.diagnostic-content p {
+    font-size: 0.9rem;
+    color: var(--subject-view-text-secondary, rgba(255, 255, 255, 0.8));
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.diagnostic-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.diagnostic-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.diagnostic-btn i {
+    font-size: 1rem;
+}
+
+/* Адаптивность для секции диагностики */
+@media (max-width: 768px) {
+    .diagnostic-card {
+        padding: 1rem;
+    }
+    
+    .diagnostic-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .diagnostic-icon i {
+        font-size: 1.25rem;
+    }
+    
+    .diagnostic-content h3 {
+        font-size: 1rem;
+    }
+    
+    .diagnostic-content p {
+        font-size: 0.85rem;
+    }
+    
+    .diagnostic-btn {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.85rem;
+    }
+}

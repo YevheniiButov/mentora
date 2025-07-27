@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} - Mentora{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            {% if category and subcategory and topic %}
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main_bp.index', lang=lang) }}">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('content_nav.categories_list', lang=lang) }}">Категории</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('content_nav.view_category', lang=lang, category_slug=category.slug) }}">{{ category.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('content_nav.view_subcategory', lang=lang, category_slug=category.slug, subcategory_slug=subcategory.slug) }}">{{ subcategory.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('content_nav.view_topic', lang=lang, category_slug=category.slug, subcategory_slug=subcategory.slug, topic_slug=topic.slug) }}">{{ topic.name }}</a></li>
+                    <li class="breadcrumb-item active">{{ lesson.title }}</li>
+                </ol>
+            </nav>
+            {% endif %}
+            
+            <div class="mb-4">
+                <h1>{{ lesson.title }}</h1>
+                <p class="text-muted">
+                    {% if lesson.content_type == 'learning_card' %}
+                        <i class="bi bi-journal-text"></i> Теоретический материал
+                    {% elif lesson.content_type == 'quiz' %}
+                        <i class="bi bi-question-circle"></i> Тест
+                    {% else %}
+                        <i class="bi bi-file-text"></i> Урок
+                    {% endif %}
+                </p>
+            </div>
+            
+            {% if lesson_content %}
+                {% if lesson.content_type == 'learning_card' and lesson_content.cards %}
+                    <!-- Отображение учебных карточек -->
+                    {% for card in lesson_content.cards %}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">{{ card.question or card.title or "Карточка " + loop.index|string }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if card.answer %}
+                                <div class="mb-3">
+                                    {{ card.answer|safe }}
+                                </div>
+                            {% endif %}
+                            
+                            {% if card.tags %}
+                                <div class="mb-2">
+                                    {% for tag in card.tags %}
+                                        <span class="badge bg-secondary me-1">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                {% elif lesson.content_type == 'quiz' and lesson_content.questions %}
+                    <!-- Отображение вопросов теста -->
+                    <div class="alert alert-info">
+                        <h5>Тест: {{ lesson.title }}</h5>
+                        <p>Вопросов: {{ lesson_content.questions|length }}</p>
+                        <a href="#" class="btn btn-primary">Начать тест</a>
+                    </div>
+                    
+                    {% for question in lesson_content.questions[:3] %}
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-title">Вопрос {{ loop.index }}</h6>
+                            <p>{{ question.question }}</p>
+                            {% if question.options %}
+                                <ul class="list-unstyled">
+                                    {% for option in question.options %}
+                                        <li class="mb-1">
+                                            <span class="badge bg-light text-dark me-2">{{ loop.index0|chr(65) }}</span>
+                                            {{ option }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if lesson_content.questions|length > 3 %}
+                        <p class="text-muted">... и еще {{ lesson_content.questions|length - 3 }} вопросов</p>
+                    {% endif %}
+                    
+                {% else %}
+                    <!-- Обычный контент -->
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <pre>{{ lesson_content|tojson(indent=2) }}</pre>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-warning">
+                    <h5>Контент недоступен</h5>
+                    <p>Контент для этого урока пока не загружен.</p>
+                </div>
+            {% endif %}
+            
+            <!-- Кнопки навигации -->
+            <div class="mt-4 d-flex justify-content-between">
+                {% if category and subcategory and topic %}
+                    <a href="{{ url_for('content_nav.view_topic', lang=lang, category_slug=category.slug, subcategory_slug=subcategory.slug, topic_slug=topic.slug) }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад к теме
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('content_nav.categories_list', lang=lang) }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> К категориям
+                    </a>
+                {% endif %}
+                
+                <button class="btn btn-success" onclick="markAsCompleted()">
+                    <i class="bi bi-check-circle"></i> Завершить урок
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markAsCompleted() {
+    // Здесь будет AJAX запрос для отметки урока как завершенного
+    fetch(`/${document.documentElement.lang}/content/api/lesson/{{ lesson.id }}/complete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Урок завершен!');
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка');
+    });
+}
+</script>
+{% endblock %} 

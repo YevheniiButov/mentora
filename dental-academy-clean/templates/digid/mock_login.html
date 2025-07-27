@@ -1,0 +1,933 @@
+{% extends "digid/base_digid.html" %}
+{% block title %}DigiD Inloggen - Mentora{% endblock %}
+
+{% block head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=RijksoverheidSansWebText:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --digid-blue: #003d82;
+    --digid-orange: #ff6600; 
+    --digid-light-gray: #f5f5f5;
+    --digid-border: #cccccc;
+    --digid-text: #333333;
+    --digid-text-light: #767676;
+    --digid-background: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'RijksoverheidSansWebText', 'Inter', Arial, sans-serif;
+    background: var(--digid-background);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+}
+
+.digid-page-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.digid-content-card {
+    max-width: 500px;
+    width: 100%;
+    background: var(--digid-background);
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Header Section */
+.digid-header {
+    background: var(--digid-background);
+    padding: 24px 32px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.digid-logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.digid-logo {
+    width: 32px;
+    height: 32px;
+    background: #000000;
+    color: #ff6619;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: -0.5px;
+}
+
+.digid-main-title {
+    color: var(--digid-text);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.digid-subtitle {
+    color: var(--digid-text);
+    font-size: 18px;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Main Content */
+.digid-main-content {
+    padding: 32px;
+}
+
+.digid-step-indicator {
+    color: var(--digid-text-light);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.digid-section-title {
+    color: var(--digid-orange);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 24px 0;
+    line-height: 1.4;
+}
+
+.digid-instruction-text {
+    color: var(--digid-text);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.digid-detail-text {
+    color: var(--digid-text);
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+/* Pincode Input Section */
+.digid-input-section {
+    margin-bottom: 32px;
+}
+
+.digid-code-inputs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.digid-code-input {
+    width: 56px;
+    height: 56px;
+    border: 2px solid var(--digid-border);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--digid-text);
+    background: var(--digid-background);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.digid-code-input:focus {
+    border-color: var(--digid-blue);
+    box-shadow: 0 0 0 2px rgba(0, 61, 130, 0.1);
+}
+
+.digid-code-input.filled {
+    background: #e6f2ff;
+    border-color: var(--digid-blue);
+}
+
+.digid-code-input:first-child.filled {
+    background: #e6f2ff;
+}
+
+/* Navigation Buttons */
+.digid-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.digid-btn-previous {
+    background: none;
+    border: none;
+    color: var(--digid-text-light);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.digid-btn-previous:hover {
+    color: var(--digid-blue);
+}
+
+.digid-btn-next {
+    background: var(--digid-orange);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-width: 120px;
+}
+
+.digid-btn-next:hover:not(:disabled) {
+    background: #e55a00;
+}
+
+.digid-btn-next:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Help Link */
+.digid-help-section {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
+}
+
+.digid-help-link {
+    color: var(--digid-blue);
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1.5;
+    display: inline-block;
+}
+
+.digid-help-link:hover {
+    text-decoration: underline;
+}
+
+/* Illustration Section */
+.digid-illustration {
+    text-align: center;
+    margin-top: 32px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.digid-phone-illustration {
+    max-width: 300px;
+    width: 100%;
+    height: 200px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect x="50" y="20" width="80" height="140" rx="12" fill="%23ff6600"/><rect x="60" y="35" width="60" height="100" rx="4" fill="%23ffffff"/><rect x="70" y="45" width="40" height="6" rx="3" fill="%23000000"/><rect x="70" y="60" width="30" height="4" rx="2" fill="%23cccccc"/><rect x="70" y="70" width="35" height="4" rx="2" fill="%23cccccc"/><text x="90" y="100" font-family="Arial" font-size="8" fill="%23000000" text-anchor="middle">CODE</text><rect x="150" y="40" width="100" height="60" rx="8" fill="%23003d82"/><rect x="160" y="50" width="80" height="40" rx="4" fill="%23ffffff"/><text x="200" y="75" font-family="Arial" font-size="10" fill="%23003d82" text-anchor="middle">DigiD</text></svg>') center/contain no-repeat;
+    margin: 0 auto;
+}
+
+/* Error Messages */
+.digid-error-message {
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    color: #c62828;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: none;
+}
+
+/* Loading State */
+.digid-loading-state {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.digid-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--digid-blue);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: digid-spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes digid-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.digid-loading-text {
+    color: var(--digid-text);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Demo Section */
+.digid-demo-section {
+    background: #fff3e0;
+    border-top: 3px solid var(--digid-orange);
+    padding: 20px 32px;
+}
+
+.digid-demo-warning {
+    color: var(--digid-orange);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.digid-demo-subtitle {
+    color: var(--digid-text);
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+/* Demo Options */
+.digid-demo-options {
+    margin-bottom: 16px;
+}
+
+.demo-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+}
+
+.demo-option input[type="checkbox"] {
+    margin: 0;
+}
+
+.demo-option label {
+    color: var(--digid-text);
+    font-size: 13px;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Demo Buttons Grid */
+.digid-demo-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.digid-demo-btn {
+    background: var(--digid-blue);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+}
+
+.digid-demo-btn:hover {
+    background: #002a5c;
+    transform: translateY(-1px);
+}
+
+.digid-demo-btn.admin {
+    background: #dc3545;
+}
+
+.digid-demo-btn.admin:hover {
+    background: #c82333;
+}
+
+.demo-btn-icon {
+    font-size: 14px;
+}
+
+.demo-btn-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.demo-btn-profession {
+    font-weight: 600;
+}
+
+.demo-btn-nl {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .digid-page-container {
+        padding: 10px;
+    }
+    
+    .digid-main-content {
+        padding: 24px 20px;
+    }
+    
+    .digid-header {
+        padding: 20px;
+    }
+    
+    .digid-code-inputs {
+        gap: 8px;
+    }
+    
+    .digid-code-input {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+    
+    .digid-navigation {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .digid-btn-next {
+        width: 100%;
+    }
+    
+    .digid-demo-section {
+        padding: 16px 20px;
+    }
+    
+    .digid-demo-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    
+    .digid-demo-btn {
+        padding: 8px 6px;
+        font-size: 11px;
+        min-height: 36px;
+    }
+}
+
+/* Accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus indicators */
+.digid-code-input:focus-visible,
+.digid-btn-next:focus-visible,
+.digid-btn-previous:focus-visible,
+.digid-demo-btn:focus-visible {
+    outline: 2px solid var(--digid-blue);
+    outline-offset: 2px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="digid-page-container">
+    <div class="digid-content-card">
+        <!-- Header -->
+        <div class="digid-header">
+            <div class="digid-logo-section">
+                <div class="digid-logo">DigiD</div>
+                <div>
+                    <h1 class="digid-main-title">Inloggen bij</h1>
+                    <p class="digid-subtitle">Mentora.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="digid-main-content">
+            <div class="digid-step-indicator">Stap 1 van 3</div>
+            
+            <h2 class="digid-section-title">Open de DigiD app en voer uw pincode in</h2>
+            
+            <p class="digid-instruction-text">Vul daarna de koppelcode in die u in de DigiD app ziet.</p>
+            
+            <p class="digid-detail-text">De DigiD app laat de koppelcode zien. Deze bestaat uit 4 letters. Vul de code in de 4 invoervelden hieronder in.</p>
+
+            <!-- Pincode Form -->
+            <form id="digid-auth-form" onsubmit="return handleDigiDSubmit(event)">
+                <div class="digid-input-section">
+                    <div class="digid-code-inputs">
+                        <input 
+                            type="text" 
+                            class="digid-code-input" 
+                            maxlength="1" 
+                            id="code1" 
+                            autocomplete="off"
+                            oninput="handleCodeInput(this, 0)" 
+                            onkeydown="handleCodeKeydown(event, 0)"
+                            aria-label="Eerste letter van koppelcode">
+                        <input 
+                            type="text" 
+                            class="digid-code-input" 
+                            maxlength="1" 
+                            id="code2" 
+                            autocomplete="off"
+                            oninput="handleCodeInput(this, 1)" 
+                            onkeydown="handleCodeKeydown(event, 1)"
+                            aria-label="Tweede letter van koppelcode">
+                        <input 
+                            type="text" 
+                            class="digid-code-input" 
+                            maxlength="1" 
+                            id="code3" 
+                            autocomplete="off"
+                            oninput="handleCodeInput(this, 2)" 
+                            onkeydown="handleCodeKeydown(event, 2)"
+                            aria-label="Derde letter van koppelcode">
+                        <input 
+                            type="text" 
+                            class="digid-code-input" 
+                            maxlength="1" 
+                            id="code4" 
+                            autocomplete="off"
+                            oninput="handleCodeInput(this, 3)" 
+                            onkeydown="handleCodeKeydown(event, 3)"
+                            aria-label="Vierde letter van koppelcode">
+                    </div>
+
+                    <div class="digid-error-message" id="error-message" role="alert"></div>
+                </div>
+
+                <div class="digid-navigation">
+                    <button type="button" class="digid-btn-previous" onclick="goToPreviousStep()" aria-label="Ga terug naar vorige stap">
+                        ← Vorige
+                    </button>
+                    <button type="submit" class="digid-btn-next" id="submit-button" disabled aria-label="Ga naar volgende stap">
+                        Volgende →
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loading State -->
+            <div class="digid-loading-state" id="loading-state">
+                <div class="digid-spinner" aria-hidden="true"></div>
+                <div class="digid-loading-text">Bezig met verifiëren...</div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="digid-help-section">
+                <a href="#" class="digid-help-link" onclick="showDigiDHelp(); return false;">
+                    Nog geen DigiD app? Lees hoe u de DigiD app kunt installeren en activeren. [opent in een nieuw venster]
+                </a>
+            </div>
+
+            <!-- Phone Illustration -->
+            <div class="digid-illustration">
+                <div class="digid-phone-illustration" aria-hidden="true"></div>
+            </div>
+        </div>
+
+        <!-- Demo Section -->
+        <div class="digid-demo-section">
+            <div class="digid-demo-warning">
+                🛠️ Alleen voor ontwikkeling
+            </div>
+            <div class="digid-demo-subtitle">
+                Selecteer uw professie om direct in te loggen als demo gebruiker
+            </div>
+            
+            <!-- Demo Options -->
+            <div class="digid-demo-options">
+                <div class="demo-option">
+                    <input type="checkbox" id="show-registration" name="show-registration" onchange="toggleRegistrationMode()">
+                    <label for="show-registration">Nieuwe gebruiker (toon registratieformulier)</label>
+                </div>
+            </div>
+            
+            <!-- Demo Buttons -->
+            <div class="digid-demo-buttons">
+                <button class="digid-demo-btn" onclick="selectDemoUser('tandarts')" title="Inloggen als demo tandarts">
+                    <span class="demo-btn-icon">🦷</span>
+                    <span class="demo-btn-text">
+                        <span class="demo-btn-profession">Tandarts</span>
+                        <span class="demo-btn-nl">Stomatologie</span>
+                    </span>
+                </button>
+                
+                <button class="digid-demo-btn" onclick="selectDemoUser('apotheker')" title="Inloggen als demo apotheker">
+                    <span class="demo-btn-icon">💊</span>
+                    <span class="demo-btn-text">
+                        <span class="demo-btn-profession">Apotheker</span>
+                        <span class="demo-btn-nl">Farmacie</span>
+                    </span>
+                </button>
+                
+                <button class="digid-demo-btn" onclick="selectDemoUser('verpleegkundige')" title="Inloggen als demo verpleegkundige">
+                    <span class="demo-btn-icon">👩‍⚕️</span>
+                    <span class="demo-btn-text">
+                        <span class="demo-btn-profession">Verpleegkundige</span>
+                        <span class="demo-btn-nl">Zorgverlening</span>
+                    </span>
+                </button>
+                
+                <button class="digid-demo-btn" onclick="selectDemoUser('arts')" title="Inloggen als demo arts">
+                    <span class="demo-btn-icon">🩺</span>
+                    <span class="demo-btn-text">
+                        <span class="demo-btn-profession">Arts</span>
+                        <span class="demo-btn-nl">Huisartsgeneeskunde</span>
+                    </span>
+                </button>
+                
+                <button class="digid-demo-btn admin" onclick="selectDemoUser('admin')" title="Inloggen als demo admin">
+                    <span class="demo-btn-icon">👨‍💼</span>
+                    <span class="demo-btn-text">
+                        <span class="demo-btn-profession">Admin</span>
+                        <span class="demo-btn-nl">Beheerder</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// State management
+let currentCode = ['', '', '', ''];
+let isSubmitting = false;
+let showRegistration = false;
+
+// Demo user configurations
+const demoUsers = {
+    'tandarts': { 
+        code: 'TDNT', 
+        username: 'demo.tandarts', 
+        name: 'Dr. Jan van der Berg', 
+        profession: 'tandarts',
+        bsn: '123456789',
+        role: 'Student',
+        email: 'jan.vandenberg@mentora.nl'
+    },
+    'apotheker': { 
+        code: 'APTH', 
+        username: 'demo.apotheker', 
+        name: 'Drs. Maria Jansen', 
+        profession: 'apotheker',
+        bsn: '234567890',
+        role: 'Student',
+        email: 'maria.jansen@mentora.nl'
+    },
+    'verpleegkundige': { 
+        code: 'VERP', 
+        username: 'demo.verpleegkundige', 
+        name: 'Anneke de Vries', 
+        profession: 'verpleegkundige',
+        bsn: '345678901',
+        role: 'Student',
+        email: 'anneke.devries@mentora.nl'
+    },
+    'arts': { 
+        code: 'ARTS', 
+        username: 'demo.arts', 
+        name: 'Dr. Peter Smits', 
+        profession: 'huisarts',
+        bsn: '456789012',
+        role: 'Student',
+        email: 'peter.smits@mentora.nl'
+    },
+    'admin': { 
+        code: 'ADMN', 
+        username: 'demo.admin', 
+        name: 'Admin Beheerder', 
+        profession: 'admin',
+        bsn: '999999999',
+        role: 'Admin',
+        email: 'admin@mentora.nl'
+    }
+};
+
+// Toggle registration mode
+function toggleRegistrationMode() {
+    showRegistration = document.getElementById('show-registration').checked;
+    console.log('Registration mode:', showRegistration ? 'ON' : 'OFF');
+}
+
+// Input handling
+function handleCodeInput(input, index) {
+    const value = input.value.toUpperCase().replace(/[^A-Z]/g, '');
+    
+    if (value.length > 1) {
+        input.value = value.charAt(0);
+        return;
+    }
+    
+    input.value = value;
+    currentCode[index] = value;
+    
+    // Update visual state
+    if (value) {
+        input.classList.add('filled');
+        // Auto-focus next input
+        if (index < 3) {
+            document.getElementById(`code${index + 2}`).focus();
+        }
+    } else {
+        input.classList.remove('filled');
+    }
+    
+    updateSubmitButton();
+    hideError();
+}
+
+function handleCodeKeydown(event, index) {
+    // Handle backspace navigation
+    if (event.key === 'Backspace' && !event.target.value && index > 0) {
+        const prevInput = document.getElementById(`code${index}`);
+        prevInput.focus();
+        prevInput.value = '';
+        prevInput.classList.remove('filled');
+        currentCode[index - 1] = '';
+        updateSubmitButton();
+    }
+    
+    // Handle arrow key navigation
+    if (event.key === 'ArrowLeft' && index > 0) {
+        document.getElementById(`code${index}`).focus();
+    } else if (event.key === 'ArrowRight' && index < 3) {
+        document.getElementById(`code${index + 2}`).focus();
+    }
+}
+
+function updateSubmitButton() {
+    const isComplete = currentCode.every(code => code !== '');
+    const submitButton = document.getElementById('submit-button');
+    submitButton.disabled = !isComplete || isSubmitting;
+}
+
+// Form submission
+function handleDigiDSubmit(event) {
+    event.preventDefault();
+    
+    if (isSubmitting) return false;
+    
+    const code = currentCode.join('');
+    if (code.length !== 4) {
+        showError('Vul alle 4 letters in.');
+        return false;
+    }
+    
+    authenticateWithDigiD(code);
+    return false;
+}
+
+function authenticateWithDigiD(code) {
+    isSubmitting = true;
+    showLoading();
+    hideError();
+    
+    // Simulate authentication delay
+    setTimeout(() => {
+        // Map demo codes to users
+        const demoCodeMap = {};
+        Object.keys(demoUsers).forEach(key => {
+            demoCodeMap[demoUsers[key].code] = demoUsers[key];
+        });
+        
+        const user = demoCodeMap[code];
+        if (user) {
+            // Successful authentication
+            authenticateUser(user);
+        } else {
+            // Invalid code
+            hideLoading();
+            showError('Ongeldige koppelcode. Controleer de code in uw DigiD app.');
+            isSubmitting = false;
+            updateSubmitButton();
+        }
+    }, 2000);
+}
+
+// Demo user selection
+function selectDemoUser(userType) {
+    const user = demoUsers[userType];
+    if (!user) return;
+    
+    // Fill in the demo code
+    const code = user.code;
+    for (let i = 0; i < 4; i++) {
+        const input = document.getElementById(`code${i + 1}`);
+        input.value = code[i];
+        input.classList.add('filled');
+        currentCode[i] = code[i];
+    }
+    
+    updateSubmitButton();
+    hideError();
+    
+    // Show user info
+    console.log(`🔑 Demo login: ${user.name} (${user.profession})`);
+    
+    // Auto-submit after a brief delay
+    setTimeout(() => {
+        if (!isSubmitting) {
+            document.getElementById('digid-auth-form').dispatchEvent(new Event('submit'));
+        }
+    }, 600);
+}
+
+// UI state management
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hideError() {
+    document.getElementById('error-message').style.display = 'none';
+}
+
+function showLoading() {
+    document.getElementById('digid-auth-form').style.display = 'none';
+    document.getElementById('loading-state').style.display = 'block';
+}
+
+function hideLoading() {
+    document.getElementById('digid-auth-form').style.display = 'block';
+    document.getElementById('loading-state').style.display = 'none';
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
+function goToPreviousStep() {
+    window.history.back();
+}
+
+function showDigiDHelp() {
+    window.open('https://www.digid.nl/digid-app', '_blank');
+}
+
+// Get current language from URL or default to 'nl'
+function getCurrentLanguage() {
+    const pathParts = window.location.pathname.split('/');
+    const langCodes = ['nl', 'en', 'ru', 'uk', 'tr', 'fa', 'ar', 'es', 'pt'];
+    const urlLang = pathParts[1];
+    return langCodes.includes(urlLang) ? urlLang : 'nl';
+}
+
+function authenticateUser(user) {
+    // Send authentication request to backend
+    const authData = {
+        digid_username: user.username,
+        koppelcode: currentCode.join(''),
+        full_name: user.name,
+        bsn: user.bsn,
+        profession: user.profession,
+        email: user.email,
+        role: user.role.toLowerCase(),
+        show_registration: showRegistration
+    };
+    
+    const currentLang = getCurrentLanguage();
+    
+    fetch('/digid/authenticate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(authData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Если это админ — всегда редиректим строго на data.redirect_url
+            if (data.user_info && data.user_info.role === 'admin' && data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else {
+                // Обычная логика для остальных ролей
+                const professionRedirects = {
+                    'tandarts': `/${currentLang}/learning-map/subject/101/tests`,
+                    'apotheker': `/${currentLang}/learning-map/subject/201/tests`,
+                    'huisarts': `/${currentLang}/learning-map/subject/301/tests`,
+                    'verpleegkundige': `/${currentLang}/learning-map/subject/401/tests`
+                };
+                const redirectUrl = professionRedirects[data.user_info.profession] || data.redirect_url || `/${currentLang}/dashboard`;
+                window.location.href = redirectUrl;
+            }
+        } else {
+            hideLoading();
+            showError(data.message || 'Authenticatie is mislukt. Probeer het opnieuw.');
+            isSubmitting = false;
+            updateSubmitButton();
+        }
+    })
+    .catch(error => {
+        console.error('Authentication error:', error);
+        hideLoading();
+        showError('Er is een technische fout opgetreden. Probeer het later opnieuw.');
+        isSubmitting = false;
+        updateSubmitButton();
+    });
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus first input
+    document.getElementById('code1').focus();
+    
+    // Log demo users for development
+    console.log('🔧 Demo users available:', Object.keys(demoUsers));
+});
+
+// Prevent form resubmission on page refresh
+window.addEventListener('beforeunload', function() {
+    isSubmitting = false;
+});
+</script>
+{% endblock %}

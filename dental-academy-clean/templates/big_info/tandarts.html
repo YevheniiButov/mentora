@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIG Registratie Tandarts - Complete gids - Mentora</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Reset and base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-light: #f8fafc;
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        .big-info-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .big-info-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(62, 205, 193, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(108, 92, 231, 0.15) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Hero Section */
+        .big-hero {
+            padding: 3rem 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hero-title i {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .hero-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .big-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .logo-circle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.75rem;
+        }
+
+        .logo-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Navigation Tabs */
+        .big-navigation {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .tab-navigation {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding: 1rem 0;
+        }
+
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: var(--bg-light);
+            border-color: var(--primary);
+        }
+
+        /* Content Sections */
+        .big-content {
+            padding: 3rem 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .section-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .info-icon i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .info-text {
+            font-size: 1rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        /* Timeline */
+        .process-timeline {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .timeline-marker {
+            flex-shrink: 0;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .timeline-content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-icon i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .step-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .step-description {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .details-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .details-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .details-list li i {
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+
+        /* Documents Grid */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .document-category {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .category-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .document-count {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            background: var(--bg-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .documents-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .document-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .document-item:hover {
+            background: var(--bg-light);
+        }
+
+        .document-checkbox {
+            display: none;
+        }
+
+        .checkmark {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .document-checkbox:checked + .checkmark {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .document-checkbox:checked + .checkmark::after {
+            content: '✓';
+            position: absolute;
+            top: -1px;
+            left: 2px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .document-name {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        /* Call to Action */
+        .big-cta {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta-content p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.125rem;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+
+        /* FAQ Section */
+        .faq-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: var(--shadow);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .faq-question:hover {
+            background: var(--bg-light);
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-toggle {
+            font-size: 1.2rem;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(180deg);
+        }
+
+        /* Links Section */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .link-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .link-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .link-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .link-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .link-url {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .link-url:hover {
+            text-decoration: underline;
+        }
+
+        /* Exam Section */
+        .exam-info {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        .exam-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .exam-stat {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        .exam-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: block;
+        }
+
+        .exam-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1.5rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+                justify-content: center;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline-item {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="big-info-container">
+        <!-- Hero Section -->
+        <section class="big-hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            <i class="fas fa-tooth"></i>
+                            BIG Registratie Tandarts
+                        </h1>
+                        <p class="hero-subtitle">
+                            Complete gids voor tandheelkundigen die zich willen registreren in het BIG-register
+                        </p>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">2</span>
+                                <span class="stat-label">Jaar proces</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">€1500</span>
+                                <span class="stat-label">Toets kosten</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">B2+</span>
+                                <span class="stat-label">Taal niveau</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="big-logo">
+                            <div class="logo-circle">
+                                <i class="fas fa-tooth"></i>
+                            </div>
+                            <span class="logo-text">Tandarts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <section class="big-navigation">
+            <div class="container">
+                <nav class="tab-navigation">
+                    <button class="tab-btn active" data-tab="requirements">
+                        <i class="fas fa-list-check"></i>
+                        Vereisten
+                    </button>
+                    <button class="tab-btn" data-tab="process">
+                        <i class="fas fa-route"></i>
+                        Proces
+                    </button>
+                    <button class="tab-btn" data-tab="documents">
+                        <i class="fas fa-file-alt"></i>
+                        Documenten
+                    </button>
+                    <button class="tab-btn" data-tab="exam">
+                        <i class="fas fa-graduation-cap"></i>
+                        BI-toets
+                    </button>
+                    <button class="tab-btn" data-tab="faq">
+                        <i class="fas fa-question-circle"></i>
+                        FAQ
+                    </button>
+                    <button class="tab-btn" data-tab="links">
+                        <i class="fas fa-external-link-alt"></i>
+                        Links
+                    </button>
+                </nav>
+            </div>
+        </section>
+
+        <!-- Content Sections -->
+        <div class="big-content">
+            <!-- Requirements Section -->
+            <section id="requirements" class="content-section active">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Vereisten voor tandarts registratie</h2>
+                        <p class="section-description">Alle eisen die je moet vervullen om als tandarts geregistreerd te worden</p>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <p class="info-text">Master in de Tandheelkunde van erkende universiteit</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <p class="info-text">Minimaal 5 jaar universitaire opleiding</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <p class="info-text">Klinische stage van minimaal 1 jaar</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <p class="info-text">Bewijs van praktijkervaring</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <p class="info-text">Nederlands taalvaardigheid niveau B2+</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <p class="info-text">Geen strafblad of tuchtrechtelijke maatregelen</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Process Section -->
+            <section id="process" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Registratieproces voor tandartsen</h2>
+                        <p class="section-description">Stap-voor-stap proces specifiek voor tandheelkundigen</p>
+                    </div>
+                    
+                    <div class="process-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">1</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-file-check"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">Diploma evaluatie</h3>
+                                        <p class="step-description">Controleer of je tandheelkunde diploma erkend wordt</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>EU/EEA diploma: directe erkenning mogelijk</li>
+                                        <li><i class="fas fa-arrow-right"></i>Niet-EU diploma: NUFFIC evaluatie vereist</li>
+                                        <li><i class="fas fa-arrow-right"></i>Controleer of opleiding voldoet aan Nederlandse normen</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">2</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-language"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">Nederlandse taaltoets</h3>
+                                        <p class="step-description">Behaal B2+ niveau Nederlands</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>CNaVT certificaat vereist</li>
+                                        <li><i class="fas fa-arrow-right"></i>Medisch Nederlands component</li>
+                                        <li><i class="fas fa-arrow-right"></i>Praktische communicatie vaardigheden</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">3</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">BI-toets voorbereiding</h3>
+                                        <p class="step-description">Voorbereiden op beroepsinhoudelijke toets</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>Studie van Nederlandse tandheelkunde</li>
+                                        <li><i class="fas fa-arrow-right"></i>Praktische vaardigheden oefenen</li>
+                                        <li><i class="fas fa-arrow-right"></i>Kennis van Nederlandse wetgeving</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">4</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-edit"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">BI-toets afleggen</h3>
+                                        <p class="step-description">Praktische en theoretische toets</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>Theoretische kennis toets</li>
+                                        <li><i class="fas fa-arrow-right"></i>Praktische vaardigheden demonstratie</li>
+                                        <li><i class="fas fa-arrow-right"></i>Kosten: €1500</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">5</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">BIG registratie</h3>
+                                        <p class="step-description">Ontvang je BIG-nummer</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>BIG-nummer wordt toegekend</li>
+                                        <li><i class="fas fa-arrow-right"></i>Registratie is 5 jaar geldig</li>
+                                        <li><i class="fas fa-arrow-right"></i>Start met werken in Nederland</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Documents Section -->
+            <section id="documents" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Benodigde documenten</h2>
+                        <p class="section-description">Alle documenten die je moet verzamelen voor je aanvraag</p>
+                    </div>
+                    
+                    <div class="documents-grid">
+                        <div class="document-category">
+                            <div class="category-header">
+                                <h3 class="category-title">Opleidingsdocumenten</h3>
+                                <span class="document-count">4 documenten</span>
+                            </div>
+                            <div class="documents-list">
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Origineel tandheelkunde diploma met apostille</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Beëdigde Nederlandse vertaling van diploma</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Officiële transcripten/cijferlijsten</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Bewijs van accreditatie opleidingsinstelling</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="document-category">
+                            <div class="category-header">
+                                <h3 class="category-title">Taalvaardigheid</h3>
+                                <span class="document-count">2 documenten</span>
+                            </div>
+                            <div class="documents-list">
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">CNaVT certificaat (Nederlands B2+)</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Bewijs medisch Nederlands</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="document-category">
+                            <div class="category-header">
+                                <h3 class="category-title">Praktijkervaring</h3>
+                                <span class="document-count">3 documenten</span>
+                            </div>
+                            <div class="documents-list">
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Werkgeversverklaringen</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Bewijs van tandheelkundige stage</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Referenties van supervisors</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="document-category">
+                            <div class="category-header">
+                                <h3 class="category-title">Juridische documenten</h3>
+                                <span class="document-count">3 documenten</span>
+                            </div>
+                            <div class="documents-list">
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Verklaring omtrent gedrag (VOG)</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Bewijs van goede staat van dienst</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Bewijs van registratie in herkomstland</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Exam Section -->
+            <section id="exam" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>BI-toets voor tandartsen</h2>
+                        <p class="section-description">Alles wat je moet weten over de beroepsinhoudelijke toets</p>
+                    </div>
+                    
+                    <div class="exam-info">
+                        <h3>Overzicht BI-toets</h3>
+                        <p>De beroepsinhoudelijke toets (BI-toets) is een uitgebreid examen dat je vakkennis en praktische vaardigheden als tandarts test volgens Nederlandse standaarden.</p>
+                        
+                        <div class="exam-stats">
+                            <div class="exam-stat">
+                                <span class="exam-stat-number">€1500</span>
+                                <span class="exam-stat-label">Kosten</span>
+                            </div>
+                            <div class="exam-stat">
+                                <span class="exam-stat-number">2-3</span>
+                                <span class="exam-stat-label">Dagen examen</span>
+                            </div>
+                            <div class="exam-stat">
+                                <span class="exam-stat-number">70%</span>
+                                <span class="exam-stat-label">Slagingspercentage</span>
+                            </div>
+                            <div class="exam-stat">
+                                <span class="exam-stat-number">2x</span>
+                                <span class="exam-stat-label">Per jaar</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <p class="info-text">Theoretische kennis van tandheelkunde volgens Nederlandse normen</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <p class="info-text">Praktische vaardigheden demonstratie op phantomhoofd</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <p class="info-text">Patiëntcommunicatie en professioneel gedrag</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-gavel"></i>
+                            </div>
+                            <p class="info-text">Kennis van Nederlandse wetgeving en richtlijnen</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section id="faq" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Veelgestelde vragen</h2>
+                        <p class="section-description">Antwoorden op de meest gestelde vragen over BIG registratie</p>
+                    </div>
+                    
+                    <div class="faq-list">
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Hoe lang duurt het totale proces?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Het totale proces duurt gemiddeld 1-2 jaar, afhankelijk van je voorbereidingstijd voor de taaltoets en BI-toets, en de wachttijd voor examens.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Wat kost de hele procedure?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                De totale kosten bedragen ongeveer €2500-€4000, inclusief documenten, vertalingen, taalcursus, BI-toets (€1500) en andere kosten.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Kan ik werken tijdens het proces?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Tijdens het proces kun je niet als tandarts werken in Nederland. Je kunt wel andere werk doen of als assistent werken onder supervisie.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Wat gebeurt er als ik zak voor de BI-toets?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Je kunt de BI-toets herhalen na 6 maanden. Je moet wel opnieuw het volledige examengeld betalen (€1500).
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Is er een leeftijdslimiet?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Er is geen specifieke leeftijdslimiet, maar je moet wel fysiek en mentaal in staat zijn om als tandarts te praktiseren.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Links Section -->
+            <section id="links" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Nuttige links</h2>
+                        <p class="section-description">Officiële websites en bronnen voor je BIG registratie</p>
+                    </div>
+                    
+                    <div class="links-grid">
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                BIG-register
+                            </h3>
+                            <p class="link-description">Officiële website voor BIG registratie aanvragen en informatie</p>
+                            <a href="https://www.bigregister.nl" class="link-url" target="_blank">www.bigregister.nl</a>
+                        </div>
+
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                ACTA
+                            </h3>
+                            <p class="link-description">Academisch Centrum Tandheelkunde Amsterdam - BI-toets informatie</p>
+                            <a href="https://www.acta.nl" class="link-url" target="_blank">www.acta.nl</a>
+                        </div>
+
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                NUFFIC
+                            </h3>
+                            <p class="link-description">Voor diploma erkenning van niet-EU landen</p>
+                            <a href="https://www.nuffic.nl" class="link-url" target="_blank">www.nuffic.nl</a>
+                        </div>
+
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                CNaVT
+                            </h3>
+                            <p class="link-description">Nederlandse taaltoets voor medische professionals</p>
+                            <a href="https://www.cnavt.org" class="link-url" target="_blank">www.cnavt.org</a>
+                        </div>
+
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                KNMT
+                            </h3>
+                            <p class="link-description">Koninklijke Nederlandse Maatschappij tot bevordering der Tandheelkunde</p>
+                            <a href="https://www.knmt.nl" class="link-url" target="_blank">www.knmt.nl</a>
+                        </div>
+
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                Rijksoverheid
+                            </h3>
+                            <p class="link-description">Officiële informatie over werken in de zorg in Nederland</p>
+                            <a href="https://www.rijksoverheid.nl" class="link-url" target="_blank">www.rijksoverheid.nl</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Call to Action -->
+        <section class="big-cta">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Klaar om te beginnen?</h2>
+                    <p>Start vandaag nog met je voorbereiding op de BIG registratie</p>
+                    <div class="cta-buttons">
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i>
+                            Start voorbereiding
+                        </a>
+                        <a href="#" class="btn btn-secondary">
+                            <i class="fas fa-users"></i>
+                            Vraag de community
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetTab = this.dataset.tab;
+
+                    // Remove active class from all tabs and sections
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    contentSections.forEach(section => section.classList.remove('active'));
+
+                    // Add active class to clicked tab and corresponding section
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+
+            // FAQ functionality
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', function() {
+                    item.classList.toggle('active');
+                });
+            });
+
+            // Document checklist functionality (optional enhancement)
+            const checkboxes = document.querySelectorAll('.document-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    // You can add logic here to track progress
+                    console.log('Document checked:', this.nextElementSibling.nextElementSibling.textContent);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

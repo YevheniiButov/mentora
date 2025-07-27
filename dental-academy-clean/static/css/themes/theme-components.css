@@ -1,0 +1,267 @@
+/* ===== UNIVERSAL THEME COMPONENTS ===== */
+/* static/css/themes/theme-components.css */
+
+/* Стили для логотипа */
+.logo-container {
+    position: relative;
+    display: inline-block;
+}
+
+.logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* В светлой теме показываем светлый логотип */
+[data-theme="light"] .logo-light {
+    opacity: 1;
+    position: relative;
+}
+
+[data-theme="light"] .logo-dark {
+    opacity: 0;
+}
+
+/* В темной теме показываем темный логотип */
+[data-theme="dark"] .logo-dark {
+    opacity: 1;
+    position: relative;
+}
+
+[data-theme="dark"] .logo-light {
+    opacity: 0;
+}
+
+/* ===== BODY & BASE ===== */
+body {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  transition: all var(--transition-speed) ease;
+}
+
+/* ===== CARDS ===== */
+.card,
+.theme-card {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--theme-shadow-md);
+  transition: all var(--transition-speed) ease;
+}
+
+.card:hover,
+.theme-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--theme-shadow-lg);
+  border-color: var(--theme-border-hover);
+}
+
+/* ===== BUTTONS ===== */
+.btn-primary,
+.theme-btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.btn-primary:hover,
+.theme-btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);
+}
+
+.btn-secondary,
+.theme-btn-secondary {
+  background: var(--secondary);
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.btn-outline,
+.theme-btn-outline {
+  background: transparent;
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.btn-outline:hover,
+.theme-btn-outline:hover {
+  background: var(--theme-surface);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ===== NAVIGATION ===== */
+.navbar,
+.theme-navbar {
+  background: var(--navbar-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--theme-border);
+  color: var(--theme-text);
+  transition: all var(--transition-speed) ease;
+}
+
+.nav-link,
+.theme-nav-link {
+  color: var(--theme-text-secondary);
+  text-decoration: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-speed) ease;
+}
+
+.nav-link:hover,
+.theme-nav-link:hover {
+  color: var(--primary);
+  background: var(--theme-surface);
+}
+
+/* ===== FORMS ===== */
+.form-control,
+.theme-input {
+  background: var(--input-bg);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-sm) var(--space-md);
+  transition: all var(--transition-speed) ease;
+}
+
+.form-control:focus,
+.theme-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.1);
+  outline: none;
+}
+
+/* ===== LEARNING MODULES ===== */
+.learning-module,
+.theme-module {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--border-radius-xl);
+  overflow: hidden;
+  transition: all var(--transition-speed) ease;
+}
+
+.learning-module:hover,
+.theme-module:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--theme-shadow-lg);
+  border-color: var(--primary);
+}
+
+/* ===== PROGRESS BARS ===== */
+.progress,
+.theme-progress {
+  background: var(--theme-border);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  height: 8px;
+}
+
+.progress-bar,
+.theme-progress-bar {
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  height: 100%;
+  transition: width var(--transition-speed) ease;
+  position: relative;
+}
+
+.progress-bar::after,
+.theme-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ===== ALERTS ===== */
+.alert-success,
+.theme-alert-success {
+  background: rgba(46, 204, 113, 0.1);
+  color: var(--success);
+  border: 1px solid var(--success);
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
+}
+
+.alert-warning,
+.theme-alert-warning {
+  background: rgba(243, 156, 18, 0.1);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
+}
+
+.alert-danger,
+.theme-alert-danger {
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
+}
+
+/* ===== GLASS EFFECTS (для gradient theme) ===== */
+[data-theme="gradient"] .card,
+[data-theme="gradient"] .theme-card {
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+[data-theme="gradient"] .navbar,
+[data-theme="gradient"] .theme-navbar {
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* ===== ANIMATIONS ===== */
+.fade-in {
+  animation: fadeIn var(--transition-speed) ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+  animation: slideIn var(--transition-speed) ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+} 

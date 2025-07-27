@@ -1,0 +1,280 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Админ панель</h2>
+        </div>
+    </div>
+
+    <!-- Основные разделы -->
+    <div class="row">
+        <!-- Виртуальные пациенты -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>🏥 Виртуальные пациенты</h5>
+                </div>
+                <div class="card-body">
+                    <p>Управление сценариями виртуальных пациентов</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.virtual_patients') }}" class="btn btn-primary">
+                            <i class="fas fa-list"></i> Список сценариев
+                        </a>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadScenarioModal">
+                            <i class="fas fa-upload"></i> Загрузить сценарий
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Пути обучения -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📚 Пути обучения</h5>
+                </div>
+                <div class="card-body">
+                    <p>Создание и управление иерархией обучения</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('learning_map_bp.learning_map', lang='ru') }}" class="btn btn-primary">
+                            <i class="fas fa-sitemap"></i> Карта обучения
+                        </a>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createPathModal">
+                            <i class="fas fa-plus"></i> Создать путь
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Уроки и тесты -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📝 Уроки и тесты</h5>
+                </div>
+                <div class="card-body">
+                    <p>Создание учебного контента</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLessonModal">
+                            <i class="fas fa-file-text"></i> Создать урок
+                        </button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTestModal">
+                            <i class="fas fa-question-circle"></i> Создать тест
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Пользователи -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>👥 Пользователи</h5>
+                </div>
+                <div class="card-body">
+                    <p>Управление пользователями системы</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-primary">
+                            <i class="fas fa-users"></i> Список пользователей
+                        </a>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                            <i class="fas fa-user-plus"></i> Добавить пользователя
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📊 Статистика</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats is defined %}
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ stats.users if stats.users is defined else 0 }}</h4>
+                            <small>Пользователей</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ stats.scenarios if stats.scenarios is defined else 0 }}</h4>
+                            <small>Сценариев</small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Нет данных</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна -->
+<!-- Загрузка сценария -->
+<div class="modal fade" id="uploadScenarioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Загрузить сценарий</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" action="{{ url_for('admin.index') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="upload_scenario">
+                    <div class="mb-3">
+                        <label class="form-label">Название сценария</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Файл сценария (JSON)</label>
+                        <input type="file" class="form-control" name="scenario_file" accept=".json" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Загрузить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Создание пути обучения -->
+<div class="modal fade" id="createPathModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создать путь обучения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{{ url_for('admin.index') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="create_path">
+                    <div class="mb-3">
+                        <label class="form-label">Название пути</label>
+                        <input type="text" class="form-control" name="path_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-control" name="path_description" rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Создать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Создание урока -->
+<div class="modal fade" id="createLessonModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создать урок</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{{ url_for('admin.index') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="create_lesson">
+                    <div class="mb-3">
+                        <label class="form-label">Название урока</label>
+                        <input type="text" class="form-control" name="lesson_title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Содержание</label>
+                        <textarea class="form-control" name="lesson_content" rows="5"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Создать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Создание теста -->
+<div class="modal fade" id="createTestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создать тест</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{{ url_for('admin.index') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="create_test">
+                    <div class="mb-3">
+                        <label class="form-label">Название теста</label>
+                        <input type="text" class="form-control" name="test_title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-control" name="test_description" rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Создать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Добавление пользователя -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить пользователя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{{ url_for('admin.index') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="add_user">
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

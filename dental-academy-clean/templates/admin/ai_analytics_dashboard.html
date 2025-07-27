@@ -1,0 +1,810 @@
+{% extends "base.html" %}
+
+{% block title %}AI Analytics Dashboard{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="ai-analytics-dashboard">
+    <div class="dashboard-header">
+        <h1><i class="bi bi-graph-up"></i> AI Analytics Dashboard</h1>
+        <div class="dashboard-controls">
+            <button class="btn btn-primary" onclick="refreshDashboard()">
+                <i class="bi bi-arrow-clockwise"></i> Обновить
+            </button>
+            <select class="form-select" id="timeRangeSelect" onchange="changeTimeRange()">
+                <option value="24h">Последние 24 часа</option>
+                <option value="7d">Последние 7 дней</option>
+                <option value="30d" selected>Последние 30 дней</option>
+                <option value="90d">Последние 90 дней</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Real-time Metrics Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card active-users">
+            <div class="metric-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="metric-content">
+                <h3 id="activeUsersCount">-</h3>
+                <p>Активные пользователи</p>
+                <span class="metric-trend" id="activeUsersTrend">-</span>
+            </div>
+        </div>
+        
+        <div class="metric-card ai-interactions">
+            <div class="metric-icon">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div class="metric-content">
+                <h3 id="aiInteractionsCount">-</h3>
+                <p>ИИ взаимодействия</p>
+                <span class="metric-trend" id="aiInteractionsTrend">-</span>
+            </div>
+        </div>
+        
+        <div class="metric-card predictions">
+            <div class="metric-icon">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="metric-content">
+                <h3 id="predictionsCount">-</h3>
+                <p>Предсказания</p>
+                <span class="metric-trend" id="predictionsTrend">-</span>
+            </div>
+        </div>
+        
+        <div class="metric-card satisfaction">
+            <div class="metric-icon">
+                <i class="bi bi-heart"></i>
+            </div>
+            <div class="metric-content">
+                <h3 id="satisfactionScore">-</h3>
+                <p>Удовлетворенность</p>
+                <span class="metric-trend" id="satisfactionTrend">-</span>
+            </div>
+        </div>
+        
+        <div class="metric-card system-health">
+            <div class="metric-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="metric-content">
+                <h3 id="systemHealth">-</h3>
+                <p>Здоровье системы</p>
+                <span class="metric-trend" id="healthTrend">-</span>
+            </div>
+        </div>
+        
+        <div class="metric-card error-rate">
+            <div class="metric-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="metric-content">
+                <h3 id="errorRate">-</h3>
+                <p>Ошибки (%)</p>
+                <span class="metric-trend" id="errorTrend">-</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Активность пользователей</h3>
+                <div class="chart-controls">
+                    <button class="chart-btn active" data-chart="users">Пользователи</button>
+                    <button class="chart-btn" data-chart="interactions">Взаимодействия</button>
+                    <button class="chart-btn" data-chart="satisfaction">Удовлетворенность</button>
+                </div>
+            </div>
+            <canvas id="mainChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Распределение ИИ функций</h3>
+            </div>
+            <canvas id="distributionChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    
+    <!-- Trending Topics -->
+    <div class="trending-section">
+        <div class="section-header">
+            <h3><i class="bi bi-trending-up"></i> Популярные темы в чате</h3>
+        </div>
+        <div class="trending-topics" id="trendingTopics">
+            <!-- Заполняется JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Performance Metrics -->
+    <div class="performance-section">
+        <div class="section-header">
+            <h3><i class="bi bi-speedometer2"></i> Производительность системы</h3>
+        </div>
+        <div class="performance-grid" id="performanceMetrics">
+            <!-- Заполняется JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="activity-section">
+        <div class="section-header">
+            <h3><i class="bi bi-clock-history"></i> Последняя активность</h3>
+        </div>
+        <div class="activity-feed" id="activityFeed">
+            <!-- Заполняется JavaScript -->
+        </div>
+    </div>
+</div>
+
+<style>
+.ai-analytics-dashboard {
+    padding: 20px;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.dashboard-header h1 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 28px;
+}
+
+.dashboard-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.metric-card {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: transform 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+
+.metric-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.metric-card.active-users .metric-icon { background: linear-gradient(135deg, #667eea, #764ba2); }
+.metric-card.ai-interactions .metric-icon { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.metric-card.predictions .metric-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.metric-card.satisfaction .metric-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.metric-card.system-health .metric-icon { background: linear-gradient(135deg, #fa709a, #fee140); }
+.metric-card.error-rate .metric-icon { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+
+.metric-content h3 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.metric-content p {
+    margin: 5px 0;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.metric-trend {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.metric-trend.up { background: #d4edda; color: #155724; }
+.metric-trend.down { background: #f8d7da; color: #721c24; }
+.metric-trend.stable { background: #d1ecf1; color: #0c5460; }
+
+.charts-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.chart-header h3 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.chart-btn {
+    padding: 5px 12px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 15px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.trending-section,
+.performance-section,
+.activity-section {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.section-header {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.trending-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.trending-topic {
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 20px;
+    border-left: 4px solid #007bff;
+    font-size: 14px;
+}
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.performance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.activity-feed {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+    background: #6c757d;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-time {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .metric-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .chart-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// AI Analytics Dashboard JavaScript
+class AIAnalyticsDashboard {
+    constructor() {
+        this.charts = {};
+        this.refreshInterval = null;
+        this.currentTimeRange = '30d';
+        
+        this.init();
+    }
+    
+    async init() {
+        await this.loadRealtimeMetrics();
+        await this.loadHistoricalData();
+        this.setupCharts();
+        this.startAutoRefresh();
+        this.setupEventListeners();
+    }
+    
+    async loadRealtimeMetrics() {
+        try {
+            const lang = window.location.pathname.split('/')[1] || 'ru';
+            const response = await fetch(`/${lang}/ai-assistant/analytics/realtime`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updateMetricCards(data.metrics);
+                this.updateTrendingTopics(data.metrics.trending_topics);
+                this.updatePerformanceMetrics(data.metrics.performance_metrics);
+                this.generateMockActivity();
+            } else {
+                console.error('Analytics API error:', data.error);
+                this.showError(data.error);
+            }
+            
+        } catch (error) {
+            console.error('Error loading realtime metrics:', error);
+            this.showError('Failed to load realtime metrics');
+            this.loadMockData();
+        }
+    }
+    
+    async loadHistoricalData() {
+        try {
+            const lang = window.location.pathname.split('/')[1] || 'ru';
+            const days = this.getTimeRangeDays(this.currentTimeRange);
+            const response = await fetch(`/${lang}/ai-assistant/analytics/historical?days=${days}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updateCharts(data.data);
+            } else {
+                console.error('Historical analytics API error:', data.error);
+                this.loadMockChartData();
+            }
+            
+        } catch (error) {
+            console.error('Error loading historical data:', error);
+            this.showError('Failed to load historical data');
+            this.loadMockChartData();
+        }
+    }
+    
+    loadMockData() {
+        // Заглушка для демонстрации
+        const mockMetrics = {
+            active_users: 142,
+            ai_interactions: 1847,
+            chat_sessions: 324,
+            user_satisfaction: 0.87,
+            system_health: 0.94,
+            error_rate: 0.03,
+            trending_topics: [
+                { topic: 'экзамен', mentions: 45, trend: 'up', percentage: 25.0 },
+                { topic: 'голландский', mentions: 38, trend: 'up', percentage: 20.5 },
+                { topic: 'анатомия', mentions: 29, trend: 'stable', percentage: 15.7 },
+                { topic: 'подготовка', mentions: 22, trend: 'up', percentage: 11.9 },
+                { topic: 'практика', mentions: 18, trend: 'stable', percentage: 9.7 }
+            ],
+            performance_metrics: {
+                avg_messages_per_session: 8.5,
+                avg_response_length: 245,
+                response_time: 0.42,
+                uptime: 0.99,
+                throughput: 15.3
+            }
+        };
+        
+        this.updateMetricCards(mockMetrics);
+        this.updateTrendingTopics(mockMetrics.trending_topics);
+        this.updatePerformanceMetrics(mockMetrics.performance_metrics);
+        this.generateMockActivity();
+    }
+    
+    loadMockChartData() {
+        // Генерируем данные за последние дни
+        const days = this.getTimeRangeDays(this.currentTimeRange);
+        const mockData = {
+            daily_metrics: []
+        };
+        
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            
+            mockData.daily_metrics.push({
+                date: date.toISOString().split('T')[0],
+                active_users: Math.floor(Math.random() * 50) + 100,
+                ai_interactions: Math.floor(Math.random() * 500) + 1000,
+                user_satisfaction: 0.7 + Math.random() * 0.3,
+                chat_sessions: Math.floor(Math.random() * 100) + 200,
+                error_rate: Math.random() * 0.1
+            });
+        }
+        
+        this.updateCharts(mockData);
+    }
+    
+    updateMetricCards(metrics) {
+        // Активные пользователи
+        document.getElementById('activeUsersCount').textContent = metrics.active_users || 0;
+        
+        // ИИ взаимодействия
+        document.getElementById('aiInteractionsCount').textContent = metrics.ai_interactions || 0;
+        
+        // Предсказания (используем чат-сессии как аналог)
+        document.getElementById('predictionsCount').textContent = metrics.chat_sessions || 0;
+        
+        // Удовлетворенность
+        const satisfaction = Math.round((metrics.user_satisfaction || 0) * 100);
+        document.getElementById('satisfactionScore').textContent = satisfaction + '%';
+        
+        // Здоровье системы
+        const health = Math.round((metrics.system_health || 0) * 100);
+        document.getElementById('systemHealth').textContent = health + '%';
+        
+        // Ошибки
+        const errorRate = Math.round((metrics.error_rate || 0) * 100);
+        document.getElementById('errorRate').textContent = errorRate + '%';
+        
+        // Обновляем тренды
+        this.updateTrends(metrics);
+    }
+    
+    updateTrends(metrics) {
+        // Генерируем тренды на основе значений
+        const trends = [
+            metrics.active_users > 100 ? 'up' : 'down',
+            metrics.ai_interactions > 1500 ? 'up' : 'stable',
+            metrics.chat_sessions > 250 ? 'up' : 'stable',
+            metrics.user_satisfaction > 0.8 ? 'up' : 'stable',
+            metrics.system_health > 0.9 ? 'stable' : 'down',
+            metrics.error_rate < 0.05 ? 'down' : 'up'
+        ];
+        
+        const trendElements = [
+            'activeUsersTrend', 'aiInteractionsTrend', 'predictionsTrend',
+            'satisfactionTrend', 'healthTrend', 'errorTrend'
+        ];
+        
+        trendElements.forEach((elementId, index) => {
+            const element = document.getElementById(elementId);
+            const trend = trends[index];
+            element.className = `metric-trend ${trend}`;
+            
+            const value = Math.floor(Math.random() * 20) + 5;
+            element.textContent = trend === 'up' ? `↑ +${value}%` : 
+                                 trend === 'down' ? `↓ -${value}%` : '→ 0%';
+        });
+    }
+    
+    updateTrendingTopics(topics) {
+        const container = document.getElementById('trendingTopics');
+        
+        if (!topics || topics.length === 0) {
+            container.innerHTML = '<p class="text-muted">Нет данных о популярных темах</p>';
+            return;
+        }
+        
+        container.innerHTML = topics.map(topic => `
+            <div class="trending-topic">
+                <strong>${topic.topic}</strong>
+                <span class="ms-2 text-muted">${topic.mentions} упоминаний</span>
+                <span class="badge badge-${topic.trend === 'up' ? 'success' : topic.trend === 'down' ? 'danger' : 'secondary'} ms-2">
+                    ${topic.trend === 'up' ? '↑' : topic.trend === 'down' ? '↓' : '→'}
+                </span>
+            </div>
+        `).join('');
+    }
+    
+    updatePerformanceMetrics(metrics) {
+        const container = document.getElementById('performanceMetrics');
+        
+        const performanceData = [
+            { label: 'Сообщений за сессию', value: `${(metrics.avg_messages_per_session || 0).toFixed(1)}` },
+            { label: 'Длина ответа', value: `${Math.round(metrics.avg_response_length || 0)} символов` },
+            { label: 'Время ответа', value: `${(metrics.response_time || 0).toFixed(2)}с` },
+            { label: 'Uptime', value: `${Math.round((metrics.uptime || 0) * 100)}%` },
+            { label: 'Пропускная способность', value: `${(metrics.throughput || 0).toFixed(1)} сообщ/мин` },
+            { label: 'Активные сессии', value: `${Math.floor(Math.random() * 50) + 20}` }
+        ];
+        
+        container.innerHTML = performanceData.map(item => `
+            <div class="performance-item">
+                <span>${item.label}</span>
+                <strong>${item.value}</strong>
+            </div>
+        `).join('');
+    }
+    
+    generateMockActivity() {
+        const container = document.getElementById('activityFeed');
+        const activities = [
+            { icon: 'bi-person-plus', text: 'Новый пользователь зарегистрировался', time: '2 минуты назад', color: '#28a745' },
+            { icon: 'bi-chat-dots', text: 'Активная сессия чата с ИИ', time: '5 минут назад', color: '#007bff' },
+            { icon: 'bi-graph-up', text: 'Запрос предсказания успешно обработан', time: '8 минут назад', color: '#17a2b8' },
+            { icon: 'bi-star', text: 'Пользователь оценил ИИ на 5 звезд', time: '12 минут назад', color: '#ffc107' },
+            { icon: 'bi-exclamation-triangle', text: 'Превышен лимит API для провайдера OpenAI', time: '15 минут назад', color: '#dc3545' },
+            { icon: 'bi-shield-check', text: 'Система здоровья: все сервисы работают', time: '20 минут назад', color: '#28a745' }
+        ];
+        
+        container.innerHTML = activities.map(activity => `
+            <div class="activity-item">
+                <div class="activity-icon" style="background: ${activity.color}">
+                    <i class="${activity.icon}"></i>
+                </div>
+                <div class="activity-content">
+                    <div>${activity.text}</div>
+                    <div class="activity-time">${activity.time}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    setupCharts() {
+        // Главный график
+        const mainCtx = document.getElementById('mainChart').getContext('2d');
+        this.charts.main = new Chart(mainCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Активные пользователи',
+                    data: [],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // График распределения
+        const distCtx = document.getElementById('distributionChart').getContext('2d');
+        this.charts.distribution = new Chart(distCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Чат', 'Объяснения', 'Тестирование', 'Рекомендации', 'Анализ'],
+                datasets: [{
+                    data: [35, 25, 20, 15, 5],
+                    backgroundColor: [
+                        '#f093fb',
+                        '#43e97b', 
+                        '#4facfe',
+                        '#fa709a',
+                        '#ffeaa7'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    updateCharts(historicalData) {
+        if (!historicalData.daily_metrics) return;
+        
+        const labels = historicalData.daily_metrics.map(day => 
+            new Date(day.date).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' })
+        );
+        const userData = historicalData.daily_metrics.map(day => day.active_users);
+        const interactionData = historicalData.daily_metrics.map(day => day.ai_interactions);
+        const satisfactionData = historicalData.daily_metrics.map(day => day.user_satisfaction * 100);
+        
+        // Обновляем главный график
+        this.charts.main.data.labels = labels;
+        this.charts.main.data.datasets[0].data = userData;
+        this.charts.main.update();
+        
+        // Сохраняем данные для переключения
+        this.chartData = {
+            users: userData,
+            interactions: interactionData,
+            satisfaction: satisfactionData
+        };
+    }
+    
+    setupEventListeners() {
+        // Переключатели графика
+        document.querySelectorAll('.chart-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const chartType = e.target.getAttribute('data-chart');
+                this.switchChart(chartType);
+            });
+        });
+    }
+    
+    switchChart(chartType) {
+        if (!this.chartData || !this.chartData[chartType]) return;
+        
+        const dataset = this.charts.main.data.datasets[0];
+        dataset.data = this.chartData[chartType];
+        
+        const labels = {
+            users: 'Активные пользователи',
+            interactions: 'ИИ взаимодействия',
+            satisfaction: 'Удовлетворенность (%)'
+        };
+        
+        const colors = {
+            users: '#667eea',
+            interactions: '#f093fb',
+            satisfaction: '#43e97b'
+        };
+        
+        dataset.label = labels[chartType];
+        dataset.borderColor = colors[chartType];
+        dataset.backgroundColor = colors[chartType] + '20';
+        this.charts.main.update();
+    }
+    
+    getTimeRangeDays(range) {
+        const ranges = {
+            '24h': 1,
+            '7d': 7,
+            '30d': 30,
+            '90d': 90
+        };
+        return ranges[range] || 30;
+    }
+    
+    startAutoRefresh() {
+        // Обновляем каждые 5 минут
+        this.refreshInterval = setInterval(() => {
+            this.loadRealtimeMetrics();
+        }, 5 * 60 * 1000);
+    }
+    
+    showError(message) {
+        console.error(message);
+        // Показываем уведомление пользователю
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-warning alert-dismissible fade show';
+        alert.innerHTML = `
+            <strong>Предупреждение:</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.ai-analytics-dashboard').prepend(alert);
+        
+        // Автоматически скрываем через 5 секунд
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.parentNode.removeChild(alert);
+            }
+        }, 5000);
+    }
+}
+
+// Глобальные функции для HTML
+function refreshDashboard() {
+    window.dashboard.loadRealtimeMetrics();
+    window.dashboard.loadHistoricalData();
+}
+
+function changeTimeRange() {
+    const select = document.getElementById('timeRangeSelect');
+    window.dashboard.currentTimeRange = select.value;
+    window.dashboard.loadHistoricalData();
+}
+
+// Инициализация дашборда
+document.addEventListener('DOMContentLoaded', function() {
+    window.dashboard = new AIAnalyticsDashboard();
+});
+</script>
+{% endblock %} 

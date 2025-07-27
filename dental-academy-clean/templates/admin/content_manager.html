@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Управление контентом - Mentora{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Управление контентом</h1>
+            <p class="text-muted">Создание и управление категориями, подкатегориями и темами</p>
+            
+            <!-- Вкладки -->
+            <ul class="nav nav-tabs" id="contentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab">
+                        Категории
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="subcategories-tab" data-bs-toggle="tab" data-bs-target="#subcategories" type="button" role="tab">
+                        Подкатегории
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="topics-tab" data-bs-toggle="tab" data-bs-target="#topics" type="button" role="tab">
+                        Темы
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Содержимое вкладок -->
+            <div class="tab-content" id="contentTabsContent">
+                
+                <!-- Категории -->
+                <div class="tab-pane fade show active" id="categories" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center my-3">
+                        <h3>Категории</h3>
+                        <button class="btn btn-primary" onclick="showCreateCategoryModal()">
+                            <i class="bi bi-plus-circle"></i> Создать категорию
+                        </button>
+                    </div>
+                    
+                    <div id="categoriesList" class="row">
+                        <!-- Категории будут загружены через AJAX -->
+                    </div>
+                </div>
+                
+                <!-- Подкатегории -->
+                <div class="tab-pane fade" id="subcategories" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center my-3">
+                        <h3>Подкатегории</h3>
+                        <button class="btn btn-primary" onclick="showCreateSubcategoryModal()">
+                            <i class="bi bi-plus-circle"></i> Создать подкатегорию
+                        </button>
+                    </div>
+                    
+                    <div id="subcategoriesList">
+                        <!-- Подкатегории будут загружены через AJAX -->
+                    </div>
+                </div>
+                
+                <!-- Темы -->
+                <div class="tab-pane fade" id="topics" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center my-3">
+                        <h3>Темы</h3>
+                        <button class="btn btn-primary" onclick="showCreateTopicModal()">
+                            <i class="bi bi-plus-circle"></i> Создать тему
+                        </button>
+                    </div>
+                    
+                    <div id="topicsList">
+                        <!-- Темы будут загружены через AJAX -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна -->
+
+<!-- Модальное окно создания категории -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создать категорию</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createCategoryForm">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="categoryName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryIcon" class="form-label">Иконка</label>
+                        <select class="form-select" id="categoryIcon">
+                            <option value="folder">folder</option>
+                            <option value="diagram-3">diagram-3</option>
+                            <option value="bug">bug</option>
+                            <option value="shield-check">shield-check</option>
+                            <option value="book">book</option>
+                            <option value="collection">collection</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="createCategory()">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно создания подкатегории -->
+<div class="modal fade" id="createSubcategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создать подкатегорию</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createSubcategoryForm">
+                    <div class="mb-3">
+                        <label for="subcategoryCategory" class="form-label">Категория</label>
+                        <select class="form-select" id="subcategoryCategory" required>
+                            <!-- Опции будут загружены -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subcategoryName" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="subcategoryName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subcategoryIcon" class="form-label">Иконка</label>
+                        <select class="form-select" id="subcategoryIcon">
+                            <option value="bookmark">bookmark</option>
+                            <option value="gear">gear</option>
+                            <option value="layers">layers</option>
+                            <option value="exclamation-triangle">exclamation-triangle</option>
+                            <option value="shield-exclamation">shield-exclamation</option>
+                            <option value="brush">brush</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="createSubcategory()">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно создания темы -->
+<div class="modal fade" id="createTopicModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создать тему</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createTopicForm">
+                    <div class="mb-3">
+                        <label for="topicSubcategory" class="form-label">Подкатегория</label>
+                        <select class="form-select" id="topicSubcategory" required>
+                            <!-- Опции будут загружены -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="topicName" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="topicName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="topicDescription" class="form-label">Описание</label>
+                        <textarea class="form-control" id="topicDescription" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="createTopic()">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Загрузка данных при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    loadCategories();
+    loadSubcategories();
+    loadTopics();
+});
+
+// Функции для работы с категориями
+function showCreateCategoryModal() {
+    new bootstrap.Modal(document.getElementById('createCategoryModal')).show();
+}
+
+function createCategory() {
+    const name = document.getElementById('categoryName').value;
+    const icon = document.getElementById('categoryIcon').value;
+    
+    if (!name) {
+        alert('Введите название категории');
+        return;
+    }
+    
+    fetch(`/${document.documentElement.lang}/admin/content/api/content-categories`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            name: name,
+            icon: icon
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Категория создана! URL: ' + data.category.url);
+            bootstrap.Modal.getInstance(document.getElementById('createCategoryModal')).hide();
+            loadCategories();
+            document.getElementById('createCategoryForm').reset();
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка');
+    });
+}
+
+function loadCategories() {
+    // Здесь можно добавить загрузку существующих категорий
+    document.getElementById('categoriesList').innerHTML = '<p>Категории будут отображены здесь</p>';
+}
+
+// Функции для работы с подкатегориями
+function showCreateSubcategoryModal() {
+    loadCategoriesForSelect();
+    new bootstrap.Modal(document.getElementById('createSubcategoryModal')).show();
+}
+
+function loadCategoriesForSelect() {
+    // Загружаем категории для выпадающего списка
+    // Здесь должен быть API запрос для получения категорий
+}
+
+function createSubcategory() {
+    const categoryId = document.getElementById('subcategoryCategory').value;
+    const name = document.getElementById('subcategoryName').value;
+    const icon = document.getElementById('subcategoryIcon').value;
+    
+    if (!name || !categoryId) {
+        alert('Заполните все обязательные поля');
+        return;
+    }
+    
+    fetch(`/${document.documentElement.lang}/admin/content/api/content-subcategories`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            name: name,
+            category_id: parseInt(categoryId),
+            icon: icon
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Подкатегория создана! URL: ' + data.subcategory.url);
+            bootstrap.Modal.getInstance(document.getElementById('createSubcategoryModal')).hide();
+            loadSubcategories();
+            document.getElementById('createSubcategoryForm').reset();
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка');
+    });
+}
+
+function loadSubcategories() {
+    document.getElementById('subcategoriesList').innerHTML = '<p>Подкатегории будут отображены здесь</p>';
+}
+
+// Функции для работы с темами
+function showCreateTopicModal() {
+    loadSubcategoriesForSelect();
+    new bootstrap.Modal(document.getElementById('createTopicModal')).show();
+}
+
+function loadSubcategoriesForSelect() {
+    // Загружаем подкатегории для выпадающего списка
+    // Здесь должен быть API запрос для получения подкатегорий
+}
+
+function createTopic() {
+    const subcategoryId = document.getElementById('topicSubcategory').value;
+    const name = document.getElementById('topicName').value;
+    const description = document.getElementById('topicDescription').value;
+    
+    if (!name || !subcategoryId) {
+        alert('Заполните все обязательные поля');
+        return;
+    }
+    
+    fetch(`/${document.documentElement.lang}/admin/content/api/content-topics`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            name: name,
+            subcategory_id: parseInt(subcategoryId),
+            description: description
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Тема создана! URL: ' + data.topic.url);
+            bootstrap.Modal.getInstance(document.getElementById('createTopicModal')).hide();
+            loadTopics();
+            document.getElementById('createTopicForm').reset();
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка');
+    });
+}
+
+function loadTopics() {
+    document.getElementById('topicsList').innerHTML = '<p>Темы будут отображены здесь</p>';
+}
+</script>
+
+<style>
+.card-hover {
+    transition: transform 0.2s;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %} 

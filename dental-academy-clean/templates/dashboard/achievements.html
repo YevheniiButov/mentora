@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Prestaties - Mentora{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/pages/enhanced_dashboard.css') }}" rel="stylesheet">
+<style>
+.achievements-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.achievements-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: white;
+    text-align: center;
+}
+
+.achievements-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.achievement-stat {
+    text-align: center;
+}
+
+.stat-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    backdrop-filter: blur(10px);
+}
+
+.stat-circle .number {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+.achievement-category {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.category-header {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.category-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.category-progress {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+.achievements-list {
+    padding: 20px;
+}
+
+.achievement-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.achievement-card.earned {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+    border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.achievement-card.locked {
+    background: rgba(0, 0, 0, 0.02);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    opacity: 0.7;
+}
+
+.achievement-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.achievement-badge {
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.achievement-badge.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.achievement-badge.primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.achievement-badge.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.achievement-badge.locked {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+}
+
+.achievement-badge::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.achievement-card.earned .achievement-badge::after {
+    content: '✓';
+    color: white;
+}
+
+.achievement-info {
+    flex: 1;
+}
+
+.achievement-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 5px;
+}
+
+.achievement-description {
+    color: #6b7280;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.achievement-progress {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.progress-bar-small {
+    flex: 1;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill-small {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #4f46e5);
+    transition: width 1s ease-in-out;
+    border-radius: 4px;
+}
+
+.progress-text-small {
+    font-size: 0.85rem;
+    color: #6b7280;
+    min-width: 80px;
+    text-align: right;
+}
+
+.achievement-date {
+    font-size: 0.8rem;
+    color: #10b981;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.no-achievements {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+}
+
+.no-achievements i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.category-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+}
+
+.category-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    opacity: 0.3;
+}
+
+@media (max-width: 768px) {
+    .achievements-page {
+        padding: 15px;
+    }
+    
+    .achievements-stats {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .achievements-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .achievement-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .achievement-progress {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="achievements-page">
+    <!-- Header -->
+    <div class="achievements-header">
+        <h1>Jouw prestaties</h1>
+        <p>Ontgrendel badges door lessen te voltooien en doelen te bereiken</p>
+        
+        <div class="achievements-stats">
+            <div class="achievement-stat">
+                <div class="stat-circle">
+                    <span class="number">{{ earned_count }}</span>
+                </div>
+                <h3>Behaald</h3>
+            </div>
+            <div class="achievement-stat">
+                <div class="stat-circle">
+                    <span class="number">{{ completion_rate }}%</span>
+                </div>
+                <h3>Voltooiing</h3>
+            </div>
+            <div class="achievement-stat">
+                <div class="stat-circle">
+                    <span class="number">{{ total_achievements }}</span>
+                </div>
+                <h3>Totaal</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievements by Category -->
+    <div class="achievements-grid">
+        {% for category, achievements in achievements_by_category.items() %}
+        <div class="achievement-category">
+            <div class="category-header">
+                <h2 class="category-title">
+                    {% if category == 'learning' %}
+                        <i class="bi bi-book"></i> Leren
+                    {% elif category == 'time' %}
+                        <i class="bi bi-clock"></i> Tijd
+                    {% elif category == 'streak' %}
+                        <i class="bi bi-fire"></i> Reeksen
+                    {% elif category == 'xp' %}
+                        <i class="bi bi-gem"></i> Experience Points
+                    {% elif category == 'level' %}
+                        <i class="bi bi-star"></i> Levels
+                    {% elif category == 'special' %}
+                        <i class="bi bi-award"></i> Speciaal
+                    {% else %}
+                        <i class="bi bi-trophy"></i> {{ category|title }}
+                    {% endif %}
+                </h2>
+                <div class="category-progress">
+                    {% set earned_in_category = achievements | selectattr('earned') | list | length %}
+                    {{ earned_in_category }} van {{ achievements | length }} behaald
+                </div>
+            </div>
+            
+            <div class="achievements-list">
+                {% if achievements %}
+                    {% for item in achievements %}
+                    <div class="achievement-card {% if item.earned %}earned{% else %}locked{% endif %}">
+                        <div class="achievement-badge {{ item.achievement.badge_color if item.earned else 'locked' }}">
+                            <i class="bi bi-{{ item.achievement.icon }}"></i>
+                        </div>
+                        
+                        <div class="achievement-info">
+                            <div class="achievement-name">{{ item.achievement.name }}</div>
+                            <div class="achievement-description">{{ item.achievement.description }}</div>
+                            
+                            {% if not item.earned %}
+                            <div class="achievement-progress">
+                                <div class="progress-bar-small">
+                                    <div class="progress-fill-small" style="width: {{ item.progress.progress_percent }}%"></div>
+                                </div>
+                                <div class="progress-text-small">
+                                    {{ item.progress.current_value }} / {{ item.progress.target_value }}
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="achievement-date">
+                                <i class="bi bi-calendar-check"></i>
+                                Behaald op {{ item.earned_at.strftime('%d %B %Y') if item.earned_at else 'Onbekende datum' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="category-empty">
+                        <i class="bi bi-inbox"></i>
+                        <p>Geen prestaties in deze categorie</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if not achievements_by_category %}
+    <div class="no-achievements">
+        <i class="bi bi-trophy"></i>
+        <h3>Geen prestaties gevonden</h3>
+        <p>Begin met leren om je eerste prestaties te ontgrendelen!</p>
+        <a href="{{ url_for('learning.index') }}" class="btn btn-primary mt-3">
+            <i class="bi bi-play-circle"></i>
+            Start met leren
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animate progress bars on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-fill-small');
+    
+    progressBars.forEach((bar, index) => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 100 + (index * 50)); // Staggered animation
+    });
+});
+
+// Add hover effects
+document.querySelectorAll('.achievement-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        if (!this.classList.contains('earned')) {
+            this.style.transform = 'translateY(-4px) scale(1.02)';
+        }
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = '';
+    });
+});
+</script>
+{% endblock %} 

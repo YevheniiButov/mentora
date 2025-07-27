@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'light' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Mentora</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3ECDC1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mentora">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+    
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
+
+    <!-- ПРАВИЛЬНЫЙ ПОРЯДОК: СНАЧАЛА ТЕМЫ, ПОТОМ УНИВЕРСАЛЬНЫЕ СТИЛИ -->
+    
+    <!-- 1. СИСТЕМА ТЕМ (базовые переменные) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
+    
+    <!-- 2. Основные стили -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <!-- 3. Универсальные стили из index.html (используют переменные тем) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-styles.css') }}">
+    
+    <!-- 4. Универсальная система лейаутов -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+    
+    <!-- 5. Дополнительные стили компонентов -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/footer-spacing.css') }}">
+    
+    <!-- Page-specific styles -->
+    {% block head %}{% endblock %}
+    
+    <!-- DigiD Styles -->
+    <style>
+        :root {
+            --digid-blue: #003d82;
+            --digid-orange: #ff9900;
+            --digid-bg: #f6f8fa;
+            --digid-border: #e0e6ef;
+        }
+        
+        /* DigiD Button */
+        .btn-digid {
+            background: var(--digid-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-digid:hover {
+            background: #002a5c;
+            color: white;
+            transform: translateY(-1px);
+        }
+        .btn-digid:active {
+            transform: translateY(0);
+        }
+        
+        /* DigiD Badge */
+        .digid-badge {
+            background: var(--digid-blue);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* DigiD Status */
+        .digid-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            color: var(--digid-blue);
+            font-weight: 500;
+        }
+        .digid-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        .digid-status.expired .status-dot {
+            background: #dc3545;
+        }
+        
+        /* DigiD User Menu */
+        .digid-user-info {
+            border-left: 3px solid var(--digid-blue);
+            padding-left: 0.8rem;
+            margin: 0.5rem 0;
+        }
+        .digid-user-info .auth-method {
+            font-size: 0.8rem;
+            color: var(--digid-blue);
+            font-weight: 600;
+        }
+        
+        /* Mobile DigiD */
+        @media (max-width: 768px) {
+            .btn-digid {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .digid-badge {
+                font-size: 0.7rem;
+                padding: 0.15rem 0.4rem;
+            }
+        }
+    </style>
+    
+    <!-- Page-specific styles -->
+    {% block page_styles %}{% endblock %}
+    {% block styles %}{% endblock %}
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Enhanced Editor Styles -->
+    {% if request.endpoint and request.endpoint == 'content_editor.enhanced_editor' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-editor.css') }}">
+    {% endif %}
+</head>
+  <body class="modern-app {% if request.endpoint and request.endpoint == 'learning.index' %}learning-map-page{% endif %}">
+    <!-- HEADER INCLUDE -->
+    {% include 'includes/_header.html' %}
+
+    <!-- Flash Messages Container -->
+    <div class="flash-container" id="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message alert alert-{{ 'danger' if category == 'error' else category }}" 
+                         data-category="{{ category }}" role="alert">
+                        <div class="flash-content">
+                            <div class="flash-icon">
+                                {% if category == 'success' %}
+                                    <i class="bi bi-check-circle-fill"></i>
+                                {% elif category == 'error' or category == 'danger' %}
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                {% elif category == 'warning' %}
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flash-text">{{ message }}</div>
+                            <button type="button" class="flash-close" onclick="this.parentElement.parentElement.remove()">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER INCLUDE - исключаем для карты обучения и иерархии -->
+    {% if not request.endpoint or not (
+        request.endpoint == 'learning.index' or 
+        request.endpoint.startswith('learning_map_bp.') or 
+        request.endpoint.startswith('subject_view_bp.') or 
+        request.endpoint.startswith('profession_map_bp.') or
+        'leerkaart' in request.path or
+        'learning-map' in request.path or
+        'subject-view' in request.path
+    ) %}
+        {% include 'includes/_footer.html' %}
+    {% endif %}
+
+    <!-- Loading Indicator -->
+    <div class="loading-indicator" id="loading-indicator">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- React (for existing components) -->
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+
+    <!-- Инициализация Bootstrap компонентов -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация всех выпадающих меню Bootstrap
+            var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+            var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl);
+            });
+            
+            // Отладка выпадающих меню
+            console.log('Инициализировано выпадающих меню:', dropdownList.length);
+            
+            // Добавляем обработчик для закрытия меню по клику вне
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.dropdown')) {
+                    dropdownList.forEach(function(dropdown) {
+                        dropdown.hide();
+                    });
+                }
+            });
+            
+            // Прямая инициализация меню профиля и языка
+            var userDropdown = document.getElementById('userDropdown');
+            if (userDropdown) {
+                var userDropdownInstance = new bootstrap.Dropdown(userDropdown);
+                console.log('Меню профиля инициализировано напрямую');
+            }
+            
+            var languageDropdown = document.getElementById('languageDropdown');
+            if (languageDropdown) {
+                var languageDropdownInstance = new bootstrap.Dropdown(languageDropdown);
+                console.log('Меню языка инициализировано напрямую');
+            }
+            
+            var guestDropdown = document.getElementById('guestDropdown');
+            if (guestDropdown) {
+                var guestDropdownInstance = new bootstrap.Dropdown(guestDropdown);
+                console.log('Меню гостя инициализировано напрямую');
+            }
+        });
+    </script>
+
+    <!-- Theme Controller -->
+    <script src="{{ url_for('static', filename='js/theme-controller.js') }}"></script>
+
+    <!-- Glass Effects для стеклянной темы -->
+    <script src="{{ url_for('static', filename='js/glass-effects.js') }}"></script>
+
+    <!-- Legacy JS -->
+    <script src="{{ url_for('static', filename='js/simple-counters.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modern_flash_messages.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    
+    <!-- Универсальные скрипты из index.html -->
+    <script src="{{ url_for('static', filename='js/universal-scripts.js') }}"></script>
+
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- Global Application Scripts -->
+    <script>
+        // Global App Configuration
+        window.AppConfig = {
+            currentLanguage: '{{ g.lang }}',
+            isAuthenticated: "{{ 'true' if current_user.is_authenticated else 'false' }}",
+            userId: "{{ current_user.id if current_user.is_authenticated else 'null' }}",
+            csrfToken: '{{ csrf_token() }}',
+            apiBaseUrl: '/api'
+        };
+
+        // Flash Messages System
+        class FlashMessagesSystem {
+            constructor() {
+                this.container = document.getElementById('flash-container');
+                this.init();
+            }
+
+            init() {
+                if (!this.container) return;
+                
+                // Auto-hide flash messages after 5 seconds
+                const messages = this.container.querySelectorAll('.flash-message');
+                messages.forEach(message => {
+                    setTimeout(() => {
+                        message.classList.add('fade-out');
+                        setTimeout(() => message.remove(), 300);
+                    }, 5000);
+                });
+            }
+        }
+
+        // DigiD Session Monitor
+        class DigiDSessionMonitor {
+            constructor() {
+                this.isDigiDUser = "{{ 'true' if current_user.is_authenticated and current_user.is_digid_user() else 'false' }}";
+                this.checkInterval = null;
+                this.init();
+            }
+
+            init() {
+                if (this.isDigiDUser === 'true') {
+                    this.startMonitoring();
+                    this.updateDigiDStatus();
+                }
+            }
+
+            startMonitoring() {
+                // Проверяем статус сессии каждые 30 секунд
+                this.checkInterval = setInterval(() => {
+                    this.checkSessionStatus();
+                }, 30000);
+            }
+
+            async checkSessionStatus() {
+                try {
+                    const response = await fetch('/digid/api/session_status');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (!data.active) {
+                            this.handleSessionExpired();
+                        } else {
+                            this.updateDigiDStatus(data);
+                        }
+                    } else {
+                        this.handleSessionExpired();
+                    }
+                } catch (error) {
+                    console.warn('DigiD session check failed:', error);
+                }
+            }
+
+            updateDigiDStatus(data = null) {
+                const statusElement = document.querySelector('.digid-status');
+                if (statusElement) {
+                    if (data && data.expires_at) {
+                        const expiresAt = new Date(data.expires_at);
+                        const now = new Date();
+                        const timeLeft = Math.floor((expiresAt - now) / 1000 / 60); // минуты
+                        
+                        if (timeLeft <= 0) {
+                            statusElement.classList.add('expired');
+                            statusElement.innerHTML = '<span class="status-dot"></span>Сессия истекла';
+                        } else {
+                            statusElement.classList.remove('expired');
+                            statusElement.innerHTML = `<span class="status-dot"></span>DigiD активен (${timeLeft} мин)`;
+                        }
+                    } else {
+                        statusElement.innerHTML = '<span class="status-dot"></span>DigiD активен';
+                    }
+                }
+            }
+
+            handleSessionExpired() {
+                clearInterval(this.checkInterval);
+                // Показываем уведомление
+                const flashContainer = document.getElementById('flash-container');
+                if (flashContainer) {
+                    const message = document.createElement('div');
+                    message.className = 'flash-message alert alert-warning';
+                    message.innerHTML = `
+                        <div class="flash-content">
+                            <div class="flash-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+                            <div class="flash-text">Ваша DigiD сессия истекла. Вы будете перенаправлены на страницу входа.</div>
+                            <button type="button" class="flash-close" onclick="this.parentElement.parentElement.remove()">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    `;
+                    flashContainer.appendChild(message);
+                }
+                
+                // Редирект через 3 секунды
+                setTimeout(() => {
+                    window.location.href = '/digid/logout';
+                }, 3000);
+            }
+        }
+
+        // Initialize systems when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new FlashMessagesSystem();
+            new DigiDSessionMonitor();
+        });
+    </script>
+
+    <!-- Page-specific scripts -->
+    {% block extra_js %}{% endblock %}
+    {% block page_scripts %}{% endblock %}
+    {% block scripts %}{% endblock %}
+    {% block body_scripts %}{% endblock %}
+</body>
+</html> 

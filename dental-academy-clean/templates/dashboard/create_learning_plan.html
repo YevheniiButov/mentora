@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="{{ g.locale or 'ru' }}" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Создание плана обучения') }} - Mentora Academy</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FullCalendar CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/create_learning_plan.css') }}">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="{{ url_for('static', filename='js/learning-plan.js') }}" as="script">
+    <link rel="preload" href="{{ url_for('static', filename='js/notification-system.js') }}" as="script">
+</head>
+<body>
+    <!-- Skip to main content link for screen readers -->
+    <a href="#main-content" class="skip-link" style="position: absolute; left: -9999px; z-index: 9999; padding: 1em; background: #000; color: #fff; text-decoration: none;">Перейти к основному содержимому</a>
+    
+    <!-- Main Container -->
+    <div class="learning-planner-container" role="main" id="main-content">
+        <!-- Header Section -->
+        <header class="planner-header" role="banner">
+            <div class="header-content">
+                <div class="header-info">
+                    <h1 class="main-title" role="heading" aria-level="1">
+                        <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                        {{ _('Персональный планировщик обучения') }}
+                    </h1>
+                    <p class="header-description" role="doc-subtitle">
+                        {{ _('Создайте индивидуальный план подготовки к BIG экзамену на основе результатов диагностики') }}
+                    </p>
+                </div>
+                
+                <!-- Header Statistics -->
+                <div class="header-stats" role="region" aria-label="Статистика обучения">
+                    <div class="stat-item" role="group" aria-labelledby="days-to-exam-label">
+                        <div class="stat-number" id="days-to-exam">105</div>
+                        <div class="stat-label" id="days-to-exam-label">{{ _('дней до экзамена') }}</div>
+                    </div>
+                    <div class="stat-item" role="group" aria-labelledby="study-hours-label">
+                        <div class="stat-number" id="study-hours">245</div>
+                        <div class="stat-label" id="study-hours-label">{{ _('часов обучения') }}</div>
+                    </div>
+                    <div class="stat-item" role="group" aria-labelledby="completion-rate-label">
+                        <div class="stat-number" id="completion-rate">78</div>
+                        <div class="stat-label" id="completion-rate-label">{{ _('% готовности') }}</div>
+                    </div>
+                            </div>
+                            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="planner-content" role="main">
+            <div class="content-grid">
+                <!-- Calendar Panel -->
+                <div class="calendar-panel slide-up" role="region" aria-labelledby="calendar-title">
+                    <div class="panel-header">
+                        <h2 class="section-title" id="calendar-title">
+                            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                            {{ _('Календарь обучения') }}
+                        </h2>
+                        <div class="calendar-controls" role="toolbar" aria-label="Управление календарем">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleCalendarView()" aria-label="Переключить вид календаря">
+                                <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                                {{ _('Вид') }}
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="calendar.today()" aria-label="Перейти к сегодняшнему дню">
+                                <i class="fas fa-calendar-day" aria-hidden="true"></i>
+                                {{ _('Сегодня') }}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar Container -->
+                    <div id="calendar" role="application" aria-label="Календарь занятий"></div>
+                    
+                    <!-- Calendar Legend -->
+                    <div class="calendar-legend" role="region" aria-label="Легенда календаря">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #3ECDC1;" aria-label="Цвет для занятий"></span>
+                            <span>{{ _('Занятия') }}</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #ef4444;" aria-label="Цвет для экзамена"></span>
+                            <span>{{ _('Экзамен') }}</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f59e0b;" aria-label="Цвет для целей"></span>
+                            <span>{{ _('Цели') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goals Panel -->
+                <div class="goals-panel slide-up" role="region" aria-labelledby="goals-title">
+                    <h2 class="section-title" id="goals-title">
+                        <i class="fas fa-bullseye" aria-hidden="true"></i>
+                        {{ _('Цели обучения') }}
+                    </h2>
+                    <div id="goals-container" role="list" aria-label="Список целей обучения">
+                        <!-- Goals will be generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Configuration Panel -->
+                <div class="config-panel slide-up" role="region" aria-labelledby="config-title">
+                    <h2 class="section-title" id="config-title">
+                        <i class="fas fa-cog" aria-hidden="true"></i>
+                        {{ _('Настройки плана') }}
+                    </h2>
+                    
+                    <form id="plan-config-form" role="form" aria-labelledby="config-title">
+                        <div class="form-group">
+                            <label class="form-label" for="exam-date">{{ _('Дата экзамена') }}</label>
+                            <input type="date" class="form-control" id="exam-date" required aria-describedby="exam-date-help">
+                            <div id="exam-date-help" class="form-text">{{ _('Выберите дату BIG экзамена') }}</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">{{ _('Период обучения') }}</label>
+                            <div class="date-input-group" role="group" aria-labelledby="study-period-label">
+                                <label for="start-date" class="sr-only">{{ _('Дата начала') }}</label>
+                                <input type="date" class="form-control" id="start-date" placeholder="{{ _('Начало') }}" required aria-describedby="start-date-help">
+                                <label for="end-date" class="sr-only">{{ _('Дата окончания') }}</label>
+                                <input type="date" class="form-control" id="end-date" placeholder="{{ _('Конец') }}" required aria-describedby="end-date-help">
+                                    </div>
+                            <div id="start-date-help" class="form-text">{{ _('Дата начала обучения') }}</div>
+                            <div id="end-date-help" class="form-text">{{ _('Дата окончания обучения') }}</div>
+                                    </div>
+
+                        <div class="form-group">
+                            <label class="form-label">{{ _('Интенсивность обучения') }}</label>
+                            <div class="intensity-selector" role="radiogroup" aria-labelledby="intensity-label">
+                                <div class="intensity-option" data-intensity="light" role="radio" aria-checked="false" tabindex="0">
+                                    <span class="intensity-label">{{ _('Легкая') }}</span>
+                                    <span class="intensity-hours">1-2 ч/день</span>
+                                </div>
+                                <div class="intensity-option active" data-intensity="moderate" role="radio" aria-checked="true" tabindex="0">
+                                    <span class="intensity-label">{{ _('Средняя') }}</span>
+                                    <span class="intensity-hours">2-4 ч/день</span>
+                            </div>
+                                <div class="intensity-option" data-intensity="intensive" role="radio" aria-checked="false" tabindex="0">
+                                    <span class="intensity-label">{{ _('Интенсивная') }}</span>
+                                    <span class="intensity-hours">4-6 ч/день</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">{{ _('Предпочитаемые дни') }}</label>
+                            <div class="day-selector" role="group" aria-labelledby="preferred-days-label">
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                    <input type="checkbox" checked aria-label="{{ _('Понедельник') }}"> {{ _('Понедельник') }}
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                    <input type="checkbox" checked aria-label="{{ _('Вторник') }}"> {{ _('Вторник') }}
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                    <input type="checkbox" checked aria-label="{{ _('Среда') }}"> {{ _('Среда') }}
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                    <input type="checkbox" checked aria-label="{{ _('Четверг') }}"> {{ _('Четверг') }}
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                    <input type="checkbox" checked aria-label="{{ _('Пятница') }}"> {{ _('Пятница') }}
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                    <input type="checkbox" aria-label="{{ _('Суббота') }}"> {{ _('Суббота') }}
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                    <input type="checkbox" aria-label="{{ _('Воскресенье') }}"> {{ _('Воскресенье') }}
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="study-time">{{ _('Время обучения') }}</label>
+                            <select class="form-control form-select" id="study-time" aria-describedby="study-time-help">
+                                <option value="morning">{{ _('Утром (8:00 - 12:00)') }}</option>
+                                <option value="afternoon" selected>{{ _('Днем (12:00 - 18:00)') }}</option>
+                                <option value="evening">{{ _('Вечером (18:00 - 22:00)') }}</option>
+                                <option value="flexible">{{ _('Гибкое расписание') }}</option>
+                            </select>
+                            <div id="study-time-help" class="form-text">{{ _('Выберите предпочтительное время для занятий') }}</div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary" aria-describedby="submit-help">
+                                <i class="fas fa-magic" aria-hidden="true"></i>
+                                {{ _('Создать план') }}
+                            </button>
+                            <div id="submit-help" class="form-text">{{ _('Нажмите для создания персонального плана обучения') }}</div>
+                            
+                            <!-- Кнопки экспорта (показываются после создания плана) -->
+                            <div id="export-buttons" style="display: none; margin-top: 15px;" role="group" aria-label="Экспорт расписания">
+                                <h4 style="margin-bottom: 10px; color: var(--primary-color);">Экспорт расписания:</h4>
+                                <div class="export-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-outline-primary" onclick="exportToICal()" aria-describedby="ical-help">
+                                        <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                                        Экспорт в календарь (iCal)
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" onclick="exportToPDF()" aria-describedby="pdf-help">
+                                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                                        Экспорт в PDF
+                                    </button>
+                                </div>
+                                <div id="ical-help" class="form-text">{{ _('Скачать расписание для импорта в календарь') }}</div>
+                                <div id="pdf-help" class="form-text">{{ _('Скачать подробный отчет в PDF формате') }}</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Progress Panel -->
+                <div class="progress-panel slide-up" role="region" aria-labelledby="progress-title">
+                    <h3 class="section-title" id="progress-title" style="font-size: 20px; margin-bottom: 24px;">
+                        <i class="fas fa-chart-line" aria-hidden="true" style="margin-right: 12px; color: var(--primary-color);"></i>
+                        {{ _('Прогресс по доменам') }}
+                    </h3>
+                    <div id="domain-progress" role="list" aria-label="Прогресс по доменам обучения">
+                        <!-- Progress items will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Learning plan data from server -->
+<script>
+        // Learning plan data from Flask backend
+        let learningPlanData = {};
+        try {
+            learningPlanData = {{ learning_plan_data | safe_json }};
+        } catch (e) {
+            console.error('Error parsing learning plan data:', e);
+            learningPlanData = {};
+        }
+        let diagnosticResults = {};
+        try {
+            diagnosticResults = {{ diagnostic_results | safe_json }};
+        } catch (e) {
+            console.error('Error parsing diagnostic results:', e);
+            diagnosticResults = {};
+        }
+</script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/learning-plan.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notification-system.js') }}"></script>
+</body>
+</html> 
