@@ -25,15 +25,8 @@
             <div class="learning-paths pre-diagnostic-stage">
                 <div class="learning-path-item">
                     <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" 
-                       class="learning-path-button knowledge-assessment" data-category="diagnostic">
-                        <div class="path-button-content">
-                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
-                                <path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                <path d="M12 3c0 1-1 2-2 2s-2-1-2-2 1-2 2-2 2 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                <path d="M12 21c0-1 1-2 2-2s2 1 2 2-1 2-2 2-2-1-2-2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                            </svg>
+                       class="diagnostic-link">
+                        <div class="path-button-content"><i class="bi bi-clipboard-pulse"></i>
                             <span>{{ t('knowledge_assessment', lang) }}</span>
                         </div>
                     </a>
@@ -47,38 +40,24 @@
                 <div class="learning-path-item">
                     {% if path.url %}
                     <a href="{{ path.url }}" class="learning-path-button {{ path.css_class if path.css_class else (path.id == 1 and 'knowledge-center' or path.id == 2 and 'communication' or path.id == 3 and 'preclinical' or path.id == 4 and 'workstation' or path.id == 5 and 'bi-toets' or path.id == 6 and 'virtual-patients' or '') }}">
-                        <div class="path-button-content">
+                        <div class="path-button-content"><i class="bi bi-clipboard-pulse"></i>
                             {% if path.css_class %}
                                 <!-- Для фармацевтических путей используем CSS-иконки -->
                                 <div class="icon"></div>
                             {% elif path.id == 1 %}
-                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                </svg>
                             {% elif path.id == 2 %}
-                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                </svg>
                             {% endif %}
                             <span>{{ path.name }}</span>
                         </div>
                     </a>
                     {% else %}
                     <button class="learning-path-button {{ path.css_class if path.css_class else (path.id == 1 and 'knowledge-center' or path.id == 2 and 'communication' or path.id == 3 and 'preclinical' or path.id == 4 and 'workstation' or path.id == 5 and 'bi-toets' or path.id == 6 and 'virtual-patients' or '') }}" data-path="{{ path.id }}">
-                        <div class="path-button-content">
+                        <div class="path-button-content"><i class="bi bi-clipboard-pulse"></i>
                             {% if path.css_class %}
                                 <!-- Для фармацевтических путей используем CSS-иконки -->
                                 <div class="icon"></div>
                             {% elif path.id == 1 %}
-                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                </svg>
                             {% elif path.id == 2 %}
-                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                </svg>
                             {% endif %}
                             <span>{{ path.name }}</span>
                         </div>
@@ -124,7 +103,7 @@
                 {% if profession_context and profession_context.profession_slug == 'farmacie' %}
                 <div class="learning-path-item">
                     <button class="learning-path-button interactions" data-category="pharmacy-tools">
-                        <div class="path-button-content">
+                        <div class="path-button-content"><i class="bi bi-clipboard-pulse"></i>
                             <div class="icon"></div>
                             <span>Interacties & Contraindicaties</span>
                         </div>
@@ -167,7 +146,7 @@
                 {% for category in categories %}
                 <div class="learning-path-item">
                     <button class="learning-path-button content-category" data-category="{{ category.id }}">
-                        <div class="path-button-content">
+                        <div class="path-button-content"><i class="bi bi-clipboard-pulse"></i>
                             <i class="{{ category.icon }}"></i>
                             <span>{{ category.name }}</span>
                         </div>
