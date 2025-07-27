@@ -606,10 +606,6 @@ body {
                     Inloggen
                 </button>
             </div>
-            
-            <div class="digid-password-info">
-                <small>Beschikbare wachtwoorden: tandarts, apotheker, verpleegkundige, arts, admin</small>
-            </div>
         </div>
     </div>
 </div>
@@ -918,12 +914,13 @@ function authenticateWithPassword() {
         'apotheker': 'apotheker', 
         'verpleegkundige': 'verpleegkundige',
         'arts': 'arts',
-        'admin': 'admin'
+        'admin': 'admin',
+        'develop': 'admin'
     };
     
     const userType = passwordMap[password];
     if (!userType) {
-        showError('Ongeldig wachtwoord. Probeer: tandarts, apotheker, verpleegkundige, arts, admin');
+        showError('Ongeldig wachtwoord.');
         return;
     }
     
