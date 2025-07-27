@@ -538,27 +538,27 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!profession) {
             e.preventDefault();
-            alert('Selecteer een professie');
+            alert('{{ t("please_select_profession", lang) }}');
             return;
         }
         
         if (!diploma) {
             e.preventDefault();
-            alert('Upload uw diploma');
+            alert('{{ t("upload_diploma", lang) }}');
             return;
         }
         
         // Check file size
         if (diploma.size > 5 * 1024 * 1024) {
             e.preventDefault();
-            alert('Diploma bestand is te groot (max 5MB)');
+            alert('{{ t("file_too_large", lang) }}');
             return;
         }
         
         const languageCert = document.getElementById('language_certificate').files[0];
         if (languageCert && languageCert.size > 5 * 1024 * 1024) {
             e.preventDefault();
-            alert('Taalcertificaat bestand is te groot (max 5MB)');
+            alert('{{ t("file_too_large", lang) }}');
             return;
         }
     });

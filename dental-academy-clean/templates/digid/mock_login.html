@@ -731,7 +731,7 @@ function handleDigiDSubmit(event) {
     
     const code = currentCode.join('');
     if (code.length !== 4) {
-        showError('Vul alle 4 letters in.');
+        showError('{{ t("fill_all_4_letters", lang) }}');
         return false;
     }
     
@@ -759,7 +759,7 @@ function authenticateWithDigiD(code) {
         } else {
             // Invalid code
             hideLoading();
-            showError('Ongeldige koppelcode. Controleer de code in uw DigiD app.');
+            showError('{{ t("invalid_coupling_code", lang) }}');
             isSubmitting = false;
             updateSubmitButton();
         }
@@ -878,7 +878,7 @@ function authenticateUser(user) {
             }
         } else {
             hideLoading();
-            showError(data.message || 'Authenticatie is mislukt. Probeer het opnieuw.');
+            showError(data.message || '{{ t("authentication_failed", lang) }}');
             isSubmitting = false;
             updateSubmitButton();
         }
@@ -886,7 +886,7 @@ function authenticateUser(user) {
     .catch(error => {
         console.error('Authentication error:', error);
         hideLoading();
-        showError('Er is een technische fout opgetreden. Probeer het later opnieuw.');
+        showError('{{ t("technical_error", lang) }}');
         isSubmitting = false;
         updateSubmitButton();
     });
@@ -904,7 +904,7 @@ function authenticateWithPassword() {
     const password = document.getElementById('demo-password').value.trim().toLowerCase();
     
     if (!password) {
-        showError('Voer een wachtwoord in.');
+        showError('{{ t("enter_password", lang) }}');
         return;
     }
     
@@ -920,13 +920,13 @@ function authenticateWithPassword() {
     
     const userType = passwordMap[password];
     if (!userType) {
-        showError('Ongeldig wachtwoord.');
+        showError('{{ t("invalid_password", lang) }}');
         return;
     }
     
     const user = demoUsers[userType];
     if (!user) {
-        showError('Gebruiker niet gevonden.');
+        showError('{{ t("user_not_found", lang) }}');
         return;
     }
     
