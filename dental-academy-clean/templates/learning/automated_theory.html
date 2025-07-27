@@ -273,23 +273,23 @@ function completeSession() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Сессия завершена! Переход к следующей...');
-            if (data.redirect_url) {
-                window.location.href = data.redirect_url;
-            }
+            alert('{{ t("session_completed", lang) }}');
+            setTimeout(() => {
+                window.location.href = data.next_url || '{{ url_for("learning.dashboard", lang=lang) }}';
+            }, 1500);
         } else {
-            alert('Ошибка при завершении сессии: ' + data.error);
+            alert('{{ t("error_completing_session", lang) }}: ' + data.error);
         }
     })
     .catch(error => {
-        console.error('❌ Ошибка:', error);
-        alert('Ошибка при завершении сессии');
+        console.error('Error:', error);
+        alert('{{ t("error_completing_session", lang) }}');
     });
 }
 
 function pauseSession() {
     pauseTimer();
-    alert('Сессия приостановлена. Вы можете продолжить позже.');
+    alert('{{ t("session_paused", lang) }}');
 }
 
 // Функции для работы с уроками
