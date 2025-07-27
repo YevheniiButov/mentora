@@ -2087,7 +2087,7 @@ def check_diagnostic_completed(user_id):
         diagnostic_session = DiagnosticSession.query.filter_by(
             user_id=user_id,
             status='completed'
-        ).order_by(DiagnosticSession.created_at.desc()).first()
+        ).order_by(DiagnosticSession.started_at.desc()).first()
         
         return diagnostic_session is not None
     except Exception as e:
@@ -2100,7 +2100,7 @@ def check_learning_progress(user_id):
         # Проверяем наличие прогресса в уроках
         lesson_progress = UserProgress.query.filter_by(
             user_id=user_id
-        ).filter(UserProgress.progress > 0).first()
+        ).filter(UserProgress.completed == True).first()
         
         # Проверяем наличие прогресса в тестах
         test_progress = TestAttempt.query.filter_by(
