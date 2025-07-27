@@ -205,20 +205,30 @@ function shareResult() {
         });
     } else {
         // Fallback для браузеров без Web Share API
-        const text = `Я прошел сценарий "${{'{{ attempt.scenario.title }}'}}" и набрал ${{'{{ attempt.percentage_score }}'}}%!`;
+        const resultText = `Я прошел сценарий "${{'{{ attempt.scenario.title }}'}}" и набрал ${{'{{ attempt.percentage_score }}'}}%!";
         
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(text + '\n' + window.location.href);
-            alert('Результат скопирован в буфер обмена!');
+            navigator.clipboard.writeText(resultText).then(() => {
+                alert('{{ t("result_copied", lang) }}');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = resultText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('{{ t("result_copied", lang) }}');
+            });
         } else {
             // Совсем старый fallback
             const textArea = document.createElement('textarea');
-            textArea.value = text + '\n' + window.location.href;
+            textArea.value = resultText;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            alert('Результат скопирован в буфер обмена!');
+            alert('{{ t("result_copied", lang) }}');
         }
     }
 }

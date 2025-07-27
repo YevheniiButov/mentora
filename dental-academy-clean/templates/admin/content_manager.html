@@ -206,8 +206,8 @@ function createCategory() {
     const name = document.getElementById('categoryName').value;
     const icon = document.getElementById('categoryIcon').value;
     
-    if (!name) {
-        alert('Введите название категории');
+    if (!name.trim()) {
+        alert('{{ t("fill_category_name", lang) }}');
         return;
     }
     
@@ -225,17 +225,15 @@ function createCategory() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Категория создана! URL: ' + data.category.url);
-            bootstrap.Modal.getInstance(document.getElementById('createCategoryModal')).hide();
-            loadCategories();
-            document.getElementById('createCategoryForm').reset();
+            alert('{{ t("category_created", lang) }} URL: ' + data.category.url);
+            location.reload();
         } else {
-            alert('Ошибка: ' + data.message);
+            alert('{{ t("error", lang) }}: ' + data.message);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Произошла ошибка');
+        alert('{{ t("error", lang) }}');
     });
 }
 
