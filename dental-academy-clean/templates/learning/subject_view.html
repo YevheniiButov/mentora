@@ -87,7 +87,7 @@
                     
                     <div class="subject-list {% if selected_subject and selected_subject.learning_path_id == path.id %}expanded{% endif %}" id="path-{{ path.id }}-subjects">
                         {% if path.id == 6 %}
-                            <a href="{{ url_for('virtual_patient.list_scenarios', lang=lang) }}" class="subject-item">
+                            <a href="{{ url_for('virtual_patient.list_scenarios') }}" class="subject-item">
                                 <span class="subject-name">{{ t('clinical_cases', lang) | default('Клинические случаи') }}</span>
                                 <div class="subject-progress">
                                     <div class="progress-bar">
@@ -104,7 +104,7 @@
                             </a>
                         {% else %}
                             {% for subject_item in subjects if subject_item.learning_path_id == path.id %}
-                            <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item.id) }}" 
+                            <a href="{{ url_for('subject_view_bp.view_subject', subject_id=subject_item.id) }}" 
                                class="subject-item {% if selected_subject and selected_subject.id == subject_item.id %}active{% endif %}">
                                 <span class="subject-name">{{ subject_item.name }}</span>
                                 <div class="subject-progress">
@@ -242,7 +242,7 @@
                                 <span class="badge premium-badge">{{ t('premium', lang) }}</span>
                             {% endif %}
                         </div>
-                        <a href="{{ url_for('learning_map_bp.start_module_redirect', lang=lang, module_id=module.id) }}" 
+                        <a href="{{ url_for('learning_map_bp.start_module_redirect', module_id=module.id) }}" 
                            class="module-btn-compact">
                             {% if module.progress == 100 %}{{ t('repeat', lang) }}
                             {% elif module.progress > 0 %}{{ t('continue', lang) }}
@@ -298,11 +298,11 @@
                             
                             <div class="vp-actions">
                                 {% if scenario.is_premium and not user.has_subscription %}
-                                <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="vp-btn premium">
+                                <a href="{{ url_for('main_bp.subscribe') }}" class="vp-btn premium">
                                     <i class="bi bi-star-fill me-1"></i> {{ t('premium', lang) }}
                                 </a>
                                 {% else %}
-                                <a href="{{ url_for('virtual_patient.start_scenario', lang=lang, scenario_id=scenario.id) }}" 
+                                <a href="{{ url_for('virtual_patient.start_scenario', scenario_id=scenario.id) }}" 
                                    class="vp-btn {% if scenario.user_progress and scenario.user_progress.completed %}completed{% endif %}">
                                     <i class="bi bi-play-fill me-1"></i>
                                     {% if scenario.user_progress and scenario.user_progress.completed %}
@@ -316,7 +316,7 @@
                                 {% endif %}
                                 
                                 {% if scenario.user_progress and scenario.user_progress.completed and scenario.user_progress.best_attempt_id %}
-                                <a href="{{ url_for('virtual_patient.scenario_results', lang=lang, attempt_id=scenario.user_progress.best_attempt_id) }}" 
+                                <a href="{{ url_for('virtual_patient.scenario_results', attempt_id=scenario.user_progress.best_attempt_id) }}" 
                                    class="vp-btn">
                                     <i class="bi bi-chart-line me-1"></i> {{ t('results', lang) }}
                                 </a>
@@ -327,7 +327,7 @@
                     </div>
                     
                     <div class="view-all-vp">
-                        <a href="{{ url_for('subject_view_bp.all_virtual_patients', lang=lang) }}">
+                        <a href="{{ url_for('subject_view_bp.all_virtual_patients') }}">
                             {{ t('view_all_scenarios', lang) }} <i class="bi bi-arrow-right ms-1"></i>
                         </a>
                     </div>
@@ -373,7 +373,7 @@
             <div class="test-section mt-4">
                 <h3>BIG-toets Voorbereiding</h3>
                 <p>Bereid je voor op je BIG-registratie met onze oefentests</p>
-                <a href="{{ url_for('learning_map_bp.subject_tests', lang=lang, subject_id=subject.id) }}" class="btn btn-primary">
+                <a href="{{ url_for('learning_map_bp.subject_tests', subject_id=subject.id) }}" class="btn btn-primary">
                     <i class="bi bi-journal-check"></i> Naar Tests
                 </a>
             </div>
@@ -384,7 +384,7 @@
                 {% if filtered_subjects %}
                     {% for subject_item_path_filtered in filtered_subjects %}
                     <div class="subject-card">
-                        <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item_path_filtered.id) }}" class="subject-link">
+                        <a href="{{ url_for('subject_view_bp.view_subject', subject_id=subject_item_path_filtered.id) }}" class="subject-link">
                             <div class="card-content">
                                 <div class="card-icon">
                                     <svg class="icon" width="24" height="24" viewBox="0 0 24 24">
@@ -772,29 +772,4 @@ function quickInteractionCheck() {
 
 // JS для показа блока только при выборе нужной категории
 </script>
-{% endblock %}// Функции для двухэтапного процесса обучения
-function startLearning() {
-    // Перенаправляем на первый доступный путь обучения
-    const firstPath = document.querySelector(".learning-path-button");
-    if (firstPath) {
-        firstPath.click();
-    } else {
-        // Если нет путей, перенаправляем на диагностику
-        window.location.href = "/nl/diagnostic/choose-type";
-    }
-}
-
-function continueLearning() {
-    // Перенаправляем на последний активный путь или модуль
-    const activePath = document.querySelector(".learning-path-button.active");
-    if (activePath) {
-        activePath.click();
-    } else {
-        // Если нет активного пути, показываем все пути
-        const paths = document.querySelectorAll(".learning-path-button");
-        if (paths.length > 0) {
-            paths[0].click();
-        }
-    }
-}
-console.log("Learning state:", {{ learning_state | tojson | safe if learning_state else "null" }});
+{% endblock %}
