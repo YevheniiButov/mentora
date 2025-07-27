@@ -166,25 +166,13 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="flash-message alert alert-{{ 'danger' if category == 'error' else category }}" 
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }}" 
                          data-category="{{ category }}" role="alert">
-                        <div class="flash-content">
-                            <div class="flash-icon">
-                                {% if category == 'success' %}
-                                    <i class="bi bi-check-circle-fill"></i>
-                                {% elif category == 'error' or category == 'danger' %}
-                                    <i class="bi bi-exclamation-triangle-fill"></i>
-                                {% elif category == 'warning' %}
-                                    <i class="bi bi-exclamation-circle-fill"></i>
-                                {% else %}
-                                    <i class="bi bi-info-circle-fill"></i>
-                                {% endif %}
-                            </div>
-                            <div class="flash-text">{{ message }}</div>
-                            <button type="button" class="flash-close" onclick="this.parentElement.parentElement.remove()">
-                                <i class="bi bi-x"></i>
-                            </button>
+                        <div class="alert-content">
+                            <div class="alert-title">{{ category.title() }}</div>
+                            <div class="alert-message">{{ message }}</div>
                         </div>
+                        <button type="button" class="btn-close" onclick="this.parentElement.remove()" aria-label="Close"></button>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -306,13 +294,46 @@
                 if (!this.container) return;
                 
                 // Auto-hide flash messages after 5 seconds
-                const messages = this.container.querySelectorAll('.flash-message');
+                const messages = this.container.querySelectorAll('.alert');
                 messages.forEach(message => {
+                    // Добавляем класс show для анимации
+                    setTimeout(() => message.classList.add('show'), 100);
+                    
+                    // Автоскрытие через 5 секунд
                     setTimeout(() => {
-                        message.classList.add('fade-out');
+                        message.classList.add('hiding');
                         setTimeout(() => message.remove(), 300);
                     }, 5000);
                 });
+            }
+
+            showMessage(category, message, title = null) {
+                if (!this.container) return;
+                
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${category === 'error' ? 'danger' : category}`;
+                alertDiv.setAttribute('role', 'alert');
+                
+                const titleText = title || category.charAt(0).toUpperCase() + category.slice(1);
+                
+                alertDiv.innerHTML = `
+                    <div class="alert-content">
+                        <div class="alert-title">${titleText}</div>
+                        <div class="alert-message">${message}</div>
+                    </div>
+                    <button type="button" class="btn-close" onclick="this.parentElement.remove()" aria-label="Close"></button>
+                `;
+                
+                this.container.appendChild(alertDiv);
+                
+                // Анимация появления
+                setTimeout(() => alertDiv.classList.add('show'), 100);
+                
+                // Автоскрытие
+                setTimeout(() => {
+                    alertDiv.classList.add('hiding');
+                    setTimeout(() => alertDiv.remove(), 300);
+                }, 5000);
             }
         }
 
@@ -379,35 +400,25 @@
 
             handleSessionExpired() {
                 clearInterval(this.checkInterval);
-                // Показываем уведомление
-                const flashContainer = document.getElementById('flash-container');
-                if (flashContainer) {
-                    const message = document.createElement('div');
-                    message.className = 'flash-message alert alert-warning';
-                    message.innerHTML = `
-                        <div class="flash-content">
-                            <div class="flash-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
-                            <div class="flash-text">Ваша DigiD сессия истекла. Вы будете перенаправлены на страницу входа.</div>
-                            <button type="button" class="flash-close" onclick="this.parentElement.parentElement.remove()">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        </div>
-                    `;
-                    flashContainer.appendChild(message);
+                // Показываем уведомление используя новую систему
+                if (window.flashMessagesSystem) {
+                    window.flashMessagesSystem.showMessage('warning', 'Ваша DigiD сессия истекла. Вы будете перенаправлены на страницу входа.');
                 }
                 
-                // Редирект через 3 секунды
+                // Перенаправляем через 3 секунды
                 setTimeout(() => {
-                    window.location.href = '/digid/logout';
+                    window.location.href = '/digid/login';
                 }, 3000);
             }
         }
 
-        // Initialize systems when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            new FlashMessagesSystem();
-            new DigiDSessionMonitor();
-        });
+        // Инициализация систем
+        const flashMessagesSystem = new FlashMessagesSystem();
+        const digiDSessionMonitor = new DigiDSessionMonitor();
+        
+        // Делаем доступным глобально
+        window.flashMessagesSystem = flashMessagesSystem;
+        window.digiDSessionMonitor = digiDSessionMonitor;
     </script>
 
     <!-- Page-specific scripts -->
