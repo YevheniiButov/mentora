@@ -341,62 +341,59 @@ body {
     margin: 0;
 }
 
-/* Demo Buttons Grid */
-.digid-demo-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px;
+/* Password Input Section */
+.digid-password-section {
+    display: flex;
+    gap: 12px;
     margin-bottom: 16px;
+    align-items: center;
 }
 
-.digid-demo-btn {
+.digid-password-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid var(--digid-border);
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--digid-text);
+    background: var(--digid-background);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.digid-password-input:focus {
+    border-color: var(--digid-blue);
+    box-shadow: 0 0 0 2px rgba(0, 61, 130, 0.1);
+}
+
+.digid-password-btn {
     background: var(--digid-blue);
     color: #ffffff;
     border: none;
     border-radius: 4px;
-    padding: 10px 12px;
-    font-size: 12px;
-    font-weight: 500;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-height: 40px;
+    white-space: nowrap;
 }
 
-.digid-demo-btn:hover {
+.digid-password-btn:hover {
     background: #002a5c;
     transform: translateY(-1px);
 }
 
-.digid-demo-btn.admin {
-    background: #dc3545;
+.digid-password-btn:active {
+    transform: translateY(0);
 }
 
-.digid-demo-btn.admin:hover {
-    background: #c82333;
-}
-
-.demo-btn-icon {
-    font-size: 14px;
-}
-
-.demo-btn-text {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    line-height: 1.2;
-}
-
-.demo-btn-profession {
-    font-weight: 600;
-}
-
-.demo-btn-nl {
-    font-size: 10px;
-    opacity: 0.8;
+.digid-password-info {
+    text-align: center;
+    color: var(--digid-text-light);
+    font-size: 12px;
+    line-height: 1.4;
 }
 
 /* Responsive Design */
@@ -437,15 +434,19 @@ body {
         padding: 16px 20px;
     }
     
-    .digid-demo-buttons {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
+    .digid-password-section {
+        flex-direction: column;
+        gap: 8px;
     }
     
-    .digid-demo-btn {
-        padding: 8px 6px;
-        font-size: 11px;
-        min-height: 36px;
+    .digid-password-input {
+        width: 100%;
+        font-size: 16px; /* Предотвращает зум на iOS */
+    }
+    
+    .digid-password-btn {
+        width: 100%;
+        padding: 14px 24px;
     }
 }
 
@@ -577,7 +578,7 @@ body {
                 🛠️ Alleen voor ontwikkeling
             </div>
             <div class="digid-demo-subtitle">
-                Selecteer uw professie om direct in te loggen als demo gebruiker
+                Voer het wachtwoord in om direct in te loggen als demo gebruiker
             </div>
             
             <!-- Demo Options -->
@@ -588,47 +589,26 @@ body {
                 </div>
             </div>
             
-            <!-- Demo Buttons -->
-            <div class="digid-demo-buttons">
-                <button class="digid-demo-btn" onclick="selectDemoUser('tandarts')" title="Inloggen als demo tandarts">
-                    <span class="demo-btn-icon">🦷</span>
-                    <span class="demo-btn-text">
-                        <span class="demo-btn-profession">Tandarts</span>
-                        <span class="demo-btn-nl">Stomatologie</span>
-                    </span>
+            <!-- Password Input -->
+            <div class="digid-password-section">
+                <input 
+                    type="password" 
+                    id="demo-password" 
+                    class="digid-password-input" 
+                    placeholder="Voer wachtwoord in..."
+                    onkeydown="handlePasswordKeydown(event)"
+                    aria-label="Demo wachtwoord">
+                <button 
+                    type="button" 
+                    class="digid-password-btn" 
+                    onclick="authenticateWithPassword()"
+                    aria-label="Inloggen met wachtwoord">
+                    Inloggen
                 </button>
-                
-                <button class="digid-demo-btn" onclick="selectDemoUser('apotheker')" title="Inloggen als demo apotheker">
-                    <span class="demo-btn-icon">💊</span>
-                    <span class="demo-btn-text">
-                        <span class="demo-btn-profession">Apotheker</span>
-                        <span class="demo-btn-nl">Farmacie</span>
-                    </span>
-                </button>
-                
-                <button class="digid-demo-btn" onclick="selectDemoUser('verpleegkundige')" title="Inloggen als demo verpleegkundige">
-                    <span class="demo-btn-icon">👩‍⚕️</span>
-                    <span class="demo-btn-text">
-                        <span class="demo-btn-profession">Verpleegkundige</span>
-                        <span class="demo-btn-nl">Zorgverlening</span>
-                    </span>
-                </button>
-                
-                <button class="digid-demo-btn" onclick="selectDemoUser('arts')" title="Inloggen als demo arts">
-                    <span class="demo-btn-icon">🩺</span>
-                    <span class="demo-btn-text">
-                        <span class="demo-btn-profession">Arts</span>
-                        <span class="demo-btn-nl">Huisartsgeneeskunde</span>
-                    </span>
-                </button>
-                
-                <button class="digid-demo-btn admin" onclick="selectDemoUser('admin')" title="Inloggen als demo admin">
-                    <span class="demo-btn-icon">👨‍💼</span>
-                    <span class="demo-btn-text">
-                        <span class="demo-btn-profession">Admin</span>
-                        <span class="demo-btn-nl">Beheerder</span>
-                    </span>
-                </button>
+            </div>
+            
+            <div class="digid-password-info">
+                <small>Beschikbare wachtwoorden: tandarts, apotheker, verpleegkundige, arts, admin</small>
             </div>
         </div>
     </div>
@@ -914,6 +894,53 @@ function authenticateUser(user) {
         isSubmitting = false;
         updateSubmitButton();
     });
+}
+
+// Password authentication functions
+function handlePasswordKeydown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        authenticateWithPassword();
+    }
+}
+
+function authenticateWithPassword() {
+    const password = document.getElementById('demo-password').value.trim().toLowerCase();
+    
+    if (!password) {
+        showError('Voer een wachtwoord in.');
+        return;
+    }
+    
+    // Map passwords to user types
+    const passwordMap = {
+        'tandarts': 'tandarts',
+        'apotheker': 'apotheker', 
+        'verpleegkundige': 'verpleegkundige',
+        'arts': 'arts',
+        'admin': 'admin'
+    };
+    
+    const userType = passwordMap[password];
+    if (!userType) {
+        showError('Ongeldig wachtwoord. Probeer: tandarts, apotheker, verpleegkundige, arts, admin');
+        return;
+    }
+    
+    const user = demoUsers[userType];
+    if (!user) {
+        showError('Gebruiker niet gevonden.');
+        return;
+    }
+    
+    // Clear password field
+    document.getElementById('demo-password').value = '';
+    
+    // Show user info
+    console.log(`🔑 Demo login: ${user.name} (${user.profession})`);
+    
+    // Authenticate user
+    authenticateUser(user);
 }
 
 // Initialize
