@@ -768,6 +768,7 @@ def profession_learning_map(lang, profession):
         
         # Получаем состояние обучения пользователя
         learning_state = get_user_learning_state(current_user.id)
+        print(f"🔍 DEBUG: profession_learning_map - learning_state = {learning_state}")
         
         return render_template(
             "learning/subject_view.html",
@@ -2119,12 +2120,17 @@ def check_learning_progress(user_id):
 
 def get_user_learning_state(user_id):
     """Получить полное состояние обучения пользователя"""
+    print(f"🔍 DEBUG: get_user_learning_state called for user_id = {user_id}")
+    
     diagnostic_completed = check_diagnostic_completed(user_id)
     learning_progress = check_learning_progress(user_id)
     
-    return {
+    result = {
         'diagnostic_completed': diagnostic_completed,
         'learning_progress': learning_progress,
         'stage': 'post_diagnostic' if diagnostic_completed else 'pre_diagnostic'
     }
+    
+    print(f"🔍 DEBUG: get_user_learning_state result = {result}")
+    return result
 
