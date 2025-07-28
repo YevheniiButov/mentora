@@ -2,6 +2,7 @@
 {% block title %}DigiD Inloggen - Mentora{% endblock %}
 
 {% block head %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=RijksoverheidSansWebText:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -553,6 +554,36 @@ body {
                 </div>
             </form>
 
+            <!-- Password Form (initially hidden) -->
+            <form id="password-auth-form" style="display: none;" onsubmit="return handlePasswordSubmit(event)">
+                <div class="digid-input-section">
+                    <div class="digid-password-section">
+                        <input 
+                            type="password" 
+                            id="auth-password" 
+                            class="digid-password-input" 
+                            placeholder="Voer wachtwoord in..."
+                            onkeydown="handlePasswordKeydown(event)"
+                            aria-label="Wachtwoord voor authenticatie"
+                            required>
+                        <button 
+                            type="submit" 
+                            class="digid-password-btn" 
+                            id="login-button"
+                            aria-label="Inloggen met wachtwoord">
+                            Inloggen
+                        </button>
+                    </div>
+                    <div class="digid-error-message" id="password-error-message" role="alert"></div>
+                </div>
+
+                <div class="digid-navigation">
+                    <button type="button" class="digid-btn-previous" onclick="goBackToPincode()" aria-label="Ga terug naar pincode">
+                        ← Terug naar pincode
+                    </button>
+                </div>
+            </form>
+
             <!-- Loading State -->
             <div class="digid-loading-state" id="loading-state">
                 <div class="digid-spinner" aria-hidden="true"></div>
@@ -615,6 +646,7 @@ body {
 let currentCode = ['', '', '', ''];
 let isSubmitting = false;
 let showRegistration = false;
+let currentUser = null; // Сохраняем пользователя после проверки пин-кода
 
 // Demo user configurations
 const demoUsers = {
@@ -723,7 +755,7 @@ function updateSubmitButton() {
     submitButton.disabled = !isComplete || isSubmitting;
 }
 
-// Form submission
+// Form submission - Step 1: Pincode verification
 function handleDigiDSubmit(event) {
     event.preventDefault();
     
@@ -735,16 +767,16 @@ function handleDigiDSubmit(event) {
         return false;
     }
     
-    authenticateWithDigiD(code);
+    verifyPincode(code);
     return false;
 }
 
-function authenticateWithDigiD(code) {
+function verifyPincode(code) {
     isSubmitting = true;
     showLoading();
     hideError();
     
-    // Simulate authentication delay
+    // Simulate verification delay
     setTimeout(() => {
         // Map demo codes to users
         const demoCodeMap = {};
@@ -754,19 +786,75 @@ function authenticateWithDigiD(code) {
         
         const user = demoCodeMap[code];
         if (user) {
-            // Successful authentication
-            authenticateUser(user);
+            // Pincode is valid - proceed to password step
+            currentUser = user;
+            hideLoading();
+            showPasswordStep();
         } else {
-            // Invalid code
+            // Invalid pincode
             hideLoading();
             showError('{{ t("invalid_coupling_code", lang) }}');
             isSubmitting = false;
             updateSubmitButton();
         }
-    }, 2000);
+    }, 1500);
 }
 
-// Demo user selection
+// Step 2: Show password input
+function showPasswordStep() {
+    document.getElementById('digid-auth-form').style.display = 'none';
+    document.getElementById('password-auth-form').style.display = 'block';
+    
+    // Update step indicator
+    document.querySelector('.digid-step-indicator').textContent = 'Stap 2 van 3';
+    document.querySelector('.digid-section-title').textContent = 'Voer uw wachtwoord in';
+    document.querySelector('.digid-instruction-text').textContent = 'Voer het wachtwoord in om uw identiteit te bevestigen.';
+    document.querySelector('.digid-detail-text').textContent = 'Voor de veiligheid moet u uw wachtwoord invoeren om de aanmelding te voltooien.';
+    
+    // Focus password input
+    document.getElementById('auth-password').focus();
+    
+    isSubmitting = false;
+}
+
+// Step 2: Go back to pincode
+function goBackToPincode() {
+    document.getElementById('password-auth-form').style.display = 'none';
+    document.getElementById('digid-auth-form').style.display = 'block';
+    
+    // Reset step indicator
+    document.querySelector('.digid-step-indicator').textContent = 'Stap 1 van 3';
+    document.querySelector('.digid-section-title').textContent = 'Open de DigiD app en voer uw pincode in';
+    document.querySelector('.digid-instruction-text').textContent = 'Vul daarna de koppelcode in die u in de DigiD app ziet.';
+    document.querySelector('.digid-detail-text').textContent = 'De DigiD app laat de koppelcode zien. Deze bestaat uit 4 letters. Vul de code in de 4 invoervelden hieronder in.';
+    
+    // Clear password
+    document.getElementById('auth-password').value = '';
+    hidePasswordError();
+    
+    // Focus first code input
+    document.getElementById('code1').focus();
+    
+    currentUser = null;
+}
+
+// Step 2: Password submission
+function handlePasswordSubmit(event) {
+    event.preventDefault();
+    
+    if (isSubmitting) return false;
+    
+    const password = document.getElementById('auth-password').value.trim();
+    if (!password) {
+        showPasswordError('{{ t("enter_password", lang) }}');
+        return false;
+    }
+    
+    authenticateWithPassword(password);
+    return false;
+}
+
+// Demo user selection (for quick testing)
 function selectDemoUser(userType) {
     const user = demoUsers[userType];
     if (!user) return;
@@ -806,6 +894,17 @@ function hideError() {
     document.getElementById('error-message').style.display = 'none';
 }
 
+function showPasswordError(message) {
+    const errorDiv = document.getElementById('password-error-message');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hidePasswordError() {
+    document.getElementById('password-error-message').style.display = 'none';
+}
+
 function showLoading() {
     document.getElementById('digid-auth-form').style.display = 'none';
     document.getElementById('loading-state').style.display = 'block';
@@ -834,6 +933,63 @@ function getCurrentLanguage() {
     const langCodes = ['nl', 'en', 'ru', 'uk', 'tr', 'fa', 'ar', 'es', 'pt'];
     const urlLang = pathParts[1];
     return langCodes.includes(urlLang) ? urlLang : 'nl';
+}
+
+// Final authentication with password
+function authenticateWithPassword(password) {
+    if (!currentUser) {
+        showPasswordError('{{ t("no_user_selected", lang) }}');
+        return;
+    }
+    
+    isSubmitting = true;
+    showPasswordLoading();
+    
+    // Map passwords to user types
+    const passwordMap = {
+        'tandarts': 'tandarts',
+        'apotheker': 'apotheker', 
+        'verpleegkundige': 'verpleegkundige',
+        'arts': 'arts',
+        'admin': 'admin',
+        'develop': 'admin'
+    };
+    
+    const userType = passwordMap[password.toLowerCase()];
+    if (!userType) {
+        hidePasswordLoading();
+        showPasswordError('{{ t("invalid_password", lang) }}');
+        isSubmitting = false;
+        return;
+    }
+    
+    // Check if password matches the user type
+    if (userType !== currentUser.profession && !(userType === 'admin' && currentUser.profession === 'admin')) {
+        hidePasswordLoading();
+        showPasswordError('{{ t("password_mismatch", lang) }}');
+        isSubmitting = false;
+        return;
+    }
+    
+    // Clear password field
+    document.getElementById('auth-password').value = '';
+    
+    // Show user info
+    console.log(`🔑 Final authentication: ${currentUser.name} (${currentUser.profession})`);
+    
+    // Authenticate user
+    authenticateUser(currentUser);
+}
+
+function showPasswordLoading() {
+    document.getElementById('password-auth-form').style.display = 'none';
+    document.getElementById('loading-state').style.display = 'block';
+    document.querySelector('.digid-loading-text').textContent = 'Bezig met inloggen...';
+}
+
+function hidePasswordLoading() {
+    document.getElementById('password-auth-form').style.display = 'block';
+    document.getElementById('loading-state').style.display = 'none';
 }
 
 function authenticateUser(user) {
@@ -877,22 +1033,20 @@ function authenticateUser(user) {
                 window.location.href = redirectUrl;
             }
         } else {
-            hideLoading();
-            showError(data.message || '{{ t("authentication_failed", lang) }}');
+            hidePasswordLoading();
+            showPasswordError(data.message || '{{ t("authentication_failed", lang) }}');
             isSubmitting = false;
-            updateSubmitButton();
         }
     })
     .catch(error => {
         console.error('Authentication error:', error);
-        hideLoading();
-        showError('{{ t("technical_error", lang) }}');
+        hidePasswordLoading();
+        showPasswordError('{{ t("technical_error", lang) }}');
         isSubmitting = false;
-        updateSubmitButton();
     });
 }
 
-// Password authentication functions
+// Password authentication functions (for demo section)
 function handlePasswordKeydown(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
