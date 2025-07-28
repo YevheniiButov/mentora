@@ -396,16 +396,8 @@ def callback():
             if not user.registration_completed:
                 return redirect('/digid/complete-registration')
             else:
-                # Проверяем, прошел ли пользователь диагностику
-                from routes.learning_map_routes import check_diagnostic_completed
-                diagnostic_completed = check_diagnostic_completed(user.id)
-                
-                if diagnostic_completed:
-                    # Уже зарегистрирован и прошел диагностику → профессиональная карта обучения
-                    return redirect(get_learning_map_url_by_profession(user.profession))
-                else:
-                    # Зарегистрирован, но не прошел диагностику → диагностика
-                    return redirect('/diagnostic/choose-type')
+                # Зарегистрирован → сразу на карту обучения
+                return redirect(get_learning_map_url_by_profession(user.profession))
                 
     except Exception as e:
         logger.error(f"Error in DigiD callback: {e}")
@@ -619,10 +611,10 @@ def complete_registration():
             current_user.registration_completed = True
             db.session.commit()
             
-            flash('Регистрация завершена успешно! Теперь пройдите диагностику для определения вашего уровня знаний.', 'success')
+            flash('Регистрация завершена успешно! Добро пожаловать в систему обучения.', 'success')
             
-            # Перенаправляем на диагностику для нового пользователя
-            return redirect('/diagnostic/choose-type')
+            # Перенаправляем на карту обучения для нового пользователя
+            return redirect(get_learning_map_url_by_profession(profession))
             
         except Exception as e:
             logger.error(f"Error completing registration: {e}")
