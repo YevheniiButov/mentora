@@ -101,7 +101,24 @@ def digid_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Вспомогательная функция: создать/обновить пользователя из DigiD-данных
+def cleanup_orphaned_records():
+    """Очищает записи с NULL user_id в базе данных"""
+    try:
+        from models import DiagnosticSession, DigiDSession, UserProgress, TestAttempt, VirtualPatientAttempt
+        
+        # Очищаем записи с NULL user_id
+        DiagnosticSession.query.filter(DiagnosticSession.user_id.is_(None)).delete()
+        DigiDSession.query.filter(DigiDSession.user_id.is_(None)).delete()
+        UserProgress.query.filter(UserProgress.user_id.is_(None)).delete()
+        TestAttempt.query.filter(TestAttempt.user_id.is_(None)).delete()
+        VirtualPatientAttempt.query.filter(VirtualPatientAttempt.user_id.is_(None)).delete()
+        
+        db.session.commit()
+        print("✅ Cleaned up orphaned records with NULL user_id")
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Error cleaning up orphaned records: {e}")
 
 def get_or_create_digid_user(digid_data, show_registration=False):
     user = User.query.filter_by(digid_username=digid_data['digid_username']).first()
@@ -110,10 +127,46 @@ def get_or_create_digid_user(digid_data, show_registration=False):
         # Принудительно создаем нового пользователя для регистрации
         # Сначала удаляем существующего пользователя если есть
         if user:
-            # Удаляем существующего пользователя
-            db.session.delete(user)
-            db.session.commit()
-            print(f"Deleted existing user {user.id} for new registration")
+            try:
+                # Сначала очищаем связанные записи
+                from models import DiagnosticSession, DigiDSession, UserProgress, TestAttempt, VirtualPatientAttempt
+                
+                # Удаляем диагностические сессии
+                DiagnosticSession.query.filter_by(user_id=user.id).delete()
+                
+                # Удаляем DigiD сессии
+                DigiDSession.query.filter_by(user_id=user.id).delete()
+                
+                # Удаляем прогресс обучения
+                UserProgress.query.filter_by(user_id=user.id).delete()
+                
+                # Удаляем попытки тестов
+                TestAttempt.query.filter_by(user_id=user.id).delete()
+                
+                # Удаляем попытки виртуальных пациентов
+                VirtualPatientAttempt.query.filter_by(user_id=user.id).delete()
+                
+                # Теперь удаляем самого пользователя
+                db.session.delete(user)
+                db.session.commit()
+                print(f"Deleted existing user {user.id} and all related data for new registration")
+                
+            except Exception as e:
+                db.session.rollback()
+                print(f"Error deleting user: {e}")
+                # Если не удалось удалить, просто обновляем данные
+                user.bsn = digid_data['bsn']
+                user.email = digid_data['email']
+                user.first_name = digid_data.get('first_name')
+                user.last_name = digid_data.get('last_name')
+                user.digid_verified = True
+                user.created_via_digid = True
+                user.role = digid_data.get('role', 'user')
+                user.registration_completed = False
+                user.profession = digid_data.get('profession', 'tandarts')
+                db.session.commit()
+                print(f"Updated existing user instead of deletion: {user.id} ({user.email})")
+                return user
         
         # Создаем нового пользователя
         user = create_digid_user(
@@ -194,6 +247,9 @@ def authenticate():
         
         # Имитация успешной аутентификации
         digid_data = MOCK_DIGID_USERS[digid_username]
+        
+        # Очищаем поврежденные записи перед созданием пользователя
+        cleanup_orphaned_records()
         
         try:
             user = get_or_create_digid_user(digid_data, show_registration)
