@@ -1,8 +1,8 @@
 {% extends "assessment/base_diagnostic.html" %}
 
-{% block title %}Выбор типа диагностики{% endblock %}
+{% block title %}{{ t('choose_diagnostic_type', lang) }}{% endblock %}
 
-{% block description %}Выберите тип BIG диагностики для начала тестирования{% endblock %}
+{% block description %}{{ t('choose_diagnostic_type_description', lang) }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/diagnostic-type-selector.css') }}">
@@ -102,36 +102,43 @@
         padding: 0;
         margin: 0;
         font-size: 0.85rem;
-        line-height: 1.3;
+        color: var(--text-secondary);
+    }
+
+    .diagnostic-type-card.selected .type-features {
+        color: rgba(255, 255, 255, 0.8);
     }
 
     .type-features li {
-        margin-bottom: 0.3rem;
-        padding: 0.2rem 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 0.25rem;
+        padding-left: 1rem;
+        position: relative;
     }
 
-    .diagnostic-type-card.selected .type-features li {
-        border-bottom-color: rgba(255, 255, 255, 0.2);
+    .type-features li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--primary-color);
+        font-weight: bold;
     }
 
-    .type-features li:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
+    .diagnostic-type-card.selected .type-features li::before {
+        color: white;
     }
 
     .action-buttons {
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     .btn-start {
-        background: var(--primary-color);
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
         border: none;
-        padding: 0.8rem 2rem;
-        border-radius: 8px;
-        font-size: 1rem;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -139,94 +146,123 @@
     }
 
     .btn-start:hover:not(:disabled) {
-        background: var(--primary-color-dark);
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
 
     .btn-start:disabled {
-        background: var(--text-muted);
+        background: var(--border-color);
         cursor: not-allowed;
-        opacity: 0.6;
-    }
-
-    .btn-start.btn-pulse {
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+        transform: none;
     }
 
     .info-section {
         background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 1rem;
-        margin-top: 1rem;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .info-title {
-        font-size: 1rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        margin-bottom: 0.5rem;
         color: var(--primary-color);
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
 
-    .info-text {
-        font-size: 0.85rem;
-        line-height: 1.4;
-        color: var(--text-secondary);
-    }
-
     .info-text p {
         margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
     }
 
-    .info-text p:last-child {
-        margin-bottom: 0;
+    .info-text strong {
+        color: var(--text-primary);
+    }
+
+    .testing-section {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 2px dashed #dee2e6;
+    }
+
+    .testing-title {
+        color: #dc3545;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .testing-description {
+        color: #6c757d;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .test-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .test-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .test-high {
+        background: #dc3545;
+        color: white;
+    }
+
+    .test-medium {
+        background: #fd7e14;
+        color: white;
+    }
+
+    .test-low {
+        background: #28a745;
+        color: white;
+    }
+
+    .test-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     /* Мобильная адаптация */
     @media (max-width: 768px) {
-        .diagnostic-type-selector {
-            padding: 0.5rem;
+        .diagnostic-types {
+            grid-template-columns: 1fr;
         }
         
         .selector-title {
             font-size: 1.5rem;
         }
         
-        .diagnostic-types {
-            grid-template-columns: 1fr;
-            gap: 0.8rem;
+        .btn-start {
+            width: 100%;
+            min-width: auto;
         }
         
-        .diagnostic-type-card {
-            padding: 1rem;
+        .test-buttons {
+            flex-direction: column;
         }
         
-        .type-icon {
-            width: 50px;
-            height: 50px;
-            font-size: 1.2rem;
-        }
-        
-        .type-title {
-            font-size: 1.1rem;
-        }
-        
-        .type-description {
-            font-size: 0.85rem;
-        }
-        
-        .type-features {
-            font-size: 0.8rem;
+        .test-btn {
+            width: 100%;
         }
     }
 </style>
@@ -236,9 +272,9 @@
 <div class="diagnostic-type-selector">
     <!-- Header -->
     <div class="selector-header">
-        <h1 class="selector-title">Выберите тип диагностики</h1>
+        <h1 class="selector-title">{{ t('choose_diagnostic_type', lang) }}</h1>
         <p class="selector-subtitle">
-            Выберите подходящий тип BIG диагностики для оценки знаний
+            {{ t('choose_diagnostic_type_description', lang) }}
         </p>
     </div>
 
@@ -249,15 +285,15 @@
             <div class="type-icon">
                 <i class="fas fa-clipboard-list"></i>
             </div>
-            <h3 class="type-title">Полная диагностика</h3>
+            <h3 class="type-title">{{ t('full_diagnostic', lang) }}</h3>
             <p class="type-description">
-                Комплексная оценка по всем областям стоматологии
+                {{ t('full_diagnostic_description', lang) }}
             </p>
             <ul class="type-features">
-                <li>130 вопросов</li>
-                <li>Детальный анализ</li>
-                <li>Персональные рекомендации</li>
-                <li>60-90 минут</li>
+                <li>130 {{ t('questions_count', lang) }}</li>
+                <li>{{ t('detailed_analysis', lang) }}</li>
+                <li>{{ t('personal_recommendations_short', lang) }}</li>
+                <li>60-90 {{ t('minutes', lang) }}</li>
             </ul>
         </div>
 
@@ -266,15 +302,15 @@
             <div class="type-icon">
                 <i class="fas fa-bolt"></i>
             </div>
-            <h3 class="type-title">Быстрая диагностика</h3>
+            <h3 class="type-title">{{ t('express_diagnostic', lang) }}</h3>
             <p class="type-description">
-                Экспресс-оценка основных знаний
+                {{ t('express_diagnostic_description', lang) }}
             </p>
             <ul class="type-features">
-                <li>25 вопросов</li>
-                <li>Общий результат</li>
-                <li>Базовые рекомендации</li>
-                <li>20-30 минут</li>
+                <li>25 {{ t('questions_count', lang) }}</li>
+                <li>{{ t('general_result', lang) }}</li>
+                <li>{{ t('basic_recommendations', lang) }}</li>
+                <li>20-30 {{ t('minutes', lang) }}</li>
             </ul>
         </div>
 
@@ -283,15 +319,15 @@
             <div class="type-icon">
                 <i class="fas fa-layer-group"></i>
             </div>
-            <h3 class="type-title">Стандартная диагностика</h3>
+            <h3 class="type-title">{{ t('standard_diagnostic', lang) }}</h3>
             <p class="type-description">
-                Балансированная диагностика по всем областям
+                {{ t('standard_diagnostic_description', lang) }}
             </p>
             <ul class="type-features">
-                <li>75 вопросов</li>
-                <li>Детальный анализ</li>
-                <li>Целевые рекомендации</li>
-                <li>40-60 минут</li>
+                <li>75 {{ t('questions_count', lang) }}</li>
+                <li>{{ t('detailed_analysis', lang) }}</li>
+                <li>{{ t('targeted_recommendations', lang) }}</li>
+                <li>40-60 {{ t('minutes', lang) }}</li>
             </ul>
         </div>
     </div>
@@ -299,7 +335,7 @@
     <!-- Action Buttons -->
     <div class="action-buttons">
         <button id="start-diagnostic" class="btn-start" disabled>
-            Начать диагностику
+            {{ t('start_diagnostic', lang) }}
         </button>
     </div>
 
@@ -307,138 +343,108 @@
     <div class="info-section">
         <h3 class="info-title">
             <i class="fas fa-info-circle"></i>
-            Информация
+            {{ t('information', lang) }}
         </h3>
         <div class="info-text">
-            <p><strong>Время:</strong> Указано приблизительно, зависит от скорости ответов.</p>
-            <p><strong>Прогресс:</strong> Автоматически сохраняется, можно продолжить позже.</p>
-            <p><strong>Результаты:</strong> Детальный анализ с рекомендациями после завершения.</p>
+            <p><strong>{{ t('time', lang) }}:</strong> {{ t('time_info', lang) }}</p>
+            <p><strong>{{ t('progress', lang) }}:</strong> {{ t('progress_info', lang) }}</p>
+            <p><strong>{{ t('results', lang) }}:</strong> {{ t('results_info', lang) }}</p>
         </div>
     </div>
 
     <!-- TESTING SECTION - УДАЛИТЬ ПОСЛЕ ТЕСТИРОВАНИЯ -->
-    <div class="testing-section" style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border: 2px dashed #dee2e6;">
-        <h3 style="color: #dc3545; margin-bottom: 1rem;">
+    <div class="testing-section">
+        <h3 class="testing-title">
             <i class="fas fa-flask"></i>
-            ТЕСТИРОВАНИЕ СИСТЕМЫ ПЛАНИРОВАНИЯ
+            {{ t('testing_system_planning', lang) }}
         </h3>
-        <p style="color: #6c757d; margin-bottom: 1rem; font-size: 0.9rem;">
-            Быстрое прохождение диагностики с разными результатами для тестирования системы планирования обучения
+        <p class="testing-description">
+            {{ t('testing_description', lang) }}
         </p>
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <div class="test-buttons">
             <button class="test-btn test-high" onclick="quickTest('high')">
-                <i class="fas fa-star"></i>
-                Высокий результат
+                <i class="fas fa-trophy"></i> {{ t('high_result', lang) }}
             </button>
             <button class="test-btn test-medium" onclick="quickTest('medium')">
-                <i class="fas fa-star-half-alt"></i>
-                Средний результат
+                <i class="fas fa-balance-scale"></i> {{ t('medium_result', lang) }}
             </button>
             <button class="test-btn test-low" onclick="quickTest('low')">
-                <i class="fas fa-star"></i>
-                Низкий результат
-            </button>
-            <button class="test-btn test-random" onclick="quickTest('random')">
-                <i class="fas fa-dice"></i>
-                Случайный результат
+                <i class="fas fa-chart-line"></i> {{ t('low_result', lang) }}
             </button>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/diagnostic-type-selector.js') }}"></script>
 <script>
-// ТЕСТОВЫЕ ФУНКЦИИ - УДАЛИТЬ ПОСЛЕ ТЕСТИРОВАНИЯ
-async function quickTest(resultType) {
-    showLoading('Создание тестовой диагностики...');
-    
-    try {
-        // Создаем тестовую сессию
-        const response = await fetch('/big-diagnostic/quick-test', {
+let selectedType = null;
+
+document.querySelectorAll('.diagnostic-type-card').forEach(card => {
+    card.addEventListener('click', function() {
+        // Remove selection from all cards
+        document.querySelectorAll('.diagnostic-type-card').forEach(c => c.classList.remove('selected'));
+        
+        // Add selection to clicked card
+        this.classList.add('selected');
+        
+        // Get the diagnostic type
+        selectedType = this.dataset.type;
+        
+        // Enable start button
+        document.getElementById('start-diagnostic').disabled = false;
+    });
+});
+
+document.getElementById('start-diagnostic').addEventListener('click', function() {
+    if (selectedType) {
+        // Start diagnostic with selected type
+        fetch('/big-diagnostic/start', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: JSON.stringify({
-                result_type: resultType,
-                diagnostic_type: 'express' // Быстрая диагностика для тестирования
+                diagnostic_type: selectedType
             })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error starting diagnostic: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error starting diagnostic');
         });
-        
-        const data = await response.json();
-        hideLoading();
-        
+    }
+});
+
+function quickTest(resultType) {
+    fetch('/big-diagnostic/quick-test', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            result_type: resultType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
         if (data.success) {
-            // Переходим к результатам
             window.location.href = data.redirect_url;
         } else {
-            alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+            alert('Error: ' + data.error);
         }
-    } catch (error) {
-        hideLoading();
-        console.error('Error in quickTest:', error);
-        alert('Ошибка при создании тестовой диагностики');
-    }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error starting quick test');
+    });
 }
 </script>
-
-<style>
-/* Стили для тестовых кнопок - УДАЛИТЬ ПОСЛЕ ТЕСТИРОВАНИЯ */
-.test-btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.test-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.test-high {
-    background: #28a745;
-    color: white;
-}
-
-.test-high:hover {
-    background: #218838;
-}
-
-.test-medium {
-    background: #ffc107;
-    color: #212529;
-}
-
-.test-medium:hover {
-    background: #e0a800;
-}
-
-.test-low {
-    background: #dc3545;
-    color: white;
-}
-
-.test-low:hover {
-    background: #c82333;
-}
-
-.test-random {
-    background: #6f42c1;
-    color: white;
-}
-
-.test-random:hover {
-    background: #5a32a3;
-}
-</style>
 {% endblock %} 

@@ -17,6 +17,7 @@ from utils.serializers import safe_jsonify
 from utils.irt_engine import IRTEngine
 from utils.rate_limiter import RateLimiter
 from utils.session_validator import SessionValidator
+from utils.translations import t
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -1382,7 +1383,9 @@ def get_diagnostic_types():
 @login_required
 def choose_diagnostic_type():
     """Страница выбора типа диагностики"""
-    return render_template('assessment/diagnostic_type_selector.html')
+    # Получаем язык из сессии или используем дефолтный
+    lang = session.get('lang', 'nl')
+    return render_template('assessment/diagnostic_type_selector.html', lang=lang)
 
 @diagnostic_bp.route('/question/<int:session_id>', methods=['GET'])
 @login_required
