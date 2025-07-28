@@ -305,11 +305,11 @@ translations = {
     
     # Two-stage learning process
     'knowledge_assessment': 'Проверка знаний',
-    'diagnostic_required_message': 'Чтобы начать обучение, сначала необходимо пройти проверку знаний для определения текущего уровня.',
+    'diagnostic_explanation': 'Чтобы начать обучение, сначала необходимо пройти тест знаний для определения вашего текущего уровня.',
     'start_learning': 'Начать обучение',
     'continue_learning': 'Продолжить обучение',
     'diagnostic_not_completed': 'Диагностика не завершена',
     'diagnostic_completed': 'Диагностика завершена',
     'learning_progress': 'Прогресс обучения',
-    'no_learning_progress': 'Прогресс обучения отсутствует',
+    'no_learning_progress': 'Прогресса обучения пока нет',
 } 

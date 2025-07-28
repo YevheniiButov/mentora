@@ -3169,3 +3169,89 @@ body.learning-map-page .main-content {
 }
 
 /* Стили для диагностической ссылки */
+
+/* Стили для объяснения диагностики */
+.diagnostic-explanation {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.diagnostic-explanation::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  pointer-events: none;
+}
+
+.diagnostic-explanation p {
+  margin: 0;
+  color: var(--subject-view-text, rgba(255, 255, 255, 0.9));
+  font-size: 0.95rem;
+  line-height: 1.6;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+.diagnostic-explanation::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer-explanation 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer-explanation {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .diagnostic-explanation {
+    margin-top: 1rem;
+    padding: 1rem;
+  }
+  
+  .diagnostic-explanation p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Темы */
+[data-theme="dark"] .diagnostic-explanation {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .diagnostic-explanation {
+  background: rgba(102, 126, 234, 0.05);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+[data-theme="light"] .diagnostic-explanation p {
+  color: var(--text-primary, #1f2937);
+}
+
+[data-theme="gradient"] .diagnostic-explanation {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Стили для объяснения диагностики */

@@ -292,6 +292,7 @@ translations = {
     
     # Two-stage learning process
     'knowledge_assessment': 'Kennistest',
+    'diagnostic_explanation': 'Om te beginnen met leren, moet u eerst een kennistest afleggen om uw huidige niveau te bepalen.',
     'diagnostic_required_message': 'Om te beginnen met leren, moet u eerst een kennistest afleggen om uw huidige niveau te bepalen.',
     'start_learning': 'Beginnen met leren',
     'continue_learning': 'Doorgaan met leren',
