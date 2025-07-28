@@ -276,7 +276,7 @@ translations = {
     'min': 'min',
     'welcome_title': 'Welkom bij Mentora!',
     'welcome_subtitle': 'Uw weg naar succesvolle BIG-examenvoorbereiding',
-    'welcome_description': 'Ons interactieve platform helpt u effectief voorbereiden op het examen. Kies een sectie om te beginnen met leren of bekijk de aanbevolen onderwerpen.',
+    'welcome_description': 'Ons interactieve platform helpt u effectief voorbereiden op het examen.',
     'getting_started': 'Aan de slag',
     'readonly': 'Alleen lezen',
     'premium': 'Premium',

@@ -262,5 +262,6 @@ translations = {
     'learn_about_big': 'Learn about BIG',
     'ai_powered': 'AI-powered',
     'personal_ai_assistant': 'Personal AI Assistant',
-    'ai_features_description': 'Receive personal recommendations, exam readiness analysis and intelligent learning support'
+    'ai_features_description': 'Receive personal recommendations, exam readiness analysis and intelligent learning support',
+    'welcome_description': 'Our interactive platform helps you effectively prepare for the exam.'
 } 
