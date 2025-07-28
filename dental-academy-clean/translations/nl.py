@@ -398,5 +398,6 @@ translations = {
     'questions_answered': 'Vragen beantwoord',
     'correct_answers': 'Juiste antwoorden',
     'progress': 'Voortgang',
-    'personal_analysis_description': 'Gedetailleerde analyse van uw kennis en vaardigheden',
+    'personal_analysis_description': 'Gedetailleerde analyse van uw kennis en vaardigheden op basis van moderne Item Response Theory (IRT) methoden. De resultaten helpen bij het maken van een optimaal voorbereidingsplan voor het examen.',
+    'next_steps_description': 'Op basis van de diagnostische resultaten maken we een persoonlijk leertraject dat u helpt effectief voor te bereiden op het BIG-examen.',
 } 
