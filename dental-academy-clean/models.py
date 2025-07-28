@@ -1431,7 +1431,7 @@ class UserReminder(db.Model):
 # ========================================
 
 class BIGDomain(db.Model):
-    """BI-toets domains based on ACTA 180 ECTS program"""
+    """BI-toets domains based on ACTA 180 ECTS program - Updated Structure"""
     __tablename__ = 'big_domain'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -1443,12 +1443,20 @@ class BIGDomain(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
+    # НОВЫЕ ПОЛЯ ДЛЯ РЕСТРУКТУРИЗАЦИИ
+    category = db.Column(db.String(50), nullable=True, index=True)  # THEORETICAL, METHODOLOGY, PRACTICAL, CLINICAL
+    exam_type = db.Column(db.String(50), nullable=True, index=True)  # multiple_choice, open_book, practical, case_study, interview
+    is_critical = db.Column(db.Boolean, default=False, index=True)  # Критические домены для приоритета
+    subcategories = db.Column(db.Text, nullable=True)  # JSON array of subcategories
+    historical_questions = db.Column(db.Boolean, default=True)  # 80-90% повторяющихся вопросов
+    open_book = db.Column(db.Boolean, default=False)  # Open Book экзамен
+    
     # Relationships
     # Note: backref is defined in Question model
     
-    # ДОМЕНЫ BI-TOETS (существующие + новые)
+    # ОБНОВЛЕННЫЕ ДОМЕНЫ BI-TOETS (30 доменов)
     DOMAIN_CODES = {
-        # Существующие домены
+        # ТЕОРЕТИЧЕСКИЕ ДОМЕНЫ (70% веса)
         'THER': 'Терапевтическая стоматология',
         'SURG': 'Хирургическая стоматология', 
         'PROTH': 'Ортопедическая стоматология',
@@ -1456,7 +1464,6 @@ class BIGDomain(db.Model):
         'PARO': 'Пародонтология',
         'ORTHO': 'Ортодонтия',
         'PREV': 'Профилактика',
-        'ETHIEK': 'Этика и право',
         'ANATOMIE': 'Анатомия',
         'FYSIOLOGIE': 'Физиология',
         'PATHOLOGIE': 'Патология',
@@ -1464,57 +1471,128 @@ class BIGDomain(db.Model):
         'MATERIAALKUNDE': 'Материаловедение',
         'RADIOLOGIE': 'Рентгенология',
         'ALGEMENE_GENEESKUNDE': 'Общая медицина',
-        
-        # НОВЫЕ ДОМЕНЫ
         'EMERGENCY': 'Неотложная помощь',
         'SYSTEMIC': 'Системные заболевания',
-        'PHARMA': 'Фармакология',
-        'FARMACOLOGIE': 'Фармакология (альтернативное название)',  # Альтернативное название
+        'PHARMACOLOGY': 'Фармакология',  # Объединено с FARMACOLOGIE
         'INFECTION': 'Инфекционный контроль',
         'SPECIAL': 'Специальные группы пациентов',
-        'DIAGNOSIS': 'Сложная диагностика',
-        'DIAGNOSIS_SPECIAL': 'Специальная диагностика',  # Специальные диагностические случаи
+        'DIAGNOSIS': 'Диагностика',  # Объединено с DIAGNOSIS_SPECIAL
         'DUTCH': 'Голландская система здравоохранения',
-        'PROFESSIONAL': 'Профессиональное развитие'
+        'PROFESSIONAL': 'Профессиональное развитие',
+        'ETHIEK': 'Этика и право',
+        
+        # МЕТОДОЛОГИЯ (Open Book) - 10% веса
+        'STATISTICS': 'Статистика и анализ данных',
+        'RESEARCH_METHOD': 'Методология исследований',
+        
+        # ПРАКТИЧЕСКИЕ НАВЫКИ (Simodont) - 15% веса
+        'PRACTICAL_SKILLS': 'Практические навыки',
+        
+        # КЛИНИЧЕСКИЕ НАВЫКИ - 5% веса
+        'TREATMENT_PLANNING': 'Планирование лечения',
+        'COMMUNICATION': 'Коммуникативные навыки'
     }
     
     @classmethod
     def initialize_domains(cls):
-        """Инициализация всех доменов в базе данных"""
-        domain_weights = {
-            # Основные клинические домены
-            'THER': 12.0, 'SURG': 10.0, 'PROTH': 8.0, 'PEDI': 7.0,
-            'PARO': 8.0, 'ORTHO': 6.0, 'PREV': 5.0,
+        """Инициализация всех доменов в базе данных - Обновленная структура"""
+        
+        # ОБНОВЛЕННЫЕ ВЕСА И КАТЕГОРИИ (30 доменов)
+        domain_config = {
+            # ТЕОРЕТИЧЕСКИЕ ДОМЕНЫ (70% веса)
+            'THER': {'weight': 15.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': True},
+            'SURG': {'weight': 10.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': True},
+            'PROTH': {'weight': 8.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'PEDI': {'weight': 7.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'PARO': {'weight': 8.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'ORTHO': {'weight': 6.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'PREV': {'weight': 5.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'ANATOMIE': {'weight': 4.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'FYSIOLOGIE': {'weight': 4.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'PATHOLOGIE': {'weight': 5.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'MICROBIOLOGIE': {'weight': 3.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'MATERIAALKUNDE': {'weight': 3.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'RADIOLOGIE': {'weight': 4.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'ALGEMENE_GENEESKUNDE': {'weight': 2.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'EMERGENCY': {'weight': 10.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': True},
+            'SYSTEMIC': {'weight': 7.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': True},
+            'PHARMACOLOGY': {'weight': 8.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': True},
+            'INFECTION': {'weight': 5.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'SPECIAL': {'weight': 4.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'DIAGNOSIS': {'weight': 10.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': True},
+            'DUTCH': {'weight': 3.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'PROFESSIONAL': {'weight': 2.0, 'category': 'THEORETICAL', 'exam_type': 'multiple_choice', 'critical': False},
+            'ETHIEK': {'weight': 3.0, 'category': 'CLINICAL', 'exam_type': 'case_study', 'critical': False},
             
-            # Базовые науки
-            'ANATOMIE': 4.0, 'FYSIOLOGIE': 4.0, 'PATHOLOGIE': 5.0,
-            'MICROBIOLOGIE': 3.0, 'MATERIAALKUNDE': 3.0, 'RADIOLOGIE': 4.0,
+            # МЕТОДОЛОГИЯ (Open Book) - 10% веса
+            'STATISTICS': {
+                'weight': 6.0, 
+                'category': 'METHODOLOGY', 
+                'exam_type': 'open_book', 
+                'critical': True,
+                'open_book': True,
+                'subcategories': ['descriptive', 'inferential', 'clinical_trials']
+            },
+            'RESEARCH_METHOD': {
+                'weight': 6.0, 
+                'category': 'METHODOLOGY', 
+                'exam_type': 'open_book', 
+                'critical': True,
+                'open_book': True,
+                'subcategories': ['study_design', 'biostatistics', 'evidence_based']
+            },
             
-            # НОВЫЕ КРИТИЧЕСКИЕ ДОМЕНЫ
-            'EMERGENCY': 8.0,      # Высокий приоритет - безопасность пациентов
-            'SYSTEMIC': 7.0,       # Системные заболевания критичны
-            'PHARMA': 6.0,         # Фармакология обязательна
-            'INFECTION': 5.0,      # Инфекционный контроль важен
-            'SPECIAL': 4.0,        # Специальные группы
-            'DIAGNOSIS': 6.0,      # Сложная диагностика
-            'DUTCH': 3.0,          # Голландская специфика
-            'PROFESSIONAL': 2.0,   # Профессиональное развитие
+            # ПРАКТИЧЕСКИЕ НАВЫКИ (Simodont) - 15% веса
+            'PRACTICAL_SKILLS': {
+                'weight': 15.0, 
+                'category': 'PRACTICAL', 
+                'exam_type': 'practical', 
+                'critical': True,
+                'subcategories': ['manual_skills', 'caries_excavation', 'endo_prep', 'crown_prep', 'gebits_reinigung']
+            },
             
-            # Остальные
-            'ETHIEK': 3.0,
-            'ALGEMENE_GENEESKUNDE': 2.0
+            # КЛИНИЧЕСКИЕ НАВЫКИ - 5% веса
+            'TREATMENT_PLANNING': {
+                'weight': 12.0, 
+                'category': 'CLINICAL', 
+                'exam_type': 'case_study', 
+                'critical': True,
+                'subcategories': ['comprehensive', 'endodontic', 'trauma_resorption', 'cariology_pediatric']
+            },
+            'COMMUNICATION': {
+                'weight': 8.0, 
+                'category': 'CLINICAL', 
+                'exam_type': 'interview', 
+                'critical': True,
+                'subcategories': ['intake_gesprek', 'patient_interaction', 'dutch_medical']
+            }
         }
         
         for code, name in cls.DOMAIN_CODES.items():
+            config = domain_config.get(code, {})
             domain = cls.query.filter_by(code=code).first()
+            
             if not domain:
                 domain = cls(
                     code=code,
                     name=name,
-                    weight_percentage=domain_weights.get(code, 3.0),
+                    weight_percentage=config.get('weight', 3.0),
+                    category=config.get('category', 'THEORETICAL'),
+                    exam_type=config.get('exam_type', 'multiple_choice'),
+                    is_critical=config.get('critical', False),
+                    open_book=config.get('open_book', False),
+                    subcategories=safe_json_dumps(config.get('subcategories', [])),
                     is_active=True
                 )
                 db.session.add(domain)
+            else:
+                # Обновляем существующие домены
+                domain.weight_percentage = config.get('weight', domain.weight_percentage)
+                domain.category = config.get('category', domain.category)
+                domain.exam_type = config.get('exam_type', domain.exam_type)
+                domain.is_critical = config.get('critical', domain.is_critical)
+                domain.open_book = config.get('open_book', domain.open_book)
+                domain.subcategories = safe_json_dumps(config.get('subcategories', []))
         
         db.session.commit()
     
@@ -1528,6 +1606,11 @@ class BIGDomain(db.Model):
             'weight_percentage': self.weight_percentage,
             'order': self.order,
             'is_active': self.is_active,
+            'category': self.category,
+            'exam_type': self.exam_type,
+            'is_critical': self.is_critical,
+            'open_book': self.open_book,
+            'subcategories': json.loads(self.subcategories) if self.subcategories else [],
             'questions_count': self.questions.count()
         }
     

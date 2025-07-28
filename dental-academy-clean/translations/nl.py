@@ -400,4 +400,48 @@ translations = {
     'progress': 'Voortgang',
     'personal_analysis_description': 'Gedetailleerde analyse van uw kennis en vaardigheden op basis van moderne Item Response Theory (IRT) methoden. De resultaten helpen bij het maken van een optimaal voorbereidingsplan voor het examen.',
     'next_steps_description': 'Op basis van de diagnostische resultaten maken we een persoonlijk leertraject dat u helpt effectief voor te bereiden op het BIG-examen.',
+    
+    # New domain translations (30 domains)
+    'domain_statistics': 'Statistiek en data-analyse',
+    'domain_research_method': 'Onderzoeksmethodologie',
+    'domain_practical_skills': 'Praktische vaardigheden',
+    'domain_treatment_planning': 'Behandelplanning',
+    'domain_communication': 'Communicatieve vaardigheden',
+    
+    # Domain categories
+    'category_theoretical': 'Theoretische examens',
+    'category_methodology': 'Methodologie (Open Book)',
+    'category_practical': 'Praktische vaardigheden',
+    'category_clinical': 'Klinische vaardigheden',
+    
+    # Exam types
+    'exam_type_multiple_choice': 'Meerkeuze',
+    'exam_type_open_book': 'Open Boek',
+    'exam_type_practical': 'Praktisch',
+    'exam_type_case_study': 'Casestudy',
+    'exam_type_interview': 'Interview',
+    
+    # Critical domains indicator
+    'critical_domain': 'Kritiek domein',
+    'open_book_exam': 'Open Boek examen',
+    
+    # Subcategories for new domains
+    'subcategory_descriptive': 'Beschrijvende statistiek',
+    'subcategory_inferential': 'Inferentiële statistiek',
+    'subcategory_clinical_trials': 'Klinische trials',
+    'subcategory_study_design': 'Onderzoeksopzet',
+    'subcategory_biostatistics': 'Biostatistiek',
+    'subcategory_evidence_based': 'Evidence-based',
+    'subcategory_manual_skills': 'Handvaardigheid',
+    'subcategory_caries_excavation': 'Cariës excavatie',
+    'subcategory_endo_prep': 'Endo preparatie',
+    'subcategory_crown_prep': 'Kroon preparatie',
+    'subcategory_gebits_reinigung': 'Gebitsreiniging',
+    'subcategory_comprehensive': 'Uitgebreide behandeling',
+    'subcategory_endodontic': 'Endodontologie',
+    'subcategory_trauma_resorption': 'Trauma en resorptie',
+    'subcategory_cariology_pediatric': 'Cariologie kindertandheelkunde',
+    'subcategory_intake_gesprek': 'Intake gesprek',
+    'subcategory_patient_interaction': 'Patiëntinteractie',
+    'subcategory_dutch_medical': 'Nederlandse medische terminologie',
 } 

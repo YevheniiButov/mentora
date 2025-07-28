@@ -1,7 +1,7 @@
 """Add new domains to BI-toets system
 
 Revision ID: add_new_domains_001
-Revises: add_created_at_big_domain
+Revises: fb47982ff101
 Create Date: 2025-01-20 10:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import sqlite
 
 # revision identifiers, used by Alembic.
 revision = 'add_new_domains_001'
-down_revision = 'add_created_at_big_domain'
+down_revision = 'fb47982ff101'
 branch_labels = None
 depends_on = None
 

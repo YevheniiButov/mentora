@@ -273,12 +273,55 @@ translations = {
     
     # Additional translations for results page
     'domain_performance': 'Domain Performance',
-    'questions_answered': 'Questions answered',
-    'correct_answers': 'Correct answers',
+    'questions_answered': 'Questions Answered',
+    'correct_answers': 'Correct Answers',
     'progress': 'Progress',
-    'personal_analysis_description': 'Detailed analysis of your knowledge and skills based on modern Item Response Theory (IRT) methods. The results will help create an optimal exam preparation plan.',
-    'next_steps_description': 'Based on the diagnostic results, we will create a personal learning plan that will help you effectively prepare for the BIG exam.',
-    'modules': 'Modules',
+    'personal_analysis_description': 'Detailed analysis of your knowledge and skills based on modern Item Response Theory (IRT) methods. The results help create an optimal preparation plan for the exam.',
+    'next_steps_description': 'Based on diagnostic results, we create a personal learning path that helps you effectively prepare for the BIG exam.',
+    
+    # New domain translations (30 domains)
+    'domain_statistics': 'Statistics and Data Analysis',
+    'domain_research_method': 'Research Methodology',
+    'domain_practical_skills': 'Practical Skills',
+    'domain_treatment_planning': 'Treatment Planning',
+    'domain_communication': 'Communication Skills',
+    
+    # Domain categories
+    'category_theoretical': 'Theoretical Exams',
+    'category_methodology': 'Methodology (Open Book)',
+    'category_practical': 'Practical Skills',
+    'category_clinical': 'Clinical Skills',
+    
+    # Exam types
+    'exam_type_multiple_choice': 'Multiple Choice',
+    'exam_type_open_book': 'Open Book',
+    'exam_type_practical': 'Practical',
+    'exam_type_case_study': 'Case Study',
+    'exam_type_interview': 'Interview',
+    
+    # Critical domains indicator
+    'critical_domain': 'Critical domain',
+    'open_book_exam': 'Open Book exam',
+    
+    # Subcategories for new domains
+    'subcategory_descriptive': 'Descriptive statistics',
+    'subcategory_inferential': 'Inferential statistics',
+    'subcategory_clinical_trials': 'Clinical trials',
+    'subcategory_study_design': 'Study design',
+    'subcategory_biostatistics': 'Biostatistics',
+    'subcategory_evidence_based': 'Evidence-based',
+    'subcategory_manual_skills': 'Manual skills',
+    'subcategory_caries_excavation': 'Caries excavation',
+    'subcategory_endo_prep': 'Endo preparation',
+    'subcategory_crown_prep': 'Crown preparation',
+    'subcategory_gebits_reinigung': 'Dental cleaning',
+    'subcategory_comprehensive': 'Comprehensive treatment',
+    'subcategory_endodontic': 'Endodontics',
+    'subcategory_trauma_resorption': 'Trauma and resorption',
+    'subcategory_cariology_pediatric': 'Cariology pediatric dentistry',
+    'subcategory_intake_gesprek': 'Intake conversation',
+    'subcategory_patient_interaction': 'Patient interaction',
+    'subcategory_dutch_medical': 'Dutch medical terminology',
     'cards': 'Cards',
     'accuracy': 'Accuracy',
     'anatomy': 'Anatomy',
