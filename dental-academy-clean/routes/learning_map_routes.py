@@ -2125,6 +2125,9 @@ def get_user_learning_state(user_id):
     """Получить полное состояние обучения пользователя"""
     print(f"🔍 DEBUG: get_user_learning_state called for user_id = {user_id}")
     
+    # Отладочная информация
+    debug_user_state(user_id)
+    
     diagnostic_completed = check_diagnostic_completed(user_id)
     learning_progress = check_learning_progress(user_id)
     
@@ -2140,4 +2143,41 @@ def get_user_learning_state(user_id):
     
     print(f"🔍 DEBUG: get_user_learning_state result = {result}")
     return result
+
+def debug_user_state(user_id):
+    """Отладочная функция для проверки состояния пользователя"""
+    print(f"🔍 DEBUG: Checking user state for user_id = {user_id}")
+    
+    # Проверяем диагностические сессии
+    diagnostic_sessions = DiagnosticSession.query.filter_by(user_id=user_id).all()
+    print(f"🔍 DEBUG: Diagnostic sessions count: {len(diagnostic_sessions)}")
+    for session in diagnostic_sessions:
+        print(f"🔍 DEBUG: Diagnostic session - status: {session.status}, started_at: {session.started_at}")
+    
+    # Проверяем прогресс обучения
+    lesson_progress = UserProgress.query.filter_by(user_id=user_id, completed=True).all()
+    print(f"🔍 DEBUG: Completed lesson progress count: {len(lesson_progress)}")
+    
+    test_progress = TestAttempt.query.filter_by(user_id=user_id, is_correct=True).all()
+    print(f"🔍 DEBUG: Correct test attempts count: {len(test_progress)}")
+    
+    vp_progress = VirtualPatientAttempt.query.filter_by(user_id=user_id, completed=True).all()
+    print(f"🔍 DEBUG: Completed VP attempts count: {len(vp_progress)}")
+    
+    # Проверяем все попытки тестов (включая неправильные)
+    all_test_attempts = TestAttempt.query.filter_by(user_id=user_id).all()
+    print(f"🔍 DEBUG: All test attempts count: {len(all_test_attempts)}")
+    
+    # Проверяем все попытки VP (включая незавершенные)
+    all_vp_attempts = VirtualPatientAttempt.query.filter_by(user_id=user_id).all()
+    print(f"🔍 DEBUG: All VP attempts count: {len(all_vp_attempts)}")
+    
+    return {
+        'diagnostic_sessions': len(diagnostic_sessions),
+        'completed_lessons': len(lesson_progress),
+        'correct_tests': len(test_progress),
+        'completed_vp': len(vp_progress),
+        'all_tests': len(all_test_attempts),
+        'all_vp': len(all_vp_attempts)
+    }
 
