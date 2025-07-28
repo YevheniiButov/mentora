@@ -306,16 +306,16 @@ translations = {
     # Diagnostic Results Page
     'big_diagnostic_results': 'BIG Diagnostiek Resultaten',
     'diagnostic_completed_badge': 'Diagnostiek voltooid',
-    'your_big_diagnostic_results': 'Uw BIG Diagnostiek Resultaten',
-    'personal_analysis_description': 'Persoonlijke analyse van uw kennis en vaardigheden op basis van moderne Item Response Theory (IRT) methoden. Resultaten helpen bij het maken van een optimaal examen voorbereidingsplan.',
+    'your_big_diagnostic_results': 'Uw BIG diagnostiek resultaten',
+    'diagnostic_description': 'Persoonlijke analyse van uw kennis en vaardigheden op basis van moderne Item Response Theory (IRT) methoden. De resultaten helpen bij het maken van een optimaal studieplan voor het examen.',
     'overall_preparation_level': 'Algemeen voorbereidingsniveau',
     'analyzing_results': 'Resultaten analyseren...',
     'personal_recommendations': 'Persoonlijke aanbevelingen',
     'next_steps': 'Volgende stappen',
-    'next_steps_description': 'Op basis van de diagnostiek resultaten maken we een persoonlijk leerplan dat u helpt effectief voor te bereiden op het BIG examen.',
-    'create_learning_plan': 'Leerplan maken',
-    'download_report': 'Rapport downloaden',
-    'share_results': 'Resultaten delen',
+    'learning_plan_description': 'Op basis van de diagnostiek resultaten maken we een persoonlijk studieplan dat u helpt om effectief voor te bereiden op het BIG examen.',
+    'create_learning_plan': 'Maak studieplan',
+    'download_report': 'Download rapport',
+    'share_results': 'Deel resultaten',
     
     # Domain Analysis
     'excellent_understanding_basics': 'Uitstekend begrip van de basis',

@@ -184,16 +184,14 @@ translations = {
     'no_learning_progress': 'No learning progress yet',
     
     # Diagnostic Results Page
-    'big_diagnostic_results': 'BIG Diagnostic Results',
-    'diagnostic_completed_badge': 'Diagnostic Completed',
     'your_big_diagnostic_results': 'Your BIG Diagnostic Results',
-    'personal_analysis_description': 'Personal analysis of your knowledge and skills based on modern Item Response Theory (IRT) methods. Results help create an optimal exam preparation plan.',
+    'diagnostic_description': 'Personal analysis of your knowledge and skills based on modern Item Response Theory (IRT) methods. Results help create an optimal study plan for the exam.',
     'overall_preparation_level': 'Overall Preparation Level',
     'analyzing_results': 'Analyzing results...',
     'personal_recommendations': 'Personal Recommendations',
     'next_steps': 'Next Steps',
-    'next_steps_description': 'Based on diagnostic results, we will create a personal learning plan that helps you effectively prepare for the BIG exam.',
-    'create_learning_plan': 'Create Learning Plan',
+    'learning_plan_description': 'Based on diagnostic results, we will create a personal study plan that helps you effectively prepare for the BIG exam.',
+    'create_learning_plan': 'Create Study Plan',
     'download_report': 'Download Report',
     'share_results': 'Share Results',
     
