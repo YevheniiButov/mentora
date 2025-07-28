@@ -314,7 +314,7 @@ function createLearningPlan() {
  */
 function downloadReport() {
     if (!diagnosticData || !diagnosticData.sessionId) {
-        alert('Данные для отчета недоступны');
+        alert('Rapportgegevens niet beschikbaar');
         return;
     }
     
@@ -344,16 +344,16 @@ function shareResults() {
     if (navigator.share) {
         // Use native sharing if available
         navigator.share({
-            title: 'Мои результаты BIG диагностики',
-            text: `Мой общий уровень подготовки: ${diagnosticData.overallScore}%`,
+            title: 'Mijn BIG diagnostiek resultaten',
+            text: `Mijn algemene voorbereidingsniveau: ${diagnosticData.overallScore}%`,
             url: window.location.href
         });
       } else {
         // Fallback to copying URL
         navigator.clipboard.writeText(window.location.href).then(() => {
-            alert('Ссылка на результаты скопирована в буфер обмена');
+            alert('Link naar resultaten gekopieerd naar klembord');
         }).catch(() => {
-            alert('Не удалось скопировать ссылку');
+            alert('Kon link niet kopiëren');
         });
     }
   }
