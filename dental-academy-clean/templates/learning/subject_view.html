@@ -24,7 +24,7 @@
             {% if learning_state and not learning_state.diagnostic_completed %}
             <div class="learning-paths pre-diagnostic-stage">
                 <div class="learning-path-item">
-                    <a href="{{ url_for('diagnostic_routes.diagnostic_type_selector', lang=lang) }}" 
+                    <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" 
                        class="learning-path-button knowledge-assessment">
                         <div class="path-button-content">
                             <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
@@ -167,7 +167,7 @@
                 {% for category in categories %}
                 <div class="learning-path-item">
                     <button class="learning-path-button content-category" data-category="{{ category.id }}">
-                        <div class="path-button-content"><i class="bi bi-clipboard-pulse"></i>
+                        <div class="path-button-content">
                             <i class="{{ category.icon }}"></i>
                             <span>{{ category.name }}</span>
                         </div>
@@ -242,7 +242,7 @@
                                 <span class="badge premium-badge">{{ t('premium', lang) }}</span>
                             {% endif %}
                         </div>
-                        <a href="{{ url_for('learning_map_bp.start_module_redirect', module_id=module.id) }}" 
+                        <a href="{{ url_for('learning_map_bp.start_module_redirect', lang=lang, module_id=module.id) }}" 
                            class="module-btn-compact">
                             {% if module.progress == 100 %}{{ t('repeat', lang) }}
                             {% elif module.progress > 0 %}{{ t('continue', lang) }}
@@ -298,11 +298,11 @@
                             
                             <div class="vp-actions">
                                 {% if scenario.is_premium and not user.has_subscription %}
-                                <a href="{{ url_for('main_bp.subscribe') }}" class="vp-btn premium">
+                                <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="vp-btn premium">
                                     <i class="bi bi-star-fill me-1"></i> {{ t('premium', lang) }}
                                 </a>
                                 {% else %}
-                                <a href="{{ url_for('virtual_patient.start_scenario', scenario_id=scenario.id) }}" 
+                                <a href="{{ url_for('virtual_patient.start_scenario', lang=lang, scenario_id=scenario.id) }}" 
                                    class="vp-btn {% if scenario.user_progress and scenario.user_progress.completed %}completed{% endif %}">
                                     <i class="bi bi-play-fill me-1"></i>
                                     {% if scenario.user_progress and scenario.user_progress.completed %}
@@ -316,7 +316,7 @@
                                 {% endif %}
                                 
                                 {% if scenario.user_progress and scenario.user_progress.completed and scenario.user_progress.best_attempt_id %}
-                                <a href="{{ url_for('virtual_patient.scenario_results', attempt_id=scenario.user_progress.best_attempt_id) }}" 
+                                <a href="{{ url_for('virtual_patient.scenario_results', lang=lang, attempt_id=scenario.user_progress.best_attempt_id) }}" 
                                    class="vp-btn">
                                     <i class="bi bi-chart-line me-1"></i> {{ t('results', lang) }}
                                 </a>
@@ -327,7 +327,7 @@
                     </div>
                     
                     <div class="view-all-vp">
-                        <a href="{{ url_for('subject_view_bp.all_virtual_patients') }}">
+                        <a href="{{ url_for('subject_view_bp.all_virtual_patients', lang=lang) }}">
                             {{ t('view_all_scenarios', lang) }} <i class="bi bi-arrow-right ms-1"></i>
                         </a>
                     </div>
@@ -373,7 +373,7 @@
             <div class="test-section mt-4">
                 <h3>BIG-toets Voorbereiding</h3>
                 <p>Bereid je voor op je BIG-registratie met onze oefentests</p>
-                <a href="{{ url_for('learning_map_bp.subject_tests', subject_id=subject.id) }}" class="btn btn-primary">
+                <a href="{{ url_for('learning_map_bp.subject_tests', lang=lang, subject_id=subject.id) }}" class="btn btn-primary">
                     <i class="bi bi-journal-check"></i> Naar Tests
                 </a>
             </div>
@@ -384,7 +384,7 @@
                 {% if filtered_subjects %}
                     {% for subject_item_path_filtered in filtered_subjects %}
                     <div class="subject-card">
-                        <a href="{{ url_for('subject_view_bp.view_subject', subject_id=subject_item_path_filtered.id) }}" class="subject-link">
+                        <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item_path_filtered.id) }}" class="subject-link">
                             <div class="card-content">
                                 <div class="card-icon">
                                     <svg class="icon" width="24" height="24" viewBox="0 0 24 24">
@@ -419,12 +419,6 @@
               <div class="welcome-content">
                 <div class="welcome-description">
                   <p>{{ t('welcome_description', lang)|default('Наша интерактивная платформа поможет вам эффективно подготовиться к экзамену. Выберите раздел для начала обучения или ознакомьтесь с рекомендуемыми темами.') }}</p>
-                  
-                  {% if learning_state and not learning_state.diagnostic_completed %}
-                  <div class="diagnostic-explanation">
-                    <p>{{ t('diagnostic_explanation', lang)|default('Om te beginnen met leren, moet u eerst een kennistest afleggen om uw huidige niveau te bepalen.') }}</p>
-                  </div>
-                  {% endif %}
                 </div>
                 
                 <div class="welcome-steps">
@@ -553,7 +547,7 @@
                     <div class="diagnostic-content">
                         <h3>{{ t('adaptive_testing', lang)|default('Адаптивное тестирование') }}</h3>
                         <p>{{ t('diagnostic_description', lang)|default('Оцените свой уровень подготовки к экзамену BI-toets с помощью адаптивного тестирования') }}</p>
-                        <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" class="diagnostic-btn">
+                        <a href="{{ url_for('diagnostic.choose_diagnostic_type', lang=lang) }}" class="diagnostic-btn">
                             <i class="bi bi-clipboard-pulse"></i>
                             {{ t('choose_diagnostic_type', lang)|default('Выбрать тип диагностики') }}
                         </a>
