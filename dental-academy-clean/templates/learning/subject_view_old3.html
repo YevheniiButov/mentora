@@ -7,13 +7,19 @@
     <div class="main-container">
         <div class="left-column">
             <!-- ЭТАП 1: До диагностики - показываем только кнопку проверки знаний -->
-            {% if learning_state and learning_state.stage == 'pre_diagnostic' %}
+            {% if learning_state and not learning_state.diagnostic_completed %}
             <div class="learning-paths pre-diagnostic-stage">
                 <div class="learning-path-item">
-                    <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" 
-                       class="diagnostic-link">
-                        <div class="diagnostic-link-content">
-                            <i class="bi bi-clipboard-pulse"></i>
+                    <a href="{{ url_for('diagnostic_routes.diagnostic_type_selector', lang=lang) }}" 
+                       class="learning-path-button knowledge-assessment">
+                        <div class="path-button-content">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                <path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M12 3c0 1-1 2-2 2s-2-1-2-2 1-2 2-2 2 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M12 21c0-1 1-2 2-2s2 1 2 2-1 2-2 2-2-1-2-2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
                             <span>{{ t('knowledge_assessment', lang) }}</span>
                         </div>
                     </a>
@@ -83,14 +89,15 @@
                                 </div>
                             </a>
                         {% else %}
-                            {% for subject in path.subjects %}
-                            <a href="{{ url_for('learning_map_bp.learning_map', lang=lang, path_id=path.id) }}?subject={{ subject.id }}" class="subject-item {% if selected_subject and selected_subject.id == subject.id %}active{% endif %}">
-                                <span class="subject-name">{{ subject.name }}</span>
+                            {% for subject_item in subjects if subject_item.learning_path_id == path.id %}
+                            <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item.id) }}" 
+                               class="subject-item {% if selected_subject and selected_subject.id == subject_item.id %}active{% endif %}">
+                                <span class="subject-name">{{ subject_item.name }}</span>
                                 <div class="subject-progress">
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: {{ subject.progress|default(0) }}%"></div>
+                                        <div class="progress-fill" style="width: {{ subject_item.progress|default(0) }}%"></div>
                                     </div>
-                                    <span class="progress-percent">{{ subject.progress|default(0) }}%</span>
+                                    <span class="progress-percent">{{ subject_item.progress|default(0) }}%</span>
                                 </div>
                             </a>
                             {% endfor %}
@@ -98,6 +105,40 @@
                     </div>
                 </div>
                 {% endfor %}
+                
+                <!-- Добавляем Interacties & Contraindicaties в секцию exam -->
+                {% if profession_context and profession_context.profession_slug == 'farmacie' %}
+                <div class="learning-path-item">
+                    <button class="learning-path-button interactions" data-category="pharmacy-tools">
+                        <div class="path-button-content">
+                            <div class="icon"></div>
+                            <span>Interacties & Contraindicaties</span>
+                        </div>
+                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24">
+                            <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <div class="subject-list" id="category-pharmacy-tools-subcategories">
+                        <div class="subcategory-item">
+                            <a href="#" class="subject-item" onclick="showDrugInteractionChecker(event)">
+                                <span class="subject-name">Drug Interaction Checker</span>
+                                <div class="subject-progress">
+                                    <span class="progress-percent">Interactief</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="subcategory-item">
+                            <a href="/{{ lang }}/farmacie/advanced-drug-checker" class="subject-item">
+                                <span class="subject-name">Geavanceerde Drug Checker</span>
+                                <div class="subject-progress">
+                                    <span class="progress-percent">Uitgebreid</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
         </div>
@@ -418,4 +459,11 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/subject_view.js') }}"></script>
 <script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
+<script src="{{ url_for('static', filename='js/universal-scripts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/simple-counters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/glass-effects.js') }}"></script>
+<script src="{{ url_for('static', filename='js/theme-controller.js') }}"></script>
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modern_flash_messages.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %} 
