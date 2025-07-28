@@ -12,12 +12,6 @@
 
 {% block content %}
 <div class="learning-map-container">
-    <!-- Анимированные декоративные элементы - убираем для устранения полосы внизу -->
-    <!-- <div class="floating-shape shape-1"></div>
-    <div class="floating-shape shape-2"></div>
-    <div class="floating-shape shape-3"></div>
-    <div class="floating-shape shape-4"></div> -->
-    
     <div class="main-container">
         <div class="left-column">
             <!-- ЭТАП 1: До диагностики - показываем только кнопку проверки знаний -->
@@ -27,13 +21,7 @@
                     <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" 
                        class="diagnostic-link">
                         <div class="diagnostic-link-content">
-                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
-                                <path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                <path d="M12 3c0 1-1 2-2 2s-2-1-2-2 1-2 2-2 2 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                <path d="M12 21c0-1 1-2 2-2s2 1 2 2-1 2-2 2-2-1-2-2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                            </svg>
+                            <i class="bi bi-clipboard-pulse"></i>
                             <span>{{ t('knowledge_assessment', lang) }}</span>
                         </div>
                     </a>
@@ -47,7 +35,7 @@
                 <div class="learning-path-item">
                     {% if path.url %}
                     <a href="{{ path.url }}" class="learning-path-button {{ path.css_class if path.css_class else (path.id == 1 and 'knowledge-center' or path.id == 2 and 'communication' or path.id == 3 and 'preclinical' or path.id == 4 and 'workstation' or path.id == 5 and 'bi-toets' or path.id == 6 and 'virtual-patients' or '') }}">
-                        <div class="diagnostic-link-content">
+                        <div class="path-button-content">
                             {% if path.css_class %}
                                 <!-- Для фармацевтических путей используем CSS-иконки -->
                                 <div class="icon"></div>
@@ -66,7 +54,7 @@
                     </a>
                     {% else %}
                     <button class="learning-path-button {{ path.css_class if path.css_class else (path.id == 1 and 'knowledge-center' or path.id == 2 and 'communication' or path.id == 3 and 'preclinical' or path.id == 4 and 'workstation' or path.id == 5 and 'bi-toets' or path.id == 6 and 'virtual-patients' or '') }}" data-path="{{ path.id }}">
-                        <div class="diagnostic-link-content">
+                        <div class="path-button-content">
                             {% if path.css_class %}
                                 <!-- Для фармацевтических путей используем CSS-иконки -->
                                 <div class="icon"></div>
@@ -103,102 +91,18 @@
                                 </div>
                             </a>
                         {% else %}
-                            {% for subject_item in subjects if subject_item.learning_path_id == path.id %}
-                            <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item.id) }}" 
-                               class="subject-item {% if selected_subject and selected_subject.id == subject_item.id %}active{% endif %}">
-                                <span class="subject-name">{{ subject_item.name }}</span>
+                            {% for subject in path.subjects %}
+                            <a href="{{ url_for('learning_map_bp.learning_map', lang=lang, path_id=path.id) }}?subject={{ subject.id }}" class="subject-item {% if selected_subject and selected_subject.id == subject.id %}active{% endif %}">
+                                <span class="subject-name">{{ subject.name }}</span>
                                 <div class="subject-progress">
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: {{ subject_item.progress|default(0) }}%"></div>
+                                        <div class="progress-fill" style="width: {{ subject.progress|default(0) }}%"></div>
                                     </div>
-                                    <span class="progress-percent">{{ subject_item.progress|default(0) }}%</span>
+                                    <span class="progress-percent">{{ subject.progress|default(0) }}%</span>
                                 </div>
                             </a>
                             {% endfor %}
                         {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-                
-                <!-- Добавляем Interacties & Contraindicaties в секцию exam -->
-                {% if profession_context and profession_context.profession_slug == 'farmacie' %}
-                <div class="learning-path-item">
-                    <button class="learning-path-button interactions" data-category="pharmacy-tools">
-                        <div class="diagnostic-link-content">
-                            <div class="icon"></div>
-                            <span>Interacties & Contraindicaties</span>
-                        </div>
-                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24">
-                            <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
-                        </svg>
-                    </button>
-                    
-                    <div class="subject-list" id="category-pharmacy-tools-subcategories">
-                        <div class="subcategory-item">
-                            <a href="#" class="subject-item" onclick="showDrugInteractionChecker(event)">
-                                <span class="subject-name">Drug Interaction Checker</span>
-                                <div class="subject-progress">
-                                    <span class="progress-percent">Interactief</span>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="subcategory-item">
-                            <a href="/{{ lang }}/farmacie/advanced-drug-checker" class="subject-item">
-                                <span class="subject-name">Geavanceerde Drug Checker</span>
-                                <div class="subject-progress">
-                                    <span class="progress-percent">Uitgebreid</span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-            {% endif %}
-            
-            <!-- Секция с контентом -->
-            {% set categories = content_categories if content_categories else content_categories_for_hierarchy %}
-            {% if categories %}
-            <div class="section-header" style="margin-top: 2rem;">
-                <h2>{{ t('content', lang)|default('Контент') }}</h2>
-            </div>
-            
-            <div class="learning-paths">
-                {% for category in categories %}
-                <div class="learning-path-item">
-                    <button class="learning-path-button content-category" data-category="{{ category.id }}">
-                        <div class="diagnostic-link-content">
-                            <i class="{{ category.icon }}"></i>
-                            <span>{{ category.name }}</span>
-                        </div>
-                        <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24">
-                            <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
-                        </svg>
-                    </button>
-                    
-                    <div class="subject-list" id="category-{{ category.id }}-subcategories">
-                        {% for subcategory in category.subcategories %}
-                        <div class="subcategory-item">
-                            <a href="{{ subcategory.url }}" class="subject-item">
-                                <span class="subject-name">{{ subcategory.name }}</span>
-                                <div class="subject-progress">
-                                    <span class="progress-percent">{{ subcategory.topics_count }} тем</span>
-                                </div>
-                            </a>
-                            
-                            <!-- Темы подкатегории -->
-                            <div class="topics-list" style="padding-left: 1rem; display: none;">
-                                {% for topic in subcategory.topics %}
-                                <a href="{{ topic.url }}" class="topic-item" style="display: block; padding: 0.5rem; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem;">
-                                    <span>{{ topic.name }}</span>
-                                    <span style="float: right; font-size: 0.8rem; opacity: 0.7;">{{ topic.lessons_count }} уроков</span>
-                                </a>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                        
-
                     </div>
                 </div>
                 {% endfor %}
@@ -223,7 +127,6 @@
                         <span class="active">{{ selected_path.name }}</span>
                     {% endif %}
                 </div>
-
             </div>
 
             {% if selected_subject %}
@@ -298,112 +201,24 @@
                             
                             <div class="vp-actions">
                                 {% if scenario.is_premium and not user.has_subscription %}
-                                <a href="{{ url_for('main_bp.subscribe', lang=lang) }}" class="vp-btn premium">
-                                    <i class="bi bi-star-fill me-1"></i> {{ t('premium', lang) }}
-                                </a>
+                                    <button class="btn-premium" onclick="showPremiumModal()">
+                                        <i class="bi bi-star-fill"></i>
+                                        {{ t('premium', lang) }}
+                                    </button>
                                 {% else %}
-                                <a href="{{ url_for('virtual_patient.start_scenario', lang=lang, scenario_id=scenario.id) }}" 
-                                   class="vp-btn {% if scenario.user_progress and scenario.user_progress.completed %}completed{% endif %}">
-                                    <i class="bi bi-play-fill me-1"></i>
-                                    {% if scenario.user_progress and scenario.user_progress.completed %}
-                                        {{ t('try_again', lang) }}
-                                    {% elif scenario.user_progress and scenario.user_progress.attempts_count > 0 %}
-                                        {{ t('continue_vp', lang) | default(t('continue', lang)) }}
-                                    {% else %}
-                                        {{ t('start', lang) }}
-                                    {% endif %}
-                                </a>
-                                {% endif %}
-                                
-                                {% if scenario.user_progress and scenario.user_progress.completed and scenario.user_progress.best_attempt_id %}
-                                <a href="{{ url_for('virtual_patient.scenario_results', lang=lang, attempt_id=scenario.user_progress.best_attempt_id) }}" 
-                                   class="vp-btn">
-                                    <i class="bi bi-chart-line me-1"></i> {{ t('results', lang) }}
-                                </a>
+                                    <a href="{{ url_for('virtual_patient.play_scenario', lang=lang, scenario_id=scenario.id) }}" class="btn-play">
+                                        {% if scenario.user_progress and scenario.user_progress.attempts_count > 0 %}
+                                            {{ t('continue', lang) }}
+                                        {% else %}
+                                            {{ t('start', lang) }}
+                                        {% endif %}
+                                    </a>
                                 {% endif %}
                             </div>
                         </div>
                         {% endfor %}
                     </div>
-                    
-                    <div class="view-all-vp">
-                        <a href="{{ url_for('subject_view_bp.all_virtual_patients', lang=lang) }}">
-                            {{ t('view_all_scenarios', lang) }} <i class="bi bi-arrow-right ms-1"></i>
-                        </a>
-                    </div>
                 </div>
-                {% endif %}
-            </div>
-            
-            {# === Интерактивный Drug Interaction Checker для категории Interacties & Contraindicaties === #}
-            <div id="interacties-checker-block" style="display: none; margin: 2rem 0;">
-              <div class="card border-warning">
-                <div class="card-header bg-warning text-dark">
-                  <h6 class="mb-0">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Live Drug Checker
-                  </h6>
-                </div>
-                <div class="card-body">
-                  <div class="drug-checker-widget">
-                    <div class="form-floating mb-2">
-                      <input type="text" class="form-control" placeholder="Medicijn 1..." id="drug1">
-                      <label for="drug1">Medicijn 1</label>
-                    </div>
-                    <div class="form-floating mb-3">
-                      <input type="text" class="form-control" placeholder="Medicijn 2..." id="drug2">
-                      <label for="drug2">Medicijn 2</label>
-                    </div>
-                    <button class="btn btn-warning w-100" onclick="quickInteractionCheck()">
-                      <i class="bi bi-search me-1"></i>
-                      Check Interactie
-                    </button>
-                    <div id="quickResult" class="mt-3"></div>
-                  </div>
-                  <hr>
-                  <a href="/{{ lang }}/farmacie/advanced-drug-checker" class="btn btn-outline-warning w-100" id="advanced-checker-link">
-                    <i class="bi bi-gear me-1"></i>
-                    Geavanceerde Checker
-                  </a>
-                </div>
-              </div>
-            </div>
-            
-            {% if subject.id == 101 %}
-            <div class="test-section mt-4">
-                <h3>BIG-toets Voorbereiding</h3>
-                <p>Bereid je voor op je BIG-registratie met onze oefentests</p>
-                <a href="{{ url_for('learning_map_bp.subject_tests', lang=lang, subject_id=subject.id) }}" class="btn btn-primary">
-                    <i class="bi bi-journal-check"></i> Naar Tests
-                </a>
-            </div>
-            {% endif %}
-            {% elif selected_path %}
-            <div class="subjects-grid">
-                {% set filtered_subjects = subjects|selectattr("learning_path_id", "equalto", selected_path.id)|list %}
-                {% if filtered_subjects %}
-                    {% for subject_item_path_filtered in filtered_subjects %}
-                    <div class="subject-card">
-                        <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item_path_filtered.id) }}" class="subject-link">
-                            <div class="card-content">
-                                <div class="card-icon">
-                                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24">
-                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                    </svg>
-                                </div>
-                                <div class="card-info">
-                                    <h3>{{ subject_item_path_filtered.name }}</h3>
-                                    <p>{{ subject_item_path_filtered.description|default('')|truncate(80) }}</p>
-                                    <div class="card-footer">
-                                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: {{ subject_item_path_filtered.progress|default(0) }}%;"></div></div>
-                                        <span>{{ subject_item_path_filtered.progress|default(0) }}%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    {% endfor %}
                 {% endif %}
             </div>
             {% else %}
@@ -412,15 +227,35 @@
                 <div class="welcome-icon">
                   <img src="{{ url_for('static', filename='favicon.png') }}" alt="Mentora" class="static-favicon-logo">
                 </div>
-                <h2>{{ t('welcome_title', lang)|default('Добро пожаловать в Mentora!') }}</h2>
-                <p class="welcome-subtitle">{{ t('welcome_subtitle', lang)|default('Ваш путь к успешной подготовке к BIG экзамену') }}</p>
+                <h2>{{ t('your_path_to_success', lang)|default('Uw weg naar succesvolle BIG-examenvoorbereiding') }}</h2>
               </div>
               
               <div class="welcome-content">
+                {% if learning_state and not learning_state.diagnostic_completed %}
+                <!-- ЭТАП 1: До диагностики -->
                 <div class="welcome-description">
-                  <p>{{ t('welcome_description', lang)|default('Наша интерактивная платформа поможет вам эффективно подготовиться к экзамену. Выберите раздел для начала обучения или ознакомьтесь с рекомендуемыми темами.') }}</p>
+                  <p>{{ t('welcome_description', lang)|default('Ons interactieve platform helpt u effectief voorbereiden op het examen.') }}</p>
+                  <div class="diagnostic-explanation">
+                    <p>{{ t('diagnostic_explanation', lang)|default('Om te beginnen met leren, moet u eerst een kennistest afleggen om uw huidige niveau te bepalen.') }}</p>
+                  </div>
+                </div>
+                {% else %}
+                <!-- ЭТАП 2: После диагностики -->
+                <div class="welcome-description">
+                  {% if learning_state and not learning_state.learning_progress %}
+                    <p>{{ t('diagnostic_completed_no_progress_explanation', lang)|default('U heeft de kennistest succesvol afgerond. Tijd om te beginnen met leren!') }}</p>
+                    <button class="btn-start-learning" onclick="window.location.href='{{ url_for('learning_map_bp.learning_map', lang=lang) }}'">
+                      {{ t('start_learning', lang)|default('Begin met leren') }}
+                    </button>
+                  {% else %}
+                    <p>{{ t('learning_in_progress_explanation', lang)|default('U bent al bezig met uw leertraject. Ga verder waar u gebleven bent!') }}</p>
+                    <button class="btn-continue-learning" onclick="window.location.href='{{ url_for('learning_map_bp.learning_map', lang=lang) }}'">
+                      {{ t('continue_learning', lang)|default('Ga verder met leren') }}
+                    </button>
+                  {% endif %}
                 </div>
                 
+                <!-- Полный интерфейс с рекомендациями и прогрессом -->
                 <div class="welcome-steps">
                   <h3>{{ t('getting_started', lang)|default('С чего начать?') }}</h3>
                   <div class="steps-grid">
@@ -477,6 +312,7 @@
                   </div>
                 </div>
                 {% endif %}
+                {% endif %}
               </div>
             </div>
             {% endif %}
@@ -512,77 +348,29 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon purple">
+                        <div class="stat-icon green">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">{{ t('total_time', lang) }}</div>
-                            <div class="stat-value">{{ stats.total_time_spent|default(0) }} {{ t('min', lang) }}</div>
+                            <div class="stat-label">{{ t('tests_passed', lang) }}</div>
+                            <div class="stat-value">{{ stats.passed_tests|default(0) }}/{{ stats.total_tests|default(0) }}</div>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon green">
+                        <div class="stat-icon purple">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">{{ t('days_active', lang) }}</div>
-                            <div class="stat-value">{{ stats.active_days|default(0) }}</div>
+                            <div class="stat-label">{{ t('virtual_patients', lang) }}</div>
+                            <div class="stat-value">{{ stats.completed_vp|default(0) }}/{{ stats.total_vp|default(0) }}</div>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Кнопка диагностики BI-toets -->
-            <div class="diagnostic-section">
-                <h2>{{ t('bi_toets_diagnostic', lang)|default('Диагностика BI-toets') }}</h2>
-                <div class="diagnostic-card">
-                    <div class="diagnostic-icon">
-                        <i class="bi bi-clipboard-pulse"></i>
-                    </div>
-                    <div class="diagnostic-content">
-                        <h3>{{ t('adaptive_testing', lang)|default('Адаптивное тестирование') }}</h3>
-                        <p>{{ t('diagnostic_description', lang)|default('Оцените свой уровень подготовки к экзамену BI-toets с помощью адаптивного тестирования') }}</p>
-                        <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" class="diagnostic-btn">
-                            <i class="bi bi-clipboard-pulse"></i>
-                            {{ t('choose_diagnostic_type', lang)|default('Выбрать тип диагностики') }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="recommendations-section">
-                <h2>{{ t('recommendations', lang) }}</h2>
-                <div class="recommendations-list">
-                    {% if recommendations and recommendations|length > 0 %}
-                        {% for rec in recommendations %}
-                        <div class="recommendation-item">
-                            <div class="rec-icon {% if loop.index % 2 == 0 %}purple{% else %}blue{% endif %}">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
-                                </svg>
-                            </div>
-                            <div class="rec-info">
-                                <h4>{{ rec.title }}</h4>
-                                <span>{{ rec.subject_name }}</span>
-                            </div>
-                            <button class="rec-action" onclick="startModule({{ rec.module_id }})">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                            </button>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                    <div class="empty-recommendations">
-                        <p>{{ t('no_recommendations', lang) }}</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -591,185 +379,7 @@
 {% endblock %}
 
 {% block scripts %}
+{{ super() }}
 <script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
 <script src="{{ url_for('static', filename='js/subject_view.js') }}"></script>
-<script src="{{ url_for('static', filename='js/drug-checker.js') }}"></script>
-<script>
-// Инициализация системы категорий
-document.addEventListener('DOMContentLoaded', function() {
-    // Система автоматически инициализируется через universal-category-system.js
-    // Дополнительная настройка не требуется
-    
-    // Инициализация кнопок для фармацевтических инструментов
-    const pharmacyToolsButton = document.querySelector('[data-category="pharmacy-tools"]');
-    if (pharmacyToolsButton) {
-        pharmacyToolsButton.addEventListener('click', function() {
-            const targetId = 'category-pharmacy-tools-subcategories';
-            const targetElement = document.getElementById(targetId);
-            
-            if (targetElement) {
-                // Переключаем класс expanded для отображения/скрытия списка
-                targetElement.classList.toggle('expanded');
-                
-                // Обновляем стиль кнопки
-                this.classList.toggle('active');
-            }
-        });
-    }
-    
-    // Автоматически показываем Drug Interaction Checker, если в URL есть "interacties"
-    if (window.location.href.toLowerCase().includes('interacties') || 
-        window.location.href.toLowerCase().includes('contraindicaties')) {
-        const interactiesBlock = document.getElementById('interacties-checker-block');
-        if (interactiesBlock) {
-            interactiesBlock.style.display = 'block';
-            
-            // Плавная прокрутка к блоку
-            setTimeout(() => {
-                interactiesBlock.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }, 500);
-        }
-    }
-});
-
-function startModule(moduleId) {
-    window.location.href = '/{{ lang }}/learning-map/module/' + moduleId + '/start';
-}
-
-// Функция для показа Drug Interaction Checker
-function showDrugInteractionChecker(event) {
-  event.preventDefault();
-  
-  const interactiesBlock = document.getElementById('interacties-checker-block');
-  if (interactiesBlock) {
-      interactiesBlock.style.display = 'block';
-  
-  // Плавная прокрутка к блоку
-  interactiesBlock.scrollIntoView({ 
-    behavior: 'smooth', 
-    block: 'start' 
-  });
-}
-}
-
-// Функция для быстрой проверки взаимодействий
-function quickInteractionCheck() {
-  const drug1 = document.getElementById('drug1').value.trim();
-  const drug2 = document.getElementById('drug2').value.trim();
-  const resultElement = document.getElementById('quickResult');
-  
-  if (!drug1 || !drug2) {
-    resultElement.innerHTML = `
-      <div class="alert alert-info">
-        <i class="bi bi-info-circle me-2"></i>
-        Vul beide medicijnen in om interacties te controleren
-      </div>
-    `;
-    return;
-  }
-  
-  // База данных взаимодействий (можно расширить)
-  const knownInteractions = {
-    'warfarine+ibuprofen': {
-      severity: 'MAJOR', 
-      warning: '⚠️ MAJOR: Verhoogd bloedingsrisico',
-      description: 'Verhoogd risico op bloedingen door remming van bloedplaatjesaggregatie'
-    },
-    'digoxine+furosemide': {
-      severity: 'MAJOR', 
-      warning: '⚠️ MAJOR: Digitalis toxiciteit risico',
-      description: 'Verhoogd risico op digitalis toxiciteit door hypokaliëmie'
-    },
-    'amiodarone+digoxine': {
-      severity: 'MAJOR', 
-      warning: '⚠️ MAJOR: Verhoogde digoxine concentratie',
-      description: 'Verhoogde digoxine concentratie door remming van uitscheiding'
-    },
-    'simvastatine+amiodarone': {
-      severity: 'MAJOR', 
-      warning: '⚠️ MAJOR: Verhoogd risico op rhabdomyolyse',
-      description: 'Verhoogd risico op spierschade door CYP3A4 remming'
-    },
-    'metoprolol+verapamil': {
-      severity: 'MODERATE', 
-      warning: '⚠️ MODERATE: Verhoogd risico op bradycardie',
-      description: 'Additieve cardiodepressieve effecten'
-    },
-    'aspirine+clopidogrel': {
-      severity: 'MAJOR', 
-      warning: '⚠️ MAJOR: Verhoogd bloedingsrisico',
-      description: 'Dubbele antiplaatjeswerking verhoogt bloedingsrisico'
-    },
-    'paracetamol+ibuprofen': {
-      severity: 'MINOR', 
-      warning: 'ℹ️ MINOR: Geen klinisch relevante interactie',
-      description: 'Combinatie wordt vaak gebruikt voor pijnbestrijding'
-    },
-    'omeprazol+clopidogrel': {
-      severity: 'MODERATE', 
-      warning: '⚠️ MODERATE: Verminderde effectiviteit clopidogrel',
-      description: 'CYP2C19 remming vermindert activatie van clopidogrel'
-    }
-  };
-  
-  // Проверяем взаимодействие
-  const key1 = `${drug1.toLowerCase()}+${drug2.toLowerCase()}`;
-  const key2 = `${drug2.toLowerCase()}+${drug1.toLowerCase()}`;
-  const interaction = knownInteractions[key1] || knownInteractions[key2];
-  
-  if (interaction) {
-    // Определяем класс для уровня опасности
-    let alertClass = 'alert-info';
-    let icon = 'bi-info-circle';
-    
-    if (interaction.severity === 'MAJOR') {
-      alertClass = 'alert-danger';
-      icon = 'bi-exclamation-triangle-fill';
-    } else if (interaction.severity === 'MODERATE') {
-      alertClass = 'alert-warning';
-      icon = 'bi-exclamation-triangle';
-    } else if (interaction.severity === 'MINOR') {
-      alertClass = 'alert-success';
-      icon = 'bi-check-circle';
-    }
-    
-    resultElement.innerHTML = `
-      <div class="alert ${alertClass}">
-        <div class="d-flex align-items-center">
-          <i class="${icon} me-2" style="font-size: 1.5rem;"></i>
-          <div>
-            <h6 class="mb-1">${interaction.warning}</h6>
-            <p class="mb-0">${interaction.description}</p>
-          </div>
-        </div>
-      </div>
-    `;
-  } else {
-    resultElement.innerHTML = `
-      <div class="alert alert-success">
-        <div class="d-flex align-items-center">
-          <i class="bi bi-check-circle me-2" style="font-size: 1.5rem;"></i>
-          <div>
-            <h6 class="mb-1">Geen bekende interactie gevonden</h6>
-            <p class="mb-0">Er is geen significante interactie bekend tussen deze medicijnen.</p>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  
-  // Показываем результат с анимацией
-  resultElement.style.opacity = '0';
-  resultElement.style.display = 'block';
-  setTimeout(() => {
-    resultElement.style.transition = 'opacity 0.3s ease';
-    resultElement.style.opacity = '1';
-  }, 10);
-}
-
-// JS для показа блока только при выборе нужной категории
-</script>
-{% endblock %}
+{% endblock %} 
