@@ -276,12 +276,16 @@ function createLearningPlan() {
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создаем план...';
     button.disabled = true;
     
+    // Получаем CSRF токен из мета-тега
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
     // Send request to create learning plan
     fetch('/dashboard/create-learning-plan', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken || ''
           },
           body: JSON.stringify({
             diagnostic_session_id: diagnosticData.sessionId
