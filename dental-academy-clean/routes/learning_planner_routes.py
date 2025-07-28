@@ -8,7 +8,7 @@ learning_planner_bp = Blueprint('learning_planner', __name__)
 
 @learning_planner_bp.route('/learning-planner')
 @login_required
-def learning_planner():
+def learning_planner(plan_id):
     """Enhanced learning planner with calendar and charts"""
     
     print(f"🔍 ОТЛАДКА: learning_planner вызван")
@@ -27,7 +27,7 @@ def learning_planner():
     print(f"🔍 ОТЛАДКА: latest_diagnostic.id = {latest_diagnostic.id if latest_diagnostic else 'None'}")
     
     # Get user's learning plan
-    learning_plan = PersonalLearningPlan.query.filter_by(
+    learning_plan = PersonalLearningPlan.query.filter_by(id=plan_id, 
         user_id=current_user.id,
         status='active'
     ).order_by(PersonalLearningPlan.last_updated.desc()).first()

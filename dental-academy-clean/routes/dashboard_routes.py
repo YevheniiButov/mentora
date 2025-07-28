@@ -205,17 +205,28 @@ def learning_plan(plan_id):
     study_schedule = plan.get_study_schedule()
     milestones = plan.get_milestones()
     
-    return render_template('dashboard/learning_plan.html',
-                         plan=plan,
-                         study_sessions=study_sessions,
-                         total_sessions=total_sessions,
-                         completed_sessions=completed_sessions,
-                         upcoming_sessions=upcoming_sessions,
-                         domain_analysis=domain_analysis,
-                         weak_domains=weak_domains,
-                         strong_domains=strong_domains,
-                         study_schedule=study_schedule,
-                         milestones=milestones)
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to the enhanced learning planner
+    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
 
 @dashboard_bp.route('/learning-plan/<int:plan_id>/start-learning')
 # @login_required  # Временно отключено для тестирования
