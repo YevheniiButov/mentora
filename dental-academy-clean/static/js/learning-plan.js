@@ -375,7 +375,7 @@ function generateStudyPlan() {
     const originalText = submitButton.innerHTML;
     
     // Show loading state
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создаем план...';
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Plan maken...';
     submitButton.disabled = true;
     
     // Collect form data
@@ -414,12 +414,12 @@ function generateStudyPlan() {
                 updateStudyGoals(data.goals);
             }
         } else {
-            showNotification('Ошибка при создании плана: ' + (data.message || 'Неизвестная ошибка'), 'error');
+            showNotification('Fout bij het maken van plan: ' + (data.message || 'Неизвестная ошибка'), 'error');
         }
     })
     .catch(error => {
         console.error('Error creating learning plan:', error);
-        showNotification('Ошибка при создании плана обучения', 'error');
+        showNotification('Fout bij het maken van studieplan', 'error');
     })
     .finally(() => {
         // Reset button
@@ -645,7 +645,7 @@ function updateStudyGoals(goals) {
 function exportToICal() {
     const planId = getCurrentPlanId();
     if (!planId) {
-        showNotification('Сначала создайте план обучения', 'warning');
+        showNotification('Maak eerst een studieplan', 'warning');
         return;
     }
     
@@ -677,7 +677,7 @@ function exportToICal() {
 function exportToPDF() {
     const planId = getCurrentPlanId();
     if (!planId) {
-        showNotification('Сначала создайте план обучения', 'warning');
+        showNotification('Maak eerst een studieplan', 'warning');
         return;
     }
     

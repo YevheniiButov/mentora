@@ -273,7 +273,7 @@ function animateProgressRings() {
 function createLearningPlan() {
     const button = event.target;
     const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создаем план...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Plan maken...';
     button.disabled = true;
     
     // Получаем CSRF токен из мета-тега
@@ -296,14 +296,14 @@ function createLearningPlan() {
       if (data.success) {
             window.location.href = data.redirect_url || '/dashboard/learning-plan';
         } else {
-            alert('Ошибка при создании плана обучения: ' + (data.message || 'Неизвестная ошибка'));
+            alert('Fout bij het maken van studieplan: ' + (data.message || 'Onbekende fout'));
             button.innerHTML = originalText;
             button.disabled = false;
         }
     })
     .catch(error => {
         console.error('Error creating learning plan:', error);
-        alert('Ошибка при создании плана обучения');
+        alert('Fout bij het maken van studieplan');
         button.innerHTML = originalText;
         button.disabled = false;
     });
