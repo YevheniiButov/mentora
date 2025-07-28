@@ -116,11 +116,17 @@ class DiagnosticTypeSelector {
     }
 
     async sendStartRequest() {
+        console.log('Debug - sendStartRequest called');
+        
+        // Получаем CSRF токен из мета-тега
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
         const response = await fetch('/big-diagnostic/start', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken || ''
             },
             body: JSON.stringify({
                 diagnostic_type: this.selectedType
