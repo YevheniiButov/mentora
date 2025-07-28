@@ -6,7 +6,7 @@ from translations import get_translation
 
 learning_planner_bp = Blueprint('learning_planner', __name__)
 
-@learning_planner_bp.route('/learning-planner')
+@learning_planner_bp.route('/learning-planner/<int:plan_id>')
 @login_required
 def learning_planner(plan_id):
     """Enhanced learning planner with calendar and charts"""
