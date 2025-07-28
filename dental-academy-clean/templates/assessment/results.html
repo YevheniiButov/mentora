@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ t('big_diagnostic_results', lang) }} - Dental Academy</title>
+    <title>{{ _('Результаты BIG диагностики') }} - Dental Academy</title>
     
     <!-- Modern CSS Framework -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -56,8 +56,8 @@
         .results-header {
             background: white;
             border-radius: var(--radius-lg);
-            padding: 25px;
-            margin-bottom: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
             box-shadow: var(--shadow-lg);
             text-align: center;
             position: relative;
@@ -80,16 +80,16 @@
             gap: 12px;
             background: linear-gradient(135deg, var(--success-color), #16a34a);
             color: white;
-            padding: 12px 24px;
+            padding: 16px 32px;
             border-radius: 50px;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 18px;
             margin-bottom: 24px;
             box-shadow: var(--shadow-md);
         }
 
         .results-title {
-            font-size: 28px;
+            font-size: 36px;
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 12px;
@@ -97,7 +97,7 @@
         }
 
         .results-subtitle {
-            font-size: 16px;
+            font-size: 18px;
             color: var(--text-secondary);
             max-width: 600px;
             margin: 0 auto;
@@ -108,16 +108,16 @@
         .overall-score {
             background: white;
             border-radius: var(--radius-lg);
-            padding: 25px;
-            margin-bottom: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
             box-shadow: var(--shadow-lg);
             text-align: center;
         }
 
         .score-circle {
             position: relative;
-            width: 150px;
-            height: 150px;
+            width: 200px;
+            height: 200px;
             margin: 0 auto 30px;
         }
 
@@ -126,7 +126,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 36px;
+            font-size: 48px;
             font-weight: 700;
             color: var(--primary-color);
         }
@@ -141,10 +141,10 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 24px;
+            padding: 16px 32px;
             border-radius: 50px;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 18px;
             margin-top: 20px;
         }
 
@@ -168,13 +168,13 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 24px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .domain-card {
             background: white;
             border-radius: var(--radius-lg);
-            padding: 20px;
+            padding: 32px;
             box-shadow: var(--shadow-lg);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -227,7 +227,7 @@
         }
 
         .domain-insights {
-            background: #f8fafc;
+            background: #ffffff;
             border-radius: 8px;
             padding: 16px;
             margin-top: 20px;
@@ -268,8 +268,8 @@
         .recommendations {
             background: white;
             border-radius: var(--radius-lg);
-            padding: 25px;
-            margin-bottom: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
             box-shadow: var(--shadow-lg);
         }
 
@@ -277,7 +277,7 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 32px;
         }
 
         .recommendations-icon {
@@ -299,9 +299,9 @@
         }
 
         .recommendation-card {
-            background: #f8fafc;
+            background: #ffffff;
             border-radius: 12px;
-            padding: 16px;
+            padding: 24px;
             margin-bottom: 20px;
             border-left: 4px solid var(--primary-color);
         }
@@ -336,7 +336,7 @@
         .action-section {
             background: white;
             border-radius: var(--radius-lg);
-            padding: 25px;
+            padding: 40px;
             box-shadow: var(--shadow-lg);
             text-align: center;
         }
@@ -353,7 +353,7 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 24px;
+            padding: 16px 32px;
             border: none;
             border-radius: 12px;
             font-size: 16px;
@@ -361,7 +361,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             text-decoration: none;
-            min-width: 150px;
+            min-width: 200px;
             justify-content: center;
         }
 
@@ -417,7 +417,7 @@
             .overall-score,
             .recommendations,
             .action-section {
-                padding: 16px;
+                padding: 24px;
             }
 
             .domain-card {
@@ -434,7 +434,7 @@
             }
 
             .score-value {
-                font-size: 28px;
+                font-size: 36px;
             }
 
             .action-buttons {
@@ -488,29 +488,6 @@
             </p>
         </div>
         
-        <!-- Overall Score Section -->
-        <div class="overall-score slide-up">
-            <div class="score-circle">
-                <svg width="200" height="200" class="progress-ring">
-                    <defs>
-                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#3ECDC1"/>
-                            <stop offset="100%" style="stop-color:#6C5CE7"/>
-                        </linearGradient>
-                    </defs>
-                    <circle cx="100" cy="100" r="80" class="progress-ring-circle"></circle>
-                    <circle cx="100" cy="100" r="80" class="progress-ring-progress" id="progress-circle"></circle>
-                </svg>
-                <div class="score-value" id="overall-score">--</div>
-                    </div>
-            <div class="score-label">{{ t('overall_preparation_level', lang) }}</div>
-            <div class="readiness-level" id="readiness-badge">
-                <i class="fas fa-clock"></i>
-                {{ t('analyzing_results', lang) }}
-                    </div>
-                </div>
-                
-        <!-- Domain Analysis Grid -->
         <div class="domain-analysis" id="domain-grid">
             <!-- Domain cards will be generated by JavaScript -->
             </div>
@@ -531,7 +508,7 @@
         <!-- Action Section -->
         <div class="action-section slide-up">
             <h2 style="font-size: 28px; margin-bottom: 16px; color: var(--text-primary);">{{ t('next_steps', lang) }}</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+            <p style="color: var(--text-secondary); margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto;">
                 {{ t('learning_plan_description', lang) }}
             </p>
             <div class="action-buttons">
