@@ -416,6 +416,10 @@ def show_results(session_id):
                 domain_info = BIGDomain.query.filter_by(code=domain_code).first()
                 domain_name = domain_info.name if domain_info else domain_code
                 
+                # Translate domain name based on language
+                domain_name_translation_key = f'domain_{domain_code.lower()}'
+                translated_domain_name = t(domain_name_translation_key, lang) if t(domain_name_translation_key, lang) != domain_name_translation_key else domain_name
+                
                 # Calculate domain score
                 domain_score = int(domain_data.get('accuracy_percentage', 0))
                 
@@ -445,7 +449,7 @@ def show_results(session_id):
                     weaknesses.append(t('need_additional_practice', lang))
                 
                 domains.append({
-                    'name': domain_name,
+                    'name': translated_domain_name,
                     'code': domain_code,
                     'score': domain_score,
                     'progress': domain_score,

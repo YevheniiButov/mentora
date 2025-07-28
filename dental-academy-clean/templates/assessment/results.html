@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ t('big_diagnostic_results', lang) }} - Dental Academy</title>
+    <title>{{ _('Результаты BIG диагностики') }} - Dental Academy</title>
     
     <!-- Modern CSS Framework -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -12,10 +12,12 @@
     
     <!-- Chart.js for visualizations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Убираем проблемный плагин datalabels -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script> -->
     
     <!-- Base styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base/common.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/assessment.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/assessment.css') }}">
     
     <style>
         :root {
@@ -97,13 +99,13 @@
         .results-subtitle {
             font-size: 18px;
             color: var(--text-secondary);
-            line-height: 1.6;
             max-width: 600px;
             margin: 0 auto;
+            line-height: 1.6;
         }
 
-        /* Score Section */
-        .score-section {
+        /* Overall Score Section */
+        .overall-score {
             background: white;
             border-radius: var(--radius-lg);
             padding: 40px;
@@ -113,51 +115,157 @@
         }
 
         .score-circle {
+            position: relative;
             width: 200px;
             height: 200px;
-            border-radius: 50%;
-            margin: 0 auto 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            background: conic-gradient(
-                var(--primary-color) 0deg,
-                var(--primary-color) {{ diagnostic_data.overall_score * 3.6 }}deg,
-                #e5e7eb {{ diagnostic_data.overall_score * 3.6 }}deg,
-                #e5e7eb 360deg
-            );
-        }
-
-        .score-circle::before {
-            content: '';
-            position: absolute;
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
-            background: white;
+            margin: 0 auto 30px;
         }
 
         .score-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-size: 48px;
             font-weight: 700;
-            color: var(--text-primary);
-            z-index: 1;
+            color: var(--primary-color);
         }
 
         .score-label {
             font-size: 16px;
             color: var(--text-secondary);
-            margin-bottom: 8px;
+            margin-top: 8px;
         }
 
-        .score-description {
+        .readiness-level {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .readiness-ready {
+            background: linear-gradient(135deg, var(--success-color), #16a34a);
+            color: white;
+        }
+
+        .readiness-almost {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            color: white;
+        }
+
+        .readiness-progress {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        /* Domain Analysis Grid */
+        .domain-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .domain-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .domain-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .domain-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .domain-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .domain-score {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
             font-size: 14px;
-            color: var(--text-secondary);
+        }
+
+        .domain-progress {
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .domain-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            transition: width 0.8s ease;
+        }
+
+        .domain-chart {
+            height: 120px;
+            margin: 20px 0;
+        }
+
+        .domain-insights {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .insight-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+
+        .insight-strong {
+            background: var(--success-color);
+        }
+
+        .insight-weak {
+            background: var(--error-color);
+        }
+
+        .insight-average {
+            background: var(--warning-color);
         }
 
         /* Recommendations Section */
-        .recommendations-section {
+        .recommendations {
             background: white;
             border-radius: var(--radius-lg);
             padding: 40px;
@@ -165,63 +273,66 @@
             box-shadow: var(--shadow-lg);
         }
 
-        .recommendations-title {
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        .recommendations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
+        .recommendations-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
             margin-bottom: 32px;
         }
 
+        .recommendations-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .recommendations-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
         .recommendation-card {
-            background: var(--bg-secondary);
-            border-radius: var(--radius-md);
+            background: #f8fafc;
+            border-radius: 12px;
             padding: 24px;
+            margin-bottom: 20px;
             border-left: 4px solid var(--primary-color);
         }
 
-        .recommendation-card.high {
-            border-left-color: var(--error-color);
-        }
-
-        .recommendation-card.medium {
-            border-left-color: var(--warning-color);
-        }
-
-        .recommendation-card.low {
-            border-left-color: var(--success-color);
-        }
-
-        .recommendation-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .recommendation-description {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-            line-height: 1.5;
-        }
-
-        .recommendation-meta {
-            display: flex;
-            justify-content: space-between;
+        .recommendation-priority {
+            display: inline-flex;
             align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
             font-size: 12px;
-            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 12px;
         }
 
-        /* Action Section */
+        .priority-high {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-low {
+            background: #f0f9ff;
+            color: #2563eb;
+        }
+
+        /* Action Buttons */
         .action-section {
             background: white;
             border-radius: var(--radius-lg);
@@ -232,83 +343,133 @@
 
         .action-buttons {
             display: flex;
-            gap: 16px;
+            gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 24px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            min-width: 200px;
+            justify-content: center;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 16px 32px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
+            box-shadow: var(--shadow-md);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 10px 25px rgba(62, 205, 193, 0.3);
         }
 
         .btn-secondary {
             background: white;
             color: var(--text-primary);
-            padding: 16px 32px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
             border: 2px solid var(--border-color);
-            transition: all 0.3s ease;
         }
 
         .btn-secondary:hover {
             border-color: var(--primary-color);
             color: var(--primary-color);
+            transform: translateY(-2px);
         }
 
-        /* Responsive Design */
+        /* Progress Ring */
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            fill: none;
+            stroke: #e5e7eb;
+            stroke-width: 8;
+        }
+
+        .progress-ring-progress {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.8s ease;
+        }
+
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             .results-container {
-                padding: 10px;
+                padding: 12px;
             }
-            
+
             .results-header,
-            .score-section,
-            .recommendations-section,
+            .overall-score,
+            .recommendations,
             .action-section {
                 padding: 24px;
             }
-            
+
+            .domain-card {
+                padding: 20px;
+            }
+
             .results-title {
                 font-size: 28px;
             }
-            
+
             .score-circle {
-                width: 150px;
-                height: 150px;
+                width: 160px;
+                height: 160px;
             }
-            
-            .score-circle::before {
-                width: 120px;
-                height: 120px;
-            }
-            
+
             .score-value {
                 font-size: 36px;
             }
-            
-            .recommendations-grid {
-                grid-template-columns: 1fr;
-            }
-            
+
             .action-buttons {
                 flex-direction: column;
                 align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
@@ -316,85 +477,87 @@
 <body>
     <div class="results-container">
         <!-- Header Section -->
-        <div class="results-header">
+        <div class="results-header fade-in">
             <div class="completion-badge">
                 <i class="fas fa-check-circle"></i>
-                {{ t('diagnostic_completed_badge', lang) }}
+                {{ _('Диагностика завершена') }}
             </div>
-            <h1 class="results-title">{{ t('your_big_diagnostic_results', lang) }}</h1>
-            <p class="results-subtitle">{{ t('personal_analysis_description', lang) }}</p>
+            <h1 class="results-title">{{ _('Ваши результаты BIG диагностики') }}</h1>
+            <p class="results-subtitle">
+                {{ _('Персональный анализ ваших знаний и навыков на основе современных методов Item Response Theory (IRT). Результаты помогут создать оптимальный план подготовки к экзамену.') }}
+            </p>
         </div>
-
-        <!-- Score Section -->
-        <div class="score-section">
+        
+        <!-- Overall Score Section -->
+        <div class="overall-score slide-up">
             <div class="score-circle">
-                <div class="score-value">{{ diagnostic_data.overall_score }}%</div>
-            </div>
-            <div class="score-label">{{ t('overall_preparation_level', lang) }}</div>
-            <div class="score-description">{{ t('analyzing_results', lang) }}</div>
-        </div>
-
-        <!-- Recommendations Section -->
-        <div class="recommendations-section">
-            <div class="recommendations-title">{{ t('personal_recommendations', lang) }}</div>
-            <div class="recommendations-grid">
-                {% for recommendation in diagnostic_data.recommendations %}
-                <div class="recommendation-card {{ recommendation.priority }}">
-                    <div class="recommendation-title">{{ recommendation.title }}</div>
-                    <div class="recommendation-description">{{ recommendation.description }}</div>
-                    <div class="recommendation-meta">
-                        <span>{{ recommendation.timeEstimate }}</span>
-                        <span>{{ recommendation.modules|length }} modules</span>
+                <svg width="200" height="200" class="progress-ring">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#3ECDC1"/>
+                            <stop offset="100%" style="stop-color:#6C5CE7"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="100" cy="100" r="80" class="progress-ring-circle"></circle>
+                    <circle cx="100" cy="100" r="80" class="progress-ring-progress" id="progress-circle"></circle>
+                </svg>
+                <div class="score-value" id="overall-score">--</div>
+                    </div>
+            <div class="score-label">{{ _('Общий уровень подготовки') }}</div>
+            <div class="readiness-level" id="readiness-badge">
+                <i class="fas fa-clock"></i>
+                {{ _('Анализируем результаты...') }}
                     </div>
                 </div>
-                {% endfor %}
+                
+        <!-- Domain Analysis Grid -->
+        <div class="domain-analysis" id="domain-grid">
+            <!-- Domain cards will be generated by JavaScript -->
             </div>
-        </div>
-
-        <!-- Action Section -->
-        <div class="action-section">
-            <h2 style="font-size: 28px; margin-bottom: 16px; color: var(--text-primary);">{{ t('next_steps', lang) }}</h2>
-            <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto;">{{ t('next_steps_description', lang) }}</p>
             
-            <div class="action-buttons">
-                <button class="btn-primary" onclick="createLearningPlan()">
-                    {{ t('create_learning_plan', lang) }}
-                </button>
-                <button class="btn-secondary" onclick="downloadReport()">
-                    {{ t('download_report', lang) }}
-                </button>
-                <button class="btn-secondary" onclick="shareResults()">
-                    {{ t('share_results', lang) }}
-                </button>
+        <!-- Recommendations Section -->
+        <div class="recommendations slide-up">
+            <div class="recommendations-header">
+                <div class="recommendations-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="recommendations-title">{{ _('Персональные рекомендации') }}</div>
             </div>
+            <div id="recommendations-content">
+                <!-- Recommendations will be generated by JavaScript -->
+            </div>
+            </div>
+            
+        <!-- Action Section -->
+        <div class="action-section slide-up">
+            <h2 style="font-size: 28px; margin-bottom: 16px; color: var(--text-primary);">{{ _('Следующие шаги') }}</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                {{ _('На основе результатов диагностики мы создадим персональный план обучения, который поможет вам эффективно подготовиться к BIG экзамену.') }}
+            </p>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="createLearningPlan()">
+                    <i class="fas fa-route"></i>
+                    {{ _('Создать план обучения') }}
+                </button>
+                <a href="#" class="btn btn-secondary" onclick="downloadReport()">
+                    <i class="fas fa-download"></i>
+                    {{ _('Скачать отчет') }}
+                </a>
+                <a href="#" class="btn btn-secondary" onclick="shareResults()">
+                    <i class="fas fa-share"></i>
+                    {{ _('Поделиться результатами') }}
+                </a>
         </div>
     </div>
+</div>
 
-    <script>
-        function createLearningPlan() {
-            // Redirect to learning plan creation
-            window.location.href = '/learning-planner/create';
-        }
-
-        function downloadReport() {
-            // Generate and download PDF report
-            alert('Download functionality will be implemented soon');
-        }
-
-        function shareResults() {
-            // Share results functionality
-            if (navigator.share) {
-                navigator.share({
-                    title: 'My BIG Diagnostic Results',
-                    text: `I scored ${document.querySelector('.score-value').textContent} on my BIG diagnostic test!`,
-                    url: window.location.href
-                });
-            } else {
-                // Fallback: copy to clipboard
-                navigator.clipboard.writeText(window.location.href);
-                alert('Results URL copied to clipboard!');
-            }
-        }
+    <!-- Diagnostic data from server -->
+<script>
+        // Diagnostic data from Flask backend
+        const diagnosticData = {{ diagnostic_data | tojson | safe }};
     </script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/diagnostic.js') }}"></script>
 </body>
-</html> 
+</html>
