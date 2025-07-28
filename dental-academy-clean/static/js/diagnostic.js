@@ -104,13 +104,13 @@ function generateDomainCards() {
                 ${domain.strengths ? domain.strengths.map(strength => 
                     `<div class="insight-item">
                         <div class="insight-icon insight-strong"><i class="fas fa-check"></i></div>
-                        <span>Сильная сторона: ${strength}</span>
+                        <span>getTranslation('strong_side') + ': ${strength}</span>
                     </div>`
                 ).join('') : ''}
                 ${domain.weaknesses ? domain.weaknesses.map(weakness => 
                     `<div class="insight-item">
                         <div class="insight-icon insight-weak"><i class="fas fa-times"></i></div>
-                        <span>Требует внимания: ${weakness}</span>
+                        <span>getTranslation('needs_attention') + ': ${weakness}</span>
                     </div>`
                 ).join('') : ''}
             </div>
