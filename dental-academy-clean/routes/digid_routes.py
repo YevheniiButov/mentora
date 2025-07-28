@@ -106,18 +106,16 @@ def digid_required(f):
 def get_or_create_digid_user(digid_data, show_registration=False):
     user = User.query.filter_by(digid_username=digid_data['digid_username']).first()
     
-    if user and not show_registration:
-        # Обновить данные существующего пользователя
-        user.bsn = digid_data['bsn']
-        user.email = digid_data['email']
-        user.first_name = digid_data.get('first_name')
-        user.last_name = digid_data.get('last_name')
-        user.digid_verified = True
-        user.created_via_digid = True
-        user.role = digid_data.get('role', 'user')
-        db.session.commit()
-    elif show_registration:
-        # Создаем нового пользователя для регистрации
+    if show_registration:
+        # Принудительно создаем нового пользователя для регистрации
+        # Сначала удаляем существующего пользователя если есть
+        if user:
+            # Удаляем существующего пользователя
+            db.session.delete(user)
+            db.session.commit()
+            print(f"Deleted existing user {user.id} for new registration")
+        
+        # Создаем нового пользователя
         user = create_digid_user(
             digid_username=digid_data['digid_username'],
             bsn=digid_data['bsn'],
@@ -130,6 +128,18 @@ def get_or_create_digid_user(digid_data, show_registration=False):
             user.registration_completed = False  # Явно указываем что регистрация не завершена
             user.profession = digid_data.get('profession', 'tandarts')  # Устанавливаем профессию
             db.session.commit()
+            print(f"Created new user for registration: {user.id} ({user.email})")
+    elif user:
+        # Обновить данные существующего пользователя
+        user.bsn = digid_data['bsn']
+        user.email = digid_data['email']
+        user.first_name = digid_data.get('first_name')
+        user.last_name = digid_data.get('last_name')
+        user.digid_verified = True
+        user.created_via_digid = True
+        user.role = digid_data.get('role', 'user')
+        db.session.commit()
+        print(f"Updated existing user: {user.id} ({user.email})")
     else:
         # Обычное создание пользователя
         user = create_digid_user(
@@ -142,6 +152,7 @@ def get_or_create_digid_user(digid_data, show_registration=False):
         if user:
             user.role = digid_data.get('role', 'user')
             db.session.commit()
+            print(f"Created new user: {user.id} ({user.email})")
     return user
 
 # DigiD: страница входа (выбор тестового пользователя)
@@ -170,6 +181,8 @@ def authenticate():
         pincode = data.get('pincode') or data.get('koppelcode')  # Поддерживаем оба варианта
         show_registration = data.get('show_registration', False)  # Получаем флаг регистрации
         
+        print(f"🔍 DEBUG: Authentication request - username: {digid_username}, show_registration: {show_registration}")
+        
         if not digid_username or not pincode:
             return jsonify({'success': False, 'message': 'Gebruikersnaam en pincode zijn verplicht'}), 400
             
@@ -187,6 +200,9 @@ def authenticate():
             if not user:
                 logger.error(f"Failed to create DigiD user for {digid_username}")
                 return jsonify({'success': False, 'message': 'Fout bij het aanmaken van gebruiker'}), 500
+            
+            print(f"🔍 DEBUG: User created/updated - ID: {user.id}, registration_completed: {user.registration_completed}")
+            
         except Exception as e:
             logger.error(f"Error creating DigiD user: {e}")
             return jsonify({'success': False, 'message': 'Database fout bij gebruiker aanmaken'}), 500
@@ -213,13 +229,18 @@ def authenticate():
             # Определяем куда перенаправить пользователя
             if user.is_admin:
                 redirect_url = '/admin'
+                print(f"🔍 DEBUG: Admin user - redirecting to /admin")
             else:
                 # Если это новый пользователь или регистрация не завершена
                 if show_registration or not user.registration_completed:
                     redirect_url = '/digid/complete-registration'
+                    print(f"🔍 DEBUG: New/incomplete user - redirecting to registration (show_registration: {show_registration}, registration_completed: {user.registration_completed})")
                 else:
                     # Уже зарегистрирован → профессиональная карта обучения
                     redirect_url = get_learning_map_url_by_profession(user.profession)
+                    print(f"🔍 DEBUG: Registered user - redirecting to learning map: {redirect_url}")
+            
+            print(f"🔍 DEBUG: Final redirect URL: {redirect_url}")
             
             return jsonify({
                 'success': True, 
