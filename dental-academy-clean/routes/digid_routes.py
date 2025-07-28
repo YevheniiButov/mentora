@@ -211,10 +211,13 @@ def get_or_create_digid_user(digid_data, show_registration=False):
 # DigiD: страница входа (выбор тестового пользователя)
 @digid_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    # Получаем язык из сессии или используем дефолтный
+    lang = session.get('lang', 'nl')
+    
     if request.method == 'POST':
         digid_username = request.form.get('digid_username')
         if digid_username not in MOCK_DIGID_USERS:
-            flash('Пользователь не найден (мок DigiD)', 'danger')
+            flash(t('user_not_found_mock', lang), 'danger')
             return render_template('digid/mock_login.html', users=MOCK_DIGID_USERS)
         # Сохраняем выбранного пользователя в сессии
         session['digid_username'] = digid_username
@@ -540,9 +543,12 @@ def demo():
 @digid_bp.route('/complete-registration', methods=['GET', 'POST'])
 @login_required
 def complete_registration():
+    # Получаем язык из сессии или используем дефолтный
+    lang = session.get('lang', 'nl')
+    
     # Проверяем, что пользователь авторизован через DigiD
     if not current_user.is_digid_user():
-        flash('Доступ только для DigiD пользователей', 'danger')
+        flash(t('digid_users_only', lang), 'danger')
         return redirect('/digid/login')
     
     # Если регистрация уже завершена, перенаправляем на карту обучения
@@ -556,21 +562,21 @@ def complete_registration():
         # Валидация профессии
         valid_professions = ['tandarts', 'apotheker', 'huisarts', 'verpleegkundige']
         if not profession or profession not in valid_professions:
-            flash('Выберите профессию', 'danger')
+            flash(t('select_profession', lang), 'danger')
             return render_template('digid/registration_form.html', user=current_user)
         
         # Обработка файла диплома (обязательный)
         diploma_file = request.files.get('diploma_file')
         if not diploma_file or diploma_file.filename == '':
-            flash('Загрузите диплом', 'danger')
+            flash(t('upload_diploma', lang), 'danger')
             return render_template('digid/registration_form.html', user=current_user)
         
         if not allowed_file(diploma_file.filename):
-            flash('Диплом должен быть в формате PDF', 'danger')
+            flash(t('diploma_must_be_pdf', lang), 'danger')
             return render_template('digid/registration_form.html', user=current_user)
         
         if not validate_file_size(diploma_file):
-            flash('Размер файла диплома не должен превышать 5MB', 'danger')
+            flash(t('diploma_size_limit', lang), 'danger')
             return render_template('digid/registration_form.html', user=current_user)
         
         # Сохраняем диплом
@@ -583,11 +589,11 @@ def complete_registration():
         language_cert_file = request.files.get('language_certificate')
         if language_cert_file and language_cert_file.filename != '':
             if not allowed_file(language_cert_file.filename):
-                flash('Сертификат языка должен быть в формате PDF', 'danger')
+                flash(t('language_cert_must_be_pdf', lang), 'danger')
                 return render_template('digid/registration_form.html', user=current_user)
             
             if not validate_file_size(language_cert_file):
-                flash('Размер файла сертификата не должен превышать 5MB', 'danger')
+                flash(t('language_cert_size_limit', lang), 'danger')
                 return render_template('digid/registration_form.html', user=current_user)
             
             language_cert_filename = secure_filename(f"language_cert_{current_user.bsn}_{language_cert_file.filename}")
@@ -602,7 +608,7 @@ def complete_registration():
             current_user.registration_completed = True
             db.session.commit()
             
-            flash('Регистрация завершена успешно! Добро пожаловать в систему обучения.', 'success')
+            flash(t('registration_completed_successfully', lang), 'success')
             
             # Перенаправляем на карту обучения для нового пользователя
             return redirect(get_learning_map_url_by_profession(profession))
@@ -610,7 +616,7 @@ def complete_registration():
         except Exception as e:
             logger.error(f"Error completing registration: {e}")
             db.session.rollback()
-            flash('Ошибка при завершении регистрации', 'danger')
+            flash(t('registration_completion_error', lang), 'danger')
             return render_template('digid/registration_form.html', user=current_user)
     
     # GET запрос - показываем форму
