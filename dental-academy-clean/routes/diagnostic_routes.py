@@ -379,6 +379,9 @@ def show_results(session_id):
     """Show diagnostic results with modern UI"""
     print(f"🔍 ОТЛАДКА: show_results вызвана для session_id = {session_id}")
     
+    # Получаем язык из сессии или используем дефолтный
+    lang = session.get('lang', 'nl')
+    
     try:
         diagnostic_session = g.current_session
         print(f"🔍 ОТЛАДКА: diagnostic_session = {diagnostic_session}")
@@ -431,14 +434,14 @@ def show_results(session_id):
                 weaknesses = []
                 
                 if domain_score >= 80:
-                    strengths.append('Отличное понимание основ')
+                    strengths.append(t('excellent_understanding_basics', lang))
                 elif domain_score >= 60:
-                    strengths.append('Хорошее базовое понимание')
+                    strengths.append(t('good_basic_understanding', lang))
                 else:
-                    weaknesses.append('Требуется изучение основ')
+                    weaknesses.append(t('need_study_basics', lang))
                 
                 if domain_score < 70:
-                    weaknesses.append('Необходима дополнительная практика')
+                    weaknesses.append(t('need_additional_practice', lang))
                 
                 domains.append({
                     'name': domain_name,
@@ -461,10 +464,16 @@ def show_results(session_id):
         for domain in weak_domains[:2]:
             recommendations.append({
                 'priority': 'high',
-                'title': f'Сфокусироваться на {domain["name"]}',
-                'description': f'Ваш результат в области {domain["name"]} ({domain["score"]}%) требует улучшения. Рекомендуется интенсивное изучение.',
-                'timeEstimate': '4-6 недель',
-                'modules': [f'Основы {domain["name"]}', f'Практика {domain["name"]}']
+                'title': t('focus_on_domain', lang).format(domain_name=domain["name"]),
+                'description': t('weak_domain_recommendation', lang).format(
+                    domain_name=domain["name"], 
+                    score=domain["score"]
+                ),
+                'timeEstimate': t('time_estimate_4_6_weeks', lang),
+                'modules': [
+                    t('basics_of_domain', lang).format(domain_name=domain["name"]), 
+                    t('practice_of_domain', lang).format(domain_name=domain["name"])
+                ]
             })
         
         # Medium priority for domains needing improvement
@@ -472,20 +481,26 @@ def show_results(session_id):
         for domain in medium_domains[:2]:
             recommendations.append({
                 'priority': 'medium',
-                'title': f'Улучшить {domain["name"]}',
-                'description': f'Ваш результат в области {domain["name"]} ({domain["score"]}%) хороший, но можно улучшить.',
-                'timeEstimate': '2-3 недели',
-                'modules': [f'Углубленное изучение {domain["name"]}']
+                'title': t('improve_domain', lang).format(domain_name=domain["name"]),
+                'description': t('medium_domain_recommendation', lang).format(
+                    domain_name=domain["name"], 
+                    score=domain["score"]
+                ),
+                'timeEstimate': t('time_estimate_2_3_weeks', lang),
+                'modules': [t('advanced_study_of_domain', lang).format(domain_name=domain["name"])]
             })
         
         # Positive feedback for strong domains
         for domain in strong_domains[:2]:
             recommendations.append({
                 'priority': 'low',
-                'title': f'Поддерживать {domain["name"]}',
-                'description': f'Отличный результат в области {domain["name"]} ({domain["score"]}%)! Продолжайте поддерживать этот уровень.',
-                'timeEstimate': '1-2 недели',
-                'modules': [f'Повторение {domain["name"]}']
+                'title': t('maintain_domain', lang).format(domain_name=domain["name"]),
+                'description': t('strong_domain_recommendation', lang).format(
+                    domain_name=domain["name"], 
+                    score=domain["score"]
+                ),
+                'timeEstimate': t('time_estimate_1_2_weeks', lang),
+                'modules': [t('review_of_domain', lang).format(domain_name=domain["name"])]
             })
         
         # Prepare diagnostic data for template
@@ -505,7 +520,8 @@ def show_results(session_id):
         
         return render_template('assessment/results.html', 
                              diagnostic_data=diagnostic_data,
-                             session_id=session_id)
+                             session_id=session_id,
+                             lang=lang)
                              
     except Exception as e:
         print(f"❌ Ошибка в show_results: {e}")

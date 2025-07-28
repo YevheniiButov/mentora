@@ -302,4 +302,43 @@ translations = {
     'diagnostic_completed': 'Diagnostiek voltooid',
     'learning_progress': 'Leervoortgang',
     'no_learning_progress': 'Nog geen leervoortgang',
+    
+    # Diagnostic Results Page
+    'big_diagnostic_results': 'BIG Diagnostiek Resultaten',
+    'diagnostic_completed_badge': 'Diagnostiek voltooid',
+    'your_big_diagnostic_results': 'Uw BIG Diagnostiek Resultaten',
+    'personal_analysis_description': 'Persoonlijke analyse van uw kennis en vaardigheden op basis van moderne Item Response Theory (IRT) methoden. Resultaten helpen bij het maken van een optimaal examen voorbereidingsplan.',
+    'overall_preparation_level': 'Algemeen voorbereidingsniveau',
+    'analyzing_results': 'Resultaten analyseren...',
+    'personal_recommendations': 'Persoonlijke aanbevelingen',
+    'next_steps': 'Volgende stappen',
+    'next_steps_description': 'Op basis van de diagnostiek resultaten maken we een persoonlijk leerplan dat u helpt effectief voor te bereiden op het BIG examen.',
+    'create_learning_plan': 'Leerplan maken',
+    'download_report': 'Rapport downloaden',
+    'share_results': 'Resultaten delen',
+    
+    # Domain Analysis
+    'excellent_understanding_basics': 'Uitstekend begrip van de basis',
+    'good_basic_understanding': 'Goed basisbegrip',
+    'need_study_basics': 'Basisstudie vereist',
+    'need_additional_practice': 'Extra oefening nodig',
+    
+    # Recommendations
+    'focus_on_domain': 'Focus op {domain_name}',
+    'weak_domain_recommendation': 'Uw resultaat in {domain_name} ({score}%) heeft verbetering nodig. Intensieve studie wordt aanbevolen.',
+    'improve_domain': 'Verbeter {domain_name}',
+    'medium_domain_recommendation': 'Uw resultaat in {domain_name} ({score}%) is goed, maar kan verbeterd worden.',
+    'maintain_domain': 'Behoud {domain_name}',
+    'strong_domain_recommendation': 'Uitstekend resultaat in {domain_name} ({score}%)! Blijf dit niveau behouden.',
+    
+    # Time Estimates
+    'time_estimate_4_6_weeks': '4-6 weken',
+    'time_estimate_2_3_weeks': '2-3 weken',
+    'time_estimate_1_2_weeks': '1-2 weken',
+    
+    # Modules
+    'basics_of_domain': 'Basis van {domain_name}',
+    'practice_of_domain': 'Praktijk van {domain_name}',
+    'advanced_study_of_domain': 'Geavanceerde studie van {domain_name}',
+    'review_of_domain': 'Herhaling van {domain_name}',
 } 

@@ -173,12 +173,54 @@ translations = {
     # Two-stage learning process
     'knowledge_assessment': 'Knowledge Assessment',
     'diagnostic_explanation': 'To start learning, you must first take a knowledge test to determine your current level.',
+    'diagnostic_required_message': 'To start learning, you must first take a knowledge test to determine your current level.',
+    'diagnostic_completed_no_progress_explanation': 'You have successfully completed the knowledge test. Time to start learning!',
+    'learning_in_progress_explanation': 'You are already working on your learning path. Continue where you left off!',
     'start_learning': 'Start Learning',
     'continue_learning': 'Continue Learning',
     'diagnostic_not_completed': 'Diagnostic not completed',
     'diagnostic_completed': 'Diagnostic completed',
     'learning_progress': 'Learning Progress',
     'no_learning_progress': 'No learning progress yet',
+    
+    # Diagnostic Results Page
+    'big_diagnostic_results': 'BIG Diagnostic Results',
+    'diagnostic_completed_badge': 'Diagnostic Completed',
+    'your_big_diagnostic_results': 'Your BIG Diagnostic Results',
+    'personal_analysis_description': 'Personal analysis of your knowledge and skills based on modern Item Response Theory (IRT) methods. Results help create an optimal exam preparation plan.',
+    'overall_preparation_level': 'Overall Preparation Level',
+    'analyzing_results': 'Analyzing results...',
+    'personal_recommendations': 'Personal Recommendations',
+    'next_steps': 'Next Steps',
+    'next_steps_description': 'Based on diagnostic results, we will create a personal learning plan that helps you effectively prepare for the BIG exam.',
+    'create_learning_plan': 'Create Learning Plan',
+    'download_report': 'Download Report',
+    'share_results': 'Share Results',
+    
+    # Domain Analysis
+    'excellent_understanding_basics': 'Excellent understanding of basics',
+    'good_basic_understanding': 'Good basic understanding',
+    'need_study_basics': 'Basic study required',
+    'need_additional_practice': 'Additional practice needed',
+    
+    # Recommendations
+    'focus_on_domain': 'Focus on {domain_name}',
+    'weak_domain_recommendation': 'Your result in {domain_name} ({score}%) needs improvement. Intensive study is recommended.',
+    'improve_domain': 'Improve {domain_name}',
+    'medium_domain_recommendation': 'Your result in {domain_name} ({score}%) is good but can be improved.',
+    'maintain_domain': 'Maintain {domain_name}',
+    'strong_domain_recommendation': 'Excellent result in {domain_name} ({score}%)! Keep maintaining this level.',
+    
+    # Time Estimates
+    'time_estimate_4_6_weeks': '4-6 weeks',
+    'time_estimate_2_3_weeks': '2-3 weeks',
+    'time_estimate_1_2_weeks': '1-2 weeks',
+    
+    # Modules
+    'basics_of_domain': 'Basics of {domain_name}',
+    'practice_of_domain': 'Practice of {domain_name}',
+    'advanced_study_of_domain': 'Advanced study of {domain_name}',
+    'review_of_domain': 'Review of {domain_name}',
     'modules': 'Modules',
     'cards': 'Cards',
     'accuracy': 'Accuracy',
