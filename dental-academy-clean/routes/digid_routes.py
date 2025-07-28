@@ -292,18 +292,9 @@ def authenticate():
                     redirect_url = '/digid/complete-registration'
                     print(f"🔍 DEBUG: New/incomplete user - redirecting to registration (show_registration: {show_registration}, registration_completed: {user.registration_completed})")
                 else:
-                    # Проверяем, прошел ли пользователь диагностику
-                    from routes.learning_map_routes import check_diagnostic_completed
-                    diagnostic_completed = check_diagnostic_completed(user.id)
-                    
-                    if diagnostic_completed:
-                        # Уже зарегистрирован и прошел диагностику → профессиональная карта обучения
-                        redirect_url = get_learning_map_url_by_profession(user.profession)
-                        print(f"🔍 DEBUG: Registered user with diagnostic - redirecting to learning map: {redirect_url}")
-                    else:
-                        # Зарегистрирован, но не прошел диагностику → диагностика
-                        redirect_url = '/diagnostic/choose-type'
-                        print(f"🔍 DEBUG: Registered user without diagnostic - redirecting to diagnostic: {redirect_url}")
+                    # Зарегистрированный пользователь → сразу на карту обучения
+                    redirect_url = get_learning_map_url_by_profession(user.profession)
+                    print(f"🔍 DEBUG: Registered user - redirecting to learning map: {redirect_url}")
             
             print(f"🔍 DEBUG: Final redirect URL: {redirect_url}")
             

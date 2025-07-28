@@ -2098,19 +2098,22 @@ def check_diagnostic_completed(user_id):
 def check_learning_progress(user_id):
     """Проверить, есть ли прогресс в обучении"""
     try:
-        # Проверяем наличие прогресса в уроках
+        # Проверяем наличие ЗАВЕРШЕННОГО прогресса в уроках
         lesson_progress = UserProgress.query.filter_by(
-            user_id=user_id
-        ).filter(UserProgress.completed == True).first()
-        
-        # Проверяем наличие прогресса в тестах
-        test_progress = TestAttempt.query.filter_by(
-            user_id=user_id
+            user_id=user_id,
+            completed=True
         ).first()
         
-        # Проверяем наличие прогресса в виртуальных пациентах
+        # Проверяем наличие ЗАВЕРШЕННЫХ попыток тестов (с положительным результатом)
+        test_progress = TestAttempt.query.filter_by(
+            user_id=user_id,
+            is_correct=True
+        ).first()
+        
+        # Проверяем наличие ЗАВЕРШЕННЫХ попыток виртуальных пациентов
         vp_progress = VirtualPatientAttempt.query.filter_by(
-            user_id=user_id
+            user_id=user_id,
+            completed=True
         ).first()
         
         return lesson_progress is not None or test_progress is not None or vp_progress is not None
