@@ -103,10 +103,11 @@ def digid_required(f):
 
 # Вспомогательная функция: создать/обновить пользователя из DigiD-данных
 
-def get_or_create_digid_user(digid_data):
+def get_or_create_digid_user(digid_data, show_registration=False):
     user = User.query.filter_by(digid_username=digid_data['digid_username']).first()
-    if user:
-        # Обновить данные
+    
+    if user and not show_registration:
+        # Обновить данные существующего пользователя
         user.bsn = digid_data['bsn']
         user.email = digid_data['email']
         user.first_name = digid_data.get('first_name')
@@ -115,7 +116,22 @@ def get_or_create_digid_user(digid_data):
         user.created_via_digid = True
         user.role = digid_data.get('role', 'user')
         db.session.commit()
+    elif show_registration:
+        # Создаем нового пользователя для регистрации
+        user = create_digid_user(
+            digid_username=digid_data['digid_username'],
+            bsn=digid_data['bsn'],
+            email=digid_data['email'],
+            first_name=digid_data.get('first_name'),
+            last_name=digid_data.get('last_name')
+        )
+        if user:
+            user.role = digid_data.get('role', 'user')
+            user.registration_completed = False  # Явно указываем что регистрация не завершена
+            user.profession = digid_data.get('profession', 'tandarts')  # Устанавливаем профессию
+            db.session.commit()
     else:
+        # Обычное создание пользователя
         user = create_digid_user(
             digid_username=digid_data['digid_username'],
             bsn=digid_data['bsn'],
@@ -152,6 +168,7 @@ def authenticate():
             
         digid_username = data.get('digid_username')
         pincode = data.get('pincode') or data.get('koppelcode')  # Поддерживаем оба варианта
+        show_registration = data.get('show_registration', False)  # Получаем флаг регистрации
         
         if not digid_username or not pincode:
             return jsonify({'success': False, 'message': 'Gebruikersnaam en pincode zijn verplicht'}), 400
@@ -166,7 +183,7 @@ def authenticate():
         digid_data = MOCK_DIGID_USERS[digid_username]
         
         try:
-            user = get_or_create_digid_user(digid_data)
+            user = get_or_create_digid_user(digid_data, show_registration)
             if not user:
                 logger.error(f"Failed to create DigiD user for {digid_username}")
                 return jsonify({'success': False, 'message': 'Fout bij het aanmaken van gebruiker'}), 500
@@ -197,8 +214,8 @@ def authenticate():
             if user.is_admin:
                 redirect_url = '/admin'
             else:
-                # Проверяем, завершена ли регистрация
-                if not user.registration_completed:
+                # Если это новый пользователь или регистрация не завершена
+                if show_registration or not user.registration_completed:
                     redirect_url = '/digid/complete-registration'
                 else:
                     # Уже зарегистрирован → профессиональная карта обучения
