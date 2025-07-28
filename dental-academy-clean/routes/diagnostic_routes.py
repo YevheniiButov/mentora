@@ -511,7 +511,7 @@ def show_results(session_id):
             'readiness_level': readiness_level,
             'total_questions': diagnostic_session.questions_answered,
             'correct_answers': diagnostic_session.correct_answers,
-            'accuracy_percentage': round((diagnostic_session.correct_answers / diagnostic_session.questions_answered) * 100, 1),
+            'accuracy_percentage': round((diagnostic_session.correct_answers / diagnostic_session.questions_answered) * 100, 1) if diagnostic_session.questions_answered > 0 else 0.0,
             'domains': domains,
             'recommendations': recommendations,
             'results': results
