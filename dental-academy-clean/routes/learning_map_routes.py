@@ -2131,8 +2131,8 @@ def get_user_learning_state(user_id):
     diagnostic_completed = check_diagnostic_completed(user_id)
     learning_progress = check_learning_progress(user_id)
     
-    # Определяем этап: если есть прогресс обучения, то post_diagnostic, иначе pre_diagnostic
-    # Диагностика больше не обязательна, поэтому этап определяется по прогрессу
+    # Определяем этап: ТОЛЬКО по прогрессу обучения
+    # Диагностика больше не влияет на этап отображения
     stage = 'post_diagnostic' if learning_progress else 'pre_diagnostic'
     
     result = {
