@@ -3,7 +3,13 @@ from datetime import datetime, date
 from decimal import Decimal
 import json
 from flask import jsonify as flask_jsonify
-from sqlalchemy.ext.declarative import DeclarativeMeta
+
+# Совместимость с новыми версиями SQLAlchemy
+try:
+    from sqlalchemy.ext.declarative import DeclarativeMeta
+except ImportError:
+    # Для SQLAlchemy 2.0+
+    from sqlalchemy.orm import DeclarativeMeta
 
 class UniversalJSONEncoder(json.JSONEncoder):
     """Универсальный JSON encoder для всех типов данных"""
