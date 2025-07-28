@@ -104,13 +104,13 @@ function generateDomainCards() {
                 ${domain.strengths ? domain.strengths.map(strength => 
                     `<div class="insight-item">
                         <div class="insight-icon insight-strong"><i class="fas fa-check"></i></div>
-                        <span>getTranslation('strong_side') + ': ${strength}</span>
+                        <span>'Sterke kant:' ${strength}</span>
                     </div>`
                 ).join('') : ''}
                 ${domain.weaknesses ? domain.weaknesses.map(weakness => 
                     `<div class="insight-item">
                         <div class="insight-icon insight-weak"><i class="fas fa-times"></i></div>
-                        <span>getTranslation('needs_attention') + ': ${weakness}</span>
+                        <span>'Vereist aandacht:' ${weakness}</span>
                     </div>`
                 ).join('') : ''}
             </div>
@@ -225,8 +225,8 @@ function generateRecommendations() {
         const priorityIcon = rec.priority === 'high' ? 'fas fa-exclamation-circle' : 
                            rec.priority === 'medium' ? 'fas fa-info-circle' : 'fas fa-lightbulb';
         
-        const priorityText = rec.priority === 'high' ? getTranslation('high_priority') : 
-                           rec.priority === 'medium' ? getTranslation('medium_priority') : getTranslation('low_priority');
+        const priorityText = rec.priority === 'high' ? 'Hoge prioriteit' : 
+                           rec.priority === 'medium' ? 'Gemiddelde prioriteit' : 'Lage prioriteit';
         
         card.innerHTML = `
             <div class="recommendation-priority ${priorityClass}">
@@ -242,11 +242,11 @@ function generateRecommendations() {
             <div style="display: flex; align-items: center; gap: 20px; font-size: 14px;">
                 <span style="color: var(--text-secondary);">
                     <i class="fas fa-clock" style="margin-right: 8px;"></i>
-                    getTranslation('time') + ': ${rec.timeEstimate || '2-3 недели'}
+                    'Tijd:' ${rec.timeEstimate || '2-3 недели'}
                 </span>
                 <span style="color: var(--text-secondary);">
                     <i class="fas fa-book" style="margin-right: 8px;"></i>
-                    getTranslation('modules') + ': ${rec.modules ? rec.modules.join(', ') : 'Рекомендуемые модули'}
+                    'Modules:' ${rec.modules ? rec.modules.join(', ') : 'Рекомендуемые модули'}
                 </span>
             </div>
         `;
