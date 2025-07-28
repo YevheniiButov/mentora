@@ -225,8 +225,8 @@ function generateRecommendations() {
         const priorityIcon = rec.priority === 'high' ? 'fas fa-exclamation-circle' : 
                            rec.priority === 'medium' ? 'fas fa-info-circle' : 'fas fa-lightbulb';
         
-        const priorityText = rec.priority === 'high' ? 'Высокий приоритет' : 
-                           rec.priority === 'medium' ? 'Средний приоритет' : 'Низкий приоритет';
+        const priorityText = rec.priority === 'high' ? getTranslation('high_priority') : 
+                           rec.priority === 'medium' ? getTranslation('medium_priority') : getTranslation('low_priority');
         
         card.innerHTML = `
             <div class="recommendation-priority ${priorityClass}">
@@ -242,11 +242,11 @@ function generateRecommendations() {
             <div style="display: flex; align-items: center; gap: 20px; font-size: 14px;">
                 <span style="color: var(--text-secondary);">
                     <i class="fas fa-clock" style="margin-right: 8px;"></i>
-                    Время: ${rec.timeEstimate || '2-3 недели'}
+                    getTranslation('time') + ': ${rec.timeEstimate || '2-3 недели'}
                 </span>
                 <span style="color: var(--text-secondary);">
                     <i class="fas fa-book" style="margin-right: 8px;"></i>
-                    Модули: ${rec.modules ? rec.modules.join(', ') : 'Рекомендуемые модули'}
+                    getTranslation('modules') + ': ${rec.modules ? rec.modules.join(', ') : 'Рекомендуемые модули'}
                 </span>
             </div>
         `;
