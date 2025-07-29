@@ -1,6 +1,5 @@
 /**
- * subject_view.js - Функциональность для страницы просмотра предметов
- * Become a Tandarts - Образовательная платформа
+ * Mentora - Образовательная платформа
  */
 
 document.addEventListener('DOMContentLoaded', function() {

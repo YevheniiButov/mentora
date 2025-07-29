@@ -1,7 +1,6 @@
 # utils/mobile_navigation.py
 """
-Конфигурации мобильной навигации для разных типов страниц
-Система навигации для приложения Become a Tandarts
+Система навигации для приложения Mentora
 """
 
 from flask import url_for, request, g
