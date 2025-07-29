@@ -1,6 +1,9 @@
 translations = {
     # Navigatie
-    'home': 'Home',
+    'home': 'Hoofdpagina',
+    'learning_map': 'Leerkaart',
+    'community': 'Community',
+    'about_big': 'Over BIG',
     'learning': 'Leren',
     'dashboard': 'Dashboard',
     'profile': 'Profiel',
@@ -9,7 +12,7 @@ translations = {
     'login': 'Inloggen',
     'register': 'Registreren',
     'patients': 'Patiënten',
-    'ai_assistant': 'AI-assistent',
+    'ai_assistant': 'AI Assistent',
     
     # Knoppen
     'save': 'Opslaan',
@@ -19,20 +22,34 @@ translations = {
     'back': 'Terug',
     'next': 'Volgende',
     'complete': 'Voltooien',
+    'login_with_digid': 'Inloggen met DigiD',
+    'continue_learning': 'Doorgaan met leren',
+    'start_learning': 'Start met leren',
     
     # Labels
     'search': 'Zoeken',
     'language': 'Taal',
     'select_language': 'Selecteer taal',
+    'toggle_navigation': 'Navigatie wisselen',
     
     # Fouten
     'error': 'Fout',
     'not_found': 'Niet gevonden',
     'server_error': 'Serverfout',
     'form_error': 'Vul alle verplichte velden in',
-    'unauthorized': 'Niet gemachtigd',
-    'forbidden': 'Toegang geweigerd',
+    'unauthorized': 'Niet geautoriseerd',
+    'forbidden': 'Verboden',
     'success': 'Succes',
+    
+    # Gebruiker en profiel
+    'pharmacist': 'Apotheker',
+    'gamification': 'Gamificatie',
+    'progress': 'Voortgang',
+    'learning_planner': 'Leerplanner',
+    'edit_profile': 'Profiel bewerken',
+    'switch_theme': 'Thema wisselen',
+    'light_theme': 'Lichte thema',
+    'dark_theme': 'Donkere thema',
     
     # Error Messages
     'fill_all_4_letters': 'Vul alle 4 letters in.',
@@ -154,7 +171,6 @@ translations = {
     # Homepage
     'hero_title': 'Uw succesvolle pad naar de medische excellentie',
     'hero_subtitle': 'Multidisciplinaire training voor tandartsen, apothekers, huisartsen en verpleegkundigen',
-    'login_with_digid': 'Inloggen met DigiD',
     'learn_more': 'Meer informatie',
     'exam_preparation': 'Examenvoorbereiding',
     'languages_supported': 'Ondersteunde talen',

@@ -25,15 +25,7 @@
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'index' }}" 
                href="{{ url_for('index', lang=lang) }}">
-              {% if lang == 'nl' %}
-                Hoofdpagina
-              {% elif lang == 'en' %}
-                Home
-              {% elif lang == 'ru' %}
-                Главная
-              {% else %}
-                {{ t('home', lang) }}
-              {% endif %}
+              {{ t('home', lang)|default('Home') }}
             </a>
           </li>
           
@@ -42,15 +34,7 @@
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
                href="{{ url_for('profession_map_bp.profession_redirect', lang=lang) }}">
-              {% if lang == 'nl' %}
-                Leerkaart
-              {% elif lang == 'en' %}
-                Learning Map
-              {% elif lang == 'ru' %}
-                Карта обучения
-              {% else %}
-                {{ t('learning_map', lang) }}
-              {% endif %}
+              {{ t('learning_map', lang)|default('Learning Map') }}
             </a>
           </li>
           {% endif %}
@@ -59,30 +43,14 @@
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'main.community' }}" 
                href="{{ url_for('main.community', lang=lang) }}">
-              {% if lang == 'nl' %}
-                Community
-              {% elif lang == 'en' %}
-                Community
-              {% elif lang == 'ru' %}
-                Сообщество
-              {% else %}
-                Community
-              {% endif %}
+              {{ t('community', lang)|default('Community') }}
             </a>
           </li>
           
           <!-- Over BIG - всегда видна -->
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('main.big_info', lang=lang) }}">
-              {% if lang == 'nl' %}
-                Over BIG
-              {% elif lang == 'en' %}
-                About BIG
-              {% elif lang == 'ru' %}
-                О BIG
-              {% else %}
-                {{ t('about_big', lang) }}
-              {% endif %}
+              {{ t('about_big', lang)|default('About BIG') }}
             </a>
           </li>
         </ul>
@@ -157,15 +125,7 @@
                 <i class="bi bi-person-badge fs-5 me-1"></i> <strong>Dr. {{ current_user.get_display_name() }}</strong>
                 <br>
                 <small class="text-muted">
-                  {% if lang == 'nl' %}
-                    Apotheker
-                  {% elif lang == 'en' %}
-                    Pharmacist
-                  {% elif lang == 'ru' %}
-                    Фармацевт
-                  {% else %}
-                    Pharmacist
-                  {% endif %}
+                  {{ t('pharmacist', lang)|default('Pharmacist') }}
                 </small>
               </li>
               
@@ -174,71 +134,31 @@
               <!-- Gamification -->
               <li><a class="dropdown-item" href="{{ url_for('dashboard.index') }}">
                 <i class="bi bi-trophy fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Gamificatie
-                {% elif lang == 'en' %}
-                  Gamification
-                {% elif lang == 'ru' %}
-                  Геймификация
-                {% else %}
-                  Gamification
-                {% endif %}
+                {{ t('gamification', lang)|default('Gamification') }}
               </a></li>
               
               <!-- Progress -->
               <li><a class="dropdown-item" href="{{ url_for('dashboard.index') }}">
                 <i class="bi bi-graph-up fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Voortgang
-                {% elif lang == 'en' %}
-                  Progress
-                {% elif lang == 'ru' %}
-                  Прогресс
-                {% else %}
-                  Progress
-                {% endif %}
+                {{ t('progress', lang)|default('Progress') }}
               </a></li>
               
               <!-- Learning Planner -->
               <li><a class="dropdown-item" href="{{ url_for('dashboard.index') }}?v=2">
                 <i class="bi bi-calendar-check fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Leerplanner
-                {% elif lang == 'en' %}
-                  Learning Planner
-                {% elif lang == 'ru' %}
-                  Планировщик обучения
-                {% else %}
-                  Learning Planner
-                {% endif %}
+                {{ t('learning_planner', lang)|default('Learning Planner') }}
               </a></li>
               
               <!-- Profile -->
               <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">
                 <i class="bi bi-person-gear fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Profiel bewerken
-                {% elif lang == 'en' %}
-                  Edit profile
-                {% elif lang == 'ru' %}
-                  Редактировать профиль
-                {% else %}
-                  Edit profile
-                {% endif %}
+                {{ t('edit_profile', lang)|default('Edit profile') }}
               </a></li>
               
               <!-- Theme Switcher -->
               <li><a class="dropdown-item theme-btn" data-theme="toggle" href="#" onclick="toggleTheme(); return false;">
                 <i class="bi bi-moon-stars fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Thema wisselen
-                {% elif lang == 'en' %}
-                  Switch theme
-                {% elif lang == 'ru' %}
-                  Сменить тему
-                {% else %}
-                  Switch theme
-                {% endif %}
+                {{ t('switch_theme', lang)|default('Switch theme') }}
               </a></li>
               
               <li><hr class="dropdown-divider"></li>
@@ -247,28 +167,12 @@
               {% if current_user.is_digid_user() %}
               <li><a class="dropdown-item text-danger" href="{{ url_for('digid.logout') }}">
                 <i class="bi bi-box-arrow-right fs-5 me-2"></i> DigiD 
-                {% if lang == 'nl' %}
-                  Uitloggen
-                {% elif lang == 'en' %}
-                  Logout
-                {% elif lang == 'ru' %}
-                  Выйти
-                {% else %}
-                  Logout
-                {% endif %}
+                {{ t('logout', lang)|default('Logout') }}
               </a></li>
               {% else %}
               <li><a class="dropdown-item text-danger" href="{{ url_for('auth.digid_logout') }}">
                 <i class="bi bi-box-arrow-right fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Uitloggen
-                {% elif lang == 'en' %}
-                  Logout
-                {% elif lang == 'ru' %}
-                  Выйти
-                {% else %}
-                  Logout
-                {% endif %}
+                {{ t('logout', lang)|default('Logout') }}
               </a></li>
               {% endif %}
             </ul>
@@ -298,35 +202,19 @@
           <div class="dropdown" style="position: relative; z-index: 1002;">
             <button class="btn user-btn-modern" 
                     type="button" id="guestDropdown" data-bs-toggle="dropdown" aria-expanded="false"
-                    title="{{ t('settings', lang)|default('Настройки') }}">
+                    title="{{ t('settings', lang)|default('Settings') }}">
               <span class="settings-icon"><i class="bi bi-gear-fill"></i></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="guestDropdown">
               <!-- Theme Switcher -->
               <li><a class="dropdown-item theme-btn" data-theme="light" href="#" onclick="setTheme('light'); return false;">
                 <i class="bi bi-sun fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Lichte thema
-                {% elif lang == 'en' %}
-                  Light theme
-                {% elif lang == 'ru' %}
-                  Светлая тема
-                {% else %}
-                  {{ t('light_theme', lang)|default('Light theme') }}
-                {% endif %}
+                {{ t('light_theme', lang)|default('Light theme') }}
                 <span class="theme-checkmark" id="light-check"><i class="bi bi-check-lg ms-1"></i></span>
               </a></li>
               <li><a class="dropdown-item theme-btn" data-theme="dark" href="#" onclick="setTheme('dark'); return false;">
                 <i class="bi bi-moon fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Donkere thema
-                {% elif lang == 'en' %}
-                  Dark theme
-                {% elif lang == 'ru' %}
-                  Темная тема
-                {% else %}
-                  {{ t('dark_theme', lang)|default('Dark theme') }}
-                {% endif %}
+                {{ t('dark_theme', lang)|default('Dark theme') }}
                 <span class="theme-checkmark" id="dark-check"><i class="bi bi-check-lg ms-1"></i></span>
               </a></li>
               
@@ -335,15 +223,7 @@
               <!-- DigiD Login -->
               <li><a class="dropdown-item" href="/digid/login">
                 <i class="bi bi-shield-lock fs-5 me-2"></i>
-                {% if lang == 'nl' %}
-                  Inloggen met DigiD
-                {% elif lang == 'en' %}
-                  Login with DigiD
-                {% elif lang == 'ru' %}
-                  Войти через DigiD
-                {% else %}
-                  DigiD Login
-                {% endif %}
+                {{ t('login_with_digid', lang)|default('Login with DigiD') }}
               </a></li>
             </ul>
           </div>

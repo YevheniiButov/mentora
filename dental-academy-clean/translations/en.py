@@ -1,6 +1,9 @@
 translations = {
     # Navigation
     'home': 'Home',
+    'learning_map': 'Learning Map',
+    'community': 'Community',
+    'about_big': 'About BIG',
     'learning': 'Learning',
     'dashboard': 'Dashboard',
     'profile': 'Profile',
@@ -19,11 +22,15 @@ translations = {
     'back': 'Back',
     'next': 'Next',
     'complete': 'Complete',
+    'login_with_digid': 'Login with DigiD',
+    'continue_learning': 'Continue learning',
+    'start_learning': 'Start learning',
     
     # Labels
     'search': 'Search',
     'language': 'Language',
     'select_language': 'Select language',
+    'toggle_navigation': 'Toggle navigation',
     
     # Errors
     'error': 'Error',
@@ -31,8 +38,18 @@ translations = {
     'server_error': 'Server error',
     'form_error': 'Please fill in all required fields',
     'unauthorized': 'Unauthorized',
-    'forbidden': 'Access denied',
+    'forbidden': 'Forbidden',
     'success': 'Success',
+    
+    # User and profile
+    'pharmacist': 'Pharmacist',
+    'gamification': 'Gamification',
+    'progress': 'Progress',
+    'learning_planner': 'Learning Planner',
+    'edit_profile': 'Edit profile',
+    'switch_theme': 'Switch theme',
+    'light_theme': 'Light theme',
+    'dark_theme': 'Dark theme',
     
     # Error Messages
     'fill_all_4_letters': 'Fill in all 4 letters.',
@@ -154,7 +171,6 @@ translations = {
     # Homepage
     'hero_title': 'Your successful path to medical excellence',
     'hero_subtitle': 'Multidisciplinary training for dentists, pharmacists, general practitioners and nurses',
-    'login_with_digid': 'Login with DigiD',
     'learn_more': 'Learn more',
     'exam_preparation': 'Exam preparation',
     'languages_supported': 'Languages supported',

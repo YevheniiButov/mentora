@@ -1,6 +1,9 @@
 translations = {
     # ناوبری
     'home': 'خانه',
+    'learning_map': 'نقشه یادگیری',
+    'community': 'انجمن',
+    'about_big': 'درباره BIG',
     'learning': 'یادگیری',
     'dashboard': 'داشبورد',
     'profile': 'پروفایل',
@@ -27,6 +30,7 @@ translations = {
     'search': 'جستجو',
     'language': 'زبان',
     'select_language': 'انتخاب زبان',
+    'toggle_navigation': 'تغییر ناوبری',
     
     # خطاها
     'error': 'خطا',
@@ -37,6 +41,16 @@ translations = {
     'forbidden': 'دسترسی ممنوع',
     'success': 'موفقیت',
     
+    # کاربر و پروفایل
+    'pharmacist': 'داروساز',
+    'gamification': 'بازی‌سازی',
+    'progress': 'پیشرفت',
+    'learning_planner': 'برنامه‌ریز یادگیری',
+    'edit_profile': 'ویرایش پروفایل',
+    'switch_theme': 'تغییر تم',
+    'light_theme': 'تم روشن',
+    'dark_theme': 'تم تاریک',
+    
     # صفحه اصلی
     'hero_title': 'مسیر موفقیت شما به سوی تعالی پزشکی',
     'hero_subtitle': 'آموزش چندرشته‌ای برای دندانپزشکان، داروسازان، پزشکان عمومی و پرستاران',
@@ -46,7 +60,6 @@ translations = {
     'availability': 'در دسترس بودن',
     
     # کارت‌های ویژگی
-    'community': 'انجمن',
     'community_description': 'با همکاران ارتباط برقرار کنید، دانش را به اشتراک بگذارید و از یکدیگر بیاموزید',
     'discussions': 'بحث‌ها',
     'networking': 'شبکه‌سازی',

@@ -1,15 +1,18 @@
 translations = {
     # Навігація
     'home': 'Головна',
+    'learning_map': 'Карта навчання',
+    'community': 'Спільнота',
+    'about_big': 'Про BIG',
     'learning': 'Навчання',
-    'dashboard': 'Панель',
+    'dashboard': 'Панель керування',
     'profile': 'Профіль',
     'settings': 'Налаштування',
     'logout': 'Вийти',
     'login': 'Увійти',
     'register': 'Зареєструватися',
     'patients': 'Пацієнти',
-    'ai_assistant': 'AI-асистент',
+    'ai_assistant': 'AI Асистент',
     
     # Кнопки
     'save': 'Зберегти',
@@ -21,20 +24,32 @@ translations = {
     'complete': 'Завершити',
     'login_with_digid': 'Увійти через DigiD',
     'continue_learning': 'Продовжити навчання',
+    'start_learning': 'Почати навчання',
     
     # Мітки
     'search': 'Пошук',
     'language': 'Мова',
     'select_language': 'Вибрати мову',
+    'toggle_navigation': 'Перемкнути навігацію',
     
     # Помилки
     'error': 'Помилка',
     'not_found': 'Не знайдено',
     'server_error': 'Помилка сервера',
     'form_error': 'Будь ласка, заповніть всі обов\'язкові поля',
-    'unauthorized': 'Не авторизовано',
-    'forbidden': 'Доступ заборонено',
+    'unauthorized': 'Неавторизований',
+    'forbidden': 'Заборонено',
     'success': 'Успіх',
+    
+    # Користувач і профіль
+    'pharmacist': 'Фармацевт',
+    'gamification': 'Гейміфікація',
+    'progress': 'Прогрес',
+    'learning_planner': 'Планувальник навчання',
+    'edit_profile': 'Редагувати профіль',
+    'switch_theme': 'Змінити тему',
+    'light_theme': 'Світла тема',
+    'dark_theme': 'Темна тема',
     
     # Головна сторінка
     'hero_title': 'Ваш успішний шлях до медичної досконалості',

@@ -1,15 +1,18 @@
 translations = {
     # Навигация
     'home': 'Главная',
+    'learning_map': 'Карта обучения',
+    'community': 'Сообщество',
+    'about_big': 'О BIG',
     'learning': 'Обучение',
-    'dashboard': 'Панель',
+    'dashboard': 'Панель управления',
     'profile': 'Профиль',
     'settings': 'Настройки',
     'logout': 'Выйти',
     'login': 'Войти',
     'register': 'Регистрация',
     'patients': 'Пациенты',
-    'ai_assistant': 'AI-ассистент',
+    'ai_assistant': 'AI Ассистент',
     
     # Кнопки
     'save': 'Сохранить',
@@ -19,20 +22,34 @@ translations = {
     'back': 'Назад',
     'next': 'Далее',
     'complete': 'Завершить',
+    'login_with_digid': 'Войти через DigiD',
+    'continue_learning': 'Продолжить обучение',
+    'start_learning': 'Начать обучение',
     
     # Метки
     'search': 'Поиск',
     'language': 'Язык',
     'select_language': 'Выбрать язык',
+    'toggle_navigation': 'Переключить навигацию',
     
     # Ошибки
     'error': 'Ошибка',
     'not_found': 'Не найдено',
     'server_error': 'Ошибка сервера',
     'form_error': 'Пожалуйста, заполните все обязательные поля',
-    'unauthorized': 'Не авторизован',
-    'forbidden': 'Доступ запрещен',
+    'unauthorized': 'Неавторизован',
+    'forbidden': 'Запрещено',
     'success': 'Успех',
+    
+    # Пользователь и профиль
+    'pharmacist': 'Фармацевт',
+    'gamification': 'Геймификация',
+    'progress': 'Прогресс',
+    'learning_planner': 'Планировщик обучения',
+    'edit_profile': 'Редактировать профиль',
+    'switch_theme': 'Сменить тему',
+    'light_theme': 'Светлая тема',
+    'dark_theme': 'Темная тема',
     
     # Error Messages
     'fill_all_4_letters': 'Введите все 4 буквы.',
@@ -154,7 +171,6 @@ translations = {
     # Главная страница
     'hero_title': 'Ваш успешный путь к медицинскому совершенству',
     'hero_subtitle': 'Мультидисциплинарное обучение для стоматологов, фармацевтов, терапевтов и медсестер',
-    'login_with_digid': 'Войти через DigiD',
     'learn_more': 'Узнать больше',
     'exam_preparation': 'Подготовка к экзамену',
     'languages_supported': 'Поддерживаемые языки',

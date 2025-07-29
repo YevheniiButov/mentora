@@ -1,6 +1,9 @@
 translations = {
     # Navigasyon
     'home': 'Ana Sayfa',
+    'learning_map': 'Öğrenme Haritası',
+    'community': 'Topluluk',
+    'about_big': 'BIG Hakkında',
     'learning': 'Öğrenme',
     'dashboard': 'Gösterge Paneli',
     'profile': 'Profil',
@@ -21,20 +24,32 @@ translations = {
     'complete': 'Tamamla',
     'login_with_digid': 'DigiD ile Giriş',
     'continue_learning': 'Öğrenmeye devam et',
+    'start_learning': 'Öğrenmeye başla',
     
     # Etiketler
     'search': 'Ara',
     'language': 'Dil',
     'select_language': 'Dil seçin',
+    'toggle_navigation': 'Navigasyonu değiştir',
     
     # Hatalar
     'error': 'Hata',
     'not_found': 'Bulunamadı',
     'server_error': 'Sunucu hatası',
-    'form_error': 'Lütfen tüm zorunlu alanları doldurun',
+    'form_error': 'Lütfen tüm gerekli alanları doldurun',
     'unauthorized': 'Yetkisiz',
-    'forbidden': 'Erişim reddedildi',
+    'forbidden': 'Yasak',
     'success': 'Başarılı',
+    
+    # Kullanıcı ve profil
+    'pharmacist': 'Eczacı',
+    'gamification': 'Oyunlaştırma',
+    'progress': 'İlerleme',
+    'learning_planner': 'Öğrenme Planlayıcısı',
+    'edit_profile': 'Profili düzenle',
+    'switch_theme': 'Temayı değiştir',
+    'light_theme': 'Açık tema',
+    'dark_theme': 'Koyu tema',
     
     # Ana sayfa
     'hero_title': 'Tıbbi mükemmelliğe giden başarılı yolunuz',

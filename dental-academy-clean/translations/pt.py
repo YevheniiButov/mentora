@@ -1,7 +1,10 @@
 translations = {
     # Navegação
     'home': 'Início',
-    'learning': 'Aprendizado',
+    'learning_map': 'Mapa de Aprendizagem',
+    'community': 'Comunidade',
+    'about_big': 'Sobre BIG',
+    'learning': 'Aprendizagem',
     'dashboard': 'Painel',
     'profile': 'Perfil',
     'settings': 'Configurações',
@@ -14,7 +17,7 @@ translations = {
     # Botões
     'save': 'Salvar',
     'cancel': 'Cancelar',
-    'start': 'Iniciar',
+    'start': 'Começar',
     'continue': 'Continuar',
     'back': 'Voltar',
     'next': 'Próximo',
@@ -23,10 +26,11 @@ translations = {
     'continue_learning': 'Continuar aprendendo',
     'start_learning': 'Começar a aprender',
     
-    # Rótulos
+    # Etiquetas
     'search': 'Pesquisar',
     'language': 'Idioma',
     'select_language': 'Selecionar idioma',
+    'toggle_navigation': 'Alternar navegação',
     
     # Erros
     'error': 'Erro',
@@ -34,8 +38,18 @@ translations = {
     'server_error': 'Erro do servidor',
     'form_error': 'Por favor preencha todos os campos obrigatórios',
     'unauthorized': 'Não autorizado',
-    'forbidden': 'Acesso negado',
+    'forbidden': 'Proibido',
     'success': 'Sucesso',
+    
+    # Usuário e perfil
+    'pharmacist': 'Farmacêutico',
+    'gamification': 'Gamificação',
+    'progress': 'Progresso',
+    'learning_planner': 'Planejador de Aprendizagem',
+    'edit_profile': 'Editar perfil',
+    'switch_theme': 'Alternar tema',
+    'light_theme': 'Tema claro',
+    'dark_theme': 'Tema escuro',
     
     # Página principal
     'hero_title': 'Seu caminho de sucesso para a excelência médica',

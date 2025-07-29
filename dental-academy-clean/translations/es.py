@@ -1,6 +1,9 @@
 translations = {
     # Navegación
     'home': 'Inicio',
+    'learning_map': 'Mapa de Aprendizaje',
+    'community': 'Comunidad',
+    'about_big': 'Acerca de BIG',
     'learning': 'Aprendizaje',
     'dashboard': 'Panel',
     'profile': 'Perfil',
@@ -27,6 +30,7 @@ translations = {
     'search': 'Buscar',
     'language': 'Idioma',
     'select_language': 'Seleccionar idioma',
+    'toggle_navigation': 'Alternar navegación',
     
     # Errores
     'error': 'Error',
@@ -34,8 +38,18 @@ translations = {
     'server_error': 'Error del servidor',
     'form_error': 'Por favor complete todos los campos requeridos',
     'unauthorized': 'No autorizado',
-    'forbidden': 'Acceso denegado',
+    'forbidden': 'Prohibido',
     'success': 'Éxito',
+    
+    # Usuario y perfil
+    'pharmacist': 'Farmacéutico',
+    'gamification': 'Gamificación',
+    'progress': 'Progreso',
+    'learning_planner': 'Planificador de Aprendizaje',
+    'edit_profile': 'Editar perfil',
+    'switch_theme': 'Cambiar tema',
+    'light_theme': 'Tema claro',
+    'dark_theme': 'Tema oscuro',
     
     # Página principal
     'hero_title': 'Tu camino exitoso hacia la excelencia médica',
