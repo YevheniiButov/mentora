@@ -790,7 +790,7 @@ section {
       {% else %}
                                          <a href="{{ url_for('auth.digid_login') }}" class="btn-modern btn-primary btn-lg">
               <i class="bi bi-shield-check me-2"></i>
-              Войти через DigiD
+              {{ t('login_with_digid', g.lang)|default('Inloggen met DigiD') }}
             </a>
       {% endif %}
     </div>
@@ -995,7 +995,7 @@ section {
             {% if not current_user.is_authenticated %}
             <a href="{{ url_for('auth.digid_login') }}" class="btn-modern btn-primary btn-lg">
               <i class="bi bi-shield-check me-2"></i>
-              Войти через DigiD
+              {{ t('login_with_digid', g.lang)|default('Inloggen met DigiD') }}
             </a>
             <a href="{{ url_for('main.big_info', lang=lang) }}" class="btn-modern btn-secondary btn-lg">
               <i class="bi bi-info-circle"></i>
