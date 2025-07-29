@@ -87,13 +87,45 @@ translations = {
     'conduct_exam': 'Muayene yap',
     
     # Ana özellikler
-    'start_path_title': 'Başarıya giden yolunuza başlayın',
+    'start_path_title': 'Başarı yolculuğunuza başlayın',
     'professional_platform': 'Sınav hazırlığı için profesyonel platform',
     'theory_title': 'Teori',
     'theory_description': 'Anatomi, fizyoloji ve radyoloji için yapılandırılmış modüller',
     'practice_title': 'Pratik',
     'practice_description': 'Klinik vakalar ve hasta çalışması simülasyonu',
     'most_popular': 'En popüler',
+    
+    # Platform özellikleri - ek bölüm
+    'platform_features': 'Platform özellikleri',
+    'why_choose_us': 'Neden bizi seçin',
+    'comprehensive_approach': 'Tıp profesyonelleri için kapsamlı hazırlık yaklaşımı',
+    'multilingual_support': 'Çok dilli destek',
+    'multilingual_description': 'Farklı ülkelerden öğrenciler için 8 dilde eğitim',
+    'flexible_schedule': 'Esnek program',
+    'flexible_description': 'Kendi zamanınızda ve kendi hızınızda öğrenin',
+    'quality_assurance': 'Kalite garantisi',
+    'quality_description': 'Tıp alanında uzmanlar tarafından geliştirilen içerik',
+    'support_247': '7/24 destek',
+    'support_description': 'Kullanıcılar için 24 saat destek',
+    
+    # Öğrenme yaklaşımı
+    'learning_approach': 'Öğrenme yaklaşımı',
+    'our_methodology': 'Metodolojimiz',
+    'evidence_based': 'Kanıta dayalı öğrenme sistemi',
+    'structured_modules': 'Yapılandırılmış modüller',
+    'structured_modules_desc': 'Temel bilgilerden ileri becerilere kadar mantıklı öğrenme programı',
+    'adaptive_testing': 'Uyarlanabilir testler',
+    'adaptive_testing_desc': 'Optimal öğrenme için bilgi seviyenize uyarlanan testler',
+    
+    # Ek başlıklar ve açıklamalar
+    'case_studies': 'Vaka çalışmaları',
+    'communication': 'İletişim',
+    'medical_dutch': 'Tıbbi Hollandaca',
+    'exam_title': 'Sınav',
+    'exam_description': 'Sonuç analizi ile gerçek sınavlara hazırlık',
+    'mock_exams': 'Deneme sınavları',
+    'analytics': 'Analitik',
+    'strategy': 'Strateji',
     
     # Tıbbi terminoloji
     'dental_caries': 'Diş çürüğü',

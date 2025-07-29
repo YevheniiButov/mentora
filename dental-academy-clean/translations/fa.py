@@ -118,6 +118,38 @@ translations = {
     'practice_description': 'موارد بالینی و شبیه‌سازی کار با بیماران',
     'most_popular': 'محبوب‌ترین',
     
+    # ویژگی‌های پلتفرم - بخش دوم
+    'platform_features': 'ویژگی‌های پلتفرم',
+    'why_choose_us': 'چرا ما را انتخاب کنید',
+    'comprehensive_approach': 'رویکرد جامع برای آمادگی متخصصان پزشکی',
+    'multilingual_support': 'پشتیبانی چندزبانه',
+    'multilingual_description': 'آموزش به ۸ زبان برای راحتی دانشجویان از کشورهای مختلف',
+    'flexible_schedule': 'برنامه انعطاف‌پذیر',
+    'flexible_description': 'در زمان مناسب و با سرعت خودتان یاد بگیرید',
+    'quality_assurance': 'تضمین کیفیت',
+    'quality_description': 'محتوای توسعه یافته توسط متخصصان حوزه پزشکی',
+    'support_247': 'پشتیبانی ۲۴/۷',
+    'support_description': 'پشتیبانی شبانه‌روزی کاربران',
+    
+    # رویکرد یادگیری
+    'learning_approach': 'رویکرد یادگیری',
+    'our_methodology': 'روش‌شناسی ما',
+    'evidence_based': 'سیستم یادگیری مبتنی بر شواهد',
+    'structured_modules': 'ماژول‌های ساختاریافته',
+    'structured_modules_desc': 'برنامه یادگیری منطقی از دانش پایه تا مهارت‌های پیشرفته',
+    'adaptive_testing': 'آزمون تطبیقی',
+    'adaptive_testing_desc': 'آزمون‌هایی که با سطح دانش شما تطبیق می‌یابند برای یادگیری بهینه',
+    
+    # عناوین و توضیحات اضافی
+    'case_studies': 'مطالعات موردی',
+    'communication': 'ارتباطات',
+    'medical_dutch': 'هلندی پزشکی',
+    'exam_title': 'امتحان',
+    'exam_description': 'آمادگی برای امتحانات واقعی با تحلیل نتایج',
+    'mock_exams': 'امتحانات آزمایشی',
+    'analytics': 'تحلیل‌ها',
+    'strategy': 'استراتژی',
+    
     # روزهای هفته
     'sunday': 'یکشنبه',
     'monday': 'دوشنبه',
@@ -131,7 +163,6 @@ translations = {
     'morning_time': 'صبح (۸:۰۰ - ۱۲:۰۰)',
     'afternoon_time': 'عصر (۱۲:۰۰ - ۱۸:۰۰)',
     'evening_time': 'شب (۱۸:۰۰ - ۲۲:۰۰)',
-    'flexible_schedule': 'برنامه انعطاف‌پذیر',
     
     # برنامه‌ریز یادگیری
     'learning_planner_title': 'برنامه‌ریز یادگیری',
@@ -146,7 +177,6 @@ translations = {
     'plan_settings': 'تنظیمات برنامه',
     'exam_date': 'تاریخ امتحان',
     'study_period': 'دوره مطالعه',
-    'start': 'شروع',
     'end': 'پایان',
     'study_intensity': 'شدت مطالعه',
     'light': 'سبک',

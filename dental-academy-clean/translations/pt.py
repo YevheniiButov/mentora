@@ -118,6 +118,38 @@ translations = {
     'practice_description': 'Casos clínicos e simulação de trabalho com pacientes',
     'most_popular': 'Mais popular',
     
+    # Características da plataforma - seção adicional
+    'platform_features': 'Características da plataforma',
+    'why_choose_us': 'Por que nos escolher',
+    'comprehensive_approach': 'Abordagem abrangente para preparação de profissionais médicos',
+    'multilingual_support': 'Suporte multilíngue',
+    'multilingual_description': 'Educação em 8 idiomas para comodidade de estudantes de diferentes países',
+    'flexible_schedule': 'Horário flexível',
+    'flexible_description': 'Aprenda no seu tempo livre e no seu próprio ritmo',
+    'quality_assurance': 'Garantia de qualidade',
+    'quality_description': 'Conteúdo desenvolvido por especialistas na área médica',
+    'support_247': 'Suporte 24/7',
+    'support_description': 'Suporte 24 horas para usuários',
+    
+    # Abordagem de aprendizado
+    'learning_approach': 'Abordagem de aprendizado',
+    'our_methodology': 'Nossa metodologia',
+    'evidence_based': 'Sistema de aprendizado baseado em evidências',
+    'structured_modules': 'Módulos estruturados',
+    'structured_modules_desc': 'Programa de aprendizado lógico desde conhecimentos básicos até habilidades avançadas',
+    'adaptive_testing': 'Testes adaptativos',
+    'adaptive_testing_desc': 'Testes que se adaptam ao seu nível de conhecimento para aprendizado ideal',
+    
+    # Títulos e descrições adicionais
+    'case_studies': 'Estudos de casos',
+    'communication': 'Comunicação',
+    'medical_dutch': 'Holandês médico',
+    'exam_title': 'Exame',
+    'exam_description': 'Preparação para exames reais com análise de resultados',
+    'mock_exams': 'Exames simulados',
+    'analytics': 'Análise',
+    'strategy': 'Estratégia',
+    
     # Terminologia médica
     'dental_caries': 'Cárie dental',
     'periodontitis': 'Periodontite',

@@ -118,6 +118,38 @@ translations = {
     'practice_description': 'Casos clínicos y simulación de trabajo con pacientes',
     'most_popular': 'Más popular',
     
+    # Características de la plataforma - sección adicional
+    'platform_features': 'Características de la plataforma',
+    'why_choose_us': 'Por qué elegirnos',
+    'comprehensive_approach': 'Enfoque integral para la preparación de profesionales médicos',
+    'multilingual_support': 'Soporte multilingüe',
+    'multilingual_description': 'Educación en 8 idiomas para la comodidad de estudiantes de diferentes países',
+    'flexible_schedule': 'Horario flexible',
+    'flexible_description': 'Aprende en tu tiempo libre y a tu propio ritmo',
+    'quality_assurance': 'Garantía de calidad',
+    'quality_description': 'Contenido desarrollado por expertos en el campo médico',
+    'support_247': 'Soporte 24/7',
+    'support_description': 'Soporte las 24 horas para usuarios',
+    
+    # Enfoque de aprendizaje
+    'learning_approach': 'Enfoque de aprendizaje',
+    'our_methodology': 'Nuestra metodología',
+    'evidence_based': 'Sistema de aprendizaje basado en evidencia',
+    'structured_modules': 'Módulos estructurados',
+    'structured_modules_desc': 'Programa de aprendizaje lógico desde conocimientos básicos hasta habilidades avanzadas',
+    'adaptive_testing': 'Pruebas adaptativas',
+    'adaptive_testing_desc': 'Pruebas que se adaptan a tu nivel de conocimiento para un aprendizaje óptimo',
+    
+    # Títulos y descripciones adicionales
+    'case_studies': 'Estudios de casos',
+    'communication': 'Comunicación',
+    'medical_dutch': 'Holandés médico',
+    'exam_title': 'Examen',
+    'exam_description': 'Preparación para exámenes reales con análisis de resultados',
+    'mock_exams': 'Exámenes simulados',
+    'analytics': 'Análisis',
+    'strategy': 'Estrategia',
+    
     # Días de la semana
     'sunday': 'Domingo',
     'monday': 'Lunes',
