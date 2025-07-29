@@ -21,6 +21,7 @@ translations = {
     'complete': 'Completar',
     'login_with_digid': 'Entrar com DigiD',
     'continue_learning': 'Continuar aprendendo',
+    'start_learning': 'Começar a aprender',
     
     # Rótulos
     'search': 'Pesquisar',
@@ -43,6 +44,28 @@ translations = {
     'exam_preparation': 'Preparação para exames',
     'languages_supported': 'Idiomas suportados',
     'availability': 'Disponibilidade',
+    
+    # Cartões de características
+    'community': 'Comunidade',
+    'community_description': 'Conecte-se com colegas, compartilhe conhecimentos e aprenda uns com os outros',
+    'discussions': 'Discussões',
+    'networking': 'Networking',
+    'cases': 'Casos',
+    'visit_community': 'Visitar Comunidade →',
+    
+    'virtual_patients': 'Pacientes Virtuais',
+    'virtual_patients_description': 'Pratique com cenários clínicos realistas e melhore suas habilidades diagnósticas',
+    'diagnosis': 'Diagnóstico',
+    'treatment': 'Tratamento',
+    'scenarios': 'Cenários',
+    'start_scenario': 'Iniciar cenário →',
+    
+    'big_registration': 'Registro BIG',
+    'big_registration_description': 'Guia completo para registro BIG: requisitos, processo e dicas para todas as profissões de saúde',
+    'documentation': 'Documentação',
+    'step_by_step': 'Passo a passo',
+    'all_professions': 'Todas as profissões',
+    'view_big_guide': 'Ver guia BIG →',
     
     # Características da plataforma
     'interactive_learning': 'Aprendizado interativo',

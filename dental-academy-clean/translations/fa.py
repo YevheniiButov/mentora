@@ -21,6 +21,7 @@ translations = {
     'complete': 'تکمیل',
     'login_with_digid': 'ورود با DigiD',
     'continue_learning': 'ادامه یادگیری',
+    'start_learning': 'شروع یادگیری',
     
     # برچسب‌ها
     'search': 'جستجو',
@@ -43,6 +44,28 @@ translations = {
     'exam_preparation': 'آمادگی برای امتحان',
     'languages_supported': 'زبان‌های پشتیبانی شده',
     'availability': 'در دسترس بودن',
+    
+    # کارت‌های ویژگی
+    'community': 'انجمن',
+    'community_description': 'با همکاران ارتباط برقرار کنید، دانش را به اشتراک بگذارید و از یکدیگر بیاموزید',
+    'discussions': 'بحث‌ها',
+    'networking': 'شبکه‌سازی',
+    'cases': 'موارد',
+    'visit_community': 'بازدید از انجمن →',
+    
+    'virtual_patients': 'بیماران مجازی',
+    'virtual_patients_description': 'با سناریوهای بالینی واقع‌گرایانه تمرین کنید و مهارت‌های تشخیصی خود را بهبود دهید',
+    'diagnosis': 'تشخیص',
+    'treatment': 'درمان',
+    'scenarios': 'سناریوها',
+    'start_scenario': 'شروع سناریو →',
+    
+    'big_registration': 'ثبت‌نام BIG',
+    'big_registration_description': 'راهنمای کامل ثبت‌نام BIG: الزامات، فرآیند و نکات برای تمام حرفه‌های بهداشتی',
+    'documentation': 'مستندات',
+    'step_by_step': 'گام به گام',
+    'all_professions': 'تمام حرفه‌ها',
+    'view_big_guide': 'مشاهده راهنمای BIG →',
     
     # ویژگی‌های پلتفرم
     'interactive_learning': 'یادگیری تعاملی',
@@ -94,6 +117,57 @@ translations = {
     'practice_title': 'تمرین',
     'practice_description': 'موارد بالینی و شبیه‌سازی کار با بیماران',
     'most_popular': 'محبوب‌ترین',
+    
+    # روزهای هفته
+    'sunday': 'یکشنبه',
+    'monday': 'دوشنبه',
+    'tuesday': 'سه‌شنبه',
+    'wednesday': 'چهارشنبه',
+    'thursday': 'پنج‌شنبه',
+    'friday': 'جمعه',
+    'saturday': 'شنبه',
+    
+    # ساعات
+    'morning_time': 'صبح (۸:۰۰ - ۱۲:۰۰)',
+    'afternoon_time': 'عصر (۱۲:۰۰ - ۱۸:۰۰)',
+    'evening_time': 'شب (۱۸:۰۰ - ۲۲:۰۰)',
+    'flexible_schedule': 'برنامه انعطاف‌پذیر',
+    
+    # برنامه‌ریز یادگیری
+    'learning_planner_title': 'برنامه‌ریز یادگیری',
+    'learning_planner_header_title': 'برنامه‌ریز یادگیری شخصی',
+    'learning_planner_header_subtitle': 'یک برنامه بهینه آمادگی برای امتحان BIG بر اساس نتایج تشخیصی ایجاد کنید',
+    'days_to_exam': 'روز تا امتحان',
+    'study_hours': 'ساعت مطالعه',
+    'readiness': 'آمادگی',
+    'learning_schedule': 'برنامه یادگیری',
+    'month': 'ماه',
+    'learning_goals': 'اهداف یادگیری',
+    'plan_settings': 'تنظیمات برنامه',
+    'exam_date': 'تاریخ امتحان',
+    'study_period': 'دوره مطالعه',
+    'start': 'شروع',
+    'end': 'پایان',
+    'study_intensity': 'شدت مطالعه',
+    'light': 'سبک',
+    'light_hours': '۱-۲ ساعت/روز',
+    'moderate': 'متوسط',
+    'moderate_hours': '۲-۴ ساعت/روز',
+    'intensive': 'فشرده',
+    'intensive_hours': '۴-۶ ساعت/روز',
+    'preferred_days': 'روزهای ترجیحی',
+    'study_time': 'زمان مطالعه',
+    'create_plan': 'ایجاد برنامه',
+    'domain_progress': 'پیشرفت حوزه',
+    
+    # پیشرفت
+    'progress': 'پیشرفت',
+    'detailed_progress': 'پیشرفت تفصیلی',
+    'progress_description': 'اطلاعات تفصیلی درباره پیشرفت شما در تمام برنامه‌های یادگیری',
+    'back_to_dashboard': 'بازگشت به داشبورد',
+    'lessons': 'درس‌ها',
+    'no_progress_data': 'داده‌ای پیشرفت وجود ندارد',
+    'start_learning_to_track': 'برای ردیابی پیشرفت شروع به یادگیری کنید',
     
     # اصطلاحات پزشکی
     'dental_caries': 'پوسیدگی دندان',

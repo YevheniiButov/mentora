@@ -45,6 +45,28 @@ translations = {
     'languages_supported': 'Idiomas soportados',
     'availability': 'Disponibilidad',
     
+    # Tarjetas de características
+    'community': 'Comunidad',
+    'community_description': 'Conecta con colegas, comparte conocimientos y aprende unos de otros',
+    'discussions': 'Discusiones',
+    'networking': 'Networking',
+    'cases': 'Casos',
+    'visit_community': 'Visitar Comunidad →',
+    
+    'virtual_patients': 'Pacientes Virtuales',
+    'virtual_patients_description': 'Practica con escenarios clínicos realistas y mejora tus habilidades diagnósticas',
+    'diagnosis': 'Diagnóstico',
+    'treatment': 'Tratamiento',
+    'scenarios': 'Escenarios',
+    'start_scenario': 'Iniciar escenario →',
+    
+    'big_registration': 'Registro BIG',
+    'big_registration_description': 'Guía completa para el registro BIG: requisitos, proceso y consejos para todas las profesiones sanitarias',
+    'documentation': 'Documentación',
+    'step_by_step': 'Paso a paso',
+    'all_professions': 'Todas las profesiones',
+    'view_big_guide': 'Ver guía BIG →',
+    
     # Características de la plataforma
     'interactive_learning': 'Aprendizaje interactivo',
     'structured_learning': 'Aprendizaje estructurado',
