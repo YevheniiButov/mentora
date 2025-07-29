@@ -20,6 +20,7 @@ translations = {
     'next': 'İleri',
     'complete': 'Tamamla',
     'login_with_digid': 'DigiD ile Giriş',
+    'continue_learning': 'Öğrenmeye devam et',
     
     # Etiketler
     'search': 'Ara',

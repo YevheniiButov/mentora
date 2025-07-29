@@ -20,6 +20,7 @@ translations = {
     'next': 'Próximo',
     'complete': 'Completar',
     'login_with_digid': 'Entrar com DigiD',
+    'continue_learning': 'Continuar aprendendo',
     
     # Rótulos
     'search': 'Pesquisar',

@@ -20,6 +20,8 @@ translations = {
     'next': 'Siguiente',
     'complete': 'Completar',
     'login_with_digid': 'Iniciar sesión con DigiD',
+    'continue_learning': 'Continuar aprendiendo',
+    'start_learning': 'Comenzar a aprender',
     
     # Etiquetas
     'search': 'Buscar',
@@ -93,6 +95,57 @@ translations = {
     'practice_title': 'Práctica',
     'practice_description': 'Casos clínicos y simulación de trabajo con pacientes',
     'most_popular': 'Más popular',
+    
+    # Días de la semana
+    'sunday': 'Domingo',
+    'monday': 'Lunes',
+    'tuesday': 'Martes',
+    'wednesday': 'Miércoles',
+    'thursday': 'Jueves',
+    'friday': 'Viernes',
+    'saturday': 'Sábado',
+    
+    # Horarios
+    'morning_time': 'Mañana (8:00 - 12:00)',
+    'afternoon_time': 'Tarde (12:00 - 18:00)',
+    'evening_time': 'Noche (18:00 - 22:00)',
+    'flexible_schedule': 'Horario flexible',
+    
+    # Planificador de aprendizaje
+    'learning_planner_title': 'Planificador de Aprendizaje',
+    'learning_planner_header_title': 'Planificador de Aprendizaje Personal',
+    'learning_planner_header_subtitle': 'Crea un plan óptimo de preparación para el examen BIG basado en resultados diagnósticos',
+    'days_to_exam': 'días para el examen',
+    'study_hours': 'horas de estudio',
+    'readiness': 'preparación',
+    'learning_schedule': 'Horario de Aprendizaje',
+    'month': 'Mes',
+    'learning_goals': 'Objetivos de Aprendizaje',
+    'plan_settings': 'Configuración del Plan',
+    'exam_date': 'Fecha del Examen',
+    'study_period': 'Período de Estudio',
+    'start': 'Inicio',
+    'end': 'Fin',
+    'study_intensity': 'Intensidad de Estudio',
+    'light': 'Ligero',
+    'light_hours': '1-2 h/día',
+    'moderate': 'Moderado',
+    'moderate_hours': '2-4 h/día',
+    'intensive': 'Intensivo',
+    'intensive_hours': '4-6 h/día',
+    'preferred_days': 'Días Preferidos',
+    'study_time': 'Tiempo de Estudio',
+    'create_plan': 'Crear Plan',
+    'domain_progress': 'Progreso del Dominio',
+    
+    # Progreso
+    'progress': 'Progreso',
+    'detailed_progress': 'Progreso Detallado',
+    'progress_description': 'Información detallada sobre tu progreso en todos los programas de aprendizaje',
+    'back_to_dashboard': 'Volver al Panel',
+    'lessons': 'lecciones',
+    'no_progress_data': 'No hay datos de progreso',
+    'start_learning_to_track': 'Comienza a aprender para rastrear el progreso',
     
     # Terminología médica
     'dental_caries': 'Caries dental',

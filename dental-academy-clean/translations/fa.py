@@ -20,6 +20,7 @@ translations = {
     'next': 'بعدی',
     'complete': 'تکمیل',
     'login_with_digid': 'ورود با DigiD',
+    'continue_learning': 'ادامه یادگیری',
     
     # برچسب‌ها
     'search': 'جستجو',

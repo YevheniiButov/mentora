@@ -20,6 +20,7 @@ translations = {
     'next': 'Далі',
     'complete': 'Завершити',
     'login_with_digid': 'Увійти через DigiD',
+    'continue_learning': 'Продовжити навчання',
     
     # Мітки
     'search': 'Пошук',
