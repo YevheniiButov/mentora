@@ -10,6 +10,7 @@ translations = {
     'register': 'Зареєструватися',
     'patients': 'Пацієнти',
     'ai_assistant': 'AI-асистент',
+    
     # Кнопки
     'save': 'Зберегти',
     'cancel': 'Скасувати',
@@ -18,10 +19,13 @@ translations = {
     'back': 'Назад',
     'next': 'Далі',
     'complete': 'Завершити',
+    'login_with_digid': 'Увійти через DigiD',
+    
     # Мітки
     'search': 'Пошук',
     'language': 'Мова',
     'select_language': 'Вибрати мову',
+    
     # Помилки
     'error': 'Помилка',
     'not_found': 'Не знайдено',
@@ -30,6 +34,66 @@ translations = {
     'unauthorized': 'Не авторизовано',
     'forbidden': 'Доступ заборонено',
     'success': 'Успіх',
+    
+    # Головна сторінка
+    'hero_title': 'Ваш успішний шлях до медичної досконалості',
+    'hero_subtitle': 'Мультидисциплінарна підготовка для стоматологів, фармацевтів, лікарів загальної практики та медсестер',
+    'learn_more': 'Дізнатися більше',
+    'exam_preparation': 'Підготовка до іспитів',
+    'languages_supported': 'Підтримувані мови',
+    'availability': 'Доступність',
+    
+    # Особливості платформи
+    'interactive_learning': 'Інтерактивне навчання',
+    'structured_learning': 'Структуроване навчання',
+    'structured_learning_desc': 'Покрокова програма підготовки до іспитів',
+    'clinical_cases': 'Клінічні випадки',
+    'clinical_cases_desc': 'Практика з реалістичними медичними сценаріями',
+    'progress_tracking': 'Відстеження прогресу',
+    'progress_tracking_desc': 'Детальний аналіз вашого процесу навчання',
+    'learning_dashboard': 'Панель навчання',
+    'your_progress': 'Ваш прогрес',
+    'completed': 'Завершено',
+    'modules': 'Модулі',
+    'cards': 'Картки',
+    'accuracy': 'Точність',
+    
+    # Модулі навчання
+    'anatomy': 'Анатомія',
+    'physiology': 'Фізіологія',
+    'radiology': 'Радіологія',
+    
+    # Тестування
+    'testing': 'Тестування',
+    'question_progress': 'Питання 3 з 15',
+    'sample_question': 'Яка структура відповідає за утворення емалі в зубі?',
+    'odontoblasts': 'Одонтобласти',
+    'ameloblasts': 'Амелобласти',
+    'cementoblasts': 'Цементобласти',
+    'osteoblasts': 'Остеобласти',
+    'timer': 'Таймер: 2:45',
+    'time_remaining': 'Час, що залишився для відповіді',
+    
+    # Віртуальні пацієнти
+    'virtual_patient': 'Віртуальний пацієнт',
+    'clinical_case': 'Клінічний випадок',
+    'patient_name': 'Марія Гарсія',
+    'patient_complaint': 'Інтенсивний біль у правому задньому зубі',
+    'symptom_1': 'Гострий біль при жуванні',
+    'symptom_2': 'Чутливість до холоду та тепла',
+    'symptom_3': 'Біль, що погіршується вночі',
+    'examination': 'Обстеження',
+    'conduct_exam': 'Провести обстеження',
+    
+    # Основні особливості
+    'start_path_title': 'Почніть свій шлях до успіху',
+    'professional_platform': 'Професійна платформа для підготовки до іспитів',
+    'theory_title': 'Теорія',
+    'theory_description': 'Структуровані модулі з анатомії, фізіології та радіології',
+    'practice_title': 'Практика',
+    'practice_description': 'Клінічні випадки та симуляція роботи з пацієнтами',
+    'most_popular': 'Найпопулярніше',
+    
     # Медична термінологія
     'dental_caries': 'Карієс зубів',
     'periodontitis': 'Пародонтит',
