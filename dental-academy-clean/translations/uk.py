@@ -44,6 +44,28 @@ translations = {
     'languages_supported': 'Підтримувані мови',
     'availability': 'Доступність',
     
+    # Картки особливостей
+    'community': 'Спільнота',
+    'community_description': 'З\'єднуйтесь з колегами, діліться знаннями та вчіться один від одного',
+    'discussions': 'Обговорення',
+    'networking': 'Мережування',
+    'cases': 'Випадки',
+    'visit_community': 'Відвідати Спільноту →',
+    
+    'virtual_patients': 'Віртуальні пацієнти',
+    'virtual_patients_description': 'Практикуйтеся з реалістичними клінічними сценаріями та покращуйте свої діагностичні навички',
+    'diagnosis': 'Діагностика',
+    'treatment': 'Лікування',
+    'scenarios': 'Сценарії',
+    'start_scenario': 'Почати сценарій →',
+    
+    'big_registration': 'Реєстрація BIG',
+    'big_registration_description': 'Повний посібник з реєстрації BIG: вимоги, процес та поради для всіх медичних професій',
+    'documentation': 'Документація',
+    'step_by_step': 'Крок за кроком',
+    'all_professions': 'Всі професії',
+    'view_big_guide': 'Переглянути посібник BIG →',
+    
     # Особливості платформи
     'interactive_learning': 'Інтерактивне навчання',
     'structured_learning': 'Структуроване навчання',
