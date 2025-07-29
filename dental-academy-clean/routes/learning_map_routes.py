@@ -500,139 +500,85 @@ def get_nursing_learning_data(user_id):
     }
 
 def get_dentistry_learning_data(user_id):
-    """Генерирует данные карты обучения для стоматологов"""
+    """Генерирует данные карты обучения для стоматологов (BI-toets структура)"""
     
-    # Стоматологические пути обучения
-    dentistry_paths = [
-        {
-            'id': 1,
-            'name': 'BIG-toets Voorbereiding',
-            'description': 'Подготовка к главному экзамену BIG для стоматологов',
-            'icon': 'certificate',
-            'order': 1,
-            'is_active': True,
-            'css_class': 'dentistry-big-preparation'
-        },
-        {
-            'id': 2,
-            'name': 'Algemene Tandheelkunde',
-            'description': 'Основы общей стоматологии',
-            'icon': 'tooth',
-            'order': 2,
-            'is_active': True,
-            'css_class': 'dentistry-general'
-        },
-        {
-            'id': 3,
-            'name': 'Endodontie',
-            'description': 'Эндодонтическое лечение',
-            'icon': 'medical-bag',
-            'order': 3,
-            'is_active': True,
-            'css_class': 'dentistry-endodontics'
-        },
-        {
-            'id': 4,
-            'name': 'Parodontologie',
-            'description': 'Лечение заболеваний пародонта',
-            'icon': 'shield-plus',
-            'order': 4,
-            'is_active': True,
-            'css_class': 'dentistry-periodontology'
-        },
-        {
-            'id': 5,
-            'name': 'Orale Chirurgie',
-            'description': 'Хирургическая стоматология',
-            'icon': 'surgical-scalpel',
-            'order': 5,
-            'is_active': True,
-            'css_class': 'dentistry-surgery'
-        },
-        {
-            'id': 6,
-            'name': 'Prothetiek',
-            'description': 'Стоматологическое протезирование',
-            'icon': 'crown',
-            'order': 6,
-            'is_active': True,
-            'css_class': 'dentistry-prosthetics'
-        },
-        {
-            'id': 7,
-            'name': 'Orthodontie',
-            'description': 'Ортодонтическое лечение',
-            'icon': 'braces',
-            'order': 7,
-            'is_active': True,
-            'css_class': 'dentistry-orthodontics'
-        }
-    ]
+    # Получаем пути обучения из базы данных
+    from models import UserLearningProgress
     
-    # Стоматологические предметы
-    dentistry_subjects = [
-        # BIG-toets Voorbereiding
-        {
-            'id': 1101,
-            'name': 'Anatomie & Fysiologie',
-            'description': 'Анатомия головы и шеи',
-            'learning_path_id': 1,
-            'progress': 65,
-            'modules': [
-                {'id': 11001, 'title': 'Anatomie van het Hoofd', 'progress': 80, 'total_lessons': 12, 'completed_lessons': 10},
-                {'id': 11002, 'title': 'Fysiologie van Kauw- en Slikfunctie', 'progress': 50, 'total_lessons': 8, 'completed_lessons': 4},
-                {'id': 11003, 'title': 'Zenuwstelsel in de Orofaciale Regio', 'progress': 65, 'total_lessons': 10, 'completed_lessons': 7}
-            ]
-        },
-        {
-            'id': 1102,
-            'name': 'Pathologie',
-            'description': 'Патология полости рта',
-            'learning_path_id': 1,
-            'progress': 45,
-            'modules': [
-                {'id': 11004, 'title': 'Orale Pathologie', 'progress': 40, 'total_lessons': 15, 'completed_lessons': 6},
-                {'id': 11005, 'title': 'Systemische Ziekten', 'progress': 50, 'total_lessons': 12, 'completed_lessons': 6}
-            ]
-        },
+    learning_paths = LearningPath.query.filter_by(is_active=True).order_by(LearningPath.exam_weight.desc()).all()
+    
+    dentistry_paths = []
+    for path in learning_paths:
+        # Получаем прогресс пользователя
+        user_progress = UserLearningProgress.query.filter_by(
+            user_id=user_id,
+            learning_path_id=path.id
+        ).first()
         
-        # Algemene Tandheelkunde
-        {
-            'id': 1201,
-            'name': 'Cariologie',
-            'description': 'Кариесология и профилактика',
-            'learning_path_id': 2,
-            'progress': 70,
-            'modules': [
-                {'id': 12001, 'title': 'Cariespreventie', 'progress': 85, 'total_lessons': 8, 'completed_lessons': 7},
-                {'id': 12002, 'title': 'Fluoride Therapie', 'progress': 55, 'total_lessons': 6, 'completed_lessons': 3}
-            ]
-        },
-        {
-            'id': 1202,
-            'name': 'Restauratieve Tandheelkunde',
-            'description': 'Восстановительная стоматология',
-            'learning_path_id': 2,
-            'progress': 55,
-            'modules': [
-                {'id': 12003, 'title': 'Composiet Restauraties', 'progress': 60, 'total_lessons': 10, 'completed_lessons': 6},
-                {'id': 12004, 'title': 'Amalgaam en Alternatieve Vullingen', 'progress': 50, 'total_lessons': 8, 'completed_lessons': 4}
-            ]
-        },
+        progress_percent = user_progress.progress_percentage if user_progress else 0
         
-        # Endodontie
-        {
-            'id': 1301,
-            'name': 'Wortelkanaalbehandeling',
-            'description': 'Лечение корневых каналов',
-            'learning_path_id': 3,
-            'progress': 40,
-            'modules': [
-                {'id': 13001, 'title': 'Pulpa Diagnostiek', 'progress': 45, 'total_lessons': 12, 'completed_lessons': 5},
-                {'id': 13002, 'title': 'Endodontische Instrumenten', 'progress': 35, 'total_lessons': 10, 'completed_lessons': 4}
-            ]
+        # Определяем иконку в зависимости от типа экзамена
+        icon_map = {
+            'multiple-choice': 'question-circle',
+            'open-book': 'book-open',
+            'practical-theory': 'hands',
+            'interview': 'user-md',
+            'case-study': 'clipboard-list'
         }
-    ]
+        
+        icon = icon_map.get(path.exam_type, 'graduation-cap')
+        
+        # Определяем CSS класс на основе компонента экзамена
+        css_class_map = {
+            'THEORETICAL': 'knowledge-center',
+            'METHODOLOGY': 'communication', 
+            'PRACTICAL': 'preclinical',
+            'CLINICAL': 'workstation'
+        }
+        
+        path_data = {
+            'id': path.id,
+            'name': path.name,
+            'description': path.description or f'{path.exam_component} - {path.exam_weight}%',
+            'icon': icon,
+            'order': path.exam_weight,  # Используем вес как порядок
+            'is_active': path.is_active,
+            'css_class': css_class_map.get(path.exam_component, 'knowledge-center'),
+            'progress_percent': progress_percent,
+            'exam_component': path.exam_component,
+            'exam_weight': path.exam_weight,
+            'exam_type': path.exam_type,
+            'total_hours': path.total_estimated_hours or 0,
+            'duration_weeks': path.duration_weeks or 0
+        }
+        dentistry_paths.append(path_data)
+    
+    # Генерируем предметы на основе модулей из путей обучения
+    dentistry_subjects = []
+    
+    for path in learning_paths:
+        if path.modules:
+            for module in path.modules:
+                # Создаем предмет на основе модуля
+                subject_data = {
+                    'id': hash(module.get('id', '')) % 10000,  # Простой хеш для ID
+                    'name': module.get('name', 'Модуль'),
+                    'description': f'Модуль из {path.name}',
+                    'learning_path_id': path.id,
+                    'progress': 0,  # TODO: Реализовать прогресс по модулям
+                    'modules': [
+                        {
+                            'id': module.get('id', ''),
+                            'title': module.get('name', 'Модуль'),
+                            'progress': 0,
+                            'total_lessons': 0,
+                            'completed_lessons': 0,
+                            'domains': module.get('domains', []),
+                            'estimated_hours': module.get('estimated_hours', 0)
+                        }
+                    ]
+                }
+                dentistry_subjects.append(subject_data)
     
     return {
         'learning_paths': dentistry_paths,

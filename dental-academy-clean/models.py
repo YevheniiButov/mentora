@@ -504,6 +504,82 @@ class User(db.Model, UserMixin):
         username_display = self.username or self.digid_username or self.email
         return f'<User {username_display}>'
 
+    def get_path_progress(self, path_id):
+        """Получить прогресс по конкретному пути"""
+        return UserLearningProgress.query.filter_by(
+            user_id=self.id,
+            learning_path_id=path_id
+        ).first()
+    
+    def get_all_path_progress(self):
+        """Получить прогресс по всем путям"""
+        progress_records = UserLearningProgress.query.filter_by(
+            user_id=self.id
+        ).all()
+        
+        return {record.learning_path_id: record for record in progress_records}
+    
+    def get_completed_paths(self):
+        """Получить завершенные пути обучения"""
+        return UserLearningProgress.query.filter_by(
+            user_id=self.id,
+            progress_percentage=100
+        ).all()
+    
+    def get_active_paths(self):
+        """Получить активные пути обучения"""
+        return UserLearningProgress.query.filter_by(
+            user_id=self.id,
+            is_active=True
+        ).filter(UserLearningProgress.progress_percentage < 100).all()
+    
+    def get_bi_toets_readiness(self):
+        """Рассчитать готовность к BI-toets"""
+        all_progress = self.get_all_path_progress()
+        
+        # Веса компонентов
+        component_weights = {
+            'THEORETICAL': 70,
+            'METHODOLOGY': 10,
+            'PRACTICAL': 15,
+            'CLINICAL': 5
+        }
+        
+        total_score = 0
+        component_scores = {}
+        
+        for component, weight in component_weights.items():
+            component_paths = LearningPath.get_by_component(component)
+            component_total = 0
+            component_completed = 0
+            
+            for path in component_paths:
+                progress = all_progress.get(path.id)
+                if progress:
+                    component_total += path.exam_weight
+                    component_completed += path.exam_weight * (progress.progress_percentage / 100)
+            
+            if component_total > 0:
+                component_score = (component_completed / component_total) * weight
+                component_scores[component] = component_score
+                total_score += component_score
+        
+        return {
+            'total_score': total_score,
+            'component_scores': component_scores,
+            'readiness_level': self._get_readiness_level(total_score)
+        }
+    
+    def _get_readiness_level(self, score):
+        """Определить уровень готовности"""
+        if score >= 85:
+            return 'excellent'
+        elif score >= 70:
+            return 'good'
+        elif score >= 50:
+            return 'fair'
+        else:
+            return 'needs_improvement'
 
 class ProfileAuditLog(db.Model):
     """Audit log for tracking profile changes"""
@@ -540,17 +616,92 @@ class LearningPath(db.Model):
     """Top-level learning paths (5 exam categories)"""
     __tablename__ = 'learning_path'
     
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    order = db.Column(db.Integer, default=0)
-    icon = db.Column(db.String(50), default="list-task")
-    subjects = db.relationship("Subject", backref="learning_path", lazy='dynamic', cascade="all, delete-orphan")
-    exam_phase = db.Column(db.Integer, default=1)
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    name_nl = db.Column(db.String(200))
+    name_ru = db.Column(db.String(200))
+    description = db.Column(db.Text)
+    
+    # BI-toets специфика
+    exam_component = db.Column(db.String(20), nullable=False)  # THEORETICAL, METHODOLOGY, PRACTICAL, CLINICAL
+    exam_weight = db.Column(db.Float, nullable=False)  # Вес в процентах
+    exam_type = db.Column(db.String(20), nullable=False)  # multiple_choice, open_book, practical_theory, interview, case_study
+    
+    # Структура обучения
+    duration_weeks = db.Column(db.Integer)
+    total_estimated_hours = db.Column(db.Integer)
+    prerequisites = db.Column(db.JSON)  # Список ID предварительных путей
+    
+    # Модули и связи
+    modules = db.Column(db.JSON)  # Структура модулей
+    
+    # Оценка
+    assessment = db.Column(db.JSON)  # Структура оценки
+    
+    # Метаданные
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     
+    # Связи
+    user_progress = db.relationship('UserLearningProgress', backref='learning_path', lazy=True)
+    
     def __repr__(self):
-        return f'<LearningPath {self.name}>'
+        return f'<LearningPath {self.id}: {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'name_nl': self.name_nl,
+            'name_ru': self.name_ru,
+            'description': self.description,
+            'exam_component': self.exam_component,
+            'exam_weight': self.exam_weight,
+            'exam_type': self.exam_type,
+            'duration_weeks': self.duration_weeks,
+            'total_estimated_hours': self.total_estimated_hours,
+            'prerequisites': self.prerequisites or [],
+            'modules': self.modules or [],
+            'assessment': self.assessment or {},
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    @classmethod
+    def get_by_component(cls, component):
+        """Получить все пути по компоненту экзамена"""
+        return cls.query.filter_by(exam_component=component, is_active=True).all()
+    
+    @classmethod
+    def get_bi_toets_structure(cls):
+        """Получить полную структуру BI-toets"""
+        return {
+            'THEORETICAL': cls.get_by_component('THEORETICAL'),
+            'METHODOLOGY': cls.get_by_component('METHODOLOGY'),
+            'PRACTICAL': cls.get_by_component('PRACTICAL'),
+            'CLINICAL': cls.get_by_component('CLINICAL')
+        }
+    
+    def calculate_total_hours(self):
+        """Рассчитать общее количество часов из модулей"""
+        if not self.modules:
+            return 0
+        
+        total = 0
+        for module in self.modules:
+            total += module.get('estimated_hours', 0)
+        return total
+    
+    def get_domains(self):
+        """Получить все домены из модулей"""
+        domains = set()
+        if self.modules:
+            for module in self.modules:
+                module_domains = module.get('domains', [])
+                domains.update(module_domains)
+        return list(domains)
 
 class Subject(db.Model):
     """Subject areas within learning paths"""
@@ -2385,3 +2536,170 @@ class TestResult(db.Model):
             return 'needs_improvement'
         else:
             return 'poor'
+
+class UserLearningProgress(db.Model):
+    __tablename__ = 'user_learning_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    learning_path_id = db.Column(db.String(50), db.ForeignKey('learning_path.id'), nullable=False)
+    
+    # Прогресс
+    progress_percentage = db.Column(db.Float, default=0.0)  # 0-100%
+    completed_modules = db.Column(db.JSON, default=list)  # Список завершенных модулей
+    current_module = db.Column(db.String(50))  # Текущий модуль
+    
+    # Время
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_accessed = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    
+    # Статистика
+    total_time_spent = db.Column(db.Integer, default=0)  # В минутах
+    lessons_completed = db.Column(db.Integer, default=0)
+    tests_passed = db.Column(db.Integer, default=0)
+    
+    # Метаданные
+    notes = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Связи
+    user = db.relationship('User', backref='learning_progress')
+    
+    def __repr__(self):
+        return f'<UserLearningProgress {self.user_id}:{self.learning_path_id} - {self.progress_percentage}%>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'learning_path_id': self.learning_path_id,
+            'progress_percentage': self.progress_percentage,
+            'completed_modules': self.completed_modules or [],
+            'current_module': self.current_module,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'last_accessed': self.last_accessed.isoformat() if self.last_accessed else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'total_time_spent': self.total_time_spent,
+            'lessons_completed': self.lessons_completed,
+            'tests_passed': self.tests_passed,
+            'is_active': self.is_active
+        }
+    
+    def update_progress(self, module_id=None, time_spent=0):
+        """Обновить прогресс пользователя"""
+        self.last_accessed = datetime.utcnow()
+        self.total_time_spent += time_spent
+        
+        if module_id and module_id not in (self.completed_modules or []):
+            if not self.completed_modules:
+                self.completed_modules = []
+            self.completed_modules.append(module_id)
+        
+        # Рассчитать процент завершения
+        if self.learning_path:
+            total_modules = len(self.learning_path.modules or [])
+            if total_modules > 0:
+                self.progress_percentage = (len(self.completed_modules or []) / total_modules) * 100
+        
+        # Проверить завершение
+        if self.progress_percentage >= 100 and not self.completed_at:
+            self.completed_at = datetime.utcnow()
+    
+    def is_completed(self):
+        """Проверить, завершен ли путь"""
+        return self.progress_percentage >= 100
+    
+    def get_remaining_modules(self):
+        """Получить оставшиеся модули"""
+        if not self.learning_path or not self.learning_path.modules:
+            return []
+        
+        completed = set(self.completed_modules or [])
+        all_modules = [m['id'] for m in self.learning_path.modules]
+        return [m for m in all_modules if m not in completed]
+    
+    def get_next_module(self):
+        """Получить следующий модуль для изучения"""
+        remaining = self.get_remaining_modules()
+        return remaining[0] if remaining else None
+
+# Добавляем методы к существующей модели User
+def get_path_progress(self, path_id):
+    """Получить прогресс по конкретному пути"""
+    return UserLearningProgress.query.filter_by(
+        user_id=self.id,
+        learning_path_id=path_id
+    ).first()
+
+def get_all_path_progress(self):
+    """Получить прогресс по всем путям"""
+    progress_records = UserLearningProgress.query.filter_by(
+        user_id=self.id
+    ).all()
+    
+    return {record.learning_path_id: record for record in progress_records}
+
+def get_completed_paths(self):
+    """Получить завершенные пути обучения"""
+    return UserLearningProgress.query.filter_by(
+        user_id=self.id,
+        progress_percentage=100
+    ).all()
+
+def get_active_paths(self):
+    """Получить активные пути обучения"""
+    return UserLearningProgress.query.filter_by(
+        user_id=self.id,
+        is_active=True
+    ).filter(UserLearningProgress.progress_percentage < 100).all()
+
+def get_bi_toets_readiness(self):
+    """Рассчитать готовность к BI-toets"""
+    all_progress = self.get_all_path_progress()
+    
+    # Веса компонентов
+    component_weights = {
+        'THEORETICAL': 70,
+        'METHODOLOGY': 10,
+        'PRACTICAL': 15,
+        'CLINICAL': 5
+    }
+    
+    total_score = 0
+    component_scores = {}
+    
+    for component, weight in component_weights.items():
+        component_paths = LearningPath.get_by_component(component)
+        component_total = 0
+        component_completed = 0
+        
+        for path in component_paths:
+            progress = all_progress.get(path.id)
+            if progress:
+                component_total += path.exam_weight
+                component_completed += path.exam_weight * (progress.progress_percentage / 100)
+        
+        if component_total > 0:
+            component_score = (component_completed / component_total) * weight
+            component_scores[component] = component_score
+            total_score += component_score
+    
+    return {
+        'total_score': total_score,
+        'component_scores': component_scores,
+        'readiness_level': self._get_readiness_level(total_score)
+    }
+
+def _get_readiness_level(self, score):
+    """Определить уровень готовности"""
+    if score >= 85:
+        return 'excellent'
+    elif score >= 70:
+        return 'good'
+    elif score >= 50:
+        return 'fair'
+    else:
+        return 'needs_improvement'
+
+# ... existing code ...

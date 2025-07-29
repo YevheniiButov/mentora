@@ -387,13 +387,34 @@
                         
                         if (timeLeft <= 0) {
                             statusElement.classList.add('expired');
-                            statusElement.innerHTML = '<span class="status-dot"></span>Сессия истекла';
+                            const currentLang = "{{ g.lang }}";
+                            if (currentLang === 'en') {
+                                statusElement.innerHTML = '<span class="status-dot"></span>Session expired';
+                            } else if (currentLang === 'ru') {
+                                statusElement.innerHTML = '<span class="status-dot"></span>Сессия истекла';
+                            } else {
+                                statusElement.innerHTML = '<span class="status-dot"></span>Sessie verlopen';
+                            }
                         } else {
                             statusElement.classList.remove('expired');
-                            statusElement.innerHTML = `<span class="status-dot"></span>DigiD активен (${timeLeft} мин)`;
+                            const currentLang = "{{ g.lang }}";
+                            if (currentLang === 'en') {
+                                statusElement.innerHTML = `<span class="status-dot"></span>DigiD active (${timeLeft} min)`;
+                            } else if (currentLang === 'ru') {
+                                statusElement.innerHTML = `<span class="status-dot"></span>DigiD активен (${timeLeft} мин)`;
+                            } else {
+                                statusElement.innerHTML = `<span class="status-dot"></span>DigiD actief (${timeLeft} min)`;
+                            }
                         }
                     } else {
-                        statusElement.innerHTML = '<span class="status-dot"></span>DigiD активен';
+                        const currentLang = "{{ g.lang }}";
+                        if (currentLang === 'en') {
+                            statusElement.innerHTML = '<span class="status-dot"></span>DigiD active';
+                        } else if (currentLang === 'ru') {
+                            statusElement.innerHTML = '<span class="status-dot"></span>DigiD активен';
+                        } else {
+                            statusElement.innerHTML = '<span class="status-dot"></span>DigiD actief';
+                        }
                     }
                 }
             }
@@ -402,7 +423,16 @@
                 clearInterval(this.checkInterval);
                 // Показываем уведомление используя новую систему
                 if (window.flashMessagesSystem) {
-                    window.flashMessagesSystem.showMessage('warning', 'Ваша DigiD сессия истекла. Вы будете перенаправлены на страницу входа.');
+                    const currentLang = "{{ g.lang }}";
+                    let message = 'Uw DigiD sessie is verlopen. U wordt doorgestuurd naar de inlogpagina.';
+                    
+                    if (currentLang === 'en') {
+                        message = 'Your DigiD session has expired. You will be redirected to the login page.';
+                    } else if (currentLang === 'ru') {
+                        message = 'Ваша DigiD сессия истекла. Вы будете перенаправлены на страницу входа.';
+                    }
+                    
+                    window.flashMessagesSystem.showMessage('warning', message);
                 }
                 
                 // Перенаправляем через 3 секунды

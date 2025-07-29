@@ -325,199 +325,265 @@ def favicon():
 @main_bp.route('/community')
 @login_required
 def community(lang):
-    """Community/Forum страница"""
-    
-    # Данные форумных категорий
-    forum_categories = [
-        {
-            'id': 1,
-            'name': 'Algemene Discussies',
-            'description': 'Общие обсуждения медицинских тем',
-            'icon': 'message-circle',
-            'color': 'primary',
-            'posts_count': 142,
-            'members_count': 89,
-            'last_activity': {
-                'user': 'Dr. van Berg',
-                'topic': 'Nieuwe richtlijnen 2024',
-                'time': '2 uur geleden'
-            }
+    """Community forum page"""
+    return render_template('community/index.html', lang=lang)
+
+@main_bp.route('/community/category/<category>')
+@login_required
+def community_category(lang, category):
+    """Community category page"""
+    # Данные для разных категорий
+    categories_data = {
+        'trending': {
+            'title': 'Trending Discussions',
+            'topics': [
+                {
+                    'id': 1,
+                    'title': 'Complex Root Canal with Unusual Anatomy - Need Advice',
+                    'author': 'Dr. Sarah Johnson',
+                    'time': '2 hours ago',
+                    'category': 'Endodontics',
+                    'preview': 'Patient presents with a maxillary first molar with 4 canals and unusual MB2 anatomy...',
+                    'replies': 12,
+                    'views': 89,
+                    'likes': 5,
+                    'status': 'new'
+                },
+                {
+                    'id': 2,
+                    'title': 'Modern Implant Techniques - Best Practices Discussion',
+                    'author': 'Dr. Emma Rodriguez',
+                    'time': '3 hours ago',
+                    'category': 'Expert Advice',
+                    'preview': 'Let\'s discuss the latest advances in implant dentistry...',
+                    'replies': 8,
+                    'views': 67,
+                    'likes': 3,
+                    'status': 'normal'
+                }
+            ]
         },
-        {
-            'id': 2,
-            'name': '🦷 Tandheelkunde',
-            'description': 'Discussies over tandheelkundige praktijk',
-            'icon': 'tooth',
-            'color': 'info',
-            'posts_count': 98,
-            'members_count': 45,
-            'last_activity': {
-                'user': 'Tandarts Sarah',
-                'topic': 'Endodontie technieken',
-                'time': '4 uur geleden'
-            }
+        'clinical-cases': {
+            'title': 'Clinical Cases',
+            'topics': [
+                {
+                    'id': 3,
+                    'title': 'Pediatric Dentistry - Behavior Management Techniques',
+                    'author': 'Dr. Lisa Wang',
+                    'time': '1 day ago',
+                    'category': 'Clinical Cases',
+                    'preview': 'Share your most effective behavior management techniques for pediatric patients...',
+                    'replies': 22,
+                    'views': 156,
+                    'likes': 12,
+                    'status': 'normal'
+                },
+                {
+                    'id': 4,
+                    'title': 'Emergency Case: Acute Dental Trauma',
+                    'author': 'Dr. Robert Smith',
+                    'time': '4 hours ago',
+                    'category': 'Clinical Cases',
+                    'preview': 'Patient with fractured anterior tooth after sports injury...',
+                    'replies': 15,
+                    'views': 98,
+                    'likes': 7,
+                    'status': 'new'
+                }
+            ]
         },
-        {
-            'id': 3,
-            'name': '💊 Farmacie',
-            'description': 'Medicatiebegeleiding en farmacologie',
-            'icon': 'pill',
-            'color': 'success',
-            'posts_count': 76,
-            'members_count': 32,
-            'last_activity': {
-                'user': 'Apotheker Jan',
-                'topic': 'Medicatie interacties',
-                'time': '6 uur geleden'
-            }
+        'study-materials': {
+            'title': 'Study Materials',
+            'topics': [
+                {
+                    'id': 5,
+                    'title': '📌 BIG Exam Study Guide - Periodontics Section',
+                    'author': 'Dr. Michael Chen',
+                    'time': '1 day ago',
+                    'category': 'Study Materials',
+                    'preview': 'Comprehensive study notes for the periodontics section of the BIG exam...',
+                    'replies': 34,
+                    'views': 234,
+                    'likes': 18,
+                    'status': 'pinned'
+                },
+                {
+                    'id': 6,
+                    'title': 'Anatomy Review: Cranial Nerves in Dentistry',
+                    'author': 'Dr. Anna Kowalski',
+                    'time': '2 days ago',
+                    'category': 'Study Materials',
+                    'preview': 'Detailed review of cranial nerves relevant to dental practice...',
+                    'replies': 28,
+                    'views': 189,
+                    'likes': 14,
+                    'status': 'normal'
+                }
+            ]
         },
-        {
-            'id': 4,
-            'name': '🩺 Huisartsgeneeskunde',
-            'description': 'Huisartspraktijk en patiëntenzorg',
-            'icon': 'stethoscope',
-            'color': 'warning',
-            'posts_count': 134,
-            'members_count': 67,
-            'last_activity': {
-                'user': 'Dr. Jansen',
-                'topic': 'Diabetes management',
-                'time': '1 uur geleden'
-            }
+        'expert-advice': {
+            'title': 'Expert Advice',
+            'topics': [
+                {
+                    'id': 7,
+                    'title': 'Practice Management: Patient Communication Strategies',
+                    'author': 'Dr. Jennifer Davis',
+                    'time': '6 hours ago',
+                    'category': 'Expert Advice',
+                    'preview': 'What communication techniques do you find most effective...',
+                    'replies': 19,
+                    'views': 145,
+                    'likes': 9,
+                    'status': 'normal'
+                }
+            ]
         },
-        {
-            'id': 5,
-            'name': '👩‍⚕️ Verpleegkunde',
-            'description': 'Verpleegkundige zorg en procedures',
-            'icon': 'heart-pulse',
-            'color': 'danger',
-            'posts_count': 87,
-            'members_count': 56,
-            'last_activity': {
-                'user': 'Verpleegkundige Lisa',
-                'topic': 'Wondverzorging protocol',
-                'time': '3 uur geleden'
-            }
+        'research': {
+            'title': 'Research & Publications',
+            'topics': [
+                {
+                    'id': 8,
+                    'title': 'Latest Research on Bioactive Materials',
+                    'author': 'Dr. Carlos Mendez',
+                    'time': '1 day ago',
+                    'category': 'Research',
+                    'preview': 'Review of recent studies on bioactive materials in restorative dentistry...',
+                    'replies': 11,
+                    'views': 87,
+                    'likes': 6,
+                    'status': 'normal'
+                }
+            ]
         },
-        {
-            'id': 6,
-            'name': 'BIG Voorbereiding',
-            'description': 'Voorbereiding op BIG examens - alle specialismen',
-            'icon': 'graduation-cap',
-            'color': 'secondary',
-            'posts_count': 203,
-            'members_count': 128,
-            'last_activity': {
-                'user': 'Student Marc',
-                'topic': 'BIG examen tips',
-                'time': '30 min geleden'
-            }
-        },
-        {
-            'id': 7,
-            'name': 'Praktijkcases',
-            'description': 'Bespreking van complexe patiëntcases',
-            'icon': 'file-text',
-            'color': 'dark',
-            'posts_count': 156,
-            'members_count': 78,
-            'last_activity': {
-                'user': 'Dr. Smit',
-                'topic': 'Complexe orthodontische case',
-                'time': '5 uur geleden'
-            }
-        },
-        {
-            'id': 8,
-            'name': 'Vragen & Antwoorden',
-            'description': 'Snel antwoord op specifieke vragen',
-            'icon': 'help-circle',
-            'color': 'info',
-            'posts_count': 89,
-            'members_count': 94,
-            'last_activity': {
-                'user': 'Student Emma',
-                'topic': 'Vraag over farmacologie',
-                'time': '15 min geleden'
-            }
-        },
-        {
-            'id': 9,
-            'name': 'Netwerken & Events',
-            'description': 'Evenementen, cursussen en netwerkmogelijkheden',
-            'icon': 'calendar',
-            'color': 'success',
-            'posts_count': 45,
-            'members_count': 156,
-            'last_activity': {
-                'user': 'Event Organisator',
-                'topic': 'Webinar aankondiging',
-                'time': '7 uur geleden'
-            }
+        'equipment': {
+            'title': 'Equipment & Technology',
+            'topics': [
+                {
+                    'id': 9,
+                    'title': 'Digital Workflow Integration - Software Recommendations',
+                    'author': 'Dr. Alex Kim',
+                    'time': '5 hours ago',
+                    'category': 'Equipment',
+                    'preview': 'Looking to upgrade our digital workflow. What software solutions...',
+                    'replies': 15,
+                    'views': 112,
+                    'likes': 3,
+                    'status': 'normal'
+                }
+            ]
         }
-    ]
-    
-    # Algemene community statistieken
-    community_stats = {
-        'total_members': 234,
-        'online_members': 23,
-        'total_posts': 1030,
-        'total_topics': 287,
-        'new_members_today': 5
     }
     
-    # Recente activiteiten
-    recent_activities = [
-        {
-            'user': 'Dr. van Berg',
-            'action': 'plaatste een nieuw topic',
-            'topic': 'Update Nederlandse richtlijnen 2024',
-            'category': 'Algemene Discussies',
-            'time': '2 uur geleden',
-            'avatar': '👨‍⚕️'
+    category_data = categories_data.get(category, categories_data['trending'])
+    return render_template('community/category.html', 
+                         category=category,
+                         category_data=category_data,
+                         lang=lang)
+
+@main_bp.route('/community/topic/<int:topic_id>')
+@login_required
+def community_topic(lang, topic_id):
+    """Individual topic page"""
+    # Данные для тем (в реальном приложении это было бы из базы данных)
+    topics_data = {
+        1: {
+            'id': 1,
+            'title': 'Complex Root Canal with Unusual Anatomy - Need Advice',
+            'author': 'Dr. Sarah Johnson',
+            'time': '2 hours ago',
+            'category': 'Endodontics',
+            'content': '''
+            <p>Hello everyone,</p>
+            <p>I have a challenging case that I'd like to discuss with the community. Patient presents with a maxillary first molar with 4 canals and unusual MB2 anatomy. The patient is experiencing severe pain and the tooth has been previously treated.</p>
+            
+            <h4>Case Details:</h4>
+            <ul>
+                <li>Patient: 45-year-old female</li>
+                <li>Tooth: Maxillary first molar (#3)</li>
+                <li>Previous treatment: Incomplete root canal 2 years ago</li>
+                <li>Current symptoms: Severe pain, especially to percussion</li>
+            </ul>
+            
+            <h4>Radiographic Findings:</h4>
+            <p>CBCT shows unusual MB2 canal configuration with multiple accessory canals. The MB2 appears to have a complex branching pattern.</p>
+            
+            <p>Has anyone encountered similar cases? I'm looking for treatment approach recommendations and any tips for managing this type of anatomy.</p>
+            
+            <p>Thanks in advance for your insights!</p>
+            ''',
+            'replies': [
+                {
+                    'id': 1,
+                    'author': 'Dr. Michael Chen',
+                    'time': '1 hour ago',
+                    'content': 'I had a similar case last month. The key is to use a surgical operating microscope and take your time with the MB2. I recommend using a small file (#08 or #10) initially to negotiate the canal.',
+                    'likes': 8
+                },
+                {
+                    'id': 2,
+                    'author': 'Dr. Emma Rodriguez',
+                    'time': '45 minutes ago',
+                    'content': 'Agree with Dr. Chen. Also, consider using ultrasonic tips to remove any calcifications. The MB2 in these cases is often calcified and requires careful negotiation.',
+                    'likes': 5
+                },
+                {
+                    'id': 3,
+                    'author': 'Dr. Lisa Wang',
+                    'time': '30 minutes ago',
+                    'content': 'I would also recommend taking multiple working length radiographs from different angles. The MB2 often has a curved path that can be missed on standard views.',
+                    'likes': 3
+                }
+            ],
+            'views': 89,
+            'likes': 5
         },
-        {
-            'user': 'Student Marc',
-            'action': 'reageerde op',
-            'topic': 'BIG examen ervaringen delen',
-            'category': 'BIG Voorbereiding',
-            'time': '30 min geleden',
-            'avatar': '👨‍🎓'
-        },
-        {
-            'user': 'Apotheker Jan',
-            'action': 'startte discussie',
-            'topic': 'Nieuwe medicatie richtlijnen',
-            'category': 'Farmacie',
-            'time': '6 uur geleden',
-            'avatar': '💊'
-        },
-        {
-            'user': 'Verpleegkundige Lisa',
-            'action': 'deelde case',
-            'topic': 'Complexe wondbehandeling',
-            'category': 'Praktijkcases',
-            'time': '3 uur geleden',
-            'avatar': '👩‍⚕️'
-        },
-        {
-            'user': 'Dr. Jansen',
-            'action': 'beantwoordde vraag',
-            'topic': 'Diabetes type 2 behandeling',
-            'category': 'Vragen & Antwoorden',
-            'time': '1 uur geleden',
-            'avatar': '🩺'
+        2: {
+            'id': 2,
+            'title': 'Modern Implant Techniques - Best Practices Discussion',
+            'author': 'Dr. Emma Rodriguez',
+            'time': '3 hours ago',
+            'category': 'Expert Advice',
+            'content': '''
+            <p>Let's discuss the latest advances in implant dentistry. What techniques are you using? Any tips for improving success rates?</p>
+            
+            <p>I've been using guided surgery more frequently and have seen excellent results. The precision and predictability are remarkable.</p>
+            
+            <p>What are your thoughts on immediate loading protocols? I've had good success with single tooth implants, but I'm more conservative with full arch cases.</p>
+            ''',
+            'replies': [
+                {
+                    'id': 1,
+                    'author': 'Dr. Alex Kim',
+                    'time': '2 hours ago',
+                    'content': 'I\'ve been using digital workflows for all my implant cases. The combination of CBCT, intraoral scanning, and guided surgery has significantly improved my outcomes.',
+                    'likes': 6
+                },
+                {
+                    'id': 2,
+                    'author': 'Dr. Sarah Johnson',
+                    'time': '1 hour ago',
+                    'content': 'For immediate loading, I stick to single tooth implants in the anterior region with good primary stability. Full arch cases I still prefer delayed loading.',
+                    'likes': 4
+                }
+            ],
+            'views': 67,
+            'likes': 3
         }
-    ]
+    }
     
-    return render_template(
-        'community/index.html',
-        title='Community & Forum',
-        forum_categories=forum_categories,
-        community_stats=community_stats,
-        recent_activities=recent_activities,
-        user=current_user
-    ) 
+    topic_data = topics_data.get(topic_id)
+    if not topic_data:
+        return redirect(url_for('main.community', lang=lang))
+    
+    return render_template('community/topic.html', 
+                         topic=topic_data,
+                         lang=lang)
+
+@main_bp.route('/community/new-topic')
+@login_required
+def new_topic(lang):
+    """Create new topic page"""
+    return render_template('community/new_topic.html', lang=lang)
 
 @main_bp.route('/test')
 def test_page():

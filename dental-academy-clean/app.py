@@ -127,7 +127,16 @@ def before_request():
                 logout_user()
                 session.pop('digid_session_id', None)
                 session.pop('digid_user_id', None)
-                flash('Ваша DigiD сессия истекла. Пожалуйста, войдите снова.', 'warning')
+                
+                # Get current language for flash message
+                current_lang = g.get('lang', 'nl')
+                if current_lang == 'en':
+                    flash('Your DigiD session has expired. Please log in again.', 'warning')
+                elif current_lang == 'ru':
+                    flash('Ваша DigiD сессия истекла. Пожалуйста, войдите снова.', 'warning')
+                else:
+                    flash('Uw DigiD sessie is verlopen. Log opnieuw in.', 'warning')
+                
                 return redirect(url_for('digid.login'))
 
 # ========================================
@@ -417,6 +426,36 @@ except ImportError as e:
 # ========================================
 # SIMPLE TEST ROUTES
 # ========================================
+
+@app.route('/health')
+def health_check():
+    """Health check для Render"""
+    try:
+        # Проверяем подключение к БД
+        db.session.execute('SELECT 1')
+        
+        # Проверяем основные модели
+        user_count = User.query.count()
+        question_count = Question.query.count()
+        path_count = LearningPath.query.count()
+        
+        return {
+            'status': 'healthy',
+            'timestamp': datetime.now().isoformat(),
+            'environment': app.config.get('FLASK_ENV', 'unknown'),
+            'database': 'connected',
+            'stats': {
+                'users': user_count,
+                'questions': question_count,
+                'learning_paths': path_count
+            }
+        }
+    except Exception as e:
+        return {
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }, 500
 
 @app.route('/ai-test')
 def ai_test():

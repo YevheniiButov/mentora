@@ -43,9 +43,9 @@ DOMAIN_DIAGNOSTIC_TRANSLATIONS = {
         
         # Заголовки и основные элементы
         'domain_diagnostic_title': 'Domein Diagnostiek',
-        'domain_diagnostic_subtitle': 'Test uw kennis in specifieke tandheelkundige gebieden',
+        'domain_diagnostic_subtitle': 'Test uw kennis in specifieke medische gebieden',
         'domain_overview_title': 'Domein Overzicht',
-        'domain_overview_subtitle': 'Uw voortgang in verschillende tandheelkundige gebieden',
+        'domain_overview_subtitle': 'Uw voortgang in verschillende medische gebieden',
         
         # Кнопки и действия
         'start_diagnostic': 'Start Diagnostiek',

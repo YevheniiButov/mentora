@@ -1,16 +1,41 @@
 services:
   - type: web
-    name: dental-academy
+    name: mentora-dental-academy
     env: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    plan: starter  # или free для тестирования
+    buildCommand: |
+      pip install -r requirements-render.txt &&
+      python -m flask db upgrade &&
+      python scripts/seed_production_data.py
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
     envVars:
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        value: sqlite:///app.db
-    healthCheckPath: /
-    autoDeploy: true 
+        fromDatabase:
+          name: mentora-db
+          property: connectionString
+      - key: DIGID_MOCK_MODE
+        value: "true"  # для production заменить на false
+      - key: DIGID_ENABLED
+        value: "true"
+      - key: DIGID_ENTITY_ID
+        value: "your-digid-entity-id"
+      - key: DIGID_ACS_URL
+        value: "https://your-domain.onrender.com/digid/callback"
+      - key: DIGID_SLO_URL
+        value: "https://your-domain.onrender.com/digid/logout"
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: SESSION_COOKIE_HTTPONLY
+        value: "true"
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  - name: mentora-db
+    databaseName: mentora
+    user: mentora_user
+    plan: starter 

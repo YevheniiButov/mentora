@@ -443,6 +443,97 @@
     border-radius: 50%;
 }
 
+.activity-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activity-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #3ECDC1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-text {
+    font-size: 0.75rem;
+    color: #374151;
+    line-height: 1.4;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+/* Online Users */
+.online-users {
+    margin-top: 1.5rem;
+}
+
+.online-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.online-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(62, 205, 193, 0.1);
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: #3ECDC1;
+    font-weight: 500;
+}
+
+.online-indicator {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .forum-container {
@@ -603,7 +694,7 @@
                 </h3>
                 <ul class="category-list">
                     <li class="category-item">
-                        <a href="#" class="category-link active">
+                        <a href="{{ url_for('main.community_category', lang=g.lang, category='trending') }}" class="category-link active">
                             <span class="category-icon">
                                 <i class="fas fa-fire"></i>
                             </span>
@@ -612,7 +703,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="#" class="category-link">
+                        <a href="{{ url_for('main.community_category', lang=g.lang, category='clinical-cases') }}" class="category-link">
                             <span class="category-icon">
                                 <i class="fas fa-tooth"></i>
                             </span>
@@ -621,7 +712,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="#" class="category-link">
+                        <a href="{{ url_for('main.community_category', lang=g.lang, category='study-materials') }}" class="category-link">
                             <span class="category-icon">
                                 <i class="fas fa-book-medical"></i>
                             </span>
@@ -630,7 +721,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="#" class="category-link">
+                        <a href="{{ url_for('main.community_category', lang=g.lang, category='expert-advice') }}" class="category-link">
                             <span class="category-icon">
                                 <i class="fas fa-graduation-cap"></i>
                             </span>
@@ -639,7 +730,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="#" class="category-link">
+                        <a href="{{ url_for('main.community_category', lang=g.lang, category='research') }}" class="category-link">
                             <span class="category-icon">
                                 <i class="fas fa-microscope"></i>
                             </span>
@@ -648,7 +739,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="#" class="category-link">
+                        <a href="{{ url_for('main.community_category', lang=g.lang, category='equipment') }}" class="category-link">
                             <span class="category-icon">
                                 <i class="fas fa-tools"></i>
                             </span>
@@ -676,14 +767,14 @@
         <main class="forum-main">
             <div class="topics-header">
                 <h2 class="topics-title">Recent Discussions</h2>
-                <button class="new-topic-btn">
+                <a href="{{ url_for('main.new_topic', lang=g.lang) }}" class="new-topic-btn">
                     <i class="fas fa-plus"></i>
                     New Topic
-                </button>
+                </a>
             </div>
 
             <div class="topics-list">
-                <article class="topic-item status-new">
+                <article class="topic-item status-new" onclick="window.location.href='{{ url_for('main.community_topic', lang=g.lang, topic_id=1) }}';">
                     <div class="topic-header">
                         <div class="topic-avatar">SJ</div>
                         <div class="topic-info">
@@ -714,7 +805,7 @@
                     </div>
                 </article>
 
-                <article class="topic-item status-pinned">
+                <article class="topic-item status-pinned" onclick="window.location.href='{{ url_for('main.community_topic', lang=g.lang, topic_id=5) }}';">
                     <div class="topic-header">
                         <div class="topic-avatar">MC</div>
                         <div class="topic-info">
@@ -745,7 +836,7 @@
                     </div>
                 </article>
 
-                <article class="topic-item">
+                <article class="topic-item" onclick="window.location.href='{{ url_for('main.community_topic', lang=g.lang, topic_id=2) }}';">
                     <div class="topic-header">
                         <div class="topic-avatar">ER</div>
                         <div class="topic-info">

@@ -1,10 +1,203 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIG Registratie Tandarts - Complete gids - Mentora</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
+    
+    <!-- Основные стили платформы -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+    
+    <!-- Стили для простой шапки -->
+    <style>
+        /* ===== ПРОСТАЯ ШАПКА ===== */
+        .simple-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Левая часть */
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .header-logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(62, 205, 193, 0.1);
+            color: #3ECDC1;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(62, 205, 193, 0.2);
+            transform: translateX(-2px);
+        }
+
+        /* Правая часть */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-dropdown {
+            position: relative;
+        }
+
+        .header-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .header-btn:hover {
+            background: rgba(62, 205, 193, 0.1);
+            border-color: #3ECDC1;
+        }
+
+        /* Dropdown меню */
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            min-width: 180px;
+            z-index: 1001;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(62, 205, 193, 0.1);
+            color: #3ECDC1;
+        }
+
+        .dropdown-item.active {
+            background: rgba(62, 205, 193, 0.1);
+            color: #3ECDC1;
+            font-weight: 600;
+        }
+
+        .theme-item {
+            justify-content: space-between;
+        }
+
+        .check {
+            color: #3ECDC1;
+            font-weight: bold;
+        }
+
+        .dropdown-divider {
+            border: none;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .flag-icon {
+            font-size: 16px;
+        }
+
+        /* Мобильные устройства */
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 1rem;
+            }
+            
+            .header-logo {
+                height: 32px;
+            }
+            
+            .back-button {
+                padding: 0.4rem 0.8rem;
+                font-size: 14px;
+            }
+            
+            .header-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 13px;
+            }
+        }
+    </style>
+    
     <style>
         /* Reset and base */
         * {
@@ -38,6 +231,7 @@
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             position: relative;
             overflow-x: hidden;
+            padding-top: 70px; /* Отступ для фиксированной шапки */
         }
 
         .big-info-container::before {
@@ -67,10 +261,9 @@
         }
 
         .hero-content {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 2rem;
-            align-items: center;
+            display: block;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .hero-title {
@@ -78,13 +271,7 @@
             font-weight: 700;
             margin-bottom: 0.5rem;
             color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .hero-title i {
-            font-size: 2rem;
+            text-align: center;
         }
 
         .hero-subtitle {
@@ -125,40 +312,7 @@
             margin-top: 0.25rem;
         }
 
-        .hero-visual {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
 
-        .big-logo {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1.5rem;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .logo-circle {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.75rem;
-        }
-
-        .logo-text {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
 
         /* Navigation Tabs */
         .big-navigation {
@@ -214,10 +368,14 @@
         .content-section {
             display: none;
             animation: fadeIn 0.3s ease;
+            opacity: 0;
+            transform: translateY(10px);
         }
 
         .content-section.active {
             display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
 
         @keyframes fadeIn {
@@ -716,6 +874,68 @@
     </style>
 </head>
 <body>
+    <!-- Простая шапка -->
+    <header class="simple-header">
+        <div class="header-container">
+            <!-- Левая часть: логотип и кнопка назад -->
+            <div class="header-left">
+                <a href="/nl/" class="logo-link">
+                    <img src="/static/images/logo.png" alt="Mentora" class="header-logo">
+                </a>
+                <a href="/nl/big-info" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Terug
+                </a>
+            </div>
+            
+            <!-- Правая часть: язык и настройки -->
+            <div class="header-right">
+                <!-- Язык -->
+                <div class="header-dropdown">
+                    <button class="header-btn" id="langBtn">
+                        <i class="fas fa-globe"></i>
+                        NL
+                    </button>
+                    <div class="dropdown-content" id="langDropdown">
+                        <a href="/nl/big-info/tandarts" class="dropdown-item active">
+                            <span class="flag-icon">🇳🇱</span> Nederlands
+                        </a>
+                        <a href="/en/big-info/tandarts" class="dropdown-item">
+                            <span class="flag-icon">🇬🇧</span> English
+                        </a>
+                        <a href="/ru/big-info/tandarts" class="dropdown-item">
+                            <span class="flag-icon">🇷🇺</span> Русский
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Настройки -->
+                <div class="header-dropdown">
+                    <button class="header-btn" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <div class="dropdown-content" id="settingsDropdown">
+                        <div class="dropdown-item theme-item" onclick="setTheme('light')">
+                            <i class="fas fa-sun"></i>
+                            Lichte thema
+                            <span class="check" id="light-check">✓</span>
+                        </div>
+                        <div class="dropdown-item theme-item" onclick="setTheme('dark')">
+                            <i class="fas fa-moon"></i>
+                            Donkere thema
+                            <span class="check" id="dark-check"></span>
+                        </div>
+                        <hr class="dropdown-divider">
+                        <a href="/digid/login" class="dropdown-item">
+                            <i class="fas fa-shield-alt"></i>
+                            DigiD Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
     <div class="big-info-container">
         <!-- Hero Section -->
         <section class="big-hero">
@@ -723,7 +943,6 @@
                 <div class="hero-content">
                     <div class="hero-text">
                         <h1 class="hero-title">
-                            <i class="fas fa-tooth"></i>
                             BIG Registratie Tandarts
                         </h1>
                         <p class="hero-subtitle">
@@ -744,14 +963,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="hero-visual">
-                        <div class="big-logo">
-                            <div class="logo-circle">
-                                <i class="fas fa-tooth"></i>
-                            </div>
-                            <span class="logo-text">Tandarts</span>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </section>
@@ -1290,43 +1502,151 @@
         </section>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Основные скрипты платформы -->
+    <script src="{{ url_for('static', filename='js/theme-controller.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flash-messages.js') }}"></script>
+    
+    <!-- Скрипт для простой шапки -->
     <script>
-        // Tab switching functionality
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Инициализация простой шапки...');
+            
+            // Dropdown для языка
+            const langBtn = document.getElementById('langBtn');
+            const langDropdown = document.getElementById('langDropdown');
+            
+            if (langBtn && langDropdown) {
+                langBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    langDropdown.classList.toggle('show');
+                    
+                    // Закрываем другие dropdown
+                    const settingsDropdown = document.getElementById('settingsDropdown');
+                    if (settingsDropdown) {
+                        settingsDropdown.classList.remove('show');
+                    }
+                });
+            }
+            
+            // Dropdown для настроек
+            const settingsBtn = document.getElementById('settingsBtn');
+            const settingsDropdown = document.getElementById('settingsDropdown');
+            
+            if (settingsBtn && settingsDropdown) {
+                settingsBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    settingsDropdown.classList.toggle('show');
+                    
+                    // Закрываем другие dropdown
+                    if (langDropdown) {
+                        langDropdown.classList.remove('show');
+                    }
+                });
+            }
+            
+            // Закрытие dropdown при клике вне
+            document.addEventListener('click', function() {
+                if (langDropdown) langDropdown.classList.remove('show');
+                if (settingsDropdown) settingsDropdown.classList.remove('show');
+            });
+            
+            console.log('✅ Простая шапка инициализирована');
+        });
+        
+        // Функция для переключения тем
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // Обновляем галочки
+            document.querySelectorAll('.check').forEach(check => {
+                check.textContent = '';
+            });
+            
+            const activeCheck = document.getElementById(theme + '-check');
+            if (activeCheck) {
+                activeCheck.textContent = '✓';
+            }
+            
+            // Закрываем dropdown
+            const settingsDropdown = document.getElementById('settingsDropdown');
+            if (settingsDropdown) {
+                settingsDropdown.classList.remove('show');
+            }
+        }
+        
+        // Инициализация темы при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+        });
+    </script>
+    
+    <script>
+        // Объединенная инициализация всех функций
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Инициализация страницы tandarts...');
+            
+            // ===== ТАБЫ =====
             const tabButtons = document.querySelectorAll('.tab-btn');
             const contentSections = document.querySelectorAll('.content-section');
+            
+            console.log('📋 Найдено табов:', tabButtons.length);
+            console.log('📄 Найдено секций:', contentSections.length);
 
             tabButtons.forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const targetTab = this.dataset.tab;
+                    console.log('🖱️ Клик по табу:', targetTab);
 
-                    // Remove active class from all tabs and sections
+                    // Убираем активный класс со всех табов и секций
                     tabButtons.forEach(btn => btn.classList.remove('active'));
-                    contentSections.forEach(section => section.classList.remove('active'));
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                        section.style.display = 'none';
+                    });
 
-                    // Add active class to clicked tab and corresponding section
+                    // Добавляем активный класс к выбранному табу и секции
                     this.classList.add('active');
-                    document.getElementById(targetTab).classList.add('active');
+                    const targetSection = document.getElementById(targetTab);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                        targetSection.style.display = 'block';
+                        console.log('✅ Секция активирована:', targetTab);
+                    } else {
+                        console.error('❌ Секция не найдена:', targetTab);
+                    }
                 });
             });
 
-            // FAQ functionality
+            // ===== FAQ =====
             const faqItems = document.querySelectorAll('.faq-item');
             faqItems.forEach(item => {
                 const question = item.querySelector('.faq-question');
-                question.addEventListener('click', function() {
-                    item.classList.toggle('active');
-                });
+                if (question) {
+                    question.addEventListener('click', function() {
+                        item.classList.toggle('active');
+                    });
+                }
             });
 
-            // Document checklist functionality (optional enhancement)
+            // ===== ЧЕКБОКСЫ =====
             const checkboxes = document.querySelectorAll('.document-checkbox');
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
-                    // You can add logic here to track progress
-                    console.log('Document checked:', this.nextElementSibling.nextElementSibling.textContent);
+                    console.log('📋 Документ отмечен:', this.nextElementSibling?.nextElementSibling?.textContent);
                 });
             });
+            
+            // ===== ИНИЦИАЛИЗАЦИЯ ТЕМЫ =====
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+            
+            console.log('✅ Страница tandarts инициализирована');
         });
     </script>
 </body>

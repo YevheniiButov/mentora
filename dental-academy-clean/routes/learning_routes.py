@@ -9,65 +9,114 @@ from datetime import datetime, timezone
 from functools import wraps
 from flask import session
 from models import PersonalLearningPlan, Question, BIGDomain
+import os
+from flask import jsonify
+from models import UserLearningProgress
 
 learning_bp = Blueprint('learning', __name__)
 
 @learning_bp.route('/')
 @login_required
 def index():
-    """Learning map - overview of all learning paths"""
+    """BI-toets Learning Map - overview of all learning paths for dentists"""
     
-    learning_paths = []
-    for path in LearningPath.query.filter_by(is_active=True).order_by(LearningPath.order).all():
+    # Получаем пути обучения, сгруппированные по компонентам экзамена
+    exam_components = {
+        'THEORETICAL': [],
+        'METHODOLOGY': [],
+        'PRACTICAL': [],
+        'CLINICAL': []
+    }
+    
+    for path in LearningPath.query.filter_by(is_active=True).order_by(LearningPath.exam_weight.desc()).all():
+        # Получаем прогресс пользователя по этому пути
+        user_progress = UserLearningProgress.query.filter_by(
+            user_id=current_user.id,
+            learning_path_id=path.id
+        ).first()
         
-        # Calculate progress for this path
-        total_lessons = 0
-        completed_lessons = 0
-        
-        for subject in path.subjects:
-            subject_progress = subject.get_progress_for_user(current_user.id)
-            total_lessons += subject_progress['total_lessons']
-            completed_lessons += subject_progress['completed_lessons']
-        
-        progress_percent = int((completed_lessons / total_lessons * 100)) if total_lessons > 0 else 0
+        progress_percent = user_progress.progress_percentage if user_progress else 0
         
         path_data = {
             'path': path,
-            'total_lessons': total_lessons,
-            'completed_lessons': completed_lessons,
             'progress_percent': progress_percent,
-            'subjects_count': path.subjects.count()
+            'modules_count': len(path.modules) if path.modules else 0,
+            'total_hours': path.total_estimated_hours or 0,
+            'duration_weeks': path.duration_weeks or 0
         }
-        learning_paths.append(path_data)
+        
+        exam_components[path.exam_component].append(path_data)
     
-    return render_template('learning/index.html', learning_paths=learning_paths)
+    # Рассчитываем общий прогресс по BI-toets
+    total_weight = sum(p['path'].exam_weight for paths in exam_components.values() for p in paths)
+    weighted_progress = sum(
+        p['progress_percent'] * p['path'].exam_weight / total_weight 
+        for paths in exam_components.values() 
+        for p in paths
+    )
+    
+    return render_template('learning/bi_toets_index.html', 
+                         exam_components=exam_components,
+                         total_progress=weighted_progress,
+                         total_weight=total_weight)
 
-@learning_bp.route('/path/<int:path_id>')
+@learning_bp.route('/path/<path_id>')
 @login_required
 def learning_path(path_id):
-    """View specific learning path with subjects"""
+    """View specific BI-toets learning path with modules"""
     
-    path = LearningPath.query.get_or_404(path_id)
+    path = LearningPath.query.filter_by(id=path_id).first_or_404()
     
-    subjects_data = []
-    for subject in path.subjects.order_by(Subject.order).all():
-        subject_progress = subject.get_progress_for_user(current_user.id)
-        subjects_data.append({
-            'subject': subject,
-            **subject_progress
-        })
+    # Получаем прогресс пользователя по этому пути
+    user_progress = UserLearningProgress.query.filter_by(
+        user_id=current_user.id,
+        learning_path_id=path.id
+    ).first()
     
-    # Calculate path totals
-    path_total_lessons = sum(s['total_lessons'] for s in subjects_data)
-    path_completed_lessons = sum(s['completed_lessons'] for s in subjects_data)
-    path_progress_percent = int((path_completed_lessons / path_total_lessons * 100)) if path_total_lessons > 0 else 0
+    if not user_progress:
+        # Создаем новую запись прогресса
+        user_progress = UserLearningProgress(
+            user_id=current_user.id,
+            learning_path_id=path.id,
+            progress_percentage=0.0,
+            completed_modules=[],
+            is_active=True
+        )
+        db.session.add(user_progress)
+        db.session.commit()
+    
+    # Анализируем модули пути
+    modules_data = []
+    if path.modules:
+        for module in path.modules:
+            module_progress = 0  # TODO: Реализовать прогресс по модулям
+            modules_data.append({
+                'id': module.get('id'),
+                'name': module.get('name'),
+                'domains': module.get('domains', []),
+                'estimated_hours': module.get('estimated_hours', 0),
+                'progress_percent': module_progress,
+                'learning_cards_path': module.get('learning_cards_path'),
+                'virtual_patients': module.get('virtual_patients', [])
+            })
+    
+    # Проверяем предварительные требования
+    prerequisites_met = True
+    if path.prerequisites:
+        for prereq_id in path.prerequisites:
+            prereq_progress = UserLearningProgress.query.filter_by(
+                user_id=current_user.id,
+                learning_path_id=prereq_id
+            ).first()
+            if not prereq_progress or prereq_progress.progress_percentage < 80:
+                prerequisites_met = False
+                break
     
     return render_template('learning/path.html',
                          path=path,
-                         subjects=subjects_data,
-                         total_lessons=path_total_lessons,
-                         completed_lessons=path_completed_lessons,
-                         progress_percent=path_progress_percent)
+                         user_progress=user_progress,
+                         modules=modules_data,
+                         prerequisites_met=prerequisites_met)
 
 @learning_bp.route('/subject/<int:subject_id>')
 @login_required
@@ -319,6 +368,67 @@ def api_update_progress(lesson_id):
             'completed': progress.completed,
             'time_spent': progress.time_spent,
             'score': progress.score
+        })
+    
+    except Exception as e:
+        db.session.rollback()
+        return safe_jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@learning_bp.route('/api/path-progress/<path_id>', methods=['POST'])
+@login_required
+def api_update_path_progress(path_id):
+    """API endpoint to update learning path progress"""
+    
+    path = LearningPath.query.filter_by(id=path_id).first_or_404()
+    
+    # Get or create progress
+    progress = UserLearningProgress.query.filter_by(
+        user_id=current_user.id,
+        learning_path_id=path.id
+    ).first()
+    
+    if not progress:
+        progress = UserLearningProgress(
+            user_id=current_user.id,
+            learning_path_id=path.id,
+            progress_percentage=0.0,
+            completed_modules=[],
+            is_active=True
+        )
+        db.session.add(progress)
+    
+    # Update progress data
+    data = request.get_json()
+    
+    if 'progress_percentage' in data:
+        progress.progress_percentage = float(data['progress_percentage'])
+    
+    if 'completed_modules' in data:
+        progress.completed_modules = data['completed_modules']
+    
+    if 'time_spent' in data:
+        progress.total_time_spent += int(data['time_spent'])
+    
+    if 'lessons_completed' in data:
+        progress.lessons_completed += int(data['lessons_completed'])
+    
+    if 'tests_passed' in data:
+        progress.tests_passed += int(data['tests_passed'])
+    
+    progress.last_accessed = datetime.now(timezone.utc)
+    
+    try:
+        db.session.commit()
+        return safe_jsonify({
+            'success': True,
+            'progress_percentage': progress.progress_percentage,
+            'completed_modules': progress.completed_modules,
+            'total_time_spent': progress.total_time_spent,
+            'lessons_completed': progress.lessons_completed,
+            'tests_passed': progress.tests_passed
         })
     
     except Exception as e:
@@ -627,6 +737,162 @@ def test_theory():
                          current_week=test_data['current_week'],
                          current_session=test_data['current_session'],
                          recommended_lessons=test_data['recommended_lessons'])
+
+@learning_bp.route('/learning-paths')
+@login_required
+def learning_paths():
+    """Отображение путей обучения в структуре BI-toets"""
+    try:
+        # Получить структуру BI-toets
+        learning_paths = LearningPath.get_bi_toets_structure()
+        
+        return render_template('dashboard/learning_paths.html', 
+                             learning_paths=learning_paths)
+    except Exception as e:
+        flash(f'Ошибка при загрузке путей обучения: {str(e)}', 'error')
+        return redirect(url_for('dashboard.index'))
+
+@learning_bp.route('/api/learning-paths/<path_id>')
+def get_learning_path(path_id):
+    """API для получения детальной информации о пути обучения"""
+    try:
+        path = LearningPath.query.get(path_id)
+        if not path:
+            return jsonify({'success': False, 'message': 'Путь не найден'})
+        
+        return jsonify({
+            'success': True,
+            'path': path.to_dict()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@learning_bp.route('/learning/path/<path_id>')
+@login_required
+def start_learning_path(path_id):
+    """Начать обучение по выбранному пути"""
+    try:
+        path = LearningPath.query.get(path_id)
+        if not path:
+            flash('Путь обучения не найден', 'error')
+            return redirect(url_for('learning.learning_paths'))
+        
+        # Проверить предварительные требования
+        if path.prerequisites:
+            user_progress = current_user.get_all_path_progress()
+            missing_prereqs = []
+            
+            for prereq_id in path.prerequisites:
+                prereq_progress = user_progress.get(prereq_id)
+                if not prereq_progress or prereq_progress.progress_percentage < 100:
+                    missing_prereqs.append(prereq_id)
+            
+            if missing_prereqs:
+                flash('Необходимо завершить предварительные пути обучения', 'warning')
+                return redirect(url_for('learning.learning_paths'))
+        
+        # Создать или получить прогресс пользователя
+        progress = UserLearningProgress.query.filter_by(
+            user_id=current_user.id,
+            learning_path_id=path_id
+        ).first()
+        
+        if not progress:
+            progress = UserLearningProgress(
+                user_id=current_user.id,
+                learning_path_id=path_id,
+                progress_percentage=0,
+                completed_modules=[],
+                last_accessed=datetime.utcnow()
+            )
+            db.session.add(progress)
+            db.session.commit()
+        
+        # Перенаправить на первый модуль
+        if path.modules:
+            first_module = path.modules[0]
+            return redirect(url_for('learning.module_view', 
+                                  path_id=path_id, 
+                                  module_id=first_module['id']))
+        
+        flash('Путь обучения не содержит модулей', 'error')
+        return redirect(url_for('learning.learning_paths'))
+        
+    except Exception as e:
+        flash(f'Ошибка при запуске пути обучения: {str(e)}', 'error')
+        return redirect(url_for('learning.learning_paths'))
+
+@learning_bp.route('/learning/path/<path_id>/module/<module_id>')
+@login_required
+def module_view(path_id, module_id):
+    """Отображение модуля обучения"""
+    try:
+        path = LearningPath.query.get(path_id)
+        if not path:
+            flash('Путь обучения не найден', 'error')
+            return redirect(url_for('learning.learning_paths'))
+        
+        # Найти модуль
+        module = None
+        for m in path.modules:
+            if m['id'] == module_id:
+                module = m
+                break
+        
+        if not module:
+            flash('Модуль не найден', 'error')
+            return redirect(url_for('learning.learning_paths'))
+        
+        # Получить прогресс пользователя
+        progress = UserLearningProgress.query.filter_by(
+            user_id=current_user.id,
+            learning_path_id=path_id
+        ).first()
+        
+        # Загрузить контент модуля
+        module_content = load_module_content(module)
+        
+        return render_template('learning/module_view.html',
+                             path=path,
+                             module=module,
+                             module_content=module_content,
+                             progress=progress)
+        
+    except Exception as e:
+        flash(f'Ошибка при загрузке модуля: {str(e)}', 'error')
+        return redirect(url_for('learning.learning_paths'))
+
+def load_module_content(module):
+    """Загрузить контент модуля (карточки, виртуальные пациенты и т.д.)"""
+    content = {
+        'learning_cards': [],
+        'virtual_patients': [],
+        'theory_content': []
+    }
+    
+    try:
+        # Загрузить карточки обучения
+        if 'learning_cards_path' in module:
+            cards_path = module['learning_cards_path']
+            if cards_path and os.path.exists(cards_path):
+                # Здесь будет логика загрузки карточек
+                pass
+        
+        # Загрузить виртуальных пациентов
+        if 'virtual_patients' in module:
+            for patient_id in module['virtual_patients']:
+                # Здесь будет логика загрузки виртуальных пациентов
+                pass
+        
+        # Загрузить теоретический контент
+        if 'content' in module:
+            content['theory_content'] = module['content']
+        
+        return content
+        
+    except Exception as e:
+        print(f"Ошибка при загрузке контента модуля: {e}")
+        return content
 
 # Функция для получения языка
 def get_lang():
