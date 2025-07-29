@@ -155,4 +155,16 @@ translations = {
     'periodontitis': 'Periodontite',
     'root_canal': 'Tratamento de canal radicular',
     'oral_hygiene': 'Higiene bucal',
+    
+    # Descrições adicionais
+    'medical_dutch_desc': 'Curso especializado de holandês médico para trabalhar na Holanda',
+    'realistic_simulations': 'Simulações realistas',
+    'realistic_simulations_desc': 'Pacientes virtuais e cenários clínicos que se aproximam da realidade',
+    'detailed_analytics': 'Análise detalhada',
+    'detailed_analytics_desc': 'Estatísticas de progresso detalhadas com recomendações pessoais',
+    'community_learning': 'Aprendizado em comunidade',
+    'community_learning_desc': 'Comunidade ativa de estudantes e especialistas para troca de conhecimentos',
+    'ready_to_start': 'Pronto para começar?',
+    'join_thousands': 'Junte-se a estudantes que se preparam para o exame BIG com nossa plataforma',
+    'learn_about_big': 'Mais sobre BIG',
 } 

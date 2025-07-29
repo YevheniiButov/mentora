@@ -132,4 +132,16 @@ translations = {
     'periodontitis': 'Periodontitis',
     'root_canal': 'Kök kanal tedavisi',
     'oral_hygiene': 'Ağız hijyeni',
+    
+    # Ek açıklamalar
+    'medical_dutch_desc': 'Hollanda\'da çalışmak için özel tıbbi Hollandaca kursu',
+    'realistic_simulations': 'Gerçekçi simülasyonlar',
+    'realistic_simulations_desc': 'Gerçekliğe yakın sanal hastalar ve klinik senaryolar',
+    'detailed_analytics': 'Detaylı analiz',
+    'detailed_analytics_desc': 'Kişisel önerilerle detaylı ilerleme istatistikleri',
+    'community_learning': 'Topluluk öğrenmesi',
+    'community_learning_desc': 'Bilgi alışverişi için öğrenci ve uzmanların aktif topluluğu',
+    'ready_to_start': 'Başlamaya hazır mısınız?',
+    'join_thousands': 'Platformumuzla BIG sınavına hazırlanan öğrencilere katılın',
+    'learn_about_big': 'BIG hakkında daha fazla bilgi',
 } 

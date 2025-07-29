@@ -204,4 +204,16 @@ translations = {
     'periodontitis': 'پریودنتیت',
     'root_canal': 'درمان کانال ریشه',
     'oral_hygiene': 'بهداشت دهان',
+    
+    # توضیحات اضافی
+    'medical_dutch_desc': 'دوره تخصصی هلندی پزشکی برای کار در هلند',
+    'realistic_simulations': 'شبیه‌سازی‌های واقع‌گرایانه',
+    'realistic_simulations_desc': 'بیماران مجازی و سناریوهای بالینی که واقعیت را تقلید می‌کنند',
+    'detailed_analytics': 'تحلیل تفصیلی',
+    'detailed_analytics_desc': 'آمار پیشرفت تفصیلی با توصیه‌های شخصی',
+    'community_learning': 'یادگیری در انجمن',
+    'community_learning_desc': 'انجمن فعال دانشجویان و متخصصان برای تبادل دانش',
+    'ready_to_start': 'آماده شروع هستید؟',
+    'join_thousands': 'به دانشجویانی بپیوندید که با پلتفرم ما برای امتحان BIG آماده می‌شوند',
+    'learn_about_big': 'بیشتر درباره BIG',
 } 
