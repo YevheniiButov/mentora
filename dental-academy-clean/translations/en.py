@@ -134,6 +134,9 @@ translations = {
     'right_to_change': 'We reserve the right to change these terms at any time. Changes take effect after publication on this page. Continued platform use means acceptance of new terms.',
     'terms_contact': 'If you have any questions about these Terms of Use, please contact us.',
     
+    # Navigation
+    'back_to_home': 'Back to home',
+    
     # Error Messages
     'fill_all_4_letters': 'Fill in all 4 letters.',
     'invalid_coupling_code': 'Invalid coupling code. Check the code in your DigiD app.',

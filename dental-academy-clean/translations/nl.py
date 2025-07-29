@@ -134,6 +134,9 @@ translations = {
     'right_to_change': 'We behouden ons het recht voor om deze voorwaarden op elk moment te wijzigen. Wijzigingen treden in werking na publicatie op deze pagina. Doorgaan met platformgebruik betekent aanvaarding van nieuwe voorwaarden.',
     'terms_contact': 'Als u vragen heeft over deze Gebruiksvoorwaarden, neem dan contact met ons op.',
     
+    # Navigatie
+    'back_to_home': 'Terug naar home',
+    
     # Error Messages
     'fill_all_4_letters': 'Vul alle 4 letters in.',
     'invalid_coupling_code': 'Ongeldige koppelcode. Controleer de code in uw DigiD app.',
