@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="assessment-container">
+    <!-- Compact Header -->
+    <div class="container">
+        <div class="assessment-header">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-1">
+                        <i class="bi bi-heart-pulse text-red-500 mr-2"></i>
+                        {{ t('big_exam_prep', lang)|default('Подготовка к BIG экзамену') }}
+                    </h1>
+                    <p class="text-sm text-gray-600">
+                        {{ t('big_exam_description', lang)|default('Комплексная подготовка к экзамену BIG для получения лицензии на медицинскую практику в Нидерландах') }}
+                    </p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="text-center">
+                        <div class="text-xl font-bold text-blue-600">{{ big_categories|length }}</div>
+                        <div class="text-xs text-gray-500">{{ t('exam_categories', lang)|default('Категорий') }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl font-bold text-green-600">{{ previous_attempts|length }}</div>
+                        <div class="text-xs text-gray-500">{{ t('previous_attempts', lang)|default('Попыток') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="container mb-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold mb-3">{{ t('ready_to_start', lang)|default('Готовы начать подготовку?') }}</h3>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ url_for('assessment_bp.dutch_intro', lang=lang) }}" 
+                       class="btn btn-primary">
+                        <i class="bi bi-flag-fill mr-2"></i>
+                        {{ t('start_dutch_assessment', lang)|default('Dutch Assessment') }}
+                    </a>
+                    <a href="{{ url_for('assessment_bp.intro', lang=lang) }}" 
+                       class="btn btn-outline">
+                        <i class="bi bi-clipboard-data mr-2"></i>
+                        {{ t('general_assessment', lang)|default('Общая оценка') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Categories Grid -->
+    <div class="container mb-6">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="bi bi-list-check mr-2 text-blue-500"></i>
+            {{ t('exam_categories_title', lang)|default('Категории BIG экзамена') }}
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for category in big_categories %}
+            <div class="card hover:shadow-md transition-shadow">
+                <div class="card-body">
+                    <div class="flex items-start mb-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <i class="bi {{ category.icon|default('bi-clipboard-check') }} text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-900 mb-1">{{ category.name }}</h3>
+                            <p class="text-sm text-gray-600 mb-2">{{ category.description|default('Описание категории') }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="badge badge-gray text-xs">
+                                    <i class="bi bi-question-circle mr-1"></i>
+                                    {{ category.min_questions }}-{{ category.max_questions }}
+                                </span>
+                                {% if category.critical_for_netherlands %}
+                                <span class="badge badge-warning text-xs">
+                                    <i class="bi bi-exclamation-triangle mr-1"></i>
+                                    {{ t('critical_for_nl', lang)|default('Критично') }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Previous Attempts -->
+    {% if previous_attempts %}
+    <div class="container mb-6">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="bi bi-clock-history mr-2 text-green-500"></i>
+            {{ t('previous_attempts_title', lang)|default('Предыдущие попытки') }}
+        </h2>
+        
+        <div class="space-y-3">
+            {% for attempt in previous_attempts %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                                <div class="text-center">
+                                    <div class="text-lg font-bold text-green-600">{{ "%.0f"|format(attempt.total_score) }}%</div>
+                                    <div class="text-xs text-gray-500">{{ t('score', lang)|default('балл') }}</div>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-4 text-sm text-gray-600 mb-1">
+                                    <span class="flex items-center">
+                                        <i class="bi bi-calendar mr-1"></i>
+                                        {{ attempt.completed_at.strftime('%d.%m.%Y') }}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <i class="bi bi-clock mr-1"></i>
+                                        {% if attempt.time_spent %}
+                                            {% set minutes = (attempt.time_spent // 60) | int %}
+                                            {% set hours = (minutes // 60) | int %}
+                                            {% set remaining_minutes = minutes % 60 %}
+                                            {% if hours > 0 %}
+                                                {{ hours }}ч {{ remaining_minutes }}мин
+                                            {% else %}
+                                                {{ minutes }}мин
+                                            {% endif %}
+                                        {% else %}
+                                            0 мин
+                                        {% endif %}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <i class="bi bi-check-circle mr-1"></i>
+                                        {{ attempt.correct_answers }}/{{ attempt.total_questions }}
+                                    </span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: {{ attempt.total_score }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('assessment_bp.results', lang=lang, attempt_id=attempt.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            {{ t('view_results', lang)|default('Результаты') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Progress Overview -->
+    {% if previous_attempts %}
+    <div class="container mb-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold mb-4">{{ t('progress_overview', lang)|default('Обзор прогресса') }}</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {% set latest_attempt = previous_attempts[0] %}
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">{{ "%.0f"|format(latest_attempt.total_score) }}%</div>
+                        <div class="text-xs text-gray-500">{{ t('latest_score', lang)|default('Последний балл') }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">{{ previous_attempts|length }}</div>
+                        <div class="text-xs text-gray-500">{{ t('total_attempts', lang)|default('Всего попыток') }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">{{ latest_attempt.correct_answers }}/{{ latest_attempt.total_questions }}</div>
+                        <div class="text-xs text-gray-500">{{ t('correct_answers', lang)|default('Правильных ответов') }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-600">
+                            {% if latest_attempt.time_spent %}
+                                {% set minutes = (latest_attempt.time_spent // 60) | int %}
+                                {{ minutes }}м
+                            {% else %}
+                                0м
+                            {% endif %}
+                        </div>
+                        <div class="text-xs text-gray-500">{{ t('avg_time', lang)|default('Среднее время') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Compact Assessment Styles */
+.assessment-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%);
+    padding: 1rem 0;
+}
+
+.assessment-header {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Typography */
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* Colors */
+.text-blue-600 { color: #2563eb; }
+.text-green-600 { color: #059669; }
+.text-purple-600 { color: #7c3aed; }
+.text-orange-600 { color: #ea580c; }
+.text-red-500 { color: #ef4444; }
+.text-gray-500 { color: #6b7280; }
+.text-gray-600 { color: #4b5563; }
+.text-gray-900 { color: #111827; }
+
+.bg-blue-100 { background-color: #dbeafe; }
+.bg-green-100 { background-color: #d1fae5; }
+
+/* Layout */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+.flex-shrink-0 { flex-shrink: 0; }
+.flex-wrap { flex-wrap: wrap; }
+
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.space-y-3 > * + * { margin-top: 0.75rem; }
+
+/* Spacing */
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mr-1 { margin-right: 0.25rem; }
+.mr-2 { margin-right: 0.5rem; }
+.mr-3 { margin-right: 0.75rem; }
+.mr-4 { margin-right: 1rem; }
+
+.p-0 { padding: 0; }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    background-color: #0080ff;
+    color: white;
+    border-color: #0080ff;
+}
+
+.btn-primary:hover {
+    background-color: #0056cc;
+    border-color: #0056cc;
+}
+
+.btn-outline {
+    background-color: transparent;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.btn-outline:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    border-color: #0080ff;
+    color: #0080ff;
+}
+
+.btn-outline-primary:hover {
+    background-color: #eff6ff;
+    border-color: #0056cc;
+    color: #0056cc;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+.badge-gray {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+/* Progress bar */
+.rounded-full { border-radius: 9999px; }
+.h-2 { height: 0.5rem; }
+
+/* Responsive */
+@media (min-width: 768px) {
+    .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+    .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Transitions */
+.transition-shadow { transition: box-shadow 0.2s ease; }
+.hover\:shadow-md:hover { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+
+/* Container */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Icons */
+.bi {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+}
+</style>
+{% endblock %} 

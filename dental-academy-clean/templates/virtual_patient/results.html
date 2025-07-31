@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты - {{ attempt.scenario.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-{{ 'success' if result_type == 'good' else 'warning' if result_type == 'average' else 'danger' }} text-white text-center">
+                    <h2 class="mb-0">
+                        <i class="fas fa-{{ 'trophy' if result_type == 'good' else 'medal' if result_type == 'average' else 'certificate' }} me-2"></i>
+                        {{ outcome.title }}
+                    </h2>
+                </div>
+                
+                <div class="card-body p-5">
+                    <!-- Основные результаты -->
+                    <div class="text-center mb-4">
+                        <div class="result-icon mb-3">
+                            {% if result_type == 'good' %}
+                                <i class="fas fa-trophy text-success" style="font-size: 4rem;"></i>
+                            {% elif result_type == 'average' %}
+                                <i class="fas fa-medal text-warning" style="font-size: 4rem;"></i>
+                            {% else %}
+                                <i class="fas fa-certificate text-danger" style="font-size: 4rem;"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <h3 class="mb-3">{{ attempt.scenario.title }}</h3>
+                        <p class="text-muted mb-4">{{ outcome.text }}</p>
+                        
+                        <!-- Счет -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="stat-box p-3 bg-light rounded">
+                                    <div class="stat-number h2 mb-1">{{ attempt.score }}</div>
+                                    <div class="stat-label text-muted">Итоговый балл</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-box p-3 bg-light rounded">
+                                    <div class="stat-number h2 mb-1">{{ attempt.percentage_score }}%</div>
+                                    <div class="stat-label text-muted">Процент</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-box p-3 bg-light rounded">
+                                    <div class="stat-number h2 mb-1">{{ "%.1f"|format(attempt.time_spent) if attempt.time_spent else 0 }}</div>
+                                    <div class="stat-label text-muted">Минут</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Прогресс бар -->
+                        <div class="progress mb-4" style="height: 20px;">
+                            <div class="progress-bar bg-{{ 'success' if result_type == 'good' else 'warning' if result_type == 'average' else 'danger' }}" 
+                                 style="width: {{ attempt.percentage_score }}%">
+                                {{ attempt.percentage_score }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Детали сценария -->
+                    <div class="scenario-details mb-4">
+                        <h5>Детали сценария</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item mb-2">
+                                    <strong>Категория:</strong> {{ attempt.scenario.category or 'Общий' }}
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <strong>Сложность:</strong> 
+                                    <span class="badge bg-{{ 'success' if attempt.scenario.difficulty == 'easy' else 'warning' if attempt.scenario.difficulty == 'medium' else 'danger' }}">
+                                        {{ attempt.scenario.difficulty }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item mb-2">
+                                    <strong>Максимальный балл:</strong> {{ attempt.max_score }}
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <strong>Дата прохождения:</strong> {{ attempt.completed_at.strftime('%d.%m.%Y %H:%M') if attempt.completed_at else 'Не завершен' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Рекомендации -->
+                    <div class="recommendations mb-4">
+                        <h5>Рекомендации</h5>
+                        <div class="alert alert-{{ 'success' if result_type == 'good' else 'warning' if result_type == 'average' else 'info' }}">
+                            {% if result_type == 'good' %}
+                                <i class="fas fa-check-circle me-2"></i>
+                                Отличная работа! Вы показали высокий уровень клинических навыков. 
+                                Рекомендуем попробовать более сложные сценарии или помочь другим студентам.
+                            {% elif result_type == 'average' %}
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Хороший результат! Есть области для улучшения. 
+                                Рекомендуем повторить теоретический материал и попробовать сценарий снова.
+                            {% else %}
+                                <i class="fas fa-info-circle me-2"></i>
+                                Необходимо больше практики. Рекомендуем изучить теоретический материал, 
+                                посмотреть учебные видео и попробовать более простые сценарии.
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- История диалога -->
+                    {% if attempt.dialogue_history %}
+                        <div class="dialogue-history mb-4">
+                            <h5>История диалога</h5>
+                            <div class="accordion" id="dialogueAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDialogue">
+                                            Показать детали прохождения
+                                        </button>
+                                    </h2>
+                                    <div id="collapseDialogue" class="accordion-collapse collapse" data-bs-parent="#dialogueAccordion">
+                                        <div class="accordion-body">
+                                            {% set dialogue_data = attempt.dialogue_history | fromjson %}
+                                            {% for entry in dialogue_data %}
+                                                <div class="dialogue-entry mb-2 p-2 border-start border-primary">
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="fw-bold">Шаг {{ loop.index }}</span>
+                                                        <span class="text-{{ 'success' if entry.score_change > 0 else 'danger' if entry.score_change < 0 else 'muted' }}">
+                                                            {{ '+' if entry.score_change > 0 else '' }}{{ entry.score_change }} баллов
+                                                        </span>
+                                                    </div>
+                                                    <small class="text-muted">{{ entry.timestamp }}</small>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('virtual_patient.list_scenarios') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            К списку сценариев
+                        </a>
+                        
+                        <div class="btn-group">
+                            <form method="POST" action="{{ url_for('virtual_patient.start_scenario', scenario_id=attempt.scenario.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-redo me-1"></i>
+                                    Пройти еще раз
+                                </button>
+                            </form>
+                            
+                            <button type="button" class="btn btn-success" onclick="shareResult()">
+                                <i class="fas fa-share me-1"></i>
+                                Поделиться
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Похожие сценарии -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Рекомендуемые сценарии
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for i in range(3) %}
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-md text-primary mb-2" style="font-size: 2rem;"></i>
+                                    <h6 class="card-title">Сценарий {{ i + 1 }}</h6>
+                                    <p class="card-text small text-muted">Рекомендуется для дальнейшего изучения</p>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Попробовать</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function shareResult() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Результат виртуального пациента',
+            text: `Я прошел сценарий "${{'{{ attempt.scenario.title }}'}}" и набрал ${{'{{ attempt.percentage_score }}'}}%!`,
+            url: window.location.href
+        });
+    } else {
+        // Fallback для браузеров без Web Share API
+        const resultText = `Я прошел сценарий "${{'{{ attempt.scenario.title }}'}}" и набрал ${{'{{ attempt.percentage_score }}'}}%!";
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(resultText).then(() => {
+                alert('{{ t("result_copied", lang) }}');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = resultText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('{{ t("result_copied", lang) }}');
+            });
+        } else {
+            // Совсем старый fallback
+            const textArea = document.createElement('textarea');
+            textArea.value = resultText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('{{ t("result_copied", lang) }}');
+        }
+    }
+}
+
+// Анимация появления статистики
+document.addEventListener('DOMContentLoaded', function() {
+    const statBoxes = document.querySelectorAll('.stat-box');
+    statBoxes.forEach((box, index) => {
+        setTimeout(() => {
+            box.style.opacity = '0';
+            box.style.transform = 'translateY(20px)';
+            box.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                box.style.opacity = '1';
+                box.style.transform = 'translateY(0)';
+            }, 100);
+        }, index * 200);
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Profiel - Mentora{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-hero">
+                <div class="profile-avatar">
+                    {% if current_user.profile_photo %}
+                        <img src="{{ url_for('static', filename=current_user.profile_photo.replace('static/', '')) }}" alt="Profile Photo" class="avatar-img">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            <i class="icon-user"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="profile-info">
+                    <h1 class="profile-name">{{ current_user.get_display_name() }}</h1>
+                    <p class="profile-subtitle">{{ current_user.get_profession_display() }}</p>
+                    <div class="profile-badges">
+                        {% if current_user.is_digid_user() %}
+                        <span class="badge digid-badge">
+                            <i class="icon-shield-check"></i>
+                            DigiD Geverifieerd
+                        </span>
+                        {% endif %}
+                        {% if current_user.big_number %}
+                        <span class="badge big-badge">
+                            <i class="icon-award"></i>
+                            BIG: {{ current_user.big_number }}
+                        </span>
+                        {% endif %}
+                        {% if current_user.has_subscription %}
+                        <span class="badge premium-badge">
+                            <i class="icon-star"></i>
+                            Premium
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <div class="content-grid">
+                <!-- Personal Information -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="icon-user"></i>
+                            Persoonlijke Gegevens
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">E-mailadres</span>
+                                <span class="info-value">{{ current_user.email }}</span>
+                            </div>
+                            {% if current_user.phone %}
+                            <div class="info-item">
+                                <span class="info-label">Telefoon</span>
+                                <span class="info-value">{{ current_user.phone }}</span>
+                            </div>
+                            {% endif %}
+                            {% if current_user.bsn %}
+                            <div class="info-item">
+                                <span class="info-label">BSN</span>
+                                <span class="info-value">{{ current_user.bsn }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="info-item">
+                                <span class="info-label">Voorkeurstaal</span>
+                                <span class="info-value">
+                                    {% if current_user.language == 'nl' %}🇳🇱 Nederlands
+                                    {% elif current_user.language == 'en' %}🇺🇸 English
+                                    {% elif current_user.language == 'ru' %}🇷🇺 Русский
+                                    {% elif current_user.language == 'es' %}🇪🇸 Español
+                                    {% elif current_user.language == 'pt' %}🇵🇹 Português
+                                    {% elif current_user.language == 'uk' %}🇺🇦 Українська
+                                    {% elif current_user.language == 'tr' %}🇹🇷 Türkçe
+                                    {% elif current_user.language == 'fa' %}🇮🇷 فارسی
+                                    {% else %}🇺🇸 English{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Information -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="icon-briefcase"></i>
+                            Professionele Gegevens
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Specialisme</span>
+                                <span class="info-value">{{ current_user.get_profession_display() }}</span>
+                            </div>
+                            {% if current_user.workplace %}
+                            <div class="info-item">
+                                <span class="info-label">Werkplek</span>
+                                <span class="info-value">{{ current_user.workplace }}</span>
+                            </div>
+                            {% endif %}
+                            {% if current_user.specialization %}
+                            <div class="info-item">
+                                <span class="info-label">Subspecialisatie</span>
+                                <span class="info-value">{{ current_user.specialization }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="info-item">
+                                <span class="info-label">Authenticatie</span>
+                                <span class="info-value">
+                                    {% if current_user.is_digid_user() %}
+                                        <span class="auth-method digid">DigiD</span>
+                                    {% else %}
+                                        <span class="auth-method password">Wachtwoord</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Statistics -->
+                <div class="info-card full-width">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="icon-chart"></i>
+                            Leervoortgang
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        {% if user_stats %}
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon lessons">
+                                    <i class="icon-book"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-number">{{ user_stats.get('completed_lessons', 0) }}</span>
+                                    <span class="stat-label">Lessen voltooid</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon time">
+                                    <i class="icon-clock"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-number">{{ (user_stats.get('total_time_spent', 0) / 60) | round(1) }}h</span>
+                                    <span class="stat-label">Studietijd</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon activity">
+                                    <i class="icon-calendar"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-number">{{ user_stats.get('activity_days', 0) }}</span>
+                                    <span class="stat-label">Actieve dagen</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon level">
+                                    <i class="icon-trophy"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-number">{{ current_user.level }}</span>
+                                    <span class="stat-label">Niveau</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="icon-chart-empty"></i>
+                            <h4>Geen voortgang beschikbaar</h4>
+                            <p>Begin met leren om uw voortgang bij te houden</p>
+                            <a href="{{ url_for('profession_map_bp.profession_redirect', lang='nl') }}" class="btn btn-primary">
+                                <i class="icon-play"></i>
+                                Start leren
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Documents Overview -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="icon-file-text"></i>
+                            Documenten
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="documents-overview">
+                            <div class="document-status">
+                                <div class="status-item">
+                                    <span class="status-label">Diploma</span>
+                                    <span class="status-value {{ 'completed' if current_user.diploma_file else 'pending' }}">
+                                        {% if current_user.diploma_file %}
+                                            <i class="icon-check"></i> Geüpload
+                                        {% else %}
+                                            <i class="icon-x"></i> Niet geüpload
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Taalcertificaten</span>
+                                    <span class="status-value">
+                                        <i class="icon-file"></i> 
+                                        {{ current_user.get_language_certificates() | length }} certificaten
+                                    </span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Extra documenten</span>
+                                    <span class="status-value">
+                                        <i class="icon-file-plus"></i> 
+                                        {{ current_user.get_additional_documents() | length }} documenten
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Status -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="icon-settings"></i>
+                            Account Status
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-grid">
+                            <div class="status-indicator">
+                                <span class="status-dot {{ 'active' if current_user.is_active else 'inactive' }}"></span>
+                                <span>Account {{ 'Actief' if current_user.is_active else 'Inactief' }}</span>
+                            </div>
+                            <div class="status-indicator">
+                                <span class="status-dot {{ 'active' if current_user.registration_completed else 'pending' }}"></span>
+                                <span>Registratie {{ 'Voltooid' if current_user.registration_completed else 'In behandeling' }}</span>
+                            </div>
+                            {% if current_user.profile_updated_at %}
+                            <div class="status-info">
+                                <small class="text-muted">
+                                    Laatst bijgewerkt: {{ current_user.profile_updated_at.strftime('%d-%m-%Y om %H:%M') }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="profile-actions">
+            <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-primary">
+                <i class="icon-edit"></i>
+                Profiel bewerken
+            </a>
+            <a href="{{ url_for('auth.change_password') }}" class="btn btn-secondary">
+                <i class="icon-key"></i>
+                Wachtwoord wijzigen
+            </a>
+            {% if current_user.is_admin %}
+            <a href="/admin/" class="btn btn-outline">
+                <i class="icon-shield"></i>
+                Admin paneel
+            </a>
+            {% endif %}
+            <a href="{{ url_for('profession_map_bp.profession_redirect', lang='nl') }}" class="btn btn-outline">
+                <i class="icon-map"></i>
+                Leerkaart
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 
