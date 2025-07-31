@@ -5,9 +5,11 @@ services:
     plan: starter
     branch: main
     buildCommand: |
+      echo "🚀 Starting build process..." &&
       pip install -r requirements-render.txt &&
       python -m flask db upgrade &&
-      python scripts/seed_production_data.py
+      python scripts/seed_production_data.py &&
+      echo "✅ Build completed successfully!"
     startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
     envVars:
       - key: FLASK_ENV
@@ -36,6 +38,8 @@ services:
         value: "Lax"
       - key: FLASK_DEBUG
         value: "false"
+      - key: CACHE_CONTROL
+        value: "no-cache, no-store, must-revalidate"
     healthCheckPath: /health
     autoDeploy: true
 
