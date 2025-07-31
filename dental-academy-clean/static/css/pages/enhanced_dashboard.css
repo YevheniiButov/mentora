@@ -1,0 +1,1234 @@
+/* Enhanced Dashboard Styles */
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-top: 100px; /* Отступ для фиксированной шапки */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header Section */
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    z-index: 1;
+}
+
+.welcome-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.welcome-content {
+    flex: 1;
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.digid-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.welcome-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+/* Level Progress */
+.level-progress-section {
+    position: relative;
+    z-index: 2;
+}
+
+.level-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.level-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12px 20px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.xp-info {
+    font-size: 1.2rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    transition: width 1s ease-in-out;
+    border-radius: 6px;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    white-space: nowrap;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.dashboard-left,
+.dashboard-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Widget Styles */
+.widget {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.widget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.widget-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.widget-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.widget-link {
+    color: #6366f1;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.widget-link:hover {
+    color: #4f46e5;
+}
+
+.widget-content {
+    padding: 20px 24px 24px;
+}
+
+/* Goals Widget */
+.goals-widget {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+.goals-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.goal-item {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.goal-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.lessons-icon {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.time-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.xp-icon {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.goal-content {
+    flex: 1;
+}
+
+.goal-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 5px;
+}
+
+.goal-progress {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.goal-current {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.goal-separator {
+    font-size: 1.2rem;
+    color: #6b7280;
+}
+
+.goal-target {
+    font-size: 1rem;
+    color: #6b7280;
+}
+
+.goal-progress-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.goal-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #4f46e5);
+    transition: width 1s ease-in-out;
+    border-radius: 3px;
+}
+
+/* Statistics Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+}
+
+.completed-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.progress-icon {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.streak-icon {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Activity Chart Widget */
+.activity-chart-widget canvas {
+    max-height: 200px;
+}
+
+/* Learning Paths Widget */
+.learning-path-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.learning-path-item:last-child {
+    border-bottom: none;
+}
+
+.path-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.path-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.path-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 3px;
+}
+
+.path-meta {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.path-progress {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 120px;
+}
+
+.path-progress-bar {
+    width: 80px;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.path-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #4f46e5);
+    transition: width 1s ease-in-out;
+    border-radius: 4px;
+}
+
+.path-progress-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 40px;
+}
+
+/* BIG Exam Widget */
+.big-exam-widget {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.big-exam-status {
+    text-align: center;
+}
+
+.exam-progress-circle {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    position: relative;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.circle-inner {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.status-badge.ready {
+    background: #10b981;
+    color: white;
+}
+
+.status-badge.almost-ready {
+    background: #f59e0b;
+    color: white;
+}
+
+.status-badge.in-progress {
+    background: #6366f1;
+    color: white;
+}
+
+.status-badge.getting-started {
+    background: #6b7280;
+    color: white;
+}
+
+.exam-date {
+    font-size: 0.9rem;
+    color: #92400e;
+    font-weight: 500;
+}
+
+/* Achievements Widget */
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.achievement-item:last-child {
+    border-bottom: none;
+}
+
+.achievement-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.achievement-icon.primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.achievement-icon.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.achievement-icon.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.achievement-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 3px;
+}
+
+.achievement-description {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.no-achievements {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+}
+
+.no-achievements i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+/* Recommended Modules Widget */
+.recommended-module-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.recommended-module-item:last-child {
+    border-bottom: none;
+}
+
+.module-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.module-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+}
+
+.module-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 3px;
+}
+
+.module-path {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.module-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.module-progress-bar {
+    width: 60px;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.module-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #4f46e5);
+    transition: width 1s ease-in-out;
+    border-radius: 3px;
+}
+
+.continue-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.continue-btn:hover {
+    transform: scale(1.1);
+    color: white;
+}
+
+/* Recent Activity Widget */
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-date {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+    min-width: 50px;
+}
+
+.activity-stats {
+    display: flex;
+    gap: 15px;
+    flex: 1;
+}
+
+.activity-lessons,
+.activity-time,
+.activity-xp {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.activity-lessons {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+}
+
+.activity-time {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.activity-xp {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.no-activity {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+}
+
+.no-activity i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+/* Reminders Widget */
+.reminder-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.reminder-item:last-child {
+    border-bottom: none;
+}
+
+.reminder-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.reminder-icon.exam {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.reminder-icon.deadline {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.reminder-icon.general {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.reminder-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 3px;
+}
+
+.reminder-date {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.quick-action-btn {
+    padding: 16px 24px;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.quick-action-btn.primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.quick-action-btn.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.quick-action-btn.info {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+}
+
+.quick-action-btn.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* Achievement Notification */
+.achievement-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    max-width: 350px;
+    animation: slideInRight 0.5s ease-out;
+}
+
+.achievement-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.achievement-notification i {
+    font-size: 2rem;
+    color: #f59e0b;
+}
+
+.achievement-notification strong {
+    color: #1f2937;
+    font-size: 1.1rem;
+}
+
+.achievement-notification p {
+    margin: 5px 0 0 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .goals-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 15px;
+    }
+    
+    .dashboard-header {
+        padding: 20px;
+    }
+    
+    .welcome-section {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .welcome-title {
+        font-size: 2rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .quick-action-btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-title {
+        font-size: 1.8rem;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .level-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .progress-bar-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .widget-content {
+        padding: 16px;
+    }
+}
+
+/* Learning Plan Widget Styles */
+.learning-plan-widget {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid #e2e8f0;
+}
+
+/* Обеспечиваем кликабельность кнопок */
+.learning-plan-widget .widget-link,
+.quick-action-btn,
+.widget-link,
+.continue-btn {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    position: relative;
+    z-index: 10;
+}
+
+.learning-plan-widget .widget-link:hover,
+.quick-action-btn:hover,
+.widget-link:hover,
+.continue-btn:hover {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* Убеждаемся, что кнопки не перекрыты */
+.widget-header,
+.quick-actions {
+    position: relative;
+    z-index: 5;
+}
+
+.plan-overview {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.plan-progress {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.plan-progress-circle {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.plan-progress-circle .circle-progress {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(#667eea 0deg, #667eea calc(var(--progress, 0) * 3.6deg), #e2e8f0 calc(var(--progress, 0) * 3.6deg), #e2e8f0 360deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.plan-progress-circle .circle-inner {
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #667eea;
+}
+
+.plan-status {
+    flex: 1;
+}
+
+.plan-stats-mini {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.plan-stat {
+    text-align: center;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.plan-stat .stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 4px;
+}
+
+.plan-stat .stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.exam-countdown {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: #fef3c7;
+    border-radius: 8px;
+    color: #92400e;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.exam-countdown i {
+    color: #f59e0b;
+}
+
+.no-plan {
+    text-align: center;
+    padding: 30px 20px;
+    color: #64748b;
+}
+
+.no-plan i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.no-plan p {
+    margin: 0 0 20px 0;
+    font-size: 1rem;
+}
+
+.btn-create-plan {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-create-plan:hover {
+    background: #5a6fd8;
+    color: white;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+/* Responsive adjustments for learning plan widget */
+@media (max-width: 768px) {
+    .plan-progress {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .plan-stats-mini {
+        grid-template-columns: 1fr;
+    }
+    
+    .plan-progress-circle {
+        align-self: center;
+    }
+}
+
+/* ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ КЛИКАБЕЛЬНОСТИ КНОПОК */
+.widget-link,
+.quick-action-btn,
+.continue-btn,
+.btn-create-plan,
+.widget-header a,
+.widget-content a {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    position: relative !important;
+    z-index: 10 !important;
+    text-decoration: none !important;
+}
+
+.widget-link:hover,
+.quick-action-btn:hover,
+.continue-btn:hover,
+.btn-create-plan:hover,
+.widget-header a:hover,
+.widget-content a:hover {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+}
+
+/* Убеждаемся, что контейнеры кнопок не блокируют клики */
+.widget-header,
+.widget-content,
+.quick-actions {
+    position: relative !important;
+    z-index: 5 !important;
+    pointer-events: auto !important;
+}
+
+/* Исправляем возможные конфликты с другими стилями */
+.dashboard-container * {
+    pointer-events: auto;
+}
+
+.dashboard-container .widget * {
+    pointer-events: auto;
+}
+
+/* Специально для кнопок в виджетах */
+.widget a[href] {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+}
+
+/* JavaScript for circular progress animation */
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate circular progress bars
+    const progressCircles = document.querySelectorAll('.circle-progress');
+    
+    progressCircles.forEach(circle => {
+        const progress = circle.getAttribute('data-progress');
+        if (progress) {
+            circle.style.setProperty('--progress', progress);
+            
+            // Animate the progress
+            setTimeout(() => {
+                circle.style.transition = 'all 1s ease-in-out';
+            }, 100);
+        }
+    });
+    
+    // Animate stat numbers
+    const statNumbers = document.querySelectorAll('.stat-number');
+    
+    statNumbers.forEach(stat => {
+        const finalValue = parseFloat(stat.textContent);
+        if (!isNaN(finalValue)) {
+            let currentValue = 0;
+            const increment = finalValue / 50;
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= finalValue) {
+                    currentValue = finalValue;
+                    clearInterval(timer);
+                }
+                stat.textContent = Math.round(currentValue);
+            }, 20);
+        }
+    });
+    
+    // Fix button clickability
+    const buttons = document.querySelectorAll('.widget-link, .quick-action-btn, .continue-btn, .btn-create-plan');
+    buttons.forEach(button => {
+        // Ensure buttons are clickable
+        button.style.pointerEvents = 'auto';
+        button.style.cursor = 'pointer';
+        button.style.position = 'relative';
+        button.style.zIndex = '10';
+        
+        // Add click event listener for debugging
+        button.addEventListener('click', function(e) {
+            console.log('Button clicked:', this.href);
+        });
+        
+        // Add hover effect
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Debug: Log all buttons
+    console.log('Found buttons:', buttons.length);
+    buttons.forEach((btn, index) => {
+        console.log(`Button ${index}:`, btn.href, btn.className);
+    });
+});
+</script> 
+</script> 

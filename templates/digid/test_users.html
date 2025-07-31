@@ -1,0 +1,193 @@
+{% extends "digid/base_digid.html" %}
+{% block title %}DigiD Users Test - Mentora{% endblock %}
+
+{% block head %}
+<style>
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f5f5f5;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #003d82;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.user-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #fafafa;
+}
+
+.user-card.completed {
+    border-color: #4caf50;
+    background: #e8f5e8;
+}
+
+.user-card.incomplete {
+    border-color: #ff9800;
+    background: #fff3e0;
+}
+
+.user-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.user-field {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.label {
+    font-weight: bold;
+    color: #333;
+}
+
+.value {
+    color: #666;
+}
+
+.status {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 12px;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.status.completed {
+    background: #4caf50;
+    color: white;
+}
+
+.status.incomplete {
+    background: #ff9800;
+    color: white;
+}
+
+.actions {
+    text-align: center;
+    margin-top: 16px;
+}
+
+.btn {
+    background: #003d82;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    margin: 0 8px;
+}
+
+.btn:hover {
+    background: #002a5c;
+}
+
+.btn-orange {
+    background: #ff6600;
+}
+
+.btn-orange:hover {
+    background: #e65100;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>DigiD Users Registration Status</h1>
+    
+    {% if users %}
+        {% for user in users %}
+            <div class="user-card {{ 'completed' if user.registration_completed else 'incomplete' }}">
+                <div class="user-info">
+                    <div>
+                        <div class="user-field">
+                            <span class="label">Name:</span>
+                            <span class="value">{{ user.get_display_name() }}</span>
+                        </div>
+                        <div class="user-field">
+                            <span class="label">Email:</span>
+                            <span class="value">{{ user.email }}</span>
+                        </div>
+                        <div class="user-field">
+                            <span class="label">BSN:</span>
+                            <span class="value">{{ user.bsn }}</span>
+                        </div>
+                        <div class="user-field">
+                            <span class="label">DigiD Username:</span>
+                            <span class="value">{{ user.digid_username }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="user-field">
+                            <span class="label">Profession:</span>
+                            <span class="value">{{ user.get_profession_display() if user.profession else 'Not set' }}</span>
+                        </div>
+                        <div class="user-field">
+                            <span class="label">Diploma:</span>
+                            <span class="value">{{ '✅ Uploaded' if user.diploma_file else '❌ Not uploaded' }}</span>
+                        </div>
+                        <div class="user-field">
+                            <span class="label">Language Cert:</span>
+                            <span class="value">{{ '✅ Uploaded' if user.language_certificate else '❌ Not uploaded' }}</span>
+                        </div>
+                        <div class="user-field">
+                            <span class="label">Created:</span>
+                            <span class="value">{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'Unknown' }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="status {{ 'completed' if user.registration_completed else 'incomplete' }}">
+                    {{ '✅ Registration Complete' if user.registration_completed else '⏳ Registration Incomplete' }}
+                </div>
+                
+                <div class="actions">
+                    <a href="/digid/test-auth/{{ user.digid_username }}" class="btn">Test Login</a>
+                    {% if not user.registration_completed %}
+                        <a href="/digid/complete-registration" class="btn btn-orange">Complete Registration</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <h3>No DigiD users found</h3>
+            <p>Try logging in with DigiD to create test users</p>
+            <a href="/digid/login" class="btn">Go to DigiD Login</a>
+        </div>
+    {% endif %}
+    
+    <div class="actions" style="margin-top: 30px;">
+        <a href="/digid/login" class="btn">DigiD Login</a>
+        <a href="/digid/demo" class="btn btn-orange">Demo Page</a>
+    </div>
+</div>
+{% endblock %} 

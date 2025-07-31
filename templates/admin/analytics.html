@@ -1,0 +1,185 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary">
+                <i class="bi bi-eye"></i>
+            </div>
+            <div class="stat-content">
+                <h3>1,247</h3>
+                <p>Page Views Today</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="stat-content">
+                <h3>+23%</h3>
+                <p>Growth This Week</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning">
+                <i class="bi bi-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>4m 32s</h3>
+                <p>Avg. Session Time</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-info">
+                <i class="bi bi-award"></i>
+            </div>
+            <div class="stat-content">
+                <h3>89%</h3>
+                <p>Completion Rate</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="content-item">
+            <h5><i class="bi bi-graph-up me-2"></i>Usage Analytics</h5>
+            <div class="chart-container mt-3" style="height: 300px;">
+                <canvas id="usageChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="content-item">
+            <h5><i class="bi bi-pie-chart me-2"></i>User Distribution</h5>
+            <div class="chart-container mt-3" style="height: 300px;">
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <div class="col-md-6">
+        <div class="content-item">
+            <h5><i class="bi bi-trophy me-2"></i>Top Performing Content</h5>
+            <div class="list-group list-group-flush mt-3">
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>Advanced Dental Procedures</span>
+                    <span class="badge bg-success">94% completion</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>Basic Oral Hygiene</span>
+                    <span class="badge bg-success">91% completion</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>Dental Anatomy</span>
+                    <span class="badge bg-warning">78% completion</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>Patient Communication</span>
+                    <span class="badge bg-info">65% completion</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="content-item">
+            <h5><i class="bi bi-calendar-event me-2"></i>Recent Activity</h5>
+            <div class="activity-list mt-3">
+                <div class="activity-item">
+                    <i class="bi bi-person-plus text-success"></i>
+                    <div>
+                        <div>New user registration</div>
+                        <small class="text-muted">john.doe@example.com • 2 hours ago</small>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <i class="bi bi-book text-primary"></i>
+                    <div>
+                        <div>Module completed</div>
+                        <small class="text-muted">Advanced Procedures • 4 hours ago</small>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <i class="bi bi-upload text-warning"></i>
+                    <div>
+                        <div>Content uploaded</div>
+                        <small class="text-muted">5 new lessons • Yesterday</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Usage Chart
+    const usageCtx = document.getElementById('usageChart').getContext('2d');
+    new Chart(usageCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Active Users',
+                data: [65, 59, 80, 81, 56, 55, 40],
+                borderColor: '#3ECDC1',
+                backgroundColor: 'rgba(62, 205, 193, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Distribution Chart
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Students', 'Teachers', 'Admins'],
+            datasets: [{
+                data: [75, 20, 5],
+                backgroundColor: ['#3ECDC1', '#6C5CE7', '#FD79A8']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

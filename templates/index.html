@@ -1,0 +1,1119 @@
+{% extends "base.html" %}
+
+{# --- SEO Meta Tags --- #}
+{% block title %}{{ t('hero_title', g.lang) }}{% endblock %}
+{% block meta_description %}{{ t('hero_subtitle', g.lang) }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<!-- CSRF Token for AJAX requests -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="user-authenticated" content="{{ 'true' if current_user.is_authenticated else 'false' }}">
+<meta name="current-language" content="{{ g.lang }}">
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<!-- Optimized Modern Theme CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+
+<!-- Google Fonts для лучшей типографики -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ ОТОБРАЖЕНИЯ СЕКЦИЙ И ШАПКИ -->
+<style>
+/* ===== ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ ШАПКИ ===== */
+.modern-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+  height: 70px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.modern-header .navbar {
+  padding: 0.5rem 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.modern-header .navbar .container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 1.5rem !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-brand img {
+  height: 40px !important;
+  width: auto !important;
+}
+
+.modern-header .navbar-collapse {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-nav {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  height: 100% !important;
+}
+
+.modern-header .navbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  margin-left: auto !important;
+  height: 100% !important;
+}
+
+.modern-header .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 1rem !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-header .nav-link:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #3ECDC1 !important;
+}
+
+.modern-header .dropdown-toggle,
+.modern-header .btn {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #333 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-header .dropdown-toggle:hover,
+.modern-header .btn:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Темная тема для шапки */
+[data-theme="dark"] .modern-header {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .modern-header .nav-link {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .modern-header .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .modern-header .dropdown-toggle,
+[data-theme="dark"] .modern-header .btn {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 992px) {
+  .modern-header {
+    height: 60px !important;
+  }
+  
+  .modern-header .navbar-brand img {
+    height: 32px !important;
+  }
+  
+  .modern-header .navbar-toggler {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+    padding: 0.25rem !important;
+  }
+  
+  .modern-header .navbar-collapse {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
+    border-radius: 0 0 16px 16px !important;
+    padding: 1rem !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    height: auto !important;
+  }
+}
+
+/* ===== ИСПРАВЛЕНИЯ КОНТЕНТА ===== */
+/* Принудительно делаем все секции видимыми */
+.main-content {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* Секции должны быть видимыми */
+section {
+  display: block !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  margin-top: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero section получает padding-top */
+.hero-section {
+  padding-top: 70px !important;
+  margin-top: 0 !important;
+}
+
+/* Все контейнеры видимы */
+.container, .container-fluid {
+  display: block !important;
+  height: auto !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+/* Принудительно показываем конкретные секции */
+.features-section,
+.platform-features-section, 
+.benefits-section,
+.cta-section {
+  display: block !important;
+  opacity: 1 !important;
+  height: auto !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  margin-top: 0 !important;
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+
+<!-- Принудительные стили для анимации телефона -->
+<style>
+.device-mockup .screen-slides {
+    display: flex !important;
+    width: 400% !important;
+    height: 100% !important;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.device-mockup .screen-content {
+    width: 25% !important;
+    flex-shrink: 0 !important;
+}
+
+.device-mockup .indicator {
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.device-mockup .indicator.active {
+    background: white !important;
+    transform: scale(1.3) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# === ИСПРАВЛЕННАЯ HERO SECTION === #}
+<section class="hero-section">
+  <!-- Background Effects (Reduced) -->
+  <div class="hero-bg"></div>
+  
+  <!-- Reduced Animated Particles (only for desktop) -->
+  <div class="floating-particles d-none d-lg-block"></div>
+  
+  <!-- Simplified Morphing Shapes (only 3 instead of 6) -->
+  <div class="floating-shape shape-1 d-none d-xl-block"></div>
+  <div class="floating-shape shape-2 d-none d-xl-block"></div>
+  <div class="floating-shape shape-3 d-none d-xl-block"></div>
+  
+  <div class="container">
+    <div class="hero-content">
+      <!-- Left Column: Text Content -->
+      <div class="hero-text" data-animate="fadeInLeft">
+        <h1 class="hero-title">
+          {{ t('hero_title', g.lang) }}
+        </h1>
+        
+        <p class="hero-subtitle">
+          {{ t('hero_subtitle', g.lang) }}
+        </p>
+        
+        <div class="hero-buttons">
+          {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.digid_login') }}" class="btn-modern btn-primary">
+              <i class="bi bi-shield-check me-2"></i>
+              {{ t('login_with_digid', g.lang) }}
+            </a>
+            <a href="#features" class="btn-modern btn-secondary">
+              <i class="fas fa-play cta-icon"></i>
+              {{ t('learn_more', g.lang) }}
+            </a>
+          {% else %}
+            <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
+              <i class="bi bi-play-circle"></i>
+              {{ t('continue_learning', g.lang) }}
+            </a>
+          {% endif %}
+        </div>
+        
+        <!-- Realistic Statistics -->
+        <div class="stats-grid">
+          <div class="stat-card" data-animate="fadeInUp">
+            <div class="stat-number">BIG</div>
+            <div class="stat-label">{{ t('exam_preparation', g.lang) }}</div>
+          </div>
+          <div class="stat-card" data-animate="fadeInUp">
+            <div class="stat-number">9</div>
+            <div class="stat-label">{{ t('languages_supported', g.lang) }}</div>
+          </div>
+          <div class="stat-card" data-animate="fadeInUp">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">{{ t('availability', g.lang) }}</div>
+          </div>
+        </div>
+      </div>
+      
+<!-- Right Column: Animated Phone with Screen Switching -->
+<div class="hero-visual" data-animate="fadeInRight">
+  <!-- Floating Particles Container -->
+  <div class="particles-container" id="particles"></div>
+  
+  <div class="app-showcase">
+    <div class="device-mockup">
+      <div class="device-screen">
+        <div class="screen-slides" id="screenSlides">
+          <!-- Screen 1: Main Features -->
+          <div class="screen-content">
+            <div class="app-header">
+              <h3 class="app-title">Become a Healthcare Professional</h3>
+              <p class="app-subtitle">{{ t('interactive_learning', g.lang)|default('Интерактивное обучение') }}</p>
+            </div>
+            
+            <div class="feature-cards">
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h4>{{ t('structured_learning', g.lang)|default('Структурированное обучение') }}</h4>
+                <p>{{ t('structured_learning_desc', g.lang)|default('Пошаговая программа подготовки к экзамену') }}</p>
+              </div>
+              
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <i class="fas fa-user-md"></i>
+                </div>
+                <h4>{{ t('clinical_cases', g.lang)|default('Клинические случаи') }}</h4>
+                <p>{{ t('clinical_cases_desc', g.lang)|default('Практика на реалистичных медицинских сценариях') }}</p>
+              </div>
+              
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <h4>{{ t('progress_tracking', g.lang)|default('Отслеживание прогресса') }}</h4>
+                <p>{{ t('progress_tracking_desc', g.lang)|default('Детальная аналитика вашего обучения') }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 2: Learning Dashboard -->
+          <div class="screen-content screen-2">
+            <div class="app-header">
+              <h3 class="app-title">{{ t('learning_dashboard', g.lang)|default('Дашборд обучения') }}</h3>
+              <p class="app-subtitle">{{ t('your_progress', g.lang)|default('Ваш прогресс') }}</p>
+            </div>
+            
+            <div class="dashboard-stats">
+              <div class="stat-card">
+                <div class="stat-number">{{ stats.overall_progress|default(75) }}%</div>
+                <div class="stat-label">{{ t('completed', g.lang)|default('Завершено') }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">{{ stats.completed_lessons|default(24) }}</div>
+                <div class="stat-label">{{ t('modules', g.lang)|default('Модулей') }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">{{ stats.total_lessons|default(156) }}</div>
+                <div class="stat-label">{{ t('cards', g.lang)|default('Карточек') }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">{{ stats.average_score|default(89) }}%</div>
+                <div class="stat-label">{{ t('accuracy', g.lang)|default('Точность') }}</div>
+              </div>
+            </div>
+
+            <div class="progress-list">
+              <div class="progress-item">
+                <div class="progress-header">
+                  <span>{{ t('anatomy', g.lang)|default('Анатомия') }}</span>
+                  <span>{{ stats.anatomy_progress|default(92) }}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: {{ stats.anatomy_progress|default(92) }}%"></div>
+                </div>
+              </div>
+              <div class="progress-item">
+                <div class="progress-header">
+                  <span>{{ t('physiology', g.lang)|default('Физиология') }}</span>
+                  <span>{{ stats.physiology_progress|default(78) }}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: {{ stats.physiology_progress|default(78) }}%"></div>
+                </div>
+              </div>
+              <div class="progress-item">
+                <div class="progress-header">
+                  <span>{{ t('radiology', g.lang)|default('Радиология') }}</span>
+                  <span>{{ stats.radiology_progress|default(65) }}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: {{ stats.radiology_progress|default(65) }}%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 3: Test Interface -->
+          <div class="screen-content screen-3">
+            <div class="app-header">
+              <h3 class="app-title">{{ t('testing', g.lang)|default('Тестирование') }}</h3>
+              <p class="app-subtitle">{{ t('question_progress', g.lang)|default('Вопрос 3 из 15') }}</p>
+            </div>
+            
+            <div class="question-card">
+              <div class="question-text">
+                {{ t('sample_question', g.lang)|default('Какая структура отвечает за эмалевое образование в зубе?') }}
+              </div>
+              <div class="answer-options">
+                <div class="answer-option">A. {{ t('odontoblasts', g.lang)|default('Одонтобласты') }}</div>
+                <div class="answer-option correct">B. {{ t('ameloblasts', g.lang)|default('Амелобласты') }}</div>
+                <div class="answer-option">C. {{ t('cementoblasts', g.lang)|default('Цементобласты') }}</div>
+                <div class="answer-option">D. {{ t('osteoblasts', g.lang)|default('Остеобласты') }}</div>
+              </div>
+            </div>
+
+            <div class="feature-cards">
+              <div class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <h4>{{ t('timer', g.lang)|default('Таймер: 2:45') }}</h4>
+                <p>{{ t('time_remaining', g.lang)|default('Время на ответ') }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 4: Virtual Patient -->
+          <div class="screen-content screen-4">
+            <div class="app-header">
+              <h3 class="app-title">{{ t('virtual_patient', g.lang) }}</h3>
+              <p class="app-subtitle">{{ t('clinical_case', g.lang) }}</p>
+            </div>
+            
+            <div class="patient-card">
+              <div class="patient-avatar">👨‍⚕️</div>
+              <div class="patient-info">
+                <h4>{{ t('patient_name', g.lang) }}</h4>
+                <p>{{ t('patient_complaint', g.lang) }}</p>
+              </div>
+            </div>
+
+            <div class="patient-symptoms">
+              <div class="symptom-item">
+                🦷 {{ t('symptom_1', g.lang) }}
+              </div>
+              <div class="symptom-item">
+                🌡️ {{ t('symptom_2', g.lang) }}
+              </div>
+              <div class="symptom-item">
+                📅 {{ t('symptom_3', g.lang) }}
+              </div>
+            </div>
+
+            <div class="feature-cards">
+              <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h4>{{ t('examination', g.lang)|default('Обследование') }}</h4>
+                <p>{{ t('conduct_exam', g.lang)|default('Провести осмотр') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen Indicators -->
+        <div class="screen-indicators">
+          <div class="indicator active" data-screen="0"></div>
+          <div class="indicator" data-screen="1"></div>
+          <div class="indicator" data-screen="2"></div>
+          <div class="indicator" data-screen="3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+{# === FEATURES SECTION === #}
+<section class="features-section py-5" id="features">
+  <div class="container">
+    <!-- Section Header -->
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center" data-animate="fadeInUp">
+        <h2 class="section-title position-relative mb-4">
+          {{ t('start_path_title', g.lang)|default('Начни свой путь к успеху') | safe }}
+        </h2>
+        <p class="lead text-muted">
+          {{ t('professional_platform', g.lang)|default('Профессиональная платформа для подготовки к экзаменам') }}
+        </p>
+      </div>
+    </div>
+    
+    <!-- Feature Cards -->
+    <div class="row g-4">
+      <!-- Theory Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card">
+          <div class="feature-icon knowledge-gradient">
+            <i class="bi bi-lightbulb-fill"></i>
+          </div>
+          <h3 class="feature-title">{{ t('theory_title', g.lang)|default('Теория') }}</h3>
+          <p class="feature-description">
+            {{ t('theory_description', g.lang)|default('Структурированные модули по анатомии, физиологии и радиологии') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">{{ t('anatomy', g.lang)|default('Анатомия') }}</span>
+            <span class="tag">{{ t('physiology', g.lang)|default('Физиология') }}</span>
+            <span class="tag">{{ t('radiology', g.lang)|default('Радиология') }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Practice Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card featured">
+          <div class="featured-badge">{{ t('most_popular', g.lang)|default('Популярное') }}</div>
+          <div class="feature-icon communication-gradient">
+            <i class="bi bi-chat-dots"></i>
+          </div>
+          <h3 class="feature-title">{{ t('practice_title', g.lang)|default('Практика') }}</h3>
+          <p class="feature-description">
+            {{ t('practice_description', g.lang)|default('Клинические случаи и симуляция работы с пациентами') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">{{ t('case_studies', g.lang)|default('Клинические случаи') }}</span>
+            <span class="tag">{{ t('communication', g.lang)|default('Коммуникация') }}</span>
+            <span class="tag">{{ t('medical_dutch', g.lang)|default('Медицинский голландский') }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Exam Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card">
+          <div class="feature-icon workstation-gradient">
+            <i class="bi bi-award-fill"></i>
+          </div>
+          <h3 class="feature-title">{{ t('exam_title', g.lang)|default('Экзамен') }}</h3>
+          <p class="feature-description">
+            {{ t('exam_description', g.lang)|default('Подготовка к реальным экзаменам с анализом результатов') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">{{ t('mock_exams', g.lang)|default('Пробные экзамены') }}</span>
+            <span class="tag">{{ t('analytics', g.lang)|default('Аналитика') }}</span>
+            <span class="tag">{{ t('strategy', g.lang)|default('Стратегия') }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Community Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card highlight">
+          <div class="feature-icon community-gradient">
+            <i class="bi bi-chat-heart-fill"></i>
+          </div>
+          <h3 class="feature-title">
+            {{ t('community', g.lang)|default('Community') }}
+          </h3>
+          <p class="feature-description">
+            {{ t('community_description', g.lang)|default('Connect with colleagues, share knowledge and learn from each other') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">
+              {{ t('discussions', g.lang)|default('Discussions') }}
+            </span>
+            <span class="tag">
+              {{ t('networking', g.lang)|default('Networking') }}
+            </span>
+            <span class="tag">
+              {{ t('cases', g.lang)|default('Cases') }}
+            </span>
+          </div>
+          <a href="{{ url_for('main.community', lang=g.lang) }}" class="feature-link">
+            {{ t('visit_community', g.lang)|default('Visit Community →') }}
+          </a>
+        </div>
+      </div>
+      
+      <!-- Virtual Patients Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card highlight">
+          <div class="feature-icon virtual-patient-gradient">
+            <i class="bi bi-person-heart"></i>
+          </div>
+          <h3 class="feature-title">
+            {{ t('virtual_patients', g.lang)|default('Virtual Patients') }}
+          </h3>
+          <p class="feature-description">
+            {{ t('virtual_patients_description', g.lang)|default('Practice with realistic clinical scenarios and improve your diagnostic skills') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">
+              {{ t('diagnosis', g.lang)|default('Diagnosis') }}
+            </span>
+            <span class="tag">
+              {{ t('treatment', g.lang)|default('Treatment') }}
+            </span>
+            <span class="tag">
+              {{ t('scenarios', g.lang)|default('Scenarios') }}
+            </span>
+          </div>
+          <a href="{{ url_for('virtual_patient.list_scenarios') }}" class="feature-link">
+            {{ t('start_scenario', g.lang)|default('Start scenario →') }}
+          </a>
+        </div>
+      </div>
+      
+      <!-- BIG Registration Card -->
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="feature-card modern-card highlight">
+          <div class="feature-icon big-gradient">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h3 class="feature-title">
+            {{ t('big_registration', g.lang)|default('BIG Registration') }}
+          </h3>
+          <p class="feature-description">
+            {{ t('big_registration_description', g.lang)|default('Complete guide for BIG registration: requirements, process and tips for all healthcare professions') }}
+          </p>
+          <div class="feature-tags">
+            <span class="tag">
+              {{ t('documentation', g.lang)|default('Documentation') }}
+            </span>
+            <span class="tag">
+              {{ t('step_by_step', g.lang)|default('Step-by-step') }}
+            </span>
+            <span class="tag">
+              {{ t('all_professions', g.lang)|default('All professions') }}
+            </span>
+          </div>
+          <a href="{{ url_for('main.big_info', lang=g.lang) }}" class="feature-link">
+            {{ t('view_big_guide', g.lang)|default('View BIG guide →') }}
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- CTA Section -->
+    <div class="text-center mt-5" data-animate="fadeInUp">
+      {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
+          <i class="bi bi-play-fill"></i>
+          {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
+        </a>
+      {% else %}
+                                         <a href="{{ url_for('auth.digid_login') }}" class="btn-modern btn-primary btn-lg">
+              <i class="bi bi-shield-check me-2"></i>
+              {{ t('login_with_digid', g.lang)|default('Inloggen met DigiD') }}
+            </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{# === PLATFORM FEATURES SECTION === #}
+<section class="platform-features-section py-5">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center" data-animate="fadeInUp">
+        <span class="section-subtitle">
+          {{ t('platform_features', g.lang)|default('Возможности платформы') }}
+        </span>
+        <h2 class="section-title">
+          {{ t('why_choose_us', g.lang)|default('Почему выбирают нас') | safe }}
+        </h2>
+        <p class="section-description">
+          {{ t('comprehensive_approach', g.lang)|default('Комплексный подход к подготовке стоматологов') }}
+        </p>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
+        <div class="platform-feature">
+          <div class="platform-icon">
+            <i class="bi bi-globe"></i>
+          </div>
+          <h3 class="platform-title">
+            {{ t('multilingual_support', g.lang)|default('Многоязычность') }}
+          </h3>
+          <p class="platform-description">
+            {{ t('multilingual_description', g.lang)|default('Обучение на 8 языках для удобства студентов из разных стран') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
+        <div class="platform-feature">
+          <div class="platform-icon">
+            <i class="bi bi-clock"></i>
+          </div>
+          <h3 class="platform-title">
+            {{ t('flexible_schedule', g.lang)|default('Гибкий график') }}
+          </h3>
+          <p class="platform-description">
+            {{ t('flexible_description', g.lang)|default('Учитесь в удобное время в своем темпе') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
+        <div class="platform-feature">
+          <div class="platform-icon">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h3 class="platform-title">
+            {{ t('quality_assurance', g.lang)|default('Гарантия качества') }}
+          </h3>
+          <p class="platform-description">
+            {{ t('quality_description', g.lang)|default('Контент разработан экспертами в области стоматологии') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
+        <div class="platform-feature">
+          <div class="platform-icon">
+            <i class="bi bi-headset"></i>
+          </div>
+          <h3 class="platform-title">
+            {{ t('support_247', g.lang)|default('Поддержка 24/7') }}
+          </h3>
+          <p class="platform-description">
+            {{ t('support_description', g.lang)|default('Круглосуточная поддержка пользователей') }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# === BENEFITS SECTION === #}
+<section class="benefits-section py-5">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center" data-animate="fadeInUp">
+        <span class="section-subtitle">
+          {{ t('learning_approach', g.lang)|default('Подход к обучению') }}
+        </span>
+        <h2 class="section-title">
+          {{ t('our_methodology', g.lang)|default('Наша методология') | safe }}
+        </h2>
+        <p class="section-description">
+          {{ t('evidence_based', g.lang)|default('Основанная на доказательствах система обучения') }}
+        </p>
+      </div>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-journal-medical"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('structured_modules', g.lang)|default('Структурированные модули') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('structured_modules_desc', g.lang)|default('Логически выстроенная программа обучения от базовых знаний к продвинутым навыкам') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-card-checklist"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('adaptive_testing', g.lang)|default('Адаптивное тестирование') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('adaptive_testing_desc', g.lang)|default('Тесты, адаптирующиеся под ваш уровень знаний для оптимального обучения') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-translate"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('medical_dutch', g.lang)|default('Медицинский голландский') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('medical_dutch_desc', g.lang)|default('Специализированный курс медицинского голландского языка для работы в Нидерландах') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-clipboard-data"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('realistic_simulations', g.lang)|default('Реалистичные симуляции') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('realistic_simulations_desc', g.lang)|default('Виртуальные пациенты и клинические сценарии, максимально приближенные к реальности') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-bar-chart-line"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('detailed_analytics', g.lang)|default('Подробная аналитика') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('detailed_analytics_desc', g.lang)|default('Детальная статистика прогресса с персональными рекомендациями') }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="bi bi-people"></i>
+          </div>
+          <h3 class="benefit-title">
+            {{ t('community_learning', g.lang)|default('Обучение в сообществе') }}
+          </h3>
+          <p class="benefit-description">
+            {{ t('community_learning_desc', g.lang)|default('Активное сообщество студентов и экспертов для обмена знаниями') }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# === CALL TO ACTION SECTION === #}
+<section class="cta-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center" data-animate="fadeInUp">
+        <div class="cta-card">
+          <h2 class="cta-title">
+            {{ t('ready_to_start', g.lang)|default('Готовы начать?') }}
+          </h2>
+          <p class="cta-description">
+            {{ t('join_thousands', g.lang)|default('Присоединяйтесь к студентам, которые готовятся к BIG экзамену с нашей платформой') }}
+          </p>
+          <div class="cta-buttons">
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.digid_login') }}" class="btn-modern btn-primary btn-lg">
+              <i class="bi bi-shield-check me-2"></i>
+              {{ t('login_with_digid', g.lang)|default('Inloggen met DigiD') }}
+            </a>
+            <a href="{{ url_for('main.big_info', lang=lang) }}" class="btn-modern btn-secondary btn-lg">
+              <i class="bi bi-info-circle"></i>
+              {{ t('learn_about_big', g.lang)|default('Узнать о BIG') }}
+            </a>
+            {% else %}
+            <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
+              <i class="bi bi-play-circle"></i>
+              {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block body_scripts %}
+{{ super() }}
+
+<!-- 🚀 Встроенная анимация телефона (работает всегда) -->
+<script>
+// 🚀 Встроенная анимация телефона (работает всегда)
+(function() {
+    'use strict';
+    
+    console.log('🔧 Инициализация встроенной анимации телефона');
+    
+    let currentScreen = 0;
+    const totalScreens = 4;
+    let autoInterval = null;
+    
+    // === ДОБАВЛЕНО: функция для анимации частиц ===
+    function setupParticles() {
+        let particlesContainer = document.getElementById('particles');
+        if (!particlesContainer) {
+            particlesContainer = document.createElement('div');
+            particlesContainer.id = 'particles';
+            particlesContainer.className = 'particles-container';
+            // Добавляем в hero-section
+            const heroSection = document.querySelector('.hero-section');
+            if (heroSection) {
+                heroSection.appendChild(particlesContainer);
+                console.log('✨ Created particles container');
+            }
+        }
+        if (particlesContainer) {
+            startParticleSystem(particlesContainer);
+            console.log('🎪 Particles system started');
+        }
+    }
+    function createParticle(particlesContainer) {
+        if (!particlesContainer) return;
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        // Размер
+        const size = Math.random() * 5 + 3;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        // Позиция
+        particle.style.left = Math.random() * 100 + '%';
+        // Длительность
+        const duration = Math.random() * 7 + 8;
+        particle.style.animationDuration = `${duration}s`;
+        // Задержка
+        particle.style.animationDelay = Math.random() * 3 + 's';
+        // Прозрачность
+        particle.style.opacity = Math.random() * 0.8 + 0.2;
+        particlesContainer.appendChild(particle);
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+            }
+        }, (duration + 3) * 1000);
+    }
+    function startParticleSystem(particlesContainer) {
+        const createParticles = () => {
+            createParticle(particlesContainer);
+            setTimeout(createParticles, Math.random() * 1000 + 500);
+        };
+        createParticle(particlesContainer);
+        setTimeout(createParticles, 1000);
+        console.log('🎆 Particle creation started');
+    }
+    // === КОНЕЦ ДОБАВЛЕНИЯ ===
+
+    function initPhoneAnimation() {
+        // Ждем загрузки DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupAnimation);
+    } else {
+            setupAnimation();
+        }
+    }
+    
+    function setupAnimation() {
+        console.log('📱 Настройка анимации телефона');
+        
+        // === ДОБАВЛЕНО: инициализация частиц ===
+        setupParticles();
+        // === КОНЕЦ ДОБАВЛЕНИЯ ===
+        
+        const screenSlides = document.querySelector('.screen-slides');
+        const indicators = document.querySelectorAll('.indicator');
+        const deviceMockup = document.querySelector('.device-mockup');
+        
+        if (!screenSlides) {
+            console.warn('❌ .screen-slides не найден');
+    return;
+  }
+  
+        if (!indicators || indicators.length === 0) {
+            console.warn('❌ .indicator элементы не найдены');
+    return;
+  }
+  
+        console.log('✅ Все элементы найдены, запускаем анимацию');
+        
+        // Функция обновления экрана
+        function updateScreen() {
+            const translateX = -currentScreen * 25; // 25% на экран
+            screenSlides.style.transform = `translateX(${translateX}%)`;
+            
+            // Обновляем индикаторы
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentScreen);
+            });
+            
+            console.log(`📱 Экран ${currentScreen + 1}: translateX(${translateX}%)`);
+        }
+        
+        // Переход к следующему экрану
+        function nextScreen() {
+            currentScreen = (currentScreen + 1) % totalScreens;
+            updateScreen();
+        }
+        
+        // Переход к конкретному экрану
+        function goToScreen(index) {
+            currentScreen = index;
+            updateScreen();
+            restartAutoAdvance();
+        }
+        
+        // Автопрокрутка
+        function startAutoAdvance() {
+            stopAutoAdvance();
+            autoInterval = setInterval(nextScreen, 4000);
+            console.log('▶️ Автопрокрутка запущена');
+        }
+        
+        function stopAutoAdvance() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                console.log('⏸️ Автопрокрутка остановлена');
+            }
+        }
+        
+        function restartAutoAdvance() {
+            stopAutoAdvance();
+            startAutoAdvance();
+        }
+        
+        // Обработчики событий
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', (e) => {
+                e.preventDefault();
+                goToScreen(index);
+                console.log(`🖱️ Клик по индикатору ${index + 1}`);
+            });
+        });
+        
+        // Пауза при наведении на телефон
+        if (deviceMockup) {
+            deviceMockup.addEventListener('mouseenter', () => {
+                stopAutoAdvance();
+            });
+            
+            deviceMockup.addEventListener('mouseleave', () => {
+                startAutoAdvance();
+            });
+        }
+        
+        // Swipe events для мобильных устройств
+        let startX = 0;
+        screenSlides.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        }, { passive: true });
+        
+        screenSlides.addEventListener('touchend', (e) => {
+            if (!startX) return;
+            const endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+            
+            if (Math.abs(diffX) > 50) { // Минимальное расстояние свайпа
+                if (diffX > 0) {
+                    nextScreen(); // Свайп влево
+    } else {
+                    currentScreen = (currentScreen - 1 + totalScreens) % totalScreens;
+                    updateScreen();
+                }
+                restartAutoAdvance();
+            }
+            startX = 0;
+        }, { passive: true });
+        
+        // Инициализация
+        updateScreen();
+        startAutoAdvance();
+        
+        // Глобальный доступ для отладки
+        window.phoneAnimation = {
+            next: nextScreen,
+            goTo: goToScreen,
+            stop: stopAutoAdvance,
+            start: startAutoAdvance
+        };
+        
+        console.log('🚀 Анимация телефона полностью инициализирована!');
+    }
+    
+    // Запуск
+    initPhoneAnimation();
+})();
+
+
+</script>
+
+<!-- Подключение скриптов для анимации телефона -->
+
+{% endblock %}

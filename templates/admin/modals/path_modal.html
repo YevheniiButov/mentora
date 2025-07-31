@@ -1,0 +1,60 @@
+<!-- Модальное окно для добавления Category Path -->
+<div class="modal fade" id="addPathModal" tabindex="-1" aria-labelledby="addPathModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPathModalLabel">Добавить категорию обучения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('admin_bp.add_path', lang=lang) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="path-name">Название</label>
+                        <input type="text" class="form-control" id="path-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="path-description">Описание</label>
+                        <textarea class="form-control" id="path-description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="path-order">Порядок отображения</label>
+                        <input type="number" class="form-control" id="path-order" name="order" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="path-icon">Иконка (Bootstrap Icons)</label>
+                        <input type="text" class="form-control" id="path-icon" name="icon" value="list-task">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования Category Path -->
+<div class="modal fade" id="editPathModal" tabindex="-1" aria-labelledby="editPathModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPathModalLabel">Редактировать категорию обучения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('admin_bp.update_path', lang=lang) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" id="edit-path-id" name="path_id">
+                    <div class="form-group">
+                        <label for="edit-path-name">Название</label>
+                        <input type="text" class="form-control" id="edit-path-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-path-description">Описание</label>
+                        <textarea class="form-control" id="edit-path-description" name="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Обновить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

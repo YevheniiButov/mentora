@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subject.name }} - Tests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+
+    <div class="row">
+        <div class="col-md-8">
+            <h2>{{ subject.name }} - Tests</h2>
+            <p class="lead">Bereid je voor op je BIG-registratie met onze oefentests</p>
+
+            {% for test in tests %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">{{ test.name }}</h3>
+                    <p class="card-text">{{ test.description }}</p>
+                    
+                    <div class="test-info mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><i class="bi bi-clock"></i> Tijdslimiet: {{ test.time_limit }} minuten</p>
+                                <p><i class="bi bi-award"></i> Slagingspercentage: {{ test.passing_score }}%</p>
+                            </div>
+                            <div class="col-md-6">
+                                {% if test.id in test_stats %}
+                                <p><i class="bi bi-trophy"></i> Beste score: {{ test_stats[test.id]['best_score'] }}%</p>
+                                <p><i class="bi bi-calendar-check"></i> Aantal pogingen: {{ test_stats[test.id]['total_attempts'] }}</p>
+                                {% if test_stats[test.id]['passed'] %}
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle"></i> Test behaald!
+                                </div>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="{{ url_for('learning_map_bp.start_test', test_id=test.id) }}" class="btn btn-primary">
+                        <i class="bi bi-play-circle"></i> Start Test
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Onderwerpen</h4>
+                    <div class="list-group">
+                        {% for category in categories %}
+                        <div class="list-group-item">
+                            <h5 class="mb-1">{{ category.name }}</h5>
+                            <p class="mb-1">{{ category.description }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

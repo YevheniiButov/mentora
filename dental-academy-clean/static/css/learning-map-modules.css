@@ -1,0 +1,476 @@
+/* ===== СТИЛИ МОДУЛЕЙ И СУБТОПИКОВ В СТИЛЕ КАРТЫ ОБУЧЕНИЯ ===== */
+
+/* === ГРАДИЕНТНЫЙ ФОН КАК НА КАРТЕ ОБУЧЕНИЯ === */
+.main-container {
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Декоративные анимированные элементы фона */
+.main-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(62, 205, 193, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
+    animation: gentle-float 20s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.main-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.02) 50%, transparent 70%);
+    animation: shimmer 15s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes gentle-float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(-20px, -20px) rotate(1deg); }
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* Обеспечиваем что контент находится поверх фона */
+.left-column,
+.middle-column,
+.right-column {
+    position: relative;
+    z-index: 1;
+}
+
+/* Стеклянный эффект для левой колонки */
+.left-column {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 0 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Стили для заголовков и текста на градиентном фоне */
+.section-header h2,
+.filters-title {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.filter-section h3 {
+    color: rgba(255, 255, 255, 0.8) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.filter-option label {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Стили для кнопок фильтров на градиентном фоне */
+.apply-filters-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.apply-filters-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.clear-filters-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.clear-filters-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
+
+/* Стили для основной области на градиентном фоне */
+.breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.8) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.breadcrumb-item a:hover {
+    color: white !important;
+}
+
+.breadcrumb-item.active {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.section-title,
+.page-header h1,
+.module-title,
+.category-title {
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.page-header p {
+    color: rgba(255, 255, 255, 0.8) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* === ПЕРЕМЕННЫЕ ЦВЕТОВ === */
+:root {
+    /* Градиенты категорий из карты обучения */
+    --knowledge-gradient: linear-gradient(135deg, #3498db, #2980b9);
+    --communication-gradient: linear-gradient(135deg, #9b59b6, #8e44ad);
+    --preclinical-gradient: linear-gradient(135deg, #1abc9c, #16a085);
+    --workstation-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
+    --bi-toets-gradient: linear-gradient(135deg, #f39c12, #e67e22);
+    --virtual-patients-gradient: linear-gradient(135deg, #667eea, #764ba2);
+    
+    /* Основные цвета */
+    --primary-color: #3ECDC1;
+    --primary-dark: #32A39A;
+    --secondary-color: #6C5CE7;
+    --text-primary: #2c3e50;
+    --text-secondary: #5d6d7e;
+    --border-color: #e9ecef;
+    --background-light: #f8fafc;
+    --card-bg: #ffffff;
+    
+    /* Радиусы и тени */
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --transition-fast: 200ms ease;
+    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === СТИЛИ МОДУЛЕЙ === */
+.module-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid transparent;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    position: relative;
+    transition: all var(--transition-normal);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+/* Градиентная рамка для модулей */
+.module-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 2px;
+    background: var(--knowledge-gradient);
+    border-radius: var(--radius-xl);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    -webkit-mask-composite: xor;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    z-index: -1;
+}
+
+.module-card:hover::before {
+    opacity: 1;
+}
+
+.module-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(52, 152, 219, 0.3);
+    border-color: transparent;
+}
+
+/* Стили для разных категорий модулей */
+.module-card.knowledge-center::before,
+.module-card.education::before {
+    background: var(--knowledge-gradient);
+}
+
+.module-card.knowledge-center:hover,
+.module-card.education:hover {
+    box-shadow: 0 20px 40px rgba(52, 152, 219, 0.3);
+}
+
+.module-card.communication::before {
+    background: var(--communication-gradient);
+}
+
+.module-card.communication:hover {
+    box-shadow: 0 20px 40px rgba(155, 89, 182, 0.3);
+}
+
+.module-card.preclinical-skills::before,
+.module-card.preclinical::before {
+    background: var(--preclinical-gradient);
+}
+
+.module-card.preclinical-skills:hover,
+.module-card.preclinical:hover {
+    box-shadow: 0 20px 40px rgba(26, 188, 156, 0.3);
+}
+
+.module-card.workstation::before {
+    background: var(--workstation-gradient);
+}
+
+.module-card.workstation:hover {
+    box-shadow: 0 20px 40px rgba(231, 76, 60, 0.3);
+}
+
+.module-card.bi_toets::before,
+.module-card.bi-toets::before {
+    background: var(--bi-toets-gradient);
+}
+
+.module-card.bi_toets:hover,
+.module-card.bi-toets:hover {
+    box-shadow: 0 20px 40px rgba(243, 156, 18, 0.3);
+}
+
+.module-card.dutch::before,
+.module-card.virtual-patients::before {
+    background: var(--virtual-patients-gradient);
+}
+
+.module-card.dutch:hover,
+.module-card.virtual-patients:hover {
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+}
+
+/* === СТИЛИ СУБТОПИКОВ === */
+.subtopic-link,
+.module-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text-primary);
+    position: relative;
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-bottom: 0.5rem;
+}
+
+/* Градиентная левая граница для субтопиков */
+.subtopic-link::before,
+.module-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--knowledge-gradient);
+    border-radius: 2px 0 0 2px;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+/* Иконка субтопика */
+.subtopic-link::after {
+    content: '📚';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--knowledge-gradient);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    transition: transform var(--transition-normal);
+    margin-left: auto;
+}
+
+.subtopic-link:hover,
+.module-link:hover {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 24px rgba(52, 152, 219, 0.2);
+    transform: translateX(4px);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.subtopic-link:hover::before,
+.module-link:hover::before {
+    opacity: 1;
+}
+
+.subtopic-link:hover::after {
+    transform: rotate(10deg) scale(1.1);
+}
+
+.subtopic-link.active,
+.module-link.active {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 12px 32px rgba(62, 205, 193, 0.3);
+    color: var(--primary-color);
+    font-weight: 600;
+    transform: translateX(6px);
+}
+
+.subtopic-link.active::before,
+.module-link.active::before {
+    opacity: 1;
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+}
+
+.subtopic-link.active::after {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    transform: rotate(15deg) scale(1.15);
+}
+
+/* === ПРОГРЕСС-БАРЫ === */
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: var(--border-color);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--knowledge-gradient);
+    border-radius: 3px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Прогресс-бары для разных категорий */
+.knowledge-center .progress-bar-fill,
+.education .progress-bar-fill {
+    background: var(--knowledge-gradient);
+}
+
+.communication .progress-bar-fill {
+    background: var(--communication-gradient);
+}
+
+.preclinical-skills .progress-bar-fill,
+.preclinical .progress-bar-fill {
+    background: var(--preclinical-gradient);
+}
+
+.workstation .progress-bar-fill {
+    background: var(--workstation-gradient);
+}
+
+.bi_toets .progress-bar-fill,
+.bi-toets .progress-bar-fill {
+    background: var(--bi-toets-gradient);
+}
+
+.dutch .progress-bar-fill,
+.virtual-patients .progress-bar-fill {
+    background: var(--virtual-patients-gradient);
+}
+
+/* === АНИМАЦИИ === */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.module-card,
+.subtopic-link {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Задержки для последовательного появления */
+.module-card:nth-child(1) { animation-delay: 0.1s; }
+.module-card:nth-child(2) { animation-delay: 0.2s; }
+.module-card:nth-child(3) { animation-delay: 0.3s; }
+.module-card:nth-child(4) { animation-delay: 0.4s; }
+
+.subtopic-link:nth-child(1) { animation-delay: 0.1s; }
+.subtopic-link:nth-child(2) { animation-delay: 0.2s; }
+.subtopic-link:nth-child(3) { animation-delay: 0.3s; }
+.subtopic-link:nth-child(4) { animation-delay: 0.4s; }
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+    .module-card:hover {
+        transform: translateY(-4px) scale(1.01);
+    }
+    
+    .subtopic-link:hover,
+    .module-link:hover {
+        transform: translateX(2px);
+    }
+}
+
+/* === ДОПОЛНИТЕЛЬНЫЕ СТИЛИ === */
+.module-icon {
+    transition: transform var(--transition-normal);
+}
+
+.module-card:hover .module-icon {
+    transform: rotate(10deg) scale(1.1);
+}
+
+.status-badge {
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-available {
+    background: rgba(26, 188, 156, 0.1);
+    color: #16a085;
+}
+
+.badge-locked {
+    background: rgba(149, 165, 166, 0.1);
+    color: #95a5a6;
+}
+
+.badge-premium {
+    background: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+} 

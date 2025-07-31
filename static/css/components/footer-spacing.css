@@ -1,0 +1,31 @@
+/* Дополнительные стили для подвала */
+.footer-spaced {
+    margin-top: 30px !important; /* Небольшой отступ перед подвалом */
+}
+
+/* Полное скрытие нижней части страницы для карты обучения */
+body.learning-map-page,
+body.learning-map-page .learning-map-container {
+    min-height: 100vh;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    overflow: hidden;
+}
+
+/* Убираем все возможные полосы внизу страницы */
+body.learning-map-page::after,
+.learning-map-container::after {
+    display: none !important;
+}
+
+/* Убираем отступы для main-content на страницах карты обучения */
+body.learning-map-page .main-content {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Убираем фиксированную высоту для контейнера карты обучения */
+.learning-map-container {
+    height: auto !important;
+    min-height: calc(100vh - var(--header-height)) !important;
+} 

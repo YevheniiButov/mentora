@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('about_big', g.lang) }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/big-info.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        {{ t('about_big', g.lang) }}
+                    </h2>
+                </div>
+                
+                <!-- Навигационные кнопки -->
+                <div class="card-body p-4">
+                    <div class="nav-buttons">
+                        <button class="nav-button active" data-section="what-is-big">
+                            Wat is BIG?
+                        </button>
+                        <button class="nav-button" data-section="registration">
+                            Registratieproces
+                        </button>
+                        <button class="nav-button" data-section="specialisms">
+                            Per specialisme
+                        </button>
+                        <button class="nav-button" data-section="documents">
+                            Documenten
+                        </button>
+                        <button class="nav-button" data-section="faq">
+                            FAQ
+                        </button>
+                        <button class="nav-button" data-section="useful-links">
+                            Handige links
+                        </button>
+                    </div>
+
+                    <!-- Секции с контентом -->
+                    <div class="content-sections">
+                        <!-- Wat is BIG? -->
+                        <div class="content-section active" id="what-is-big">
+                            <h3>Wat is BIG?</h3>
+                            <p>Het BIG-register (Beroepen in de Individuele Gezondheidszorg) is het officiële register van zorgverleners in Nederland. Een BIG-registratie bevestigt dat een zorgverlener bevoegd is om zijn beroep uit te oefenen en aan alle wettelijke eisen voldoet.</p>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                Alleen met een BIG-registratie mag u in Nederland als zorgverlener werken.
+                            </div>
+                        </div>
+
+                        <!-- Registratieproces -->
+                        <div class="content-section" id="registration">
+                            <h3>Registratieproces</h3>
+                            <div class="registration-steps">
+                                <div class="step">
+                                    <div class="step-number">1</div>
+                                    <h4>Diploma-evaluatie</h4>
+                                    <p>Laat uw buitenlandse diploma beoordelen door CIBG</p>
+                                </div>
+                                <div class="step">
+                                    <div class="step-number">2</div>
+                                    <h4>AKV-toets</h4>
+                                    <p>Algemene Kennis- en Vaardighedentoets</p>
+                                </div>
+                                <div class="step">
+                                    <div class="step-number">3</div>
+                                    <h4>Beroepsinhoudelijke toets</h4>
+                                    <p>Specifieke kennis voor uw vakgebied</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Per specialisme -->
+                        <div class="content-section" id="specialisms">
+                            <h3>Per specialisme</h3>
+                            <div class="specialisms-grid">
+                                <div class="specialism-card">
+                                    <i class="bi bi-tooth"></i>
+                                    <h4>Tandarts</h4>
+                                    <ul>
+                                        <li>Theoretische toets</li>
+                                        <li>Praktijktoets</li>
+                                        <li>Nederlandse taal (B2)</li>
+                                    </ul>
+                                </div>
+                                <!-- Другие специальности можно добавить здесь -->
+                            </div>
+                        </div>
+
+                        <!-- Documenten -->
+                        <div class="content-section" id="documents">
+                            <h3>Documenten</h3>
+                            <ul class="document-list">
+                                <li>
+                                    <i class="bi bi-file-earmark-text"></i>
+                                    <span>Diploma (gewaarmerkte kopie)</span>
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-text"></i>
+                                    <span>Verklaring van goed gedrag</span>
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-text"></i>
+                                    <span>Identiteitsbewijs</span>
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-text"></i>
+                                    <span>C1 taalcertificaat</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- FAQ -->
+                        <div class="content-section" id="faq">
+                            <h3>Veelgestelde vragen</h3>
+                            <div class="accordion" id="faqAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                            Hoe lang duurt het registratieproces?
+                                        </button>
+                                    </h2>
+                                    <div id="faq1" class="accordion-collapse collapse show">
+                                        <div class="accordion-body">
+                                            Het hele proces duurt gemiddeld 1-2 jaar, afhankelijk van uw voorbereiding en beschikbaarheid van toetsmomenten.
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Добавьте больше вопросов здесь -->
+                            </div>
+                        </div>
+
+                        <!-- Handige links -->
+                        <div class="content-section" id="useful-links">
+                            <h3>Handige links</h3>
+                            <div class="useful-links-grid">
+                                <a href="https://www.bigregister.nl" class="link-card" target="_blank">
+                                    <i class="bi bi-link-45deg"></i>
+                                    <span>BIG-register officiële website</span>
+                                </a>
+                                <a href="https://www.cbgmeb.nl" class="link-card" target="_blank">
+                                    <i class="bi bi-link-45deg"></i>
+                                    <span>CBGMEB</span>
+                                </a>
+                                <a href="https://www.government.nl/topics/healthcare-qualifications" class="link-card" target="_blank">
+                                    <i class="bi bi-link-45deg"></i>
+                                    <span>Nederlandse overheid - Zorgkwalificaties</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            {{ t('back_to_home', g.lang)|default('Вернуться на главную') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pages/big-info.js') }}"></script>
+{% endblock %} 

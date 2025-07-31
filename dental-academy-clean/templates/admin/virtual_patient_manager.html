@@ -1,0 +1,549 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Виртуальные пациенты{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .scenario-list {
+        margin-top: 20px;
+    }
+    
+    .scenario-card {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-bottom: 15px;
+    }
+    
+    .scenario-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .scenario-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .scenario-title {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+    
+    .scenario-badges {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .scenario-body {
+        padding: 15px 20px;
+    }
+    
+    .scenario-description {
+        margin-bottom: 15px;
+        color: #666;
+    }
+    
+    .scenario-footer {
+        padding: 10px 20px;
+        background-color: #f9f9f9;
+        border-top: 1px solid #eee;
+        border-radius: 0 0 8px 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .search-container {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Управление виртуальными пациентами</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createScenarioModal">
+            <i class="bi bi-plus-circle"></i> Создать сценарий
+        </button>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Импорт/Экспорт сценариев</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Импорт JSON -->
+                <div class="col-md-6">
+                    <h6>Импорт сценариев из JSON</h6>
+                    <form id="import-scenarios-form" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <input type="file" class="form-control" id="scenarios-json-file" name="scenarios_file" accept=".json">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="replace-existing-scenarios" name="replace_existing">
+                            <label class="form-check-label" for="replace-existing-scenarios">
+                                Заменить существующие сценарии
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Импортировать
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Экспорт JSON -->
+                <div class="col-md-6">
+                    <h6>Экспорт сценариев в JSON</h6>
+                    <form id="export-scenarios-form">
+                        <div class="mb-3">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="export_option" id="export-all" value="all" checked>
+                                <label class="form-check-label" for="export-all">
+                                    Все сценарии
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="export_option" id="export-published" value="published">
+                                <label class="form-check-label" for="export-published">
+                                    Только опубликованные
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="export_option" id="export-selected" value="selected">
+                                <label class="form-check-label" for="export-selected">
+                                    Выбранные сценарии
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-download"></i> Экспортировать
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Поиск и фильтрация -->
+    <div class="card search-container">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="scenario-search" placeholder="Поиск по названию...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="difficulty-filter">
+                        <option value="">Все уровни сложности</option>
+                        <option value="easy">Легкий</option>
+                        <option value="medium">Средний</option>
+                        <option value="hard">Сложный</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="category-filter">
+                        <option value="">Все категории</option>
+                        <option value="dental_anatomy">Анатомия зубов</option>
+                        <option value="diagnosis">Диагностика</option>
+                        <option value="treatment">Лечение</option>
+                        <option value="emergency">Неотложная помощь</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="status-filter">
+                        <option value="">Все статусы</option>
+                        <option value="published">Опубликованные</option>
+                        <option value="draft">Черновики</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Список сценариев -->
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="select-all-scenarios" onclick="toggleSelectAll()">
+        <label class="form-check-label" for="select-all-scenarios">
+            Выбрать все
+        </label>
+    </div>
+    <div>
+    <div class="scenario-list">
+        {% for scenario in scenarios %}
+        <div class="card scenario-card">
+            <div class="scenario-header">
+                <div class="d-flex align-items-center">
+                    <div class="form-check me-2">
+                        <input class="form-check-input scenario-checkbox" type="checkbox" value="{{ scenario.id }}" id="scenario-{{ scenario.id }}">
+                    </div>
+                    <h5 class="scenario-title mb-0">{{ scenario.title }}</h5>
+                </div>
+                <div class="scenario-badges">
+                    <span class="badge {% if scenario.difficulty == 'easy' %}bg-success{% elif scenario.difficulty == 'medium' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                        {{ scenario.difficulty|capitalize }}
+                    </span>
+                    {% if scenario.is_premium %}
+                    <span class="badge bg-info">Premium</span>
+                    {% endif %}
+                    {% if scenario.is_published %}
+                    <span class="badge bg-success">Опубликован</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Черновик</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="scenario-body">
+                <div class="scenario-description">
+                    {{ scenario.description|truncate(150) }}
+                </div>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-clock-history me-2"></i>
+                            <span>Таймер: {{ scenario.timeframe or 'Нет' }} сек.</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-award me-2"></i>
+                            <span>Макс. баллов: {{ scenario.max_score }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            <span>Создан: {{ scenario.created_at.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="scenario-footer">
+                <div class="scenario-stats">
+                    <small class="text-muted">Попыток: {{ scenario.attempts.count() }}</small>
+                </div>
+                <div class="scenario-actions">
+                    <a href="{{ url_for('admin_bp.edit_scenario', lang=lang, scenario_id=scenario.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                    <button class="btn btn-sm btn-outline-success publish-scenario-btn" data-id="{{ scenario.id }}" data-published="{{ scenario.is_published|lower }}">
+                        {% if scenario.is_published %}
+                        <i class="bi bi-eye-slash"></i> Скрыть
+                        {% else %}
+                        <i class="bi bi-eye"></i> Опубликовать
+                        {% endif %}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary duplicate-scenario-btn" data-id="{{ scenario.id }}">
+                        <i class="bi bi-files"></i> Дублировать
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger delete-scenario-btn" data-id="{{ scenario.id }}">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i> Сценарии не найдены. Создайте первый сценарий, нажав кнопку "Создать сценарий" выше.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Модальное окно для создания сценария -->
+<div class="modal fade" id="createScenarioModal" tabindex="-1" aria-labelledby="createScenarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createScenarioModalLabel">Создать новый сценарий</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-scenario-form" action="{{ url_for('admin_bp.create_scenario', lang=lang) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="scenario-title" class="form-label">Название сценария</label>
+                        <input type="text" class="form-control" id="scenario-title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scenario-description" class="form-label">Описание</label>
+                        <textarea class="form-control" id="scenario-description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="scenario-difficulty" class="form-label">Сложность</label>
+                            <select class="form-select" id="scenario-difficulty" name="difficulty">
+                                <option value="easy">Легкий</option>
+                                <option value="medium" selected>Средний</option>
+                                <option value="hard">Сложный</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="scenario-category" class="form-label">Категория</label>
+                            <select class="form-select" id="scenario-category" name="category">
+                                <option value="dental_anatomy">Анатомия зубов</option>
+                                <option value="diagnosis">Диагностика</option>
+                                <option value="treatment">Лечение</option>
+                                <option value="emergency">Неотложная помощь</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="scenario-timeframe" class="form-label">Ограничение по времени (секунды)</label>
+                            <input type="number" class="form-control" id="scenario-timeframe" name="timeframe" value="0" min="0">
+                            <small class="form-text text-muted">0 = без ограничения</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="scenario-max-score" class="form-label">Максимальный балл</label>
+                            <input type="number" class="form-control" id="scenario-max-score" name="max_score" value="100" min="1">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="scenario-premium" name="is_premium">
+                                <label class="form-check-label" for="scenario-premium">Премиум контент</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="scenario-published" name="is_published">
+                                <label class="form-check-label" for="scenario-published">Опубликовать сразу</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i> После создания сценария вы будете перенаправлены на страницу редактирования, где сможете настроить данные пациента и диалоговые узлы.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" form="create-scenario-form" class="btn btn-primary">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Поиск по названию
+        const scenarioSearch = document.getElementById('scenario-search');
+        if (scenarioSearch) {
+            scenarioSearch.addEventListener('input', filterScenarios);
+        }
+        
+        // Фильтрация по сложности и категории
+        const difficultyFilter = document.getElementById('difficulty-filter');
+        const categoryFilter = document.getElementById('category-filter');
+        const statusFilter = document.getElementById('status-filter');
+        
+        if (difficultyFilter) difficultyFilter.addEventListener('change', filterScenarios);
+        if (categoryFilter) categoryFilter.addEventListener('change', filterScenarios);
+        if (statusFilter) statusFilter.addEventListener('change', filterScenarios);
+        
+        // Функция фильтрации сценариев
+        function filterScenarios() {
+            const searchValue = scenarioSearch.value.toLowerCase();
+            const difficultyValue = difficultyFilter.value;
+            const categoryValue = categoryFilter.value;
+            const statusValue = statusFilter.value;
+            
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                const title = card.querySelector('.scenario-title').textContent.toLowerCase();
+                const difficulty = card.querySelector('.scenario-badges .badge').textContent.toLowerCase();
+                const isPublished = card.querySelector('.scenario-badges').textContent.includes('Опубликован');
+                // Для категории нужно будет добавить дата-атрибут или другой способ хранения этой информации
+                
+                let matchesSearch = title.includes(searchValue);
+                let matchesDifficulty = difficultyValue === '' || difficulty.includes(difficultyValue);
+                // Для статуса
+                let matchesStatus = statusValue === '' || 
+                                   (statusValue === 'published' && isPublished) ||
+                                   (statusValue === 'draft' && !isPublished);
+                
+                // Для категории
+                let matchesCategory = true; // Заглушка, потребуется реализация
+                
+                if (matchesSearch && matchesDifficulty && matchesCategory && matchesStatus) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Публикация/снятие с публикации
+        document.querySelectorAll('.publish-scenario-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const scenarioId = this.dataset.id;
+                const isPublished = this.dataset.published === 'true';
+                
+                if (confirm(`Вы уверены, что хотите ${isPublished ? 'снять с публикации' : 'опубликовать'} этот сценарий?`)) {
+                    fetch(`/{{ lang }}/admin/api/toggle-publish-scenario/${scenarioId}`, {                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Произошла ошибка: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Произошла ошибка при выполнении запроса');
+                    });
+                }
+            });
+        });
+        
+        // Дублирование сценария
+        document.querySelectorAll('.duplicate-scenario-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const scenarioId = this.dataset.id;
+                
+                if (confirm('Вы уверены, что хотите создать копию этого сценария?')) {
+                    fetch(`/{{ lang }}/admin/api/duplicate-scenario/${scenarioId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Произошла ошибка: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Произошла ошибка при выполнении запроса');
+                    });
+                }
+            });
+        });
+        
+        // Удаление сценария
+        document.querySelectorAll('.delete-scenario-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const scenarioId = this.dataset.id;
+                
+                if (confirm('Вы уверены, что хотите удалить этот сценарий? Это действие нельзя отменить.')) {
+                    fetch(`/{{ lang }}/admin/api/delete-scenario/${scenarioId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.closest('.scenario-card').remove();
+                        } else {
+                            alert('Произошла ошибка: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Произошла ошибка при выполнении запроса');
+                    });
+                }
+            });
+        });
+    });
+    // Обработка импорта сценариев
+document.getElementById('import-scenarios-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('scenarios-json-file');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Пожалуйста, выберите JSON-файл со сценариями');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('scenarios_file', fileInput.files[0]);
+    formData.append('replace_existing', document.getElementById('replace-existing-scenarios').checked);
+    
+    fetch('/{{ lang }}/admin/api/import-scenarios', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Успешно импортировано ${data.imported_count} сценариев`);
+            location.reload(); // Перезагружаем страницу для отображения новых сценариев
+        } else {
+            alert('Ошибка при импорте сценариев: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при импорте сценариев');
+    });
+});
+
+// Обработка экспорта сценариев
+document.getElementById('export-scenarios-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const exportOption = document.querySelector('input[name="export_option"]:checked').value;
+    let selectedIds = [];
+    
+    if (exportOption === 'selected') {
+        // Получаем ID выбранных сценариев (если есть чекбоксы для выбора)
+        document.querySelectorAll('.scenario-checkbox:checked').forEach(checkbox => {
+            selectedIds.push(parseInt(checkbox.value));
+        });
+        
+        if (selectedIds.length === 0) {
+            alert('Пожалуйста, выберите хотя бы один сценарий для экспорта');
+            return;
+        }
+    }
+    
+    // Создаем ссылку для скачивания
+    window.location.href = `/{{ lang }}/admin/api/export-scenarios?option=${exportOption}&ids=${selectedIds.join(',')}`;
+});
+
+// Функция для выбора всех сценариев
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('select-all-scenarios');
+    document.querySelectorAll('.scenario-checkbox').forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+}
+</script>
+{% endblock %}

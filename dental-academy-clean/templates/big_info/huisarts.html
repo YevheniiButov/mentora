@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="light" class="big-info-standalone">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIG Registratie Huisarts - Complete gids - Mentora</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
+    
+    <!-- Standalone BIG Info Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/big-info-standalone.css') }}">
+    
+    <!-- Дополнительные стили для страницы врача -->
+    <style>
+        /* Дополнительные стили для страницы врача */
+        .advieswijzer-container {
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+        }
+
+        .advieswijzer-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .advieswijzer-header {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .advieswijzer-header i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .advieswijzer-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .advieswijzer-content {
+            padding: 2rem;
+        }
+
+        .question-step, .result-step {
+            transition: all 0.3s ease;
+        }
+
+        .question-step h4 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .answer-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .answer-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .answer-btn:hover {
+            border-color: #3b82f6;
+            background: #f3f4f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+        }
+
+        .answer-btn i {
+            font-size: 1.5rem;
+            color: #3b82f6;
+        }
+
+        .result-step {
+            text-align: center;
+        }
+
+        .result-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .result-header i {
+            font-size: 3rem;
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+
+        .result-header h4 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .result-details {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .result-details p {
+            margin-bottom: 0.5rem;
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .result-details strong {
+            color: #1f2937;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Простая шапка -->
+    <header class="simple-header">
+        <div class="header-container">
+            <!-- Левая часть: логотип и кнопка назад -->
+            <div class="header-left">
+                <a href="/nl/" class="logo-link">
+                    <img src="/static/images/logo.png" alt="Mentora" class="header-logo">
+                </a>
+                <a href="/nl/big-info" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Terug
+                </a>
+            </div>
+            
+            <!-- Правая часть: язык и настройки -->
+            <div class="header-right">
+                <!-- Язык -->
+                <div class="header-dropdown">
+                    <button class="header-btn" id="langBtn">
+                        <i class="fas fa-globe"></i>
+                        NL
+                    </button>
+                    <div class="dropdown-content" id="langDropdown">
+                        <a href="/nl/big-info/huisarts" class="dropdown-item active">
+                            <span class="flag-icon">🇳🇱</span> Nederlands
+                        </a>
+                        <a href="/en/big-info/huisarts" class="dropdown-item">
+                            <span class="flag-icon">🇬🇧</span> English
+                        </a>
+                        <a href="/ru/big-info/huisarts" class="dropdown-item">
+                            <span class="flag-icon">🇷🇺</span> Русский
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Настройки -->
+                <div class="header-dropdown">
+                    <button class="header-btn" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <div class="dropdown-content" id="settingsDropdown">
+                        <div class="dropdown-item theme-item" onclick="setTheme('light')">
+                            <i class="fas fa-sun"></i>
+                            Lichte thema
+                            <span class="check" id="light-check">✓</span>
+                        </div>
+                        <div class="dropdown-item theme-item" onclick="setTheme('dark')">
+                            <i class="fas fa-moon"></i>
+                            Donkere thema
+                            <span class="check" id="dark-check"></span>
+                        </div>
+                        <hr class="dropdown-divider">
+                        <a href="/digid/login" class="dropdown-item">
+                            <i class="fas fa-shield-alt"></i>
+                            DigiD Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="big-info-container">
+        <!-- Hero Section -->
+        <section class="big-hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            BIG Registratie Huisarts
+                        </h1>
+                        <p class="hero-subtitle">
+                            Complete gids voor huisartsen die zich willen registreren in het BIG-register
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <section class="big-navigation">
+            <div class="container">
+                <nav class="tab-navigation">
+                    <button class="tab-btn active" data-tab="requirements">
+                        <i class="fas fa-list-check"></i>
+                        Vereisten
+                    </button>
+                    <button class="tab-btn" data-tab="process">
+                        <i class="fas fa-route"></i>
+                        Proces
+                    </button>
+                    <button class="tab-btn" data-tab="documents">
+                        <i class="fas fa-file-alt"></i>
+                        Documenten
+                    </button>
+                    <button class="tab-btn" data-tab="specialization">
+                        <i class="fas fa-graduation-cap"></i>
+                        Specialisatie
+                    </button>
+                    <button class="tab-btn" data-tab="faq">
+                        <i class="fas fa-question-circle"></i>
+                        FAQ
+                    </button>
+                    <button class="tab-btn" data-tab="links">
+                        <i class="fas fa-external-link-alt"></i>
+                        Links
+                    </button>
+                </nav>
+            </div>
+        </section>
+
+        <!-- Content Sections -->
+        <div class="big-content">
+            <!-- Requirements Section -->
+            <section id="requirements" class="content-section active">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Vereisten voor huisarts registratie</h2>
+                        <p class="section-description">Alle eisen die je moet vervullen om als huisarts geregistreerd te worden</p>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <p class="info-text">Master in de Geneeskunde van erkende universiteit</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <p class="info-text">Specialisatie Huisartsgeneeskunde (3 jaar)</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <p class="info-text">Minimaal 3 jaar specialisatie</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <p class="info-text">Nederlands C1 niveau vereist</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <p class="info-text">Praktijkervaring tijdens specialisatie</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <p class="info-text">BIG registratie na voltooiing</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Process Section -->
+            <section id="process" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Registratieproces voor huisartsen</h2>
+                        <p class="section-description">Stap-voor-stap proces specifiek voor huisartsen</p>
+                    </div>
+                    
+                    <div class="process-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">1</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">Geneeskunde opleiding</h3>
+                                        <p class="step-description">Voltooi 6-jarige universitaire opleiding</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>Master in de Geneeskunde behalen</li>
+                                        <li><i class="fas fa-arrow-right"></i>Basisarts registratie verkrijgen</li>
+                                        <li><i class="fas fa-arrow-right"></i>Klaar voor specialisatie</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">2</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-user-md"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">Huisartsopleiding</h3>
+                                        <p class="step-description">3-jarige specialisatie volgen</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>Solliciteren bij huisartsopleiding</li>
+                                        <li><i class="fas fa-arrow-right"></i>Praktijkervaring opdoen</li>
+                                        <li><i class="fas fa-arrow-right"></i>Klinische vaardigheden ontwikkelen</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">3</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-language"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">Taalvereisten</h3>
+                                        <p class="step-description">Nederlands C1 niveau behalen</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>CNaVT certificaat behalen</li>
+                                        <li><i class="fas fa-arrow-right"></i>Medisch Nederlands beheersen</li>
+                                        <li><i class="fas fa-arrow-right"></i>Communicatie met patiënten</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">4</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-edit"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">Aanvraag indienen</h3>
+                                        <p class="step-description">BIG registratie aanvragen</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>Alle documenten verzamelen</li>
+                                        <li><i class="fas fa-arrow-right"></i>Online aanvraag bij CIBG</li>
+                                        <li><i class="fas fa-arrow-right"></i>Betalen van registratiekosten</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <span class="step-number">5</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="step-header">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="step-info">
+                                        <h3 class="step-title">BIG registratie</h3>
+                                        <p class="step-description">Ontvang je BIG-nummer</p>
+                                    </div>
+                                </div>
+                                <div class="step-details">
+                                    <ul class="details-list">
+                                        <li><i class="fas fa-arrow-right"></i>BIG-nummer wordt toegekend</li>
+                                        <li><i class="fas fa-arrow-right"></i>Registratie is 5 jaar geldig</li>
+                                        <li><i class="fas fa-arrow-right"></i>Start met werken als huisarts</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Documents Section -->
+            <section id="documents" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Benodigde documenten</h2>
+                        <p class="section-description">Alle documenten die je moet verzamelen voor je aanvraag</p>
+                    </div>
+                    
+                    <div class="documents-grid">
+                        <div class="document-category">
+                            <div class="category-header">
+                                <h3 class="category-title">Opleidingsdocumenten</h3>
+                                <span class="document-count">3 documenten</span>
+                            </div>
+                            <div class="documents-list">
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Master diploma Geneeskunde</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">BIG registratie als basisarts</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Huisartsopleiding certificaat</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="document-category">
+                            <div class="category-header">
+                                <h3 class="category-title">Taalvaardigheid</h3>
+                                <span class="document-count">1 document</span>
+                            </div>
+                            <div class="documents-list">
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">CNaVT certificaat (Nederlands C1)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="document-category">
+                            <div class="category-header">
+                                <h3 class="category-title">Praktijkervaring</h3>
+                                <span class="document-count">2 documenten</span>
+                            </div>
+                            <div class="documents-list">
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Werkgeversverklaringen</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Referenties van supervisors</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="document-category">
+                            <div class="category-header">
+                                <h3 class="category-title">Juridische documenten</h3>
+                                <span class="document-count">2 documenten</span>
+                            </div>
+                            <div class="documents-list">
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Verklaring omtrent gedrag (VOG)</span>
+                                </label>
+                                <label class="document-item">
+                                    <input type="checkbox" class="document-checkbox">
+                                    <span class="checkmark"></span>
+                                    <span class="document-name">Bewijs van goede staat van dienst</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Specialization Section -->
+            <section id="specialization" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Huisartsopleiding</h2>
+                        <p class="section-description">Informatie over de specialisatie tot huisarts</p>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <p class="info-text">3-jarige opleiding na basisarts registratie</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-hospital"></i>
+                            </div>
+                            <p class="info-text">Praktijkervaring in huisartsenpraktijken</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <p class="info-text">Theoretische kennis en vaardigheden</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <p class="info-text">Patiëntenzorg en communicatie</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-stethoscope"></i>
+                            </div>
+                            <p class="info-text">Diagnostiek en behandeling</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <p class="info-text">Certificaat na succesvolle afronding</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section id="faq" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Veelgestelde vragen</h2>
+                        <p class="section-description">Antwoorden op de meest gestelde vragen over huisarts registratie</p>
+                    </div>
+                    
+                    <div class="faq-list">
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Hoe lang duurt de huisartsopleiding?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                De huisartsopleiding duurt 3 jaar en kan alleen gevolgd worden na het behalen van je Master in de Geneeskunde en BIG registratie als basisarts.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Wat is het verschil tussen basisarts en huisarts?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Een basisarts heeft de universitaire opleiding Geneeskunde afgerond. Een huisarts heeft daarna nog 3 jaar specialisatie gevolgd en is gespecialiseerd in eerstelijnszorg.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Kan ik als huisarts in het buitenland werken?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Met een Nederlandse BIG registratie als huisarts kun je in de hele EU/EEA werken. Voor andere landen gelden specifieke vereisten per land.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span>Kan ik een eigen praktijk beginnen?</span>
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Ja, na BIG registratie kun je een eigen huisartsenpraktijk beginnen. Wel moet je voldoen aan de Nederlandse wetgeving voor huisartsenpraktijken en mogelijk aanvullende certificeringen behalen.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Links Section -->
+            <section id="links" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Handige links</h2>
+                        <p class="section-description">Officiële websites en resources voor huisarts registratie</p>
+                    </div>
+                    
+                    <div class="links-grid">
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                BIG-register
+                            </h3>
+                            <p class="link-description">Officiële website voor BIG registratie aanvragen en informatie</p>
+                            <a href="https://www.bigregister.nl" class="link-url" target="_blank">www.bigregister.nl</a>
+                        </div>
+
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                LHV
+                            </h3>
+                            <p class="link-description">Landelijke Huisartsen Vereniging Nederland</p>
+                            <a href="https://www.lhv.nl" class="link-url" target="_blank">www.lhv.nl</a>
+                        </div>
+
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                KNMG
+                            </h3>
+                            <p class="link-description">Koninklijke Nederlandse Maatschappij tot bevordering der Geneeskunde</p>
+                            <a href="https://www.knmg.nl" class="link-url" target="_blank">www.knmg.nl</a>
+                        </div>
+
+                        <div class="link-card">
+                            <h3 class="link-title">
+                                <i class="fas fa-external-link-alt"></i>
+                                CNaVT
+                            </h3>
+                            <p class="link-description">Nederlandse taaltoets voor medische professionals</p>
+                            <a href="https://www.cnavt.org" class="link-url" target="_blank">www.cnavt.org</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Call to Action -->
+        <section class="big-cta">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Klaar om te beginnen?</h2>
+                    <p>Start vandaag nog met je voorbereiding op de BIG registratie</p>
+                    <div class="cta-buttons">
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i>
+                            Start voorbereiding
+                        </a>
+                        <a href="#" class="btn btn-secondary">
+                            <i class="fas fa-users"></i>
+                            Vraag de community
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Основные скрипты платформы -->
+    <script src="{{ url_for('static', filename='js/theme-controller.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flash-messages.js') }}"></script>
+    
+    <!-- Скрипт для простой шапки -->
+    <script>
+        // Функция для переключения тем
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // Обновляем галочки
+            document.querySelectorAll('.check').forEach(check => {
+                check.textContent = '';
+            });
+            
+            const activeCheck = document.getElementById(theme + '-check');
+            if (activeCheck) {
+                activeCheck.textContent = '✓';
+            }
+            
+            // Закрываем dropdown
+            const settingsDropdown = document.getElementById('settingsDropdown');
+            if (settingsDropdown) {
+                settingsDropdown.classList.remove('show');
+            }
+        }
+
+        // Основная инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Инициализация страницы huisarts...');
+            
+            // ===== ПРОСТАЯ ШАПКА =====
+            // Dropdown для языка
+            const langBtn = document.getElementById('langBtn');
+            const langDropdown = document.getElementById('langDropdown');
+            
+            if (langBtn && langDropdown) {
+                langBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    langDropdown.classList.toggle('show');
+                    
+                    // Закрываем другие dropdown
+                    const settingsDropdown = document.getElementById('settingsDropdown');
+                    if (settingsDropdown) {
+                        settingsDropdown.classList.remove('show');
+                    }
+                });
+            }
+            
+            // Dropdown для настроек
+            const settingsBtn = document.getElementById('settingsBtn');
+            const settingsDropdown = document.getElementById('settingsDropdown');
+            
+            if (settingsBtn && settingsDropdown) {
+                settingsBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    settingsDropdown.classList.toggle('show');
+                    
+                    // Закрываем другие dropdown
+                    if (langDropdown) {
+                        langDropdown.classList.remove('show');
+                    }
+                });
+            }
+            
+            // Закрытие dropdown при клике вне
+            document.addEventListener('click', function() {
+                if (langDropdown) langDropdown.classList.remove('show');
+                if (settingsDropdown) settingsDropdown.classList.remove('show');
+            });
+            
+            // ===== ТАБЫ =====
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            console.log('📋 Найдено табов:', tabButtons.length);
+            console.log('📄 Найдено секций:', contentSections.length);
+
+            // Показываем первую секцию по умолчанию
+            if (contentSections.length > 0) {
+                contentSections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                const firstSection = document.getElementById('requirements');
+                if (firstSection) {
+                    firstSection.style.display = 'block';
+                }
+            }
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetTab = this.dataset.tab;
+                    console.log('🖱️ Клик по табу:', targetTab);
+
+                    // Убираем активный класс со всех табов и секций
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                        section.style.display = 'none';
+                    });
+
+                    // Добавляем активный класс к выбранному табу и секции
+                    this.classList.add('active');
+                    const targetSection = document.getElementById(targetTab);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                        targetSection.style.display = 'block';
+                        console.log('✅ Секция активирована:', targetTab);
+                    } else {
+                        console.error('❌ Секция не найдена:', targetTab);
+                    }
+                });
+            });
+
+            // ===== FAQ =====
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                if (question) {
+                    question.addEventListener('click', function() {
+                        item.classList.toggle('active');
+                    });
+                }
+            });
+
+            // ===== ЧЕКБОКСЫ =====
+            const checkboxes = document.querySelectorAll('.document-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    console.log('📋 Документ отмечен:', this.nextElementSibling?.nextElementSibling?.textContent);
+                });
+            });
+            
+            // ===== ИНИЦИАЛИЗАЦИЯ ТЕМЫ =====
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+            
+            console.log('✅ Страница huisarts инициализирована');
+        });
+    </script>
+</body>
+</html> 

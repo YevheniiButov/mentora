@@ -1,0 +1,1365 @@
+{% extends "base.html" %}
+{% block title %}BIG Registratie - Complete gids 2025 - Mentora{% endblock %}
+{% block head %}
+<!-- Standalone BIG Info Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/big-info-standalone.css') }}">
+<style>
+/* Компактные стили для главной страницы BIG-info 2025 */
+.big-info-container {
+    padding-top: 80px;
+}
+
+.big-info-container * {
+    box-sizing: border-box;
+}
+
+.big-info-container .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Компактная Hero Section */
+.big-hero {
+    padding: 1.5rem 0 1rem 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    margin-bottom: 1rem;
+}
+
+.hero-content {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1rem;
+    color: #4b5563;
+    margin-bottom: 0;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* Компактная Route Selection */
+.route-selection {
+    padding: 2rem 0;
+    background: rgba(255, 255, 255, 0.3);
+    margin-bottom: 1.5rem;
+}
+
+.route-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.route-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 2px solid;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.route-card.eu-route {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+}
+
+.route-card.non-eu-route {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(217, 119, 6, 0.05));
+}
+
+.route-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: inherit;
+}
+
+.route-flag {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.route-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #1f2937;
+}
+
+.route-description {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.route-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+    text-align: left;
+}
+
+.route-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+.route-features li i {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.route-card.eu-route .route-features li i {
+    color: #10b981;
+}
+
+.route-card.non-eu-route .route-features li i {
+    color: #f59e0b;
+}
+
+.route-button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-decoration: none;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.route-card.eu-route .route-button {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.route-card.non-eu-route .route-button {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+/* Компактные Section Headers */
+.section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.section-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.75rem;
+    position: relative;
+}
+
+.section-header h2::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 2px;
+}
+
+.section-description {
+    font-size: 1rem;
+    color: #4b5563;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* Компактная What is BIG Section */
+.what-is-big {
+    padding: 3rem 0 2rem 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+    margin-bottom: 1.5rem;
+}
+
+.big-explanation {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.explanation-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.explanation-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.explanation-icon i {
+    font-size: 2rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.explanation-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #1f2937;
+}
+
+.explanation-card p {
+    color: #4b5563;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Компактные профессии - 4 в ряд */
+.professions {
+    padding: 2rem 0;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.professions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.profession-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+}
+
+.profession-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: inherit;
+}
+
+.profession-icon i {
+    font-size: 2rem;
+    color: #3b82f6;
+    margin-bottom: 0.75rem;
+}
+
+.profession-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.profession-card p {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 0.75rem;
+}
+
+.profession-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    flex-grow: 1;
+}
+
+.profession-features li {
+    font-size: 0.75rem;
+    color: #4b5563;
+    margin-bottom: 0.25rem;
+    text-align: left;
+}
+
+.cta-button {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Компактное сравнение процессов */
+.general-process {
+    padding: 3rem 0;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.process-comparison {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.process-column {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 2px solid;
+}
+
+.process-column.eu-process {
+    border-color: #10b981;
+}
+
+.process-column.non-eu-process {
+    border-color: #f59e0b;
+}
+
+.process-column h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.process-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.process-step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.eu-process .step-number {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.non-eu-process .step-number {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.step-content h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    color: #1f2937;
+}
+
+.step-content p {
+    font-size: 0.8rem;
+    color: #4b5563;
+    margin: 0;
+}
+
+/* Компактное предупреждение внизу */
+.important-notice-2025 {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1px solid #f59e0b;
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 2rem auto;
+    max-width: 800px;
+    text-align: center;
+}
+
+.important-notice-2025 h3 {
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+.important-notice-2025 p {
+    color: #78350f;
+    margin: 0;
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+
+/* Компактный CTA */
+.big-cta {
+    background: linear-gradient(135deg, #1e40af, #7c3aed);
+    color: white;
+    padding: 3rem 0;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.cta-content h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.cta-content p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.95;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.8rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+/* Responsive - компактная версия */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 1.6rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.4rem;
+    }
+    
+    .big-explanation {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .explanation-card {
+        padding: 1rem;
+    }
+    
+    .route-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .route-card {
+        padding: 1.25rem;
+    }
+    
+    .professions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .profession-card {
+        padding: 1rem;
+    }
+    
+    .process-comparison {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+    
+    .process-column {
+        padding: 1rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .professions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profession-card {
+        padding: 1rem;
+    }
+    
+    .profession-card h3 {
+        font-size: 0.95rem;
+    }
+    
+    .profession-features li {
+        font-size: 0.7rem;
+    }
+}
+</style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<!-- Translation function -->
+<script>
+    function t(key, lang) {
+        const translations = {
+            'nl': {
+                'big_registration_2025': 'BIG Registratie 2025',
+                'complete_guide_international': 'Complete gids voor internationale zorgprofessionals in Nederland',
+                'choose_your_route': 'Kies jouw route',
+                'procedures_requirements_different': 'De procedures en vereisten zijn fundamenteel verschillend afhankelijk van waar je diploma behaald hebt.',
+                'eu_eea_diploma': 'EU/EEA Diploma',
+                'eu_eea_diploma_desc': 'Voor diplomas behaald binnen de Europese Unie, EEA of Zwitserland',
+                'automatic_recognition_possible': 'Automatische erkenning mogelijk',
+                'faster_process': 'Sneller proces (2-4 maanden)',
+                'dutch_b2_level': 'Nederlands B2 niveau',
+                'lower_costs': 'Lagere kosten',
+                'choose_eu_route': 'Kies EU Route',
+                'non_eu_diploma': 'Niet-EU Diploma',
+                'non_eu_diploma_desc': 'Voor diplomas behaald buiten de EU/EEA (bijvoorbeeld VS, Canada, Australië, etc.)',
+                'cbgv_assessment_required': 'CBGV beoordeling vereist',
+                'longer_process': 'Langer proces (8 mnd - 4 jaar)',
+                'possible_additional_study': 'Mogelijk aanvullende studie',
+                'bi_test_required': 'BI-toets verplicht',
+                'choose_non_eu_route': 'Kies niet-EU Route',
+                'what_is_big_registration': 'Wat is BIG registratie?',
+                'big_register_legal': 'Het BIG-register is het wettelijke kwaliteitsregister voor zorgverleners in Nederland.',
+                'legal_protection': 'Wettelijke bescherming',
+                'legal_protection_desc': 'Beschermt zowel patiënten als zorgverleners door kwaliteitsstandaarden',
+                'european_recognition': 'Europese erkenning',
+                'european_recognition_desc': 'Met BIG registratie kun je in de hele EU/EEA werken',
+                'quality_guarantee': 'Kwaliteitsgarantie',
+                'quality_guarantee_desc': 'Bewijs van je competentie en professionele training',
+                'eu_eea_specialisms': '🇪🇺 EU/EEA Specialismen',
+                'faster_procedure_eu': 'Snellere procedure voor EU/EEA diploma\'s met automatische erkenning',
+                'dentist_eu': 'Tandarts (EU)',
+                'automatic_recognition_possible_short': 'Automatische erkenning mogelijk',
+                'eu_directive_dentists': 'EU richtlijn voor tandartsen',
+                'language_b2_dental': 'Taal B2 + tandheelkundig jargon',
+                'process_2_4_months': '2-4 maanden proces',
+                'view_guide': 'Bekijk gids',
+                'general_practitioner_eu': 'Huisarts (EU)',
+                'eu_directive_procedure': 'EU richtlijn procedure',
+                'automatic_recognition_short': 'Automatische erkenning',
+                'dutch_language_b2': 'Nederlandse taal B2',
+                'process_3_6_months': '3-6 maanden proces',
+                'pharmacist_eu': 'Apotheker (EU)',
+                'fast_eu_procedure': 'Snelle EU procedure',
+                'dutch_pharmacy_legislation': 'Nederlandse farmacie wetgeving',
+                'process_4_8_months': '4-8 maanden proces',
+                'nurse_eu': 'Verpleegkundige (EU)',
+                'eu_directive_advantage': 'EU richtlijn voordeel',
+                'dutch_b2_short': 'Nederlands B2',
+                'non_eu_specialisms': '🌍 Niet-EU Specialismen',
+                'extensive_procedure_non_eu': 'Uitgebreide procedure voor niet-EU diploma\'s via CBGV commissie',
+                'dentist_non_eu': 'Tandarts (niet-EU)',
+                'cbgv_bi_test_procedure': 'CBGV + BI-toets procedure',
+                'cbgv_assessment': 'CBGV beoordeling',
+                'bi_test_required_short': 'BI-toets verplicht',
+                'process_1_2_years': '1-2 jaar proces',
+                'ready_to_start': 'Klaar om te beginnen?',
+                'choose_route_start_preparation': 'Kies je route en start vandaag nog met je BIG registratie voorbereiding',
+                'choose_your_route_button': 'Kies jouw route',
+                'ask_community': 'Vraag de community',
+                'important_changes_2025': 'Belangrijke wijzigingen in 2025',
+                'big_registration_procedure_differs': 'De BIG registratie procedure verschilt sterk tussen EU/EEA en niet-EU landen. Kies de juiste route voor jouw situatie hierboven.',
+                'general_practitioner_non_eu': 'Huisarts (niet-EU)',
+                'complex_cbgv_procedure': 'Complexe CBGV procedure',
+                'declaration_competence': 'Verklaring vakbekwaamheid',
+                'possible_additional_training': 'Mogelijke aanvullende opleiding',
+                'process_2_4_years': '2-4 jaar proces',
+                'pharmacist_non_eu': 'Apotheker (niet-EU)',
+                'usually_3_year_master': 'Meestal 3-jaar master vereist',
+                'cbgv_almost_always_master': 'CBGV vrijwel altijd master',
+                'process_3_4_years_35000': '3-4 jaar + €35.000',
+                'alternatives_available': 'Alternatieven beschikbaar',
+                'nurse_non_eu': 'Verpleegkundige (niet-EU)',
+                'bi_test_cbgv_assessment': 'BI-toets + CBGV beoordeling',
+                'bi_test_required_2025': 'BI-toets verplicht 2025',
+                'process_8_15_months': '8-15 maanden',
+                'vig_alternative_available': 'VIG alternatief beschikbaar'
+            },
+            'en': {
+                'big_registration_2025': 'BIG Registration 2025',
+                'complete_guide_international': 'Complete guide for international healthcare professionals in the Netherlands',
+                'choose_your_route': 'Choose your route',
+                'procedures_requirements_different': 'The procedures and requirements are fundamentally different depending on where you obtained your diploma.',
+                'eu_eea_diploma': 'EU/EEA Diploma',
+                'eu_eea_diploma_desc': 'For diplomas obtained within the European Union, EEA or Switzerland',
+                'automatic_recognition_possible': 'Automatic recognition possible',
+                'faster_process': 'Faster process (2-4 months)',
+                'dutch_b2_level': 'Dutch B2 level',
+                'lower_costs': 'Lower costs',
+                'choose_eu_route': 'Choose EU Route',
+                'non_eu_diploma': 'Non-EU Diploma',
+                'non_eu_diploma_desc': 'For diplomas obtained outside the EU/EEA (e.g. US, Canada, Australia, etc.)',
+                'cbgv_assessment_required': 'CBGV assessment required',
+                'longer_process': 'Longer process (8 mth - 4 years)',
+                'possible_additional_study': 'Possible additional study',
+                'bi_test_required': 'BI-exam required',
+                'choose_non_eu_route': 'Choose non-EU Route',
+                'what_is_big_registration': 'What is BIG registration?',
+                'big_register_legal': 'The BIG register is the legal quality register for healthcare providers in the Netherlands.',
+                'legal_protection': 'Legal protection',
+                'legal_protection_desc': 'Protects both patients and healthcare providers through quality standards',
+                'european_recognition': 'European recognition',
+                'european_recognition_desc': 'With BIG registration you can work throughout the EU/EEA',
+                'quality_guarantee': 'Quality guarantee',
+                'quality_guarantee_desc': 'Proof of your competence and professional training',
+                'eu_eea_specialisms': '🇪🇺 EU/EEA Specialisms',
+                'faster_procedure_eu': 'Faster procedure for EU/EEA diplomas with automatic recognition',
+                'dentist_eu': 'Dentist (EU)',
+                'automatic_recognition_possible_short': 'Automatic recognition possible',
+                'eu_directive_dentists': 'EU directive for dentists',
+                'language_b2_dental': 'Language B2 + dental jargon',
+                'process_2_4_months': '2-4 months process',
+                'view_guide': 'View guide',
+                'general_practitioner_eu': 'General Practitioner (EU)',
+                'eu_directive_procedure': 'EU directive procedure',
+                'automatic_recognition_short': 'Automatic recognition',
+                'dutch_language_b2': 'Dutch language B2',
+                'process_3_6_months': '3-6 months process',
+                'pharmacist_eu': 'Pharmacist (EU)',
+                'fast_eu_procedure': 'Fast EU procedure',
+                'dutch_pharmacy_legislation': 'Dutch pharmacy legislation',
+                'process_4_8_months': '4-8 months process',
+                'nurse_eu': 'Nurse (EU)',
+                'eu_directive_advantage': 'EU directive advantage',
+                'dutch_b2_short': 'Dutch B2',
+                'non_eu_specialisms': '🌍 Non-EU Specialisms',
+                'extensive_procedure_non_eu': 'Extensive procedure for non-EU diplomas via CBGV committee',
+                'dentist_non_eu': 'Dentist (non-EU)',
+                'cbgv_bi_test_procedure': 'CBGV + BI-exam procedure',
+                'cbgv_assessment': 'CBGV assessment',
+                'bi_test_required_short': 'BI-exam required',
+                'process_1_2_years': '1-2 years process',
+                'ready_to_start': 'Ready to start?',
+                'choose_route_start_preparation': 'Choose your route and start your BIG registration preparation today',
+                'choose_your_route_button': 'Choose your route',
+                'ask_community': 'Ask the community',
+                'important_changes_2025': 'Important changes in 2025',
+                'big_registration_procedure_differs': 'The BIG registration procedure differs significantly between EU/EEA and non-EU countries. Choose the right route for your situation above.',
+                'general_practitioner_non_eu': 'General Practitioner (non-EU)',
+                'complex_cbgv_procedure': 'Complex CBGV procedure',
+                'declaration_competence': 'Declaration of competence',
+                'possible_additional_training': 'Possible additional training',
+                'process_2_4_years': '2-4 years process',
+                'pharmacist_non_eu': 'Pharmacist (non-EU)',
+                'usually_3_year_master': 'Usually 3-year master required',
+                'cbgv_almost_always_master': 'CBGV almost always master',
+                'process_3_4_years_35000': '3-4 years + €35.000',
+                'alternatives_available': 'Alternatives available',
+                'nurse_non_eu': 'Nurse (non-EU)',
+                'bi_test_cbgv_assessment': 'BI-exam + CBGV assessment',
+                'bi_test_required_2025': 'BI-exam required 2025',
+                'process_8_15_months': '8-15 months',
+                'vig_alternative_available': 'VIG alternative available'
+            },
+            'ru': {
+                'big_registration_2025': 'BIG Регистрация 2025',
+                'complete_guide_international': 'Полное руководство для международных медицинских специалистов в Нидерландах',
+                'choose_your_route': 'Выберите ваш путь',
+                'procedures_requirements_different': 'Процедуры и требования принципиально различаются в зависимости от того, где вы получили диплом.',
+                'eu_eea_diploma': 'Диплом EU/EEA',
+                'eu_eea_diploma_desc': 'Для дипломов, полученных в Европейском Союзе, EEA или Швейцарии',
+                'automatic_recognition_possible': 'Возможно автоматическое признание',
+                'faster_process': 'Более быстрый процесс (2-4 месяца)',
+                'dutch_b2_level': 'Голландский уровень B2',
+                'lower_costs': 'Более низкие затраты',
+                'choose_eu_route': 'Выбрать путь EU',
+                'non_eu_diploma': 'Диплом не-EU',
+                'non_eu_diploma_desc': 'Для дипломов, полученных вне EU/EEA (например, США, Канада, Австралия и т.д.)',
+                'cbgv_assessment_required': 'Требуется оценка CBGV',
+                'longer_process': 'Более длительный процесс (8 мес - 4 года)',
+                'possible_additional_study': 'Возможно дополнительное обучение',
+                'bi_test_required': 'Обязательный экзамен BI',
+                'choose_non_eu_route': 'Выбрать путь не-EU',
+                'what_is_big_registration': 'Что такое BIG регистрация?',
+                'big_register_legal': 'Реестр BIG - это юридический реестр качества для поставщиков медицинских услуг в Нидерландах.',
+                'legal_protection': 'Юридическая защита',
+                'legal_protection_desc': 'Защищает как пациентов, так и поставщиков медицинских услуг через стандарты качества',
+                'european_recognition': 'Европейское признание',
+                'european_recognition_desc': 'С BIG регистрацией вы можете работать по всему EU/EEA',
+                'quality_guarantee': 'Гарантия качества',
+                'quality_guarantee_desc': 'Доказательство вашей компетентности и профессиональной подготовки',
+                'eu_eea_specialisms': '🇪🇺 Специализации EU/EEA',
+                'faster_procedure_eu': 'Более быстрая процедура для дипломов EU/EEA с автоматическим признанием',
+                'dentist_eu': 'Стоматолог (EU)',
+                'automatic_recognition_possible_short': 'Возможно автоматическое признание',
+                'eu_directive_dentists': 'Директива EU для стоматологов',
+                'language_b2_dental': 'Язык B2 + стоматологическая терминология',
+                'process_2_4_months': 'Процесс 2-4 месяца',
+                'view_guide': 'Посмотреть руководство',
+                'general_practitioner_eu': 'Врач общей практики (EU)',
+                'eu_directive_procedure': 'Процедура директивы EU',
+                'automatic_recognition_short': 'Автоматическое признание',
+                'dutch_language_b2': 'Голландский язык B2',
+                'process_3_6_months': 'Процесс 3-6 месяцев',
+                'pharmacist_eu': 'Фармацевт (EU)',
+                'fast_eu_procedure': 'Быстрая процедура EU',
+                'dutch_pharmacy_legislation': 'Голландское фармацевтическое законодательство',
+                'process_4_8_months': 'Процесс 4-8 месяцев',
+                'nurse_eu': 'Медсестра (EU)',
+                'eu_directive_advantage': 'Преимущество директивы EU',
+                'dutch_b2_short': 'Голландский B2',
+                'non_eu_specialisms': '🌍 Специализации не-EU',
+                'extensive_procedure_non_eu': 'Обширная процедура для дипломов не-EU через комиссию CBGV',
+                'dentist_non_eu': 'Стоматолог (не-EU)',
+                'cbgv_bi_test_procedure': 'Процедура CBGV + экзамен BI',
+                'cbgv_assessment': 'Оценка CBGV',
+                'bi_test_required_short': 'Требуется экзамен BI',
+                'process_1_2_years': 'Процесс 1-2 года',
+                'ready_to_start': 'Готовы начать?',
+                'choose_route_start_preparation': 'Выберите ваш путь и начните подготовку к BIG регистрации сегодня',
+                'choose_your_route_button': 'Выберите ваш путь',
+                'ask_community': 'Спросить сообщество',
+                'important_changes_2025': 'Важные изменения в 2025',
+                'big_registration_procedure_differs': 'Процедура BIG регистрации значительно различается между странами EU/EEA и не-EU. Выберите правильный путь для вашей ситуации выше.',
+                'general_practitioner_non_eu': 'Врач общей практики (не-EU)',
+                'complex_cbgv_procedure': 'Сложная процедура CBGV',
+                'declaration_competence': 'Декларация компетентности',
+                'possible_additional_training': 'Возможная дополнительная подготовка',
+                'process_2_4_years': 'Процесс 2-4 года',
+                'pharmacist_non_eu': 'Фармацевт (не-EU)',
+                'usually_3_year_master': 'Обычно требуется 3-летняя магистратура',
+                'cbgv_almost_always_master': 'CBGV почти всегда магистратура',
+                'process_3_4_years_35000': 'Процесс 3-4 года + €35.000',
+                'alternatives_available': 'Доступны альтернативы',
+                'nurse_non_eu': 'Медсестра (не-EU)',
+                'bi_test_cbgv_assessment': 'Экзамен BI + оценка CBGV',
+                'bi_test_required_2025': 'Экзамен BI обязателен 2025',
+                'process_8_15_months': 'Процесс 8-15 месяцев',
+                'vig_alternative_available': 'Доступна альтернатива VIG'
+            },
+            'uk': {
+                'big_registration_2025': 'BIG Реєстрація 2025',
+                'complete_guide_international': 'Повне керівництво для міжнародних медичних спеціалістів у Нідерландах',
+                'choose_your_route': 'Виберіть ваш шлях',
+                'procedures_requirements_different': 'Процедури та вимоги принципово відрізняються залежно від того, де ви отримали диплом.',
+                'eu_eea_diploma': 'Диплом EU/EEA',
+                'eu_eea_diploma_desc': 'Для дипломів, отриманих в Європейському Союзі, EEA або Швейцарії',
+                'automatic_recognition_possible': 'Можливе автоматичне визнання',
+                'faster_process': 'Швидший процес (2-4 місяці)',
+                'dutch_b2_level': 'Голландський рівень B2',
+                'lower_costs': 'Нижчі витрати',
+                'choose_eu_route': 'Вибрати шлях EU',
+                'non_eu_diploma': 'Диплом не-EU',
+                'non_eu_diploma_desc': 'Для дипломів, отриманих поза EU/EEA (наприклад, США, Канада, Австралія тощо)',
+                'cbgv_assessment_required': 'Потрібна оцінка CBGV',
+                'longer_process': 'Довший процес (8 міс - 4 роки)',
+                'possible_additional_study': 'Можливе додаткове навчання',
+                'bi_test_required': 'Обов\'язковий іспит BI',
+                'choose_non_eu_route': 'Вибрати шлях не-EU',
+                'what_is_big_registration': 'Що таке BIG реєстрація?',
+                'big_register_legal': 'Реєстр BIG - це юридичний реєстр якості для постачальників медичних послуг у Нідерландах.',
+                'legal_protection': 'Юридичний захист',
+                'legal_protection_desc': 'Захищає як пацієнтів, так і постачальників медичних послуг через стандарти якості',
+                'european_recognition': 'Європейське визнання',
+                'european_recognition_desc': 'З BIG реєстрацією ви можете працювати по всьому EU/EEA',
+                'quality_guarantee': 'Гарантія якості',
+                'quality_guarantee_desc': 'Доказ вашої компетентності та професійної підготовки',
+                'eu_eea_specialisms': '🇪🇺 Спеціалізації EU/EEA',
+                'faster_procedure_eu': 'Швидша процедура для дипломів EU/EEA з автоматичним визнанням',
+                'dentist_eu': 'Стоматолог (EU)',
+                'automatic_recognition_possible_short': 'Можливе автоматичне визнання',
+                'eu_directive_dentists': 'Директива EU для стоматологів',
+                'language_b2_dental': 'Мова B2 + стоматологічна термінологія',
+                'process_2_4_months': 'Процес 2-4 місяці',
+                'view_guide': 'Подивитися керівництво',
+                'general_practitioner_eu': 'Лікар загальної практики (EU)',
+                'eu_directive_procedure': 'Процедура директиви EU',
+                'automatic_recognition_short': 'Автоматичне визнання',
+                'dutch_language_b2': 'Голландська мова B2',
+                'process_3_6_months': 'Процес 3-6 місяців',
+                'pharmacist_eu': 'Фармацевт (EU)',
+                'fast_eu_procedure': 'Швидка процедура EU',
+                'dutch_pharmacy_legislation': 'Голландське фармацевтичне законодавство',
+                'process_4_8_months': 'Процес 4-8 місяців',
+                'nurse_eu': 'Медсестра (EU)',
+                'eu_directive_advantage': 'Перевага директиви EU',
+                'dutch_b2_short': 'Голландський B2',
+                'non_eu_specialisms': '🌍 Спеціалізації не-EU',
+                'extensive_procedure_non_eu': 'Обширна процедура для дипломів не-EU через комісію CBGV',
+                'dentist_non_eu': 'Стоматолог (не-EU)',
+                'cbgv_bi_test_procedure': 'Процедура CBGV + іспит BI',
+                'cbgv_assessment': 'Оцінка CBGV',
+                'bi_test_required_short': 'Потрібен іспит BI',
+                'process_1_2_years': 'Процес 1-2 роки',
+                'ready_to_start': 'Готові почати?',
+                'choose_route_start_preparation': 'Виберіть ваш шлях і почніть підготовку до BIG реєстрації сьогодні',
+                'choose_your_route_button': 'Виберіть ваш шлях',
+                'ask_community': 'Запитати спільноту',
+                'important_changes_2025': 'Важливі зміни в 2025',
+                'big_registration_procedure_differs': 'Процедура BIG реєстрації значно відрізняється між країнами EU/EEA та не-EU. Виберіть правильний шлях для вашої ситуації вище.',
+                'general_practitioner_non_eu': 'Лікар загальної практики (не-EU)',
+                'complex_cbgv_procedure': 'Складна процедура CBGV',
+                'declaration_competence': 'Декларація компетентності',
+                'possible_additional_training': 'Можлива додаткова підготовка',
+                'process_2_4_years': 'Процес 2-4 роки',
+                'pharmacist_non_eu': 'Фармацевт (не-EU)',
+                'usually_3_year_master': 'Зазвичай потрібна 3-річна магістратура',
+                'cbgv_almost_always_master': 'CBGV майже завжди магістратура',
+                'process_3_4_years_35000': 'Процес 3-4 роки + €35.000',
+                'alternatives_available': 'Доступні альтернативи',
+                'nurse_non_eu': 'Медсестра (не-EU)',
+                'bi_test_cbgv_assessment': 'Іспит BI + оцінка CBGV',
+                'bi_test_required_2025': 'Іспит BI обов\'язковий 2025',
+                'process_8_15_months': 'Процес 8-15 місяців',
+                'vig_alternative_available': 'Доступна альтернатива VIG'
+            }
+        };
+        
+        const currentLang = lang || 'nl';
+        return translations[currentLang] && translations[currentLang][key] ? translations[currentLang][key] : key;
+    }
+    
+    // Apply translations when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentLang = '{{ g.lang }}' || 'nl';
+        applyTranslations(currentLang);
+    });
+    
+    function applyTranslations(lang) {
+        // Apply translations to elements with data-translate attribute
+        document.querySelectorAll('[data-translate]').forEach(element => {
+            const key = element.getAttribute('data-translate');
+            element.textContent = t(key, lang);
+        });
+    }
+</script>
+
+<div class="big-info-container">
+    <!-- Компактная Hero Section -->
+    <section class="big-hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title"><span data-translate="big_registration_2025">BIG Registratie 2025</span></h1>
+                <p class="hero-subtitle"><span data-translate="complete_guide_international">Complete gids voor internationale zorgprofessionals in Nederland</span></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Route Selection -->
+    <section class="route-selection">
+        <div class="container">
+            <div class="section-header">
+                <h2><span data-translate="choose_your_route">Kies jouw route</span></h2>
+                <p class="section-description">
+                    <span data-translate="procedures_requirements_different">De procedures en vereisten zijn fundamenteel verschillend afhankelijk van waar je diploma behaald hebt.</span>
+                </p>
+            </div>
+            
+            <div class="route-cards">
+                <a href="#eu-professions" class="route-card eu-route" onclick="showEUProfessions()">
+                    <span class="route-flag">🇪🇺</span>
+                    <h3 class="route-title"><span data-translate="eu_eea_diploma">EU/EEA Diploma</span></h3>
+                    <p class="route-description">
+                        <span data-translate="eu_eea_diploma_desc">Voor diplomas behaald binnen de Europese Unie, EEA of Zwitserland</span>
+                    </p>
+                    <ul class="route-features">
+                        <li><i class="fas fa-check-circle"></i><span data-translate="automatic_recognition_possible">Automatische erkenning mogelijk</span></li>
+                        <li><i class="fas fa-clock"></i><span data-translate="faster_process">Sneller proces (2-4 maanden)</span></li>
+                        <li><i class="fas fa-language"></i><span data-translate="dutch_b2_level">Nederlands B2 niveau</span></li>
+                        <li><i class="fas fa-euro-sign"></i><span data-translate="lower_costs">Lagere kosten</span></li>
+                    </ul>
+                    <div class="route-button"><span data-translate="choose_eu_route">Kies EU Route</span></div>
+                </a>
+                
+                <a href="#non-eu-professions" class="route-card non-eu-route" onclick="showNonEUProfessions()">
+                    <span class="route-flag">🌍</span>
+                    <h3 class="route-title"><span data-translate="non_eu_diploma">Niet-EU Diploma</span></h3>
+                    <p class="route-description">
+                        <span data-translate="non_eu_diploma_desc">Voor diplomas behaald buiten de EU/EEA (bijvoorbeeld VS, Canada, Australië, etc.)</span>
+                    </p>
+                    <ul class="route-features">
+                        <li><i class="fas fa-file-medical"></i><span data-translate="cbgv_assessment_required">CBGV beoordeling vereist</span></li>
+                        <li><i class="fas fa-calendar-alt"></i><span data-translate="longer_process">Langer proces (8 mnd - 4 jaar)</span></li>
+                        <li><i class="fas fa-graduation-cap"></i><span data-translate="possible_additional_study">Mogelijk aanvullende studie</span></li>
+                        <li><i class="fas fa-edit"></i><span data-translate="bi_test_required">BI-toets verplicht</span></li>
+                    </ul>
+                    <div class="route-button"><span data-translate="choose_non_eu_route">Kies niet-EU Route</span></div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- What is BIG Section -->
+    <section class="what-is-big">
+        <div class="container">
+            <div class="section-header">
+                <h2><span data-translate="what_is_big_registration">Wat is BIG registratie?</span></h2>
+                <p class="section-description">
+                    <span data-translate="big_register_legal">Het BIG-register is het wettelijke kwaliteitsregister voor zorgverleners in Nederland.</span>
+                </p>
+            </div>
+            
+            <div class="big-explanation">
+                <div class="explanation-card">
+                    <div class="explanation-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3><span data-translate="legal_protection">Wettelijke bescherming</span></h3>
+                    <p><span data-translate="legal_protection_desc">Beschermt zowel patiënten als zorgverleners door kwaliteitsstandaarden</span></p>
+                </div>
+                <div class="explanation-card">
+                    <div class="explanation-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3><span data-translate="european_recognition">Europese erkenning</span></h3>
+                    <p><span data-translate="european_recognition_desc">Met BIG registratie kun je in de hele EU/EEA werken</span></p>
+                </div>
+                <div class="explanation-card">
+                    <div class="explanation-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3><span data-translate="quality_guarantee">Kwaliteitsgarantie</span></h3>
+                    <p><span data-translate="quality_guarantee_desc">Bewijs van je competentie en professionele training</span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EU Professions Section -->
+    <section id="eu-professions" class="professions" style="display: none;">
+        <div class="container">
+            <div class="section-header">
+                <h2><span data-translate="eu_eea_specialisms">🇪🇺 EU/EEA Specialismen</span></h2>
+                <p class="section-description">
+                    <span data-translate="faster_procedure_eu">Snellere procedure voor EU/EEA diploma's met automatische erkenning</span>
+                </p>
+            </div>
+            
+            <div class="professions-grid">
+                <a href="/{{ g.lang }}/big-info/eu/tandarts" class="profession-card">
+                    <div class="profession-icon">
+                        <i class="fas fa-tooth"></i>
+                    </div>
+                    <h3><span data-translate="dentist_eu">Tandarts (EU)</span></h3>
+                    <p><span data-translate="automatic_recognition_possible_short">Automatische erkenning mogelijk</span></p>
+                    <ul class="profession-features">
+                        <li>• <span data-translate="eu_directive_dentists">EU richtlijn voor tandartsen</span></li>
+                        <li>• <span data-translate="language_b2_dental">Taal B2 + tandheelkundig jargon</span></li>
+                        <li>• <span data-translate="process_2_4_months">2-4 maanden proces</span></li>
+                    </ul>
+                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                </a>
+                
+                <a href="/{{ g.lang }}/big-info/eu/huisarts" class="profession-card">
+                    <div class="profession-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3><span data-translate="general_practitioner_eu">Huisarts (EU)</span></h3>
+                    <p><span data-translate="eu_directive_procedure">EU richtlijn procedure</span></p>
+                    <ul class="profession-features">
+                        <li>• <span data-translate="automatic_recognition_short">Automatische erkenning</span></li>
+                        <li>• <span data-translate="dutch_language_b2">Nederlandse taal B2</span></li>
+                        <li>• <span data-translate="process_3_6_months">3-6 maanden proces</span></li>
+                    </ul>
+                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                </a>
+                
+                <a href="/{{ g.lang }}/big-info/eu/apotheker" class="profession-card">
+                    <div class="profession-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <h3><span data-translate="pharmacist_eu">Apotheker (EU)</span></h3>
+                    <p><span data-translate="fast_eu_procedure">Snelle EU procedure</span></p>
+                    <ul class="profession-features">
+                        <li>• <span data-translate="automatic_recognition_short">Automatische erkenning</span></li>
+                        <li>• <span data-translate="dutch_pharmacy_legislation">Nederlandse farmacie wetgeving</span></li>
+                        <li>• <span data-translate="process_4_8_months">4-8 maanden proces</span></li>
+                    </ul>
+                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                </a>
+                
+                <a href="/{{ g.lang }}/big-info/eu/verpleegkundige" class="profession-card">
+                    <div class="profession-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3><span data-translate="nurse_eu">Verpleegkundige (EU)</span></h3>
+                    <p><span data-translate="eu_directive_advantage">EU richtlijn voordeel</span></p>
+                    <ul class="profession-features">
+                        <li>• <span data-translate="automatic_recognition_short">Automatische erkenning</span></li>
+                        <li>• <span data-translate="dutch_b2_short">Nederlands B2</span></li>
+                        <li>• <span data-translate="process_2_4_months">2-4 maanden proces</span></li>
+                    </ul>
+                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Non-EU Professions Section -->
+    <section id="non-eu-professions" class="professions" style="display: none;">
+        <div class="container">
+            <div class="section-header">
+                <h2><span data-translate="non_eu_specialisms">🌍 Niet-EU Specialismen</span></h2>
+                <p class="section-description">
+                    <span data-translate="extensive_procedure_non_eu">Uitgebreide procedure voor niet-EU diploma's via CBGV commissie</span>
+                </p>
+            </div>
+            
+            <div class="professions-grid">
+                <a href="/{{ g.lang }}/big-info/tandarts" class="profession-card">
+                    <div class="profession-icon">
+                        <i class="fas fa-tooth"></i>
+                    </div>
+                    <h3><span data-translate="dentist_non_eu">Tandarts (niet-EU)</span></h3>
+                    <p><span data-translate="cbgv_bi_test_procedure">CBGV + BI-toets procedure</span></p>
+                    <ul class="profession-features">
+                        <li>• <span data-translate="cbgv_assessment">CBGV beoordeling</span></li>
+                        <li>• <span data-translate="bi_test_required_short">BI-toets verplicht</span></li>
+                        <li>• <span data-translate="process_1_2_years">1-2 jaar proces</span></li>
+                    </ul>
+                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                </a>
+                
+                <a href="/{{ g.lang }}/big-info/huisarts" class="profession-card">
+                    <div class="profession-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3><span data-translate="general_practitioner_non_eu">Huisarts (niet-EU)</span></h3>
+                    <p><span data-translate="complex_cbgv_procedure">Complexe CBGV procedure</span></p>
+                    <ul class="profession-features">
+                        <li>• <span data-translate="declaration_competence">Verklaring vakbekwaamheid</span></li>
+                        <li>• <span data-translate="possible_additional_training">Mogelijke aanvullende opleiding</span></li>
+                        <li>• <span data-translate="process_2_4_years">2-4 jaar proces</span></li>
+                    </ul>
+                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                </a>
+                
+                <a href="/{{ g.lang }}/big-info/apotheker" class="profession-card">
+                    <div class="profession-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <h3><span data-translate="pharmacist_non_eu">Apotheker (niet-EU)</span></h3>
+                    <p><span data-translate="usually_3_year_master">Meestal 3-jaar master vereist</span></p>
+                    <ul class="profession-features">
+                        <li>• <span data-translate="cbgv_almost_always_master">CBGV vrijwel altijd master</span></li>
+                        <li>• <span data-translate="process_3_4_years_35000">3-4 jaar + €35.000</span></li>
+                        <li>• <span data-translate="alternatives_available">Alternatieven beschikbaar</span></li>
+                    </ul>
+                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                </a>
+                
+                <a href="/{{ g.lang }}/big-info/verpleegkundige" class="profession-card">
+                    <div class="profession-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3><span data-translate="nurse_non_eu">Verpleegkundige (niet-EU)</span></h3>
+                    <p><span data-translate="bi_test_cbgv_assessment">BI-toets + CBGV beoordeling</span></p>
+                    <ul class="profession-features">
+                        <li>• <span data-translate="bi_test_required_2025">BI-toets verplicht 2025</span></li>
+                        <li>• <span data-translate="process_8_15_months">8-15 maanden</span></li>
+                        <li>• <span data-translate="vig_alternative_available">VIG alternatief beschikbaar</span></li>
+                    </ul>
+                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- General Process Comparison -->
+    <section class="general-process">
+        <div class="container">
+            <div class="section-header">
+                <h2>Proces vergelijking</h2>
+                <p class="section-description">Verschil tussen EU en niet-EU procedures in 2025</p>
+            </div>
+            
+            <div class="process-comparison">
+                <div class="process-column eu-process">
+                    <h3>🇪🇺 EU/EEA Route</h3>
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Documenten verzamelen</h4>
+                                <p>Diploma + apostille, identiteit, taal</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Taaltoets B2</h4>
+                                <p>CNaVT Nederlands + vakspecifiek</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Automatische erkenning</h4>
+                                <p>Directe procedure via CIBG</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>BIG registratie</h4>
+                                <p>2-4 maanden totaal proces</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="process-column non-eu-process">
+                    <h3>🌍 Niet-EU Route</h3>
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Documenten verzamelen</h4>
+                                <p>Diploma, CCPS, Good Conduct, CV</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>CBGV aanvraag</h4>
+                                <p>Verklaring van vakbekwaamheid</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>BI-toets + beoordeling</h4>
+                                <p>Beroepsinhoudelijke toets verplicht</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Mogelijke studie</h4>
+                                <p>Aanvullende opleiding 6 mnd - 3 jaar</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h4>BIG registratie</h4>
+                                <p>8 maanden - 4 jaar totaal</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="big-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2><span data-translate="ready_to_start">Klaar om te beginnen?</span></h2>
+                <p><span data-translate="choose_route_start_preparation">Kies je route en start vandaag nog met je BIG registratie voorbereiding</span></p>
+                <div class="cta-buttons">
+                    <a href="#route-selection" class="btn btn-primary" onclick="document.querySelector('.route-selection').scrollIntoView({behavior: 'smooth'})">
+                        <i class="fas fa-route"></i>
+                        <span data-translate="choose_your_route_button">Kies jouw route</span>
+                    </a>
+                    <a href="{{ url_for('main.community', lang=g.lang) }}" class="btn btn-secondary">
+                        <i class="fas fa-users"></i>
+                        <span data-translate="ask_community">Vraag de community</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Компактное предупреждение перенесено в конец -->
+    <div class="important-notice-2025">
+        <h3><i class="fas fa-exclamation-triangle"></i> <span data-translate="important_changes_2025">Belangrijke wijzigingen in 2025</span></h3>
+        <p><span data-translate="big_registration_procedure_differs">De BIG registratie procedure verschilt sterk tussen EU/EEA en niet-EU landen. Kies de juiste route voor jouw situatie hierboven.</span></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Enhanced functionality for 2025 BIG info page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing compact BIG info page (2025)...');
+    
+    // Initially show non-EU professions as they are more common
+    showNonEUProfessions();
+    
+    // Smooth scrolling for navigation
+    const smoothScrollLinks = document.querySelectorAll('a[href^="#"]');
+    smoothScrollLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    console.log('✅ Compact BIG info page (2025) initialized');
+});
+
+function showEUProfessions() {
+    console.log('📋 Showing EU professions...');
+    document.getElementById('eu-professions').style.display = 'block';
+    document.getElementById('non-eu-professions').style.display = 'none';
+    
+    // Update route card styling
+    const euCard = document.querySelector('.route-card.eu-route');
+    const nonEuCard = document.querySelector('.route-card.non-eu-route');
+    
+    if (euCard) euCard.style.transform = 'translateY(-5px)';
+    if (nonEuCard) nonEuCard.style.transform = 'translateY(0px)';
+    
+    // Scroll to professions section
+    setTimeout(() => {
+        const target = document.getElementById('eu-professions');
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    }, 100);
+}
+
+function showNonEUProfessions() {
+    console.log('🌍 Showing non-EU professions...');
+    document.getElementById('non-eu-professions').style.display = 'block';
+    document.getElementById('eu-professions').style.display = 'none';
+    
+    // Update route card styling
+    const euCard = document.querySelector('.route-card.eu-route');
+    const nonEuCard = document.querySelector('.route-card.non-eu-route');
+    
+    if (nonEuCard) nonEuCard.style.transform = 'translateY(-5px)';
+    if (euCard) euCard.style.transform = 'translateY(0px)';
+    
+    // Scroll to professions section
+    setTimeout(() => {
+        const target = document.getElementById('non-eu-professions');
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    }, 100);
+}
+</script>
+{% endblock %}
