@@ -1,1 +1,0 @@
-# API пакет для Dental Academy 

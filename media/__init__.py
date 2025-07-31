@@ -1,1 +1,0 @@
-# Медиа пакет для Dental Academy 
