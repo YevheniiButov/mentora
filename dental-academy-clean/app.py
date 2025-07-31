@@ -63,6 +63,14 @@ csrf = CSRFProtect(app)
 # Temporarily disable CSRF for testing
 csrf.exempt(lambda: True)
 
+# Create database tables if they don't exist
+with app.app_context():
+    try:
+        db.create_all()
+        logger.info("✅ Database tables created successfully")
+    except Exception as e:
+        logger.error(f"❌ Database table creation failed: {e}")
+
 # ========================================
 # USER LOADER
 # ========================================
