@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t('progress', g.lang) }} - {{ app_name }}{% endblock %}
+{% block title %}{{ t('progress', lang)|default('Progress') }} - Mentora{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -8,13 +8,13 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h1 class="h3 mb-0">{{ t('detailed_progress', g.lang)|default('Детальный прогресс') }}</h1>
-                    <p class="text-muted">{{ t('progress_description', g.lang)|default('Подробная информация о вашем прогрессе по всем программам обучения') }}</p>
+                    <h1 class="h3 mb-0">{{ t('detailed_progress', lang)|default('Detailed Progress') }}</h1>
+                    <p class="text-muted">{{ t('progress_description', lang)|default('Detailed information about your progress across all learning programs') }}</p>
                 </div>
                 <div>
                     <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-2"></i>
-                        {{ t('back_to_dashboard', g.lang)|default('Назад к панели') }}
+                        {{ t('back_to_dashboard', lang)|default('Back to Dashboard') }}
                     </a>
                 </div>
             </div>
@@ -38,7 +38,7 @@
                         <div class="text-end">
                             <span class="badge bg-primary fs-6">{{ path.progress_percent }}%</span>
                             <div class="small text-muted mt-1">
-                                {{ path.completed_lessons }} / {{ path.total_lessons }} {{ t('lessons', g.lang)|default('уроков') }}
+                                {{ path.completed_lessons }} / {{ path.total_lessons }} {{ t('lessons', lang)|default('lessons') }}
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                                     </div>
 
                                     <div class="small text-muted mb-3">
-                                        {{ subject.completed_lessons }} / {{ subject.total_lessons }} {{ t('lessons', g.lang)|default('уроков') }}
+                                        {{ subject.completed_lessons }} / {{ subject.total_lessons }} {{ t('lessons', lang)|default('lessons') }}
                                     </div>
 
                                     {% if subject.modules %}
@@ -110,11 +110,11 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center py-5">
                     <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
-                    <h4 class="text-muted mt-3">{{ t('no_progress_data', g.lang)|default('Нет данных о прогрессе') }}</h4>
-                    <p class="text-muted">{{ t('start_learning_to_track', g.lang)|default('Начните обучение, чтобы отслеживать прогресс') }}</p>
+                    <h4 class="text-muted mt-3">{{ t('no_progress_data', lang)|default('No progress data') }}</h4>
+                    <p class="text-muted">{{ t('start_learning_to_track', lang)|default('Start learning to track progress') }}</p>
                     <a href="{{ url_for('learning.index') }}" class="btn btn-primary mt-3">
                         <i class="bi bi-play-circle me-2"></i>
-                        {{ t('start_learning', g.lang)|default('Начать обучение') }}
+                        {{ t('start_learning', lang)|default('Start Learning') }}
                     </a>
                 </div>
             </div>

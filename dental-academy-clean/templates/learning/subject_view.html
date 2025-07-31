@@ -47,7 +47,11 @@
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
                                 </svg>
                             {% endif %}
-                            <span>{{ path.name }}</span>
+                            <span class="path-name" 
+                                  title="{{ path.name }}" 
+                                  data-full-name="{{ path.name }}">
+                                {{ path.short_name if path.short_name else path.name }}
+                            </span>
                         </div>
                     </a>
                     {% else %}
@@ -66,7 +70,11 @@
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
                                 </svg>
                             {% endif %}
-                            <span>{{ path.name }}</span>
+                            <span class="path-name" 
+                                  title="{{ path.name }}" 
+                                  data-full-name="{{ path.name }}">
+                                {{ path.short_name if path.short_name else path.name }}
+                            </span>
                         </div>
                     </button>
                     {% endif %}
@@ -90,7 +98,7 @@
                             </a>
                         {% else %}
                             {% for subject in path.subjects %}
-                            <a href="{{ url_for('learning_map_bp.learning_map', lang=lang, path_id=path.id) }}?subject={{ subject.id }}" class="subject-item {% if selected_subject and selected_subject.id == subject.id %}active{% endif %}">
+                            <a href="{{ url_for('learning_map_bp.subject_topics', lang=lang, subject_id=subject.id) }}" class="subject-item {% if selected_subject and selected_subject.id == subject.id %}active{% endif %}">
                                 <span class="subject-name">{{ subject.name }}</span>
                                 <div class="subject-progress">
                                     <div class="progress-bar">
@@ -109,19 +117,7 @@
         </div>
 
         <div class="middle-column">
-            <div class="page-header">
-                <div class="breadcrumb">
-                    <a href="{{ url_for('main.index', lang=lang) }}">{{ t('home', lang) }}</a>
-                    <span class="separator">/</span>
-                    <a href="{{ url_for('learning_map_bp.learning_map', lang=lang) }}">{{ t('learning_map', lang) }}</a>
-                    {% if selected_subject %}
-                        <span class="separator">/</span>
-                        <span class="active">{{ selected_subject.name }}</span>
-                    {% elif selected_path %}
-                        <span class="active">{{ selected_path.name }}</span>
-                    {% endif %}
-                </div>
-            </div>
+
 
             {% if selected_subject %}
             <div class="subject-content">
@@ -225,12 +221,12 @@
                 </div>
                 {% endif %}
 
-                {% if subject.id == 101 %}
+                {% if selected_subject and selected_subject.id == 101 %}
                 <div class="test-section mt-4">
-                    <h3>BIG-toets Voorbereiding</h3>
-                    <p>Bereid je voor op je BIG-registratie met onze oefentests</p>
-                    <a href="{{ url_for('learning_map_bp.subject_tests', lang=lang, subject_id=subject.id) }}" class="btn btn-primary">
-                        <i class="bi bi-journal-check"></i> Naar Tests
+                    <h3>{{ t('big_toets_preparation', lang) }}</h3>
+                    <p>{{ t('big_toets_description', lang) }}</p>
+                    <a href="{{ url_for('learning_map_bp.subject_tests', lang=lang, subject_id=selected_subject.id) }}" class="btn btn-primary">
+                        <i class="bi bi-journal-check"></i> {{ t('go_to_tests', lang) }}
                     </a>
                 </div>
                 {% endif %}
@@ -287,7 +283,7 @@
                 <div class="welcome-description">
                   {% if learning_state and not learning_state.learning_progress %}
                     <p>{{ t('diagnostic_completed_no_progress_explanation', lang)|default('U heeft de kennistest succesvol afgerond. Tijd om te beginnen met leren!') }}</p>
-                    <button class="btn-start-learning" onclick="window.location.href='{{ url_for('learning_map_bp.learning_map', lang=lang) }}'">
+                    <button class="btn-start-learning" onclick="window.location.href='{{ url_for('learning_map_bp.start_diagnostic_learning', lang=lang) }}'">
                       {{ t('start_learning', lang)|default('Begin met leren') }}
                     </button>
                   {% else %}
@@ -425,4 +421,108 @@
 <script src="{{ url_for('static', filename='js/subject_view.js') }}"></script>
 <script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
 <script src="{{ url_for('static', filename='js/subject-navigation.js') }}"></script>
+
+<script>
+// Кастомные tooltip'ы для путей обучения
+document.addEventListener('DOMContentLoaded', function() {
+    const pathNames = document.querySelectorAll('.path-name[title]');
+    
+    pathNames.forEach(function(element) {
+        let tooltip = null;
+        let tooltipArrow = null;
+        
+        element.addEventListener('mouseenter', function(e) {
+            // Удаляем существующие tooltip'ы
+            if (tooltip) {
+                tooltip.remove();
+                tooltipArrow.remove();
+            }
+            
+            const title = this.getAttribute('title');
+            if (!title) return;
+            
+            // Создаем tooltip
+            tooltip = document.createElement('div');
+            tooltip.className = 'custom-tooltip';
+            tooltip.textContent = title;
+            tooltip.style.cssText = `
+                position: absolute;
+                background: rgba(0, 0, 0, 0.95);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                white-space: nowrap;
+                z-index: 10000;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                pointer-events: none;
+                max-width: 300px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: all 0.3s ease;
+            `;
+            
+            // Создаем стрелку
+            tooltipArrow = document.createElement('div');
+            tooltipArrow.className = 'custom-tooltip-arrow';
+            tooltipArrow.style.cssText = `
+                position: absolute;
+                border: 6px solid transparent;
+                border-top-color: rgba(0, 0, 0, 0.95);
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: all 0.3s ease;
+            `;
+            
+            // Добавляем в DOM
+            document.body.appendChild(tooltip);
+            document.body.appendChild(tooltipArrow);
+            
+            // Позиционируем
+            const rect = this.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            
+            tooltip.style.left = rect.left + (rect.width / 2) - (tooltipRect.width / 2) + 'px';
+            tooltip.style.top = rect.top - tooltipRect.height - 10 + 'px';
+            
+            tooltipArrow.style.left = rect.left + (rect.width / 2) - 6 + 'px';
+            tooltipArrow.style.top = rect.top - 6 + 'px';
+            
+            // Показываем с анимацией
+            setTimeout(() => {
+                tooltip.style.opacity = '1';
+                tooltip.style.transform = 'translateY(0)';
+                tooltipArrow.style.opacity = '1';
+                tooltipArrow.style.transform = 'translateY(0)';
+            }, 10);
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            if (tooltip) {
+                tooltip.style.opacity = '0';
+                tooltip.style.transform = 'translateY(10px)';
+                tooltipArrow.style.opacity = '0';
+                tooltipArrow.style.transform = 'translateY(10px)';
+                
+                setTimeout(() => {
+                    if (tooltip && tooltip.parentNode) {
+                        tooltip.remove();
+                        tooltipArrow.remove();
+                        tooltip = null;
+                        tooltipArrow = null;
+                    }
+                }, 300);
+            }
+        });
+    });
+});
+</script>
 {% endblock %} 

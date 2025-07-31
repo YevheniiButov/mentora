@@ -167,6 +167,30 @@ body {
     background: #e6f2ff;
 }
 
+/* Demo Option */
+.digid-demo-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 12px;
+    background: rgba(255, 102, 0, 0.05);
+    border: 1px solid rgba(255, 102, 0, 0.2);
+    border-radius: 4px;
+}
+
+.digid-demo-option input[type="checkbox"] {
+    margin: 0;
+}
+
+.digid-demo-option label {
+    color: var(--digid-text);
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0;
+    font-weight: 500;
+}
+
 /* Navigation Buttons */
 .digid-navigation {
     display: flex;
@@ -290,58 +314,6 @@ body {
     font-weight: 500;
 }
 
-/* Demo Section */
-.digid-demo-section {
-    background: #fff3e0;
-    border-top: 3px solid var(--digid-orange);
-    padding: 20px 32px;
-}
-
-.digid-demo-warning {
-    color: var(--digid-orange);
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.digid-demo-subtitle {
-    color: var(--digid-text);
-    font-size: 13px;
-    text-align: center;
-    margin-bottom: 20px;
-    line-height: 1.4;
-}
-
-/* Demo Options */
-.digid-demo-options {
-    margin-bottom: 16px;
-}
-
-.demo-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 4px;
-}
-
-.demo-option input[type="checkbox"] {
-    margin: 0;
-}
-
-.demo-option label {
-    color: var(--digid-text);
-    font-size: 13px;
-    cursor: pointer;
-    margin: 0;
-}
-
 /* Password Input Section */
 .digid-password-section {
     display: flex;
@@ -431,10 +403,6 @@ body {
         width: 100%;
     }
     
-    .digid-demo-section {
-        padding: 16px 20px;
-    }
-    
     .digid-password-section {
         flex-direction: column;
         gap: 8px;
@@ -468,7 +436,7 @@ body {
 .digid-code-input:focus-visible,
 .digid-btn-next:focus-visible,
 .digid-btn-previous:focus-visible,
-.digid-demo-btn:focus-visible {
+.digid-password-btn:focus-visible {
     outline: 2px solid var(--digid-blue);
     outline-offset: 2px;
 }
@@ -544,6 +512,12 @@ body {
                     <div class="digid-error-message" id="error-message" role="alert"></div>
                 </div>
 
+                <!-- Demo Option -->
+                <div class="digid-demo-option">
+                    <input type="checkbox" id="show-registration" name="show-registration" onchange="toggleRegistrationMode()">
+                    <label for="show-registration">Nieuwe gebruiker (toon registratieformulier)</label>
+                </div>
+
                 <div class="digid-navigation">
                     <button type="button" class="digid-btn-previous" onclick="goToPreviousStep()" aria-label="Ga terug naar vorige stap">
                         ← Vorige
@@ -602,42 +576,6 @@ body {
                 <div class="digid-phone-illustration" aria-hidden="true"></div>
             </div>
         </div>
-
-        <!-- Demo Section -->
-        <div class="digid-demo-section">
-            <div class="digid-demo-warning">
-                🛠️ Alleen voor ontwikkeling
-            </div>
-            <div class="digid-demo-subtitle">
-                Voer het wachtwoord in om direct in te loggen als demo gebruiker
-            </div>
-            
-            <!-- Demo Options -->
-            <div class="digid-demo-options">
-                <div class="demo-option">
-                    <input type="checkbox" id="show-registration" name="show-registration" onchange="toggleRegistrationMode()">
-                    <label for="show-registration">Nieuwe gebruiker (toon registratieformulier)</label>
-                </div>
-            </div>
-            
-            <!-- Password Input -->
-            <div class="digid-password-section">
-                <input 
-                    type="password" 
-                    id="demo-password" 
-                    class="digid-password-input" 
-                    placeholder="Voer wachtwoord in..."
-                    onkeydown="handlePasswordKeydown(event)"
-                    aria-label="Demo wachtwoord">
-                <button 
-                    type="button" 
-                    class="digid-password-btn" 
-                    onclick="authenticateWithPassword()"
-                    aria-label="Inloggen met wachtwoord">
-                    Inloggen
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -646,55 +584,17 @@ body {
 let currentCode = ['', '', '', ''];
 let isSubmitting = false;
 let showRegistration = false;
-let currentUser = null; // Сохраняем пользователя после проверки пин-кода
+let currentUser = null;
 
-// Demo user configurations
-const demoUsers = {
-    'tandarts': { 
-        code: 'TDNT', 
-        username: 'demo.tandarts', 
-        name: 'Dr. Jan van der Berg', 
-        profession: 'tandarts',
-        bsn: '123456789',
-        role: 'Student',
-        email: 'jan.vandenberg@mentora.nl'
-    },
-    'apotheker': { 
-        code: 'APTH', 
-        username: 'demo.apotheker', 
-        name: 'Drs. Maria Jansen', 
-        profession: 'apotheker',
-        bsn: '234567890',
-        role: 'Student',
-        email: 'maria.jansen@mentora.nl'
-    },
-    'verpleegkundige': { 
-        code: 'VERP', 
-        username: 'demo.verpleegkundige', 
-        name: 'Anneke de Vries', 
-        profession: 'verpleegkundige',
-        bsn: '345678901',
-        role: 'Student',
-        email: 'anneke.devries@mentora.nl'
-    },
-    'arts': { 
-        code: 'ARTS', 
-        username: 'demo.arts', 
-        name: 'Dr. Peter Smits', 
-        profession: 'huisarts',
-        bsn: '456789012',
-        role: 'Student',
-        email: 'peter.smits@mentora.nl'
-    },
-    'admin': { 
-        code: 'ADMN', 
-        username: 'demo.admin', 
-        name: 'Admin Beheerder', 
-        profession: 'admin',
-        bsn: '999999999',
-        role: 'Admin',
-        email: 'admin@mentora.nl'
-    }
+// Single demo user
+const demoUser = {
+    code: 'DEMO', 
+    username: 'demo.user', 
+    name: 'Demo Gebruiker', 
+    profession: 'tandarts',
+    bsn: '123456789',
+    role: 'user',
+    email: 'demo@mentora.nl'
 };
 
 // Toggle registration mode
@@ -778,16 +678,9 @@ function verifyPincode(code) {
     
     // Simulate verification delay
     setTimeout(() => {
-        // Map demo codes to users
-        const demoCodeMap = {};
-        Object.keys(demoUsers).forEach(key => {
-            demoCodeMap[demoUsers[key].code] = demoUsers[key];
-        });
-        
-        const user = demoCodeMap[code];
-        if (user) {
+        if (code === demoUser.code) {
             // Pincode is valid - proceed to password step
-            currentUser = user;
+            currentUser = demoUser;
             hideLoading();
             showPasswordStep();
         } else {
@@ -850,36 +743,14 @@ function handlePasswordSubmit(event) {
         return false;
     }
     
-    authenticateWithPassword(password);
-    return false;
-}
-
-// Demo user selection (for quick testing)
-function selectDemoUser(userType) {
-    const user = demoUsers[userType];
-    if (!user) return;
-    
-    // Fill in the demo code
-    const code = user.code;
-    for (let i = 0; i < 4; i++) {
-        const input = document.getElementById(`code${i + 1}`);
-        input.value = code[i];
-        input.classList.add('filled');
-        currentCode[i] = code[i];
+    // Check for "Demonstration" password
+    if (password.toLowerCase() !== 'demonstration') {
+        showPasswordError('Verkeerd wachtwoord');
+        return false;
     }
     
-    updateSubmitButton();
-    hideError();
-    
-    // Show user info
-    console.log(`🔑 Demo login: ${user.name} (${user.profession})`);
-    
-    // Auto-submit after a brief delay
-    setTimeout(() => {
-        if (!isSubmitting) {
-            document.getElementById('digid-auth-form').dispatchEvent(new Event('submit'));
-        }
-    }, 600);
+    authenticateWithPassword(password);
+    return false;
 }
 
 // UI state management
@@ -935,7 +806,14 @@ function getCurrentLanguage() {
     return langCodes.includes(urlLang) ? urlLang : 'nl';
 }
 
-// Final authentication with password
+// Password authentication
+function handlePasswordKeydown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        document.getElementById('password-auth-form').dispatchEvent(new Event('submit'));
+    }
+}
+
 function authenticateWithPassword(password) {
     if (!currentUser) {
         showPasswordError('{{ t("no_user_selected", lang) }}');
@@ -944,32 +822,6 @@ function authenticateWithPassword(password) {
     
     isSubmitting = true;
     showPasswordLoading();
-    
-    // Map passwords to user types
-    const passwordMap = {
-        'tandarts': 'tandarts',
-        'apotheker': 'apotheker', 
-        'verpleegkundige': 'verpleegkundige',
-        'arts': 'arts',
-        'admin': 'admin',
-        'develop': 'admin'
-    };
-    
-    const userType = passwordMap[password.toLowerCase()];
-    if (!userType) {
-        hidePasswordLoading();
-        showPasswordError('{{ t("invalid_password", lang) }}');
-        isSubmitting = false;
-        return;
-    }
-    
-    // Check if password matches the user type
-    if (userType !== currentUser.profession && !(userType === 'admin' && currentUser.profession === 'admin')) {
-        hidePasswordLoading();
-        showPasswordError('{{ t("password_mismatch", lang) }}');
-        isSubmitting = false;
-        return;
-    }
     
     // Clear password field
     document.getElementById('auth-password').value = '';
@@ -1046,61 +898,13 @@ function authenticateUser(user) {
     });
 }
 
-// Password authentication functions (for demo section)
-function handlePasswordKeydown(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        authenticateWithPassword();
-    }
-}
-
-function authenticateWithPassword() {
-    const password = document.getElementById('demo-password').value.trim().toLowerCase();
-    
-    if (!password) {
-        showError('{{ t("enter_password", lang) }}');
-        return;
-    }
-    
-    // Map passwords to user types
-    const passwordMap = {
-        'tandarts': 'tandarts',
-        'apotheker': 'apotheker', 
-        'verpleegkundige': 'verpleegkundige',
-        'arts': 'arts',
-        'admin': 'admin',
-        'develop': 'admin'
-    };
-    
-    const userType = passwordMap[password];
-    if (!userType) {
-        showError('{{ t("invalid_password", lang) }}');
-        return;
-    }
-    
-    const user = demoUsers[userType];
-    if (!user) {
-        showError('{{ t("user_not_found", lang) }}');
-        return;
-    }
-    
-    // Clear password field
-    document.getElementById('demo-password').value = '';
-    
-    // Show user info
-    console.log(`🔑 Demo login: ${user.name} (${user.profession})`);
-    
-    // Authenticate user
-    authenticateUser(user);
-}
-
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     // Focus first input
     document.getElementById('code1').focus();
     
-    // Log demo users for development
-    console.log('🔧 Demo users available:', Object.keys(demoUsers));
+    // Log demo user for development
+    console.log('🔧 Demo user available:', demoUser);
 });
 
 // Prevent form resubmission on page refresh

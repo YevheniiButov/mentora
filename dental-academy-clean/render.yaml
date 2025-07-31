@@ -2,7 +2,7 @@ services:
   - type: web
     name: mentora-dental-academy
     env: python
-    plan: starter  # или free для тестирования
+    plan: starter
     buildCommand: |
       pip install -r requirements-render.txt &&
       python -m flask db upgrade &&
@@ -18,19 +18,23 @@ services:
           name: mentora-db
           property: connectionString
       - key: DIGID_MOCK_MODE
-        value: "true"  # для production заменить на false
+        value: "true"  # Оставляем true для начального деплоя
       - key: DIGID_ENABLED
         value: "true"
       - key: DIGID_ENTITY_ID
-        value: "your-digid-entity-id"
+        value: "mentora-dental-academy"
       - key: DIGID_ACS_URL
-        value: "https://your-domain.onrender.com/digid/callback"
+        value: "https://mentora-dental-academy.onrender.com/digid/callback"
       - key: DIGID_SLO_URL
-        value: "https://your-domain.onrender.com/digid/logout"
+        value: "https://mentora-dental-academy.onrender.com/digid/logout"
       - key: SESSION_COOKIE_SECURE
         value: "true"
       - key: SESSION_COOKIE_HTTPONLY
         value: "true"
+      - key: SESSION_COOKIE_SAMESITE
+        value: "Lax"
+      - key: FLASK_DEBUG
+        value: "false"
     healthCheckPath: /health
     autoDeploy: true
 

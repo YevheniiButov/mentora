@@ -519,11 +519,11 @@ def get_dentistry_learning_data(user_id):
         
         # Определяем иконку в зависимости от типа экзамена
         icon_map = {
-            'multiple-choice': 'question-circle',
-            'open-book': 'book-open',
-            'practical-theory': 'hands',
+            'multiple_choice': 'question-circle',
+            'open_book': 'book-open',
+            'practical_theory': 'hands',
             'interview': 'user-md',
-            'case-study': 'clipboard-list'
+            'case_study': 'clipboard-list'
         }
         
         icon = icon_map.get(path.exam_type, 'graduation-cap')
@@ -536,9 +536,26 @@ def get_dentistry_learning_data(user_id):
             'CLINICAL': 'workstation'
         }
         
+        # Словарь коротких названий для путей обучения
+        short_names = {
+            'THK I - Tandheelkunde Kern I': 'THK I',
+            'THK II - Tandheelkunde Kern II': 'THK II',
+            'Basic Medical Sciences': 'Basic Medical Sciences',
+            'Praktische vaardigheden (Simodont voorbereiding)': 'Praktische vaardigheden',
+            'Radiologie': 'Radiologie',
+            'Statistiek voor tandheelkunde': 'Statistiek',
+            'Onderzoeksmethodologie': 'Onderzoek',
+            'Communicatie en ethiek': 'Communicatie & Ethiek',
+            'Behandelplanning': 'Behandelplanning'
+        }
+        
+        # Получаем короткое название или используем оригинальное
+        short_name = short_names.get(path.name, path.name)
+        
         path_data = {
             'id': path.id,
-            'name': path.name,
+            'name': path.name,  # Полное название для tooltip
+            'short_name': short_name,  # Короткое название для отображения
             'description': path.description or f'{path.exam_component} - {path.exam_weight}%',
             'icon': icon,
             'order': path.exam_weight,  # Используем вес как порядок
@@ -553,32 +570,56 @@ def get_dentistry_learning_data(user_id):
         }
         dentistry_paths.append(path_data)
     
-    # Генерируем предметы на основе модулей из путей обучения
+    # Получаем реальные предметы из базы данных
     dentistry_subjects = []
+    subjects = Subject.query.all()
     
-    for path in learning_paths:
-        if path.modules:
-            for module in path.modules:
-                # Создаем предмет на основе модуля
-                subject_data = {
-                    'id': hash(module.get('id', '')) % 10000,  # Простой хеш для ID
-                    'name': module.get('name', 'Модуль'),
-                    'description': f'Модуль из {path.name}',
-                    'learning_path_id': path.id,
-                    'progress': 0,  # TODO: Реализовать прогресс по модулям
-                    'modules': [
-                        {
-                            'id': module.get('id', ''),
-                            'title': module.get('name', 'Модуль'),
-                            'progress': 0,
-                            'total_lessons': 0,
-                            'completed_lessons': 0,
-                            'domains': module.get('domains', []),
-                            'estimated_hours': module.get('estimated_hours', 0)
-                        }
-                    ]
-                }
-                dentistry_subjects.append(subject_data)
+    for subject in subjects:
+        # Получаем модули для этого предмета
+        modules = Module.query.filter_by(subject_id=subject.id).order_by(Module.order).all()
+        
+        # Обрабатываем модули
+        processed_modules = []
+        total_progress = 0
+        
+        for module in modules:
+            # Получаем статистику модуля
+            module_stats = get_module_stats_unified(module.id, user_id)
+            
+            # Добавляем модуль с прогрессом
+            processed_modules.append({
+                'id': module.id,
+                'title': module.title,
+                'description': module.description if hasattr(module, 'description') else '',
+                'is_premium': module.is_premium if hasattr(module, 'is_premium') else False,
+                'is_final_test': module.is_final_test if hasattr(module, 'is_final_test') else False,
+                'icon': module.icon if hasattr(module, 'icon') else 'file-earmark-text',
+                'progress': module_stats['progress'],
+                'completed_lessons': module_stats['completed_lessons'],
+                'total_lessons': module_stats['total_lessons']
+            })
+            
+            total_progress += module_stats['progress']
+        
+        # Вычисляем средний прогресс предмета
+        subject_progress = round(total_progress / len(modules)) if modules else 0
+        
+        # Создаем словарь с информацией о предмете
+        subject_data = {
+            'id': subject.id,
+            'name': subject.name,
+            'description': subject.description if hasattr(subject, 'description') else '',
+            'icon': subject.icon if hasattr(subject, 'icon') else 'folder2-open',
+            'learning_path_id': subject.learning_path_id,
+            'progress': subject_progress,
+            'modules': processed_modules
+        }
+        
+        dentistry_subjects.append(subject_data)
+    
+    # Привязываем предметы к путям обучения
+    for path in dentistry_paths:
+        path['subjects'] = [subject for subject in dentistry_subjects if subject['learning_path_id'] == path['id']]
     
     return {
         'learning_paths': dentistry_paths,
@@ -839,7 +880,7 @@ def check_categories(lang):
 
 # --- Маршрут отображения карты обучения (обновленный) ---
 @learning_map_bp.route("/")
-@learning_map_bp.route("/<int:path_id>")
+@learning_map_bp.route("/<string:path_id>")
 @login_required
 def learning_map(lang, path_id=None):
     """Отображает интерактивную карту обучения."""
@@ -860,7 +901,7 @@ def learning_map(lang, path_id=None):
                 for topic in subcat.topics.all():
                     print(f"DEBUG:     Тема: {topic.name}")
         # Получаем все пути обучения
-        learning_paths = LearningPath.query.filter_by(is_active=True).order_by(LearningPath.order).all()
+        learning_paths = LearningPath.query.filter_by(is_active=True).all()
         for path in learning_paths:
             if path.id == 6:  # Virtual Patients
                 vp_stats = get_virtual_patients_stats(current_user.id)
@@ -871,6 +912,30 @@ def learning_map(lang, path_id=None):
         
         # Получаем запрашиваемый путь
         current_path = LearningPath.query.get_or_404(path_id) if path_id else None
+        
+        # Получаем выбранный предмет из параметра URL
+        selected_subject_id = request.args.get('subject', type=int)
+        selected_subject = None
+        subject_modules = []
+        
+        if selected_subject_id:
+            selected_subject = Subject.query.get(selected_subject_id)
+            if selected_subject:
+                # Получаем модули для выбранного предмета
+                modules = Module.query.filter_by(subject_id=selected_subject.id).order_by(Module.order).all()
+                for module in modules:
+                    module_stats = get_module_stats_unified(module.id, current_user.id)
+                    subject_modules.append({
+                        'id': module.id,
+                        'title': module.title,
+                        'description': module.description if hasattr(module, 'description') else '',
+                        'is_premium': module.is_premium if hasattr(module, 'is_premium') else False,
+                        'is_final_test': module.is_final_test if hasattr(module, 'is_final_test') else False,
+                        'icon': module.icon if hasattr(module, 'icon') else 'file-earmark-text',
+                        'progress': module_stats['progress'],
+                        'completed_lessons': module_stats['completed_lessons'],
+                        'total_lessons': module_stats['total_lessons']
+                    })
         
         # Получаем все предметы с предзагрузкой модулей
         all_subjects = []
@@ -981,7 +1046,8 @@ def learning_map(lang, path_id=None):
                     learning_paths=learning_paths,
                     current_path=current_path,
                     subjects=all_subjects,
-                    selected_subject=None,  # Добавлен этот параметр
+                    selected_subject=selected_subject,  # Обновлен этот параметр
+                    subject_modules=subject_modules,  # Добавлен этот параметр
                     user=current_user,
                     has_subscription=current_user.has_subscription,
                     stats=stats,
@@ -1184,7 +1250,7 @@ def start_module_redirect(lang, module_id):
         return redirect(url_for('learning_map_bp.learning_map', lang=g.lang))
 
 # --- API-эндпоинт ---
-@learning_map_bp.route("/api/data/<int:path_id>")
+@learning_map_bp.route("/api/data/<string:path_id>")
 @login_required
 def get_learning_map_data(lang, path_id):
     """API-эндпоинт для получения данных карты обучения"""
@@ -1570,7 +1636,7 @@ def debug_progress_status(lang):
         flash(f"❌ Ошибка при получении статистики прогресса: {str(e)}", "danger")
         return redirect(url_for('learning_map_bp.learning_map', lang=lang))
     
-@learning_map_bp.route('/api/path/<int:path_id>/subjects')
+@learning_map_bp.route('/api/path/<string:path_id>/subjects')
 def get_path_subjects(path_id):
     # Получаем язык из g, установленный в middleware
     lang = g.lang
@@ -1618,7 +1684,7 @@ def get_path_subjects(path_id):
         'learning_map_text': t('learning_map', lang)
     })
 
-@learning_map_bp.route('/path/<int:path_id>')
+@learning_map_bp.route('/path/<string:path_id>')
 @login_required  # Добавляем декоратор для авторизации
 def view_path(lang, path_id):
     """Отображает предметы выбранного учебного пути."""
@@ -2127,4 +2193,369 @@ def debug_user_state(user_id):
         'all_tests': len(all_test_attempts),
         'all_vp': len(all_vp_attempts)
     }
+
+@learning_map_bp.route("/subject/<int:subject_id>/topics")
+@login_required
+def subject_topics(lang, subject_id):
+    """Отображает темы предмета напрямую, минуя промежуточную страницу с модулями."""
+    current_lang = g.lang
+    
+    try:
+        # Получаем предмет
+        subject = Subject.query.get_or_404(subject_id)
+        
+        # Получаем модули предмета
+        modules = Module.query.filter_by(subject_id=subject.id).order_by(Module.order).all()
+        
+        # Собираем все темы из всех модулей
+        all_topics = []
+        
+        for module in modules:
+            lessons = Lesson.query.filter_by(module_id=module.id).order_by(Lesson.order).all()
+            
+            for lesson in lessons:
+                if lesson.content:
+                    try:
+                        content_data = json.loads(lesson.content)
+                        
+                        # Извлекаем module_title из контента
+                        if 'cards' in content_data and content_data['cards']:
+                            first_card = content_data['cards'][0]
+                            topic_title = first_card.get('module_title', lesson.title)
+                        elif 'questions' in content_data and content_data['questions']:
+                            first_question = content_data['questions'][0]
+                            topic_title = first_question.get('module_title', lesson.title)
+                        else:
+                            topic_title = lesson.title
+                        
+                        # Проверяем, что контент соответствует предмету
+                        # Для всех предметов - все темы из их модулей подходят
+                        # Фильтрация не нужна, так как контент уже правильно загружен в соответствующие модули
+                        pass  # Не фильтруем, все темы из модулей предмета подходят
+                        
+                        # Создаем slug для темы
+                        from routes.modules_routes import create_slug
+                        topic_slug = create_slug(topic_title)
+                        
+                        # Получаем статистику урока
+                        lesson_stats = get_module_stats_unified(lesson.id, current_user.id)
+                        
+                        topic_data = {
+                            'id': lesson.id,
+                            'title': topic_title,
+                            'slug': topic_slug,
+                            'module_id': module.id,
+                            'module_title': module.title,
+                            'content_type': lesson.content_type,
+                            'progress': lesson_stats['progress'],
+                            'completed_lessons': lesson_stats['completed_lessons'],
+                            'total_lessons': lesson_stats['total_lessons']
+                        }
+                        
+                        all_topics.append(topic_data)
+                        
+                    except (json.JSONDecodeError, KeyError) as e:
+                        current_app.logger.warning(f"Error parsing lesson {lesson.id}: {e}")
+                        continue
+        
+        # Убираем дубликаты тем (если есть)
+        unique_topics = []
+        seen_titles = set()
+        
+        for topic in all_topics:
+            if topic['title'] not in seen_titles:
+                unique_topics.append(topic)
+                seen_titles.add(topic['title'])
+        
+        # Получаем статистику пользователя
+        stats = get_unified_user_stats(current_user.id)
+        
+        # Получаем рекомендации
+        from routes.subject_view_routes import get_user_recommendations
+        recommendations = get_user_recommendations(current_user.id)
+        
+        return render_template(
+            "learning/subject_topics.html",
+            title=f'{subject.name} - Topics',
+            subject=subject,
+            topics=unique_topics,
+            user=current_user,
+            has_subscription=current_user.has_subscription,
+            stats=stats,
+            recommendations=recommendations,
+            lang=lang
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in subject_topics: {e}", exc_info=True)
+        flash("Error loading subject topics", "error")
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+
+def get_diagnostic_based_recommendations(user_id, limit=5):
+    """
+    Возвращает рекомендуемые модули на основе результатов диагностики
+    Фокусируется на слабых доменах (показатели < 50%)
+    """
+    try:
+        # Получаем последнюю завершенную диагностическую сессию
+        latest_diagnostic = DiagnosticSession.query.filter_by(
+            user_id=user_id,
+            status='completed'
+        ).order_by(DiagnosticSession.completed_at.desc()).first()
+        
+        if not latest_diagnostic:
+            # Если нет диагностики, возвращаем обычные рекомендации
+            return get_user_recommendations(user_id, limit)
+        
+        # Получаем результаты диагностики
+        diagnostic_results = latest_diagnostic.generate_results()
+        weak_domains = diagnostic_results.get('weak_domains', [])
+        
+        if not weak_domains:
+            # Если нет слабых доменов, возвращаем обычные рекомендации
+            return get_user_recommendations(user_id, limit)
+        
+        # Получаем домены BIG
+        from models import BIGDomain
+        weak_domain_objects = BIGDomain.query.filter(
+            BIGDomain.code.in_(weak_domains)
+        ).all()
+        
+        # Получаем модули, связанные со слабыми доменами
+        recommended_modules = []
+        
+        for domain in weak_domain_objects:
+            # Ищем модули, связанные с этим доменом через ContentDomainMapping
+            from models import ContentDomainMapping, Module, Subject
+            
+            domain_modules = db.session.query(
+                Module, Subject.name.label('subject_name')
+            ).join(
+                ContentDomainMapping, ContentDomainMapping.module_id == Module.id
+            ).join(
+                Subject, Subject.id == Module.subject_id
+            ).filter(
+                ContentDomainMapping.domain_id == domain.id,
+                ContentDomainMapping.relevance_score >= 0.5  # Только релевантные модули
+            ).order_by(
+                ContentDomainMapping.relevance_score.desc()
+            ).limit(limit // len(weak_domain_objects) + 1).all()
+            
+            for module, subject_name in domain_modules:
+                # Проверяем, не завершил ли пользователь уже этот модуль
+                completed_lessons = db.session.query(UserProgress).join(
+                    Lesson, Lesson.id == UserProgress.lesson_id
+                ).filter(
+                    UserProgress.user_id == user_id,
+                    UserProgress.completed == True,
+                    Lesson.module_id == module.id
+                ).count()
+                
+                total_lessons = module.lessons.count()
+                
+                if total_lessons > 0 and (completed_lessons / total_lessons) < 0.8:  # Не завершен на 80%
+                    recommended_modules.append({
+                        'module_id': module.id,
+                        'title': module.title,
+                        'icon': module.icon if hasattr(module, 'icon') else 'journal-text',
+                        'subject_name': subject_name,
+                        'domain_name': domain.name,
+                        'domain_code': domain.code,
+                        'relevance_score': 0.8,  # Высокая релевантность для слабых доменов
+                        'completion_percentage': (completed_lessons / total_lessons) * 100,
+                        'priority': 'high'  # Высокий приоритет для слабых доменов
+                    })
+        
+        # Сортируем по приоритету и релевантности
+        recommended_modules.sort(
+            key=lambda x: (x['priority'] == 'high', x['relevance_score'], -x['completion_percentage']),
+            reverse=True
+        )
+        
+        return recommended_modules[:limit]
+        
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при получении рекомендаций на основе диагностики: {str(e)}", exc_info=True)
+        # В случае ошибки возвращаем обычные рекомендации
+        return get_user_recommendations(user_id, limit)
+
+@learning_map_bp.route("/start-diagnostic-learning")
+@login_required
+def start_diagnostic_learning(lang):
+    """
+    Начинает обучение с модулей, соответствующих слабым доменам из диагностики
+    """
+    try:
+        # Получаем рекомендации на основе диагностики
+        recommendations = get_diagnostic_based_recommendations(current_user.id, limit=1)
+        
+        if not recommendations:
+            # Если нет рекомендаций, перенаправляем на обычную карту обучения
+            flash(t('no_diagnostic_recommendations', lang) | default('No diagnostic recommendations available. Please complete a knowledge assessment first.'), 'info')
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        
+        # Берем первый рекомендуемый модуль
+        recommended_module = recommendations[0]
+        module_id = recommended_module['module_id']
+        
+        # Перенаправляем на первый урок этого модуля
+        module = Module.query.get(module_id)
+        if not module:
+            flash(t('module_not_found', lang) | default('Module not found.'), 'error')
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        
+        # Получаем первый урок модуля
+        first_lesson = module.lessons.order_by(Lesson.order).first()
+        if not first_lesson:
+            flash(t('no_lessons_in_module', lang) | default('No lessons found in this module.'), 'error')
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        
+        # Перенаправляем на интерактивный урок
+        return redirect(url_for('modules_bp.subtopic_lessons_list', 
+                               lang=lang, 
+                               module_id=module_id, 
+                               slug=first_lesson.subtopic_slug or 'learning-materials'))
+        
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при начале обучения на основе диагностики: {str(e)}", exc_info=True)
+        flash(t('error_starting_diagnostic_learning', lang) | default('Error starting diagnostic-based learning.'), 'error')
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+
+
+    stage = 'post_diagnostic' if diagnostic_completed else 'pre_diagnostic'
+    
+    result = {
+        'diagnostic_completed': diagnostic_completed,
+        'learning_progress': learning_progress,
+        'stage': stage
+    }
+    
+    print(f"🔍 DEBUG: get_user_learning_state result = {result}")
+    return result
+
+def debug_user_state(user_id):
+    """Отладочная функция для проверки состояния пользователя"""
+    print(f"🔍 DEBUG: Checking user state for user_id = {user_id}")
+    
+    # Проверяем диагностические сессии
+    diagnostic_sessions = DiagnosticSession.query.filter_by(user_id=user_id).all()
+    print(f"🔍 DEBUG: Diagnostic sessions count: {len(diagnostic_sessions)}")
+    for session in diagnostic_sessions:
+        print(f"🔍 DEBUG: Diagnostic session - status: {session.status}, started_at: {session.started_at}")
+    
+    # Проверяем прогресс обучения
+    lesson_progress = UserProgress.query.filter_by(user_id=user_id, completed=True).all()
+    print(f"🔍 DEBUG: Completed lesson progress count: {len(lesson_progress)}")
+    
+    test_progress = TestAttempt.query.filter_by(user_id=user_id, is_correct=True).all()
+    print(f"🔍 DEBUG: Correct test attempts count: {len(test_progress)}")
+    
+    vp_progress = VirtualPatientAttempt.query.filter_by(user_id=user_id, completed=True).all()
+    print(f"🔍 DEBUG: Completed VP attempts count: {len(vp_progress)}")
+    
+    # Проверяем все попытки тестов (включая неправильные)
+    all_test_attempts = TestAttempt.query.filter_by(user_id=user_id).all()
+    print(f"🔍 DEBUG: All test attempts count: {len(all_test_attempts)}")
+    
+    # Проверяем все попытки VP (включая незавершенные)
+    all_vp_attempts = VirtualPatientAttempt.query.filter_by(user_id=user_id).all()
+    print(f"🔍 DEBUG: All VP attempts count: {len(all_vp_attempts)}")
+    
+    return {
+        'diagnostic_sessions': len(diagnostic_sessions),
+        'completed_lessons': len(lesson_progress),
+        'correct_tests': len(test_progress),
+        'completed_vp': len(vp_progress),
+        'all_tests': len(all_test_attempts),
+        'all_vp': len(all_vp_attempts)
+    }
+
+@learning_map_bp.route("/subject/<int:subject_id>/topics")
+def get_diagnostic_based_recommendations(user_id, limit=5):
+    """
+    Возвращает рекомендуемые модули на основе результатов диагностики
+    Фокусируется на слабых доменах (показатели < 50%)
+    """
+    try:
+        # Получаем последнюю завершенную диагностическую сессию
+        latest_diagnostic = DiagnosticSession.query.filter_by(
+            user_id=user_id,
+            status='completed'
+        ).order_by(DiagnosticSession.completed_at.desc()).first()
+        
+        if not latest_diagnostic:
+            # Если нет диагностики, возвращаем обычные рекомендации
+            return get_user_recommendations(user_id, limit)
+        
+        # Получаем результаты диагностики
+        diagnostic_results = latest_diagnostic.generate_results()
+        weak_domains = diagnostic_results.get('weak_domains', [])
+        
+        if not weak_domains:
+            # Если нет слабых доменов, возвращаем обычные рекомендации
+            return get_user_recommendations(user_id, limit)
+        
+        # Получаем домены BIG
+        from models import BIGDomain
+        weak_domain_objects = BIGDomain.query.filter(
+            BIGDomain.code.in_(weak_domains)
+        ).all()
+        
+        # Получаем модули, связанные со слабыми доменами
+        recommended_modules = []
+        
+        for domain in weak_domain_objects:
+            # Ищем модули, связанные с этим доменом через ContentDomainMapping
+            from models import ContentDomainMapping, Module, Subject
+            
+            domain_modules = db.session.query(
+                Module, Subject.name.label('subject_name')
+            ).join(
+                ContentDomainMapping, ContentDomainMapping.module_id == Module.id
+            ).join(
+                Subject, Subject.id == Module.subject_id
+            ).filter(
+                ContentDomainMapping.domain_id == domain.id,
+                ContentDomainMapping.relevance_score >= 0.5  # Только релевантные модули
+            ).order_by(
+                ContentDomainMapping.relevance_score.desc()
+            ).limit(limit // len(weak_domain_objects) + 1).all()
+            
+            for module, subject_name in domain_modules:
+                # Проверяем, не завершил ли пользователь уже этот модуль
+                completed_lessons = db.session.query(UserProgress).join(
+                    Lesson, Lesson.id == UserProgress.lesson_id
+                ).filter(
+                    UserProgress.user_id == user_id,
+                    UserProgress.completed == True,
+                    Lesson.module_id == module.id
+                ).count()
+                
+                total_lessons = module.lessons.count()
+                
+                if total_lessons > 0 and (completed_lessons / total_lessons) < 0.8:  # Не завершен на 80%
+                    recommended_modules.append({
+                        'module_id': module.id,
+                        'title': module.title,
+                        'icon': module.icon if hasattr(module, 'icon') else 'journal-text',
+                        'subject_name': subject_name,
+                        'domain_name': domain.name,
+                        'domain_code': domain.code,
+                        'relevance_score': 0.8,  # Высокая релевантность для слабых доменов
+                        'completion_percentage': (completed_lessons / total_lessons) * 100,
+                        'priority': 'high'  # Высокий приоритет для слабых доменов
+                    })
+        
+        # Сортируем по приоритету и релевантности
+        recommended_modules.sort(
+            key=lambda x: (x['priority'] == 'high', x['relevance_score'], -x['completion_percentage']),
+            reverse=True
+        )
+        
+        return recommended_modules[:limit]
+        
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при получении рекомендаций на основе диагностики: {str(e)}", exc_info=True)
+        # В случае ошибки возвращаем обычные рекомендации
+        return get_user_recommendations(user_id, limit)
 

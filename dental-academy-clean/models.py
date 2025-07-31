@@ -479,21 +479,24 @@ class User(db.Model, UserMixin):
         # Get modules from incomplete subjects
         incomplete_modules = []
         
-        for path in LearningPath.query.filter_by(is_active=True).all():
-            for subject in path.subjects:
-                subject_progress = subject.get_progress_for_user(self.id)
-                if subject_progress['progress_percent'] < 100:
-                    # Get the single module for this subject
-                    module = subject.module.first()
-                    if module:
-                        module_progress = module.get_progress_for_user(self.id)
-                        if module_progress['progress_percent'] < 100:
-                            incomplete_modules.append({
-                                'module': module,
-                                'subject': subject,
-                                'path': path,
-                                'progress': module_progress
-                            })
+        # Get all subjects and their modules
+        subjects = Subject.query.all()
+        for subject in subjects:
+            subject_progress = subject.get_progress_for_user(self.id)
+            if subject_progress['progress_percent'] < 100:
+                # Get modules for this subject
+                modules = subject.module.all()
+                for module in modules:
+                    module_progress = module.get_progress_for_user(self.id)
+                    if module_progress['progress_percent'] < 100:
+                        # Get the learning path for this subject
+                        path = LearningPath.query.get(subject.learning_path_id)
+                        incomplete_modules.append({
+                            'module': module,
+                            'subject': subject,
+                            'path': path,
+                            'progress': module_progress
+                        })
         
         # Sort by progress (modules with some progress first)
         incomplete_modules.sort(key=lambda x: x['progress']['progress_percent'], reverse=True)
@@ -2166,6 +2169,7 @@ class DiagnosticResponse(db.Model, JSONSerializableMixin):
     selected_answer = db.Column(db.String(255), nullable=False)
     is_correct = db.Column(db.Boolean, nullable=False)
     response_time = db.Column(db.Float, nullable=True)  # Seconds
+    confidence_level = db.Column(db.Integer, nullable=True)  # 1-5 scale
     
     # IRT data
     ability_before = db.Column(db.Float, nullable=True)  # θ before this question
@@ -2192,6 +2196,7 @@ class DiagnosticResponse(db.Model, JSONSerializableMixin):
             'selected_answer': self.selected_answer,
             'is_correct': self.is_correct,
             'response_time': self.response_time,
+            'confidence_level': self.confidence_level,
             'ability_before': self.ability_before,
             'ability_after': self.ability_after,
             'se_before': self.se_before,
@@ -2700,6 +2705,9 @@ def _get_readiness_level(self, score):
     elif score >= 50:
         return 'fair'
     else:
+        return 'needs_improvement'
+
+# ... existing code ...
         return 'needs_improvement'
 
 # ... existing code ...

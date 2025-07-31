@@ -5,6 +5,21 @@ import os
 import logging
 import json
 from datetime import datetime, timezone
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # If python-dotenv is not installed, try to load .env manually
+    env_file = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(env_file):
+        with open(env_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key] = value
 from flask import Flask, render_template, request, session, g, redirect, url_for, flash, send_from_directory, abort
 from utils.serializers import safe_jsonify
 from flask_login import current_user, login_user, logout_user, login_required

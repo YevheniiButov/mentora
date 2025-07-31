@@ -387,4 +387,3 @@ DOMAIN_DIAGNOSTIC_TRANSLATIONS = {
 
 def get_domain_diagnostic_translation(key: str, language: str = 'nl') -> str:
     """Получить перевод для ключа доменной диагностики"""
-    return DOMAIN_DIAGNOSTIC_TRANSLATIONS.get(language, DOMAIN_DIAGNOSTIC_TRANSLATIONS['nl']).get(key, key) 

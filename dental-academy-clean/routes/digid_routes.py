@@ -42,6 +42,15 @@ def validate_file_size(file_stream):
 
 # Мок-данные пользователей DigiD (только для теста)
 MOCK_DIGID_USERS = {
+    'demo.user': {
+        'digid_username': 'demo.user',
+        'bsn': '111111111',
+        'email': 'demo@mentora.nl',
+        'first_name': 'Demo',
+        'last_name': 'Gebruiker',
+        'role': 'user',
+        'profession': 'tandarts'
+    },
     'demo.tandarts': {
         'digid_username': 'demo.tandarts',
         'bsn': '123456789',
@@ -610,7 +619,7 @@ def complete_registration():
             
             flash(t('registration_completed_successfully', lang), 'success')
             
-            # Перенаправляем на карту обучения для нового пользователя
+            # Перенаправляем на карту обучения для нового пользователя (пути будут скрыты)
             return redirect(get_learning_map_url_by_profession(profession))
             
         except Exception as e:

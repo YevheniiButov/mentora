@@ -289,7 +289,9 @@ def submit_answer(session_id):
         return redirect(url_for('diagnostic.show_results', session_id=session_id))
     
     user_answer = request.form.get('answer')
+    confidence_level = request.form.get('confidence', 3)  # Default to 3 if not provided
     print(f"🔍 ОТЛАДКА: user_answer = {user_answer}")
+    print(f"🔍 ОТЛАДКА: confidence_level = {confidence_level}")
     
     # Вычисляем правильность ответа
     from models import Question
@@ -306,7 +308,8 @@ def submit_answer(session_id):
         session_id=session.id,
         question_id=session.current_question_id,
         selected_answer=user_answer,
-        is_correct=is_correct
+        is_correct=is_correct,
+        confidence_level=int(confidence_level) if confidence_level else None
     )
     db.session.add(response)
     session.questions_answered += 1
@@ -508,6 +511,19 @@ def show_results(session_id):
                 'modules': [t('review_of_domain', lang).format(domain_name=domain["name"])]
             })
         
+        # Calculate confidence statistics
+        confidence_stats = {}
+        responses = diagnostic_session.responses.all()
+        if responses:
+            confidence_levels = [r.confidence_level for r in responses if r.confidence_level is not None]
+            if confidence_levels:
+                confidence_stats = {
+                    'average_confidence': round(sum(confidence_levels) / len(confidence_levels), 1),
+                    'high_confidence_answers': len([c for c in confidence_levels if c >= 4]),
+                    'low_confidence_answers': len([c for c in confidence_levels if c <= 2]),
+                    'total_with_confidence': len(confidence_levels)
+                }
+        
         # Prepare diagnostic data for template
         diagnostic_data = {
             'session_id': diagnostic_session.id,
@@ -516,6 +532,7 @@ def show_results(session_id):
             'total_questions': diagnostic_session.questions_answered,
             'correct_answers': diagnostic_session.correct_answers,
             'accuracy_percentage': round((diagnostic_session.correct_answers / diagnostic_session.questions_answered) * 100, 1) if diagnostic_session.questions_answered > 0 else 0.0,
+            'confidence_stats': confidence_stats,
             'domains': domains,
             'recommendations': recommendations,
             'results': results

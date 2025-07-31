@@ -14,8 +14,242 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}?v=2.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/interactive_subtopic.css') }}?v=2.6">
     
-    <!-- Стили для Drug Interaction Checker -->
+    <!-- Стили для Drug Interaction Checker и анимаций -->
     <style>
+        /* Анимация конфетти для поздравлений */
+        .celebration-animation {
+            position: relative;
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+        
+        .confetti-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            border-radius: 2px;
+            animation: confetti-fall 3s ease-in-out infinite;
+        }
+        
+        .confetti:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .confetti:nth-child(2) { left: 30%; animation-delay: 0.5s; }
+        .confetti:nth-child(3) { left: 50%; animation-delay: 1s; }
+        .confetti:nth-child(4) { left: 70%; animation-delay: 1.5s; }
+        .confetti:nth-child(5) { left: 90%; animation-delay: 2s; }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Улучшенные стили для completion-header */
+        .completion-header {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 16px rgba(0, 123, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .completion-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        .completion-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .completion-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Улучшенные стили для статистики */
+        .completion-stats {
+            margin: 1rem 0;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .completion-stat {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        
+        .completion-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            border-color: #007bff;
+        }
+        
+        .completion-stat .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .completion-stat .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+        
+        .completion-stat .stat-label {
+            font-size: 0.9rem;
+            color: var(--theme-text-secondary);
+            font-weight: 500;
+        }
+        
+        /* Улучшенные стили для достижений */
+        .achievements-section {
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .achievements-section h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--theme-text);
+            margin-bottom: 1.5rem;
+        }
+        
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .achievement-badge {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 25px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            animation: achievement-pop 0.6s ease-out;
+            border: 2px solid #ffed4e;
+        }
+        
+        @keyframes achievement-pop {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(0deg); opacity: 0.8; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .achievement-badge span:first-child {
+            font-size: 1.5rem;
+        }
+        
+        .achievement-badge span:last-child {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+        
+        /* Улучшенные стили для кнопок действий */
+        .completion-actions {
+            margin-top: 2rem;
+        }
+        
+        .primary-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+        
+        .secondary-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .completion-actions .universal-button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+        
+        .completion-actions .universal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .completion-actions .universal-button.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+        }
+        
+        .completion-actions .universal-button.primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            color: white;
+        }
+        
+        .completion-actions .universal-button.secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            border: none;
+            color: white;
+        }
+        
         .interactive-tools-section {
             margin: 2rem 0;
             padding: 1.5rem;
@@ -141,18 +375,19 @@
                 <!-- Экран завершения урока -->
                 <div class="completion-screen universal-card" id="completion-screen" style="display: none;">
                     <div class="completion-content">
-                        <!-- Анимация поздравления -->
-                        <div class="celebration-animation">
-                            <div class="confetti"></div>
-                            <div class="trophy-icon">
-                                <i class="bi bi-trophy-fill"></i>
-                            </div>
-                        </div>
-                        
                         <!-- Заголовок поздравления -->
                         <div class="completion-header">
-                            <h2>🎉 {{ t('congratulations', lang) }}!</h2>
-                            <p>{{ t('subtopic_completed', lang) }}: <strong>{{ subtopic_name }}</strong></p>
+                        <div class="celebration-animation">
+                                <div class="confetti-container">
+                            <div class="confetti"></div>
+                                    <div class="confetti"></div>
+                                    <div class="confetti"></div>
+                                    <div class="confetti"></div>
+                                    <div class="confetti"></div>
+                            </div>
+                        </div>
+                            <h2>🎉 {{ t('congratulations', lang) | default('Congratulations') }}!</h2>
+                            <p>{{ t('subtopic_completed', lang) | default('Subtopic completed') }}: <strong>{{ subtopic_name }}</strong></p>
                         </div>
                         
                         <!-- Статистика прохождения -->
@@ -192,7 +427,7 @@
 
                         <!-- Достижения -->
                         <div class="achievements-section" id="achievements-section" style="display: none;">
-                            <h3>🏆 {{ t('achievements_unlocked', lang) }}</h3>
+                            <h3>🏆 {{ t('achievements_unlocked', lang) | default('Achievements Unlocked') }}</h3>
                             <div class="achievements-list" id="achievements-list"></div>
                         </div>
                         
@@ -244,7 +479,7 @@
                                     <div class="card-answer">{{ item.data.answer|safe }}</div>
                                     
                                     <!-- Интерактивный Drug Interaction Checker для раздела "Interacties & Contraindicaties" -->
-                                    {% if "interacties" in subtopic_name.lower() or "contraindicaties" in subtopic_name.lower() %}
+                                    {% if subtopic_name and ("interacties" in subtopic_name.lower() or "contraindicaties" in subtopic_name.lower()) %}
                                         <div class="interactive-tools-section">
                                             <div class="row">
                                                 <div class="col-md-8">
@@ -386,7 +621,7 @@
                 <div class="lesson-header">
                     <div class="lesson-type-badge" id="current-lesson-type">
                         <i class="bi bi-lightbulb"></i>
-                        {{ t('learning_card', lang) }}
+                        {{ t('learning_card', lang) | default('Learning Card') }}
                     </div>
                     <h3 id="current-lesson-title">{{ subtopic_name }}</h3>
                 </div>
@@ -394,7 +629,7 @@
             
             <!-- Статистика текущей сессии -->
             <div class="session-stats">
-                <h4>{{ t('session_progress', lang) }}</h4>
+                <h4>{{ t('session_progress', lang) | default('Session Progress') }}</h4>
                 
                 <div class="session-stat">
                     <div class="stat-icon blue">
@@ -429,7 +664,7 @@
             
             <!-- Быстрые действия -->
             <div class="quick-actions">
-                <h4>{{ t('quick_actions', lang) }}</h4>
+                <h4>{{ t('quick_actions', lang) | default('Quick Actions') }}</h4>
                 <button class="universal-button secondary" onclick="window.location.reload()">
                     <i class="bi bi-arrow-repeat"></i>
                     {{ t('restart_lesson', lang) }}
@@ -627,17 +862,252 @@ document.addEventListener('DOMContentLoaded', function() {
         const achievements = [];
         
         if (score === 100) {
-            achievements.push({ icon: '🏆', text: 'Идеальный результат!' });
+            achievements.push({ icon: '🏆', text: '{{ t("perfect_result", lang) | default("Perfect Result") }}' });
         } else if (score >= 80) {
-            achievements.push({ icon: '🌟', text: 'Отличный результат!' });
+            achievements.push({ icon: '🌟', text: '{{ t("excellent_result", lang) | default("Excellent Result") }}' });
         }
         
         if (timeSpent <= 5) {
-            achievements.push({ icon: '⚡', text: 'Быстрое обучение!' });
+            achievements.push({ icon: '⚡', text: '{{ t("fast_learning", lang) | default("Fast Learning") }}' });
         }
         
         if (correctAnswers >= 5) {
-            achievements.push({ icon: '🎯', text: 'Мастер тестов!' });
+            achievements.push({ icon: '🎯', text: '{{ t("test_master", lang) | default("Test Master") }}' });
+        }
+        
+        if (achievements.length > 0) {
+            achievementsList.innerHTML = achievements.map(achievement => 
+                `<div class="achievement-badge">
+                    <span>${achievement.icon}</span>
+                    <span>${achievement.text}</span>
+                </div>`
+            ).join('');
+            achievementsSection.style.display = 'block';
+        }
+    }
+    
+    function handleTestOption(option, testContent) {
+        // Проверяем, не отвечен ли уже вопрос
+        if (testContent.dataset.answered === 'true') {
+            return;
+        }
+        
+        const isCorrect = option.dataset.correct === 'true';
+        const allOptions = testContent.querySelectorAll('.test-option');
+        
+        // Отключаем все опции
+        allOptions.forEach(opt => {
+            opt.style.pointerEvents = 'none';
+        });
+        
+        // Показываем правильный ответ
+        setTimeout(() => {
+            allOptions.forEach(opt => {
+                if (opt.dataset.correct === 'true') {
+                    opt.classList.add('correct');
+                } else if (opt === option && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+            });
+            
+            const explanation = testContent.querySelector('.explanation');
+            if (explanation) {
+                explanation.style.display = 'block';
+            }
+            
+            testContent.dataset.answered = 'true';
+            
+            if (isCorrect) {
+                correctAnswers++;
+            } else {
+                incorrectQuestions.push(currentIndex);
+            }
+            
+            // Показываем кнопку "Далее" для тестов
+            const testNextBtn = testContent.closest('.content-item').querySelector('[id^="test-next-"]');
+            if (testNextBtn) {
+                testNextBtn.style.display = 'inline-flex';
+            }
+            
+            updateProgress();
+        }, 200);
+    }
+    
+    // Обработчик событий
+    document.addEventListener('click', function(e) {
+        const target = e.target;
+        const button = target.closest('button');
+        
+        if (target.closest('.universal-button.test-option')) {
+            e.preventDefault();
+            const option = target.closest('.universal-button.test-option');
+            const testContent = option.closest('.test-content');
+            
+            console.log('Test option clicked:', {
+                option: option,
+                dataCorrect: option.dataset.correct,
+                dataIndex: option.dataset.index,
+                optionText: option.querySelector('.option-text')?.textContent
+            });
+            
+            handleTestOption(option, testContent);
+            return;
+        }
+        
+        if (!button) return;
+        
+        if (button.classList.contains('prev-btn') && !button.hasAttribute('onclick')) {
+            e.preventDefault();
+            if (currentIndex > 0) {
+                showItem(currentIndex - 1);
+            }
+            return;
+        }
+        
+        if ((button.classList.contains('next-btn') || button.id && button.id.startsWith('test-next-')) && !button.hasAttribute('onclick')) {
+            e.preventDefault();
+            
+            const isLastButton = button.getAttribute('data-is-last') === 'true';
+            
+            if (currentIndex < totalItems - 1 && !isLastButton) {
+                showItem(currentIndex + 1);
+            } else {
+                showCompletionScreen();
+            }
+            return;
+        }
+        
+        if (button.id === 'continue-learning-btn') {
+            e.preventDefault();
+            const moduleUrl = button.getAttribute('data-module-url');
+            if (moduleUrl) {
+                window.location.href = moduleUrl;
+            }
+            return;
+        }
+    });
+    
+    // Инициализация
+    updateProgress();
+    
+    // Функция для тестирования экрана завершения
+    window.testCompletionScreen = function() {
+        correctAnswers = 5;
+        totalQuestions = 7;
+        showCompletionScreen();
+    };
+    
+    console.log('Focused interactive learning initialized with', totalItems, 'items and', totalQuestions, 'questions');
+});
+</script>
+{% endblock %}
+    }
+    
+    function updateProgress() {
+        if (currentItemSpan) {
+            currentItemSpan.textContent = currentIndex + 1;
+        }
+        if (correctCountSpan) {
+            correctCountSpan.textContent = correctAnswers;
+        }
+        updateSessionTime();
+        updateLessonTypeIndicator();
+    }
+    
+    function updateLessonTypeIndicator() {
+        const currentItem = contentItems[currentIndex];
+        if (!currentItem || !currentLessonType) return;
+        
+        const isTest = currentItem.dataset.type === 'test';
+        
+        if (isTest) {
+            currentLessonType.innerHTML = `
+                <i class="bi bi-question-circle"></i>
+                {{ t('test_question', lang) }}
+            `;
+            currentLessonType.className = 'lesson-type-badge test-badge';
+        } else {
+            currentLessonType.innerHTML = `
+                <i class="bi bi-lightbulb"></i>
+                {{ t('learning_card', lang) }}
+            `;
+            currentLessonType.className = 'lesson-type-badge card-badge';
+        }
+    }
+    
+    function showItem(index) {
+        contentItems.forEach((item, i) => {
+            if (i === index) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        currentIndex = index;
+        updateProgress();
+    }
+    
+    function showCompletionScreen() {
+        console.log('showCompletionScreen called');
+        
+        const completionScreen = document.getElementById('completion-screen');
+        if (!completionScreen) {
+            console.error('Completion screen element not found!');
+            alert('Урок завершен! Возвращаемся к модулю...');
+            window.location.href = '/{{ lang }}/modules/{{ module.id }}';
+            return;
+        }
+        
+        // Скрываем все элементы контента
+        contentItems.forEach(item => {
+            item.classList.remove('active');
+            item.style.display = 'none';
+        });
+        
+        // Показываем экран завершения
+        completionScreen.style.display = 'block';
+        completionScreen.classList.add('show');
+        
+        // Заполняем статистику
+        const endTime = Date.now();
+        const timeSpent = Math.floor((endTime - startTime) / 1000 / 60);
+        const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 100;
+        
+        const correctAnswersEl = document.getElementById('correct-answers');
+        const timeSpentEl = document.getElementById('time-spent');
+        const completionScoreEl = document.getElementById('completion-score');
+        
+        if (correctAnswersEl) correctAnswersEl.textContent = `${correctAnswers}/${totalQuestions}`;
+        if (timeSpentEl) timeSpentEl.textContent = `${timeSpent} мин`;
+        if (completionScoreEl) completionScoreEl.textContent = `${score}%`;
+        
+        showAchievements(score, timeSpent);
+        
+        if (incorrectQuestions.length > 0) {
+            const reviewBtn = document.getElementById('review-mistakes-btn');
+            if (reviewBtn) {
+                reviewBtn.style.display = 'inline-flex';
+            }
+        }
+    }
+    
+    function showAchievements(score, timeSpent) {
+        const achievementsSection = document.getElementById('achievements-section');
+        const achievementsList = document.getElementById('achievements-list');
+        const achievements = [];
+        
+        if (score === 100) {
+            achievements.push({ icon: '🏆', text: '{{ t("perfect_result", lang) | default("Perfect Result") }}' });
+        } else if (score >= 80) {
+            achievements.push({ icon: '🌟', text: '{{ t("excellent_result", lang) | default("Excellent Result") }}' });
+        }
+        
+        if (timeSpent <= 5) {
+            achievements.push({ icon: '⚡', text: '{{ t("fast_learning", lang) | default("Fast Learning") }}' });
+        }
+        
+        if (correctAnswers >= 5) {
+            achievements.push({ icon: '🎯', text: '{{ t("test_master", lang) | default("Test Master") }}' });
         }
         
         if (achievements.length > 0) {

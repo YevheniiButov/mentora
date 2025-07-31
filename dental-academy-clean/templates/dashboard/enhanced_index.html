@@ -2,6 +2,44 @@
 
 {% block title %}Dashboard - Mentora{% endblock %}
 
+{% set achievement_translations = {
+    'Eerste stappen': 'achievement_first_steps',
+    'Op weg': 'achievement_on_the_way',
+    'Toegewijde leerling': 'achievement_dedicated_student',
+    'Lesgever': 'achievement_teacher',
+    'Master student': 'achievement_master_student',
+    'Legende': 'achievement_legend',
+    'Studietijd': 'achievement_study_time',
+    'Marathonloper': 'achievement_marathon_runner',
+    'Tijdmeester': 'achievement_time_master',
+    'Eeuwige student': 'achievement_eternal_student',
+    'Regelmaat': 'achievement_regularity',
+    'Leermeester': 'achievement_learning_master',
+    'Serie kampioen': 'achievement_streak_champion',
+    'Planner': 'achievement_planner',
+    'Doelbereiker': 'achievement_goal_achiever',
+    'Klaar voor examen': 'achievement_exam_ready'
+} %}
+
+{% set achievement_desc_translations = {
+    'Eerste stappen': 'achievement_first_steps_desc',
+    'Op weg': 'achievement_on_the_way_desc',
+    'Toegewijde leerling': 'achievement_dedicated_student_desc',
+    'Lesgever': 'achievement_teacher_desc',
+    'Master student': 'achievement_master_student_desc',
+    'Legende': 'achievement_legend_desc',
+    'Studietijd': 'achievement_study_time_desc',
+    'Marathonloper': 'achievement_marathon_runner_desc',
+    'Tijdmeester': 'achievement_time_master_desc',
+    'Eeuwige student': 'achievement_eternal_student_desc',
+    'Regelmaat': 'achievement_regularity_desc',
+    'Leermeester': 'achievement_learning_master_desc',
+    'Serie kampioen': 'achievement_streak_champion_desc',
+    'Planner': 'achievement_planner_desc',
+    'Doelbereiker': 'achievement_goal_achiever_desc',
+    'Klaar voor examen': 'achievement_exam_ready_desc'
+} %}
+
 {% block extra_css %}
 <link href="{{ url_for('static', filename='css/pages/enhanced_dashboard.css') }}" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -325,8 +363,14 @@
                                 <i class="bi bi-{{ achievement.icon }}"></i>
                             </div>
                             <div class="achievement-content">
-                                <div class="achievement-title">{{ achievement.name }}</div>
-                                <div class="achievement-description">{{ achievement.description }}</div>
+                                <div class="achievement-title">
+                                    {% set translation_key = achievement_translations.get(achievement.name, 'achievement_unknown') %}
+                                    {{ t(translation_key, lang)|default(achievement.name) }}
+                                </div>
+                                <div class="achievement-description">
+                                    {% set desc_translation_key = achievement_desc_translations.get(achievement.name, 'achievement_unknown_desc') %}
+                                    {{ t(desc_translation_key, lang)|default(achievement.description) }}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -458,7 +502,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/dashboard-button-fix.js') }}"></script>
 <script>
 // Activity Chart
 const ctx = document.getElementById('activityChart').getContext('2d');
@@ -522,6 +565,49 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Activity logging function
+function logActivity(activityData) {
+    fetch('/dashboard/api/activity-log', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(activityData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.new_achievements.length > 0) {
+            // Show achievement notification
+            data.new_achievements.forEach(achievement => {
+                showAchievementNotification(achievement);
+            });
+        }
+    });
+}
+
+// Achievement notification
+function showAchievementNotification(achievement) {
+    const notification = document.createElement('div');
+    notification.className = 'achievement-notification';
+    notification.innerHTML = `
+        <div class="achievement-notification-content">
+            <i class="bi bi-trophy"></i>
+            <div>
+                <strong>Prestatie ontgrendeld!</strong>
+                <p>${achievement.name}</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+</script>
+{% endblock %} 
 
 // Activity logging function
 function logActivity(activityData) {

@@ -3363,3 +3363,96 @@ body.learning-map-page .main-content {
         color: #e2e8f0;
     }
 }
+
+/* === TOOLTIP STYLES FOR PATH NAMES === */
+.path-name {
+    position: relative;
+    cursor: help;
+    transition: all var(--transition-normal, 0.3s ease);
+}
+
+.path-name:hover {
+    color: var(--subject-view-text-hover, rgba(255, 255, 255, 1));
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Удаляем старые tooltip стили, которые конфликтуют */
+.path-name[title]:hover::after,
+.path-name[title]:hover::before {
+    display: none;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Удаляем конфликтующие CSS tooltip'ы, используем JavaScript */
+.learning-path-button .path-name[title]:hover::after,
+.learning-path-button .path-name[title]:hover::before {
+    display: none;
+}
+
+/* Mobile tooltip adjustments */
+@media (max-width: 768px) {
+    .custom-tooltip {
+        font-size: 0.8rem !important;
+        padding: 8px 12px !important;
+        max-width: 200px !important;
+        white-space: normal !important;
+        text-align: center !important;
+    }
+}
+
+/* Улучшенные стили для кнопок с короткими названиями */
+.learning-path-button .path-name {
+    display: block;
+    width: 100%;
+    text-align: center;
+    word-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.2;
+    min-height: 1.2em;
+}
+
+/* Обеспечиваем, что кнопки имеют одинаковую высоту */
+.learning-path-button {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.path-button-content {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+}
+
+/* Dark theme tooltip adjustments */
+[data-theme="dark"] .path-name[title]:hover::after {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .path-name[title]:hover::before {
+    border-top-color: rgba(255, 255, 255, 0.95);
+}
+
+/* Light theme tooltip adjustments */
+[data-theme="light"] .path-name[title]:hover::after {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .path-name[title]:hover::before {
+    border-top-color: rgba(0, 0, 0, 0.9);
+}

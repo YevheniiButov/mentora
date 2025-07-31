@@ -1,267 +1,154 @@
 {% extends "base.html" %}
 
-{% block title %}Prestaties - Mentora{% endblock %}
+{% block title %}{{ t('achievements')|default('Achievements') }} - Mentora{% endblock %}
+
+{% set achievement_translations = {
+    'Eerste stappen': 'achievement_first_steps',
+    'Op weg': 'achievement_on_the_way',
+    'Toegewijde leerling': 'achievement_dedicated_student',
+    'Lesgever': 'achievement_teacher',
+    'Master student': 'achievement_master_student',
+    'Legende': 'achievement_legend',
+    'Studietijd': 'achievement_study_time',
+    'Marathonloper': 'achievement_marathon_runner',
+    'Tijdmeester': 'achievement_time_master',
+    'Eeuwige student': 'achievement_eternal_student',
+    'Regelmaat': 'achievement_regularity',
+    'Leermeester': 'achievement_learning_master',
+    'Serie kampioen': 'achievement_streak_champion',
+    'Planner': 'achievement_planner',
+    'Doelbereiker': 'achievement_goal_achiever',
+    'Klaar voor examen': 'achievement_exam_ready'
+} %}
+
+{% set achievement_desc_translations = {
+    'Eerste stappen': 'achievement_first_steps_desc',
+    'Op weg': 'achievement_on_the_way_desc',
+    'Toegewijde leerling': 'achievement_dedicated_student_desc',
+    'Lesgever': 'achievement_teacher_desc',
+    'Master student': 'achievement_master_student_desc',
+    'Legende': 'achievement_legend_desc',
+    'Studietijd': 'achievement_study_time_desc',
+    'Marathonloper': 'achievement_marathon_runner_desc',
+    'Tijdmeester': 'achievement_time_master_desc',
+    'Eeuwige student': 'achievement_eternal_student_desc',
+    'Regelmaat': 'achievement_regularity_desc',
+    'Leermeester': 'achievement_learning_master_desc',
+    'Serie kampioen': 'achievement_streak_champion_desc',
+    'Planner': 'achievement_planner_desc',
+    'Doelbereiker': 'achievement_goal_achiever_desc',
+    'Klaar voor examen': 'achievement_exam_ready_desc'
+} %}
 
 {% block extra_css %}
-<link href="{{ url_for('static', filename='css/pages/enhanced_dashboard.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/pages/achievements.css') }}" rel="stylesheet">
 <style>
+/* Compact styles */
 .achievements-page {
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 15px;
+    padding-top: 70px;
 }
 
 .achievements-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 30px;
-    color: white;
-    text-align: center;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    margin-bottom: 20px;
 }
 
 .achievements-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-bottom: 40px;
+    gap: 20px;
+    margin-bottom: 15px;
 }
 
-.achievement-stat {
-    text-align: center;
+.stat-number {
+    font-size: 2rem;
 }
 
-.stat-circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    backdrop-filter: blur(10px);
-}
-
-.stat-circle .number {
-    font-size: 2.5rem;
-    font-weight: 700;
+.overall-progress {
+    margin-bottom: 25px;
 }
 
 .achievements-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 30px;
-}
-
-.achievement-category {
-    background: white;
-    border-radius: 16px;
-    padding: 0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
 }
 
 .category-header {
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    padding: 20px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 15px;
 }
 
 .category-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-    text-transform: capitalize;
-}
-
-.category-progress {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin-top: 5px;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
 }
 
 .achievements-list {
-    padding: 20px;
+    padding: 15px;
 }
 
 .achievement-card {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 20px;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.achievement-card.earned {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
-    border: 2px solid rgba(16, 185, 129, 0.3);
-}
-
-.achievement-card.locked {
-    background: rgba(0, 0, 0, 0.02);
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    opacity: 0.7;
-}
-
-.achievement-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.achievement-badge {
-    width: 70px;
-    height: 70px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: white;
-    position: relative;
-    flex-shrink: 0;
-}
-
-.achievement-badge.success {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.achievement-badge.primary {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-}
-
-.achievement-badge.warning {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.achievement-badge.locked {
-    background: linear-gradient(135deg, #9ca3af, #6b7280);
-}
-
-.achievement-badge::after {
-    content: '';
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 20px;
-    height: 20px;
-    background: #10b981;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-}
-
-.achievement-card.earned .achievement-badge::after {
-    content: '✓';
-    color: white;
-}
-
-.achievement-info {
-    flex: 1;
-}
-
-.achievement-name {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 5px;
-}
-
-.achievement-description {
-    color: #6b7280;
+    padding: 15px;
     margin-bottom: 10px;
-    line-height: 1.4;
-}
-
-.achievement-progress {
-    display: flex;
-    align-items: center;
     gap: 15px;
 }
 
-.progress-bar-small {
-    flex: 1;
-    height: 8px;
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
+.achievement-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
 }
 
-.progress-fill-small {
-    height: 100%;
-    background: linear-gradient(90deg, #6366f1, #4f46e5);
-    transition: width 1s ease-in-out;
-    border-radius: 4px;
+.achievement-name {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.achievement-description {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.progress-bar-small {
+    height: 6px;
 }
 
 .progress-text-small {
-    font-size: 0.85rem;
-    color: #6b7280;
-    min-width: 80px;
-    text-align: right;
-}
-
-.achievement-date {
     font-size: 0.8rem;
-    color: #10b981;
-    font-weight: 500;
-    margin-top: 5px;
-}
-
-.no-achievements {
-    text-align: center;
-    padding: 60px 20px;
-    color: #6b7280;
-}
-
-.no-achievements i {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.category-empty {
-    text-align: center;
-    padding: 40px 20px;
-    color: #6b7280;
-}
-
-.category-empty i {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
-    opacity: 0.3;
 }
 
 @media (max-width: 768px) {
     .achievements-page {
+        padding: 10px;
+        padding-top: 60px;
+    }
+    
+    .achievements-header {
         padding: 15px;
     }
     
-    .achievements-stats {
-        grid-template-columns: 1fr;
-        gap: 20px;
+    .page-title {
+        font-size: 1.5rem;
     }
     
     .achievements-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .achievement-card {
-        flex-direction: column;
-        text-align: center;
         gap: 15px;
     }
     
-    .achievement-progress {
-        width: 100%;
+    .achievement-card {
+        padding: 12px;
+        gap: 12px;
     }
 }
 </style>
@@ -271,95 +158,93 @@
 <div class="achievements-page">
     <!-- Header -->
     <div class="achievements-header">
-        <h1>Jouw prestaties</h1>
-        <p>Ontgrendel badges door lessen te voltooien en doelen te bereiken</p>
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="bi bi-trophy-fill"></i>
+                {{ t('achievements')|default('Achievements') }}
+            </h1>
+            <p class="page-subtitle">{{ t('achievements_description')|default('Track your learning progress and unlock achievements') }}</p>
+        </div>
         
+        <!-- Statistics -->
         <div class="achievements-stats">
-            <div class="achievement-stat">
-                <div class="stat-circle">
-                    <span class="number">{{ earned_count }}</span>
-                </div>
-                <h3>Behaald</h3>
+            <div class="stat-item">
+                <div class="stat-number">{{ earned_count }}</div>
+                <div class="stat-label">{{ t('earned')|default('Earned') }}</div>
             </div>
-            <div class="achievement-stat">
-                <div class="stat-circle">
-                    <span class="number">{{ completion_rate }}%</span>
-                </div>
-                <h3>Voltooiing</h3>
+            <div class="stat-item">
+                <div class="stat-number">{{ total_achievements }}</div>
+                <div class="stat-label">{{ t('total')|default('Total') }}</div>
             </div>
-            <div class="achievement-stat">
-                <div class="stat-circle">
-                    <span class="number">{{ total_achievements }}</span>
-                </div>
-                <h3>Totaal</h3>
+            <div class="stat-item">
+                <div class="stat-number">{{ completion_rate }}%</div>
+                <div class="stat-label">{{ t('completion')|default('Completion') }}</div>
             </div>
         </div>
     </div>
 
-    <!-- Achievements by Category -->
+    <!-- Progress Bar -->
+    <div class="overall-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ completion_rate }}%"></div>
+        </div>
+        <div class="progress-text">{{ completion_rate }}% {{ t('complete')|default('complete') }}</div>
+    </div>
+
+    <!-- Achievements Grid -->
     <div class="achievements-grid">
         {% for category, achievements in achievements_by_category.items() %}
         <div class="achievement-category">
             <div class="category-header">
-                <h2 class="category-title">
-                    {% if category == 'learning' %}
-                        <i class="bi bi-book"></i> Leren
-                    {% elif category == 'time' %}
-                        <i class="bi bi-clock"></i> Tijd
-                    {% elif category == 'streak' %}
-                        <i class="bi bi-fire"></i> Reeksen
-                    {% elif category == 'xp' %}
-                        <i class="bi bi-gem"></i> Experience Points
-                    {% elif category == 'level' %}
-                        <i class="bi bi-star"></i> Levels
-                    {% elif category == 'special' %}
-                        <i class="bi bi-award"></i> Speciaal
-                    {% else %}
-                        <i class="bi bi-trophy"></i> {{ category|title }}
-                    {% endif %}
-                </h2>
+                <h2 class="category-title">{{ t('category_' + category.lower())|default(category) }}</h2>
                 <div class="category-progress">
-                    {% set earned_in_category = achievements | selectattr('earned') | list | length %}
-                    {{ earned_in_category }} van {{ achievements | length }} behaald
+                    {% set category_earned = achievements|selectattr('earned')|list|length %}
+                    {% set category_total = achievements|length %}
+                    <span class="category-count">{{ category_earned }}/{{ category_total }}</span>
+                    <div class="category-progress-bar">
+                        <div class="category-progress-fill" style="width: {{ (category_earned / category_total * 100)|round }}%"></div>
+                    </div>
                 </div>
             </div>
             
             <div class="achievements-list">
-                {% if achievements %}
-                    {% for item in achievements %}
-                    <div class="achievement-card {% if item.earned %}earned{% else %}locked{% endif %}">
-                        <div class="achievement-badge {{ item.achievement.badge_color if item.earned else 'locked' }}">
-                            <i class="bi bi-{{ item.achievement.icon }}"></i>
+                {% for item in achievements %}
+                <div class="achievement-card {{ 'earned' if item.earned else 'locked' }}">
+                    <div class="achievement-icon">
+                        <i class="bi bi-{{ item.achievement.icon or 'trophy' }}"></i>
+                    </div>
+                    
+                    <div class="achievement-content">
+                        <div class="achievement-name">
+                            {% set translation_key = achievement_translations.get(item.achievement.name, 'achievement_unknown') %}
+                            {{ t(translation_key)|default(item.achievement.name) }}
+                        </div>
+                        <div class="achievement-description">
+                            {% set desc_translation_key = achievement_desc_translations.get(item.achievement.name, 'achievement_unknown_desc') %}
+                            {{ t(desc_translation_key)|default(item.achievement.description) }}
                         </div>
                         
-                        <div class="achievement-info">
-                            <div class="achievement-name">{{ item.achievement.name }}</div>
-                            <div class="achievement-description">{{ item.achievement.description }}</div>
-                            
-                            {% if not item.earned %}
-                            <div class="achievement-progress">
-                                <div class="progress-bar-small">
-                                    <div class="progress-fill-small" style="width: {{ item.progress.progress_percent }}%"></div>
-                                </div>
-                                <div class="progress-text-small">
-                                    {{ item.progress.current_value }} / {{ item.progress.target_value }}
-                                </div>
-                            </div>
-                            {% else %}
-                            <div class="achievement-date">
-                                <i class="bi bi-calendar-check"></i>
-                                Behaald op {{ item.earned_at.strftime('%d %B %Y') if item.earned_at else 'Onbekende datum' }}
-                            </div>
-                            {% endif %}
+                        {% if item.earned %}
+                        <div class="achievement-earned">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>{{ t('earned_on')|default('Earned on') }} {{ item.earned_at.strftime('%d %b %Y') }}</span>
                         </div>
+                        {% else %}
+                        <div class="achievement-progress">
+                            <div class="progress-bar-small">
+                                <div class="progress-fill-small" style="width: {{ item.progress }}%"></div>
+                            </div>
+                            <span class="progress-text-small">{{ item.progress }}% {{ t('complete')|default('complete') }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
+                </div>
                 {% else %}
-                    <div class="category-empty">
-                        <i class="bi bi-inbox"></i>
-                        <p>Geen prestaties in deze categorie</p>
-                    </div>
-                {% endif %}
+                <div class="category-empty">
+                    <i class="bi bi-inbox"></i>
+                    <p>{{ t('no_achievements_in_category')|default('No achievements in this category') }}</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
         {% endfor %}
@@ -368,11 +253,11 @@
     {% if not achievements_by_category %}
     <div class="no-achievements">
         <i class="bi bi-trophy"></i>
-        <h3>Geen prestaties gevonden</h3>
-        <p>Begin met leren om je eerste prestaties te ontgrendelen!</p>
+        <h3>{{ t('no_achievements_found')|default('No achievements found') }}</h3>
+        <p>{{ t('start_learning_to_unlock')|default('Start learning to unlock your first achievements!') }}</p>
         <a href="{{ url_for('learning.index') }}" class="btn btn-primary mt-3">
             <i class="bi bi-play-circle"></i>
-            Start met leren
+            {{ t('start_learning')|default('Start Learning') }}
         </a>
     </div>
     {% endif %}
@@ -399,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.querySelectorAll('.achievement-card').forEach(card => {
     card.addEventListener('mouseenter', function() {
         if (!this.classList.contains('earned')) {
-            this.style.transform = 'translateY(-4px) scale(1.02)';
+            this.style.transform = 'translateY(-2px) scale(1.01)';
         }
     });
     

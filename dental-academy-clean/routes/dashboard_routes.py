@@ -89,11 +89,12 @@ def achievements():
         if achievement.category not in achievements_by_category:
             achievements_by_category[achievement.category] = []
         
+        progress_data = calculate_achievement_progress(current_user, achievement)
         achievement_data = {
             'achievement': achievement,
             'earned': achievement.id in earned_achievements,
             'earned_at': earned_achievements[achievement.id].earned_at if achievement.id in earned_achievements else None,
-            'progress': calculate_achievement_progress(current_user, achievement)
+            'progress': progress_data['progress_percent']
         }
         achievements_by_category[achievement.category].append(achievement_data)
     
@@ -111,31 +112,81 @@ def achievements():
 @dashboard_bp.route('/activity')
 @login_required
 def activity():
-    """Detailed activity tracking page"""
+    """Detailed progress tracking page"""
     
-    # Get activity for different time periods
-    today_activity = UserActivity.query.filter_by(
-        user_id=current_user.id,
-        activity_date=date.today()
-    ).first()
+    # Get comprehensive progress data for all learning paths
+    progress_data = []
     
-    week_activities = current_user.get_recent_activity(7)
-    month_activities = current_user.get_recent_activity(30)
+    # Get all learning paths
+    learning_paths = LearningPath.query.filter_by(is_active=True).all()
     
-    # Get chart data for different periods
-    week_chart = current_user.get_activity_chart_data(7)
-    month_chart = current_user.get_activity_chart_data(30)
+    for path in learning_paths:
+        path_progress = {
+            'id': path.id,
+            'name': path.name,
+            'description': path.description,
+            'icon': 'bi-book',
+            'progress_percent': 0,
+            'completed_lessons': 0,
+            'total_lessons': 0,
+            'subjects': []
+        }
+        
+        # Get subjects for this path
+        subjects = Subject.query.filter_by(learning_path_id=path.id).all()
+        
+        for subject in subjects:
+            subject_progress = {
+                'id': subject.id,
+                'name': subject.name,
+                'progress_percent': 0,
+                'completed_lessons': 0,
+                'total_lessons': 0,
+                'modules': []
+            }
+            
+            # Get modules for this subject
+            modules = Module.query.filter_by(subject_id=subject.id).all()
+            
+            for module in modules:
+                module_progress = {
+                    'id': module.id,
+                    'title': module.title,
+                    'description': module.description,
+                    'progress_percent': 0,
+                    'completed_lessons': 0,
+                    'total_lessons': 0
+                }
+                
+                # Get lessons for this module
+                lessons = Lesson.query.filter_by(module_id=module.id).all()
+                module_progress['total_lessons'] = len(lessons)
+                
+                # Calculate completed lessons
+                completed_lessons = UserProgress.query.filter_by(
+                    user_id=current_user.id,
+                    completed=True
+                ).join(Lesson).filter(Lesson.module_id == module.id).count()
+                
+                module_progress['completed_lessons'] = completed_lessons
+                module_progress['progress_percent'] = int((completed_lessons / module_progress['total_lessons']) * 100) if module_progress['total_lessons'] > 0 else 0
+                
+                subject_progress['modules'].append(module_progress)
+                subject_progress['total_lessons'] += module_progress['total_lessons']
+                subject_progress['completed_lessons'] += module_progress['completed_lessons']
+            
+            # Calculate subject progress
+            subject_progress['progress_percent'] = int((subject_progress['completed_lessons'] / subject_progress['total_lessons']) * 100) if subject_progress['total_lessons'] > 0 else 0
+            path_progress['subjects'].append(subject_progress)
+            path_progress['total_lessons'] += subject_progress['total_lessons']
+            path_progress['completed_lessons'] += subject_progress['completed_lessons']
+        
+        # Calculate path progress
+        path_progress['progress_percent'] = int((path_progress['completed_lessons'] / path_progress['total_lessons']) * 100) if path_progress['total_lessons'] > 0 else 0
+        progress_data.append(path_progress)
     
-    # Calculate activity statistics
-    activity_stats = calculate_activity_stats(current_user)
-    
-    return render_template('dashboard/activity.html',
-                         today_activity=today_activity,
-                         week_activities=week_activities,
-                         month_activities=month_activities,
-                         week_chart=week_chart,
-                         month_chart=month_chart,
-                         activity_stats=activity_stats)
+    return render_template('dashboard/progress.html',
+                         progress_data=progress_data)
 
 @dashboard_bp.route('/reminders')
 @login_required
@@ -423,6 +474,24 @@ def check_session():
         'session_data': test_data,
         'all_session': dict(session)
     })
+
+@dashboard_bp.route('/learning-planner')
+@login_required
+def learning_planner_redirect():
+    """Перенаправляет на существующий план обучения или создает новый"""
+    
+    # Ищем активный план пользователя
+    active_plan = PersonalLearningPlan.query.filter_by(
+        user_id=current_user.id,
+        status='active'
+    ).order_by(PersonalLearningPlan.last_updated.desc()).first()
+    
+    if active_plan:
+        # Если есть активный план, перенаправляем на него
+        return redirect(url_for('learning_planner.learning_planner', plan_id=active_plan.id))
+    else:
+        # Если нет активного плана, перенаправляем на создание
+        return redirect(url_for('dashboard.create_learning_plan'))
 
 @dashboard_bp.route('/create-learning-plan', methods=['GET', 'POST'])
 @login_required
@@ -789,11 +858,15 @@ def get_learning_paths_with_progress(user):
     """Get learning paths with detailed progress"""
     
     paths = []
-    for path in LearningPath.query.filter_by(is_active=True).order_by(LearningPath.order).all():
+    for path in LearningPath.query.filter_by(is_active=True).all():
         total_lessons = 0
         completed_lessons = 0
         
-        for subject in path.subjects:
+        # Get subjects for this learning path
+        subjects = Subject.query.filter_by(learning_path_id=path.id).all()
+        subjects_count = len(subjects)
+        
+        for subject in subjects:
             subject_progress = subject.get_progress_for_user(user.id)
             total_lessons += subject_progress['total_lessons']
             completed_lessons += subject_progress['completed_lessons']
@@ -804,15 +877,134 @@ def get_learning_paths_with_progress(user):
             'id': path.id,
             'name': path.name,
             'description': path.description,
-            'icon': path.icon,
+            'icon': getattr(path, 'icon', 'folder'),
             'total_lessons': total_lessons,
             'completed_lessons': completed_lessons,
             'progress_percent': progress_percent,
-            'subjects_count': path.subjects.count()
+            'subjects_count': subjects_count
         })
     
     return paths
 
+def get_daily_goals(user):
+    """Get user's daily learning goals"""
+    
+    # Default daily goals
+    daily_goals = {
+        'lessons_target': 3,
+        'time_target': 30,  # minutes
+        'xp_target': 100
+    }
+    
+    # Get today's progress
+    today_activity = UserActivity.query.filter_by(
+        user_id=user.id,
+        activity_date=date.today()
+    ).first()
+    
+    if today_activity:
+        daily_goals.update({
+            'lessons_completed': today_activity.lessons_completed,
+            'time_spent': today_activity.time_spent,
+            'xp_earned': today_activity.xp_earned
+        })
+    else:
+        daily_goals.update({
+            'lessons_completed': 0,
+            'time_spent': 0,
+            'xp_earned': 0
+        })
+    
+    # Calculate completion percentages
+    daily_goals['lessons_progress'] = min(100, (daily_goals['lessons_completed'] / daily_goals['lessons_target']) * 100)
+    daily_goals['time_progress'] = min(100, (daily_goals['time_spent'] / daily_goals['time_target']) * 100)
+    daily_goals['xp_progress'] = min(100, (daily_goals['xp_earned'] / daily_goals['xp_target']) * 100)
+    
+    return daily_goals
+
+def calculate_achievement_progress(user, achievement):
+    """Calculate user's progress towards an achievement"""
+    
+    stats = user.get_progress_stats()
+    streak = user.get_or_create_streak()
+    
+    if achievement.requirement_type == 'lessons_completed':
+        current_value = stats['completed_lessons']
+    elif achievement.requirement_type == 'hours_studied':
+        current_value = stats['total_time_spent'] / 60
+    elif achievement.requirement_type == 'streak_days':
+        current_value = streak.current_streak
+    elif achievement.requirement_type == 'longest_streak':
+        current_value = streak.longest_streak
+    elif achievement.requirement_type == 'xp_earned':
+        current_value = user.xp
+    elif achievement.requirement_type == 'level_reached':
+        current_value = user.level
+    else:
+        current_value = 0
+    
+    progress = min(100, (current_value / achievement.requirement_value) * 100)
+    
+    return {
+        'current_value': current_value,
+        'target_value': achievement.requirement_value,
+        'progress_percent': int(progress)
+    }
+
+def calculate_activity_stats(user):
+    """Calculate comprehensive activity statistics"""
+    
+    from datetime import datetime, timedelta
+    
+    # Get activity for different periods
+    today = date.today()
+    week_start = today - timedelta(days=7)
+    month_start = today - timedelta(days=30)
+    
+    # Query activity stats
+    week_stats = db.session.query(
+        func.sum(UserActivity.lessons_completed),
+        func.sum(UserActivity.time_spent),
+        func.sum(UserActivity.xp_earned),
+        func.count(UserActivity.id)
+    ).filter(
+        UserActivity.user_id == user.id,
+        UserActivity.activity_date >= week_start
+    ).first()
+    
+    month_stats = db.session.query(
+        func.sum(UserActivity.lessons_completed),
+        func.sum(UserActivity.time_spent),
+        func.sum(UserActivity.xp_earned),
+        func.count(UserActivity.id)
+    ).filter(
+        UserActivity.user_id == user.id,
+        UserActivity.activity_date >= month_start
+    ).first()
+    
+    # Get most active day
+    most_active_day = db.session.query(
+        UserActivity.activity_date,
+        func.sum(UserActivity.lessons_completed + UserActivity.time_spent + UserActivity.xp_earned).label('total_activity')
+    ).filter(
+        UserActivity.user_id == user.id
+    ).group_by(UserActivity.activity_date).order_by(desc('total_activity')).first()
+    
+    return {
+        'week': {
+            'lessons': week_stats[0] or 0,
+            'time': week_stats[1] or 0,
+            'xp': week_stats[2] or 0,
+            'active_days': week_stats[3] or 0
+        },
+        'month': {
+            'lessons': month_stats[0] or 0,
+            'time': month_stats[1] or 0,
+            'xp': month_stats[2] or 0,
+            'active_days': month_stats[3] or 0
+        },
+        'most_active_day': most_active_day.activity_date if most_active_day else None
+    } 
 def get_daily_goals(user):
     """Get user's daily learning goals"""
     

@@ -1,8 +1,8 @@
 {% extends "assessment/base_diagnostic.html" %}
 
-{% block title %}Вопрос {{ question_num }} из {{ total_questions }}{% endblock %}
+{% block title %}{{ t('question', lang) | default('Question') }} {{ question_num }} {{ t('of', lang) | default('of') }} {{ total_questions }}{% endblock %}
 
-{% block description %}BIG диагностика - вопрос {{ question_num }} из {{ total_questions }}{% endblock %}
+{% block description %}BIG {{ t('diagnostic', lang) | default('Diagnostic') }} - {{ t('question', lang) | default('Question') }} {{ question_num }} {{ t('of', lang) | default('of') }} {{ total_questions }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/compact-diagnostic.css') }}">
@@ -11,7 +11,7 @@
 {% block content %}
 <div class="diagnostic-container">
   
-  <!-- Компактный header -->
+  <!-- Compact header -->
   <header class="compact-header">
     <div class="progress-mini">
       <span class="counter">{{ question_num }}/{{ total_questions }}</span>
@@ -24,7 +24,7 @@
                 </div>
   </header>
   
-  <!-- Скроллируемый контент -->
+  <!-- Scrollable content -->
   <main class="question-main" id="question-main">
             <div class="question-card">
       <h2 class="question-text" id="question-text">
@@ -34,9 +34,9 @@
       <div class="options-container" id="options-container">
         {% for option in question.options %}
         <label class="option-compact" data-option-index="{{ loop.index0 }}">
-          <input type="radio" name="answer" value="{{ loop.index0 }}" data-option-letter="{{ ['A','B','C','D'][loop.index0] }}">
+          <input type="radio" name="answer" value="{{ loop.index0 }}" data-option-letter="{{ ['A','B','C','D','E'][loop.index0] }}">
           <span class="option-ui">
-            <span class="letter">{{ ['A','B','C','D'][loop.index0] }}</span>
+            <span class="letter">{{ ['A','B','C','D','E'][loop.index0] }}</span>
             <span class="text">{{ option }}</span>
           </span>
         </label>
@@ -45,39 +45,39 @@
             </div>
   </main>
         
-  <!-- Фиксированная навигация -->
+  <!-- Fixed navigation -->
   <footer class="nav-footer">
             {% if question_num > 1 %}
     <button class="btn-exit" onclick="previousQuestion()">
       <i class="fas fa-arrow-left"></i>
-      <span>Назад</span>
+      <span>{{ t('back', lang) | default('Back') }}</span>
             </button>
             {% else %}
     <button class="btn-exit" onclick="exitDiagnostic()">
       <i class="fas fa-times"></i>
-      <span>Выйти</span>
+      <span>{{ t('exit', lang) | default('Exit') }}</span>
             </button>
             {% endif %}
             
     <div class="confidence-control">
-      <label>Уверенность:</label>
+      <label>{{ t('confidence', lang) | default('Confidence') }}:</label>
       <input type="range" min="1" max="5" value="3" class="confidence-slider" id="confidence-slider">
             </div>
             
-            <!-- Кнопка завершения диагностики -->
+            <!-- Diagnostic completion button -->
             <button class="btn-finish" onclick="forceFinishDiagnostic()" style="margin-right: 10px;">
       <i class="fas fa-stop"></i>
-      <span>Завершить</span>
+      <span>{{ t('complete', lang) | default('Complete') }}</span>
             </button>
             
             {% if question_num < total_questions %}
     <button class="btn-next" id="next-btn" disabled onclick="nextQuestion()">
-      <span>Далее</span>
+      <span>{{ t('next', lang) | default('Next') }}</span>
       <i class="fas fa-arrow-right"></i>
             </button>
             {% else %}
     <button class="btn-next" id="finish-btn" disabled onclick="finishAssessment()">
-      <span>Завершить</span>
+      <span>{{ t('finish', lang) | default('Finish') }}</span>
       <i class="fas fa-check"></i>
             </button>
             {% endif %}
@@ -88,20 +88,20 @@
 
 {% block extra_js %}
 <script>
-// Глобальные переменные
+// Global variables
 let selectedOption = null;
 let timerInterval = null;
 let startTime = Date.now();
 let timeLimit = {{ remaining_time | default(3600) | int }};
 let confidenceLevel = 3;
 
-// Инициализация при загрузке страницы
+// Page initialization
 document.addEventListener('DOMContentLoaded', function() {
     try {
-        console.log('🚀 Инициализация страницы вопроса...');
+        console.log('🚀 {{ t("initializing_question_page", lang) | default("Initializing question page") }}...');
         initializeQuestionPage();
         
-        // Восстанавливаем сохраненный ответ, если есть
+        // Restore saved answer if exists
     {% if existing_answer %}
     const savedAnswer = {{ existing_answer.user_answer | default('null') }};
     if (savedAnswer !== null) {
@@ -109,26 +109,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     {% endif %}
         
-        console.log('✅ Страница вопроса инициализирована успешно');
+        console.log('✅ {{ t("question_page_initialized", lang) | default("Question page initialized successfully") }}');
     } catch (error) {
-        console.error('❌ Ошибка при инициализации страницы:', error);
+        console.error('❌ {{ t("initialization_error", lang) | default("Error during initialization") }}:', error);
     }
 });
 
 function initializeQuestionPage() {
-    // Инициализация таймера
+    // Timer initialization
     initTimer();
     
-    // Инициализация обработчиков событий
+    // Event handlers initialization
     bindEventHandlers();
     
-    // Инициализация клавиатурной навигации
+    // Keyboard navigation initialization
     initKeyboardNavigation();
     
-    // Адаптация layout
+    // Layout adaptation
     adaptQuestionLayout();
     
-    // Автоматическая прокрутка к началу контента
+    // Auto-scroll to content start
     setTimeout(() => {
         const questionMain = document.querySelector('.question-main');
         if (questionMain) {
@@ -139,7 +139,7 @@ function initializeQuestionPage() {
 }
 
 function bindEventHandlers() {
-    // Обработка выбора вариантов ответа
+    // Answer option selection handling
     document.querySelectorAll('.option-compact').forEach((option, index) => {
         const radio = option.querySelector('input[type="radio"]');
         
@@ -147,7 +147,7 @@ function bindEventHandlers() {
             selectOption(option, index);
         });
         
-        // Добавляем поддержку клавиатуры
+        // Add keyboard support
         option.setAttribute('tabindex', '0');
         option.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -158,7 +158,7 @@ function bindEventHandlers() {
         });
     });
     
-    // Обработка слайдера уверенности
+    // Confidence slider handling
     const confidenceSlider = document.getElementById('confidence-slider');
     if (confidenceSlider) {
         confidenceSlider.addEventListener('input', (e) => {
@@ -169,36 +169,36 @@ function bindEventHandlers() {
 }
 
 function selectOption(element, index) {
-    // Убираем выделение со всех вариантов
+    // Remove selection from all options
     document.querySelectorAll('.option-compact').forEach(opt => {
         opt.classList.remove('selected');
     });
     
-    // Выделяем выбранный вариант
+    // Highlight selected option
     element.classList.add('selected');
     selectedOption = index;
     
-    // Активируем кнопку "Далее" или "Завершить"
+    // Activate "Next" or "Finish" button
         const nextBtn = document.getElementById('next-btn');
     const finishBtn = document.getElementById('finish-btn');
     
     if (nextBtn) nextBtn.disabled = false;
     if (finishBtn) finishBtn.disabled = false;
     
-    // Добавляем тактильную обратную связь
+    // Add haptic feedback
     addHapticFeedback();
     
-    // Обновляем индикатор уверенности
+    // Update confidence indicator
     updateConfidenceIndicator();
     
-    // Автоматически скроллим к следующему невыбранному варианту
+    // Auto-scroll to next unselected option
     setTimeout(() => scrollToNextOption(), 100);
 }
 
 function updateConfidenceIndicator() {
     const confidenceSlider = document.getElementById('confidence-slider');
     if (confidenceSlider && selectedOption !== null) {
-        // Автоматически увеличиваем уверенность при выборе ответа
+        // Automatically increase confidence when answer is selected
         confidenceSlider.value = Math.max(confidenceLevel, 4);
         confidenceLevel = parseInt(confidenceSlider.value);
     }
@@ -217,16 +217,16 @@ function adaptQuestionLayout() {
     
     if (!container || !questionCard) return;
     
-    // Проверяем высоту контента
+    // Check content height
     const totalHeight = questionCard.scrollHeight;
     const viewHeight = container.clientHeight;
     
     if (totalHeight > viewHeight * 0.8) {
-        // Включаем компактный режим
+        // Enable compact mode
         container.classList.add('compact-mode');
     }
     
-    // Проверяем длину вариантов ответов
+    // Check answer option lengths
     const options = document.querySelectorAll('.option-ui .text');
     let hasLongOptions = false;
     
@@ -261,13 +261,13 @@ function initTimer() {
         if (minutesEl) minutesEl.textContent = minutes;
         if (secondsEl) secondsEl.textContent = seconds.toString().padStart(2, '0');
         
-        // Цветовая индикация времени
+        // Time color indication
         const timerEl = document.getElementById('timer');
         if (timerEl) {
             timerEl.className = 'timer';
-            if (remaining <= 300) { // 5 минут
+            if (remaining <= 300) { // 5 minutes
                 timerEl.classList.add('danger');
-            } else if (remaining <= 600) { // 10 минут
+            } else if (remaining <= 600) { // 10 minutes
                 timerEl.classList.add('warning');
             }
         }
@@ -279,13 +279,13 @@ function initTimer() {
 
 function initKeyboardNavigation() {
     document.addEventListener('keydown', (e) => {
-        // Навигация стрелками
+        // Arrow navigation
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
             e.preventDefault();
             navigateOptions(e.key === 'ArrowUp' ? -1 : 1);
         }
         
-        // Enter для выбора
+        // Enter for selection
         if (e.key === 'Enter' && selectedOption !== null) {
             e.preventDefault();
             const nextBtn = document.getElementById('next-btn');
@@ -298,7 +298,7 @@ function initKeyboardNavigation() {
             }
         }
         
-        // Цифры для быстрого выбора
+        // Numbers for quick selection
         if (e.key >= '1' && e.key <= '4') {
             const optionIndex = parseInt(e.key) - 1;
             const options = document.querySelectorAll('.option-compact');
@@ -340,7 +340,7 @@ function nextQuestion() {
     
     submitAnswer().then((result) => {
         if (result && result.success) {
-            // Переходим к следующему вопросу
+            // Go to next question
             window.location.href = '{{ url_for("diagnostic.show_question", session_id=session_id) }}';
         }
     }).catch((error) => {
@@ -353,7 +353,7 @@ function finishAssessment() {
     
     submitAnswer().then((result) => {
         if (result && result.success) {
-            // Переходим к результатам
+            // Go to results
             window.location.href = '{{ url_for("diagnostic.show_results", session_id=session_id) }}';
         }
     }).catch((error) => {
@@ -362,10 +362,10 @@ function finishAssessment() {
 }
 
 function forceFinishDiagnostic() {
-    showModal('Завершить диагностику', 
-        'Вы уверены, что хотите завершить диагностику? Результаты будут основаны на уже отвеченных вопросах.', [
-        { text: 'Отмена', class: 'btn-secondary', onclick: hideModal },
-        { text: 'Завершить', class: 'btn-primary', onclick: () => {
+    showModal('{{ t("complete_diagnostic", lang) | default("Complete Diagnostic") }}', 
+        '{{ t("confirm_complete_diagnostic", lang) | default("Are you sure you want to complete the diagnostic? Results will be based on already answered questions.") }}', [
+        { text: '{{ t("cancel", lang) | default("Cancel") }}', class: 'btn-secondary', onclick: hideModal },
+        { text: '{{ t("complete", lang) | default("Complete") }}', class: 'btn-primary', onclick: () => {
             hideModal();
             completeDiagnostic();
         }}
@@ -373,7 +373,7 @@ function forceFinishDiagnostic() {
 }
 
 async function completeDiagnostic() {
-    showLoading('Завершение диагностики...');
+    showLoading('{{ t("completing_diagnostic", lang) | default("Completing diagnostic") }}...');
     
     try {
         const response = await fetch('{{ url_for("diagnostic.complete_session", session_id=session_id) }}', {
@@ -387,17 +387,17 @@ async function completeDiagnostic() {
         hideLoading();
         
         if (response.ok) {
-            // Переходим к результатам
+            // Go to results
             window.location.href = '{{ url_for("diagnostic.show_results", session_id=session_id) }}';
         } else {
             const data = await response.json();
-            throw new Error(data.error || 'Ошибка завершения диагностики');
+            throw new Error(data.error || '{{ t("diagnostic_completion_error", lang) | default("Diagnostic completion error") }}');
         }
         
     } catch (error) {
         hideLoading();
         console.error('Error completing diagnostic:', error);
-        showModal('Ошибка', 'Произошла ошибка при завершении диагностики', [
+        showModal('{{ t("error", lang) | default("Error") }}', '{{ t("diagnostic_completion_error_message", lang) | default("An error occurred while completing the diagnostic") }}', [
             { text: 'OK', class: 'btn-primary', onclick: hideModal }
         ]);
     }
@@ -406,7 +406,7 @@ async function completeDiagnostic() {
 async function submitAnswer() {
     if (selectedOption === null) return;
     
-    showLoading('Отправка ответа...');
+    showLoading('{{ t("sending_answer", lang) | default("Sending answer") }}...');
     
     try {
     const formData = new FormData();
@@ -421,25 +421,25 @@ async function submitAnswer() {
         
         hideLoading();
         
-        // Если это редирект к результатам (тест завершен)
+        // If this is a redirect to results (test completed)
         if (response.redirected && response.url && response.url.includes('/results/')) {
             window.location.href = response.url;
             return;
         }
         
-        // Если это JSON ответ с ошибкой
+        // If this is a JSON error response
         if (response.headers.get('content-type')?.includes('application/json')) {
             const data = await response.json();
             if (!data.success) {
-                throw new Error(data.error || 'Ошибка сервера');
+                throw new Error(data.error || '{{ t("server_error", lang) | default("Server error") }}');
             }
             return data;
         }
         
-        // Если это обычный успешный ответ, НЕ переходим автоматически
-        // Пользователь сам нажмет "Далее" или "Завершить"
+        // If this is a regular successful response, DON'T redirect automatically
+        // User will press "Next" or "Finish" themselves
         if (response.ok) {
-            console.log('Ответ отправлен успешно');
+            console.log('{{ t("answer_sent_successfully", lang) | default("Answer sent successfully") }}');
             return { success: true };
         } else {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -448,7 +448,7 @@ async function submitAnswer() {
     } catch (error) {
         hideLoading();
         console.error('Error submitting answer:', error);
-        showModal('Ошибка', 'Произошла ошибка при отправке ответа', [
+        showModal('{{ t("error", lang) | default("Error") }}', '{{ t("answer_submission_error", lang) | default("An error occurred while sending the answer") }}', [
             { text: 'OK', class: 'btn-primary', onclick: hideModal }
         ]);
         throw error;
@@ -456,19 +456,19 @@ async function submitAnswer() {
 }
 
 function exitDiagnostic() {
-    showModal('Подтверждение выхода', 
-        'Вы уверены, что хотите выйти? Весь прогресс будет потерян.', [
-        { text: 'Отмена', class: 'btn-secondary', onclick: hideModal },
-        { text: 'Выйти', class: 'btn-error', onclick: () => {
+    showModal('{{ t("exit_confirmation", lang) | default("Exit Confirmation") }}', 
+        '{{ t("exit_warning", lang) | default("Are you sure you want to exit? All progress will be lost.") }}', [
+        { text: '{{ t("cancel", lang) | default("Cancel") }}', class: 'btn-secondary', onclick: hideModal },
+        { text: '{{ t("exit", lang) | default("Exit") }}', class: 'btn-error', onclick: () => {
             hideModal();
         window.location.href = '{{ url_for("dashboard.index") }}';
         }}
     ]);
 }
 
-// Функции для модальных окон (если не определены в базовом шаблоне)
+// Modal window functions (if not defined in base template)
 function showModal(title, message, buttons = []) {
-    // Простая реализация модального окна
+    // Simple modal implementation
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.innerHTML = `
@@ -504,21 +504,21 @@ function hideLoading() {
     }
 }
 
-// Очистка при уходе со страницы
+// Cleanup when leaving page
 window.addEventListener('beforeunload', () => {
     if (timerInterval) {
         clearInterval(timerInterval);
     }
 });
 
-// Обработка изменения размера окна
+// Handle window resize
 window.addEventListener('resize', () => {
     setTimeout(adaptQuestionLayout, 100);
 });
 </script>
 
 <style>
-/* Дополнительные стили для модальных окон */
+/* Additional styles for modal windows */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -621,7 +621,7 @@ window.addEventListener('resize', () => {
     100% { transform: rotate(360deg); }
 }
 
-/* Стили для кнопки завершения */
+/* Styles for completion button */
 .btn-finish {
     background: #e53e3e;
     color: white;

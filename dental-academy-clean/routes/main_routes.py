@@ -289,9 +289,38 @@ def big_info(lang):
         current_user=current_user
     )
 
+@main_bp.route('/big-info/eu/<profession>')
+def big_info_eu_profession(lang, profession):
+    """BIG регистрация - детальные страницы для каждой EU профессии"""
+    
+    # Проверяем, что профессия существует
+    valid_professions = ['tandarts', 'huisarts', 'apotheker', 'verpleegkundige']
+    if profession not in valid_professions:
+        return redirect(url_for('main.big_info', lang=lang))
+    
+    # Выбираем соответствующий EU шаблон
+    template_map = {
+        'tandarts': 'big_info/tandarts_eu.html',
+        'huisarts': 'big_info/huisarts_eu.html',
+        'apotheker': 'big_info/apotheker_eu.html',
+        'verpleegkundige': 'big_info/verpleegkundige_eu.html'
+    }
+    
+    template_name = template_map.get(profession)
+    if not template_name:
+        return redirect(url_for('main.big_info', lang=lang))
+    
+    return render_template(
+        template_name,
+        title=f'BIG Registratie {profession.title()} (EU/EEA) - Complete gids',
+        profession=profession,
+        current_user=current_user,
+        lang=lang
+    )
+
 @main_bp.route('/big-info/<profession>')
 def big_info_profession(lang, profession):
-    """BIG регистрация - детальные страницы для каждой профессии"""
+    """BIG регистрация - детальные страницы для каждой профессии (не-EU)"""
     
     # Проверяем, что профессия существует
     valid_professions = ['tandarts', 'huisarts', 'apotheker', 'verpleegkundige']
@@ -314,7 +343,8 @@ def big_info_profession(lang, profession):
         template_name,
         title=f'BIG Registratie {profession.title()} - Complete gids',
         profession=profession,
-        current_user=current_user
+        current_user=current_user,
+        lang=lang
     )
 
 @main_bp.route('/favicon.ico')
@@ -588,4 +618,14 @@ def new_topic(lang):
 @main_bp.route('/test')
 def test_page():
     """Тестовая страница для отладки"""
-    return render_template('test_login.html') 
+    return render_template('test_login.html')
+
+@main_bp.route('/health')
+def health():
+    """Health check endpoint для мониторинга"""
+    return jsonify({
+        'status': 'healthy',
+        'message': 'Mentora Dental Academy is running',
+        'version': '1.0.0',
+        'database': 'connected'
+    }) 

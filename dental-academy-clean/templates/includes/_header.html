@@ -132,19 +132,19 @@
               <li><hr class="dropdown-divider"></li>
               
               <!-- Gamification -->
-              <li><a class="dropdown-item" href="{{ url_for('dashboard.index') }}">
+              <li><a class="dropdown-item" href="{{ url_for('dashboard.achievements') }}">
                 <i class="bi bi-trophy fs-5 me-2"></i>
                 {{ t('gamification', lang)|default('Gamification') }}
               </a></li>
               
               <!-- Progress -->
-              <li><a class="dropdown-item" href="{{ url_for('dashboard.index') }}">
+              <li><a class="dropdown-item" href="{{ url_for('dashboard.activity') }}">
                 <i class="bi bi-graph-up fs-5 me-2"></i>
                 {{ t('progress', lang)|default('Progress') }}
               </a></li>
               
               <!-- Learning Planner -->
-              <li><a class="dropdown-item" href="{{ url_for('dashboard.index') }}?v=2">
+              <li><a class="dropdown-item" href="{{ url_for('dashboard.learning_planner_redirect') }}">
                 <i class="bi bi-calendar-check fs-5 me-2"></i>
                 {{ t('learning_planner', lang)|default('Learning Planner') }}
               </a></li>
@@ -155,11 +155,7 @@
                 {{ t('edit_profile', lang)|default('Edit profile') }}
               </a></li>
               
-              <!-- Theme Switcher -->
-              <li><a class="dropdown-item theme-btn" data-theme="toggle" href="#" onclick="toggleTheme(); return false;">
-                <i class="bi bi-moon-stars fs-5 me-2"></i>
-                {{ t('switch_theme', lang)|default('Switch theme') }}
-              </a></li>
+
               
               <li><hr class="dropdown-divider"></li>
               
@@ -206,17 +202,7 @@
               <span class="settings-icon"><i class="bi bi-gear-fill"></i></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="guestDropdown">
-              <!-- Theme Switcher -->
-              <li><a class="dropdown-item theme-btn" data-theme="light" href="#" onclick="setTheme('light'); return false;">
-                <i class="bi bi-sun fs-5 me-2"></i>
-                {{ t('light_theme', lang)|default('Light theme') }}
-                <span class="theme-checkmark" id="light-check"><i class="bi bi-check-lg ms-1"></i></span>
-              </a></li>
-              <li><a class="dropdown-item theme-btn" data-theme="dark" href="#" onclick="setTheme('dark'); return false;">
-                <i class="bi bi-moon fs-5 me-2"></i>
-                {{ t('dark_theme', lang)|default('Dark theme') }}
-                <span class="theme-checkmark" id="dark-check"><i class="bi bi-check-lg ms-1"></i></span>
-              </a></li>
+
               
               <li><hr class="dropdown-divider"></li>
               
@@ -385,23 +371,7 @@ header.modern-header .navbar-toggler {
   order: 3 !important;
 }
 
-/* Темная тема */
-[data-theme="dark"] header.modern-header {
-  background: rgba(15, 23, 42, 0.95) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
 
-[data-theme="dark"] header.modern-header .nav-link {
-  color: #f8fafc !important;
-}
-
-[data-theme="dark"] header.modern-header .dropdown,
-[data-theme="dark"] header.modern-header .btn,
-[data-theme="dark"] header.modern-header .dropdown-toggle {
-  background: rgba(30, 41, 59, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #f8fafc !important;
-}
 
 /* Мобильные устройства */
 @media (max-width: 992px) {
@@ -792,35 +762,7 @@ header.modern-header .navbar-toggler {
   overflow-y: auto !important;
 }
 
-/* ТЕМНАЯ ТЕМА - ИСПРАВЛЕНИЯ ДЛЯ DROPDOWN */
-[data-theme="dark"] .dropdown-menu {
-  background: rgba(30, 41, 59, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(20px) !important;
-  color: #f8fafc !important;
-}
 
-[data-theme="dark"] .dropdown-item {
-  color: #f8fafc !important;
-}
-
-[data-theme="dark"] .dropdown-item:hover {
-  background: rgba(62, 205, 193, 0.2) !important;
-  color: #ffffff !important;
-}
-
-[data-theme="dark"] .dropdown-header {
-  color: #f8fafc !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-[data-theme="dark"] .user-details strong {
-  color: #f8fafc !important;
-}
-
-[data-theme="dark"] .user-details small {
-  color: #cbd5e1 !important;
-}
 
 /* ГРАДИЕНТНАЯ ТЕМА - ИСПРАВЛЕНИЯ ДЛЯ DROPDOWN */
 [data-theme="gradient"] .dropdown-menu {
@@ -1356,20 +1298,7 @@ body {
   font-weight: 600 !important;
 }
 
-/* ПЕРЕОПРЕДЕЛЕНИЕ ТЕКСТА ДЛЯ ТЕМНОЙ ТЕМЫ */
-[data-theme="dark"] .language-menu .dropdown-item {
-  color: #f8fafc !important;
-}
 
-[data-theme="dark"] .language-menu .dropdown-item:hover {
-  background-color: var(--primary-color) !important;
-  color: white !important;
-}
-
-[data-theme="dark"] .language-menu .dropdown-item.active {
-  background-color: rgba(62, 205, 193, 0.2) !important;
-  color: #3ECDC1 !important;
-}
 
 /* ПЕРЕОПРЕДЕЛЕНИЕ ТЕКСТА ДЛЯ ГРАДИЕНТНОЙ ТЕМЫ */
 [data-theme="gradient"] .language-menu .dropdown-item {
