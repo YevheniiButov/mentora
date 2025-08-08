@@ -58,6 +58,10 @@ else:
 # Initialize extensions
 init_extensions(app)
 
+# Create all database tables
+with app.app_context():
+    db.create_all()  # Создаст все таблицы
+
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
 
