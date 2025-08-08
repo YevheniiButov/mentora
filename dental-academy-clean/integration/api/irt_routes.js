@@ -291,7 +291,7 @@ router.get('/questions/domain/:domain', requireAuth, async (req, res) => {
     }
     
     const limitedQuestions = filteredQuestions
-      .sort((a, b) => a.irt_params.difficulty - b.irt_params.difficulty)
+              .sort((a, b) => a.irt_parameters.difficulty - b.irt_parameters.difficulty)
       .slice(0, parseInt(limit))
       .map(q => ({
         id: q.id,
@@ -299,7 +299,7 @@ router.get('/questions/domain/:domain', requireAuth, async (req, res) => {
         options: q.options,
         domain: q.domain,
         difficulty_level: q.difficulty_level,
-        irt_params: q.irt_params,
+        irt_parameters: q.irt_parameters,
         tags: q.tags
       }));
     

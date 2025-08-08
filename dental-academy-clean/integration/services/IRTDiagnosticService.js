@@ -60,7 +60,7 @@ class IRTDiagnosticService {
       for (const domain of criticalDomains) {
         const domainQuestions = this.questions
           .filter(q => q.domain === domain && q.difficulty_level === 2)
-          .sort((a, b) => Math.abs(a.irt_params.difficulty - 1.0) - Math.abs(b.irt_params.difficulty - 1.0));
+          .sort((a, b) => Math.abs(a.irt_parameters.difficulty - 1.0) - Math.abs(b.irt_parameters.difficulty - 1.0));
         
         if (domainQuestions.length > 0) {
           startingQuestions.push(domainQuestions[0]);
@@ -71,7 +71,7 @@ class IRTDiagnosticService {
       if (startingQuestions.length < 5) {
         const additionalQuestions = this.questions
           .filter(q => !criticalDomains.includes(q.domain) && q.difficulty_level === 2)
-          .sort((a, b) => Math.abs(a.irt_params.difficulty - 1.0) - Math.abs(b.irt_params.difficulty - 1.0))
+          .sort((a, b) => Math.abs(a.irt_parameters.difficulty - 1.0) - Math.abs(b.irt_parameters.difficulty - 1.0))
           .slice(0, 5 - startingQuestions.length);
         
         startingQuestions.push(...additionalQuestions);
@@ -108,7 +108,7 @@ class IRTDiagnosticService {
       const newAbility = this.updateAbilityEstimate(
         session.current_ability_estimate,
         isCorrect,
-        question.irt_params
+        question.irt_parameters
       );
       
       // Добавить ответ в сессию
@@ -180,7 +180,7 @@ class IRTDiagnosticService {
     
     // Рассчитать информацию Фишера для каждого вопроса
     const questionsWithInfo = availableQuestions.map(question => {
-      const fisherInfo = this.fisherInformation(currentAbility, question.irt_params);
+      const fisherInfo = this.fisherInformation(currentAbility, question.irt_parameters);
       return { question, fisherInfo };
     });
     
@@ -222,7 +222,7 @@ class IRTDiagnosticService {
       answeredQuestions.forEach(answer => {
         const question = this.questions.find(q => q.id === answer.question_id);
         if (question) {
-          const info = this.fisherInformation(answer.ability_after, question.irt_params);
+          const info = this.fisherInformation(answer.ability_after, question.irt_parameters);
           totalInformation += info;
         }
       });

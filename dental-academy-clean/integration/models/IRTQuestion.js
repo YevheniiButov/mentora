@@ -64,14 +64,14 @@ IRTQuestionSchema.virtual('correctness_rate').get(function() {
 });
 
 IRTQuestionSchema.virtual('difficulty_category').get(function() {
-  const diff = this.irt_params.difficulty;
+      const diff = this.irt_parameters.difficulty;
   if (diff < 0.7) return 'easy';
   if (diff < 1.3) return 'medium';
   return 'hard';
 });
 
 IRTQuestionSchema.virtual('discrimination_category').get(function() {
-  const disc = this.irt_params.discrimination;
+      const disc = this.irt_parameters.discrimination;
   if (disc < 1.5) return 'low';
   if (disc < 2.5) return 'medium';
   return 'high';
@@ -80,14 +80,14 @@ IRTQuestionSchema.virtual('discrimination_category').get(function() {
 // Методы
 IRTQuestionSchema.methods.calculateProbability = function(ability) {
   // 3PL модель: P(correct) = guessing + (1-guessing) * (1 / (1 + exp(-discrimination * (ability - difficulty))))
-  const { difficulty, discrimination, guessing } = this.irt_params;
+  const { difficulty, discrimination, guessing } = this.irt_parameters;
   const z = discrimination * (ability - difficulty);
   return guessing + (1 - guessing) / (1 + Math.exp(-z));
 };
 
 IRTQuestionSchema.methods.calculateFisherInformation = function(ability) {
   // Расчет информации Фишера для 3PL модели
-  const { difficulty, discrimination, guessing } = this.irt_params;
+  const { difficulty, discrimination, guessing } = this.irt_parameters;
   const z = discrimination * (ability - difficulty);
   const p = this.calculateProbability(ability);
   
@@ -122,15 +122,15 @@ IRTQuestionSchema.methods.getOptimalDifficulty = function(currentAbility) {
 // Статические методы
 IRTQuestionSchema.statics.getQuestionsByDomain = function(domain, limit = 10) {
   return this.find({ domain })
-    .sort({ 'irt_params.difficulty': 1 })
+    .sort({ 'irt_parameters.difficulty': 1 })
     .limit(limit);
 };
 
 IRTQuestionSchema.statics.getQuestionsByDifficulty = function(minDiff, maxDiff, limit = 20) {
   return this.find({
-    'irt_params.difficulty': { $gte: minDiff, $lte: maxDiff }
+    'irt_parameters.difficulty': { $gte: minDiff, $lte: maxDiff }
   })
-  .sort({ 'irt_params.discrimination': -1 })
+  .sort({ 'irt_parameters.discrimination': -1 })
   .limit(limit);
 };
 
@@ -139,13 +139,13 @@ IRTQuestionSchema.statics.getUnusedQuestions = function(usedIds, domain = null) 
   if (domain) query.domain = domain;
   
   return this.find(query)
-    .sort({ 'usage_stats.times_presented': 1, 'irt_params.discrimination': -1 });
+    .sort({ 'usage_stats.times_presented': 1, 'irt_parameters.discrimination': -1 });
 };
 
 IRTQuestionSchema.statics.getHighQualityQuestions = function(domain = null, limit = 50) {
   const query = {
-    'irt_params.discrimination': { $gte: 1.5 },
-    'irt_params.difficulty': { $gte: 0.3, $lte: 1.7 }
+    'irt_parameters.discrimination': { $gte: 1.5 },
+    'irt_parameters.difficulty': { $gte: 0.3, $lte: 1.7 }
   };
   if (domain) query.domain = domain;
   
@@ -160,9 +160,9 @@ IRTQuestionSchema.statics.getQuestionStats = function() {
       $group: {
         _id: '$domain',
         total_questions: { $sum: 1 },
-        avg_difficulty: { $avg: '$irt_params.difficulty' },
-        avg_discrimination: { $avg: '$irt_params.discrimination' },
-        avg_guessing: { $avg: '$irt_params.guessing' },
+        avg_difficulty: { $avg: '$irt_parameters.difficulty' },
+        avg_discrimination: { $avg: '$irt_parameters.discrimination' },
+        avg_guessing: { $avg: '$irt_parameters.guessing' },
         total_usage: { $sum: '$usage_stats.times_presented' },
         avg_correctness: {
           $avg: {

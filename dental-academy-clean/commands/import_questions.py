@@ -49,7 +49,7 @@ def import_questions(json_file):
         for q_data in questions_data:
             try:
                 # Проверка обязательных полей
-                required_fields = ['text', 'options', 'correct_answer_text', 'domain', 'irt_params']
+                required_fields = ['text', 'options', 'correct_answer_text', 'domain', 'irt_parameters']
                 missing_fields = [field for field in required_fields if field not in q_data]
                 
                 if missing_fields:
@@ -93,9 +93,9 @@ def import_questions(json_file):
                 from models import IRTParameters
                 irt_params = IRTParameters(
                     question_id=question.id,
-                    difficulty=q_data['irt_params']['difficulty'],
-                    discrimination=q_data['irt_params']['discrimination'],
-                    guessing=q_data['irt_params']['guessing']
+                    difficulty=q_data['irt_parameters']['difficulty'],
+                    discrimination=q_data['irt_parameters']['discrimination'],
+                    guessing=q_data['irt_parameters']['guessing']
                 )
                 
                 # Валидация IRT параметров

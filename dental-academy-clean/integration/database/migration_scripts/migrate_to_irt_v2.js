@@ -182,7 +182,7 @@ class IRTMigration {
             category: questionData.category,
             tags: questionData.tags || [],
             difficulty_level: questionData.difficulty_level,
-            irt_params: questionData.irt_params,
+            irt_parameters: questionData.irt_parameters,
             image_url: questionData.image_url,
             language: questionData.language || 'nl',
             source: questionData.id <= 320 ? 'original' : 'new_domain',
@@ -208,8 +208,8 @@ class IRTMigration {
         
         // Рассчитать средние IRT параметры
         if (domainQuestions.length > 0) {
-          const avgDifficulty = domainQuestions.reduce((sum, q) => sum + q.irt_params.difficulty, 0) / domainQuestions.length;
-          const avgDiscrimination = domainQuestions.reduce((sum, q) => sum + q.irt_params.discrimination, 0) / domainQuestions.length;
+                  const avgDifficulty = domainQuestions.reduce((sum, q) => sum + q.irt_parameters.difficulty, 0) / domainQuestions.length;
+        const avgDiscrimination = domainQuestions.reduce((sum, q) => sum + q.irt_parameters.discrimination, 0) / domainQuestions.length;
           
           domain.avg_difficulty = avgDifficulty;
           domain.avg_discrimination = avgDiscrimination;
@@ -361,13 +361,13 @@ class IRTMigration {
       // Проверить IRT параметры
       const questions = await IRTQuestion.find({});
       questions.forEach(q => {
-        if (q.irt_params.difficulty >= 0 && q.irt_params.difficulty <= 2) {
+        if (q.irt_parameters.difficulty >= 0 && q.irt_parameters.difficulty <= 2) {
           validationResults.irt_parameters.valid_difficulty++;
         }
-        if (q.irt_params.discrimination >= 1 && q.irt_params.discrimination <= 3) {
+        if (q.irt_parameters.discrimination >= 1 && q.irt_parameters.discrimination <= 3) {
           validationResults.irt_parameters.valid_discrimination++;
         }
-        if (q.irt_params.guessing >= 0.1 && q.irt_params.guessing <= 0.3) {
+        if (q.irt_parameters.guessing >= 0.1 && q.irt_parameters.guessing <= 0.3) {
           validationResults.irt_parameters.valid_guessing++;
         }
       });

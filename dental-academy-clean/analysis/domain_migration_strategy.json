@@ -1,0 +1,438 @@
+{
+  "migration_map": {
+    "PHARMA": "PHARMACOLOGY",
+    "FARMACOLOGIE": "PHARMACOLOGY",
+    "DIAGNOSIS_SPECIAL": "DIAGNOSIS",
+    "Caries": "THER",
+    "Endodontics": "THER",
+    "Periodontics": "PARO",
+    "Anatomy": "ANATOMIE",
+    "Pharmacology": "PHARMACOLOGY",
+    "Diagnostics": "DIAGNOSIS",
+    "Surgery": "SURG",
+    "Emergency": "EMERGENCY",
+    "Терапевтическая стоматология": "THER",
+    "Хирургическая стоматология": "SURG",
+    "Ортопедическая стоматология": "PROTH",
+    "Детская стоматология": "PEDI",
+    "Пародонтология": "PARO",
+    "Ортодонтия": "ORTHO",
+    "Профилактика": "PREV",
+    "Этика и право": "ETHIEK",
+    "Анатомия": "ANATOMIE",
+    "Физиология": "FYSIOLOGIE",
+    "Патология": "PATHOLOGIE",
+    "Микробиология": "MICROBIOLOGIE",
+    "Материаловедение": "MATERIAALKUNDE",
+    "Рентгенология": "RADIOLOGIE",
+    "Общая медицина": "ALGEMENE_GENEESKUNDE",
+    "Неотложная помощь": "EMERGENCY",
+    "Системные заболевания": "SYSTEMIC",
+    "Фармакология": "PHARMACOLOGY",
+    "Инфекционный контроль": "INFECTION",
+    "Специальные группы пациентов": "SPECIAL",
+    "Сложная диагностика": "DIAGNOSIS",
+    "Голландская система здравоохранения": "DUTCH",
+    "Профессиональное развитие": "PROFESSIONAL",
+    "Практические навыки": "PRACTICAL_SKILLS",
+    "Планирование лечения": "TREATMENT_PLANNING",
+    "Коммуникативные навыки": "COMMUNICATION",
+    "Статистика и анализ данных": "STATISTICS",
+    "Orthodontics": "ORTHO",
+    "Oral Surgery": "SURG",
+    "Prosthodontics": "PROTH",
+    "Preventive Care": "PREV",
+    "Dental Materials": "MATERIAALKUNDE",
+    "Oral Pathology": "PATHOLOGIE",
+    "Oral Medicine": "ALGEMENE_GENEESKUNDE",
+    "Dental Radiology": "RADIOLOGIE",
+    "Dental Anatomy": "ANATOMIE",
+    "Dental Physiology": "FYSIOLOGIE",
+    "Dental Pharmacology": "PHARMACOLOGY",
+    "Dental Anesthesia": "EMERGENCY",
+    "Dental Emergency": "EMERGENCY",
+    "Dental Ethics": "ETHIEK",
+    "Dental Law": "ETHIEK",
+    "Practice Management": "PROFESSIONAL",
+    "Patient Communication": "COMMUNICATION",
+    "Infection Control": "INFECTION",
+    "Dental Implants": "PROTH",
+    "Cosmetic Dentistry": "PROTH",
+    "Pediatric Dentistry": "PEDI",
+    "Geriatric Dentistry": "SPECIAL",
+    "Special Needs Dentistry": "SPECIAL"
+  },
+  "migration_plan": {
+    "step_1": {
+      "description": "Создание отсутствующего домена PHARMACOLOGY",
+      "actions": [
+        "Создать домен PHARMACOLOGY с правильными параметрами",
+        "Обновить все вопросы с domain=PHARMA на domain=PHARMACOLOGY",
+        "Обновить все DiagnosticResponse с вопросами PHARMA"
+      ]
+    },
+    "step_2": {
+      "description": "Объединение дублирующихся доменов",
+      "actions": [
+        "Объединить PHARMA и FARMACOLOGIE в PHARMACOLOGY",
+        "Объединить DIAGNOSIS_SPECIAL в DIAGNOSIS",
+        "Обновить все ссылки в базе данных"
+      ]
+    },
+    "step_3": {
+      "description": "Миграция планов обучения",
+      "actions": [
+        "Обновить все PersonalLearningPlan.domain_analysis",
+        "Заменить старые названия доменов на коды",
+        "Обеспечить наличие всех 30 доменов в каждом плане"
+      ]
+    },
+    "step_4": {
+      "description": "Валидация миграции",
+      "actions": [
+        "Проверить целостность данных",
+        "Убедиться, что все 30 доменов присутствуют",
+        "Проверить отсутствие потери данных"
+      ]
+    }
+  },
+  "missing_domains": [
+    "PHARMACOLOGY"
+  ],
+  "domain_variations": {
+    "THER": [
+      "THER"
+    ],
+    "SURG": [
+      "SURG"
+    ],
+    "PROTH": [
+      "PROTH"
+    ],
+    "PEDI": [
+      "PEDI"
+    ],
+    "PARO": [
+      "PARO"
+    ],
+    "ORTHO": [
+      "ORTHO"
+    ],
+    "PREV": [
+      "PREV"
+    ],
+    "ETHIEK": [
+      "ETHIEK"
+    ],
+    "ANATOMIE": [
+      "ANATOMIE"
+    ],
+    "FYSIOLOGIE": [
+      "FYSIOLOGIE"
+    ],
+    "PATHOLOGIE": [
+      "PATHOLOGIE"
+    ],
+    "MICROBIOLOGIE": [
+      "MICROBIOLOGIE"
+    ],
+    "MATERIAALKUNDE": [
+      "MATERIAALKUNDE"
+    ],
+    "RADIOLOGIE": [
+      "RADIOLOGIE"
+    ],
+    "ALGEMENE_GENEESKUNDE": [
+      "ALGEMENE_GENEESKUNDE"
+    ],
+    "EMERGENCY": [
+      "EMERGENCY"
+    ],
+    "SYSTEMIC": [
+      "SYSTEMIC"
+    ],
+    "PHARMA": [
+      "PHARMA"
+    ],
+    "INFECTION": [
+      "INFECTION"
+    ],
+    "SPECIAL": [
+      "SPECIAL"
+    ],
+    "DIAGNOSIS": [
+      "DIAGNOSIS"
+    ],
+    "DUTCH": [
+      "DUTCH"
+    ],
+    "PROFESSIONAL": [
+      "PROFESSIONAL"
+    ],
+    "FARMACOLOGIE": [
+      "FARMACOLOGIE"
+    ],
+    "DIAGNOSIS_SPECIAL": [
+      "DIAGNOSIS_SPECIAL"
+    ],
+    "TEST": [
+      "TEST"
+    ],
+    "PRACTICAL_SKILLS": [
+      "PRACTICAL_SKILLS"
+    ],
+    "COMMUNICATION": [
+      "COMMUNICATION"
+    ],
+    "RESEARCH_METHOD": [
+      "RESEARCH_METHOD"
+    ],
+    "STATISTICS": [
+      "STATISTICS"
+    ],
+    "TREATMENT_PLANNING": [
+      "TREATMENT_PLANNING"
+    ],
+    "Caries": [
+      "Caries"
+    ],
+    "Endodontics": [
+      "Endodontics"
+    ],
+    "Periodontics": [
+      "Periodontics"
+    ],
+    "Anatomy": [
+      "Anatomy"
+    ],
+    "Pharmacology": [
+      "Pharmacology"
+    ],
+    "Diagnostics": [
+      "Diagnostics"
+    ],
+    "Surgery": [
+      "Surgery"
+    ],
+    "Emergency": [
+      "Emergency"
+    ],
+    "Терапевтическая стоматология": [
+      "Терапевтическая стоматология"
+    ],
+    "Хирургическая стоматология": [
+      "Хирургическая стоматология"
+    ],
+    "Ортопедическая стоматология": [
+      "Ортопедическая стоматология"
+    ],
+    "Детская стоматология": [
+      "Детская стоматология"
+    ],
+    "Пародонтология": [
+      "Пародонтология"
+    ],
+    "Ортодонтия": [
+      "Ортодонтия"
+    ],
+    "Профилактика": [
+      "Профилактика"
+    ],
+    "Этика и право": [
+      "Этика и право"
+    ],
+    "Анатомия": [
+      "Анатомия"
+    ],
+    "Физиология": [
+      "Физиология"
+    ],
+    "Патология": [
+      "Патология"
+    ],
+    "Микробиология": [
+      "Микробиология"
+    ],
+    "Материаловедение": [
+      "Материаловедение"
+    ],
+    "Рентгенология": [
+      "Рентгенология"
+    ],
+    "Общая медицина": [
+      "Общая медицина"
+    ],
+    "Неотложная помощь": [
+      "Неотложная помощь"
+    ],
+    "Системные заболевания": [
+      "Системные заболевания"
+    ],
+    "Фармакология": [
+      "Фармакология"
+    ],
+    "Инфекционный контроль": [
+      "Инфекционный контроль"
+    ],
+    "Специальные группы пациентов": [
+      "Специальные группы пациентов"
+    ],
+    "Сложная диагностика": [
+      "Сложная диагностика"
+    ],
+    "Голландская система здравоохранения": [
+      "Голландская система здравоохранения"
+    ],
+    "Профессиональное развитие": [
+      "Профессиональное развитие"
+    ],
+    "Фармакология (альтернативное название)": [
+      "Фармакология (альтернативное название)"
+    ],
+    "Специальная диагностика": [
+      "Специальная диагностика"
+    ],
+    "Orthodontics": [
+      "Orthodontics"
+    ],
+    "Oral Surgery": [
+      "Oral Surgery"
+    ],
+    "Prosthodontics": [
+      "Prosthodontics"
+    ],
+    "Preventive Care": [
+      "Preventive Care"
+    ],
+    "Dental Materials": [
+      "Dental Materials"
+    ],
+    "Oral Pathology": [
+      "Oral Pathology"
+    ],
+    "Oral Medicine": [
+      "Oral Medicine"
+    ],
+    "Dental Radiology": [
+      "Dental Radiology"
+    ],
+    "Dental Anatomy": [
+      "Dental Anatomy"
+    ],
+    "Dental Physiology": [
+      "Dental Physiology"
+    ],
+    "Dental Pharmacology": [
+      "Dental Pharmacology"
+    ],
+    "Dental Anesthesia": [
+      "Dental Anesthesia"
+    ],
+    "Dental Emergency": [
+      "Dental Emergency"
+    ],
+    "Dental Ethics": [
+      "Dental Ethics"
+    ],
+    "Dental Law": [
+      "Dental Law"
+    ],
+    "Practice Management": [
+      "Practice Management"
+    ],
+    "Patient Communication": [
+      "Patient Communication"
+    ],
+    "Infection Control": [
+      "Infection Control"
+    ],
+    "Dental Implants": [
+      "Dental Implants"
+    ],
+    "Cosmetic Dentistry": [
+      "Cosmetic Dentistry"
+    ],
+    "Pediatric Dentistry": [
+      "Pediatric Dentistry"
+    ],
+    "Geriatric Dentistry": [
+      "Geriatric Dentistry"
+    ],
+    "Special Needs Dentistry": [
+      "Special Needs Dentistry"
+    ],
+    "Практические навыки": [
+      "Практические навыки"
+    ],
+    "Планирование лечения": [
+      "Планирование лечения"
+    ],
+    "Коммуникативные навыки": [
+      "Коммуникативные навыки"
+    ],
+    "Статистика и анализ данных": [
+      "Статистика и анализ данных"
+    ]
+  },
+  "current_domains": {
+    "THER": "Терапевтическая стоматология",
+    "SURG": "Хирургическая стоматология",
+    "PROTH": "Ортопедическая стоматология",
+    "PEDI": "Детская стоматология",
+    "PARO": "Пародонтология",
+    "ORTHO": "Ортодонтия",
+    "PREV": "Профилактика",
+    "ETHIEK": "Этика и право",
+    "ANATOMIE": "Анатомия",
+    "FYSIOLOGIE": "Физиология",
+    "PATHOLOGIE": "Патология",
+    "MICROBIOLOGIE": "Микробиология",
+    "MATERIAALKUNDE": "Материаловедение",
+    "RADIOLOGIE": "Рентгенология",
+    "ALGEMENE_GENEESKUNDE": "Общая медицина",
+    "EMERGENCY": "Неотложная помощь",
+    "SYSTEMIC": "Системные заболевания",
+    "PHARMA": "Фармакология",
+    "INFECTION": "Инфекционный контроль",
+    "SPECIAL": "Специальные группы пациентов",
+    "DIAGNOSIS": "Сложная диагностика",
+    "DUTCH": "Голландская система здравоохранения",
+    "PROFESSIONAL": "Профессиональное развитие",
+    "STATISTICS": "Статистика и анализ данных",
+    "RESEARCH_METHOD": "Методология исследований",
+    "PRACTICAL_SKILLS": "Практические навыки",
+    "TREATMENT_PLANNING": "Планирование лечения",
+    "COMMUNICATION": "Коммуникативные навыки",
+    "TEST": "Test Domain"
+  },
+  "expected_domains": {
+    "THER": "Терапевтическая стоматология",
+    "SURG": "Хирургическая стоматология",
+    "PROTH": "Ортопедическая стоматология",
+    "PEDI": "Детская стоматология",
+    "PARO": "Пародонтология",
+    "ORTHO": "Ортодонтия",
+    "PREV": "Профилактика",
+    "ANATOMIE": "Анатомия",
+    "FYSIOLOGIE": "Физиология",
+    "PATHOLOGIE": "Патология",
+    "MICROBIOLOGIE": "Микробиология",
+    "MATERIAALKUNDE": "Материаловедение",
+    "RADIOLOGIE": "Рентгенология",
+    "ALGEMENE_GENEESKUNDE": "Общая медицина",
+    "EMERGENCY": "Неотложная помощь",
+    "SYSTEMIC": "Системные заболевания",
+    "PHARMACOLOGY": "Фармакология",
+    "INFECTION": "Инфекционный контроль",
+    "SPECIAL": "Специальные группы пациентов",
+    "DIAGNOSIS": "Диагностика",
+    "DUTCH": "Голландская система здравоохранения",
+    "PROFESSIONAL": "Профессиональное развитие",
+    "ETHIEK": "Этика и право",
+    "STATISTICS": "Статистика и анализ данных",
+    "RESEARCH_METHOD": "Методология исследований",
+    "PRACTICAL_SKILLS": "Практические навыки",
+    "TREATMENT_PLANNING": "Планирование лечения",
+    "COMMUNICATION": "Коммуникативные навыки"
+  }
+}

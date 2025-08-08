@@ -24,8 +24,8 @@ def analyze_domains():
             domain_stats[domain] += 1
             
             # IRT параметры по доменам
-            if 'irt_params' in question:
-                irt = question['irt_params']
+            if 'irt_parameters' in question:
+                irt = question['irt_parameters']
                 domain_irt[domain]['difficulty'].append(irt['difficulty'])
                 domain_irt[domain]['discrimination'].append(irt['discrimination'])
                 domain_irt[domain]['guessing'].append(irt['guessing'])
@@ -85,8 +85,8 @@ def analyze_domains():
         
         # Проверка IRT параметров
         for question in questions_data:
-            if 'irt_params' in question:
-                irt = question['irt_params']
+            if 'irt_parameters' in question:
+                irt = question['irt_parameters']
                 if irt['difficulty'] > 2 or irt['discrimination'] < 1:
                     problems['invalid_irt'].append({
                         'id': question['id'],

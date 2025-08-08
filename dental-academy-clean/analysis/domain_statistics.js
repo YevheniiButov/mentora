@@ -28,10 +28,10 @@ const analyzeDomains = () => {
         };
       }
       
-      if (question.irt_params) {
-        domainIRT[domain].difficulty.push(question.irt_params.difficulty);
-        domainIRT[domain].discrimination.push(question.irt_params.discrimination);
-        domainIRT[domain].guessing.push(question.irt_params.guessing);
+      if (question.irt_parameters) {
+        domainIRT[domain].difficulty.push(question.irt_parameters.difficulty);
+        domainIRT[domain].discrimination.push(question.irt_parameters.discrimination);
+        domainIRT[domain].guessing.push(question.irt_parameters.guessing);
       }
       
       // Уровни сложности по доменам
@@ -103,14 +103,14 @@ const analyzeDomains = () => {
     
     // Проверка IRT параметров
     questionsData.forEach(question => {
-      if (question.irt_params) {
-        if (question.irt_params.difficulty > 2 || question.irt_params.discrimination < 1) {
+      if (question.irt_parameters) {
+        if (question.irt_parameters.difficulty > 2 || question.irt_parameters.discrimination < 1) {
           problems.invalid_irt.push({
             id: question.id,
             domain: question.domain,
-            difficulty: question.irt_params.difficulty,
-            discrimination: question.irt_params.discrimination,
-            issue: question.irt_params.difficulty > 2 ? 'difficulty_too_high' : 'discrimination_too_low'
+            difficulty: question.irt_parameters.difficulty,
+            discrimination: question.irt_parameters.discrimination,
+            issue: question.irt_parameters.difficulty > 2 ? 'difficulty_too_high' : 'discrimination_too_low'
           });
         }
       }

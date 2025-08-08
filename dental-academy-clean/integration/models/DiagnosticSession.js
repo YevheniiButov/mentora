@@ -116,7 +116,7 @@ DiagnosticSessionSchema.methods.addAnswer = function(questionData, userAnswer, r
     is_correct: isCorrect,
     response_time: responseTime,
     ability_before: this.current_ability_estimate,
-    question_difficulty: questionData.irt_params.difficulty
+            question_difficulty: questionData.irt_parameters.difficulty
   });
   
   // Обновить способность (будет рассчитана в сервисе)
