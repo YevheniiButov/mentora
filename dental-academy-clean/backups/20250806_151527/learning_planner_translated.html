@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>{{ t('learning_planner_title', lang) | default('Learning Planner') }} - Dental Academy</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Modern CSS Framework -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Site CSS -->
+    <link href="{{ url_for('static', filename='css/universal-styles.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/themes/light-theme.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/themes/dark-theme.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/themes/gradient-theme.css') }}" rel="stylesheet">
+    
+    <!-- Calendar and Chart libraries -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="{{ url_for('static', filename='js/lib/fullcalendar.min.js') }}"></script>
+    
+    <!-- FullCalendar CSS -->
+    <link href="{{ url_for('static', filename='css/lib/fullcalendar.min.css') }}" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #3ECDC1;
+            --secondary-color: #6C5CE7;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding-top: 80px; /* Space for fixed header */
+        }
+
+        .planner-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Ensure header compatibility */
+        .modern-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        /* Override any conflicting styles */
+        .planner-container .navbar {
+            position: static;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .planner-container .navbar-brand {
+            display: none;
+        }
+
+        /* Header Section */
+        .planner-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-text h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.025em;
+        }
+
+        .header-text p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 600px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Main Grid Layout */
+        .planner-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Configuration Panel */
+        .config-panel {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .config-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .config-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .config-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.1);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .date-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .intensity-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .intensity-option {
+            padding: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .intensity-option:hover {
+            border-color: var(--primary-color);
+        }
+
+        .intensity-option.active {
+            border-color: var(--primary-color);
+            background: #f0fdfa;
+        }
+
+        .intensity-label {
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .intensity-hours {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Schedule Calendar */
+        .schedule-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .calendar-container {
+            min-height: 500px;
+        }
+
+        /* Progress Tracking */
+        .progress-panel {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .progress-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .progress-item:last-child {
+            border-bottom: none;
+        }
+
+        .progress-info {
+            flex: 1;
+        }
+
+        .progress-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .progress-detail {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 16px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            transition: width 0.8s ease;
+        }
+
+        .progress-percentage {
+            font-weight: 600;
+            color: var(--primary-color);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* Study Goals */
+        .goals-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .goal-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .goal-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 12px;
+        }
+
+        .goal-title {
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .goal-deadline {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .goal-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .goal-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(62, 205, 193, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .planner-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .planner-container {
+                padding: 12px;
+            }
+
+            .planner-header {
+                padding: 24px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-text h1 {
+                font-size: 28px;
+            }
+
+            .config-panel,
+            .schedule-section,
+            .progress-panel,
+            .goals-section {
+                padding: 20px;
+            }
+
+            .intensity-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .date-input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Custom Calendar Styles */
+        .fc {
+            --fc-border-color: #e5e7eb;
+            --fc-button-bg-color: var(--primary-color);
+            --fc-button-border-color: var(--primary-color);
+            --fc-button-hover-bg-color: var(--secondary-color);
+            --fc-event-bg-color: var(--primary-color);
+        }
+
+        .fc-event {
+            border-radius: 6px !important;
+            border: none !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+        }
+
+        .fc-day-today {
+            background-color: rgba(62, 205, 193, 0.1) !important;
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Individual day settings styles */
+        .day-setting {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .day-setting:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+        
+        .day-setting.active {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .day-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .day-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #2196f3;
+        }
+        
+        .day-name {
+            font-weight: 500;
+            min-width: 80px;
+        }
+        
+        .day-time-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .day-slider-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .time-slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .time-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2196f3;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .time-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2196f3;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .slider-value {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 80px;
+        }
+        
+        .hours-display {
+            font-weight: 600;
+            color: #2196f3;
+            font-size: 16px;
+        }
+        
+        .hours-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .time-input {
+            width: 60px;
+            padding: 4px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .day-setting.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .day-setting.disabled .time-input {
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Site Header -->
+    {% include 'includes/_header.html' %}
+    
+    <!-- Main Content -->
+    <div class="planner-container">
+        <!-- Header Section -->
+        <div class="planner-header fade-in">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>{{ t('learning_planner_header_title', lang) | default('Personal Learning Planner') }}</h1>
+                    <p>{{ t('learning_planner_header_subtitle', lang) | default('Create an optimal BIG exam preparation plan based on diagnostic results') }}</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="days-to-exam">--</span>
+                        <span class="stat-label">{{ t('days_to_exam', lang) | default('days to exam') }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="study-hours">--</span>
+                        <span class="stat-label">{{ t('study_hours', lang) | default('study hours') }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="completion-rate">--%</span>
+                        <span class="stat-label">{{ t('readiness', lang) | default('readiness') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="planner-grid">
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Schedule Section -->
+                <div class="schedule-section slide-up">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-calendar-alt" style="margin-right: 12px; color: var(--primary-color);"></i>
+                            {{ t('learning_schedule', lang) | default('Learning Schedule') }}
+                        </h2>
+                        <div class="action-buttons" style="margin-top: 0;">
+                            <button class="btn btn-secondary" id="toggle-calendar-btn">
+                                <i class="fas fa-th"></i>
+                                {{ t('month', lang) | default('Month') }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="calendar-container" id="calendar"></div>
+                </div>
+
+                <!-- Study Goals -->
+                <div class="goals-section slide-up">
+                    <h2 class="section-title">
+                        <i class="fas fa-target" style="margin-right: 12px; color: var(--primary-color);"></i>
+                        {{ t('learning_goals', lang) | default('Learning Goals') }}
+                    </h2>
+                    <div id="goals-container">
+                        <!-- Goals will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Configuration Panel -->
+                <div class="config-panel slide-up">
+                    <div class="config-header">
+                        <div class="config-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="config-title">{{ t('plan_settings', lang) | default('Plan Settings') }}</div>
+                    </div>
+
+                    <form id="plan-config-form">
+                        <div class="form-group">
+                            <label class="form-label">{{ t('exam_date', lang) | default('Exam Date') }}</label>
+                            <input type="date" class="form-control" id="exam-date" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">{{ t('study_period', lang) | default('Study Period') }}</label>
+                            <div class="date-input-group">
+                                <input type="date" class="form-control" id="start-date" placeholder="{{ t('start', lang) | default('Start') }}" required>
+                                <input type="date" class="form-control" id="end-date" placeholder="{{ t('end', lang) | default('End') }}" required>
+                            </div>
+                            <div id="study-period-info" style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px; color: #666;">
+                                <!-- Study period calculation info will be displayed here -->
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">{{ t('study_intensity', lang) | default('Study Intensity') }}</label>
+                            <div class="intensity-selector">
+                                <div class="intensity-option" data-intensity="light">
+                                    <span class="intensity-label">{{ t('light', lang) | default('Light') }}</span>
+                                    <span class="intensity-hours">{{ t('light_hours', lang) | default('1-2 h/day') }}</span>
+                                </div>
+                                <div class="intensity-option active" data-intensity="moderate">
+                                    <span class="intensity-label">{{ t('moderate', lang) | default('Moderate') }}</span>
+                                    <span class="intensity-hours">{{ t('moderate_hours', lang) | default('2-4 h/day') }}</span>
+                                </div>
+                                <div class="intensity-option" data-intensity="intensive">
+                                    <span class="intensity-label">{{ t('intensive', lang) | default('Intensive') }}</span>
+                                    <span class="intensity-hours">{{ t('intensive_hours', lang) | default('4-6 h/day') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">{{ t('preferred_days', lang) | default('Preferred Days') }}</label>
+                            <div id="study-days-settings" style="margin-top: 8px;">
+                                <!-- Individual day settings will be generated here -->
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">{{ t('study_time', lang) | default('Study Time') }}</label>
+                            <select class="form-control form-select" id="study-time">
+                                <option value="morning">{{ t('morning_time', lang) | default('Morning (8:00 - 12:00)') }}</option>
+                                <option value="afternoon" selected>{{ t('afternoon_time', lang) | default('Afternoon (12:00 - 18:00)') }}</option>
+                                <option value="evening">{{ t('evening_time', lang) | default('Evening (18:00 - 22:00)') }}</option>
+                                <option value="flexible">{{ t('flexible_schedule', lang) | default('Flexible Schedule') }}</option>
+                            </select>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-magic"></i>
+                                {{ t('create_plan', lang) | default('Create Plan') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Progress Panel -->
+                <div class="progress-panel slide-up">
+                    <h3 class="section-title" style="font-size: 20px; margin-bottom: 24px;">
+                        <i class="fas fa-chart-line" style="margin-right: 12px; color: var(--primary-color);"></i>
+                        {{ t('domain_progress', lang) | default('Domain Progress') }}
+                    </h3>
+                    <div id="domain-progress">
+                        <!-- Progress items will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript успешно загружен
+        console.log('🚀 Learning Planner JavaScript загружен и работает!');
+        
+        // Check if libraries are loaded
+        function checkLibraries() {
+            console.log('Checking libraries...');
+            
+            // Проверяем загрузку FullCalendar
+            if (typeof FullCalendar === 'undefined') {
+                console.error('❌ FullCalendar is not loaded!');
+                console.log('🔍 FullCalendar status:', {
+                    'typeof FullCalendar': typeof FullCalendar,
+                    'window.FullCalendar': typeof window.FullCalendar,
+                    'document.readyState': document.readyState
+                });
+                return false;
+            }
+            
+            console.log('✅ FullCalendar loaded successfully');
+            console.log('🔍 FullCalendar version:', FullCalendar.version || 'unknown');
+            
+            // Проверяем загрузку Chart.js
+            if (typeof Chart === 'undefined') {
+                console.warn('⚠️ Chart.js is not loaded, charts will be disabled');
+            } else {
+                console.log('✅ Chart.js loaded successfully');
+            }
+            
+            console.log('✅ Libraries check passed');
+            return true;
+        }
+        
+        // Data from Flask backend
+        let diagnosticResults = {};
+        let learningPlanData = {};
+        
+        console.log('🔍 ОТЛАДКА: Starting script initialization...');
+        
+        try {
+            diagnosticResults = {{ diagnostic_results | tojson | safe }};
+            console.log('🔍 ОТЛАДКА: diagnostic_results =', diagnosticResults);
+            console.log('🔍 ОТЛАДКА: diagnostic_results.domains =', diagnosticResults.domains);
+        } catch (e) {
+            console.warn('Error parsing diagnostic results:', e);
+            diagnosticResults = {};
+        }
+        
+        try {
+            learningPlanData = {{ learning_plan_data | tojson | safe }};
+            console.log('🔍 ОТЛАДКА: learning_plan_data =', learningPlanData);
+        } catch (e) {
+            console.warn('Error parsing learning plan data:', e);
+            learningPlanData = {};
+        }
+
+        let calendar;
+        let studyPlan = {
+            examDate: null,
+            startDate: null,
+            endDate: null,
+            intensity: 'moderate',
+            studyDays: [1, 2, 3, 4, 5], // Monday to Friday
+            studyTime: 'afternoon',
+            totalHours: 0
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing components...');
+            
+            // Check if libraries are loaded
+            if (!checkLibraries()) {
+                console.error('Required libraries not loaded, showing fallback');
+                showFallbackMessage();
+                return;
+            }
+            
+            try {
+                initializeCalendar();
+                console.log('Calendar initialized');
+            } catch (e) {
+                console.error('Error initializing calendar:', e);
+                showFallbackMessage();
+            }
+            
+            try {
+                initializeForm();
+                console.log('Form initialized');
+            } catch (e) {
+                console.error('Error initializing form:', e);
+            }
+            
+            try {
+                generateDomainProgress();
+                console.log('Domain progress generated');
+            } catch (e) {
+                console.error('Error generating domain progress:', e);
+            }
+            
+            try {
+                generateStudyGoals();
+                console.log('Study goals generated');
+            } catch (e) {
+                console.error('Error generating study goals:', e);
+            }
+            
+            try {
+                updateHeaderStats();
+                console.log('Header stats updated');
+            } catch (e) {
+                console.error('Error updating header stats:', e);
+            }
+            
+            try {
+                bindEventHandlers();
+                console.log('Event handlers bound');
+            } catch (e) {
+                console.error('Error binding event handlers:', e);
+            }
+            
+            console.log('All components initialized');
+        });
+
+        function showFallbackMessage() {
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl) {
+                calendarEl.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #666;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b; margin-bottom: 20px;"></i>
+                        <h3>Calendar Loading Error</h3>
+                        <p>The calendar library failed to load. Please refresh the page or try again later.</p>
+                        <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 20px;">
+                            <i class="fas fa-redo"></i> Refresh Page
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function initializeCalendar() {
+            console.log('🔍 ОТЛАДКА: initializeCalendar вызвана');
+            const calendarEl = document.getElementById('calendar');
+            
+            if (!calendarEl) {
+                console.error('❌ Calendar element not found!');
+                return;
+            }
+            
+            console.log('🔍 ОТЛАДКА: Calendar element найден, создаем FullCalendar...');
+            
+            try {
+                // Проверяем доступность FullCalendar
+                if (typeof FullCalendar === 'undefined') {
+                    throw new Error('FullCalendar is not loaded');
+                }
+                
+                console.log('🔍 ОТЛАДКА: FullCalendar доступен, создаем календарь...');
+                
+                // Генерируем события с обработкой ошибок
+                let calendarEvents = [];
+                try {
+                    calendarEvents = generateRealLearningEvents();
+                    console.log('✅ Real events generated successfully:', calendarEvents.length);
+                } catch (e) {
+                    console.error('❌ Error generating real events:', e);
+                    calendarEvents = []; // Пустой массив в случае ошибки
+                }
+                
+                try {
+                    calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek'
+                        },
+                        height: 'auto',
+                        events: calendarEvents,
+                        eventDidMount: function(info) {
+                            console.log('Event mounted:', info.event.title);
+                        },
+                        eventClick: function(info) {
+                            showEventDetails(info.event);
+                        },
+                        dateClick: function(info) {
+                            addStudySession(info.date);
+                        }
+                    });
+                    
+                    console.log('✅ Календарь создан успешно');
+                } catch (e) {
+                    console.error('❌ Ошибка создания календаря:', e);
+                    calendarEl.innerHTML = '<div class="alert alert-danger">Ошибка загрузки календаря. Попробуйте обновить страницу.</div>';
+                    return;
+                }
+                
+                console.log('🔍 ОТЛАДКА: FullCalendar создан, рендерим...');
+                try {
+                    calendar.render();
+                    console.log('✅ Календарь отрендерен');
+                } catch (e) {
+                    console.error('❌ Ошибка рендеринга календаря:', e);
+                    calendarEl.innerHTML = '<div class="alert alert-danger">Ошибка отображения календаря. Попробуйте обновить страницу.</div>';
+                    return;
+                }
+                console.log('✅ Calendar rendered successfully');
+                
+                // Добавляем обработчик ошибок рендеринга
+                setTimeout(() => {
+                    if (calendarEl.children.length === 0) {
+                        console.error('❌ Calendar failed to render content');
+                        calendarEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Calendar failed to load. Please refresh the page.</div>';
+                    }
+                }, 2000);
+                
+            } catch (e) {
+                console.error('❌ Error creating FullCalendar:', e);
+                console.error('Full error details:', e.stack);
+                
+                // Показываем подробную информацию об ошибке
+                calendarEl.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #666;">
+                        <h3>Calendar Loading Error</h3>
+                        <p>Error: ${e.message}</p>
+                        <p>Please check the browser console for more details.</p>
+                        <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 10px;">
+                            <i class="fas fa-redo"></i> Refresh Page
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function generateLearningPlanEvents() {
+            console.log('🔍 ОТЛАДКА: generateLearningPlanEvents вызвана');
+            const events = [];
+            
+            // Проверяем входные данные
+            console.log('🔍 ОТЛАДКА: diagnosticResults =', diagnosticResults);
+            console.log('🔍 ОТЛАДКА: diagnosticResults.domains =', diagnosticResults?.domains);
+            
+            // Get current form values
+            const examDateInput = document.getElementById('exam-date');
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const intensityInputs = document.querySelectorAll('.intensity-option.active');
+            
+            console.log('🔍 ОТЛАДКА: найдено элементов формы:', {
+                examDateInput: !!examDateInput,
+                startDateInput: !!startDateInput,
+                endDateInput: !!endDateInput,
+                intensityInputs: intensityInputs.length
+            });
+            
+            // Get selected study days with individual hours from sliders
+            const selectedDays = [];
+            const dayHours = {};
+            const timeSteps = [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8];
+            
+            // Check all days (0-6) for slider values
+            for (let day = 0; day <= 6; day++) {
+                const slider = document.querySelector(`input[name="day-hours-${day}"]`);
+                if (slider) {
+                    const hours = timeSteps[parseInt(slider.value)];
+                    if (hours > 0) {
+                        selectedDays.push(day);
+                        dayHours[day] = hours;
+                    }
+                }
+            }
+            
+            if (selectedDays.length === 0) {
+                // Default to Monday-Friday with 1.5 hours each, weekends with 3 hours
+                selectedDays.push(0, 1, 2, 3, 4, 5, 6);
+                [0, 6].forEach(day => dayHours[day] = 3); // Weekends
+                [1, 2, 3, 4, 5].forEach(day => dayHours[day] = 1.5); // Weekdays
+            }
+            
+            console.log('🔍 ОТЛАДКА: выбранные дни недели =', selectedDays);
+            console.log('🔍 ОТЛАДКА: часы по дням =', dayHours);
+            
+            // Always generate events based on available data
+            const today = new Date();
+            const domains = diagnosticResults && diagnosticResults.domains ? 
+                diagnosticResults.domains : 
+                [
+                    { name: 'Endodontics', score: 70 },
+                    { name: 'Periodontics', score: 65 },
+                    { name: 'Orthodontics', score: 75 },
+                    { name: 'Oral Surgery', score: 60 },
+                    { name: 'Prosthodontics', score: 80 },
+                    { name: 'Preventive Care', score: 85 }
+                ];
+            
+            console.log('🔍 ОТЛАДКА: домены для календаря =', domains);
+            
+            const colors = ['#3ECDC1', '#6C5CE7', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            // Get dates from form or use defaults
+            let startDate = today;
+            let endDate = new Date(today);
+            endDate.setDate(today.getDate() + 90);
+            let examDate = new Date(today);
+            examDate.setDate(today.getDate() + 90);
+            
+            if (startDateInput && startDateInput.value) {
+                startDate = new Date(startDateInput.value);
+            }
+            if (endDateInput && endDateInput.value) {
+                endDate = new Date(endDateInput.value);
+            }
+            if (examDateInput && examDateInput.value) {
+                examDate = new Date(examDateInput.value);
+            }
+            
+            console.log('🔍 ОТЛАДКА: даты:', {
+                startDate: startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0],
+                examDate: examDate.toISOString().split('T')[0]
+            });
+            
+            // Add exam date
+            events.push({
+                title: 'BIG Exam',
+                start: examDate.toISOString().split('T')[0],
+                backgroundColor: '#ef4444',
+                borderColor: '#ef4444',
+                extendedProps: {
+                    type: 'exam'
+                }
+            });
+            
+            // Generate study sessions only on selected days
+            let currentDate = new Date(startDate);
+            let domainIndex = 0;
+            let eventsGenerated = 0;
+            
+            while (currentDate <= endDate) {
+                // Check if current day is a selected study day
+                const currentDay = currentDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                
+                if (selectedDays.includes(currentDay)) {
+                    const domain = domains[domainIndex % domains.length];
+                    
+                    // Проверяем, что domain существует и имеет нужные свойства
+                    if (!domain || !domain.name) {
+                        console.warn('⚠️ Domain is undefined or missing name:', domain);
+                        continue;
+                    }
+                    
+                    const hoursPerSession = dayHours[currentDay];
+                    
+                    events.push({
+                        title: `${domain.name} (${hoursPerSession}h)`,
+                        start: currentDate.toISOString().split('T')[0],
+                        backgroundColor: colors[domainIndex % colors.length],
+                        borderColor: colors[domainIndex % colors.length],
+                        extendedProps: {
+                            domain: domain.name,
+                            duration: hoursPerSession,
+                            type: 'study',
+                            priority: (domain.score && domain.score < 75) ? 'high' : 'normal'
+                        }
+                    });
+                    
+                    domainIndex++;
+                    eventsGenerated++;
+                }
+                
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            console.log('✅ Generated events:', events.length, '(study events:', eventsGenerated, ')');
+            return events;
+        }
+
+        function getIntensityHours(intensity) {
+            switch (intensity) {
+                case 'light':
+                    return 1.5;
+                case 'moderate':
+                    return 2.5;
+                case 'intensive':
+                    return 4;
+                default:
+                    return 2.5;
+            }
+        }
+
+        function generateSampleEvents() {
+            const events = [];
+            const today = new Date();
+            const domains = ['Endodontics', 'Periodontics', 'Orthodontics', 'Oral Surgery', 'Prosthodontics', 'Preventive Care'];
+            const colors = ['#3ECDC1', '#6C5CE7', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            // Generate study sessions for next 30 days
+            for (let i = 1; i <= 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                
+                // Skip weekends for sample data
+                if (date.getDay() === 0 || date.getDay() === 6) continue;
+                
+                const domainIndex = Math.floor(Math.random() * domains.length);
+                const domain = domains[domainIndex];
+                const duration = Math.floor(Math.random() * 3) + 1; // 1-3 hours
+                
+                events.push({
+                    title: `${domain} (${duration}h)`,
+                    start: date.toISOString().split('T')[0],
+                    backgroundColor: colors[domainIndex],
+                    borderColor: colors[domainIndex],
+                    extendedProps: {
+                        domain: domain,
+                        duration: duration,
+                        type: 'study'
+                    }
+                });
+            }
+            
+            // Add exam date
+            const examDate = new Date(today);
+            examDate.setDate(today.getDate() + 90);
+            events.push({
+                title: 'BIG Exam',
+                start: examDate.toISOString().split('T')[0],
+                backgroundColor: '#ef4444',
+                borderColor: '#ef4444',
+                extendedProps: {
+                    type: 'exam'
+                }
+            });
+            
+            return events;
+        }
+
+        function initializeForm() {
+            console.log('Initializing form...');
+            
+            // Set default dates
+            const today = new Date();
+            const examDate = new Date(today);
+            examDate.setDate(today.getDate() + 90); // 90 days from now
+            
+            const startDate = new Date(today);
+            const endDate = new Date(today);
+            endDate.setDate(today.getDate() + 84); // 12 weeks = 84 days
+            
+            // Set form values
+            const examDateInput = document.getElementById('exam-date');
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            
+            if (examDateInput) examDateInput.value = examDate.toISOString().split('T')[0];
+            if (startDateInput) startDateInput.value = startDate.toISOString().split('T')[0];
+            if (endDateInput) endDateInput.value = endDate.toISOString().split('T')[0];
+            
+            // Add event listeners for date synchronization
+            if (startDateInput) {
+                startDateInput.addEventListener('change', function() {
+                    console.log('🔍 ОТЛАДКА: startDate изменен на', this.value);
+                    updateEndDate();
+                    updateCalendar();
+                    updateStudyPeriodInfo(); // Update info panel
+                });
+            }
+            
+            if (examDateInput) {
+                examDateInput.addEventListener('change', function() {
+                    console.log('🔍 ОТЛАДКА: examDate изменен на', this.value);
+                    validateStudyPeriod();
+                    updateCalendar();
+                    updateStudyPeriodInfo(); // Update info panel
+                });
+            }
+            
+            // Add event listeners for study days
+            const studyDayCheckboxes = document.querySelectorAll('input[name="study-days"]');
+            studyDayCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    console.log('🔍 ОТЛАДКА: study day изменен:', this.value, this.checked);
+                    recalculateStudyPeriod();
+                    updateCalendar();
+                });
+            });
+            
+            // Add event listeners for intensity
+            const intensityOptions = document.querySelectorAll('.intensity-option');
+            intensityOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove active class from all options
+                    intensityOptions.forEach(opt => opt.classList.remove('active'));
+                    // Add active class to clicked option
+                    this.classList.add('active');
+                    
+                    const intensity = this.getAttribute('data-intensity');
+                    console.log('🔍 ОТЛАДКА: intensity изменен на', intensity);
+                    recalculateStudyPeriod();
+                    updateCalendar();
+                });
+            });
+            
+            // Add event listeners for study time
+            const studyTimeSelect = document.getElementById('study-time');
+            if (studyTimeSelect) {
+                studyTimeSelect.addEventListener('change', function() {
+                    console.log('🔍 ОТЛАДКА: study time изменен на', this.value);
+                    updateCalendar();
+                });
+            }
+            
+            // Generate individual day settings
+            generateIndividualDaySettings();
+            
+            console.log('Form initialized');
+        }
+        
+        function generateIndividualDaySettings() {
+            console.log('🔍 ОТЛАДКА: generateIndividualDaySettings вызвана');
+            
+            const container = document.getElementById('study-days-settings');
+            if (!container) return;
+            
+            const days = [
+                { value: 0, name: '{{ t("sunday", lang) | default("Sunday") }}', defaultHours: 3 },
+                { value: 1, name: '{{ t("monday", lang) | default("Monday") }}', defaultHours: 1.5 },
+                { value: 2, name: '{{ t("tuesday", lang) | default("Tuesday") }}', defaultHours: 1.5 },
+                { value: 3, name: '{{ t("wednesday", lang) | default("Wednesday") }}', defaultHours: 1.5 },
+                { value: 4, name: '{{ t("thursday", lang) | default("Thursday") }}', defaultHours: 1.5 },
+                { value: 5, name: '{{ t("friday", lang) | default("Friday") }}', defaultHours: 1.5 },
+                { value: 6, name: '{{ t("saturday", lang) | default("Saturday") }}', defaultHours: 3 }
+            ];
+            
+            container.innerHTML = '';
+            
+            days.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day-setting';
+                dayElement.setAttribute('data-day', day.value);
+                
+                // Создаем массив возможных значений: 0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8
+                const timeSteps = [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8];
+                const defaultIndex = timeSteps.indexOf(day.defaultHours);
+                
+                dayElement.innerHTML = `
+                    <div class="day-info">
+                        <span class="day-name">${day.name}</span>
+                    </div>
+                    <div class="day-slider-controls">
+                        <input type="range" 
+                               class="time-slider" 
+                               name="day-hours-${day.value}" 
+                               min="0" 
+                               max="${timeSteps.length - 1}" 
+                               value="${defaultIndex}"
+                               step="1">
+                        <div class="slider-value">
+                            <span class="hours-display">${day.defaultHours}</span>
+                            <span class="hours-label">часов</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(dayElement);
+                
+                // Add event listeners
+                const slider = dayElement.querySelector('.time-slider');
+                const hoursDisplay = dayElement.querySelector('.hours-display');
+                
+                slider.addEventListener('input', function() {
+                    const selectedHours = timeSteps[parseInt(this.value)];
+                    hoursDisplay.textContent = selectedHours;
+                    
+                    // Обновляем визуальное состояние
+                    dayElement.classList.toggle('active', selectedHours > 0);
+                    dayElement.classList.toggle('disabled', selectedHours === 0);
+                    
+                    console.log('🔍 ОТЛАДКА: slider изменен для', day.name, 'на', selectedHours, 'hours');
+                    recalculateStudyPeriod();
+                    updateCalendar();
+                });
+                
+                // Set initial state
+                if (day.defaultHours > 0) {
+                    dayElement.classList.add('active');
+                } else {
+                    dayElement.classList.add('disabled');
+                }
+            });
+            
+            console.log('✅ Individual day settings with sliders generated');
+        }
+        
+        function updateEndDate() {
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const examDateInput = document.getElementById('exam-date');
+            
+            if (!startDateInput || !endDateInput || !examDateInput) return;
+            
+            const startDate = new Date(startDateInput.value);
+            const examDate = new Date(examDateInput.value);
+            
+            // Get current intensity
+            const intensityInputs = document.querySelectorAll('.intensity-option.active');
+            
+            let intensity = 'moderate';
+            if (intensityInputs.length > 0) {
+                intensity = intensityInputs[0].getAttribute('data-intensity');
+            }
+            
+            // Get selected study days with individual hours from sliders
+            const selectedDays = [];
+            const dayHours = {};
+            const timeSteps = [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8];
+            
+            // Check all days (0-6) for slider values
+            for (let day = 0; day <= 6; day++) {
+                const slider = document.querySelector(`input[name="day-hours-${day}"]`);
+                if (slider) {
+                    const hours = timeSteps[parseInt(slider.value)];
+                    if (hours > 0) {
+                        selectedDays.push(day);
+                        dayHours[day] = hours;
+                    }
+                }
+            }
+            
+            if (selectedDays.length === 0) {
+                // Default to Monday-Friday with 1.5 hours each, weekends with 3 hours
+                selectedDays.push(0, 1, 2, 3, 4, 5, 6);
+                [0, 6].forEach(day => dayHours[day] = 3); // Weekends
+                [1, 2, 3, 4, 5].forEach(day => dayHours[day] = 1.5); // Weekdays
+            }
+            
+            // Calculate total study hours needed
+            let totalStudyHours = 504; // Default from diagnostic results
+            if (diagnosticResults && diagnosticResults.domains) {
+                totalStudyHours = diagnosticResults.domains.reduce((sum, domain) => sum + domain.hours, 0);
+            }
+            
+            // Calculate total hours per week
+            const totalHoursPerWeek = selectedDays.reduce((sum, day) => sum + dayHours[day], 0);
+            
+            // Calculate how many weeks we need
+            const weeksNeeded = Math.ceil(totalStudyHours / totalHoursPerWeek);
+            
+            // Calculate total days needed (including non-study days)
+            const totalDaysNeeded = weeksNeeded * 7;
+            
+            // Calculate end date
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + totalDaysNeeded);
+            
+            // If end date is after exam date, set it to 7 days before exam
+            if (endDate > examDate) {
+                endDate.setDate(examDate.getDate() - 7);
+            }
+            
+            endDateInput.value = endDate.toISOString().split('T')[0];
+            console.log('🔍 ОТЛАДКА: endDate обновлен на', endDateInput.value, 'с учетом интенсивности и дней недели');
+        }
+        
+        function validateStudyPeriod() {
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const examDateInput = document.getElementById('exam-date');
+            
+            if (!startDateInput || !endDateInput || !examDateInput) return;
+            
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            const examDate = new Date(examDateInput.value);
+            
+            // Get current intensity and study days
+            const intensityInputs = document.querySelectorAll('.intensity-option.active');
+            const studyDayInputs = document.querySelectorAll('input[name="study-days"]:checked');
+            
+            let intensity = 'moderate';
+            if (intensityInputs.length > 0) {
+                intensity = intensityInputs[0].getAttribute('data-intensity');
+            }
+            
+            const selectedDays = Array.from(studyDayInputs).map(input => parseInt(input.value));
+            if (selectedDays.length === 0) {
+                selectedDays.push(1, 2, 3, 4, 5); // Default to Monday-Friday
+            }
+            
+            // Calculate total study hours needed
+            let totalStudyHours = 504; // Default
+            if (diagnosticResults && diagnosticResults.domains) {
+                totalStudyHours = diagnosticResults.domains.reduce((sum, domain) => sum + domain.hours, 0);
+            }
+            
+            // Get hours per session based on intensity
+            const hoursPerSession = getIntensityHours(intensity);
+            
+            // Calculate how many study sessions we need
+            const totalSessionsNeeded = Math.ceil(totalStudyHours / hoursPerSession);
+            
+            // Calculate how many study days per week
+            const studyDaysPerWeek = selectedDays.length;
+            
+            // Calculate how many weeks we need
+            const weeksNeeded = Math.ceil(totalSessionsNeeded / studyDaysPerWeek);
+            
+            // Calculate minimum study period in days
+            const minStudyDays = Math.max(28, weeksNeeded * 7); // At least 4 weeks or calculated period
+            
+            // Check if study period is too short
+            const studyDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            if (studyDays < minStudyDays) {
+                showNotification(`Study period must be at least ${Math.ceil(minStudyDays/7)} weeks (${minStudyDays} days) for your current settings`, 'error');
+                // Recalculate end date
+                recalculateStudyPeriod();
+                return;
+            }
+            
+            // Check if study period ends too close to exam (less than 7 days)
+            const daysBeforeExam = Math.ceil((examDate - endDate) / (1000 * 60 * 60 * 24));
+            const minDaysBeforeExam = 7;
+            
+            if (daysBeforeExam < minDaysBeforeExam) {
+                showNotification('Study period must end at least 7 days before exam', 'error');
+                // Adjust end date
+                const newEndDate = new Date(examDate);
+                newEndDate.setDate(examDate.getDate() - minDaysBeforeExam);
+                endDateInput.value = newEndDate.toISOString().split('T')[0];
+                console.log('🔍 ОТЛАДКА: end date слишком близко к экзамену, исправлен на', endDateInput.value);
+            }
+        }
+        
+        function updateCalendar() {
+            console.log('🔍 ОТЛАДКА: updateCalendar вызван');
+            
+            if (!calendar) {
+                console.warn('Calendar not initialized, skipping update');
+                return;
+            }
+            
+            try {
+                // Remove existing events
+                calendar.removeAllEvents();
+                
+                // Add new events based on current settings
+                const events = generateLearningPlanEvents();
+                calendar.addEventSource(events);
+                
+                console.log('✅ Calendar updated with', events.length, 'events');
+            } catch (e) {
+                console.error('Error updating calendar:', e);
+            }
+        }
+
+        function generateDomainProgress() {
+            console.log('🔍 ОТЛАДКА: generateDomainProgress вызвана');
+            const container = document.getElementById('domain-progress');
+            
+            if (!container) {
+                console.error('❌ Domain progress container not found!');
+                return;
+            }
+            
+            console.log('🔍 ОТЛАДКА: container найден, очищаем...');
+            container.innerHTML = ''; // Очищаем контейнер
+            
+            // Use real diagnostic data if available
+            const domains = diagnosticResults && diagnosticResults.domains ? 
+                diagnosticResults.domains : [
+                    { name: 'Endodontics', score: 85, target: 90, hours: 12 },
+                    { name: 'Periodontics', score: 72, target: 85, hours: 18 },
+                    { name: 'Orthodontics', score: 68, target: 80, hours: 24 },
+                    { name: 'Oral Surgery', score: 82, target: 88, hours: 15 },
+                    { name: 'Prosthodontics', score: 75, target: 85, hours: 20 },
+                    { name: 'Preventive Care', score: 88, target: 92, hours: 8 }
+                ];
+            
+            console.log('🔍 ОТЛАДКА: domains =', domains);
+            console.log('🔍 ОТЛАДКА: количество доменов =', domains.length);
+            
+            domains.forEach((domain, index) => {
+                console.log(`🔍 ОТЛАДКА: обрабатываем домен ${index + 1}/${domains.length}:`, domain);
+                
+                const progressItem = document.createElement('div');
+                progressItem.className = 'progress-item';
+                
+                const progressPercentage = Math.min(100, Math.round((domain.score / domain.target) * 100));
+                const formattedHours = Math.round(domain.hours * 10) / 10;
+                
+                progressItem.innerHTML = `
+                    <div class="progress-info">
+                        <div class="progress-name">${domain.name}</div>
+                        <div class="progress-detail">${domain.score}% of ${domain.target}% • ${formattedHours}h</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-percentage">${progressPercentage}%</div>
+                `;
+                
+                container.appendChild(progressItem);
+                console.log(`🔍 ОТЛАДКА: домен ${domain.name} добавлен в DOM`);
+                
+                // Animate progress bar
+                setTimeout(() => {
+                    const progressFill = progressItem.querySelector('.progress-fill');
+                    if (progressFill) {
+                        progressFill.style.width = `${progressPercentage}%`;
+                        console.log(`🔍 ОТЛАДКА: анимация прогресса для ${domain.name}: ${progressPercentage}%`);
+                    }
+                }, 100 + index * 100);
+            });
+            
+            console.log('✅ Domain progress generated for', domains.length, 'domains');
+        }
+
+        function generateStudyGoals() {
+            console.log('Generating study goals...');
+            const container = document.getElementById('goals-container');
+            
+            if (!container) {
+                console.error('Goals container not found!');
+                return;
+            }
+            
+            const goals = [
+                {
+                    title: 'Improve knowledge in orthodontics',
+                    description: 'Increase level from 68% to 80% in 4 weeks',
+                    deadline: '4 weeks',
+                    progress: 25
+                },
+                {
+                    title: 'Master periodontics',
+                    description: 'Study advanced surgical procedures',
+                    deadline: '3 weeks',
+                    progress: 60
+                },
+                {
+                    title: 'Prepare for final test',
+                    description: 'Complete all practical modules',
+                    deadline: '12 weeks',
+                    progress: 78
+                }
+            ];
+            
+            goals.forEach((goal, index) => {
+                const goalCard = document.createElement('div');
+                goalCard.className = 'goal-card';
+                goalCard.style.animationDelay = `${index * 0.1}s`;
+                
+                goalCard.innerHTML = `
+                    <div class="goal-header">
+                        <div class="goal-title">${goal.title}</div>
+                        <div class="goal-deadline">
+                            <i class="fas fa-clock"></i> ${goal.deadline}
+                        </div>
+                    </div>
+                    <div class="goal-description">${goal.description}</div>
+                    <div class="goal-progress">
+                        <div class="progress-bar" style="flex: 1;">
+                            <div class="progress-fill" style="width: ${goal.progress}%"></div>
+                        </div>
+                        <span style="margin-left: 12px; font-weight: 600; color: var(--primary-color);">
+                            ${goal.progress}%
+                        </span>
+                    </div>
+                `;
+                
+                container.appendChild(goalCard);
+            });
+            
+            console.log('Study goals generated');
+        }
+
+        function updateHeaderStats() {
+            console.log('🔍 ОТЛАДКА: updateHeaderStats вызвана');
+            
+            // Get dates from form
+            const examDateInput = document.getElementById('exam-date');
+            const startDateInput = document.getElementById('start-date');
+            
+            let examDate, startDate;
+            
+            if (examDateInput && examDateInput.value) {
+                examDate = new Date(examDateInput.value);
+            } else {
+                examDate = new Date();
+                examDate.setDate(examDate.getDate() + 90);
+            }
+            
+            if (startDateInput && startDateInput.value) {
+                startDate = new Date(startDateInput.value);
+            } else {
+                startDate = new Date();
+            }
+            
+            const daysToExam = Math.ceil((examDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            // Calculate total hours from diagnostic results
+            let totalHours = 97; // Default
+            if (diagnosticResults && diagnosticResults.domains) {
+                totalHours = diagnosticResults.domains.reduce((sum, domain) => sum + domain.hours, 0);
+                console.log('🔍 ОТЛАДКА: totalHours из diagnosticResults =', totalHours);
+            }
+            
+            // Get overall score
+            let overallScore = 78; // Default
+            if (diagnosticResults && diagnosticResults.overall_score !== undefined) {
+                // Convert IRT score to percentage (IRT scores are typically between -3 and 3)
+                // Map to 0-100% scale
+                const irtScore = diagnosticResults.overall_score;
+                console.log('🔍 ОТЛАДКА: raw IRT score =', irtScore);
+                
+                // Convert IRT score to percentage (0-100%)
+                // IRT scores range from -3 to +3, map to 0-100%
+                if (irtScore >= 0) {
+                    // Positive scores: map 0-3 to 50-100%
+                    overallScore = 50 + (irtScore / 3) * 50;
+                } else {
+                    // Negative scores: map -3-0 to 0-50%
+                    overallScore = 50 + (irtScore / 3) * 50;
+                }
+                
+                // Ensure score is between 0 and 100
+                overallScore = Math.max(0, Math.min(100, overallScore));
+                
+                console.log('🔍 ОТЛАДКА: converted overallScore =', overallScore);
+            }
+            
+            // Format total hours properly
+            const formattedTotalHours = Math.round(totalHours * 10) / 10;
+            
+            // Update the stats
+            const daysElement = document.getElementById('days-to-exam');
+            const hoursElement = document.getElementById('study-hours');
+            const scoreElement = document.getElementById('completion-rate');
+            
+            console.log('🔍 ОТЛАДКА: элементы найдены:', {
+                daysElement: !!daysElement,
+                hoursElement: !!hoursElement,
+                scoreElement: !!scoreElement
+            });
+            
+            if (daysElement) {
+                daysElement.textContent = daysToExam;
+                console.log('🔍 ОТЛАДКА: days-to-exam обновлен:', daysToExam);
+            }
+            if (hoursElement) {
+                hoursElement.textContent = formattedTotalHours;
+                console.log('🔍 ОТЛАДКА: study-hours обновлен:', formattedTotalHours);
+            }
+            if (scoreElement) {
+                scoreElement.textContent = Math.round(overallScore) + '%';
+                console.log('🔍 ОТЛАДКА: completion-rate обновлен:', Math.round(overallScore) + '%');
+            }
+            
+            console.log('✅ Header stats updated:', { daysToExam, totalHours: formattedTotalHours, overallScore });
+        }
+
+        function animateValue(elementId, start, end, duration, suffix = '') {
+            const element = document.getElementById(elementId);
+            const startTime = performance.now();
+            
+            function updateValue(currentTime) {
+                const elapsedTime = currentTime - startTime;
+                const progress = Math.min(elapsedTime / duration, 1);
+                const currentValue = start + (end - start) * progress;
+                
+                // Format the value properly
+                let displayValue;
+                if (suffix === 'h') {
+                    // For hours, show one decimal place
+                    displayValue = Math.round(currentValue * 10) / 10;
+                } else {
+                    // For other values, show as integer
+                    displayValue = Math.floor(currentValue);
+                }
+                
+                element.textContent = displayValue + suffix;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateValue);
+                }
+            }
+            
+            requestAnimationFrame(updateValue);
+        }
+
+        function bindEventHandlers() {
+            // Calendar toggle button
+            document.getElementById('toggle-calendar-btn').addEventListener('click', function() {
+                if (calendar) {
+                    const currentView = calendar.view.type;
+                    if (currentView === 'dayGridMonth') {
+                        calendar.changeView('timeGridWeek');
+                        this.innerHTML = '<i class="fas fa-calendar-week"></i> Week';
+                    } else {
+                        calendar.changeView('dayGridMonth');
+                        this.innerHTML = '<i class="fas fa-th"></i> Month';
+                    }
+                }
+            });
+
+            // Intensity selector
+            document.querySelectorAll('.intensity-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.intensity-option').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    studyPlan.intensity = this.dataset.intensity;
+                });
+            });
+
+            // Form submission
+            document.getElementById('plan-config-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                generateStudyPlan();
+            });
+
+            // Date change handlers
+            document.getElementById('exam-date').addEventListener('change', updatePlanDates);
+            document.getElementById('start-date').addEventListener('change', updatePlanDates);
+            document.getElementById('end-date').addEventListener('change', updatePlanDates);
+        }
+
+        function updatePlanDates() {
+            const examDate = document.getElementById('exam-date').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            if (examDate && startDate && endDate) {
+                const exam = new Date(examDate);
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                const daysToExam = Math.ceil((exam - start) / (1000 * 60 * 60 * 24));
+                document.getElementById('days-to-exam').textContent = daysToExam;
+                
+                // Update calendar if we have a learning plan
+                if (learningPlanData && Object.keys(learningPlanData).length > 0) {
+                    learningPlanData.exam_date = examDate;
+                    learningPlanData.start_date = startDate;
+                    learningPlanData.end_date = endDate;
+                    
+                    // Refresh calendar
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(generateLearningPlanEvents());
+                }
+            }
+        }
+
+        function generateStudyPlan() {
+            const submitButton = document.querySelector('#plan-config-form button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            // Show loading state
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating plan...';
+            submitButton.disabled = true;
+            
+            // Collect form data
+            const formData = {
+                exam_date: document.getElementById('exam-date').value,
+                start_date: document.getElementById('start-date').value,
+                end_date: document.getElementById('end-date').value,
+                intensity: studyPlan.intensity,
+                study_time: document.getElementById('study-time').value
+            };
+            
+            // Update learning plan data with form values
+            learningPlanData.exam_date = formData.exam_date;
+            learningPlanData.start_date = formData.start_date;
+            learningPlanData.end_date = formData.end_date;
+            learningPlanData.intensity = formData.intensity;
+            learningPlanData.study_time = formData.study_time;
+            
+            // Send to backend
+            fetch('/dashboard/create-learning-plan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update calendar with new plan
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(generateLearningPlanEvents());
+                    
+                    // Update header stats
+                    updateHeaderStats();
+                    
+                    // Show success message
+                    showNotification('Learning plan created successfully!', 'success');
+                } else {
+                    showNotification(data.message || 'Error creating plan', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error creating plan', 'error');
+            })
+            .finally(() => {
+                // Reset button
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            });
+        }
+
+        function generateOptimizedEvents() {
+            // This would be generated based on IRT results and user preferences
+            const events = [];
+            const domains = diagnosticResults && diagnosticResults.domains ? 
+                diagnosticResults.domains : [
+                    { name: 'Endodontics', score: 85, target: 90, hours: 12 },
+                    { name: 'Periodontics', score: 72, target: 85, hours: 18 },
+                    { name: 'Orthodontics', score: 68, target: 80, hours: 24 },
+                    { name: 'Oral Surgery', score: 82, target: 88, hours: 15 },
+                    { name: 'Prosthodontics', score: 75, target: 85, hours: 20 },
+                    { name: 'Preventive Care', score: 88, target: 92, hours: 8 }
+                ];
+            const colors = ['#3ECDC1', '#6C5CE7', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            const startDate = new Date(document.getElementById('start-date').value);
+            const endDate = new Date(document.getElementById('end-date').value);
+            
+            // Generate optimized schedule based on domain priorities
+            let currentDate = new Date(startDate);
+            let domainIndex = 0;
+            
+            while (currentDate <= endDate) {
+                // Skip weekends if not selected
+                if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    continue;
+                }
+                
+                const domain = domains[domainIndex % domains.length];
+                const hoursPerSession = studyPlan.intensity === 'light' ? 1.5 : 
+                                       studyPlan.intensity === 'moderate' ? 2.5 : 4;
+                
+                events.push({
+                    title: `${domain.name} (${hoursPerSession}h)`,
+                    start: currentDate.toISOString().split('T')[0],
+                    backgroundColor: colors[domainIndex % colors.length],
+                    borderColor: colors[domainIndex % colors.length],
+                    extendedProps: {
+                        domain: domain.name,
+                        duration: hoursPerSession,
+                        type: 'study',
+                        priority: domain.score < 75 ? 'high' : 'normal'
+                    }
+                });
+                
+                domainIndex++;
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            return events;
+        }
+
+        function showEventDetails(event) {
+            const details = `
+                <div style="padding: 20px;">
+                    <h3>${event.title}</h3>
+                    <p><strong>Domain:</strong> ${event.extendedProps.domain}</p>
+                    <p><strong>Duration:</strong> ${event.extendedProps.duration} hours</p>
+                    <p><strong>Date:</strong> ${event.start.toLocaleDateString('en-US')}</p>
+                </div>
+            `;
+            
+            showModal('Event Details', details);
+        }
+
+        function addStudySession(date) {
+            const dateStr = date.toISOString().split('T')[0];
+            const domain = prompt('Choose domain for study:');
+            
+            if (domain && calendar) {
+                calendar.addEvent({
+                    title: `${domain} (2h)`,
+                    start: dateStr,
+                    backgroundColor: '#3ECDC1',
+                    borderColor: '#3ECDC1'
+                });
+            }
+        }
+
+        function showModal(title, content) {
+            // Simple modal implementation
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+                justify-content: center; z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%;">
+                    <h3>${title}</h3>
+                    <div>${content}</div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 15px; padding: 8px 16px; background: #3ECDC1; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; padding: 15px 20px; 
+                border-radius: 8px; color: white; z-index: 1000; 
+                background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#22c55e' : '#3ECDC1'};
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function showFallbackMessage() {
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl) {
+                calendarEl.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #666;">
+                        <h3>Calendar Loading...</h3>
+                        <p>Please wait while we load the calendar component.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function recalculateStudyPeriod() {
+            console.log('🔍 ОТЛАДКА: recalculateStudyPeriod вызвана');
+            
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const examDateInput = document.getElementById('exam-date');
+            
+            if (!startDateInput || !endDateInput || !examDateInput) return;
+            
+            // Get current settings
+            const startDate = new Date(startDateInput.value);
+            const examDate = new Date(examDateInput.value);
+            
+            // Get selected study days with individual hours from sliders
+            const selectedDays = [];
+            const dayHours = {};
+            const timeSteps = [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8];
+            
+            // Check all days (0-6) for slider values
+            for (let day = 0; day <= 6; day++) {
+                const slider = document.querySelector(`input[name="day-hours-${day}"]`);
+                if (slider) {
+                    const hours = timeSteps[parseInt(slider.value)];
+                    if (hours > 0) {
+                        selectedDays.push(day);
+                        dayHours[day] = hours;
+                    }
+                }
+            }
+            
+            if (selectedDays.length === 0) {
+                // Default to Monday-Friday with 1.5 hours each, weekends with 3 hours
+                selectedDays.push(0, 1, 2, 3, 4, 5, 6);
+                [0, 6].forEach(day => dayHours[day] = 3); // Weekends
+                [1, 2, 3, 4, 5].forEach(day => dayHours[day] = 1.5); // Weekdays
+            }
+            
+            // Calculate total study hours needed
+            let totalStudyHours = 504; // Default from diagnostic results
+            if (diagnosticResults && diagnosticResults.domains) {
+                totalStudyHours = diagnosticResults.domains.reduce((sum, domain) => sum + domain.hours, 0);
+            }
+            
+            // Calculate total hours per week
+            const totalHoursPerWeek = selectedDays.reduce((sum, day) => sum + dayHours[day], 0);
+            
+            // Calculate how many weeks we need
+            const weeksNeeded = Math.ceil(totalStudyHours / totalHoursPerWeek);
+            
+            // Calculate total days needed
+            const totalDaysNeeded = weeksNeeded * 7;
+            
+            // Calculate new end date
+            const newEndDate = new Date(startDate);
+            newEndDate.setDate(startDate.getDate() + totalDaysNeeded);
+            
+            // Make sure end date is not after exam date
+            if (newEndDate > examDate) {
+                newEndDate.setDate(examDate.getDate() - 7); // 7 days before exam
+            }
+            
+            // Update end date input
+            endDateInput.value = newEndDate.toISOString().split('T')[0];
+            
+            console.log('🔍 ОТЛАДКА: пересчет периода обучения:', {
+                totalStudyHours,
+                selectedDays,
+                dayHours,
+                totalHoursPerWeek,
+                weeksNeeded,
+                totalDaysNeeded,
+                newEndDate: endDateInput.value
+            });
+            
+            // Update header stats and info panel
+            updateHeaderStats();
+            updateStudyPeriodInfo();
+        }
+
+        function updateStudyPeriodInfo() {
+            console.log('🔍 ОТЛАДКА: updateStudyPeriodInfo вызвана');
+            
+            const infoElement = document.getElementById('study-period-info');
+            if (!infoElement) return;
+            
+            // Get selected study days with individual hours from sliders
+            const selectedDays = [];
+            const dayHours = {};
+            const timeSteps = [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8];
+            
+            // Check all days (0-6) for slider values
+            for (let day = 0; day <= 6; day++) {
+                const slider = document.querySelector(`input[name="day-hours-${day}"]`);
+                if (slider) {
+                    const hours = timeSteps[parseInt(slider.value)];
+                    if (hours > 0) {
+                        selectedDays.push(day);
+                        dayHours[day] = hours;
+                    }
+                }
+            }
+            
+            if (selectedDays.length === 0) {
+                // Default to Monday-Friday with 1.5 hours each, weekends with 3 hours
+                selectedDays.push(0, 1, 2, 3, 4, 5, 6);
+                [0, 6].forEach(day => dayHours[day] = 3); // Weekends
+                [1, 2, 3, 4, 5].forEach(day => dayHours[day] = 1.5); // Weekdays
+            }
+            
+            // Calculate total study hours needed
+            let totalStudyHours = 504; // Default
+            if (diagnosticResults && diagnosticResults.domains) {
+                totalStudyHours = diagnosticResults.domains.reduce((sum, domain) => sum + domain.hours, 0);
+            }
+            
+            // Calculate total hours per week
+            const totalHoursPerWeek = selectedDays.reduce((sum, day) => sum + dayHours[day], 0);
+            
+            // Calculate how many weeks we need
+            const weeksNeeded = Math.ceil(totalStudyHours / totalHoursPerWeek);
+            
+            // Calculate total days needed
+            const totalDaysNeeded = weeksNeeded * 7;
+            
+            // Format the information
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dayDetails = selectedDays.map(day => `${dayNames[day]} (${dayHours[day]}h)`).join(', ');
+            
+            const infoText = `
+                <strong>Individual Schedule:</strong><br>
+                • Total study hours: ${totalStudyHours}h<br>
+                • Weekly schedule: ${dayDetails}<br>
+                • Hours per week: ${totalHoursPerWeek}h<br>
+                • Weeks needed: ${weeksNeeded}<br>
+                • Total period: ${totalDaysNeeded} days
+            `;
+            
+            infoElement.innerHTML = infoText;
+            console.log('✅ Study period info updated');
+        }
+
+        function generateRealLearningEvents() {
+            console.log('🔍 ОТЛАДКА: generateRealLearningEvents вызвана');
+            const events = [];
+            
+            // Получаем реальные данные диагностики
+            const diagnosticData = {{ diagnostic_results | tojson | safe }};
+            const learningPlanData = {{ learning_plan_data | tojson | safe }};
+            
+            console.log('🔍 ОТЛАДКА: diagnosticData =', diagnosticData);
+            console.log('🔍 ОТЛАДКА: learningPlanData =', learningPlanData);
+            
+            // Если нет данных диагностики, показываем сообщение
+            if (!diagnosticData.has_diagnostic || !diagnosticData.domains || diagnosticData.domains.length === 0) {
+                console.log('⚠️ Нет данных диагностики для генерации событий');
+                return events;
+            }
+            
+            // Получаем настройки плана
+            const examDate = learningPlanData.plan_data?.exam_date ? new Date(learningPlanData.plan_data.exam_date) : null;
+            const startDate = learningPlanData.plan_data?.start_date ? new Date(learningPlanData.plan_data.start_date) : new Date();
+            const intensity = learningPlanData.plan_data?.intensity || 'moderate';
+            
+            // Определяем количество часов в день в зависимости от интенсивности
+            const hoursPerDay = {
+                'low': 1,
+                'moderate': 2,
+                'high': 3
+            }[intensity] || 2;
+            
+            // Цвета для доменов
+            const domainColors = [
+                '#3ECDC1', '#6C5CE7', '#22c55e', '#f59e0b', 
+                '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'
+            ];
+            
+            // Сортируем домены по приоритету (слабые домены первыми)
+            const sortedDomains = diagnosticData.domains
+                .filter(domain => domain.score !== undefined)
+                .sort((a, b) => a.score - b.score);
+            
+            console.log('🔍 ОТЛАДКА: отсортированные домены =', sortedDomains);
+            
+            // Генерируем события для каждого домена
+            let currentDate = new Date(startDate);
+            let domainIndex = 0;
+            
+            while (currentDate <= (examDate || new Date(currentDate.getTime() + 90 * 24 * 60 * 60 * 1000))) {
+                if (domainIndex < sortedDomains.length) {
+                    const domain = sortedDomains[domainIndex];
+                    const color = domainColors[domainIndex % domainColors.length];
+                    
+                    // Определяем приоритет на основе score
+                    const priority = domain.score < 60 ? 'high' : domain.score < 80 ? 'medium' : 'low';
+                    
+                    events.push({
+                        title: `${domain.name} (${hoursPerDay}h)`,
+                        start: currentDate.toISOString().split('T')[0],
+                        backgroundColor: color,
+                        borderColor: color,
+                        extendedProps: {
+                            domain: domain.name,
+                            score: domain.score,
+                            duration: hoursPerDay,
+                            type: 'study',
+                            priority: priority
+                        }
+                    });
+                    
+                    domainIndex++;
+                }
+                
+                // Переходим к следующему дню
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // Добавляем дату экзамена, если есть
+            if (examDate) {
+                events.push({
+                    title: 'BIG Exam',
+                    start: examDate.toISOString().split('T')[0],
+                    backgroundColor: '#ef4444',
+                    borderColor: '#ef4444',
+                    extendedProps: {
+                        type: 'exam',
+                        priority: 'critical'
+                    }
+                });
+            }
+            
+            console.log('✅ Сгенерировано реальных событий:', events.length);
+            return events;
+        }
+    </script>
+    
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
