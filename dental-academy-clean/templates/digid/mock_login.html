@@ -616,7 +616,7 @@ const demoUser = demoUsers['DEMO'];
 // Toggle registration mode
 function toggleRegistrationMode() {
     showRegistration = document.getElementById('show-registration').checked;
-    console.log('Registration mode:', showRegistration ? 'ON' : 'OFF');
+    // Registration mode status
 }
 
 // Input handling
@@ -754,7 +754,7 @@ function handlePasswordSubmit(event) {
     if (isSubmitting) return false;
     
     const password = document.getElementById('auth-password').value;
-    console.log('🔍 Password input:', `"${password}"`);
+    // Password input received
     
     if (!password || !password.trim()) {
         showPasswordError('{{ t("enter_password", lang) }}');
@@ -763,9 +763,7 @@ function handlePasswordSubmit(event) {
     
     // Check for "Demonstration" password (case-insensitive, trim whitespace)
     const cleanPassword = password.toLowerCase().trim();
-    console.log('🔍 Clean password:', `"${cleanPassword}"`);
-    console.log('🔍 Expected password:', 'demonstration');
-    console.log('🔍 Password match:', cleanPassword === 'demonstration');
+    // Password validation completed
     
     // Allow any password in debug mode (for deployment testing)
     const isDebugMode = window.location.hostname.includes('render.com') || 
@@ -777,8 +775,7 @@ function handlePasswordSubmit(event) {
         return false;
     }
     
-    console.log('🔍 Debug mode:', isDebugMode);
-    console.log('🔍 Password accepted:', cleanPassword);
+    // Debug mode and password status
     
     authenticateWithPassword(password);
     return false;
@@ -858,7 +855,6 @@ function authenticateWithPassword(password) {
     document.getElementById('auth-password').value = '';
     
     // Show user info
-    console.log(`🔑 Final authentication: ${currentUser.name} (${currentUser.profession})`);
     
     // Authenticate user
     authenticateUser(currentUser);
@@ -934,11 +930,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Focus first input
     document.getElementById('code1').focus();
     
-    // Log demo users for development
-    console.log('🔧 Demo users available:');
-    Object.values(demoUsers).forEach(user => {
-        console.log(`  - ${user.code}: ${user.name} (${user.role})`);
-    });
+    // Demo users available for development
 });
 
 // Prevent form resubmission on page refresh
