@@ -1,0 +1,298 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Сессия #{{ session.id }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('admin.diagnostic_analytics') }}">Аналитика диагностики</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('admin.diagnostic_sessions_list') }}">Сессии</a>
+                    </li>
+                    <li class="breadcrumb-item active">Сессия #{{ session.id }}</li>
+                </ol>
+            </nav>
+            <h1 class="h2">Диагностическая сессия #{{ session.id }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('admin.diagnostic_sessions_list') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад к списку
+            </a>
+        </div>
+    </div>
+
+    <!-- Основная информация -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Информация о сессии</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Пользователь:</strong></td>
+                            <td>{{ session.user.full_name or session.user.email }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email:</strong></td>
+                            <td>{{ session.user.email }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Тип сессии:</strong></td>
+                            <td><span class="badge bg-secondary">{{ session.session_type }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Статус:</strong></td>
+                            <td>
+                                {% if session.status == 'active' %}
+                                    <span class="badge bg-success">Активная</span>
+                                {% elif session.status == 'completed' %}
+                                    <span class="badge bg-primary">Завершена</span>
+                                {% elif session.status == 'paused' %}
+                                    <span class="badge bg-warning">Приостановлена</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ session.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Дата начала:</strong></td>
+                            <td>{{ session.started_at.strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                        </tr>
+                        {% if session.completed_at %}
+                        <tr>
+                            <td><strong>Дата завершения:</strong></td>
+                            <td>{{ session.completed_at.strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td><strong>IP адрес:</strong></td>
+                            <td>{{ session.ip_address or 'Не указан' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Результаты</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ session.questions_answered }}</h4>
+                            <small class="text-muted">Вопросов отвечено</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success">{{ session.correct_answers }}</h4>
+                            <small class="text-muted">Правильных ответов</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-info">
+                                {% if session.questions_answered > 0 %}
+                                    {{ (session.correct_answers / session.questions_answered * 100)|round(1) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">Точность</small>
+                        </div>
+                    </div>
+                    
+                    {% if session.current_ability is not none %}
+                    <hr>
+                    <div class="text-center">
+                        <h5>Финальная способность</h5>
+                        <h3 class="{% if session.current_ability < -0.5 %}text-danger{% elif session.current_ability < 0 %}text-warning{% else %}text-success{% endif %}">
+                            {{ session.current_ability|round(3) }}
+                        </h3>
+                        <small class="text-muted">Стандартная ошибка: {{ session.ability_se|round(3) }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- График изменения способности -->
+    {% if ability_history %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Изменение способности во время тестирования</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="abilityChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Результаты по доменам -->
+    {% if results and results.domain_abilities %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Результаты по доменам</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for domain, ability in results.domain_abilities.items() %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h6>{{ domain }}</h6>
+                                    <h4 class="{% if ability < -0.5 %}text-danger{% elif ability < 0 %}text-warning{% else %}text-success{% endif %}">
+                                        {{ ability|round(2) }}
+                                    </h4>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar {% if ability < -0.5 %}bg-danger{% elif ability < 0 %}bg-warning{% else %}bg-success{% endif %}" 
+                                             style="width: {{ ((ability + 3) / 6 * 100)|round }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- История ответов -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">История ответов</h5>
+                </div>
+                <div class="card-body">
+                    {% if responses %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Вопрос</th>
+                                    <th>Ответ</th>
+                                    <th>Правильно</th>
+                                    <th>Время (сек)</th>
+                                    <th>Способность до</th>
+                                    <th>Способность после</th>
+                                    <th>Время ответа</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for response in responses %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        <div style="max-width: 300px;">
+                                            <strong>ID: {{ response.question.id }}</strong>
+                                            <br>
+                                            <small class="text-truncate d-block">
+                                                {{ response.question.text[:100] }}...
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ response.selected_answer }}</span>
+                                    </td>
+                                    <td>
+                                        {% if response.is_correct %}
+                                            <span class="badge bg-success">✓</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">✗</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ response.response_time|round(1) if response.response_time else '-' }}</td>
+                                    <td>
+                                        {% if response.ability_before is not none %}
+                                            <small>{{ response.ability_before|round(3) }}</small>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if response.ability_after is not none %}
+                                            <small>{{ response.ability_after|round(3) }}</small>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ response.responded_at.strftime('%H:%M:%S') }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Нет данных об ответах</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if ability_history %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// График изменения способности
+const abilityData = {
+    labels: {{ ability_history|map(attribute='timestamp')|list|tojson }},
+    datasets: [{
+        label: 'Способность (θ)',
+        data: {{ ability_history|map(attribute='ability')|list|tojson }},
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1,
+        pointRadius: 4
+    }]
+};
+
+new Chart(document.getElementById('abilityChart'), {
+    type: 'line',
+    data: abilityData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Время'
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Способность (θ)'
+                }
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %} 

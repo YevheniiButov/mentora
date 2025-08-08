@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}{{ path.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-route"></i>
+                        {{ path.name }}
+                    </h2>
+                    {% if path.description %}
+                    <p class="card-subtitle text-muted">{{ path.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <!-- Прогресс пути -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="progress-info">
+                                <h5>Общий прогресс</h5>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ user_progress.progress_percentage }}%"
+                                         aria-valuenow="{{ user_progress.progress_percentage }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ "%.1f"|format(user_progress.progress_percentage) }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="path-stats">
+                                <h5>Статистика</h5>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-clock"></i> Завершено модулей: {{ user_progress.completed_modules|length }}/{{ modules|length }}</li>
+                                    <li><i class="fas fa-calendar"></i> Начато: {{ user_progress.created_at.strftime('%d.%m.%Y') if user_progress.created_at else 'Недавно' }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Предварительные требования -->
+                    {% if path.prerequisites and not prerequisites_met %}
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Предварительные требования</h5>
+                        <p>Для начала этого пути необходимо завершить предварительные курсы на 80% или более.</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Модули пути -->
+                    <div class="modules-section">
+                        <h4><i class="fas fa-cubes"></i> Модули пути</h4>
+                        
+                        {% if modules %}
+                        <div class="row">
+                            {% for module in modules %}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card module-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ module.name }}</h5>
+                                        
+                                        {% if module.domains %}
+                                        <div class="domains mb-2">
+                                            <small class="text-muted">Домены:</small>
+                                            {% for domain in module.domains %}
+                                            <span class="badge badge-secondary">{{ domain }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="module-progress mb-2">
+                                            <small class="text-muted">Прогресс:</small>
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: {{ module.progress_percent }}%"
+                                                     aria-valuenow="{{ module.progress_percent }}" 
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                    {{ "%.0f"|format(module.progress_percent) }}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if module.estimated_hours %}
+                                        <div class="estimated-time mb-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock"></i> 
+                                                Примерное время: {{ module.estimated_hours }} ч
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="module-actions">
+                                            {% if module.learning_cards_path %}
+                                            <a href="{{ url_for('learning_bp.learning_cards', path=module.learning_cards_path) }}" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-cards-blank"></i> Карточки
+                                            </a>
+                                            {% endif %}
+                                            
+                                            {% if module.virtual_patients %}
+                                            <a href="{{ url_for('virtual_patient_bp.list_scenarios') }}" 
+                                               class="btn btn-sm btn-success">
+                                                <i class="fas fa-user-md"></i> Виртуальные пациенты
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Модули для этого пути пока не добавлены.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.module-card {
+    transition: transform 0.2s;
+    border: 1px solid #e9ecef;
+}
+
+.module-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.progress-sm {
+    height: 0.5rem;
+}
+
+.module-actions {
+    margin-top: 1rem;
+}
+
+.module-actions .btn {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.path-stats ul li {
+    margin-bottom: 0.5rem;
+}
+
+.path-stats ul li i {
+    width: 20px;
+    color: #6c757d;
+}
+</style>
+{% endblock %} 

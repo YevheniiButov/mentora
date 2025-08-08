@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'light' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('learning_map', lang) | default('Learning Map') }} - MENTORA</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3ECDC1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mentora">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+    
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
+
+    <!-- СИСТЕМА ТЕМ (базовые переменные) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
+    
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <!-- Универсальные стили -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-styles.css') }}">
+    
+    <!-- Универсальная система лейаутов -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+    
+    <!-- Дополнительные стили компонентов -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/footer-spacing.css') }}">
+
+    <style>
+        /* Learning Map Beautiful Design - Light Theme */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #2c3e50;
+            --text-secondary: #6c757d;
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --primary: #667eea;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --card-border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Styles - Light Theme */
+        .modern-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            padding: 0;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--text-primary) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary) !important;
+        }
+
+        .language-btn-modern {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .language-btn-modern:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary);
+        }
+
+        .dropdown-menu {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-item {
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .learning-map-container {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 2rem;
+            padding-top: 6rem; /* Отступ для sticky header */
+            display: grid;
+            grid-template-columns: 320px 1fr 300px;
+            gap: 2rem;
+            min-height: calc(100vh - 120px);
+        }
+
+        /* Daily Plan Header */
+        .daily-plan-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: var(--card-border);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .plan-date {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .plan-date i {
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .plan-date h2 {
+            font-size: 1.3rem;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .plan-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            border: var(--card-border);
+        }
+
+        .summary-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .summary-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: var(--card-border);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden; /* Предотвращает вылазивание контента */
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title h3 {
+            color: var(--text-primary);
+            margin: 0;
+            font-size: 1rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .section-icon.primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .section-icon.success { background: linear-gradient(135deg, #28a745, #20c997); }
+        .section-icon.warning { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+        .section-icon.danger { background: linear-gradient(135deg, #dc3545, #c82333); }
+
+        .section-time {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            border: var(--card-border);
+            flex-shrink: 0; /* Не сжимается */
+            white-space: nowrap; /* Не переносится */
+        }
+
+        .content-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: var(--card-border);
+        }
+
+        .content-item:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0; /* Позволяет flex-элементу сжиматься */
+        }
+
+        .item-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .item-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+
+        .difficulty-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .difficulty-easy { background: rgba(40, 167, 69, 0.1); color: var(--success); }
+        .difficulty-medium { background: rgba(255, 193, 7, 0.1); color: var(--warning); }
+        .difficulty-hard { background: rgba(220, 53, 69, 0.1); color: var(--danger); }
+
+        .item-action {
+            background: linear-gradient(135deg, var(--primary), #764ba2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .item-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .quick-action {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            border: var(--card-border);
+            min-width: 0; /* Позволяет сжиматься */
+        }
+
+        .quick-action:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: var(--text-primary);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .action-icon.primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .action-icon.warning { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+        .action-icon.danger { background: linear-gradient(135deg, #dc3545, #c82333); }
+
+        .action-content {
+            flex: 1;
+            min-width: 0; /* Позволяет сжиматься */
+        }
+
+        .action-content h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .action-content p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Progress Stats */
+        .progress-stats {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-circle {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            margin: 0 auto 1rem;
+        }
+
+        .circle-bg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) 0% 65%, rgba(0,0,0,0.1) 65% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-inner {
+            width: 80%;
+            height: 80%;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .progress-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .progress-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            border: var(--card-border);
+            min-width: 0; /* Позволяет сжиматься */
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            flex-shrink: 1;
+            min-width: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--success);
+            flex-shrink: 0;
+            margin-left: 0.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.6;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .learning-map-container {
+                grid-template-columns: 280px 1fr 280px;
+                gap: 1.5rem;
+                padding: 1.5rem;
+                padding-top: 5rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .learning-map-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1rem;
+                padding-top: 4.5rem;
+            }
+            
+            .plan-summary {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .learning-map-container {
+                padding: 0.75rem;
+                padding-top: 4rem;
+            }
+            
+            .plan-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .content-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .plan-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .learning-map-container {
+                padding: 0.5rem;
+                padding-top: 3.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+                    <header class="modern-header">
+                    <nav class="navbar navbar-expand-lg">
+                        <div class="container-fluid px-4">
+                <!-- Logo -->
+                <a class="navbar-brand" href="{{ url_for('index', lang=lang) }}">
+                    <div class="logo-container">
+                        <img class="logo logo-light" src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Light" height="40">
+                        <img class="logo logo-dark" src="{{ url_for('static', filename='images/logo_black.png') }}" alt="Mentora Dark" height="40">
+                    </div>
+                </a>
+                
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                
+                <!-- Navigation -->
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto">
+                        <!-- Hoofdpagina -->
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'index' }}" 
+                               href="{{ url_for('index', lang=lang) }}">
+                                {{ t('home', lang)|default('Home') }}
+                            </a>
+                        </li>
+                        
+                        <!-- Learning Map -->
+                        {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'daily_learning.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
+                               href="{{ url_for('daily_learning.learning_map', lang=lang) }}">
+                                {{ t('learning_map', lang)|default('Learning Map') }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'daily_learning.knowledge_base' }}" 
+                               href="{{ url_for('daily_learning.knowledge_base', lang=lang) }}">
+                                {{ t('knowledge_base', lang)|default('Knowledge Base') }}
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <!-- Community -->
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'main.community' }}" 
+                               href="{{ url_for('main.community', lang=lang) }}">
+                                {{ t('community', lang)|default('Community') }}
+                            </a>
+                        </li>
+                        
+                        <!-- Over BIG -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.big_info', lang=lang) }}">
+                                {{ t('about_big', lang)|default('About BIG') }}
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Right Side Actions -->
+                    <div class="navbar-actions d-flex align-items-center">
+                        <!-- Language Dropdown -->
+                        <div class="dropdown me-3 language-dropdown" style="position: relative; z-index: 9999;">
+                            <button class="btn language-btn-modern" 
+                                    type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                    style="pointer-events: auto !important; cursor: pointer !important;"
+                                    title="{{ t('language', lang)|default('Taal') }}: {{ lang|upper }}">
+                                <span class="language-icon"><i class="bi bi-globe2"></i></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end language-menu" aria-labelledby="languageDropdown"
+                                style="z-index: 10000 !important; position: absolute !important; display: none;">
+                                <li><a class="dropdown-item {% if lang == 'nl' %}active{% endif %}" 
+                                       href="{{ url_for(request.endpoint, lang='nl') if request.endpoint else url_for('index', lang='nl') }}">
+                                    <span class="fi fi-nl me-2"></span> Nederlands{% if lang == 'nl' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
+                                </a></li>
+                                <li><a class="dropdown-item {% if lang == 'en' %}active{% endif %}" 
+                                       href="{{ url_for(request.endpoint, lang='en') if request.endpoint else url_for('index', lang='en') }}">
+                                    <span class="fi fi-gb me-2"></span> English{% if lang == 'en' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
+                                </a></li>
+                                <li><a class="dropdown-item {% if lang == 'es' %}active{% endif %}" 
+                                       href="{{ url_for(request.endpoint, lang='es') if request.endpoint else url_for('index', lang='es') }}">
+                                    <span class="fi fi-es me-2"></span> Español{% if lang == 'es' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
+                                </a></li>
+                                <li><a class="dropdown-item {% if lang == 'pt' %}active{% endif %}" 
+                                       href="{{ url_for(request.endpoint, lang='pt') if request.endpoint else url_for('index', lang='pt') }}">
+                                    <span class="fi fi-pt me-2"></span> Português{% if lang == 'pt' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
+                                </a></li>
+                                <li><a class="dropdown-item {% if lang == 'uk' %}active{% endif %}" 
+                                       href="{{ url_for(request.endpoint, lang='uk') if request.endpoint else url_for('index', lang='uk') }}">
+                                    <span class="fi fi-ua me-2"></span> Українська{% if lang == 'uk' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
+                                </a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- User Menu -->
+                        {% if current_user.is_authenticated %}
+                        <div class="dropdown">
+                            <button class="btn language-btn-modern" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.profile', lang=lang) }}">
+                                    <i class="bi bi-person me-2"></i> {{ t('profile', lang)|default('Profile') }}
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.digid_logout') }}">
+                                    <i class="bi bi-box-arrow-right me-2"></i> {{ t('logout', lang)|default('Logout') }}
+                                </a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <a href="{{ url_for('auth.login', lang=lang) }}" class="btn language-btn-modern">
+                            {{ t('login', lang)|default('Login') }}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="learning-map-container">
+        <!-- Left Column: Daily Plan -->
+        <div class="left-column">
+            <!-- Daily Plan Header -->
+            <div class="daily-plan-header">
+                <div class="plan-date">
+                    <i class="bi bi-calendar-event"></i>
+                    <h2>{{ t('daily_plan', lang)|default('Daily Plan') }}</h2>
+                </div>
+                
+                <!-- Learning Planner Integration -->
+                {% if planner_data.has_active_plan %}
+                <div class="planner-status" style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(102, 126, 234, 0.1); border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <i class="bi bi-graph-up" style="color: var(--primary);"></i>
+                        <span style="font-weight: 600; color: var(--text-primary);">{{ t('learning_plan_active', lang)|default('Learning Plan Active') }}</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        {{ t('plan_progress', lang)|default('Plan Progress') }}: {{ planner_data.plan_progress }}% | 
+                        {{ t('exam_readiness', lang)|default('Exam Readiness') }}: {{ "%.1f"|format(planner_data.exam_readiness) }}%
+                    </div>
+                </div>
+                {% else %}
+                <div class="planner-status" style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255, 193, 7, 0.1); border-radius: 8px; border-left: 4px solid var(--warning);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <i class="bi bi-exclamation-triangle" style="color: var(--warning);"></i>
+                        <span style="font-weight: 600; color: var(--text-primary);">{{ t('no_learning_plan', lang)|default('No Learning Plan') }}</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        {{ t('create_plan_description', lang)|default('Take a diagnostic test to create your personalized learning plan') }}
+                    </div>
+                    <a href="{{ url_for('diagnostic.choose_diagnostic_type', lang=lang) }}" 
+                       style="display: inline-block; margin-top: 0.5rem; padding: 0.5rem 1rem; background: var(--warning); color: white; text-decoration: none; border-radius: 6px; font-size: 0.85rem;">
+                        {{ t('take_diagnostic', lang)|default('Take Diagnostic') }}
+                    </a>
+                </div>
+                {% endif %}
+                
+                <div class="plan-summary">
+                    <div class="summary-item">
+                        <div class="summary-value">{{ daily_plan.target_minutes or 30 }}</div>
+                        <div class="summary-label">{{ t('minutes', lang)|default('minutes') }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">
+                            {% if daily_plan.sections and daily_plan.sections.theory and daily_plan.sections.theory.content_items %}
+                                {{ daily_plan.sections.theory.content_items|length }}
+                            {% elif daily_plan.sections and daily_plan.sections.practice and daily_plan.sections.practice.content_items %}
+                                {{ daily_plan.sections.practice.content_items|length }}
+                            {% elif daily_plan.sections and daily_plan.sections.review and daily_plan.sections.review.content_items %}
+                                {{ daily_plan.sections.review.content_items|length }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                        <div class="summary-label">{{ t('tasks', lang)|default('tasks') }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">
+                            {% set total_sections = 0 %}
+                            {% if daily_plan.sections and daily_plan.sections.theory and daily_plan.sections.theory.content_items %} {% set total_sections = total_sections + 1 %} {% endif %}
+                            {% if daily_plan.sections and daily_plan.sections.practice and daily_plan.sections.practice.content_items %} {% set total_sections = total_sections + 1 %} {% endif %}
+                            {% if daily_plan.sections and daily_plan.sections.review and daily_plan.sections.review.content_items %} {% set total_sections = total_sections + 1 %} {% endif %}
+                            {{ total_sections }}
+                        </div>
+                        <div class="summary-label">{{ t('topics', lang)|default('topics') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theory Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon primary">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <h3>{{ t('theory_today', lang)|default('Theory Today') }}</h3>
+                    </div>
+                    <div class="section-time">{{ daily_plan.sections.theory.estimated_time if daily_plan.sections and daily_plan.sections.theory else 12 }} {{ t('min', lang)|default('min') }}</div>
+                </div>
+
+                {% if daily_plan.sections and daily_plan.sections.theory and daily_plan.sections.theory.content_items %}
+                    {% for item in daily_plan.sections.theory.content_items %}
+                    <div class="content-item {% if item.type == 'recommendation' %}recommendation{% endif %}">
+                        <div class="item-info">
+                            <div class="item-title">{{ item.title }}</div>
+                            <div class="item-meta">
+                                {% if item.type == 'recommendation' %}
+                                    <span><i class="bi bi-info-circle"></i> {{ item.message or t('recommendation', lang)|default('Recommendation') }}</span>
+                                {% else %}
+                                    <span><i class="bi bi-clock"></i> {{ item.estimated_time or 5 }} {{ t('min', lang)|default('min') }}</span>
+                                    <span class="difficulty-badge difficulty-{{ item.difficulty or 'medium' }}">{{ item.difficulty or 'medium' }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="item-action {% if item.type == 'recommendation' %}disabled{% endif %}" 
+                                {% if item.type == 'recommendation' %}disabled{% endif %}
+                                data-content-type="{{ item.type or 'lesson' }}" 
+                                data-content-id="{{ item.id }}">
+                            {% if item.type == 'recommendation' %}
+                                {{ t('info', lang)|default('Info') }}
+                            {% else %}
+                                {{ t('study', lang)|default('Study') }}
+                            {% endif %}
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- No theory content available -->
+                    <div class="content-item empty-state">
+                        <div class="item-info">
+                            <div class="item-title">{{ t('no_theory_available', lang)|default('No theory content available') }}</div>
+                            <div class="item-meta">
+                                <span><i class="bi bi-info-circle"></i> {{ t('complete_diagnostic', lang)|default('Complete diagnostic to get personalized content') }}</span>
+                            </div>
+                        </div>
+                        <button class="item-action disabled" disabled>{{ t('study', lang)|default('Study') }}</button>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Practice Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon success">
+                            <i class="bi bi-question-circle"></i>
+                        </div>
+                        <h3>{{ t('practice_today', lang)|default('Practice Today') }}</h3>
+                    </div>
+                    <div class="section-time">{{ daily_plan.sections.practice.estimated_time if daily_plan.sections and daily_plan.sections.practice else 15 }} {{ t('min', lang)|default('min') }}</div>
+                </div>
+
+                {% if daily_plan.sections and daily_plan.sections.practice and daily_plan.sections.practice.content_items %}
+                    {% for item in daily_plan.sections.practice.content_items %}
+                    <div class="content-item {% if item.type == 'recommendation' %}recommendation{% endif %}">
+                        <div class="item-info">
+                            <div class="item-title">{{ item.title }}</div>
+                            <div class="item-meta">
+                                {% if item.type == 'recommendation' %}
+                                    <span><i class="bi bi-info-circle"></i> {{ item.message or t('recommendation', lang)|default('Recommendation') }}</span>
+                                {% else %}
+                                    <span><i class="bi bi-clock"></i> {{ item.estimated_time or 5 }} {{ t('min', lang)|default('min') }}</span>
+                                    <span>{{ item.questions_count or 3 }} {{ t('questions', lang)|default('questions') }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="item-action {% if item.type == 'recommendation' %}disabled{% endif %}" 
+                                {% if item.type == 'recommendation' %}disabled{% endif %}
+                                data-content-type="{{ item.type or 'question' }}" 
+                                data-content-id="{{ item.id }}">
+                            {% if item.type == 'recommendation' %}
+                                {{ t('info', lang)|default('Info') }}
+                            {% else %}
+                                {{ t('start', lang)|default('Start') }}
+                            {% endif %}
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- No practice content available -->
+                    <div class="content-item empty-state">
+                        <div class="item-info">
+                            <div class="item-title">{{ t('no_practice_available', lang)|default('No practice content available') }}</div>
+                            <div class="item-meta">
+                                <span><i class="bi bi-info-circle"></i> {{ t('complete_diagnostic', lang)|default('Complete diagnostic to get personalized content') }}</span>
+                            </div>
+                        </div>
+                        <button class="item-action disabled" disabled>{{ t('start', lang)|default('Start') }}</button>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Review Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-icon warning">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                        <h3>{{ t('review', lang)|default('Review') }}</h3>
+                    </div>
+                    <div class="section-time">{{ daily_plan.sections.review.estimated_time if daily_plan.sections and daily_plan.sections.review else 8 }} {{ t('min', lang)|default('min') }}</div>
+                </div>
+
+                {% if daily_plan.sections and daily_plan.sections.review and daily_plan.sections.review.content_items %}
+                    {% for item in daily_plan.sections.review.content_items %}
+                    <div class="content-item {% if item.type == 'recommendation' %}recommendation{% endif %}">
+                        <div class="item-info">
+                            <div class="item-title">{{ item.title }}</div>
+                            <div class="item-meta">
+                                {% if item.type == 'recommendation' %}
+                                    <span><i class="bi bi-info-circle"></i> {{ item.message or t('recommendation', lang)|default('Recommendation') }}</span>
+                                {% else %}
+                                    <span><i class="bi bi-clock"></i> {{ item.estimated_time or 4 }} {{ t('min', lang)|default('min') }}</span>
+                                    <span>{{ t('overdue', lang)|default('overdue') }} {{ item.overdue_days or 1 }} {{ t('day', lang)|default('day') }}</span>
+                                    <span><i class="bi bi-question-circle"></i> {{ t('question', lang)|default('question') }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="item-action {% if item.type == 'recommendation' %}disabled{% endif %}" 
+                                {% if item.type == 'recommendation' %}disabled{% endif %}
+                                data-content-type="{{ item.type or 'spaced_repetition' }}" 
+                                data-content-id="{{ item.id }}">
+                            {% if item.type == 'recommendation' %}
+                                {{ t('info', lang)|default('Info') }}
+                            {% else %}
+                                {{ t('review', lang)|default('Review') }}
+                            {% endif %}
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- No review content available -->
+                    <div class="content-item empty-state">
+                        <div class="item-info">
+                            <div class="item-title">{{ t('no_review_available', lang)|default('No review content available') }}</div>
+                            <div class="item-meta">
+                                <span><i class="bi bi-info-circle"></i> {{ t('complete_diagnostic', lang)|default('Complete diagnostic to get personalized content') }}</span>
+                            </div>
+                        </div>
+                        <button class="item-action disabled" disabled>{{ t('review', lang)|default('Review') }}</button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Middle Column: Main Content -->
+        <div class="middle-column">
+            <div class="content-section">
+                <h2 style="color: var(--text-primary); word-wrap: break-word; overflow-wrap: break-word;">{{ t('learning_focus', lang)|default('Learning Focus') }}</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                    {{ t('learning_focus_description', lang)|default('Choose your learning focus for today and start your personalized study session.') }}
+                </p>
+                
+                <div style="background: rgba(255, 255, 255, 0.8); border-radius: 12px; padding: 2rem; text-align: center; border: var(--card-border); box-shadow: var(--card-shadow);">
+                    <i class="bi bi-book" style="font-size: 4rem; color: var(--primary); opacity: 0.3; margin-bottom: 1rem;"></i>
+                    <h3 style="color: var(--text-primary);">{{ t('ready_to_learn', lang)|default('Ready to learn?') }}</h3>
+                    <p style="color: var(--text-secondary); margin: 1rem 0;">{{ t('choose_task_description', lang)|default('Choose a task from the plan on the left or use quick actions on the right.') }}</p>
+                    <button id="start-first-task-btn" 
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; padding: 1rem 2rem; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                        {{ t('start_first_task', lang)|default('Start First Task') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Progress & Quick Actions -->
+        <div class="right-column">
+            <!-- Progress Stats -->
+            <div class="content-section">
+                <h3 style="margin-bottom: 0.75rem; color: var(--text-primary); word-wrap: break-word; overflow-wrap: break-word; font-size: 1rem;">{{ t('learning_progress', lang)|default('Learning Progress') }}</h3>
+                
+                <div class="progress-circle">
+                    <div class="circle-bg">
+                        <div class="circle-inner">
+                            <div class="progress-value">{{ planner_data.plan_progress }}%</div>
+                            <div class="progress-label">{{ t('plan_progress', lang)|default('plan progress') }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">{{ t('exam_readiness', lang)|default('Exam Readiness') }}</span>
+                        <span class="stat-value">{{ "%.1f"|format(planner_data.exam_readiness) }}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">{{ t('weak_domains', lang)|default('Weak Domains') }}</span>
+                        <span class="stat-value">{{ planner_data.weak_domains|length }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">{{ t('strong_domains', lang)|default('Strong Domains') }}</span>
+                        <span class="stat-value">{{ planner_data.strong_domains|length }}</span>
+                    </div>
+                </div>
+                
+                <!-- Next Milestone -->
+                {% if planner_data.next_milestone %}
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(40, 167, 69, 0.1); border-radius: 8px; border-left: 4px solid var(--success);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <i class="bi bi-flag" style="color: var(--success);"></i>
+                        <span style="font-weight: 600; color: var(--text-primary);">{{ t('next_milestone', lang)|default('Next Milestone') }}</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-primary); margin-bottom: 0.25rem;">
+                        {{ planner_data.next_milestone.title }}
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        {{ planner_data.next_milestone.description }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="content-section">
+                <h3 style="margin-bottom: 0.75rem; color: var(--text-primary); word-wrap: break-word; overflow-wrap: break-word; font-size: 1rem;">{{ t('quick_actions', lang)|default('Quick Actions') }}</h3>
+                
+                <div class="quick-actions">
+                    {% if planner_data.has_active_plan %}
+                    <a href="{{ url_for('learning_planner.learning_planner', plan_id=active_plan.id, lang=lang) }}" class="quick-action">
+                        <div class="action-icon primary">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>{{ t('view_learning_plan', lang)|default('View Learning Plan') }}</h4>
+                            <p>{{ t('detailed_plan_description', lang)|default('See your full learning schedule') }}</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('diagnostic.choose_diagnostic_type', lang=lang) }}" class="quick-action">
+                        <div class="action-icon warning">
+                            <i class="bi bi-clipboard-pulse"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>{{ t('retake_diagnostic', lang)|default('Retake Diagnostic') }}</h4>
+                            <p>{{ t('update_progress_description', lang)|default('Update your progress assessment') }}</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('daily_learning.knowledge_base', lang=lang) }}" class="quick-action">
+                        <div class="action-icon danger">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>{{ t('knowledge_base', lang)|default('Knowledge Base') }}</h4>
+                            <p>{{ t('free_study_description', lang)|default('Free study materials') }}</p>
+                        </div>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('diagnostic.choose_diagnostic_type', lang=lang) }}" class="quick-action">
+                        <div class="action-icon primary">
+                            <i class="bi bi-clipboard-pulse"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>{{ t('take_diagnostic', lang)|default('Take Diagnostic') }}</h4>
+                            <p>{{ t('create_plan_description', lang)|default('Create your learning plan') }}</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('daily_learning.knowledge_base', lang=lang) }}" class="quick-action">
+                        <div class="action-icon warning">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>{{ t('knowledge_base', lang)|default('Knowledge Base') }}</h4>
+                            <p>{{ t('free_study_description', lang)|default('Free study materials') }}</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('main.community', lang=lang) }}" class="quick-action">
+                        <div class="action-icon danger">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>{{ t('community', lang)|default('Community') }}</h4>
+                            <p>{{ t('connect_with_peers', lang)|default('Connect with peers') }}</p>
+                        </div>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Learning Map Integration with Learning Planner
+        document.addEventListener('DOMContentLoaded', function() {
+            // Анимация при загрузке
+            document.querySelectorAll('.content-section').forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    section.style.transition = 'all 0.5s ease';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            // Обработчики для кнопок действий
+            document.querySelectorAll('.item-action').forEach(button => {
+                button.addEventListener('click', function() {
+                    const contentType = this.getAttribute('data-content-type');
+                    const contentId = this.getAttribute('data-content-id');
+                    
+                    if (contentType && contentId) {
+                        console.log('Button clicked:', contentType, contentId);
+                        
+                        // Сначала отмечаем как выполненное
+                        markItemCompleted(contentId, contentType);
+                        
+                        // Затем переходим к контенту
+                        startContent(contentType, contentId);
+                        
+                        // Обновляем UI
+                        this.textContent = '{{ t("completed", lang)|default("Completed") }}';
+                        this.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                        this.disabled = true;
+                    } else {
+                        console.warn('Button missing data attributes:', this);
+                    }
+                });
+            });
+
+            // Обработчик для кнопки "Start First Task"
+            const startFirstTaskBtn = document.getElementById('start-first-task-btn');
+            if (startFirstTaskBtn) {
+                startFirstTaskBtn.addEventListener('click', function() {
+                    // Находим первую доступную задачу
+                    const firstAvailableTask = document.querySelector('.item-action[data-content-type][data-content-id]');
+                    if (firstAvailableTask) {
+                        firstAvailableTask.click();
+                    } else {
+                        // Если нет задач, переходим к базе знаний
+                        const lang = '{{ lang }}';
+                        window.location.href = `/knowledge-base?lang=${lang}`;
+                    }
+                });
+            }
+        });
+
+        // Функция для отметки элемента как выполненного
+        function markItemCompleted(contentId, contentType) {
+            const lang = '{{ lang }}';
+            fetch(`/daily-learning/api/daily-plan/mark-completed?lang=${lang}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    content_id: contentId,
+                    content_type: contentType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Item marked as completed');
+                } else {
+                    console.warn('Failed to mark item as completed:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error marking item as completed:', error);
+            });
+        }
+
+        // Функция для начала изучения контента
+        function startContent(contentType, contentId) {
+            let url = '';
+            const lang = '{{ lang }}';
+            
+            switch(contentType) {
+                case 'lesson':
+                    url = `/content/lesson/${contentId}?lang=${lang}`;
+                    break;
+                case 'question':
+                    // Для вопросов используем диагностику конкретного вопроса
+                    url = `/big-diagnostic/question/${contentId}?lang=${lang}`;
+                    break;
+                case 'spaced_repetition':
+                    // Для spaced repetition используем специальную страницу повторения
+                    url = `/spaced-repetition/review/${contentId}?lang=${lang}`;
+                    break;
+                default:
+                    console.error('Unknown content type:', contentType);
+                    return;
+            }
+            
+            console.log('Navigating to:', url);
+            window.location.href = url;
+        }
+    </script>
+</body>
+</html> 

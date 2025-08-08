@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel - Mentora{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+        }
+        
+        .sidebar-sticky {
+            position: sticky;
+            top: 48px;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: .75rem 1rem;
+            border-radius: 0.375rem;
+            margin: 0.125rem 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link.active {
+            color: #fff;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+        }
+        
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background: rgba(52, 152, 219, 0.2);
+            transform: translateX(4px);
+        }
+        
+        .sidebar-heading {
+            color: #bdc3c7;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+            font-weight: 600;
+            color: #fff !important;
+        }
+        
+        .navbar .form-control {
+            padding: .75rem 1rem;
+            border-width: 0;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .navbar .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        main {
+            padding-top: 48px;
+        }
+        
+        .card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .badge {
+            font-weight: 500;
+            border-radius: 0.5rem;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 0.75rem 0;
+        }
+        
+        .breadcrumb-item a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item.active {
+            color: #7f8c8d;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            border-left-color: #27ae60;
+            background: linear-gradient(135deg, #d5f4e6 0%, #e8f8f5 100%);
+        }
+        
+        .alert-danger {
+            border-left-color: #e74c3c;
+            background: linear-gradient(135deg, #fadbd8 0%, #fdf2f2 100%);
+        }
+        
+        .alert-warning {
+            border-left-color: #f39c12;
+            background: linear-gradient(135deg, #fdeaa7 0%, #fef9e7 100%);
+        }
+        
+        .alert-info {
+            border-left-color: #3498db;
+            background: linear-gradient(135deg, #d6eaf8 0%, #ebf3fd 100%);
+        }
+        
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+            transform: translateY(-1px);
+        }
+        
+        .table {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: none;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        /* Custom scrollbar */
+        .sidebar-sticky::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar-sticky::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-sticky::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .sidebar-sticky::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: static;
+                height: auto;
+                padding-top: 0;
+            }
+            
+            .sidebar-sticky {
+                position: static;
+                height: auto;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 mr-0 px-3" href="{{ url_for('admin.dashboard') }}">
+            <i class="bi bi-mortarboard"></i> Mentora Admin
+        </a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" 
+                data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="w-100 d-none d-md-block">
+            <form class="w-100 p-2">
+                <input class="form-control form-control-dark" type="text" placeholder="Поиск..." aria-label="Search">
+            </form>
+        </div>
+        <ul class="navbar-nav px-3">
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="{{ url_for('main.index', lang='en') }}">
+                    <i class="bi bi-box-arrow-right"></i> Выйти в сайт
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="sidebar-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" 
+                               href="{{ url_for('admin.dashboard') }}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                            <span>Пользователи</span>
+                        </h6>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'users' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.users') }}">
+                                <i class="bi bi-people"></i> Управление
+                            </a>
+                        </li>
+                        
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                            <span>Диагностика</span>
+                        </h6>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'diagnostic_analytics' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.diagnostic_analytics') }}">
+                                <i class="bi bi-graph-up"></i> Аналитика
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'sessions' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.diagnostic_sessions_list') }}">
+                                <i class="bi bi-clipboard-data"></i> Сессии
+                            </a>
+                        </li>
+                        
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                            <span>Контент</span>
+                        </h6>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'content_management' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.content_management') }}">
+                                <i class="bi bi-collection"></i> Обзор
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'questions' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.questions_management') }}">
+                                <i class="bi bi-question-circle"></i> Вопросы
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'virtual_patients' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.virtual_patients') }}">
+                                <i class="bi bi-person-video3"></i> Виртуальные пациенты
+                            </a>
+                        </li>
+                        
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                            <span>Система</span>
+                        </h6>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'scheduler' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.scheduler_dashboard') }}">
+                                <i class="bi bi-clock-history"></i> Планировщик
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'settings' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.system_settings') }}">
+                                <i class="bi bi-gear"></i> Настройки
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.system_settings') }}">
+                                <i class="bi bi-file-text"></i> Система
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Breadcrumbs -->
+                <nav aria-label="breadcrumb" class="mt-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+                        {% block breadcrumbs %}{% endblock %}
+                    </ol>
+                </nav>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Page Content -->
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery (optional) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+        
+        // Active link highlighting
+        $(document).ready(function() {
+            const currentPath = window.location.pathname;
+            $('.nav-link').each(function() {
+                const linkPath = $(this).attr('href');
+                if (linkPath && currentPath.includes(linkPath.replace('/admin', ''))) {
+                    $(this).addClass('active');
+                }
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

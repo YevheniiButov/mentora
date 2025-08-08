@@ -1,0 +1,239 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление контентом - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2">Управление контентом</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('admin.questions_management') }}" class="btn btn-primary">
+                <i class="bi bi-question-circle"></i> Управление вопросами
+            </a>
+        </div>
+    </div>
+
+    <!-- Статистика контента -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Пути обучения</h6>
+                    <h3 class="text-primary">{{ content_stats.learning_paths }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Предметы</h6>
+                    <h3 class="text-success">{{ content_stats.subjects }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Модули</h6>
+                    <h3 class="text-info">{{ content_stats.modules }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Уроки</h6>
+                    <h3 class="text-warning">{{ content_stats.lessons }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Вопросы</h6>
+                    <h3 class="text-danger">{{ content_stats.questions }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Виртуальные пациенты</h6>
+                    <h3 class="text-secondary">{{ content_stats.virtual_patients }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика по доменам -->
+    {% if domain_content_stats %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Вопросы по доменам</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for domain_stat in domain_content_stats %}
+                        <div class="col-md-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">{{ domain_stat.domain or 'Без домена' }}</span>
+                                <span class="badge bg-primary">{{ domain_stat.questions_count }}</span>
+                            </div>
+                            <div class="progress mt-1" style="height: 8px;">
+                                <div class="progress-bar" style="width: {{ (domain_stat.questions_count / content_stats.questions * 100) if content_stats.questions > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Последние изменения -->
+    <div class="row">
+        <!-- Последние уроки -->
+        <div class="col-xl-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Последние уроки</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_lessons %}
+                    <div class="list-group list-group-flush">
+                        {% for lesson in recent_lessons %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start px-0">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">{{ lesson.title[:50] }}{% if lesson.title|length > 50 %}...{% endif %}</div>
+                                <small class="text-muted">
+                                    {% if lesson.module %}
+                                        {{ lesson.module.title }}
+                                    {% else %}
+                                        Без модуля
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">ID: {{ lesson.id }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Нет уроков</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Последние вопросы -->
+        <div class="col-xl-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Последние вопросы</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_questions %}
+                    <div class="list-group list-group-flush">
+                        {% for question in recent_questions %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start px-0">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">{{ question.text[:60] }}{% if question.text|length > 60 %}...{% endif %}</div>
+                                <small class="text-muted">
+                                    Домен: {{ question.domain or 'Не указан' }}
+                                    {% if question.created_at %}
+                                        | {{ question.created_at.strftime('%d.%m.%Y') }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <span class="badge bg-success rounded-pill">ID: {{ question.id }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Нет вопросов</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.questions_management') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-question-circle"></i> Управление вопросами
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#importModal">
+                                <i class="bi bi-upload"></i> Импорт контента
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-info w-100">
+                                <i class="bi bi-download"></i> Экспорт контента
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-gear"></i> Настройки контента
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal импорта -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Импорт контента</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Тип контента</label>
+                        <select class="form-select">
+                            <option>Вопросы (CSV)</option>
+                            <option>Уроки (JSON)</option>
+                            <option>Виртуальные пациенты (JSON)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Файл</label>
+                        <input type="file" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="overwrite">
+                            <label class="form-check-label" for="overwrite">
+                                Перезаписать существующие записи
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary">Импортировать</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

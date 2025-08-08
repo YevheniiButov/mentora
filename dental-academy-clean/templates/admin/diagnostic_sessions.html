@@ -1,0 +1,176 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Диагностические сессии - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2">Диагностические сессии</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('admin.diagnostic_analytics') }}" class="btn btn-outline-primary">
+                <i class="bi bi-graph-up"></i> Аналитика
+            </a>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <select class="form-select" name="status">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все статусы</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Активные</option>
+                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Завершенные</option>
+                        <option value="paused" {% if status_filter == 'paused' %}selected{% endif %}>Приостановленные</option>
+                        <option value="terminated" {% if status_filter == 'terminated' %}selected{% endif %}>Завершенные</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" name="type">
+                        <option value="all" {% if type_filter == 'all' %}selected{% endif %}>Все типы</option>
+                        <option value="diagnostic" {% if type_filter == 'diagnostic' %}selected{% endif %}>Диагностика</option>
+                        <option value="adaptive" {% if type_filter == 'adaptive' %}selected{% endif %}>Адаптивная</option>
+                        <option value="practice" {% if type_filter == 'practice' %}selected{% endif %}>Практика</option>
+                        <option value="reassessment" {% if type_filter == 'reassessment' %}selected{% endif %}>Переоценка</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Фильтровать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица сессий -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Пользователь</th>
+                            <th>Тип</th>
+                            <th>Статус</th>
+                            <th>Способность</th>
+                            <th>Вопросов</th>
+                            <th>Точность</th>
+                            <th>Дата начала</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in sessions.items %}
+                        <tr>
+                            <td>
+                                <strong>#{{ session.id }}</strong>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ session.user.full_name or session.user.email }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ session.user.email }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ session.session_type }}</span>
+                            </td>
+                            <td>
+                                {% if session.status == 'active' %}
+                                    <span class="badge bg-success">Активная</span>
+                                {% elif session.status == 'completed' %}
+                                    <span class="badge bg-primary">Завершена</span>
+                                {% elif session.status == 'paused' %}
+                                    <span class="badge bg-warning">Приостановлена</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ session.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if session.current_ability is not none %}
+                                    <span class="badge {% if session.current_ability < -0.5 %}bg-danger{% elif session.current_ability < 0 %}bg-warning{% else %}bg-success{% endif %}">
+                                        {{ session.current_ability|round(2) }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ session.questions_answered }}
+                                {% if session.test_length %}
+                                    / {{ session.test_length }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if session.questions_answered > 0 %}
+                                    {{ (session.correct_answers / session.questions_answered * 100)|round(1) }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ session.started_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin.diagnostic_session_detail', session_id=session.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Детали
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            {% if sessions.pages > 1 %}
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination justify-content-center">
+                    {% if sessions.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.diagnostic_sessions_list', page=sessions.prev_num, status=status_filter, type=type_filter) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in sessions.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != sessions.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.diagnostic_sessions_list', page=page_num, status=status_filter, type=type_filter) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if sessions.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.diagnostic_sessions_list', page=sessions.next_num, status=status_filter, type=type_filter) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

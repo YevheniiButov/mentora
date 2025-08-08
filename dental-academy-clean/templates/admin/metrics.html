@@ -1,0 +1,285 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}System Metrics - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">System Metrics Dashboard</h1>
+                <div>
+                    <a href="{{ url_for('admin.export_metrics') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-download"></i> Export Metrics
+                    </a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Health Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-heartbeat"></i> System Health Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ health_report.total_metrics }}</h3>
+                                <p class="text-muted">Total Metrics</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-warning">{{ health_report.fallback_count }}</h3>
+                                <p class="text-muted">Fallback Usage</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-danger">{{ health_report.error_count }}</h3>
+                                <p class="text-muted">Total Errors</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-success">{{ "%.1f"|format(health_report.irt_validation_success_rate * 100) }}%</h3>
+                                <p class="text-muted">IRT Validation Success</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Health Indicators -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-success" style="width: {{ (1 - health_report.fallback_rate) * 100 }}%">
+                                    Normal Operation: {{ "%.1f"|format((1 - health_report.fallback_rate) * 100) }}%
+                                </div>
+                                <div class="progress-bar bg-warning" style="width: {{ health_report.fallback_rate * 100 }}%">
+                                    Fallback Usage: {{ "%.1f"|format(health_report.fallback_rate * 100) }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-success" style="width: {{ (1 - health_report.error_rate) * 100 }}%">
+                                    Success Rate: {{ "%.1f"|format((1 - health_report.error_rate) * 100) }}%
+                                </div>
+                                <div class="progress-bar bg-danger" style="width: {{ health_report.error_rate * 100 }}%">
+                                    Error Rate: {{ "%.1f"|format(health_report.error_rate * 100) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock"></i> Last 24 Hours
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ performance_24h.total_sessions }}</h4>
+                            <p class="text-muted">Diagnostic Sessions</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{ "%.1f"|format(performance_24h.avg_questions_per_session) }}</h4>
+                            <p class="text-muted">Avg Questions/Session</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <h4 class="text-success">{{ "%.3f"|format(performance_24h.avg_ability) }}</h4>
+                            <p class="text-muted">Avg Ability (θ)</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ "%.3f"|format(performance_24h.avg_standard_error) }}</h4>
+                            <p class="text-muted">Avg Standard Error</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-week"></i> Last 7 Days
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ performance_7d.total_sessions }}</h4>
+                            <p class="text-muted">Diagnostic Sessions</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{ "%.1f"|format(performance_7d.avg_questions_per_session) }}</h4>
+                            <p class="text-muted">Avg Questions/Session</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <h4 class="text-success">{{ "%.3f"|format(performance_7d.avg_ability) }}</h4>
+                            <p class="text-muted">Avg Ability (θ)</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ "%.3f"|format(performance_7d.avg_standard_error) }}</h4>
+                            <p class="text-muted">Avg Standard Error</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> Session Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-success">{{ session_stats.total_completed }}</h3>
+                                <p class="text-muted">Completed Sessions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-info">{{ session_stats.total_active }}</h3>
+                                <p class="text-muted">Active Sessions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ "%.1f"|format(session_stats.avg_questions_per_session) }}</h3>
+                                <p class="text-muted">Avg Questions/Session</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-warning">{{ "%.3f"|format(session_stats.avg_se) }}</h3>
+                                <p class="text-muted">Avg Standard Error</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Sessions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list"></i> Recent Diagnostic Sessions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Session ID</th>
+                                    <th>User ID</th>
+                                    <th>Questions</th>
+                                    <th>Final Ability</th>
+                                    <th>Standard Error</th>
+                                    <th>Completion Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in recent_sessions %}
+                                <tr>
+                                    <td>{{ session.id }}</td>
+                                    <td>{{ session.user_id }}</td>
+                                    <td>{{ session.questions_answered }}</td>
+                                    <td>{{ "%.3f"|format(session.current_ability) }}</td>
+                                    <td>{{ "%.3f"|format(session.ability_se) }}</td>
+                                    <td>{{ session.completed_at.strftime('%Y-%m-%d %H:%M') if session.completed_at else 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge badge-success">Completed</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Breakdown -->
+    {% if health_report.error_breakdown %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Error Breakdown
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Error Type</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for error_type, count in health_report.error_breakdown.items() %}
+                                <tr>
+                                    <td>{{ error_type }}</td>
+                                    <td>
+                                        <span class="badge badge-danger">{{ count }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Auto-refresh metrics every 5 minutes
+setTimeout(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %} 

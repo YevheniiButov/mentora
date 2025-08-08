@@ -1,0 +1,221 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Редактирование вопроса #{{ question.id }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('admin.content_management') }}">Управление контентом</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('admin.questions_management') }}">Вопросы</a>
+                    </li>
+                    <li class="breadcrumb-item active">Редактирование #{{ question.id }}</li>
+                </ol>
+            </nav>
+            <h1 class="h2">Редактирование вопроса #{{ question.id }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('admin.questions_management') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад к вопросам
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Основная информация</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Текст вопроса *</label>
+                            <textarea class="form-control" name="text" rows="4" required>{{ question.text }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Варианты ответов *</label>
+                            {% for i in range(4) %}
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">{{ loop.index }}</span>
+                                <input type="text" class="form-control" name="option_{{ loop.index }}" 
+                                       value="{{ question.options[i] if question.options and i < question.options|length else '' }}" 
+                                       placeholder="Вариант ответа {{ loop.index }}" required>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Правильный ответ *</label>
+                            <input type="text" class="form-control" name="correct_answer" 
+                                   value="{{ question.correct_answer_text }}" required>
+                            <div class="form-text">Текст правильного ответа (должен совпадать с одним из вариантов)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Объяснение</label>
+                            <textarea class="form-control" name="explanation" rows="3">{{ question.explanation }}</textarea>
+                            <div class="form-text">Объяснение правильного ответа для пользователей</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">Домен</label>
+                                <input type="text" class="form-control" value="{{ question.domain }}" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Категория</label>
+                                <input type="text" class="form-control" value="{{ question.category }}" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Уровень сложности</label>
+                                <input type="text" class="form-control" value="{{ question.difficulty_level }}" readonly>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <!-- IRT параметры -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">IRT параметры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Сложность (b-параметр)</label>
+                            <input type="number" class="form-control" name="difficulty" 
+                                   value="{{ question.irt_parameters.difficulty if question.irt_parameters else 0 }}" 
+                                   step="0.01" min="-4" max="4">
+                            <div class="form-text">Обычно от -4 до +4. Отрицательные значения = легкие вопросы</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Дискриминация (a-параметр)</label>
+                            <input type="number" class="form-control" name="discrimination" 
+                                   value="{{ question.irt_parameters.discrimination if question.irt_parameters else 1 }}" 
+                                   step="0.01" min="0" max="3">
+                            <div class="form-text">Обычно от 0.5 до 2.0. Выше = лучше различает способности</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Угадывание (c-параметр)</label>
+                            <input type="number" class="form-control" name="guessing" 
+                                   value="{{ question.irt_parameters.guessing if question.irt_parameters else 0.25 }}" 
+                                   step="0.01" min="0" max="1">
+                            <div class="form-text">Вероятность случайного правильного ответа (0-1)</div>
+                        </div>
+
+                        {% if question.irt_parameters %}
+                        <div class="alert alert-info">
+                            <h6>Информация о калибровке:</h6>
+                            <small>
+                                {% if question.irt_parameters.calibration_sample_size %}
+                                    <strong>Калибровано на:</strong> {{ question.irt_parameters.calibration_sample_size }} ответов<br>
+                                {% endif %}
+                                {% if question.irt_parameters.calibration_date %}
+                                    <strong>Дата калибровки:</strong> {{ question.irt_parameters.calibration_date.strftime('%d.%m.%Y') }}<br>
+                                {% endif %}
+                                {% if question.irt_parameters.reliability %}
+                                    <strong>Надежность:</strong> {{ question.irt_parameters.reliability|round(3) }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+
+            <!-- Предварительный просмотр -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Предварительный просмотр</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Вопрос:</strong>
+                        <p class="mb-2">{{ question.text[:100] }}{% if question.text|length > 100 %}...{% endif %}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Варианты:</strong>
+                        <ul class="list-unstyled">
+                            {% for option in question.options %}
+                            <li>{{ loop.index }}. {{ option[:50] }}{% if option|length > 50 %}...{% endif %}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Правильный ответ:</strong>
+                        <p class="text-success">{{ question.correct_answer_text[:50] }}{% if question.correct_answer_text|length > 50 %}...{% endif %}</p>
+                    </div>
+
+                    {% if question.irt_parameters %}
+                    <div class="mb-3">
+                        <strong>IRT параметры:</strong>
+                        <div class="small">
+                            <div>Сложность: {{ question.irt_parameters.difficulty|round(2) }}</div>
+                            <div>Дискриминация: {{ question.irt_parameters.discrimination|round(2) }}</div>
+                            <div>Угадывание: {{ question.irt_parameters.guessing|round(2) }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <a href="{{ url_for('admin.questions_management') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Отмена
+                            </a>
+                        </div>
+                        <div>
+                            <button type="submit" form="questionForm" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Объединяем формы в одну
+document.addEventListener('DOMContentLoaded', function() {
+    const mainForm = document.querySelector('form');
+    const irtForm = document.querySelectorAll('form')[1];
+    
+    // Копируем поля IRT в основную форму
+    const irtFields = irtForm.querySelectorAll('input[name]');
+    irtFields.forEach(field => {
+        const clone = field.cloneNode(true);
+        mainForm.appendChild(clone);
+    });
+    
+    // Удаляем дублирующую форму
+    irtForm.remove();
+    
+    // Добавляем ID к основной форме
+    mainForm.id = 'questionForm';
+});
+</script>
+{% endblock %} 

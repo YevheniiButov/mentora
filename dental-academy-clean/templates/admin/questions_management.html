@@ -1,0 +1,251 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление вопросами - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2">Управление вопросами</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('admin.content_management') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад к контенту
+            </a>
+        </div>
+    </div>
+
+    <!-- Фильтры и поиск -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Поиск</label>
+                            <input type="text" class="form-control" name="search" 
+                                   value="{{ search }}" placeholder="Поиск по тексту вопроса...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Домен</label>
+                            <select class="form-select" name="domain">
+                                <option value="all">Все домены</option>
+                                {% for domain in domains %}
+                                <option value="{{ domain }}" {% if domain_filter == domain %}selected{% endif %}>
+                                    {{ domain }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">IRT параметры</label>
+                            <select class="form-select" name="irt">
+                                <option value="all" {% if irt_filter == 'all' %}selected{% endif %}>Все вопросы</option>
+                                <option value="with_irt" {% if irt_filter == 'with_irt' %}selected{% endif %}>С IRT параметрами</option>
+                                <option value="without_irt" {% if irt_filter == 'without_irt' %}selected{% endif %}>Без IRT параметров</option>
+                                <option value="not_calibrated" {% if irt_filter == 'not_calibrated' %}selected{% endif %}>Не калиброванные</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search"></i> Поиск
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица вопросов -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Текст вопроса</th>
+                            <th>Домен</th>
+                            <th>Правильный ответ</th>
+                            <th>IRT параметры</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question in questions.items %}
+                        <tr>
+                            <td>
+                                <strong>#{{ question.id }}</strong>
+                            </td>
+                            <td>
+                                <div style="max-width: 300px;">
+                                    <div class="fw-bold">{{ question.text[:80] }}{% if question.text|length > 80 %}...{% endif %}</div>
+                                    <small class="text-muted">
+                                        {% if question.created_at %}
+                                            Создан: {{ question.created_at.strftime('%d.%m.%Y') }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </td>
+                            <td>
+                                {% if question.domain %}
+                                    <span class="badge bg-secondary">{{ question.domain }}</span>
+                                {% else %}
+                                    <span class="text-muted">Не указан</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="max-width: 200px;">
+                                    {{ question.correct_answer_text[:50] }}{% if question.correct_answer_text|length > 50 %}...{% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if question.irt_parameters %}
+                                    <div class="small">
+                                        <div><strong>Сложность:</strong> {{ question.irt_parameters.difficulty|round(2) }}</div>
+                                        <div><strong>Дискриминация:</strong> {{ question.irt_parameters.discrimination|round(2) }}</div>
+                                        <div><strong>Угадывание:</strong> {{ question.irt_parameters.guessing|round(2) }}</div>
+                                        {% if question.irt_parameters.calibration_sample_size %}
+                                            <div><strong>Калибровано:</strong> {{ question.irt_parameters.calibration_sample_size }} ответов</div>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span class="badge bg-warning">Нет IRT</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('admin.edit_question', question_id=question.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i> Редактировать
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-info" 
+                                            data-bs-toggle="modal" data-bs-target="#questionModal{{ question.id }}">
+                                        <i class="bi bi-eye"></i> Просмотр
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            {% if questions.pages > 1 %}
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination justify-content-center">
+                    {% if questions.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.questions_management', page=questions.prev_num, domain=domain_filter, irt=irt_filter, search=search) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in questions.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != questions.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.questions_management', page=page_num, domain=domain_filter, irt=irt_filter, search=search) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if questions.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.questions_management', page=questions.next_num, domain=domain_filter, irt=irt_filter, search=search) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна для просмотра вопросов -->
+{% for question in questions.items %}
+<div class="modal fade" id="questionModal{{ question.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Вопрос #{{ question.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h6>Текст вопроса:</h6>
+                    <p>{{ question.text }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Варианты ответов:</h6>
+                    <ul class="list-group">
+                        {% for option in question.options %}
+                        <li class="list-group-item {% if loop.index0 == question.correct_answer_index %}list-group-item-success{% endif %}">
+                            {{ loop.index }}. {{ option }}
+                            {% if loop.index0 == question.correct_answer_index %}
+                                <span class="badge bg-success">Правильный</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Объяснение:</h6>
+                    <p>{{ question.explanation or 'Объяснение не указано' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Метаданные:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Домен:</strong> {{ question.domain or 'Не указан' }}<br>
+                            <strong>Категория:</strong> {{ question.category or 'Не указана' }}<br>
+                            <strong>Уровень сложности:</strong> {{ question.difficulty_level or 'Не указан' }}
+                        </div>
+                        <div class="col-md-6">
+                            {% if question.irt_parameters %}
+                            <strong>IRT параметры:</strong><br>
+                            <small>
+                                Сложность: {{ question.irt_parameters.difficulty|round(3) }}<br>
+                                Дискриминация: {{ question.irt_parameters.discrimination|round(3) }}<br>
+                                Угадывание: {{ question.irt_parameters.guessing|round(3) }}
+                            </small>
+                            {% else %}
+                            <span class="text-muted">IRT параметры не настроены</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <a href="{{ url_for('admin.edit_question', question_id=question.id) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %} 

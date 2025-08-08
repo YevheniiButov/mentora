@@ -1,0 +1,253 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Системные настройки - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2">Системные настройки</h1>
+        </div>
+    </div>
+
+    <!-- Системная информация -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Размер БД</h6>
+                    <h4>{{ system_info.database_size }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Загруженных файлов</h6>
+                    <h4>{{ system_info.total_files }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Размер кэша</h6>
+                    <h4>{{ system_info.cache_size }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Последний бэкап</h6>
+                    <h4>{{ system_info.last_backup.strftime('%d.%m.%Y') if system_info.last_backup else 'Нет' }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Настройки -->
+    <div class="row mb-4">
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Параметры системы</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('admin.update_settings') }}" method="post">
+                        <h6 class="mb-3">Диагностика</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Минимум вопросов</label>
+                                <input type="number" class="form-control" name="DIAGNOSTIC_MIN_QUESTIONS" 
+                                       value="{{ current_config.DIAGNOSTIC_MIN_QUESTIONS }}" min="5" max="50">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Максимум вопросов</label>
+                                <input type="number" class="form-control" name="DIAGNOSTIC_MAX_QUESTIONS" 
+                                       value="{{ current_config.DIAGNOSTIC_MAX_QUESTIONS }}" min="10" max="100">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Дней до переоценки</label>
+                                <input type="number" class="form-control" name="REASSESSMENT_DAYS" 
+                                       value="{{ current_config.REASSESSMENT_DAYS }}" min="7" max="30">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">IRT порог сходимости</label>
+                                <input type="number" class="form-control" name="IRT_CONVERGENCE_THRESHOLD" 
+                                       value="{{ current_config.IRT_CONVERGENCE_THRESHOLD }}" step="0.001" min="0.0001" max="0.1">
+                            </div>
+                        </div>
+
+                        <hr>
+                        
+                        <h6 class="mb-3">Ежедневное обучение</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Минимум уроков в день</label>
+                                <input type="number" class="form-control" name="MIN_LESSONS_PER_DAY" 
+                                       value="{{ current_config.MIN_LESSONS_PER_DAY }}" min="1" max="10">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Максимум уроков в день</label>
+                                <input type="number" class="form-control" name="MAX_LESSONS_PER_DAY" 
+                                       value="{{ current_config.MAX_LESSONS_PER_DAY }}" min="5" max="20">
+                            </div>
+                        </div>
+
+                        <hr>
+                        
+                        <h6 class="mb-3">Функции</h6>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="ENABLE_AI_ASSISTANT" 
+                                   id="enableAI" {% if current_config.ENABLE_AI_ASSISTANT %}checked{% endif %}>
+                            <label class="form-check-label" for="enableAI">
+                                AI Ассистент
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="ENABLE_VIRTUAL_PATIENTS" 
+                                   id="enableVP" {% if current_config.ENABLE_VIRTUAL_PATIENTS %}checked{% endif %}>
+                            <label class="form-check-label" for="enableVP">
+                                Виртуальные пациенты
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Сохранить настройки
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Задачи обслуживания -->
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Обслуживание системы</h5>
+                </div>
+                <div class="card-body">
+                    {% for task in maintenance_tasks %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">{{ task.name }}</h6>
+                                <small class="text-muted">
+                                    {% if task.last_run %}
+                                    Последний запуск: {{ task.last_run.strftime('%d.%m %H:%M') }}
+                                    {% else %}
+                                    Никогда не запускался
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <form action="{{ url_for('admin.run_maintenance', action=task.action) }}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-primary" 
+                                        onclick="return confirm('Запустить {{ task.name }}?')">
+                                    <i class="bi bi-play"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="mt-1">
+                            <span class="badge bg-{{ task.status }}">
+                                {% if task.status == 'success' %}OK{% elif task.status == 'warning' %}Требуется{% else %}Инфо{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-download"></i> Экспорт всех данных
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-warning w-100" 
+                               onclick="return confirm('Очистить весь кэш?')">
+                                <i class="bi bi-trash"></i> Очистить кэш
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-info w-100">
+                                <i class="bi bi-calculator"></i> Пересчитать статистику
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100">
+                                <i class="bi bi-envelope"></i> Тест email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Логи системы -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Последние логи системы</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Время</th>
+                                    <th>Уровень</th>
+                                    <th>Модуль</th>
+                                    <th>Сообщение</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2024-08-04 15:30:22</td>
+                                    <td><span class="badge bg-info">INFO</span></td>
+                                    <td>Admin</td>
+                                    <td>Настройки системы обновлены</td>
+                                </tr>
+                                <tr>
+                                    <td>2024-08-04 15:25:10</td>
+                                    <td><span class="badge bg-success">SUCCESS</span></td>
+                                    <td>Database</td>
+                                    <td>Резервное копирование завершено</td>
+                                </tr>
+                                <tr>
+                                    <td>2024-08-04 15:20:45</td>
+                                    <td><span class="badge bg-warning">WARNING</span></td>
+                                    <td>IRT</td>
+                                    <td>5 вопросов требуют перекалибровки</td>
+                                </tr>
+                                <tr>
+                                    <td>2024-08-04 15:15:33</td>
+                                    <td><span class="badge bg-info">INFO</span></td>
+                                    <td>Cache</td>
+                                    <td>Кэш статистики обновлен</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
