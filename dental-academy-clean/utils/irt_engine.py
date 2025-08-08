@@ -470,33 +470,45 @@ class IRTEngine:
         questions = Question.query.join(IRTParameters).all()
         
         if not questions:
+            logger.warning("No questions found in database")
             return None
+        
+        logger.info(f"Found {len(questions)} questions with IRT parameters")
         
         # For initial question, select one with medium difficulty (close to 0)
         # Use random selection from questions with difficulty between -1 and 1
         import random
         
-        medium_difficulty_questions = [
-            q for q in questions 
-            if q.irt_difficulty is not None
-            and -1.0 <= q.irt_difficulty <= 1.0
-        ]
+        medium_difficulty_questions = []
+        questions_with_irt = []
+        
+        for q in questions:
+            # Get IRT parameters from the relationship
+            irt_params = q.irt_parameters
+            if irt_params and irt_params.difficulty is not None:
+                questions_with_irt.append(q)
+                if -1.0 <= irt_params.difficulty <= 1.0:
+                    medium_difficulty_questions.append(q)
+        
+        logger.info(f"Found {len(medium_difficulty_questions)} medium difficulty questions")
+        logger.info(f"Found {len(questions_with_irt)} questions with IRT parameters")
         
         if medium_difficulty_questions:
             # Randomly select from medium difficulty questions
-            return random.choice(medium_difficulty_questions)
-        
-        # Fallback 1: select random question with any valid IRT difficulty
-        questions_with_irt = [
-            q for q in questions 
-            if q.irt_difficulty is not None
-        ]
+            selected = random.choice(medium_difficulty_questions)
+            logger.info(f"Selected medium difficulty question: {selected.id}")
+            return selected
         
         if questions_with_irt:
-            return random.choice(questions_with_irt)
+            # Fallback 1: select random question with any valid IRT difficulty
+            selected = random.choice(questions_with_irt)
+            logger.info(f"Selected question with IRT parameters: {selected.id}")
+            return selected
         
         # Fallback 2: select any random question
-        return random.choice(questions)
+        selected = random.choice(questions)
+        logger.info(f"Selected random question: {selected.id}")
+        return selected
     
     def select_next_question(self) -> Optional[Question]:
         """Выбрать следующий вопрос для адаптивного тестирования"""

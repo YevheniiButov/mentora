@@ -1020,6 +1020,10 @@ class Question(db.Model):
     # Relationships
     big_domain = db.relationship('BIGDomain', backref='questions', lazy=True)
     irt_parameters = db.relationship('IRTParameters', backref='question', uselist=False, cascade='all, delete-orphan')
+    
+    def check_answer(self, selected_index):
+        """Check if the selected answer is correct"""
+        return selected_index == self.correct_answer_index
 
     @property
     def irt_difficulty(self):
