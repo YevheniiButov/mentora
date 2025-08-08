@@ -3,11 +3,211 @@
 
 import math
 import numpy as np
+import logging
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime, timezone
 from extensions import db
 from models import Question, DiagnosticSession, DiagnosticResponse, BIGDomain
 from models import IRTParameters # Added missing import
+from utils.metrics import record_fallback_usage, record_error
+
+# Добавляем импорты для оптимизации
+from utils.cache_manager import get_cached_question, get_cached_irt_parameters, get_cached_domain_questions
+from utils.performance_optimizer import profile_function, performance_optimizer
+
+logger = logging.getLogger(__name__)
+
+def validate_irt_parameters_for_calculation(difficulty: float, discrimination: float, guessing: float) -> Tuple[bool, str]:
+    """
+    Валидация IRT параметров перед использованием в расчетах
+    
+    Args:
+        difficulty: Параметр сложности
+        discrimination: Параметр дискриминации
+        guessing: Параметр угадывания
+        
+    Returns:
+        (is_valid, error_message)
+    """
+    # Проверка difficulty
+    if not (-5.0 <= difficulty <= 5.0):
+        return False, f"Difficulty out of valid range: {difficulty} (expected: -5.0 to 5.0)"
+    
+    # Проверка discrimination
+    if not (0.1 <= discrimination <= 4.0):
+        return False, f"Discrimination out of valid range: {discrimination} (expected: 0.1 to 4.0)"
+    
+    # Проверка guessing
+    if not (0.0 <= guessing <= 0.5):
+        return False, f"Guessing out of valid range: {guessing} (expected: 0.0 to 0.5)"
+    
+    # Проверка логической консистентности
+    if discrimination < 0.3:
+        return False, f"Very low discrimination: {discrimination} (may cause numerical issues)"
+    
+    if guessing > 0.4:
+        return False, f"Very high guessing: {guessing} (may cause numerical issues)"
+    
+    return True, ""
+
+
+def safe_3pl_probability(ability: float, difficulty: float, discrimination: float, guessing: float) -> Tuple[float, bool]:
+    """
+    Безопасный расчет вероятности по 3PL модели с валидацией
+    
+    Args:
+        ability: Способность пользователя
+        difficulty: Сложность вопроса
+        discrimination: Дискриминация вопроса
+        guessing: Параметр угадывания
+        
+    Returns:
+        (probability, is_valid)
+    """
+    try:
+        # Валидация входных параметров
+        is_valid, error_msg = validate_irt_parameters_for_calculation(difficulty, discrimination, guessing)
+        if not is_valid:
+            logger.warning(f"Invalid IRT parameters in 3PL calculation: {error_msg}")
+            return guessing, False  # Возвращаем guessing как fallback
+        
+        # Валидация ability
+        if not (-4.0 <= ability <= 4.0):
+            logger.warning(f"Ability out of valid range: {ability}")
+            ability = max(-4.0, min(4.0, ability))  # Ограничиваем ability
+        
+        # Расчет вероятности
+        exponent = discrimination * (ability - difficulty)
+        
+        # Защита от переполнения
+        if exponent > 700:  # exp(700) слишком большое число
+            probability = guessing
+        elif exponent < -700:  # exp(-700) слишком маленькое число
+            probability = guessing + (1 - guessing)
+        else:
+            probability = guessing + (1 - guessing) / (1 + math.exp(-exponent))
+        
+        # Проверка результата
+        if not (0.0 <= probability <= 1.0):
+            logger.warning(f"Invalid probability calculated: {probability}")
+            probability = max(0.0, min(1.0, probability))
+        
+        return probability, True
+        
+    except Exception as e:
+        logger.error(f"Error in 3PL probability calculation: {e}")
+        return guessing, False
+
+
+def safe_ability_estimation(responses: List[Dict], initial_ability: float = 0.0) -> Tuple[float, float, bool]:
+    """
+    Безопасная оценка способности с валидацией данных
+    
+    Args:
+        responses: Список ответов с IRT параметрами
+        initial_ability: Начальная оценка способности
+        
+    Returns:
+        (ability, standard_error, is_valid)
+    """
+    try:
+        if not responses:
+            logger.warning("No responses provided for ability estimation")
+            return initial_ability, 1.0, False
+        
+        # Валидация ответов
+        valid_responses = []
+        for i, response in enumerate(responses):
+            if 'irt_params' not in response:
+                logger.warning(f"Response {i} missing IRT parameters")
+                continue
+            
+            irt_params = response['irt_params']
+            required_fields = ['difficulty', 'discrimination', 'guessing']
+            
+            if not all(field in irt_params for field in required_fields):
+                logger.warning(f"Response {i} missing required IRT fields")
+                continue
+            
+            # Валидация IRT параметров
+            is_valid, error_msg = validate_irt_parameters_for_calculation(
+                irt_params['difficulty'],
+                irt_params['discrimination'],
+                irt_params['guessing']
+            )
+            
+            if not is_valid:
+                logger.warning(f"Response {i} has invalid IRT parameters: {error_msg}")
+                continue
+            
+            valid_responses.append(response)
+        
+        if not valid_responses:
+            logger.warning("No valid responses for ability estimation")
+            return initial_ability, 1.0, False
+        
+        # Используем только валидные ответы для оценки
+        ability = initial_ability
+        max_iterations = 50
+        tolerance = 0.001
+        
+        for iteration in range(max_iterations):
+            prev_ability = ability
+            
+            # Расчет первой и второй производных логарифма правдоподобия
+            first_derivative = 0.0
+            second_derivative = 0.0
+            
+            for response in valid_responses:
+                irt_params = response['irt_params']
+                is_correct = response['is_correct']
+                
+                # Безопасный расчет вероятности
+                probability, prob_valid = safe_3pl_probability(
+                    ability,
+                    irt_params['difficulty'],
+                    irt_params['discrimination'],
+                    irt_params['guessing']
+                )
+                
+                if not prob_valid:
+                    continue
+                
+                # Расчет производных
+                if probability > 0 and probability < 1:
+                    first_derivative += irt_params['discrimination'] * (is_correct - probability)
+                    second_derivative -= irt_params['discrimination'] ** 2 * probability * (1 - probability)
+            
+            # Проверка сходимости
+            if abs(second_derivative) < 1e-10:
+                logger.warning("Second derivative too small, stopping iteration")
+                break
+            
+            # Обновление оценки способности
+            ability_change = first_derivative / second_derivative
+            ability -= ability_change
+            
+            # Ограничение ability
+            ability = max(-4.0, min(4.0, ability))
+            
+            # Проверка сходимости
+            if abs(ability - prev_ability) < tolerance:
+                break
+        
+        # Расчет стандартной ошибки
+        if abs(second_derivative) > 1e-10:
+            standard_error = 1.0 / math.sqrt(-second_derivative)
+        else:
+            standard_error = 1.0
+        
+        # Ограничение стандартной ошибки
+        standard_error = max(0.1, min(2.0, standard_error))
+        
+        return ability, standard_error, True
+        
+    except Exception as e:
+        logger.error(f"Error in ability estimation: {e}")
+        return initial_ability, 1.0, False
 
 class IRTEngine:
     """IRT Engine for 3PL model adaptive testing with domain support"""
@@ -39,91 +239,190 @@ class IRTEngine:
             self.questions_per_domain = 1
             self.max_questions = 25
         
-        # Загрузить домены и их веса
-        self.all_domains = self.load_all_domains()
-        self.domain_weights = self.load_domain_weights()
-        
-        # Рассчитать минимальное количество вопросов
-        self.min_questions = len(self.all_domains) * self.questions_per_domain
+        # Ленивая загрузка доменов
+        self._all_domains = None
+        self._domain_weights = None
+        self._min_questions = None
     
     def load_all_domains(self) -> Dict[str, BIGDomain]:
         """Загрузить все активные домены"""
         domains = BIGDomain.query.filter_by(is_active=True).all()
         return {domain.code: domain for domain in domains}
     
+    @property
+    def all_domains(self) -> Dict[str, BIGDomain]:
+        """Ленивая загрузка всех доменов"""
+        if self._all_domains is None:
+            self._all_domains = self.load_all_domains()
+        return self._all_domains
+    
+    @property
+    def domain_weights(self) -> Dict[str, float]:
+        """Ленивая загрузка весов доменов"""
+        if self._domain_weights is None:
+            self._domain_weights = {domain.code: domain.weight_percentage for domain in self.all_domains.values()}
+        return self._domain_weights
+    
+    @property
+    def min_questions(self) -> int:
+        """Ленивый расчет минимального количества вопросов"""
+        if self._min_questions is None:
+            self._min_questions = len(self.all_domains) * self.questions_per_domain
+        return self._min_questions
+    
     def load_domain_weights(self) -> Dict[str, float]:
         """Загрузить веса доменов для приоритизации"""
         return {domain.code: domain.weight_percentage for domain in self.all_domains.values()}
     
+    # Оптимизируем метод get_domain_questions с кэшированием
+    @profile_function
     def get_domain_questions(self, domain_code: str, difficulty_range: Optional[Tuple[float, float]] = None, limit: int = 100) -> List[Question]:
         """Получить вопросы для конкретного домена с оптимизацией производительности"""
-        query = Question.query.filter_by(domain=domain_code)
+        # Сначала пробуем получить из кэша
+        cached_questions = get_cached_domain_questions(domain_code, difficulty_range)
+        if cached_questions:
+            logger.debug(f"Cache hit for domain questions: {domain_code}")
+            return cached_questions[:limit]
         
-        if difficulty_range:
-            min_diff, max_diff = difficulty_range
-            # Используем JOIN для оптимизации запроса
-            query = query.join(IRTParameters).filter(
-                IRTParameters.difficulty.between(min_diff, max_diff)
-            )
+        # Если нет в кэше, загружаем из базы данных
+        from utils.performance_optimizer import performance_optimizer
+        query_optimizer = performance_optimizer.query_optimizer
         
-        # Добавляем лимит для предотвращения загрузки всех вопросов
-        return query.limit(limit).all()
+        questions = query_optimizer.optimize_question_query(domain_code, difficulty_range)
+        
+        logger.debug(f"Loaded {len(questions)} questions for domain {domain_code} from database")
+        return questions[:limit]
     
+    # Оптимизируем метод select_next_question_by_domain
+    @profile_function
     def select_next_question_by_domain(self, domain_code: str, current_ability: float = 0.0, answered_question_ids: set = None) -> Optional[Question]:
-        """Выбрать следующий вопрос для конкретного домена"""
+        """Выбрать следующий вопрос для конкретного домена с оптимизацией"""
         if answered_question_ids is None:
             answered_question_ids = set()
-            
+        
+        # Используем оптимизированный запрос
         questions = self.get_domain_questions(domain_code)
+        logger.info(f"Found {len(questions)} questions for domain {domain_code}")
         
         # Исключить уже отвеченные вопросы
         available_questions = [q for q in questions if q.id not in answered_question_ids]
+        logger.info(f"Available questions after filtering: {len(available_questions)}")
         
         if not available_questions:
+            logger.warning(f"No available questions for domain {domain_code}")
             return None
         
-        # Обеспечить, что current_ability не None
-        if current_ability is None:
-            current_ability = 0.0
+        # Детальная проверка IRT параметров с кэшированием
+        questions_with_irt = []
+        questions_without_irt = []
         
-        # Найти вопрос с оптимальной сложностью для current_ability
+        for question in available_questions:
+            # Пробуем получить IRT параметры из кэша
+            irt_params = get_cached_irt_parameters(question.id)
+            
+            if irt_params and irt_params.difficulty is not None:
+                questions_with_irt.append(question)
+                logger.debug(f"Question {question.id}: difficulty={irt_params.difficulty}, discrimination={irt_params.discrimination}, guessing={irt_params.guessing}")
+            else:
+                questions_without_irt.append(question)
+        
+        # Приоритет вопросам с IRT параметрами
+        if questions_with_irt:
+            # Выбираем вопрос с оптимальной сложностью
+            optimal_question = self._select_optimal_question(questions_with_irt, current_ability)
+            if optimal_question:
+                return optimal_question
+        
+        # Fallback к вопросам без IRT параметров
+        if questions_without_irt:
+            import random
+            return random.choice(questions_without_irt)
+        
+        return None
+
+    def _select_optimal_question(self, questions: List[Question], current_ability: float) -> Optional[Question]:
+        """Выбрать оптимальный вопрос на основе текущей способности"""
+        if not questions:
+            return None
+        
+        # Получаем IRT параметры для всех вопросов
+        questions_with_params = []
+        
+        for question in questions:
+            irt_params = get_cached_irt_parameters(question.id)
+            if irt_params and irt_params.difficulty is not None:
+                questions_with_params.append((question, irt_params))
+        
+        if not questions_with_params:
+            return None
+        
+        # Выбираем вопрос с оптимальной сложностью
+        # Предпочитаем вопросы со сложностью близкой к текущей способности
         optimal_question = None
         min_distance = float('inf')
         
-        for question in available_questions:
-            if not hasattr(question, 'irt_difficulty') or question.irt_difficulty is None:
-                continue
-                
-            difficulty = question.irt_difficulty
-            distance = abs(difficulty - current_ability)
+        for question, irt_params in questions_with_params:
+            distance = abs(irt_params.difficulty - current_ability)
             
-            if distance < min_distance:
-                min_distance = distance
+            # Учитываем дискриминацию (предпочитаем вопросы с высокой дискриминацией)
+            discrimination_factor = 1.0 / max(irt_params.discrimination, 0.1)
+            adjusted_distance = distance * discrimination_factor
+            
+            if adjusted_distance < min_distance:
+                min_distance = adjusted_distance
                 optimal_question = question
         
-        return optimal_question or available_questions[0]
+        return optimal_question
     
     def calculate_domain_abilities(self, user_responses: List[Dict]) -> Dict[str, float]:
-        """Рассчитать способности пользователя по каждому домену"""
+        """Рассчитать способности пользователя по каждому домену с улучшенной обработкой ошибок"""
         domain_abilities = {}
         
         for domain_code in self.all_domains.keys():
             domain_responses = [r for r in user_responses if r.get('domain') == domain_code]
             
             if domain_responses and len(domain_responses) >= 1:  # Минимум 1 ответ для домена
-                domain_abilities[domain_code] = self.estimate_ability(domain_responses)[0]
+                try:
+                    theta, se = self.estimate_ability(domain_responses)
+                    domain_abilities[domain_code] = theta
+                except Exception as e:
+                    # Fallback: использовать простую пропорцию
+                    correct_count = sum(1 for r in domain_responses if r.get('is_correct', False))
+                    total_count = len(domain_responses)
+                    if total_count > 0:
+                        proportion = correct_count / total_count
+                        # Простое преобразование в theta
+                        domain_abilities[domain_code] = 2 * (proportion - 0.5)
+                    else:
+                        domain_abilities[domain_code] = 0.0
             else:
                 domain_abilities[domain_code] = None  # Нет данных для домена
         
         return domain_abilities
     
     def get_domain_statistics(self, domain_code: str) -> Dict:
-        """Получить статистику по домену"""
+        """Получить статистику по домену с улучшенной обработкой ошибок"""
         domain = self.all_domains.get(domain_code)
         if not domain:
             return {}
         
         questions = self.get_domain_questions(domain_code)
+        
+        # Фильтровать вопросы с валидными IRT параметрами
+        valid_questions = [
+            q for q in questions 
+            if hasattr(q, 'irt_difficulty') and q.irt_difficulty is not None
+        ]
+        
+        if valid_questions:
+            difficulties = [q.irt_difficulty for q in valid_questions]
+            average_difficulty = np.mean(difficulties)
+            min_difficulty = min(difficulties)
+            max_difficulty = max(difficulties)
+        else:
+            average_difficulty = 0.0
+            min_difficulty = 0.0
+            max_difficulty = 0.0
         
         return {
             'code': domain_code,
@@ -131,106 +430,73 @@ class IRTEngine:
             'description': domain.description,
             'weight': domain.weight_percentage,
             'question_count': len(questions),
-            'average_difficulty': np.mean([q.irt_difficulty for q in questions]) if questions else 0.0,
+            'valid_irt_questions': len(valid_questions),
+            'average_difficulty': average_difficulty,
             'difficulty_range': {
-                'min': min([q.irt_difficulty for q in questions]) if questions else 0.0,
-                'max': max([q.irt_difficulty for q in questions]) if questions else 0.0
+                'min': min_difficulty,
+                'max': max_difficulty
             }
         }
         
+    # Оптимизируем метод estimate_ability с профилированием
+    @profile_function
     def estimate_ability(self, responses: List[Dict]) -> Tuple[float, float]:
         """
-        Estimate ability (theta) using Maximum Likelihood Estimation (MLE)
+        Estimate ability (theta) using Maximum Likelihood Estimation (MLE) with optimization
         
         Args:
             responses: List of dicts with 'question_id', 'is_correct', 'irt_params'
             
         Returns:
-            Tuple of (theta_estimate, standard_error)
+            Tuple of (theta, standard_error)
         """
-        if not responses:
+        # Используем безопасную функцию оценки способности
+        ability, standard_error, is_valid = safe_ability_estimation(responses)
+        
+        if not is_valid:
+            logger.warning("Ability estimation failed, using fallback values")
             return 0.0, 1.0
-            
-        # Initial guess: proportion correct mapped to theta scale
-        proportion_correct = sum(r['is_correct'] for r in responses) / len(responses)
-        initial_theta = self._proportion_to_theta(proportion_correct)
         
-        # Newton-Raphson iteration for MLE
-        theta = initial_theta
-        for iteration in range(self.max_iterations):
-            first_derivative = 0.0
-            second_derivative = 0.0
-            
-            for response in responses:
-                # Получаем IRT параметры из словаря response
-                irt_params = response['irt_params']
-                is_correct = response['is_correct']
-                
-                # Calculate probability and derivatives
-                p = self._3pl_probability(theta, irt_params)
-                q = 1 - p
-                
-                # Avoid division by zero
-                if p <= 0 or p >= 1:
-                    continue
-                
-                # First derivative (gradient)
-                first_derivative += irt_params['discrimination'] * (is_correct - p)
-                
-                # Second derivative (Hessian)
-                second_derivative -= irt_params['discrimination']**2 * p * q
-                
-                # Avoid division by zero
-                if abs(second_derivative) < 1e-10:
-                    second_derivative = -1e-10
-            
-            # Newton-Raphson step
-            if abs(second_derivative) > 1e-10:
-                delta = first_derivative / second_derivative
-                theta -= delta
-                
-                # Check convergence
-                if abs(delta) < self.convergence_threshold:
-                    break
-            else:
-                break
-        
-        # Limit theta to reasonable range
-        theta = max(-4.0, min(4.0, theta))
-        
-        # Calculate standard error
-        se = self._calculate_standard_error(theta, responses)
-        
-        # Limit standard error to reasonable range
-        se = max(0.1, min(2.0, se))
-        
-        return theta, se
+        return ability, standard_error
     
     def select_initial_question(self) -> Optional[Question]:
         """
-        Select initial question for diagnostic session
+        Select initial question for diagnostic session with improved fallback logic
         
         Returns:
             Selected question or None if no questions available
         """
-        # Get all questions (IRT parameters are stored directly in Question model)
-        questions = Question.query.all()
+        # Get all questions with IRT parameters
+        questions = Question.query.join(IRTParameters).all()
         
         if not questions:
             return None
         
         # For initial question, select one with medium difficulty (close to 0)
-        best_question = None
-        min_diff_from_zero = float('inf')
+        # Use random selection from questions with difficulty between -1 and 1
+        import random
         
-        for question in questions:
-            # IRT parameters are stored directly in Question model
-            diff_from_zero = abs(question.irt_difficulty)
-            if diff_from_zero < min_diff_from_zero:
-                min_diff_from_zero = diff_from_zero
-                best_question = question
+        medium_difficulty_questions = [
+            q for q in questions 
+            if q.irt_difficulty is not None
+            and -1.0 <= q.irt_difficulty <= 1.0
+        ]
         
-        return best_question
+        if medium_difficulty_questions:
+            # Randomly select from medium difficulty questions
+            return random.choice(medium_difficulty_questions)
+        
+        # Fallback 1: select random question with any valid IRT difficulty
+        questions_with_irt = [
+            q for q in questions 
+            if q.irt_difficulty is not None
+        ]
+        
+        if questions_with_irt:
+            return random.choice(questions_with_irt)
+        
+        # Fallback 2: select any random question
+        return random.choice(questions)
     
     def select_next_question(self) -> Optional[Question]:
         """Выбрать следующий вопрос для адаптивного тестирования"""
@@ -245,9 +511,10 @@ class IRTEngine:
         for response in responses:
             question = response.question
             answered_question_ids.add(question.id)
-            if hasattr(question, 'domain') and question.domain:
-                domain = question.domain
-                domain_question_counts[domain] = domain_question_counts.get(domain, 0) + 1
+            # Используем big_domain вместо старого поля domain
+            if hasattr(question, 'big_domain') and question.big_domain:
+                domain_code = question.big_domain.code
+                domain_question_counts[domain_code] = domain_question_counts.get(domain_code, 0) + 1
         
         # Найти домены, которые нуждаются в дополнительных вопросах
         domains_needing_questions = []
@@ -268,9 +535,18 @@ class IRTEngine:
                 reverse=True
             )
             
-            # Выбрать домен с наивысшим приоритетом
-            priority_domain = domains_needing_questions[0]['domain']
-            return self.select_next_question_by_domain(priority_domain, self.current_ability_estimate, answered_question_ids)
+            # Попробовать выбрать вопрос из доменов по приоритету
+            for domain_info in domains_needing_questions:
+                priority_domain = domain_info['domain']
+                question = self.select_next_question_by_domain(priority_domain, self.current_ability_estimate, answered_question_ids)
+                if question:
+                    return question
+            
+            # Если не удалось выбрать из приоритетных доменов, попробовать любой домен с вопросами
+            for domain_code in self.all_domains.keys():
+                question = self.select_next_question_by_domain(domain_code, self.current_ability_estimate, answered_question_ids)
+                if question:
+                    return question
         
         # Если все домены покрыты, использовать стандартную логику
         # Найти вопрос с оптимальной сложностью, исключая уже отвеченные
@@ -280,6 +556,7 @@ class IRTEngine:
             # Если все вопросы отвечены, завершить диагностику
             return None
         
+        # Попробовать найти вопрос с оптимальной сложностью
         optimal_question = None
         min_distance = float('inf')
         
@@ -292,6 +569,23 @@ class IRTEngine:
             if distance < min_distance:
                 min_distance = distance
                 optimal_question = question
+        
+        # Если не нашли вопрос с IRT параметрами, использовать fallback
+        if optimal_question is None:
+            # Fallback 1: попробовать найти любой вопрос с IRT параметрами
+            questions_with_irt = [
+                q for q in all_questions 
+                if hasattr(q, 'irt_difficulty') and q.irt_difficulty is not None
+            ]
+            
+            if questions_with_irt:
+                # Выбрать случайный вопрос с IRT параметрами
+                import random
+                optimal_question = random.choice(questions_with_irt)
+            else:
+                # Fallback 2: если нет вопросов с IRT параметрами, выбрать случайный
+                import random
+                optimal_question = random.choice(all_questions)
         
         return optimal_question
     
@@ -329,11 +623,12 @@ class IRTEngine:
         domain_responses = {}
         for response in responses:
             question = response.question
-            if hasattr(question, 'domain') and question.domain:
-                domain = question.domain
-                if domain not in domain_responses:
-                    domain_responses[domain] = []
-                domain_responses[domain].append(response)
+            # Используем big_domain вместо старого поля domain
+            if hasattr(question, 'big_domain') and question.big_domain:
+                domain_code = question.big_domain.code
+                if domain_code not in domain_responses:
+                    domain_responses[domain_code] = []
+                domain_responses[domain_code].append(response)
         
         # Рассчитать способности для каждого домена
         domain_abilities = {}
@@ -346,8 +641,8 @@ class IRTEngine:
                 domain_accuracy = correct_count / total_count
                 domain_abilities[domain_code] = domain_accuracy
             else:
-                # Нет ответов по этому домену
-                domain_abilities[domain_code] = None
+                # Нет ответов по этому домену - возвращаем 0.0 вместо None
+                domain_abilities[domain_code] = 0.0
         
         return domain_abilities
     
@@ -390,58 +685,136 @@ class IRTEngine:
         return min(100.0, max(0.0, progress))
     
     def get_domain_detailed_statistics(self) -> Dict[str, Dict]:
-        """Get detailed statistics for each domain"""
-        if not self.session:
-            return {}
+        """
+        Get detailed statistics for each domain with real IRT calculations
         
-        # Get all responses for this session
-        responses = self.session.responses.all()
-        if not responses:
-            return {}
+        Returns:
+            Dict with domain statistics including IRT ability estimates and confidence intervals
+        """
+        import logging
+        logger = logging.getLogger(__name__)
         
-        # Группировать ответы по доменам
-        domain_responses = {}
-        for response in responses:
-            # Получаем вопрос из базы данных
-            question = Question.query.get(response.question_id)
-            if question and hasattr(question, 'domain') and question.domain:
-                domain = question.domain
-                if domain not in domain_responses:
-                    domain_responses[domain] = []
-                domain_responses[domain].append(response)
-        
-        # Рассчитать детальную статистику для каждого домена
-        domain_stats = {}
-        for domain_code in self.all_domains.keys():
-            domain = self.all_domains[domain_code]
+        try:
+            if not self.session:
+                logger.warning("No diagnostic session provided for domain statistics")
+                return {}
             
-            if domain_code in domain_responses and domain_responses[domain_code]:
-                # Есть ответы по этому домену
-                domain_resp_list = domain_responses[domain_code]
-                correct_count = sum(1 for resp in domain_resp_list if resp.is_correct)
-                total_count = len(domain_resp_list)
-                accuracy = correct_count / total_count
+            # Get all responses for this session using SQLAlchemy query
+            responses = self.session.responses.all()
+            if not responses:
+                logger.info(f"No responses found for session {self.session.id}")
+                return self._get_default_domain_statistics()
+            
+            # Group responses by domain using efficient SQLAlchemy queries
+            domain_responses = {}
+            for response in responses:
+                # Get question with domain information
+                question = Question.query.get(response.question_id)
+                if question and hasattr(question, 'big_domain') and question.big_domain:
+                    domain_code = question.big_domain.code
+                    if domain_code not in domain_responses:
+                        domain_responses[domain_code] = []
+                    domain_responses[domain_code].append(response)
+            
+            # Calculate detailed statistics for each domain
+            domain_stats = {}
+            for domain_code in self.all_domains.keys():
+                domain = self.all_domains[domain_code]
                 
-                domain_stats[domain_code] = {
-                    'name': domain.name,
-                    'questions_answered': total_count,
-                    'correct_answers': correct_count,
-                    'accuracy': accuracy,
-                    'accuracy_percentage': round(accuracy * 100, 1),
-                    'has_data': True
-                }
-            else:
-                # Нет ответов по этому домену
-                domain_stats[domain_code] = {
-                    'name': domain.name,
-                    'questions_answered': 0,
-                    'correct_answers': 0,
-                    'accuracy': None,
-                    'accuracy_percentage': None,
-                    'has_data': False
-                }
-        
-        return domain_stats
+                if domain_code in domain_responses and domain_responses[domain_code]:
+                    # Real data available for this domain
+                    domain_resp_list = domain_responses[domain_code]
+                    
+                    # Calculate basic statistics
+                    correct_count = sum(1 for resp in domain_resp_list if resp.is_correct)
+                    total_count = len(domain_resp_list)
+                    accuracy = correct_count / total_count if total_count > 0 else 0.0
+                    
+                    # Calculate IRT ability estimate for this domain
+                    irt_responses = []
+                    for resp in domain_resp_list:
+                        question = resp.question
+                        if (question and hasattr(question, 'irt_difficulty') and 
+                            question.irt_difficulty is not None):
+                            irt_responses.append({
+                                'question_id': resp.question_id,
+                                'is_correct': resp.is_correct,
+                                'irt_params': {
+                                    'difficulty': question.irt_difficulty,
+                                    'discrimination': question.irt_discrimination or 1.0,
+                                    'guessing': question.irt_guessing or 0.25
+                                }
+                            })
+                    
+                    # Calculate IRT ability and confidence interval
+                    if irt_responses and len(irt_responses) >= 1:
+                        try:
+                            ability_estimate, standard_error = self.estimate_ability(irt_responses)
+                            confidence_interval = [
+                                ability_estimate - 1.96 * standard_error,
+                                ability_estimate + 1.96 * standard_error
+                            ]
+                        except Exception as e:
+                            logger.error(f"Error calculating IRT ability for domain {domain_code}: {e}")
+                            ability_estimate = None
+                            standard_error = None
+                            confidence_interval = None
+                    else:
+                        ability_estimate = None
+                        standard_error = None
+                        confidence_interval = None
+                    
+                    domain_stats[domain_code] = {
+                        'name': domain.name,
+                        'questions_answered': total_count,
+                        'correct_answers': correct_count,
+                        'accuracy': accuracy,
+                        'accuracy_percentage': round(accuracy * 100, 1),
+                        'has_data': True,
+                        'ability_estimate': round(ability_estimate, 3) if ability_estimate is not None else None,
+                        'standard_error': round(standard_error, 3) if standard_error is not None else None,
+                        'confidence_interval': confidence_interval,
+                        'irt_responses_count': len(irt_responses)
+                    }
+                else:
+                    # No responses for this domain - return meaningful defaults
+                    domain_stats[domain_code] = self._get_domain_default_stats(domain)
+            
+            logger.info(f"Generated domain statistics for {len(domain_stats)} domains")
+            return domain_stats
+            
+        except Exception as e:
+            logger.error(f"Error in get_domain_detailed_statistics: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return self._get_default_domain_statistics()
+    
+    def _get_domain_default_stats(self, domain) -> Dict:
+        """Get meaningful default statistics for domain with no responses"""
+        return {
+            'name': domain.name,
+            'questions_answered': 0,
+            'correct_answers': 0,
+            'accuracy': None,
+            'accuracy_percentage': None,
+            'has_data': False,
+            'ability_estimate': None,
+            'standard_error': None,
+            'confidence_interval': None,
+            'irt_responses_count': 0,
+            'message': f'No diagnostic data available for {domain.name}. Complete a diagnostic test to see your performance.'
+        }
+    
+    def _get_default_domain_statistics(self) -> Dict[str, Dict]:
+        """Get default statistics for all domains when no session data is available"""
+        default_stats = {}
+        for domain_code, domain in self.all_domains.items():
+            default_stats[domain_code] = self._get_domain_default_stats(domain)
+        return default_stats
+    
+    def get_default_domain_statistics(self) -> Dict[str, Dict]:
+        """Public method to get default statistics for all domains"""
+        return self._get_default_domain_statistics()
     
     def _check_termination_conditions(self, session: DiagnosticSession) -> Dict:
         """
@@ -450,16 +823,23 @@ class IRTEngine:
         Returns:
             Dict with termination info
         """
+        # Получить только домены с вопросами
+        domains_with_questions = []
+        for domain_code in self.all_domains.keys():
+            questions_count = Question.query.filter_by(big_domain_id=self.all_domains[domain_code].id).count()
+            if questions_count > 0:
+                domains_with_questions.append(domain_code)
+        
         # Проверить покрытие доменов (минимум questions_per_domain вопросов на домен)
         min_questions_per_domain = self.questions_per_domain
-        total_domains = len(self.all_domains)
-        min_total_questions = total_domains * min_questions_per_domain
+        total_domains_with_questions = len(domains_with_questions)
+        min_total_questions = total_domains_with_questions * min_questions_per_domain
         
         if session.questions_answered < min_total_questions:
             return {
                 'should_terminate': False,
                 'reason': 'domain_coverage',
-                'message': f'Need at least {min_questions_per_domain} question(s) per domain ({total_domains} domains = {min_total_questions} questions)'
+                'message': f'Need at least {min_questions_per_domain} question(s) per domain ({total_domains_with_questions} domains with questions = {min_total_questions} questions)'
             }
         
         # Check minimum questions requirement
@@ -501,22 +881,41 @@ class IRTEngine:
         }
     
     def _3pl_probability(self, theta: float, irt_params: Dict) -> float:
-        """Calculate 3PL probability"""
+        """Calculate 3PL probability with validation"""
         a = irt_params['discrimination']
         b = irt_params['difficulty']
         c = irt_params['guessing']
         
-        return c + (1 - c) / (1 + math.exp(-a * (theta - b)))
+        # Validate parameters
+        if a is None or b is None or c is None:
+            return 0.5  # Default probability if parameters are missing
+        
+        # Ensure guessing parameter is in valid range
+        c = max(0.0, min(0.5, c))
+        
+        # Calculate 3PL probability: P(θ) = c + (1-c) / (1 + exp(-a(θ-b)))
+        try:
+            probability = c + (1 - c) / (1 + math.exp(-a * (theta - b)))
+            # Ensure probability is in valid range
+            return max(0.0, min(1.0, probability))
+        except (OverflowError, ZeroDivisionError):
+            # Fallback for numerical issues
+            return 0.5
     
     def _calculate_item_information(self, theta: float, a: float, b: float, c: float) -> float:
-        """Calculate item information at given theta"""
+        """Calculate item information at given theta for 3PL model"""
         p = self._3pl_probability(theta, {'discrimination': a, 'difficulty': b, 'guessing': c})
         q = 1 - p
-        return a**2 * p * q
+        
+        # 3PL information function: I(θ) = a² * (P - c)² * Q / (P * (1 - c)²)
+        if p > c and p < 1:
+            return a**2 * (p - c)**2 * q / (p * (1 - c)**2)
+        else:
+            return 0.0
     
     def _calculate_standard_error(self, theta: float, responses: List[Dict]) -> float:
         """
-        Calculate standard error of ability estimate
+        Calculate standard error of ability estimate using 3PL information function
         
         Args:
             theta: Current ability estimate
@@ -528,39 +927,56 @@ class IRTEngine:
         import math
         
         total_information = 0.0
+        valid_responses = 0
         
         for response in responses:
             # Получаем IRT параметры из словаря response
             irt_params = response['irt_params']
             
-            information = self._calculate_item_information(
-                theta,
-                irt_params['discrimination'],
-                irt_params['difficulty'],
-                irt_params['guessing']
-            )
-            total_information += information
+            # Validate IRT parameters
+            if (irt_params['discrimination'] is not None and 
+                irt_params['difficulty'] is not None and 
+                irt_params['guessing'] is not None):
+                
+                information = self._calculate_item_information(
+                    theta,
+                    irt_params['discrimination'],
+                    irt_params['difficulty'],
+                    irt_params['guessing']
+                )
+                total_information += information
+                valid_responses += 1
         
         if total_information > 0:
-            return 1.0 / math.sqrt(total_information)
+            se = 1.0 / math.sqrt(total_information)
+            # Ensure reasonable bounds for standard error
+            return max(0.1, min(2.0, se))
+        elif valid_responses > 0:
+            # Fallback: simple standard error based on number of responses
+            return 1.0 / math.sqrt(valid_responses)
         else:
+            # Default standard error if no valid information
             return 1.0
     
     def _proportion_to_theta(self, proportion: float) -> float:
-        """Convert proportion correct to initial theta estimate"""
+        """Convert proportion correct to initial theta estimate with improved validation"""
         # Ensure proportion is in valid range
         proportion = max(0.01, min(0.99, proportion))
         
-        # Use logit transformation to map proportion to theta scale
-        # This maps 0.5 to 0, 0.9 to ~2, 0.1 to ~-2
-        theta = math.log(proportion / (1 - proportion))
-        
-        # Limit to reasonable range
-        return max(-3.0, min(3.0, theta)) 
+        try:
+            # Use logit transformation to map proportion to theta scale
+            # This maps 0.5 to 0, 0.9 to ~2, 0.1 to ~-2
+            theta = math.log(proportion / (1 - proportion))
+            
+            # Limit to reasonable range
+            return max(-3.0, min(3.0, theta))
+        except (ValueError, ZeroDivisionError):
+            # Fallback for numerical issues
+            return 0.0 
 
     def convert_irt_ability_to_readiness_percentage(self, theta: float) -> float:
         """
-        Convert IRT ability (theta) to readiness percentage (0-100%)
+        Convert IRT ability (theta) to readiness percentage (0-100%) with improved error handling
         
         IRT theta values typically range from -4 to +4, where:
         - theta = 0: average ability
@@ -575,56 +991,76 @@ class IRTEngine:
         if theta is None:
             return 0.0
         
-        # Use logistic function to convert theta to probability
-        # This gives us a smooth curve from 0 to 1
-        import math
-        probability = 1 / (1 + math.exp(-theta))
-        
-        # Convert to percentage and ensure it's within 0-100 range
-        percentage = probability * 100
-        return max(0.0, min(100.0, percentage))
+        try:
+            # Use logistic function to convert theta to probability
+            # This gives us a smooth curve from 0 to 1
+            import math
+            probability = 1 / (1 + math.exp(-theta))
+            
+            # Convert to percentage and ensure it's within 0-100 range
+            percentage = probability * 100
+            
+            # Round to 1 decimal place to avoid floating point precision issues
+            return round(max(0.0, min(100.0, percentage)), 1)
+        except (OverflowError, ValueError):
+            # Fallback for numerical issues
+            if theta > 0:
+                return 100.0
+            else:
+                return 0.0
     
     def convert_irt_ability_to_performance_percentage(self, theta: float) -> float:
         """
-        Convert IRT ability to performance percentage for display
+        Convert IRT ability to performance percentage for display with improved error handling
         This is a more conservative conversion for display purposes
         """
         if theta is None:
             return 0.0
         
-        # Use a more conservative conversion
-        # theta = 0 -> 50%
-        # theta = 1 -> 70%
-        # theta = 2 -> 85%
-        # theta = -1 -> 30%
-        # theta = -2 -> 15%
-        
-        import math
-        # Use sigmoid function with adjusted parameters
-        probability = 1 / (1 + math.exp(-(theta + 0.5) * 0.8))
-        percentage = probability * 100
-        
-        # Ensure reasonable bounds
-        return max(0.0, min(100.0, percentage)) 
-
+        try:
+            # Use a more conservative conversion
+            # theta = 0 -> 50%
+            # theta = 1 -> 70%
+            # theta = 2 -> 85%
+            # theta = -1 -> 30%
+            # theta = -2 -> 15%
+            
+            import math
+            # Use sigmoid function with adjusted parameters
+            probability = 1 / (1 + math.exp(-(theta + 0.5) * 0.8))
+            percentage = probability * 100
+            
+            # Ensure reasonable bounds and round to 1 decimal place
+            return round(max(0.0, min(100.0, percentage)), 1)
+        except (OverflowError, ValueError):
+            # Fallback for numerical issues
+            if theta > 0:
+                return 100.0
+            else:
+                return 0.0
+    
     def calculate_target_ability(self) -> float:
         """
-        Calculate target ability for exam readiness
+        Calculate target ability for exam readiness with improved error handling
         Based on typical BI-toets requirements
         """
-        # Target theta for passing BI-toets is typically around 0.0 to 0.5
-        # This represents average to above-average ability
-        target_theta = 0.3
-        
-        # Convert to readiness percentage
-        target_readiness = self.convert_irt_ability_to_readiness_percentage(target_theta)
-        
-        return round(target_readiness, 1)
+        try:
+            # Target theta for passing BI-toets is typically around 0.0 to 0.5
+            # This represents average to above-average ability
+            target_theta = 0.3
+            
+            # Convert to readiness percentage
+            target_readiness = self.convert_irt_ability_to_readiness_percentage(target_theta)
+            
+            return round(target_readiness, 1)
+        except Exception:
+            # Fallback target ability
+            return 50.0
     
     def calculate_weeks_to_target(self, current_ability: float, target_ability: float, 
                                  study_hours_per_week: float = 20.0) -> int:
         """
-        Calculate estimated weeks needed to reach target ability
+        Calculate estimated weeks needed to reach target ability with improved error handling
         
         Args:
             current_ability: Current readiness percentage
@@ -634,132 +1070,311 @@ class IRTEngine:
         Returns:
             Estimated weeks needed
         """
-        if current_ability >= target_ability:
-            return 0
-        
-        # Calculate ability gap
-        ability_gap = target_ability - current_ability
-        
-        # Estimate learning rate (percentage points per week)
-        # This is a rough estimate based on typical learning curves
-        if study_hours_per_week >= 30:
-            weekly_progress = 3.0  # 3% per week with intensive study
-        elif study_hours_per_week >= 20:
-            weekly_progress = 2.0  # 2% per week with moderate study
-        elif study_hours_per_week >= 10:
-            weekly_progress = 1.5  # 1.5% per week with light study
-        else:
-            weekly_progress = 1.0  # 1% per week with minimal study
-        
-        # Calculate weeks needed
-        weeks_needed = ability_gap / weekly_progress
-        
-        # Round up and ensure minimum of 1 week
-        return max(1, int(weeks_needed + 0.5)) 
+        try:
+            if current_ability >= target_ability:
+                return 0
+            
+            # Calculate ability gap
+            ability_gap = target_ability - current_ability
+            
+            # Estimate learning rate (percentage points per week)
+            # This is a rough estimate based on typical learning curves
+            if study_hours_per_week >= 30:
+                weekly_progress = 3.0  # 3% per week with intensive study
+            elif study_hours_per_week >= 20:
+                weekly_progress = 2.0  # 2% per week with moderate study
+            elif study_hours_per_week >= 10:
+                weekly_progress = 1.5  # 1.5% per week with light study
+            else:
+                weekly_progress = 1.0  # 1% per week with minimal study
+            
+            # Calculate weeks needed
+            weeks_needed = ability_gap / weekly_progress
+            
+            # Round up and ensure minimum of 1 week
+            return max(1, int(weeks_needed + 0.5))
+        except (ValueError, ZeroDivisionError):
+            # Fallback: return reasonable default
+            return 12  # 12 weeks as default estimate 
 
+    # Оптимизируем метод update_ability_estimate
+    @profile_function
     def update_ability_estimate(self, response: 'DiagnosticResponse') -> Dict[str, float]:
         """
-        Update ability estimate for a diagnostic session after a new response
+        Update ability estimate with optimization
         
         Args:
-            response: DiagnosticResponse object with question and answer data
+            response: DiagnosticResponse object
             
         Returns:
-            Dict with updated ability data: {'ability': float, 'se': float, 'item_info': float}
+            Dictionary with updated ability and standard error
         """
         if not self.session:
-            return {'ability': 0.0, 'se': 1.0, 'item_info': 0.0}
+            return {'ability': 0.0, 'se': 1.0}
         
         try:
-            print(f"🔍 ОТЛАДКА: update_ability_estimate вызвана")
-            print(f"🔍 ОТЛАДКА: response = {response}")
-            print(f"🔍 ОТЛАДКА: response.question_id = {response.question_id}")
-            print(f"🔍 ОТЛАДКА: response.question = {response.question}")
+            # Получаем все ответы сессии с кэшированием
+            responses = self._get_session_responses_optimized()
             
-            # Get all responses for this session to recalculate ability
-            all_responses = self.session.responses.order_by(DiagnosticResponse.id).all()
-            print(f"🔍 ОТЛАДКА: всего ответов в сессии = {len(all_responses)}")
+            if not responses:
+                return {'ability': 0.0, 'se': 1.0}
             
-            # Convert responses to IRT format
-            irt_responses = []
-            for resp in all_responses:
-                print(f"🔍 ОТЛАДКА: обрабатываем ответ {resp.id}, question_id = {resp.question_id}")
-                
-                # Получаем вопрос через relationship
-                question = resp.question
-                print(f"🔍 ОТЛАДКА: question = {question}")
-                
-                if question and hasattr(question, 'irt_difficulty') and question.irt_difficulty is not None:
-                    print(f"🔍 ОТЛАДКА: вопрос имеет IRT параметры")
-                    irt_responses.append({
-                        'question_id': resp.question_id,
-                        'is_correct': resp.is_correct,
-                        'irt_params': {
-                            'difficulty': question.irt_difficulty,
-                            'discrimination': question.irt_discrimination,
-                            'guessing': question.irt_guessing
-                        }
-                    })
-                else:
-                    print(f"🔍 ОТЛАДКА: вопрос не имеет IRT параметров")
+            # Оцениваем способность
+            ability, se = self.estimate_ability(responses)
             
-            print(f"🔍 ОТЛАДКА: irt_responses = {len(irt_responses)}")
+            # Ограничиваем значения
+            ability = max(-4.0, min(4.0, ability))
+            se = max(0.1, min(2.0, se))
             
-            # Calculate new ability estimate
-            if irt_responses:
-                new_ability, new_se = self.estimate_ability(irt_responses)
-                
-                # Store previous ability before updating
-                previous_ability = self.session.current_ability
-                previous_se = self.session.ability_se
-                
-                # Update session with new ability
-                self.session.current_ability = new_ability
-                self.session.ability_se = new_se
-                
-                # Update the response record with ability data
-                response.ability_before = previous_ability
-                response.ability_after = new_ability
-                response.se_before = previous_se
-                response.se_after = new_se
-                
-                # Calculate item information for this question
-                # Получаем вопрос через relationship
-                question = response.question
-                print(f"🔍 ОТЛАДКА: текущий вопрос = {question}")
-                
-                if question and hasattr(question, 'irt_difficulty') and question.irt_difficulty is not None:
-                    print(f"🔍 ОТЛАДКА: вычисляем item_information")
-                    item_info = self._calculate_item_information(
-                        new_ability, 
-                        question.irt_discrimination,
-                        question.irt_difficulty,
-                        question.irt_guessing
-                    )
-                    response.item_information = item_info
-                else:
-                    print(f"🔍 ОТЛАДКА: вопрос не имеет IRT параметров, item_info = 0")
-                    item_info = 0.0
-                
-                # Save updates
-                from extensions import db
-                db.session.commit()
-                
-                print(f"🎯 IRT Updated: ability={new_ability:.3f}, SE={new_se:.3f}")
-                
-                return {
-                    'ability': new_ability,
-                    'se': new_se,
-                    'item_info': item_info,
-                    'previous_ability': previous_ability,
-                    'previous_se': previous_se
-                }
-            else:
-                print(f"🔍 ОТЛАДКА: нет IRT ответов для вычисления")
-                return {'ability': 0.0, 'se': 1.0, 'item_info': 0.0}
-                
+            logger.info(f"Ability updated: {ability:.3f}, SE: {se:.3f}")
+            
+            return {
+                'ability': ability,
+                'se': se
+            }
+            
         except Exception as e:
-            print(f"❌ IRT Error in update_ability_estimate: {e}")
-            import traceback
-            traceback.print_exc()
-            return {'ability': 0.0, 'se': 1.0, 'item_info': 0.0} 
+            logger.error(f"Error updating ability estimate: {e}")
+            return {'ability': 0.0, 'se': 1.0}
+
+    def _get_session_responses_optimized(self) -> List[Dict]:
+        """Получить ответы сессии с оптимизацией"""
+        if not self.session:
+            return []
+        
+        # Используем оптимизированный запрос
+        from utils.performance_optimizer import performance_optimizer
+        query_optimizer = performance_optimizer.query_optimizer
+        
+        # Получаем ответы с предзагрузкой связанных данных
+        responses = self.session.responses.options(
+            db.joinedload(DiagnosticResponse.question).joinedload(Question.irt_parameters)
+        ).all()
+        
+        # Преобразуем в формат для IRT расчетов
+        irt_responses = []
+        
+        for response in responses:
+            # Получаем IRT параметры из кэша или базы данных
+            irt_params = get_cached_irt_parameters(response.question_id)
+            
+            if irt_params:
+                irt_responses.append({
+                    'question_id': response.question_id,
+                    'is_correct': response.is_correct,
+                    'irt_params': {
+                        'difficulty': irt_params.difficulty,
+                        'discrimination': irt_params.discrimination,
+                        'guessing': irt_params.guessing
+                    }
+                })
+        
+        return irt_responses
+
+
+def update_ability_from_session_responses(user_id: int, session_id: int) -> Optional[float]:
+    """
+    Update user ability based on StudySession responses using IRT with conflict protection
+    
+    Args:
+        user_id: User ID
+        session_id: StudySession ID
+        
+    Returns:
+        Updated ability value or None if failed
+    """
+    from models import StudySessionResponse, PersonalLearningPlan, StudySession
+    import logging
+    import time
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Get session and verify it's completed
+        session = StudySession.query.get(session_id)
+        if not session:
+            logger.warning(f"Session {session_id} not found")
+            return None
+        
+        if session.status != 'completed':
+            logger.warning(f"Session {session_id} is not completed (status: {session.status})")
+            return None
+        
+        # Check if feedback already processed
+        if session.feedback_processed:
+            logger.info(f"Feedback already processed for session {session_id}")
+            return session.session_ability_after
+        
+        # Get active plan with retry logic
+        max_retries = 3
+        retry_delay = 0.1  # seconds
+        
+        for attempt in range(max_retries):
+            active_plan = PersonalLearningPlan.query.filter_by(
+                user_id=user_id, 
+                status='active'
+            ).first()
+            
+            if not active_plan:
+                logger.warning(f"No active plan found for user {user_id}")
+                return None
+            
+            # Get session responses
+            responses = StudySessionResponse.query.filter_by(session_id=session_id).all()
+            
+            if not responses:
+                logger.warning(f"No responses found for session {session_id}")
+                return active_plan.current_ability
+            
+            current_ability = active_plan.current_ability or 0.0
+            
+            # Process each response using IRT
+            new_ability = current_ability
+            total_weight = 0.0
+            
+            for response in responses:
+                # Get IRT parameters
+                irt_params = response.question.irt_parameters
+                if not irt_params:
+                    continue  # Skip questions without IRT parameters
+                
+                difficulty = irt_params.difficulty or 0.0
+                discrimination = irt_params.discrimination or 1.0
+                guessing = irt_params.guessing or 0.0
+                
+                # Calculate probability of correct response
+                prob_correct = calculate_probability(
+                    ability=current_ability,
+                    difficulty=difficulty,
+                    discrimination=discrimination,
+                    guessing=guessing
+                )
+                
+                # Calculate weight based on discrimination and response time
+                weight = discrimination
+                if response.response_time:
+                    # Penalize very fast or very slow responses
+                    if response.response_time < 2000:  # Less than 2 seconds
+                        weight *= 0.8
+                    elif response.response_time > 30000:  # More than 30 seconds
+                        weight *= 0.9
+                
+                # Update ability using Maximum Likelihood Estimation
+                if response.is_correct:
+                    # Increase ability if answered correctly
+                    adjustment = discrimination * (1 - prob_correct) / prob_correct
+                else:
+                    # Decrease ability if answered incorrectly  
+                    adjustment = -discrimination * prob_correct / (1 - prob_correct)
+                
+                # Apply weighted adjustment
+                new_ability += weight * adjustment * 0.1  # Learning rate
+                total_weight += weight
+            
+            # Normalize by total weight
+            if total_weight > 0:
+                new_ability = current_ability + (new_ability - current_ability) / total_weight
+            
+            # Keep ability in reasonable bounds [-4, 4]
+            new_ability = max(-4.0, min(4.0, new_ability))
+            
+            # Check if update is significant enough
+            if not active_plan.should_update_ability(new_ability, min_change_threshold=0.02):
+                logger.info(f"Ability change too small for session {session_id}: {new_ability - current_ability:.3f}")
+                session.mark_feedback_processed()
+                return current_ability
+            
+            # Try to update plan safely
+            if active_plan.update_ability_safely(new_ability):
+                # Update session with new ability
+                if session.update_ability_safely(new_ability, confidence=0.8):
+                    session.mark_feedback_processed()
+                    logger.info(f"Successfully updated ability for user {user_id}: {current_ability:.3f} -> {new_ability:.3f}")
+                    return new_ability
+                else:
+                    logger.warning(f"Failed to update session ability for session {session_id}")
+                    return current_ability
+            else:
+                # Conflict detected, retry with delay
+                if attempt < max_retries - 1:
+                    logger.info(f"Conflict detected, retrying in {retry_delay}s (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                    continue
+                else:
+                    logger.error(f"Failed to update ability after {max_retries} attempts due to conflicts")
+                    return current_ability
+        
+        return current_ability
+        
+    except Exception as e:
+        logger.error(f"Error updating ability from session responses: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+def update_ability_with_lock(user_id: int, new_ability: float, domain: str = None) -> bool:
+    """
+    Update user ability with distributed lock to prevent conflicts
+    
+    Args:
+        user_id: User ID
+        new_ability: New ability value
+        domain: Domain to update (optional)
+        
+    Returns:
+        True if update successful, False otherwise
+    """
+    from models import PersonalLearningPlan
+    import logging
+    import time
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Get active plan
+        active_plan = PersonalLearningPlan.query.filter_by(
+            user_id=user_id, 
+            status='active'
+        ).first()
+        
+        if not active_plan:
+            logger.warning(f"No active plan found for user {user_id}")
+            return False
+        
+        # Try to update with retry logic
+        max_retries = 3
+        retry_delay = 0.1
+        
+        for attempt in range(max_retries):
+            if active_plan.update_ability_safely(new_ability, domain=domain):
+                logger.info(f"Successfully updated ability for user {user_id}: {new_ability:.3f}")
+                return True
+            else:
+                if attempt < max_retries - 1:
+                    logger.info(f"Update conflict, retrying in {retry_delay}s (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+                    continue
+                else:
+                    logger.error(f"Failed to update ability after {max_retries} attempts")
+                    return False
+        
+        return False
+        
+    except Exception as e:
+        logger.error(f"Error in update_ability_with_lock: {str(e)}")
+        return False
+
+
+def calculate_probability(ability: float, difficulty: float, discrimination: float = 1.0, guessing: float = 0.0) -> float:
+    """Calculate probability of correct response using 3PL IRT model"""
+    import math
+    
+    try:
+        exponent = discrimination * (ability - difficulty)
+        probability = guessing + (1 - guessing) / (1 + math.exp(-exponent))
+        return max(0.01, min(0.99, probability))  # Bound between 0.01 and 0.99
+    except OverflowError:
+        return 0.99 if ability > difficulty else 0.01 

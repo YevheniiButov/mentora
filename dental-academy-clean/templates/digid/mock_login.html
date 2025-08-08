@@ -518,6 +518,8 @@ body {
                     <label for="show-registration">Nieuwe gebruiker (toon registratieformulier)</label>
                 </div>
 
+
+
                 <div class="digid-navigation">
                     <button type="button" class="digid-btn-previous" onclick="goToPreviousStep()" aria-label="Ga terug naar vorige stap">
                         ← Vorige
@@ -586,16 +588,30 @@ let isSubmitting = false;
 let showRegistration = false;
 let currentUser = null;
 
-// Single demo user
-const demoUser = {
-    code: 'DEMO', 
-    username: 'demo.user', 
-    name: 'Demo Gebruiker', 
-    profession: 'tandarts',
-    bsn: '123456789',
-    role: 'user',
-    email: 'demo@mentora.nl'
+// Demo users
+const demoUsers = {
+    'DEMO': {
+        code: 'DEMO', 
+        username: 'demo.user', 
+        name: 'Demo Gebruiker', 
+        profession: 'tandarts',
+        bsn: '123456789',
+        role: 'user',
+        email: 'demo@mentora.nl'
+    },
+    'ADMN': {
+        code: 'ADMN', 
+        username: 'demo.admin', 
+        name: 'Admin Beheerder', 
+        profession: 'admin',
+        bsn: '999999999',
+        role: 'admin',
+        email: 'admin@mentora.nl'
+    }
 };
+
+// Single demo user (for backward compatibility)
+const demoUser = demoUsers['DEMO'];
 
 // Toggle registration mode
 function toggleRegistrationMode() {
@@ -678,9 +694,9 @@ function verifyPincode(code) {
     
     // Simulate verification delay
     setTimeout(() => {
-        if (code === demoUser.code) {
+        if (demoUsers[code]) {
             // Pincode is valid - proceed to password step
-            currentUser = demoUser;
+            currentUser = demoUsers[code];
             hideLoading();
             showPasswordStep();
         } else {
@@ -918,8 +934,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Focus first input
     document.getElementById('code1').focus();
     
-    // Log demo user for development
-    console.log('🔧 Demo user available:', demoUser);
+    // Log demo users for development
+    console.log('🔧 Demo users available:');
+    Object.values(demoUsers).forEach(user => {
+        console.log(`  - ${user.code}: ${user.name} (${user.role})`);
+    });
 });
 
 // Prevent form resubmission on page refresh

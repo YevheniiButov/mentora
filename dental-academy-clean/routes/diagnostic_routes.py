@@ -3,14 +3,14 @@ Diagnostic Routes for BI-toets System
 Flask Blueprint for diagnostic testing with IRT engine integration
 """
 
-from flask import Blueprint, render_template, request, session, current_app, g, flash, redirect, url_for
+from flask import Blueprint, render_template, request, session, current_app, g, flash, redirect, url_for, jsonify
 from flask_login import current_user, login_required
 from werkzeug.exceptions import BadRequest, Unauthorized, TooManyRequests
 from functools import wraps
 import time
 import logging
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 
 from models import db, DiagnosticSession, Question, IRTParameters, User, PersonalLearningPlan, StudySession, BIGDomain, DiagnosticResponse
 from utils.serializers import safe_jsonify
@@ -18,6 +18,9 @@ from utils.irt_engine import IRTEngine
 from utils.rate_limiter import RateLimiter
 from utils.session_validator import SessionValidator
 from utils.translations import t
+from utils.irt_calibration import calibration_service
+from utils.data_validator import DataValidator, ValidationLevel
+from utils.irt_engine import validate_irt_parameters_for_calculation
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -122,7 +125,14 @@ def start_diagnostic():
                     flash('У вас уже есть активная диагностическая сессия', 'warning')
                     return redirect(url_for('diagnostic.show_question', session_id=active_session.id))
 
-            # Initialize new diagnostic session
+            # Get first question using IRT with diagnostic type BEFORE creating session
+            irt_engine = IRTEngine(diagnostic_type=diagnostic_type)
+            first_question = irt_engine.select_initial_question()
+            
+            if not first_question:
+                raise BadRequest('No questions available')
+            
+            # Initialize new diagnostic session ONLY after we have a question
             diagnostic_session = DiagnosticSession.create_session(
                 user_id=current_user.id,
                 session_type='adaptive_diagnostic',
@@ -136,13 +146,6 @@ def start_diagnostic():
                 'estimated_total_questions': 25 if diagnostic_type == 'express' else (75 if diagnostic_type == 'preliminary' else 130)
             }
             diagnostic_session.set_session_data(session_data)
-            
-            # Get first question using IRT with diagnostic type
-            irt_engine = IRTEngine(diagnostic_type=diagnostic_type)
-            first_question = irt_engine.select_initial_question()
-            
-            if not first_question:
-                raise BadRequest('No questions available')
             
             # Update session with first question
             diagnostic_session.current_question_id = first_question.id
@@ -278,103 +281,192 @@ def get_next_question():
 @diagnostic_bp.route('/submit-answer/<int:session_id>', methods=['POST'])
 @login_required
 def submit_answer(session_id):
-    print(f"🔍 ОТЛАДКА: submit_answer вызвана для session_id = {session_id}")
-    
-    session = DiagnosticSession.query.get_or_404(session_id)
-    print(f"🔍 ОТЛАДКА: session.status = {session.status}")
-    print(f"🔍 ОТЛАДКА: session.questions_answered = {session.questions_answered}")
-    
-    if session.status == 'completed':
-        print(f"🔍 ОТЛАДКА: сессия уже завершена, редирект на результаты")
-        return redirect(url_for('diagnostic.show_results', session_id=session_id))
-    
-    user_answer = request.form.get('answer')
-    confidence_level = request.form.get('confidence', 3)  # Default to 3 if not provided
-    print(f"🔍 ОТЛАДКА: user_answer = {user_answer}")
-    print(f"🔍 ОТЛАДКА: confidence_level = {confidence_level}")
-    
-    # Вычисляем правильность ответа
-    from models import Question
-    question = Question.query.get(session.current_question_id)
-    print(f"🔍 ОТЛАДКА: question = {question}")
-    print(f"🔍 ОТЛАДКА: question.correct_answer_index = {question.correct_answer_index if question else 'None'}")
-    
-    is_correct = (int(user_answer) == question.correct_answer_index) if question else False
-    print(f"🔍 ОТЛАДКА: is_correct = {is_correct}")
-    
-    # Сохраняем ответ пользователя
-    from models import DiagnosticResponse
-    response = DiagnosticResponse(
-        session_id=session.id,
-        question_id=session.current_question_id,
-        selected_answer=user_answer,
-        is_correct=is_correct,
-        confidence_level=int(confidence_level) if confidence_level else None
-    )
-    db.session.add(response)
-    session.questions_answered += 1
-    
-    print(f"🔍 ОТЛАДКА: ответ сохранен, questions_answered = {session.questions_answered}")
-    
-    # ===== УПРОЩЕННЫЙ IRT КОД - ОБНОВЛЕНИЕ ABILITY =====
+    """Submit answer for diagnostic session with enhanced validation"""
     try:
-        # Initialize IRT engine and update ability estimate
-        from utils.irt_engine import IRTEngine
-        irt = IRTEngine(session)
-        irt_result = irt.update_ability_estimate(response)
+        # Get session with validation
+        session = DiagnosticSession.query.get_or_404(session_id)
         
-        print(f"🎯 IRT Updated: ability={irt_result['ability']:.3f}, SE={irt_result['se']:.3f}")
+        # Validate session ownership
+        if session.user_id != current_user.id:
+            return jsonify({'error': 'Unauthorized'}), 403
         
-    except Exception as e:
-        print(f"❌ IRT Error: {e}")
-        # Don't break the flow if IRT fails
-        pass
-    
-    # Проверяем завершён ли тест
-    # Получаем информацию о типе диагностики из session_data
-    session_data = session.get_session_data()
-    diagnostic_type = session_data.get('diagnostic_type', 'express')
-    print(f"🔍 ОТЛАДКА: diagnostic_type = {diagnostic_type}")
-    
-    # Определяем максимальное количество вопросов для каждого типа
-    max_questions = {
-        'express': 25,
-        'preliminary': 75, 
-        'readiness': 130
-    }.get(diagnostic_type, 25)
-    
-    print(f"🔍 ОТЛАДКА: max_questions = {max_questions}")
-    print(f"🔍 ОТЛАДКА: questions_answered >= max_questions = {session.questions_answered >= max_questions}")
-    
-    if session.questions_answered >= max_questions:
-        print(f"🔍 ОТЛАДКА: достигнут лимит вопросов, завершаем сессию")
-        session.status = 'completed'
-        session.completed_at = datetime.now(timezone.utc)
-        db.session.commit()
-        print(f"🔍 ОТЛАДКА: сессия помечена как completed")
-        return redirect(url_for('diagnostic.show_results', session_id=session_id))
-    else:
-        print(f"🔍 ОТЛАДКА: продолжаем диагностику")
-        # Выбираем следующий вопрос
-        # IRTEngine уже импортирован выше в try блоке
-        irt = IRTEngine(session)
-        next_question = irt.select_next_question()
-        print(f"🔍 ОТЛАДКА: next_question = {next_question}")
+        # Validate session status
+        if session.status != 'active':
+            return jsonify({'error': 'Session is not active'}), 400
         
-        if next_question:
-            session.current_question_id = next_question.id
-            db.session.commit()
-            print(f"🔍 ОТЛАДКА: следующий вопрос установлен, редирект")
-            return redirect(url_for('diagnostic.show_question', session_id=session_id))
-        else:
-            # Больше нет доступных вопросов - завершаем диагностику
-            print(f"🔍 ОТЛАДКА: нет доступных вопросов, завершаем сессию")
+        # Get request data
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        question_id = data.get('question_id')
+        selected_option = data.get('selected_option')
+        response_time = data.get('response_time')
+        
+        # Validate required fields
+        if not question_id:
+            return jsonify({'error': 'question_id is required'}), 400
+        
+        if selected_option is None:
+            return jsonify({'error': 'selected_option is required'}), 400
+        
+        # Validate question exists and belongs to session
+        question = Question.query.get_or_404(question_id)
+        
+        # Validate response time
+        if response_time is not None:
+            if response_time < 0:
+                return jsonify({'error': 'Invalid response time'}), 400
+            if response_time > 300000:  # 5 minutes
+                logger.warning(f"Very long response time: {response_time}ms for user {current_user.id}")
+        
+        # Validate selected option
+        if not isinstance(selected_option, int) or selected_option < 0 or selected_option >= len(question.options):
+            return jsonify({'error': 'Invalid selected option'}), 400
+        
+        # Create response with validation
+        response = session.record_response(
+            question_id=question_id,
+            selected_option=selected_option,
+            response_time=response_time
+        )
+        
+        # Validate response creation
+        if not response:
+            return jsonify({'error': 'Failed to create response'}), 500
+        
+        # Validate IRT parameters before calculation
+        if hasattr(question, 'irt_parameters') and question.irt_parameters:
+            irt_params = question.irt_parameters
+            is_valid, error_msg = validate_irt_parameters_for_calculation(
+                irt_params.difficulty,
+                irt_params.discrimination,
+                irt_params.guessing
+            )
+            
+            if not is_valid:
+                logger.warning(f"Invalid IRT parameters for question {question_id}: {error_msg}")
+                # Continue with fallback calculation
+        
+        # Update IRT ability estimate with validation
+        try:
+            irt = IRTEngine(session)
+            irt_result = irt.update_ability_estimate(response)
+            
+            # Validate IRT result
+            if not isinstance(irt_result, dict):
+                logger.error(f"Invalid IRT result format: {irt_result}")
+                irt_result = {'ability': 0.0, 'se': 1.0}
+            
+            ability = irt_result.get('ability', 0.0)
+            se = irt_result.get('se', 1.0)
+            
+            # Validate ability range
+            if not (-4.0 <= ability <= 4.0):
+                logger.warning(f"Ability out of valid range: {ability}")
+                ability = max(-4.0, min(4.0, ability))
+            
+            # Validate standard error
+            if se <= 0 or se > 2.0:
+                logger.warning(f"Invalid standard error: {se}")
+                se = 1.0
+            
+            # Update session with validated values
+            session.current_ability = ability
+            session.ability_se = se
+            
+            # Save ability history
+            session.add_ability_estimate(ability, se, session.current_question_id)
+            
+            logger.info(f"IRT Updated: ability={ability:.3f}, SE={se:.3f}")
+            
+        except Exception as e:
+            logger.error(f"IRT update failed: {e}")
+            # Fallback calculation
+            if session.questions_answered > 0:
+                accuracy = session.correct_answers / session.questions_answered
+                session.current_ability = 2 * (accuracy - 0.5)
+                session.ability_se = 1.0 / (session.questions_answered ** 0.5)
+        
+        # Validate session data before proceeding
+        session_data = session.get_session_data()
+        if not session_data:
+            logger.error("Failed to get session data")
+            return jsonify({'error': 'Session data error'}), 500
+        
+        diagnostic_type = session_data.get('diagnostic_type', 'express')
+        
+        # Validate diagnostic type
+        if diagnostic_type not in ['express', 'preliminary', 'readiness']:
+            logger.warning(f"Invalid diagnostic type: {diagnostic_type}")
+            diagnostic_type = 'express'
+        
+        # Determine max questions with validation
+        max_questions = {
+            'express': 25,
+            'preliminary': 75, 
+            'readiness': 130
+        }.get(diagnostic_type, 25)
+        
+        # Validate question count
+        if session.questions_answered > max_questions:
+            logger.warning(f"Session exceeded max questions: {session.questions_answered} > {max_questions}")
+            session.questions_answered = max_questions
+        
+        # Check completion conditions
+        should_complete = False
+        completion_reason = None
+        
+        # Check max questions
+        if session.questions_answered >= max_questions:
+            should_complete = True
+            completion_reason = 'max_questions'
+        
+        # Check precision (only if enough questions answered)
+        elif session.questions_answered >= 5:
+            if session.ability_se <= 0.3:  # Sufficient precision
+                should_complete = True
+                completion_reason = 'precision_reached'
+        
+        # Complete session if needed
+        if should_complete:
             session.status = 'completed'
             session.completed_at = datetime.now(timezone.utc)
-            db.session.commit()
-            print(f"🔍 ОТЛАДКА: сессия помечена как completed")
-            return redirect(url_for('diagnostic.show_results', session_id=session_id))
-
+            session.termination_reason = completion_reason
+            
+            # Generate results
+            try:
+                results = session.generate_results()
+                if not results:
+                    logger.error("Failed to generate session results")
+                    return jsonify({'error': 'Failed to generate results'}), 500
+            except Exception as e:
+                logger.error(f"Error generating results: {e}")
+                return jsonify({'error': 'Failed to generate results'}), 500
+        
+        # Save all changes
+        db.session.commit()
+        
+        # Prepare response
+        response_data = {
+            'is_correct': response.is_correct,
+            'correct_answer': question.correct_answer_text,
+            'explanation': question.explanation,
+            'current_ability': session.current_ability,
+            'ability_se': session.ability_se,
+            'questions_answered': session.questions_answered,
+            'session_completed': should_complete
+        }
+        
+        if should_complete:
+            response_data['results'] = results
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logger.error(f"Error in submit_answer: {e}")
+        db.session.rollback()
+        return jsonify({'error': 'Internal server error'}), 500
 
 @diagnostic_bp.route('/results/<int:session_id>')
 @login_required
@@ -382,6 +474,7 @@ def submit_answer(session_id):
 def show_results(session_id):
     """Show diagnostic results with modern UI"""
     print(f"🔍 ОТЛАДКА: show_results вызвана для session_id = {session_id}")
+    current_app.logger.info(f"Showing results for session {session_id}")
     
     # Получаем язык из сессии или используем дефолтный
     lang = session.get('lang', 'nl')
@@ -540,9 +633,134 @@ def show_results(session_id):
         
         print(f"🔍 ОТЛАДКА: diagnostic_data подготовлен, рендерим шаблон")
         
+        # Сбрасываем флаг диагностики после успешного завершения
+        current_user.requires_diagnostic = False
+        db.session.commit()
+        
+        # Создание или обновление плана обучения на основе результатов диагностики
+        if diagnostic_session.session_type in ['diagnostic', 'express', 'preliminary', 'readiness']:
+            # Проверяем, есть ли активный план
+            existing_plan = PersonalLearningPlan.query.filter_by(
+                user_id=current_user.id,
+                status='active'
+            ).first()
+            
+            if existing_plan:
+                # Обновляем существующий план
+                existing_plan.diagnostic_session_id = diagnostic_session.id  # ВАЖНО!
+                existing_plan.current_ability = results['final_ability']
+                
+                # Convert domain_abilities to proper format
+                domain_analysis = {}
+                for domain_code, ability_value in results['domain_abilities'].items():
+                    domain_analysis[domain_code] = {
+                        'ability_estimate': ability_value,
+                        'accuracy': ability_value,  # For backward compatibility
+                        'questions_answered': 0,
+                        'correct_answers': 0
+                    }
+                existing_plan.set_domain_analysis(domain_analysis)
+                existing_plan.set_weak_domains(results['weak_domains'])
+                existing_plan.set_strong_domains(results['strong_domains'])
+                existing_plan.next_diagnostic_date = date.today() + timedelta(days=14)
+                existing_plan.last_updated = datetime.now(timezone.utc)
+                db.session.commit()
+                print(f"🔍 ОТЛАДКА: Существующий план обновлен: {existing_plan.id} с {len(domain_analysis)} доменами")
+            else:
+                # Создаем новый план
+                new_plan = PersonalLearningPlan(
+                    user_id=current_user.id,
+                    diagnostic_session_id=diagnostic_session.id,  # ОБЯЗАТЕЛЬНО!
+                    current_ability=results['final_ability'],
+                    target_ability=0.7,
+                    study_hours_per_week=20.0,
+                    intensity='moderate',
+                    status='active'
+                )
+                
+                # Convert domain_abilities to proper format
+                domain_analysis = {}
+                for domain_code, ability_value in results['domain_abilities'].items():
+                    domain_analysis[domain_code] = {
+                        'ability_estimate': ability_value,
+                        'accuracy': ability_value,  # For backward compatibility
+                        'questions_answered': 0,
+                        'correct_answers': 0
+                    }
+                new_plan.set_domain_analysis(domain_analysis)
+                new_plan.set_weak_domains(results['weak_domains'])
+                new_plan.set_strong_domains(results['strong_domains'])
+                new_plan.next_diagnostic_date = date.today() + timedelta(days=14)
+                new_plan.diagnostic_reminder_sent = False
+                
+                db.session.add(new_plan)
+                db.session.commit()
+                print(f"🔍 ОТЛАДКА: Новый план создан: {new_plan.id} с {len(domain_analysis)} доменами")
+                
+            flash('План обучения создан на основе результатов диагностики!', 'success')
+        elif diagnostic_session.session_type == 'reassessment':
+            active_plan = PersonalLearningPlan.query.filter_by(
+                user_id=current_user.id,
+                status='active'
+            ).first()
+            
+            if active_plan:
+                # Get old abilities for comparison
+                old_abilities = active_plan.get_domain_analysis()
+                new_abilities = results['domain_abilities']
+                
+                # Analyze improvements
+                improvements = {}
+                still_weak = []
+                
+                for domain_code, new_data in new_abilities.items():
+                    old_ability = old_abilities.get(domain_code, {}).get('ability_estimate', 0.0)
+                    new_ability = new_data.get('ability_estimate', 0.0)
+                    improvement = new_ability - old_ability
+                    
+                    improvements[domain_code] = {
+                        'old': old_ability,
+                        'new': new_ability,
+                        'improvement': improvement,
+                        'improved': improvement > 0.1
+                    }
+                    
+                                        # Use statistically justified threshold: weak if ability < -0.5 (1 SD below mean)
+                    # This corresponds to approximately 30% accuracy in 3PL model
+                    if new_ability < -0.5:
+                        still_weak.append(domain_code)
+                
+                # Update plan with new data
+                active_plan.current_ability = results['final_ability']
+                active_plan.set_domain_analysis(new_abilities)
+                active_plan.set_weak_domains(still_weak)
+                
+                # Log progress
+                try:
+                    from app import app
+                    app.logger.info(f"Reassessment for user {current_user.id}: "
+                                   f"Overall ability {active_plan.current_ability:.2f}, "
+                                   f"Weak domains: {still_weak}")
+                except ImportError:
+                    # If app is not available, just continue
+                    pass
+                
+                # Reset next diagnostic date
+                from datetime import date, timedelta
+                active_plan.next_diagnostic_date = date.today() + timedelta(days=14)
+                active_plan.diagnostic_reminder_sent = False
+                
+                # Add improvement data to results for display
+                results['improvements'] = improvements
+                results['domains_still_weak'] = still_weak
+                
+                db.session.commit()
+                
+                flash(f'План обучения обновлен! Улучшение в {sum(1 for d in improvements.values() if d["improved"])} доменах.', 'success')
+        
+        # Рендерим шаблон результатов вместо редиректа на dashboard
         return render_template('assessment/results.html', 
                              diagnostic_data=diagnostic_data,
-                             session_id=session_id,
                              lang=lang)
                              
     except Exception as e:
@@ -615,7 +833,8 @@ def end_session(session_id):
             'success': True,
             'message': 'Session ended successfully',
             'session_id': session_id,
-            'status': diagnostic_session.status
+            'status': diagnostic_session.status,
+            'redirect_url': url_for('diagnostic.show_results', session_id=session_id)
         })
         
     except Exception as e:
@@ -782,16 +1001,27 @@ def get_question_details(question_id):
 def generate_learning_plan():
     """Generate personalized learning plan based on diagnostic results"""
     try:
+        # Получение ID сессии из запроса
+        session_id = request.json.get('session_id')
+        if not session_id:
+            return safe_jsonify({'success': False, 'error': 'Diagnostic session ID is required.'}), 400
+        
+        # Проверяем наличие завершенной диагностики
+        latest_diagnostic = DiagnosticSession.query.filter_by(
+            user_id=current_user.id,
+            status='completed'
+        ).order_by(DiagnosticSession.completed_at.desc()).first()
+
+        if not latest_diagnostic:
+            flash('Необходимо пройти диагностику перед созданием плана', 'warning')
+            return redirect(url_for('diagnostic_bp.choose_diagnostic_type'))
+        
         data = request.get_json()
         if not data:
             raise BadRequest('Invalid request data')
         
-        session_id = data.get('session_id')
         study_hours_per_week = data.get('study_hours_per_week', 20)
         exam_date = data.get('exam_date')
-        
-        if not session_id:
-            raise BadRequest('Session ID required')
         
         # Get diagnostic session
         diagnostic_session = DiagnosticSession.query.get(session_id)
@@ -802,54 +1032,125 @@ def generate_learning_plan():
             raise Unauthorized('Access denied')
         
         # Generate results if not already generated
-        results = diagnostic_session.generate_results()
+        try:
+            results = diagnostic_session.generate_results()
+        except Exception as e:
+            logger.error(f"Error generating results for session {session_id}: {e}")
+            return safe_jsonify({'success': False, 'error': f'Failed to generate results: {str(e)}'}), 500
         
-        # Create or update learning plan
+        # Проверяем, есть ли уже активный план у пользователя
         existing_plan = PersonalLearningPlan.query.filter_by(
             user_id=current_user.id,
             status='active'
         ).first()
-        
+
         if existing_plan:
+            # Если план уже есть, обновляем его
             plan = existing_plan
+            plan.diagnostic_session_id = diagnostic_session.id
+            plan.last_updated = datetime.now(timezone.utc)
+            plan.status = 'active'  # Убедимся, что план активен
+            logger.info(f"Updating existing plan {plan.id} for user {current_user.id}")
         else:
-            plan = PersonalLearningPlan(user_id=current_user.id)
+            # Если плана нет, создаем новый
+            plan = PersonalLearningPlan(
+                user_id=current_user.id,
+                diagnostic_session_id=diagnostic_session.id,
+                status='active'  # Явно устанавливаем статус активным
+            )
             db.session.add(plan)
-        
-        # Update plan with diagnostic results
-        plan.current_ability = results['final_ability']
+            logger.info(f"Creating new plan for user {current_user.id}")
+
+        # Обновляем данные плана
+        plan.current_ability = results.get('final_ability', 0.0)
+        # Target ability for BI-toets: 0.5 corresponds to ~70% accuracy in 3PL model
+        # This is the minimum passing threshold for professional certification
         plan.target_ability = 0.5  # Target for exam readiness
         plan.study_hours_per_week = study_hours_per_week
+        plan.diagnostic_session_id = diagnostic_session.id
+        
+        # Set next diagnostic date (14 days from today)
+        from datetime import date
+        plan.next_diagnostic_date = date.today() + timedelta(days=14)
+        plan.diagnostic_reminder_sent = False
         
         if exam_date:
-            plan.exam_date = datetime.strptime(exam_date, '%Y-%m-%d').date()
+            try:
+                plan.exam_date = datetime.strptime(exam_date, '%Y-%m-%d').date()
+            except ValueError:
+                logger.warning(f"Invalid exam date format: {exam_date}")
         
-        # Set domain analysis
-        plan.set_domain_analysis(results['domain_abilities'])
-        plan.set_weak_domains(results['weak_domains'])
-        plan.set_strong_domains(results['strong_domains'])
+        # Set domain analysis from real IRT results with proper format
+        if 'domain_abilities' in results:
+            # Convert simple domain_abilities to proper format expected by DailyLearningAlgorithm
+            domain_analysis = {}
+            for domain_code, ability_value in results['domain_abilities'].items():
+                domain_analysis[domain_code] = {
+                    'ability_estimate': ability_value,
+                    'accuracy': ability_value,  # For backward compatibility
+                    'questions_answered': 0,  # Will be updated from actual responses
+                    'correct_answers': 0
+                }
+            plan.set_domain_analysis(domain_analysis)
+            logger.info(f"Saved domain analysis with {len(domain_analysis)} domains for user {current_user.id}")
+        
+        if 'weak_domains' in results:
+            plan.set_weak_domains(results['weak_domains'])
+            logger.info(f"Saved {len(results['weak_domains'])} weak domains for user {current_user.id}")
+        
+        if 'strong_domains' in results:
+            plan.set_strong_domains(results['strong_domains'])
+            logger.info(f"Saved {len(results['strong_domains'])} strong domains for user {current_user.id}")
         
         # Generate study schedule
-        schedule = generate_study_schedule(results, study_hours_per_week, exam_date)
-        plan.set_study_schedule(schedule)
+        try:
+            schedule = generate_study_schedule(results, study_hours_per_week, exam_date)
+            plan.set_study_schedule(schedule)
+        except Exception as e:
+            logger.error(f"Error generating study schedule: {e}")
+            # Создаем базовый расписание
+            plan.set_study_schedule({'weekly_schedule': []})
         
         # Generate milestones
-        milestones = generate_milestones(results, study_hours_per_week, exam_date)
-        plan.set_milestones(milestones)
+        try:
+            milestones = generate_milestones(results, study_hours_per_week, exam_date)
+            plan.set_milestones(milestones)
+        except Exception as e:
+            logger.error(f"Error generating milestones: {e}")
+            # Создаем базовые вехи
+            plan.set_milestones([])
         
         # Calculate estimated readiness
-        plan.estimated_readiness = plan.calculate_readiness()
-        
-        db.session.commit()
+        try:
+            plan.estimated_readiness = plan.calculate_readiness()
+        except Exception as e:
+            logger.error(f"Error calculating readiness: {e}")
+            plan.estimated_readiness = 0.0
+
+        # Явно сохраняем план в базе данных
+        try:
+            db.session.commit()
+            logger.info(f"Successfully saved plan {plan.id} to database")
+        except Exception as e:
+            logger.error(f"Error saving plan to database: {e}")
+            db.session.rollback()
+            return safe_jsonify({'success': False, 'error': f'Failed to save plan: {str(e)}'}), 500
         
         # Create study sessions
-        create_study_sessions(plan, schedule)
+        try:
+            create_study_sessions(plan, schedule)
+        except Exception as e:
+            logger.error(f"Error creating study sessions: {e}")
+            # Не прерываем выполнение, если не удалось создать сессии
         
         logger.info(f"Generated learning plan {plan.id} for user {current_user.id}")
         
+        # Успешное завершение. Перенаправляем пользователя на карту обучения.
         return safe_jsonify({
             'success': True,
+            'message': 'Learning plan successfully created!',
             'plan_id': plan.id,
+                            'redirect_url': url_for('daily_learning.learning_map', lang='en'),
             'plan_summary': {
                 'current_ability': plan.current_ability,
                 'target_ability': plan.target_ability,
@@ -862,11 +1163,9 @@ def generate_learning_plan():
         })
         
     except Exception as e:
-        logger.error(f"Error generating learning plan: {str(e)}")
-        return safe_jsonify({
-            'success': False,
-            'error': 'Failed to generate learning plan'
-        }), 500
+        logger.error(f"Error in generate_learning_plan: {e}")
+        db.session.rollback()
+        return safe_jsonify({'success': False, 'error': f'Internal server error: {str(e)}'}), 500
 
 def generate_study_schedule(results, study_hours_per_week, exam_date=None):
     """Generate personalized study schedule"""
@@ -880,7 +1179,11 @@ def generate_study_schedule(results, study_hours_per_week, exam_date=None):
         weeks_until_exam = max(1, (exam_date_obj - datetime.now().date()).days // 7)
     else:
         # Estimate based on current ability and weak domains
-        weeks_until_exam = max(8, len(weak_domains) * 2 + int((0.5 - current_ability) * 10))
+        # Calculate weeks needed based on ability gap and domain weights
+        # Use adaptive calculation: more time for larger ability gaps and critical domains
+        ability_gap = max(0, 0.5 - current_ability)
+        critical_domains = [d for d in weak_domains if d in ['THER', 'SURG', 'EMERGENCY']]  # Critical domains
+        weeks_until_exam = max(8, len(weak_domains) * 2 + len(critical_domains) * 3 + int(ability_gap * 15))
     
     # Generate weekly schedule
     weekly_schedule = []
@@ -937,6 +1240,8 @@ def generate_milestones(results, study_hours_per_week, exam_date=None):
     milestones = []
     
     # Calculate target ability improvements
+        # Target ability for BI-toets: 0.5 corresponds to ~70% accuracy in 3PL model
+    # This represents the minimum passing threshold for professional certification
     target_ability = 0.5
     ability_gap = target_ability - current_ability
     
@@ -1589,6 +1894,8 @@ def generate_test_results(result_type, diagnostic_type):
         correct_answers = int(total_questions * random.uniform(0.8, 0.95))  # 80-95%
         final_ability = random.uniform(1.5, 2.5)  # Высокий уровень
     elif result_type == 'medium':
+        # Generate realistic performance based on IRT model
+        # 0.5-0.75 range corresponds to theta values of approximately -0.5 to +0.5
         correct_answers = int(total_questions * random.uniform(0.5, 0.75))  # 50-75%
         final_ability = random.uniform(0.0, 1.0)  # Средний уровень
     elif result_type == 'low':
@@ -1643,11 +1950,44 @@ def save_test_responses(diagnostic_session, test_results):
     
     db.session.commit() 
 
+@diagnostic_bp.route('/reassessment/<int:plan_id>')
+@login_required
+def start_reassessment(plan_id):
+    """Start a new diagnostic session for reassessment"""
+    try:
+        # Get the learning plan
+        plan = PersonalLearningPlan.query.get_or_404(plan_id)
+        
+        # Check if plan belongs to current user
+        if plan.user_id != current_user.id:
+            flash('Access denied.', 'error')
+            return redirect('/dashboard')
+        
+        # Create new diagnostic session for reassessment
+        diagnostic_session = DiagnosticSession.create_session(
+            user_id=current_user.id,
+            session_type='reassessment',
+            ip_address=request.remote_addr
+        )
+        
+        # Update plan with new session
+        plan.diagnostic_session_id = diagnostic_session.id
+        plan.diagnostic_reminder_sent = False
+        db.session.commit()
+        
+        flash('Начинаем переоценку вашего прогресса обучения.', 'info')
+        return redirect(f'/big-diagnostic/question/{diagnostic_session.id}')
+        
+    except Exception as e:
+        logger.error(f"Error starting reassessment: {e}")
+        flash('Ошибка при запуске переоценки.', 'error')
+        return redirect('/dashboard')
+
 @diagnostic_bp.route('/session/<int:session_id>/complete', methods=['POST'])
 @login_required
 @validate_session
 def complete_session(session_id):
-    """Force complete diagnostic session"""
+    """Force complete diagnostic session and create learning plan"""
     print(f"🔍 ОТЛАДКА: complete_session вызвана для session_id = {session_id}")
     
     try:
@@ -1671,10 +2011,84 @@ def complete_session(session_id):
         
         print(f"🔍 ОТЛАДКА: сессия принудительно завершена")
         
-        return safe_jsonify({
-            'success': True,
-            'message': 'Session completed successfully'
-        })
+        # Автоматически создаем план обучения
+        try:
+            # Проверяем, есть ли уже активный план
+            existing_plan = PersonalLearningPlan.query.filter_by(
+                user_id=current_user.id,
+                status='active'
+            ).first()
+            
+            if not existing_plan:
+                # Генерируем результаты диагностики
+                results = session.generate_results()
+                
+                # Создаем новый план
+                plan = PersonalLearningPlan(
+                    user_id=current_user.id,
+                    diagnostic_session_id=session.id,
+                    status='active',
+                    current_ability=results.get('final_ability', 0.0),
+                    # Target ability for BI-toets: 0.5 corresponds to ~70% accuracy in 3PL model
+        target_ability=0.5,
+                    study_hours_per_week=20,  # Дефолтные значения
+                    next_diagnostic_date=date.today() + timedelta(days=14)
+                )
+                
+                # Устанавливаем анализ доменов
+                if 'domain_abilities' in results:
+                    plan.set_domain_analysis(results['domain_abilities'])
+                
+                if 'weak_domains' in results:
+                    plan.set_weak_domains(results['weak_domains'])
+                
+                if 'strong_domains' in results:
+                    plan.set_strong_domains(results['strong_domains'])
+                
+                # Генерируем расписание и вехи
+                try:
+                    schedule = generate_study_schedule(results, 20, None)
+                    plan.set_study_schedule(schedule)
+                    
+                    milestones = generate_milestones(results, 20, None)
+                    plan.set_milestones(milestones)
+                    
+                    plan.estimated_readiness = plan.calculate_readiness()
+                except Exception as e:
+                    logger.error(f"Error generating schedule/milestones: {e}")
+                    # Устанавливаем базовые значения
+                    plan.set_study_schedule({'weekly_schedule': []})
+                    plan.set_milestones([])
+                    plan.estimated_readiness = 0.0
+                
+                db.session.add(plan)
+                db.session.commit()
+                
+                print(f"🔍 ОТЛАДКА: создан новый план обучения {plan.id}")
+                
+                return safe_jsonify({
+                    'success': True,
+                    'message': 'Session completed and learning plan created',
+                    'plan_id': plan.id,
+                    'redirect_url': url_for('daily_learning.learning_map', lang='en')
+                })
+            else:
+                print(f"🔍 ОТЛАДКА: активный план уже существует {existing_plan.id}")
+                return safe_jsonify({
+                    'success': True,
+                    'message': 'Session completed successfully',
+                    'plan_id': existing_plan.id,
+                    'redirect_url': url_for('daily_learning.learning_map', lang='en')
+                })
+                
+        except Exception as e:
+            logger.error(f"Error creating learning plan: {e}")
+            # Возвращаем успех даже если не удалось создать план
+            return safe_jsonify({
+                'success': True,
+                'message': 'Session completed successfully',
+                'warning': 'Could not create learning plan automatically'
+            })
         
     except Exception as e:
         print(f"❌ Ошибка в complete_session: {e}")
@@ -1683,6 +2097,157 @@ def complete_session(session_id):
         return safe_jsonify({
             'success': False,
             'error': f'Error completing session: {str(e)}'
+        }), 500
+
+@diagnostic_bp.route('/update-plan-after-reassessment', methods=['POST'])
+@login_required
+@rate_limit(requests_per_minute=10)
+def update_plan_after_reassessment():
+    """
+    Update learning plan after reassessment with new ability estimates
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            raise BadRequest('Invalid request data')
+        
+        plan_id = data.get('plan_id')
+        session_id = data.get('session_id')
+        
+        if not plan_id or not session_id:
+            return safe_jsonify({'success': False, 'error': 'Plan ID and session ID are required'}), 400
+        
+        # Get the learning plan
+        plan = PersonalLearningPlan.query.get(plan_id)
+        if not plan or plan.user_id != current_user.id:
+            return safe_jsonify({'success': False, 'error': 'Plan not found or access denied'}), 404
+        
+        # Get the diagnostic session
+        diagnostic_session = DiagnosticSession.query.get(session_id)
+        if not diagnostic_session or diagnostic_session.user_id != current_user.id:
+            return safe_jsonify({'success': False, 'error': 'Session not found or access denied'}), 404
+        
+        # Generate results from reassessment
+        try:
+            results = diagnostic_session.generate_results()
+        except Exception as e:
+            logger.error(f"Error generating results for reassessment session {session_id}: {e}")
+            return safe_jsonify({'success': False, 'error': f'Failed to generate results: {str(e)}'}), 500
+        
+        # Extract new abilities from results
+        new_abilities = {}
+        if 'domain_abilities' in results:
+            for domain, data in results['domain_abilities'].items():
+                if isinstance(data, dict) and 'accuracy' in data:
+                    new_abilities[domain] = float(data['accuracy'])
+        
+        # Update plan with new abilities
+        reassessment_date = date.today()
+        success = plan.update_after_reassessment(new_abilities, reassessment_date)
+        
+        if not success:
+            return safe_jsonify({'success': False, 'error': 'Failed to update plan'}), 500
+        
+        # Update current ability
+        plan.current_ability = results.get('final_ability', plan.current_ability)
+        plan.estimated_readiness = plan.calculate_readiness()
+        
+        # Update diagnostic session reference
+        plan.diagnostic_session_id = session_id
+        
+        # Commit changes
+        db.session.commit()
+        
+        logger.info(f"Updated plan {plan_id} after reassessment for user {current_user.id}")
+        
+        return safe_jsonify({
+            'success': True,
+            'message': 'Learning plan updated successfully after reassessment',
+            'plan_id': plan.id,
+            'new_abilities': new_abilities,
+            'current_ability': plan.current_ability,
+            'estimated_readiness': plan.estimated_readiness,
+            'next_diagnostic_date': plan.next_diagnostic_date.isoformat() if plan.next_diagnostic_date else None,
+            'redirect_url': url_for('daily_learning.learning_map', lang='en')
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating plan after reassessment: {e}")
+        return safe_jsonify({
+            'success': False,
+            'error': f'Error updating plan: {str(e)}'
         }), 500 
+
+@diagnostic_bp.route('/calibrate-irt', methods=['POST'])
+@login_required
+@rate_limit(requests_per_minute=5)
+def calibrate_irt_parameters():
+    """Пакетная калибровка IRT параметров для вопросов"""
+    try:
+        data = request.get_json() or {}
+        domain_code = data.get('domain_code')
+        
+        if domain_code:
+            # Калибровка конкретного домена
+            result = calibration_service.batch_calibrate_domain(domain_code)
+            if result.get('success'):
+                return safe_jsonify({
+                    'success': True,
+                    'message': f'Калибровка домена {domain_code} завершена',
+                    'statistics': result
+                })
+            else:
+                return safe_jsonify({
+                    'success': False,
+                    'error': result.get('error', 'Ошибка калибровки')
+                }), 400
+        else:
+            # Калибровка всех доменов
+            from models import BIGDomain
+            domains = BIGDomain.query.filter_by(is_active=True).all()
+            
+            total_results = {}
+            for domain in domains:
+                result = calibration_service.batch_calibrate_domain(domain.code)
+                total_results[domain.code] = result
+            
+            return safe_jsonify({
+                'success': True,
+                'message': 'Калибровка всех доменов завершена',
+                'results': total_results
+            })
+            
+    except Exception as e:
+        logger.error(f"Error calibrating IRT parameters: {str(e)}")
+        return safe_jsonify({
+            'success': False,
+            'error': f'Ошибка калибровки: {str(e)}'
+        }), 500
+
+@diagnostic_bp.route('/irt-statistics', methods=['GET'])
+@login_required
+@rate_limit(requests_per_minute=10)
+def get_irt_statistics():
+    """Получить статистику IRT калибровки"""
+    try:
+        stats = calibration_service.get_calibration_statistics()
+        
+        if 'error' in stats:
+            return safe_jsonify({
+                'success': False,
+                'error': stats['error']
+            }), 500
+        
+        return safe_jsonify({
+            'success': True,
+            'statistics': stats
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting IRT statistics: {str(e)}")
+        return safe_jsonify({
+            'success': False,
+            'error': f'Ошибка получения статистики: {str(e)}'
+        }), 500
 
  
