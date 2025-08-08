@@ -25,10 +25,16 @@
     <!-- Calendar and Chart libraries -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.8/index.global.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="{{ url_for('static', filename='js/lib/fullcalendar.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.8/index.global.min.js"></script>
     
-    <!-- FullCalendar CSS -->
-    <link href="{{ url_for('static', filename='css/lib/fullcalendar.min.css') }}" rel="stylesheet">
+    <!-- Fallback for FullCalendar if CDN fails -->
+    <script>
+        if (typeof FullCalendar === 'undefined') {
+            console.warn('CDN FullCalendar failed, trying local version...');
+            document.write('<script src="{{ url_for("static", filename="js/lib/fullcalendar.min.js") }}"><\/script>');
+            document.write('<link href="{{ url_for("static", filename="css/lib/fullcalendar.min.css") }}" rel="stylesheet">');
+        }
+    </script>
     
     <style>
         :root {
