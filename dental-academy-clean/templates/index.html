@@ -905,6 +905,18 @@ section {
 {% block body_scripts %}
 {{ super() }}
 
+<!-- Отключаем все логи для главной страницы -->
+<script>
+// Отключаем все console.log для главной страницы
+const originalLog = console.log;
+const originalWarn = console.warn;
+const originalError = console.error;
+
+console.log = function() {};
+console.warn = function() {};
+console.error = function() {};
+</script>
+
 <!-- 🚀 Встроенная анимация телефона (работает всегда) -->
 <script>
 // 🚀 Встроенная анимация телефона (работает всегда)

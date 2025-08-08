@@ -59,7 +59,7 @@ def content_home(lang):
     except Exception as e:
         current_app.logger.error(f"Ошибка в content_home: {e}", exc_info=True)
         flash(t("error_loading_content", lang), "danger")
-        return redirect(url_for('main_bp.index', lang=lang))
+        return redirect(url_for('main.index', lang=lang))
 
 @content_bp.route("/category/<category_slug>")
 @login_required
@@ -278,6 +278,9 @@ def complete_lesson(lesson_id):
     try:
         lesson = Lesson.query.get_or_404(lesson_id)
         
+        # Получаем язык из контекста
+        lang = getattr(g, 'lang', 'en')
+        
         # Используем унифицированную функцию для отслеживания прогресса
         track_lesson_progress(current_user.id, lesson_id, completed=True)
         
@@ -288,9 +291,61 @@ def complete_lesson(lesson_id):
         
     except Exception as e:
         current_app.logger.error(f"Ошибка в complete_lesson ({lesson_id}): {e}", exc_info=True)
+        lang = getattr(g, 'lang', 'en')
         return jsonify({
             'success': False,
             'message': t('error_completing_lesson', lang)
+        }), 500
+
+@content_bp.route("/api/lesson/<int:lesson_id>/next", methods=['GET'])
+@login_required
+def get_next_lesson(lesson_id):
+    """Получить следующий урок"""
+    try:
+        lesson = Lesson.query.get_or_404(lesson_id)
+        lang = getattr(g, 'lang', 'en')
+        
+        # Получаем все уроки в той же теме, отсортированные по порядку
+        if lesson.topic_id:
+            lessons = Lesson.query.filter_by(topic_id=lesson.topic_id).order_by(Lesson.order).all()
+        else:
+            # Если нет topic_id, ищем по module_id
+            lessons = Lesson.query.filter_by(module_id=lesson.module_id).order_by(Lesson.order).all()
+        
+        # Находим индекс текущего урока
+        current_index = -1
+        for i, l in enumerate(lessons):
+            if l.id == lesson_id:
+                current_index = i
+                break
+        
+        # Получаем следующий урок
+        next_lesson = None
+        if current_index >= 0 and current_index < len(lessons) - 1:
+            next_lesson = lessons[current_index + 1]
+        
+        if next_lesson:
+            return jsonify({
+                'success': True,
+                'next_lesson': {
+                    'id': next_lesson.id,
+                    'title': next_lesson.title,
+                    'url': url_for('content.view_lesson', lesson_id=next_lesson.id, lang=lang)
+                }
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': t('no_next_lesson', lang),
+                'is_last': True
+            })
+        
+    except Exception as e:
+        current_app.logger.error(f"Ошибка в get_next_lesson ({lesson_id}): {e}", exc_info=True)
+        lang = getattr(g, 'lang', 'en')
+        return jsonify({
+            'success': False,
+            'message': t('error_getting_next_lesson', lang)
         }), 500
 
 # ================== ПОИСК ==================

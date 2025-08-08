@@ -182,7 +182,7 @@ function generateDomainProgress() {
         const progressItem = document.createElement('div');
         progressItem.className = 'progress-item';
         
-        const progressPercentage = Math.round((domain.score / domain.target) * 100);
+        const progressPercentage = Math.min(100, Math.round((domain.score / domain.target) * 100));
         
         progressItem.innerHTML = `
             <div class="progress-info">

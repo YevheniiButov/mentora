@@ -60,8 +60,14 @@ init_extensions(app)
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
-# Temporarily disable CSRF for testing
-csrf.exempt(lambda: True)
+
+# CSRF configuration based on environment
+if app.config.get('FLASK_ENV') == 'production':
+    # Enable CSRF protection in production
+    csrf.exempt(lambda: False)
+else:
+    # Disable CSRF for development/testing only
+    csrf.exempt(lambda: True)
 
 # ========================================
 # USER LOADER
@@ -299,6 +305,23 @@ try:
     # Импорт Learning Planner роутов
     from routes.learning_planner_routes import learning_planner_bp
     
+    # Импорт Simple Learning роутов
+    from routes.simple_learning_routes import simple_learning_bp
+    
+    # Импорт API роутов
+    from routes.api_routes import api_bp
+    
+    # Импорт новых Learning роутов
+    from routes.learning_routes_new import daily_learning_bp
+    
+    # Импорт Calendar Plan API роутов
+    from routes.calendar_plan_api import calendar_plan_bp
+    
+    # Импорт IRT + Spaced Repetition Integration роутов
+    from routes.irt_spaced_routes import irt_spaced_bp
+    
+
+    
     # Register blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -332,11 +355,27 @@ try:
     # Регистрация Learning Planner blueprint
     app.register_blueprint(learning_planner_bp, url_prefix='/dashboard')
     
-    # Отключить CSRF для DigiD API роутов
-    csrf.exempt(digid_bp)
+    # Регистрация Simple Learning blueprint
+    app.register_blueprint(simple_learning_bp)
     
-    # Отключить CSRF для Diagnostic API роутов (временно для тестирования)
-    csrf.exempt(diagnostic_bp)
+    # Регистрация API blueprint
+    app.register_blueprint(api_bp)
+    
+    # Регистрация новых Learning blueprint
+    app.register_blueprint(daily_learning_bp, url_prefix='/daily-learning')
+    
+    # Регистрация Calendar Plan API blueprint
+    app.register_blueprint(calendar_plan_bp)
+    
+    # Регистрация IRT + Spaced Repetition Integration blueprint
+    app.register_blueprint(irt_spaced_bp)
+    
+
+    
+    # CSRF exemptions for API endpoints (only in development)
+    if app.config.get('FLASK_ENV') != 'production':
+        csrf.exempt(digid_bp)
+        csrf.exempt(diagnostic_bp)
     
     logger.info("✅ All route blueprints registered successfully")
     
@@ -348,7 +387,8 @@ except ImportError as e:
     try:
         from routes.digid_routes import digid_bp
         app.register_blueprint(digid_bp)
-        csrf.exempt(digid_bp)
+        if app.config.get('FLASK_ENV') != 'production':
+            csrf.exempt(digid_bp)
         logger.info("✅ DigiD blueprint registered successfully")
     except ImportError as digid_error:
         logger.warning(f"Could not import DigiD routes: {digid_error}")
@@ -415,10 +455,16 @@ except ImportError as e:
             else:
                 user = User(username=username, email=email)
                 user.set_password(password)
+                user.requires_diagnostic = True  # Устанавливаем флаг диагностики для новых пользователей
                 db.session.add(user)
                 db.session.commit()
                 
                 login_user(user)
+                
+                # Проверяем необходимость диагностики после входа
+                if user.requires_diagnostic:
+                    return redirect(url_for('diagnostic_bp.choose_diagnostic_type'))
+                
                 return redirect(url_for('index'))
         
         return render_template('auth/register.html')
@@ -480,11 +526,12 @@ def ai_test():
         'status': 'ok'
     })
 
-@app.route('/learning-map/')
-def learning_map_redirect():
-    """Redirect old learning-map URLs to new format"""
-    lang = request.args.get('lang', 'ru')
-    return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+# Удаляем дублирующий роут learning-map
+# @app.route('/learning-map/')
+# @app.route('/<string:lang>/learning-map/')
+# def learning_map_redirect(lang='ru'):
+#     """Redirect to new learning map"""
+#     return redirect(url_for('daily_learning.learning_map', lang=lang))
 
 @app.route('/test-diagnostic')
 def test_diagnostic():
@@ -540,6 +587,15 @@ try:
     logger.info("✅ Import questions command registered")
 except ImportError as e:
     logger.warning(f"⚠️ Import questions command not available: {e}")
+
+# IRT calibration command
+@app.cli.command()
+def calibrate_irt():
+    """Калибровать IRT параметры для всех вопросов"""
+    from scripts.calibrate_irt_parameters import calibrate_all_questions
+    calibrate_all_questions()
+
+logger.info("✅ IRT calibration command registered")
 
 # ========================================
 # APPLICATION ENTRY POINT

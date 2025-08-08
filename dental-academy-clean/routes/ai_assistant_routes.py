@@ -79,28 +79,28 @@ def recommend_content(lang):
                 'type': 'module',
                 'title': 'Основы эндодонтии',
                 'description': 'Изучите современные методы лечения корневых каналов',
-                'url': f"/{g.lang}/learning-map",
+                'url': f"/daily-learning/learning-map",
                 'priority': 'high'
             },
             {
                 'type': 'lesson',
                 'title': 'Анестезия в стоматологии',
                 'description': 'Протоколы и техники местной анестезии',
-                'url': f"/{g.lang}/learning-map",
+                'url': f"/daily-learning/learning-map",
                 'priority': 'medium'
             },
             {
                 'type': 'practice',
                 'title': 'Клинические случаи',
                 'description': 'Разбор сложных клинических ситуаций',
-                'url': f"/{g.lang}/learning-map",
+                'url': f"/daily-learning/learning-map",
                 'priority': 'high'
             },
             {
                 'type': 'test',
                 'title': 'Тест по материаловедению',
                 'description': 'Проверьте знания современных материалов',
-                'url': f"/{g.lang}/learning-map",
+                'url': f"/daily-learning/learning-map",
                 'priority': 'low'
             }
         ]

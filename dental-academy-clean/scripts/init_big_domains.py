@@ -9,9 +9,202 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import app, db
-from models import BIGDomain, Question, IRTParameters, QuestionCategory
+from models import BIGDomain, Question, IRTParameters, QuestionCategory, TestAttempt, DiagnosticResponse
 import json
+import numpy as np
 from datetime import datetime, timezone
+from sqlalchemy import func
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Configuration for calibration sample size
+def get_calibration_config():
+    """Get calibration configuration from environment variables"""
+    return {
+        'min_sample_size': int(os.environ.get('IRT_MIN_SAMPLE_SIZE', 30)),
+        'optimal_sample_size': int(os.environ.get('IRT_OPTIMAL_SAMPLE_SIZE', 100)),
+        'max_sample_size': int(os.environ.get('IRT_MAX_SAMPLE_SIZE', 500)),
+        'reliability_threshold': float(os.environ.get('IRT_RELIABILITY_THRESHOLD', 0.8)),
+        'confidence_level': float(os.environ.get('IRT_CONFIDENCE_LEVEL', 0.95))
+    }
+
+def calculate_required_sample_size(confidence_level=0.95, margin_of_error=0.1, p=0.5):
+    """
+    Calculate required sample size for reliable IRT calibration
+    
+    Args:
+        confidence_level: Confidence level (default 0.95 for 95%)
+        margin_of_error: Acceptable margin of error (default 0.1 for 10%)
+        p: Expected proportion of correct answers (default 0.5 for maximum variance)
+    
+    Returns:
+        Required sample size
+    """
+    from scipy import stats
+    
+    # Z-score for confidence level
+    z_alpha = stats.norm.ppf((1 + confidence_level) / 2)
+    
+    # Sample size formula for proportion
+    n = (z_alpha ** 2 * p * (1 - p)) / (margin_of_error ** 2)
+    
+    return int(np.ceil(n))
+
+def analyze_existing_responses():
+    """
+    Analyze existing response data to determine calibration parameters
+    
+    Returns:
+        Dict with analysis results
+    """
+    try:
+        # Get total responses
+        total_test_attempts = TestAttempt.query.count()
+        total_diagnostic_responses = DiagnosticResponse.query.count()
+        total_responses = total_test_attempts + total_diagnostic_responses
+        
+        # Get responses per question
+        responses_per_question = db.session.query(
+            Question.id,
+            func.count(TestAttempt.id).label('test_responses'),
+            func.count(DiagnosticResponse.id).label('diag_responses')
+        ).outerjoin(TestAttempt).outerjoin(DiagnosticResponse).group_by(Question.id).all()
+        
+        # Calculate statistics
+        response_counts = []
+        for _, test_count, diag_count in responses_per_question:
+            total = (test_count or 0) + (diag_count or 0)
+            if total > 0:
+                response_counts.append(total)
+        
+        if not response_counts:
+            return {
+                'total_responses': 0,
+                'questions_with_responses': 0,
+                'avg_responses_per_question': 0,
+                'median_responses_per_question': 0,
+                'max_responses_per_question': 0,
+                'min_responses_per_question': 0,
+                'recommended_sample_size': 30
+            }
+        
+        return {
+            'total_responses': total_responses,
+            'questions_with_responses': len(response_counts),
+            'avg_responses_per_question': np.mean(response_counts),
+            'median_responses_per_question': np.median(response_counts),
+            'max_responses_per_question': max(response_counts),
+            'min_responses_per_question': min(response_counts),
+            'recommended_sample_size': calculate_required_sample_size()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error analyzing existing responses: {e}")
+        return {
+            'total_responses': 0,
+            'questions_with_responses': 0,
+            'avg_responses_per_question': 0,
+            'median_responses_per_question': 0,
+            'max_responses_per_question': 0,
+            'min_responses_per_question': 0,
+            'recommended_sample_size': 30
+        }
+
+def validate_sample_size(sample_size, config):
+    """
+    Validate if sample size is sufficient for reliable calibration
+    
+    Args:
+        sample_size: Actual sample size
+        config: Calibration configuration
+    
+    Returns:
+        Dict with validation results
+    """
+    if sample_size < config['min_sample_size']:
+        return {
+            'is_sufficient': False,
+            'warning': f"Sample size {sample_size} is below minimum ({config['min_sample_size']})",
+            'reliability': 'low',
+            'confidence': 'low'
+        }
+    elif sample_size < config['optimal_sample_size']:
+        return {
+            'is_sufficient': True,
+            'warning': f"Sample size {sample_size} is below optimal ({config['optimal_sample_size']})",
+            'reliability': 'medium',
+            'confidence': 'medium'
+        }
+    else:
+        return {
+            'is_sufficient': True,
+            'warning': None,
+            'reliability': 'high',
+            'confidence': 'high'
+        }
+
+def get_calibration_sample_size(question_id=None):
+    """
+    Get calibration sample size based on existing data and configuration
+    
+    Args:
+        question_id: Optional question ID to get specific sample size
+    
+    Returns:
+        Calibration sample size and validation info
+    """
+    config = get_calibration_config()
+    
+    if question_id:
+        # Get actual response count for specific question
+        test_count = TestAttempt.query.filter_by(question_id=question_id).count()
+        diag_count = DiagnosticResponse.query.filter_by(question_id=question_id).count()
+        actual_sample_size = test_count + diag_count
+        
+        validation = validate_sample_size(actual_sample_size, config)
+        
+        return {
+            'sample_size': actual_sample_size,
+            'validation': validation,
+            'source': 'actual_responses'
+        }
+    else:
+        # Use recommended sample size based on analysis
+        analysis = analyze_existing_responses()
+        recommended_size = analysis['recommended_sample_size']
+        
+        # Adjust based on configuration
+        if recommended_size < config['min_sample_size']:
+            sample_size = config['min_sample_size']
+        elif recommended_size > config['max_sample_size']:
+            sample_size = config['max_sample_size']
+        else:
+            sample_size = recommended_size
+        
+        validation = validate_sample_size(sample_size, config)
+        
+        return {
+            'sample_size': sample_size,
+            'validation': validation,
+            'source': 'recommended',
+            'analysis': analysis
+        }
+
+def log_calibration_info(question_id, sample_size_info):
+    """Log calibration information"""
+    sample_size = sample_size_info['sample_size']
+    validation = sample_size_info['validation']
+    source = sample_size_info.get('source', 'unknown')
+    
+    if validation['warning']:
+        logger.warning(f"Question {question_id}: {validation['warning']} (reliability: {validation['reliability']})")
+    else:
+        logger.info(f"Question {question_id}: Sample size {sample_size} is sufficient (reliability: {validation['reliability']})")
+    
+    return sample_size
 
 def create_big_domains():
     """Create BI-toets domains based on ACTA program"""
@@ -337,13 +530,16 @@ def create_sample_questions():
         db.session.flush()  # Get question ID
         
         # Create IRT parameters
+        sample_size_info = get_calibration_sample_size(question.id)
+        calibration_sample_size = log_calibration_info(question.id, sample_size_info)
+        
         irt_params = IRTParameters(
             question_id=question.id,
             difficulty=q_data['difficulty'],
             discrimination=q_data['discrimination'],
             guessing=q_data['guessing'],
             calibration_date=datetime.now(timezone.utc),
-            calibration_sample_size=100  # Placeholder
+            calibration_sample_size=calibration_sample_size
         )
         
         db.session.add(irt_params)
@@ -358,6 +554,17 @@ def main():
     """Main function to initialize BI-toets data"""
     with app.app_context():
         print("🦷 Initializing BI-toets diagnostic testing system...")
+        
+        # Analyze existing response data
+        print("\n📊 Analyzing existing response data...")
+        analysis = analyze_existing_responses()
+        config = get_calibration_config()
+        
+        print(f"   - Total responses: {analysis['total_responses']}")
+        print(f"   - Questions with responses: {analysis['questions_with_responses']}")
+        print(f"   - Average responses per question: {analysis['avg_responses_per_question']:.1f}")
+        print(f"   - Recommended sample size: {analysis['recommended_sample_size']}")
+        print(f"   - Configuration: min={config['min_sample_size']}, optimal={config['optimal_sample_size']}, max={config['max_sample_size']}")
         
         # Create domains
         print("\n📚 Creating BI-toets domains...")
@@ -377,6 +584,17 @@ def main():
         for domain in domains:
             question_count = Question.query.filter_by(big_domain_id=domain.id).count()
             print(f"   {domain.code}: {domain.name} ({question_count} questions, {domain.weight_percentage}%)")
+        
+        # Print calibration summary
+        print("\n🔬 Calibration Summary:")
+        print(f"   - IRT parameters created with real sample size calculation")
+        print(f"   - Sample size validation enabled")
+        print(f"   - Configuration via environment variables:")
+        print(f"     IRT_MIN_SAMPLE_SIZE={config['min_sample_size']}")
+        print(f"     IRT_OPTIMAL_SAMPLE_SIZE={config['optimal_sample_size']}")
+        print(f"     IRT_MAX_SAMPLE_SIZE={config['max_sample_size']}")
+        print(f"     IRT_RELIABILITY_THRESHOLD={config['reliability_threshold']}")
+        print(f"     IRT_CONFIDENCE_LEVEL={config['confidence_level']}")
 
 if __name__ == '__main__':
     main() 

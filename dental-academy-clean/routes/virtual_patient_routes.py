@@ -67,7 +67,7 @@ def start_scenario(scenario_id):
         user_id=current_user.id,
         scenario_id=scenario_id,
         max_score=scenario.max_score,
-        started_at=datetime.utcnow()
+        started_at=datetime.now(timezone.utc)
     )
     
     db.session.add(attempt)
@@ -146,7 +146,7 @@ def make_choice():
         'node_id': node_id,
         'choice_id': choice_id,
         'score_change': score_change,
-        'timestamp': datetime.utcnow().isoformat()
+        'timestamp': datetime.now(timezone.utc).isoformat()
     })
     attempt.dialogue_history = json.dumps(dialogue_history)
     
@@ -167,7 +167,7 @@ def make_choice():
     # Если сценарий завершен
     if is_final or not next_node:
         attempt.completed = True
-        attempt.completed_at = datetime.utcnow()
+        attempt.completed_at = datetime.now(timezone.utc)
         
         # Рассчитываем время прохождения
         if attempt.started_at:

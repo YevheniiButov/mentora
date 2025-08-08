@@ -21,6 +21,18 @@ dashboard_bp = Blueprint('dashboard', __name__)
 def index():
     """Enhanced main dashboard with gamification widgets"""
     
+    # Проверка необходимости диагностики
+    if current_user.requires_diagnostic:
+        # Проверяем есть ли завершенная диагностика
+        completed_diagnostic = DiagnosticSession.query.filter_by(
+            user_id=current_user.id,
+            status='completed'
+        ).first()
+        
+        if not completed_diagnostic:
+            flash('Для персонализации обучения необходимо пройти диагностический тест.', 'info')
+            return redirect(url_for('diagnostic_bp.choose_diagnostic_type'))
+    
     # Get comprehensive dashboard stats
     dashboard_stats = current_user.get_dashboard_stats()
     
@@ -57,6 +69,25 @@ def index():
         status='active'
     ).order_by(PersonalLearningPlan.last_updated.desc()).first()
     
+    # Check if reassessment is needed
+    reassessment_needed = False
+    reassessment_required = False
+    reassessment_url = None
+    
+    if active_plan and active_plan.next_diagnostic_date:
+        today = date.today()
+        days_until_reassessment = (active_plan.next_diagnostic_date - today).days
+        
+        if days_until_reassessment <= 0:
+            # Переоценка просрочена
+            flash(f'Необходимо пройти переоценку прогресса для продолжения эффективного обучения!', 'warning')
+            # Добавляем в контекст для показа большого баннера
+            reassessment_required = True
+            reassessment_url = url_for('diagnostic_bp.start_reassessment', plan_id=active_plan.id)
+        elif days_until_reassessment <= 3:
+            # Скоро переоценка
+            flash(f'Через {days_until_reassessment} дня запланирована переоценка прогресса', 'info')
+    
     return render_template('dashboard/enhanced_index.html',
                          user=current_user,
                          stats=dashboard_stats,
@@ -70,6 +101,9 @@ def index():
                          learning_paths=learning_paths,
                          today_goals=today_goals,
                          active_plan=active_plan,
+                         reassessment_needed=reassessment_needed,
+                         reassessment_required=reassessment_required,
+                         reassessment_url=reassessment_url,
                          today=date.today())
 
 @dashboard_bp.route('/achievements')
@@ -638,10 +672,11 @@ def create_learning_plan():
     
     learning_plan_data['domains'] = domains
     
-    return render_template('dashboard/create_learning_plan.html',
+    return render_template('dashboard/learning_planner_translated.html',
                          diagnostic_session=diagnostic_session,
                          learning_plan_data=learning_plan_data,
-                         diagnostic_results=learning_plan_data)
+                         diagnostic_results=learning_plan_data,
+                         lang=request.args.get('lang', 'ru'))
 
 def generate_learning_goals(plan, diagnostic_session_id):
     """Генерирует цели обучения на основе плана"""

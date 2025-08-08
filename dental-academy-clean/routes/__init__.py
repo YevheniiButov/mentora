@@ -25,6 +25,7 @@ from .virtual_patient_routes import virtual_patient_bp
 
 # Импорт фармацевтических инструментов
 from .learning_routes import pharmacy_tools_bp
+from .scheduler_routes import scheduler_bp
 
 def register_blueprints(app):
     """Регистрирует все blueprints приложения"""
@@ -55,4 +56,7 @@ def register_blueprints(app):
     app.register_blueprint(virtual_patient_bp)
     
     # Фармацевтические инструменты
-    app.register_blueprint(pharmacy_tools_bp) 
+    app.register_blueprint(pharmacy_tools_bp)
+    
+    # Планировщик напоминаний о диагностике
+    app.register_blueprint(scheduler_bp) 

@@ -9,11 +9,11 @@ class ThemeController {
         this.init();
         
         // Отладочная информация
-        console.log('ThemeController initialized:', {
-            theme: this.theme,
-            systemTheme: this.systemTheme,
-            isDark: this.isDark
-        });
+        // console.log('ThemeController initialized:', {
+        //     theme: this.theme,
+        //     systemTheme: this.systemTheme,
+        //     isDark: this.isDark
+        // });
     }
 
     calculateIsDark() {
@@ -46,11 +46,11 @@ class ThemeController {
         // Отправляем событие
         this.notifyThemeChange();
         
-        console.log('Theme applied:', {
-            theme: this.theme,
-            isDark: this.isDark,
-            appliedTheme: this.isDark ? 'dark' : 'light'
-        });
+        // console.log('Theme applied:', {
+        //     theme: this.theme,
+        //     isDark: this.isDark,
+        //     appliedTheme: this.isDark ? 'dark' : 'light'
+        // });
     }
 
     toggleTheme() {
@@ -70,10 +70,10 @@ class ThemeController {
         // Применяем изменения
         this.applyTheme();
         
-        console.log('Theme toggled:', {
-            theme: this.theme,
-            isDark: this.isDark
-        });
+        // console.log('Theme toggled:', {
+        //     theme: this.theme,
+        //     isDark: this.isDark
+        // });
     }
 
     notifyThemeChange() {

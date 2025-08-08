@@ -424,15 +424,14 @@ class AIAnalyticsDashboard {
     
     async loadRealtimeMetrics() {
         try {
-            const lang = window.location.pathname.split('/')[1] || 'ru';
-            const response = await fetch(`/${lang}/ai-assistant/analytics/realtime`);
+            const response = await fetch(`/admin/api/analytics/realtime?timeRange=${this.currentTimeRange}`);
             const data = await response.json();
             
             if (data.success) {
                 this.updateMetricCards(data.metrics);
-                this.updateTrendingTopics(data.metrics.trending_topics);
-                this.updatePerformanceMetrics(data.metrics.performance_metrics);
-                this.generateMockActivity();
+                this.updateTrendingTopics(data.trending_topics);
+                this.updatePerformanceMetrics(data.performance_metrics);
+                this.updateCharts(data);
             } else {
                 console.error('Analytics API error:', data.error);
                 this.showError(data.error);
@@ -441,85 +440,40 @@ class AIAnalyticsDashboard {
         } catch (error) {
             console.error('Error loading realtime metrics:', error);
             this.showError('Failed to load realtime metrics');
-            this.loadMockData();
+            // Fallback to empty data instead of mock
+            this.updateMetricCards({
+                active_users: 0,
+                ai_interactions: 0,
+                chat_sessions: 0,
+                user_satisfaction: 0,
+                system_health: 0,
+                error_rate: 0
+            });
         }
     }
     
     async loadHistoricalData() {
         try {
-            const lang = window.location.pathname.split('/')[1] || 'ru';
-            const days = this.getTimeRangeDays(this.currentTimeRange);
-            const response = await fetch(`/${lang}/ai-assistant/analytics/historical?days=${days}`);
+            const response = await fetch(`/admin/api/analytics/realtime?timeRange=${this.currentTimeRange}`);
             const data = await response.json();
             
             if (data.success) {
-                this.updateCharts(data.data);
+                this.updateCharts(data);
             } else {
                 console.error('Historical analytics API error:', data.error);
-                this.loadMockChartData();
+                // Fallback to empty data instead of mock
+                this.updateCharts({ daily_metrics: [] });
             }
             
         } catch (error) {
             console.error('Error loading historical data:', error);
             this.showError('Failed to load historical data');
-            this.loadMockChartData();
+            // Fallback to empty data instead of mock
+            this.updateCharts({ daily_metrics: [] });
         }
     }
     
-    loadMockData() {
-        // Заглушка для демонстрации
-        const mockMetrics = {
-            active_users: 142,
-            ai_interactions: 1847,
-            chat_sessions: 324,
-            user_satisfaction: 0.87,
-            system_health: 0.94,
-            error_rate: 0.03,
-            trending_topics: [
-                { topic: 'экзамен', mentions: 45, trend: 'up', percentage: 25.0 },
-                { topic: 'голландский', mentions: 38, trend: 'up', percentage: 20.5 },
-                { topic: 'анатомия', mentions: 29, trend: 'stable', percentage: 15.7 },
-                { topic: 'подготовка', mentions: 22, trend: 'up', percentage: 11.9 },
-                { topic: 'практика', mentions: 18, trend: 'stable', percentage: 9.7 }
-            ],
-            performance_metrics: {
-                avg_messages_per_session: 8.5,
-                avg_response_length: 245,
-                response_time: 0.42,
-                uptime: 0.99,
-                throughput: 15.3
-            }
-        };
-        
-        this.updateMetricCards(mockMetrics);
-        this.updateTrendingTopics(mockMetrics.trending_topics);
-        this.updatePerformanceMetrics(mockMetrics.performance_metrics);
-        this.generateMockActivity();
-    }
-    
-    loadMockChartData() {
-        // Генерируем данные за последние дни
-        const days = this.getTimeRangeDays(this.currentTimeRange);
-        const mockData = {
-            daily_metrics: []
-        };
-        
-        for (let i = days - 1; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            
-            mockData.daily_metrics.push({
-                date: date.toISOString().split('T')[0],
-                active_users: Math.floor(Math.random() * 50) + 100,
-                ai_interactions: Math.floor(Math.random() * 500) + 1000,
-                user_satisfaction: 0.7 + Math.random() * 0.3,
-                chat_sessions: Math.floor(Math.random() * 100) + 200,
-                error_rate: Math.random() * 0.1
-            });
-        }
-        
-        this.updateCharts(mockData);
-    }
+
     
     updateMetricCards(metrics) {
         // Активные пользователи
@@ -613,29 +567,7 @@ class AIAnalyticsDashboard {
         `).join('');
     }
     
-    generateMockActivity() {
-        const container = document.getElementById('activityFeed');
-        const activities = [
-            { icon: 'bi-person-plus', text: 'Новый пользователь зарегистрировался', time: '2 минуты назад', color: '#28a745' },
-            { icon: 'bi-chat-dots', text: 'Активная сессия чата с ИИ', time: '5 минут назад', color: '#007bff' },
-            { icon: 'bi-graph-up', text: 'Запрос предсказания успешно обработан', time: '8 минут назад', color: '#17a2b8' },
-            { icon: 'bi-star', text: 'Пользователь оценил ИИ на 5 звезд', time: '12 минут назад', color: '#ffc107' },
-            { icon: 'bi-exclamation-triangle', text: 'Превышен лимит API для провайдера OpenAI', time: '15 минут назад', color: '#dc3545' },
-            { icon: 'bi-shield-check', text: 'Система здоровья: все сервисы работают', time: '20 минут назад', color: '#28a745' }
-        ];
-        
-        container.innerHTML = activities.map(activity => `
-            <div class="activity-item">
-                <div class="activity-icon" style="background: ${activity.color}">
-                    <i class="${activity.icon}"></i>
-                </div>
-                <div class="activity-content">
-                    <div>${activity.text}</div>
-                    <div class="activity-time">${activity.time}</div>
-                </div>
-            </div>
-        `).join('');
-    }
+
     
     setupCharts() {
         // Главный график

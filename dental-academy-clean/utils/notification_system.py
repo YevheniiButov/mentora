@@ -62,6 +62,114 @@ class LearningNotificationSystem:
                 </div>
                 '''
             },
+            'diagnostic_reminder': {
+                'subject': '🔔 Напоминание о диагностике - {{diagnostic_date}}',
+                'template': '''
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; padding: 20px; text-align: center;">
+                        <h1>🔔 Mentora Academy</h1>
+                        <h2>Напоминание о диагностике</h2>
+                        <p>Осталось {{days_until_diagnostic}} дней</p>
+                    </div>
+                    
+                    <div style="padding: 20px; background: #f8f9fa;">
+                        <h3>Привет, {{user_name}}!</h3>
+                        
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                            <h4>📊 Ваша диагностика запланирована на:</h4>
+                            <p><strong>{{diagnostic_date}}</strong></p>
+                            <p><strong>Осталось дней:</strong> {{days_until_diagnostic}}</p>
+                        </div>
+                        
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <h4>🎯 Ваш текущий прогресс:</h4>
+                            <p>Общий прогресс: <strong>{{progress_percentage}}%</strong></p>
+                            <p>Текущий уровень: <strong>{{current_ability}}</strong></p>
+                            <p>Целевой уровень: <strong>{{target_ability}}</strong></p>
+                        </div>
+                        
+                        {% if weak_domains %}
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <h4>⚠️ Слабые области для изучения:</h4>
+                            <p><strong>{{weak_domains|join(', ')}}</strong></p>
+                        </div>
+                        {% endif %}
+                        
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <h4>💡 Рекомендации:</h4>
+                            <ul>
+                                {% for recommendation in recommendations %}
+                                <li>{{recommendation}}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="{{diagnostic_url}}" style="background: #ef4444; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; margin-right: 10px;">
+                                Пройти диагностику
+                            </a>
+                            <a href="{{study_url}}" style="background: #3ECDC1; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                                Продолжить изучение
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d;">
+                        <p>Это автоматическое уведомление от Mentora Academy</p>
+                        <p>Если вы не хотите получать уведомления, <a href="{{unsubscribe_url}}">отпишитесь здесь</a></p>
+                    </div>
+                </div>
+                '''
+            },
+            'diagnostic_overdue': {
+                'subject': '🚨 СРОЧНО: Просроченная диагностика!',
+                'template': '''
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 20px; text-align: center;">
+                        <h1>🚨 Mentora Academy</h1>
+                        <h2>СРОЧНОЕ НАПОМИНАНИЕ</h2>
+                        <p>Диагностика просрочена на {{days_overdue}} дней!</p>
+                    </div>
+                    
+                    <div style="padding: 20px; background: #f8f9fa;">
+                        <h3>Привет, {{user_name}}!</h3>
+                        
+                        <div style="background: #fee2e2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+                            <h4>⚠️ ВАЖНО: Ваша диагностика была запланирована на {{diagnostic_date}}</h4>
+                            <p><strong>Просрочено на: {{days_overdue}} дней</strong></p>
+                            <p>Регулярная диагностика необходима для отслеживания вашего прогресса и корректировки плана обучения.</p>
+                        </div>
+                        
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <h4>🎯 Почему это важно:</h4>
+                            <ul>
+                                <li>Оценка текущего уровня знаний</li>
+                                <li>Корректировка плана обучения</li>
+                                <li>Выявление слабых областей</li>
+                                <li>Подготовка к экзамену</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="{{diagnostic_url}}" style="background: #ef4444; color: white; padding: 15px 40px; text-decoration: none; border-radius: 6px; display: inline-block; font-size: 16px; font-weight: bold;">
+                                ПРОЙТИ ДИАГНОСТИКУ СЕЙЧАС
+                            </a>
+                        </div>
+                        
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <h4>📞 Нужна помощь?</h4>
+                            <p>Если у вас возникли вопросы или проблемы, свяжитесь с нами:</p>
+                            <p>Email: support@mentora.academy</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d;">
+                        <p>Это автоматическое уведомление от Mentora Academy</p>
+                        <p>Если вы не хотите получать уведомления, <a href="{{unsubscribe_url}}">отпишитесь здесь</a></p>
+                    </div>
+                </div>
+                '''
+            },
             'weekly_progress': {
                 'subject': 'Еженедельный отчет прогресса - {{week_number}} неделя',
                 'template': '''

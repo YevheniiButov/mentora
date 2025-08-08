@@ -47,6 +47,22 @@
 
 {% block content %}
 <div class="dashboard-container">
+    <!-- Reassessment Alert -->
+    {% if reassessment_required %}
+    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill fs-1 me-3"></i>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading mb-1">Требуется переоценка прогресса!</h5>
+                <p class="mb-2">Прошло 14 дней с последней диагностики. Для корректировки плана обучения необходимо пройти переоценку.</p>
+                <a href="{{ reassessment_url }}" class="btn btn-warning">
+                    <i class="bi bi-clipboard-check me-2"></i>Начать переоценку
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Header Section -->
     <div class="dashboard-header">
         <div class="welcome-section">
@@ -98,6 +114,27 @@
             </div>
         </div>
     </div>
+
+    <!-- Reassessment Notification -->
+    {% if reassessment_needed %}
+    <div class="reassessment-notification">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <i class="bi bi-clipboard-data"></i>
+            </div>
+            <div class="notification-text">
+                <h4>Время для переоценки!</h4>
+                <p>Прошло 14 дней с последней диагностики. Пройдите переоценку для обновления вашего плана обучения.</p>
+            </div>
+            <div class="notification-action">
+                <a href="/big-diagnostic/reassessment/{{ active_plan.id }}" class="btn btn-primary">
+                    <i class="bi bi-play-circle"></i>
+                    Пройти переоценку
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Main Dashboard Grid -->
     <div class="dashboard-grid">
@@ -565,49 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// Activity logging function
-function logActivity(activityData) {
-    fetch('/dashboard/api/activity-log', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(activityData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success && data.new_achievements.length > 0) {
-            // Show achievement notification
-            data.new_achievements.forEach(achievement => {
-                showAchievementNotification(achievement);
-            });
-        }
-    });
-}
-
-// Achievement notification
-function showAchievementNotification(achievement) {
-    const notification = document.createElement('div');
-    notification.className = 'achievement-notification';
-    notification.innerHTML = `
-        <div class="achievement-notification-content">
-            <i class="bi bi-trophy"></i>
-            <div>
-                <strong>Prestatie ontgrendeld!</strong>
-                <p>${achievement.name}</p>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
-</script>
-{% endblock %} 
 
 // Activity logging function
 function logActivity(activityData) {

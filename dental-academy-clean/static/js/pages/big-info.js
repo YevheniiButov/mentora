@@ -300,4 +300,101 @@ style.textContent = `
         transition: all 0.2s ease;
     }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);
+
+// Daily Plan Interaction Functions
+function startContent(contentType, contentId) {
+    // Track start time
+    const startTime = Date.now();
+    localStorage.setItem(`content_start_${contentId}`, startTime);
+    
+    // Navigate to appropriate content
+    switch(contentType) {
+        case 'lesson':
+            window.location.href = `/learning/lesson/${contentId}`;
+            break;
+        case 'question':
+            window.location.href = `/practice/question/${contentId}`;
+            break;
+        default:
+            console.error('Unknown content type:', contentType);
+    }
+}
+
+function startReview(contentId, contentType) {
+    // Mark as review session
+    localStorage.setItem(`review_session_${contentId}`, 'true');
+    startContent(contentType, contentId);
+}
+
+// Progress tracking
+function markContentCompleted(contentId, contentType, wasCorrect = null) {
+    const startTime = localStorage.getItem(`content_start_${contentId}`);
+    const endTime = Date.now();
+    const timeSpent = startTime ? Math.round((endTime - startTime) / 1000 / 60) : 0; // minutes
+    
+    // Send progress to backend
+    fetch('/api/progress/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            content_id: contentId,
+            content_type: contentType,
+            time_spent: timeSpent,
+            completed: true,
+            correct: wasCorrect,
+            is_review: localStorage.getItem(`review_session_${contentId}`) === 'true'
+        })
+    }).then(response => {
+        if (response.ok) {
+            // Update UI
+            updateDailyProgress();
+            // Clean up localStorage
+            localStorage.removeItem(`content_start_${contentId}`);
+            localStorage.removeItem(`review_session_${contentId}`);
+        }
+    }).catch(error => {
+        console.error('Error updating progress:', error);
+    });
+}
+
+function updateDailyProgress() {
+    // Refresh daily plan progress
+    fetch('/api/daily-plan/progress')
+        .then(response => response.json())
+        .then(data => {
+            // Update progress indicators
+            const progressElement = document.querySelector('.progress-value');
+            if (progressElement) {
+                progressElement.textContent = data.completion_percentage + '%';
+            }
+            
+            // Update completed tasks styling
+            data.completed_items.forEach(itemId => {
+                const element = document.querySelector(`[data-content-id="${itemId}"]`);
+                if (element) {
+                    element.classList.add('completed');
+                    const button = element.querySelector('.item-action');
+                    if (button) {
+                        button.textContent = 'Выполнено';
+                        button.disabled = true;
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error updating daily progress:', error);
+        });
+}
+
+// Initialize daily plan functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize daily plan if it exists
+    const dailyPlanSection = document.querySelector('.daily-plan-section');
+    if (dailyPlanSection) {
+        console.log('📅 Daily Plan section found, initializing...');
+        updateDailyProgress();
+    }
+}); 

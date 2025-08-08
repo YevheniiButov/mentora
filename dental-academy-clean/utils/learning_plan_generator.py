@@ -869,6 +869,8 @@ def create_learning_plan_from_diagnostic(
     
     # Создаем план обучения
     print(f"🔍 ОТЛАДКА: создаем PersonalLearningPlan")
+    from datetime import date, timedelta
+    
     plan = PersonalLearningPlan(
         user_id=user_id,
         exam_date=exam_date.date() if exam_date else None,
@@ -881,8 +883,10 @@ def create_learning_plan_from_diagnostic(
         study_hours_per_week=20.0,
         current_ability=diagnostic_session.current_ability,
         overall_progress=0.0,
-        estimated_readiness=diagnostic_data.get('readiness_percentage', 0) / 100.0,
-        status='active'
+        estimated_readiness=round(diagnostic_data.get('readiness_percentage', 0) / 100.0, 3),
+        status='active',
+        next_diagnostic_date=date.today() + timedelta(days=14),
+        diagnostic_reminder_sent=False
     )
     
     # Устанавливаем данные в ПРАВИЛЬНОМ формате

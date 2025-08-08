@@ -12,7 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
 from models import Question, Category, BIGDomain, IRTParameters
-from datetime import datetime
+from datetime import datetime, timezone
 
 def parse_question_text(text):
     Парсит текст вопроса из Word документа
@@ -173,7 +173,7 @@ def import_questions_from_text(text):
                     domain_id=domain.id,
                     irt_parameters_id=irt_params.id,
                     question_type='bi_toets',
-                    created_at=datetime.utcnow()
+                    created_at=datetime.now(timezone.utc)
                 )
                 
                 db.session.add(question)

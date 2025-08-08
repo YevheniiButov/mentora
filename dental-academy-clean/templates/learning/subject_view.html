@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t('learning_map', lang) }}{% endblock %}
+{% block title %}{% if is_knowledge_base %}{{ t('knowledge_base', lang) | default('Knowledge Base') }}{% else %}{{ t('learning_map', lang) }}{% endif %}{% endblock %}
 
 {% block head %}
-<!-- Learning Map Styles -->
+<!-- Knowledge Base Styles -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/category-navigation.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/knowledge_base.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -118,6 +119,90 @@
 
         <div class="middle-column">
 
+            {% if is_knowledge_base %}
+            <!-- Knowledge Base Header -->
+            <div class="knowledge-base-header">
+                <h1>{{ t('knowledge_base', lang) | default('Knowledge Base') }}</h1>
+                <p>{{ t('knowledge_base_description', lang) | default('Все предметы для свободного изучения') }}</p>
+            </div>
+            
+            <!-- Interesting Fact -->
+            {% if random_fact %}
+            <div class="interesting-fact-card">
+                <div class="fact-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <div class="fact-content">
+                    <h4>{{ t('interesting_fact', lang) | default('Интересный факт') }}</h4>
+                    <p>{{ random_fact.text }}</p>
+                    <small class="fact-source">{{ random_fact.source }}</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Dynamic Content Area -->
+            <div id="knowledge-base-content">
+                <!-- Default State - Select a category -->
+                <div id="default-content" class="knowledge-base-default">
+                    <div class="select-category-message">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <h3>{{ t('select_category', lang) | default('Выберите категорию') }}</h3>
+                        <p>{{ t('select_category_description', lang) | default('Выберите категорию слева, чтобы увидеть доступные предметы') }}</p>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Subject Content -->
+                <div id="subject-content" class="knowledge-base-subject" style="display: none;">
+                    <div class="subject-header">
+                        <h2 id="selected-subject-name"></h2>
+                        <div class="subject-progress-overview">
+                            <div class="progress-circle">
+                                <div class="progress-ring">
+                                    <div class="progress-fill" id="subject-progress-fill"></div>
+                                </div>
+                                <div class="progress-text">
+                                    <span id="subject-progress-percent">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="subject-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="total-lessons">0</span>
+                                <span class="stat-label">{{ t('total_lessons', lang) | default('Всего уроков') }}</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="completed-lessons">0</span>
+                                <span class="stat-label">{{ t('completed_lessons', lang) | default('Завершено') }}</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="estimated-time">0h</span>
+                                <span class="stat-label">{{ t('estimated_time', lang) | default('Время') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="subject-modules" id="subject-modules">
+                        <!-- Modules will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             {% if selected_subject %}
             <div class="subject-content">
@@ -342,7 +427,7 @@
                 </div>
                 {% endif %}
                 
-                {% if current_user.is_authenticated and stats and stats.completed_lessons > 0 %}
+                {% if not is_knowledge_base and current_user.is_authenticated and stats and stats.completed_lessons > 0 %}
                 <div class="welcome-stats">
                   <h3>{{ t('your_progress', lang)|default('Ваш прогресс') }}</h3>
                   <div class="stats-summary">
@@ -357,6 +442,7 @@
             {% endif %}
         </div>
 
+        {% if not is_knowledge_base %}
         <div class="right-column">
             <div class="stats-section">
                 <h2>{{ t('overall_progress', lang) }}</h2>
@@ -413,6 +499,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
@@ -523,6 +610,201 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Daily Plan Functions
+    function startContent(contentType, contentId) {
+        console.log('Starting content:', contentType, contentId);
+        
+        // Определяем URL в зависимости от типа контента
+        let url = '';
+        
+        switch(contentType) {
+            case 'lesson':
+                url = `/{{ lang }}/modules/${contentId}/lesson/0`;
+                break;
+            case 'question':
+                url = `/{{ lang }}/simple-learning/question/${contentId}`;
+                break;
+            case 'spaced_repetition':
+                url = `/{{ lang }}/simple-learning/spaced-repetition/review/${contentId}`;
+                break;
+            default:
+                console.error('Unknown content type:', contentType);
+                return;
+        }
+        
+        // Перенаправляем на контент
+        window.location.href = url;
+    }
+    
+    function startReview(contentId, contentType) {
+        console.log('Starting review:', contentId, contentType);
+        
+        // Для повторений используем специальный URL
+        const url = `/{{ lang }}/simple-learning/spaced-repetition/review/${contentId}`;
+        window.location.href = url;
+    }
+    
+    // Обновление прогресса Daily Plan
+    function updateDailyPlanProgress() {
+        // Здесь можно добавить логику обновления прогресса
+        // например, отправку AJAX запроса для отметки выполнения
+        console.log('Updating daily plan progress...');
+    }
+    
+    // Отметить элемент как выполненный
+    function markItemCompleted(contentId, contentType) {
+        fetch(`/{{ lang }}/daily-learning/api/daily-plan/mark-completed`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content_id: contentId,
+                content_type: contentType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем UI
+                const item = document.querySelector(`[data-content-id="${contentId}"]`);
+                if (item) {
+                    item.classList.add('completed');
+                }
+                updateDailyPlanProgress();
+            }
+        })
+        .catch(error => {
+            console.error('Error marking item as completed:', error);
+        });
+    }
+    
+    // Knowledge Base Interactive Functions
+    {% if is_knowledge_base %}
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчики для предметов в левой колонке
+        const subjectItems = document.querySelectorAll('.subject-item');
+        
+        subjectItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Убираем активный класс у всех предметов
+                subjectItems.forEach(subj => subj.classList.remove('active'));
+                
+                // Добавляем активный класс к выбранному предмету
+                this.classList.add('active');
+                
+                // Получаем данные о предмете
+                const subjectId = this.getAttribute('href').split('/').pop();
+                const subjectName = this.querySelector('.subject-name').textContent;
+                
+                // Загружаем контент предмета
+                loadSubjectContent(subjectId, subjectName);
+            });
+        });
+    });
+    
+    function loadSubjectContent(subjectId, subjectName) {
+        // Показываем контент предмета
+        document.getElementById('default-content').style.display = 'none';
+        document.getElementById('subject-content').style.display = 'block';
+        
+        // Обновляем заголовок
+        document.getElementById('selected-subject-name').textContent = subjectName;
+        
+        // Загружаем данные предмета через AJAX
+        fetch(`/{{ lang }}/api/subject/${subjectId}/stats`)
+            .then(response => response.json())
+            .then(data => {
+                updateSubjectStats(data);
+                loadSubjectModules(subjectId);
+            })
+            .catch(error => {
+                console.error('Error loading subject data:', error);
+                // Показываем заглушку
+                showDefaultStats();
+            });
+    }
+    
+    function updateSubjectStats(data) {
+        // Обновляем статистику
+        document.getElementById('total-lessons').textContent = data.total_lessons || 0;
+        document.getElementById('completed-lessons').textContent = data.completed_lessons || 0;
+        document.getElementById('estimated-time').textContent = data.estimated_time || '0h';
+        
+        // Обновляем прогресс
+        const progressPercent = data.progress_percentage || 0;
+        document.getElementById('subject-progress-percent').textContent = progressPercent + '%';
+        
+        // Обновляем круговой прогресс
+        const progressRing = document.querySelector('.progress-ring');
+        if (progressRing) {
+            progressRing.style.background = `conic-gradient(var(--primary-color) 0% ${progressPercent}%, var(--border-color) ${progressPercent}% 100%)`;
+        }
+    }
+    
+    function showDefaultStats() {
+        document.getElementById('total-lessons').textContent = '0';
+        document.getElementById('completed-lessons').textContent = '0';
+        document.getElementById('estimated-time').textContent = '0h';
+        document.getElementById('subject-progress-percent').textContent = '0%';
+    }
+    
+    function loadSubjectModules(subjectId) {
+        const modulesContainer = document.getElementById('subject-modules');
+        
+        // Загружаем модули предмета
+        fetch(`/{{ lang }}/api/subject/${subjectId}/modules`)
+            .then(response => response.json())
+            .then(data => {
+                modulesContainer.innerHTML = '';
+                
+                if (data.modules && data.modules.length > 0) {
+                    data.modules.forEach(module => {
+                        const moduleElement = createModuleElement(module);
+                        modulesContainer.appendChild(moduleElement);
+                    });
+                } else {
+                    modulesContainer.innerHTML = '<p class="no-modules">Модули не найдены</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading modules:', error);
+                modulesContainer.innerHTML = '<p class="no-modules">Ошибка загрузки модулей</p>';
+            });
+    }
+    
+    function createModuleElement(module) {
+        const moduleDiv = document.createElement('div');
+        moduleDiv.className = 'module-card';
+        moduleDiv.innerHTML = `
+            <div class="module-header">
+                <h3>${module.title}</h3>
+                <div class="module-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${module.progress || 0}%"></div>
+                    </div>
+                    <span class="progress-text">${module.progress || 0}%</span>
+                </div>
+            </div>
+            <div class="module-content">
+                <p>${module.description || ''}</p>
+                <div class="module-stats">
+                    <span>${module.lessons_count || 0} уроков</span>
+                    <span>${module.estimated_time || '0h'}</span>
+                </div>
+            </div>
+            <div class="module-actions">
+                <a href="/{{ lang }}/modules/${module.id}" class="module-btn">
+                    ${module.progress === 100 ? 'Повторить' : module.progress > 0 ? 'Продолжить' : 'Начать'}
+                </a>
+            </div>
+        `;
+        return moduleDiv;
+    }
+    {% endif %}
 });
 </script>
 {% endblock %} 

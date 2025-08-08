@@ -189,6 +189,7 @@ def get_or_create_digid_user(digid_data, show_registration=False):
             user.role = digid_data.get('role', 'user')
             user.registration_completed = False  # Явно указываем что регистрация не завершена
             user.profession = digid_data.get('profession', 'tandarts')  # Устанавливаем профессию
+            user.requires_diagnostic = True  # Устанавливаем флаг диагностики для новых пользователей
             db.session.commit()
             print(f"Created new user for registration: {user.id} ({user.email})")
     elif user:
@@ -213,6 +214,7 @@ def get_or_create_digid_user(digid_data, show_registration=False):
         )
         if user:
             user.role = digid_data.get('role', 'user')
+            user.requires_diagnostic = True  # Устанавливаем флаг диагностики для новых пользователей
             db.session.commit()
             print(f"Created new user: {user.id} ({user.email})")
     return user
@@ -304,9 +306,15 @@ def authenticate():
                     redirect_url = '/digid/complete-registration'
                     print(f"🔍 DEBUG: New/incomplete user - redirecting to registration (show_registration: {show_registration}, registration_completed: {user.registration_completed})")
                 else:
-                    # Зарегистрированный пользователь → сразу на карту обучения
-                    redirect_url = get_learning_map_url_by_profession(user.profession)
-                    print(f"🔍 DEBUG: Registered user - redirecting to learning map: {redirect_url}")
+                    # Проверяем, нужна ли диагностика
+                    if user.requires_diagnostic:
+                        # Новый пользователь без диагностики → на диагностику
+                        redirect_url = '/big-diagnostic/choose-type'
+                        print(f"🔍 DEBUG: User requires diagnostic - redirecting to diagnostic: {redirect_url}")
+                    else:
+                        # Зарегистрированный пользователь с диагностикой → на карту обучения
+                        redirect_url = get_learning_map_url_by_profession(user.profession)
+                        print(f"🔍 DEBUG: Registered user - redirecting to learning map: {redirect_url}")
             
             print(f"🔍 DEBUG: Final redirect URL: {redirect_url}")
             
@@ -518,7 +526,7 @@ def test_auth(username):
                 return redirect('/digid/complete-registration')
             else:
                 # Уже зарегистрирован → dashboard (карта обучения)
-                return redirect('/ru/learning-map/')
+                return redirect('/learning-map?lang=ru')
         
     except Exception as e:
         logger.error(f"Error in test auth: {e}")
@@ -562,7 +570,7 @@ def complete_registration():
     
     # Если регистрация уже завершена, перенаправляем на карту обучения
     if current_user.registration_completed:
-        return redirect('/ru/learning-map/')
+                        return redirect('/learning-map?lang=ru')
     
     if request.method == 'POST':
         # Получаем данные из формы
@@ -619,8 +627,13 @@ def complete_registration():
             
             flash(t('registration_completed_successfully', lang), 'success')
             
-            # Перенаправляем на карту обучения для нового пользователя (пути будут скрыты)
-            return redirect(get_learning_map_url_by_profession(profession))
+            # Проверяем, нужна ли диагностика
+            if current_user.requires_diagnostic:
+                # Новый пользователь → на диагностику
+                return redirect('/big-diagnostic/choose-type')
+            else:
+                # Пользователь с диагностикой → на карту обучения
+                return redirect(get_learning_map_url_by_profession(profession))
             
         except Exception as e:
             logger.error(f"Error completing registration: {e}")
@@ -632,19 +645,18 @@ def complete_registration():
     return render_template('digid/registration_form.html', user=current_user)
 
 def get_learning_map_url_by_profession(profession):
-    """Возвращает URL карты обучения в зависимости от профессии"""
-    from flask import g
+    """Получить URL карты обучения в зависимости от профессии"""
+    current_lang = session.get('lang', 'nl')
     
-    # Получаем текущий язык из g или сессии, или используем дефолтный
-    current_lang = getattr(g, 'lang', session.get('lang', 'ru'))
-    
+    # ИСПРАВЛЕНИЕ: Используем правильный роут daily_learning.learning_map
     profession_routes = {
-        'tandarts': f'/{current_lang}/leerkaart/tandheelkunde',
-        'apotheker': f'/{current_lang}/leerkaart/farmacie',
-        'huisarts': f'/{current_lang}/leerkaart/huisartsgeneeskunde',
-        'verpleegkundige': f'/{current_lang}/leerkaart/verpleegkunde'
+        'tandarts': f'/daily-learning/learning-map?lang={current_lang}',
+        'apotheker': f'/daily-learning/learning-map?lang={current_lang}',
+        'huisarts': f'/daily-learning/learning-map?lang={current_lang}',
+        'verpleegkundige': f'/daily-learning/learning-map?lang={current_lang}'
     }
-    return profession_routes.get(profession, f'/{current_lang}/leerkaart/')
+    
+    return profession_routes.get(profession, f'/daily-learning/learning-map?lang={current_lang}')
 
 @digid_bp.route('/test-users')
 def test_users():

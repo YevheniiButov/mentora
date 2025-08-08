@@ -8,8 +8,8 @@
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('main_bp.index', lang=lang) }}">Главная</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('content_nav.categories_list', lang=lang) }}">Категории</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index', lang=lang) }}">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('content_nav.categories_list') }}">Категории</a></li>
                     <li class="breadcrumb-item active">{{ category.name }}</li>
                 </ol>
             </nav>
@@ -37,7 +37,7 @@
                                     Тем: {{ subcategory.topics.count() }}
                                 </p>
                                 
-                                <a href="{{ url_for('content_nav.view_subcategory', lang=lang, category_slug=category.slug, subcategory_slug=subcategory.slug) }}" 
+                                <a href="{{ url_for('content_nav.view_subcategory', category_slug=category.slug, subcategory_slug=subcategory.slug) }}" 
                                    class="btn btn-outline-primary">
                                     <i class="bi bi-arrow-right me-1"></i>
                                     Перейти к темам

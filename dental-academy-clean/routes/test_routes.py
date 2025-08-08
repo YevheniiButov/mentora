@@ -70,23 +70,70 @@ def submit_test(category_id):
     """Submit test answers"""
     category = QuestionCategory.query.get_or_404(category_id)
     
-    # Process answers (placeholder logic)
+    # Process answers
     answers = request.form.to_dict()
     
-    # Calculate score (simplified)
+    # Get questions for this category
     questions = category.questions.limit(10).all()
     total_questions = len(questions)
     correct_answers = 0
     
+    # Calculate score and save attempts
     for question in questions:
         user_answer = answers.get(f'question_{question.id}')
-        if question.check_answer(user_answer):
+        is_correct = question.check_answer(user_answer)
+        
+        if is_correct:
             correct_answers += 1
+        
+        # Save test attempt
+        test_attempt = TestAttempt(
+            user_id=current_user.id,
+            test_id=category.id,  # Using category as test
+            question_id=question.id,
+            selected_option=user_answer,
+            is_correct=is_correct
+        )
+        db.session.add(test_attempt)
     
+    # Calculate final score
     score = int((correct_answers / total_questions) * 100) if total_questions > 0 else 0
     
-    # For now, just show a flash message since we don't have UserTestResult model
-    flash(f'Тест завершен! Ваш результат: {score}% ({correct_answers}/{total_questions})', 'success')
+    # Save test session
+    test_session = TestSession(
+        user_id=current_user.id,
+        module_id=category.id,  # Using category as module
+        test_type='standard',
+        difficulty='medium',
+        total_questions=total_questions,
+        correct_answers=correct_answers,
+        score=score,
+        status='completed',
+        completed_at=datetime.now()
+    )
+    db.session.add(test_session)
+    
+    # Save test result
+    test_result = TestResult(
+        user_id=current_user.id,
+        test_session_id=test_session.id,
+        module_id=category.id,
+        score=score,
+        correct_answers=correct_answers,
+        total_questions=total_questions,
+        test_type='standard',
+        difficulty='medium'
+    )
+    db.session.add(test_result)
+    
+    try:
+        db.session.commit()
+        flash(f'Тест завершен! Ваш результат: {score}% ({correct_answers}/{total_questions})', 'success')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error saving test results: {e}")
+        flash('Ошибка при сохранении результатов теста', 'error')
+    
     return redirect(url_for('tests.index'))
 
 @test_bp.route('/categories')

@@ -10,8 +10,12 @@ from functools import wraps
 from flask import session
 from models import PersonalLearningPlan, Question, BIGDomain
 import os
+import json
 from flask import jsonify
 from models import UserLearningProgress
+from flask import Blueprint, render_template
+from flask_login import login_required, current_user
+from utils.daily_learning_algorithm import DailyLearningAlgorithm
 
 learning_bp = Blueprint('learning', __name__)
 
@@ -88,17 +92,34 @@ def learning_path(path_id):
     # Анализируем модули пути
     modules_data = []
     if path.modules:
-        for module in path.modules:
-            module_progress = 0  # TODO: Реализовать прогресс по модулям
-            modules_data.append({
-                'id': module.get('id'),
-                'name': module.get('name'),
-                'domains': module.get('domains', []),
-                'estimated_hours': module.get('estimated_hours', 0),
-                'progress_percent': module_progress,
-                'learning_cards_path': module.get('learning_cards_path'),
-                'virtual_patients': module.get('virtual_patients', [])
-            })
+        # path.modules - это JSON, поэтому нужно его десериализовать
+        try:
+            modules_list = path.modules if isinstance(path.modules, list) else []
+            for module in modules_list:
+                # Реализуем прогресс по модулям
+                module_id = module.get('id')
+                if module_id:
+                    # Получаем прогресс по модулю из UserLearningProgress
+                    module_progress_obj = UserLearningProgress.query.filter_by(
+                        user_id=current_user.id,
+                        learning_path_id=module_id
+                    ).first()
+                    module_progress = module_progress_obj.progress_percentage if module_progress_obj else 0
+                else:
+                    module_progress = 0
+                    
+                modules_data.append({
+                    'id': module.get('id'),
+                    'name': module.get('name'),
+                    'domains': module.get('domains', []),
+                    'estimated_hours': module.get('estimated_hours', 0),
+                    'progress_percent': module_progress,
+                    'learning_cards_path': module.get('learning_cards_path'),
+                    'virtual_patients': module.get('virtual_patients', [])
+                })
+        except Exception as e:
+            current_app.logger.error(f"Error processing modules for path {path_id}: {e}")
+            modules_data = []
     
     # Проверяем предварительные требования
     prerequisites_met = True
@@ -803,7 +824,7 @@ def start_learning_path(path_id):
                 learning_path_id=path_id,
                 progress_percentage=0,
                 completed_modules=[],
-                last_accessed=datetime.utcnow()
+                last_accessed=datetime.now(timezone.utc)
             )
             db.session.add(progress)
             db.session.commit()
@@ -1143,3 +1164,37 @@ def search_drugs(lang):
         
     except Exception as e:
         current_app.logger.error(f"Error in search_drugs: {e}")
+
+# Удален старый роут learning-map - теперь используется новый в learning_routes_new.py
+
+@learning_bp.route('/knowledge-base')
+@login_required  
+def knowledge_base():
+    # Пока просто заглушка
+    return render_template('learning/knowledge_base.html')
+
+@learning_bp.route('/learning-cards/<path:path>')
+@login_required
+def learning_cards(path):
+    """Отображение обучающих карточек по указанному пути"""
+    try:
+        # Проверяем существование файла карточек
+        cards_file = f"cards/{path}/learning_cards.json"
+        
+        if not os.path.exists(cards_file):
+            flash("Файл карточек не найден", "warning")
+            return redirect(url_for('learning_bp.index'))
+        
+        # Загружаем карточки
+        with open(cards_file, 'r', encoding='utf-8') as f:
+            cards_data = json.load(f)
+        
+        return render_template('learning/learning_cards.html',
+                             cards=cards_data.get('cards', []),
+                             path=path,
+                             title=cards_data.get('title', 'Обучающие карточки'))
+                             
+    except Exception as e:
+        current_app.logger.error(f"Error loading learning cards: {e}")
+        flash("Ошибка при загрузке карточек", "danger")
+        return redirect(url_for('learning_bp.index'))

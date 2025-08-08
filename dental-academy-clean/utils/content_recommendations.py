@@ -78,9 +78,9 @@ class ContentRecommender:
         """Получает уроки для конкретного домена"""
         
         # Получаем маппинги контента к домену
-        mappings = ContentDomainMapping.query.filter_by(
-            domain_id=domain_id,
-            lesson_id=db.not_(None)
+        mappings = ContentDomainMapping.query.filter(
+            ContentDomainMapping.domain_id == domain_id,
+            ContentDomainMapping.lesson_id.is_not(None)
         ).order_by(ContentDomainMapping.relevance_score.desc()).limit(limit).all()
         
         lesson_ids = [m.lesson_id for m in mappings if m.lesson_id]

@@ -5,10 +5,10 @@
 function getCSRFToken() {
   const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
   if (token) {
-    console.log('CSRF Token: Found');
+    // console.log('CSRF Token: Found');
     return token;
   }
-  console.warn('CSRF Token: Not found');
+  // console.warn('CSRF Token: Not found');
   return null;
 }
 
@@ -34,7 +34,7 @@ const aiWidgetController = {
       ...options
     };
 
-    console.log(`Making request to: ${url}`);
+    // console.log(`Making request to: ${url}`);
     const response = await fetch(url, defaultOptions);
     
     if (!response.ok) {
@@ -152,7 +152,7 @@ async function loadExamReadiness() {
       }
     }
     
-    console.log('Exam readiness data:', data);
+    // console.log('Exam readiness data:', data);
     
     if (data.success && data.prediction) {
       renderExamReadiness(data.prediction);
@@ -204,7 +204,7 @@ async function loadRecommendations() {
       }
     }
     
-    console.log('Recommendations data:', data);
+    // console.log('Recommendations data:', data);
     
     if (data.success && data.recommendations) {
       renderRecommendations(data.recommendations);
@@ -392,7 +392,7 @@ function renderRecommendations(recommendations) {
     // Проверяем что recommendations существует и является массивом
     if (Array.isArray(recommendations)) {
       safeRecommendations = recommendations;
-      console.log(`✅ Generated ${safeRecommendations.length} recommendations for user`);
+      // console.log(`✅ Generated ${safeRecommendations.length} recommendations for user`);
     } else if (recommendations && typeof recommendations === 'object') {
       // Если это объект, пытаемся извлечь массив
       if (Array.isArray(recommendations.recommendations)) {
@@ -608,7 +608,7 @@ function renderProgressAnalytics(analytics) {
 
 // ===== AI WIDGETS INITIALIZATION WITH STAGGERED LOADING =====
 function initializeAIWidgets() {
-  console.log('DOM loaded - starting AI widgets');
+  // console.log('DOM loaded - starting AI widgets');
   
   // Загружаем виджеты с задержкой для лучшей производительности
   setTimeout(() => {

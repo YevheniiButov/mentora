@@ -1,280 +1,256 @@
-{% extends 'admin/master.html' %}
+{% extends "admin/base.html" %}
 
-{% block body %}
+{% block title %}Admin Dashboard - Mentora{% endblock %}
+
+{% block content %}
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">
-            <h2>Админ панель</h2>
+            <h1 class="h2">Dashboard</h1>
+            <p class="text-muted">Мониторинг системы адаптивного обучения</p>
         </div>
     </div>
 
-    <!-- Основные разделы -->
-    <div class="row">
-        <!-- Виртуальные пациенты -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5>🏥 Виртуальные пациенты</h5>
-                </div>
-                <div class="card-body">
-                    <p>Управление сценариями виртуальных пациентов</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.virtual_patients') }}" class="btn btn-primary">
-                            <i class="fas fa-list"></i> Список сценариев
-                        </a>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadScenarioModal">
-                            <i class="fas fa-upload"></i> Загрузить сценарий
-                        </button>
-                    </div>
-                </div>
+    <!-- Алерты -->
+    {% if alerts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for alert in alerts %}
+            <div class="alert alert-{{ alert.type }} alert-dismissible fade show" role="alert">
+                {{ alert.message }}
+                {% if alert.link %}
+                <a href="{{ alert.link }}" class="alert-link">Подробнее →</a>
+                {% endif %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        </div>
-
-        <!-- Пути обучения -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5>📚 Пути обучения</h5>
-                </div>
-                <div class="card-body">
-                    <p>Создание и управление иерархией обучения</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('learning_map_bp.learning_map', lang='ru') }}" class="btn btn-primary">
-                            <i class="fas fa-sitemap"></i> Карта обучения
-                        </a>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createPathModal">
-                            <i class="fas fa-plus"></i> Создать путь
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Уроки и тесты -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5>📝 Уроки и тесты</h5>
-                </div>
-                <div class="card-body">
-                    <p>Создание учебного контента</p>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLessonModal">
-                            <i class="fas fa-file-text"></i> Создать урок
-                        </button>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTestModal">
-                            <i class="fas fa-question-circle"></i> Создать тест
-                        </button>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
+    {% endif %}
 
-    <!-- Пользователи -->
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5>👥 Пользователи</h5>
-                </div>
+    <!-- Основные метрики -->
+    <div class="row mb-4">
+        <!-- Пользователи -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <p>Управление пользователями системы</p>
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.users') }}" class="btn btn-primary">
-                            <i class="fas fa-users"></i> Список пользователей
-                        </a>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                            <i class="fas fa-user-plus"></i> Добавить пользователя
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Статистика -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5>📊 Статистика</h5>
-                </div>
-                <div class="card-body">
-                    {% if stats is defined %}
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <h4 class="text-primary">{{ stats.users if stats.users is defined else 0 }}</h4>
-                            <small>Пользователей</small>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Всего пользователей</h6>
+                            <h3 class="mb-0">{{ users_metrics.total_users }}</h3>
+                            <small class="text-success">
+                                <i class="bi bi-arrow-up"></i> +{{ users_metrics.new_week }} за неделю
+                            </small>
                         </div>
-                        <div class="col-6">
-                            <h4 class="text-success">{{ stats.scenarios if stats.scenarios is defined else 0 }}</h4>
-                            <small>Сценариев</small>
+                        <div class="text-primary">
+                            <i class="bi bi-people-fill fs-1"></i>
                         </div>
                     </div>
-                    {% else %}
-                    <p class="text-muted">Нет данных</p>
-                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Активные пользователи -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Активные за неделю</h6>
+                            <h3 class="mb-0">{{ users_metrics.active_week }}</h3>
+                            <small class="text-muted">
+                                {{ (users_metrics.active_week / users_metrics.total_users * 100)|round(1) if users_metrics.total_users > 0 else 0 }}% от всех
+                            </small>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-activity fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Диагностики -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Завершено диагностик</h6>
+                            <h3 class="mb-0">{{ diagnostic_metrics.completed_sessions }}</h3>
+                            <small class="text-info">
+                                {{ diagnostic_metrics.completion_rate }}% completion rate
+                            </small>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-clipboard-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Активные планы -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Активные планы</h6>
+                            <h3 class="mb-0">{{ learning_metrics.active_plans }}</h3>
+                            <small class="text-warning">
+                                <i class="bi bi-exclamation-triangle"></i> {{ learning_metrics.overdue_reassessments }} требуют переоценки
+                            </small>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-journal-text fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="row mb-4">
+        <!-- График активности -->
+        <div class="col-xl-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Активность за последние 7 дней</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слабые домены -->
+        <div class="col-xl-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Топ слабых доменов</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for domain_stat in weak_domains_stats %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span>{{ domain_stat.domain }}</span>
+                            <span class="badge bg-danger rounded-pill">{{ domain_stat.count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Детальная статистика -->
+    <div class="row">
+        <!-- Контент -->
+        <div class="col-xl-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Статистика контента</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <h6 class="text-muted">Вопросов</h6>
+                            <p class="h4 mb-0">{{ content_metrics.total_questions }}</p>
+                            <small class="text-muted">{{ content_metrics.questions_with_irt }} с IRT</small>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-muted">Уроков</h6>
+                            <p class="h4 mb-0">{{ content_metrics.total_lessons }}</p>
+                            <small class="text-muted">{{ content_metrics.lessons_completed_week }} пройдено за неделю</small>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ (content_metrics.questions_with_irt / content_metrics.total_questions * 100) if content_metrics.total_questions > 0 else 0 }}%">
+                                    IRT покрытие
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Обучение -->
+        <div class="col-xl-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Статистика обучения</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <h6 class="text-muted">Средний прогресс</h6>
+                            <p class="h4 mb-0">{{ learning_metrics.avg_progress|round(1) }}%</p>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-muted">Среднее время/урок</h6>
+                            <p class="h4 mb-0">{{ content_metrics.avg_time_per_lesson|round(1) }} мин</p>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-muted">Средняя способность</h6>
+                            <p class="h4 mb-0">{{ diagnostic_metrics.avg_ability|round(2) }}</p>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-muted">Новых планов/неделю</h6>
+                            <p class="h4 mb-0">{{ learning_metrics.plans_created_week }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Модальные окна -->
-<!-- Загрузка сценария -->
-<div class="modal fade" id="uploadScenarioModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Загрузить сценарий</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" enctype="multipart/form-data" action="{{ url_for('admin.index') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="upload_scenario">
-                    <div class="mb-3">
-                        <label class="form-label">Название сценария</label>
-                        <input type="text" class="form-control" name="title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Файл сценария (JSON)</label>
-                        <input type="file" class="form-control" name="scenario_file" accept=".json" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Описание</label>
-                        <textarea class="form-control" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <button type="submit" class="btn btn-primary">Загрузить</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Создание пути обучения -->
-<div class="modal fade" id="createPathModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Создать путь обучения</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{{ url_for('admin.index') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="create_path">
-                    <div class="mb-3">
-                        <label class="form-label">Название пути</label>
-                        <input type="text" class="form-control" name="path_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Описание</label>
-                        <textarea class="form-control" name="path_description" rows="3"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <button type="submit" class="btn btn-primary">Создать</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Создание урока -->
-<div class="modal fade" id="createLessonModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Создать урок</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{{ url_for('admin.index') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="create_lesson">
-                    <div class="mb-3">
-                        <label class="form-label">Название урока</label>
-                        <input type="text" class="form-control" name="lesson_title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Содержание</label>
-                        <textarea class="form-control" name="lesson_content" rows="5"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <button type="submit" class="btn btn-primary">Создать</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Создание теста -->
-<div class="modal fade" id="createTestModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Создать тест</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{{ url_for('admin.index') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="create_test">
-                    <div class="mb-3">
-                        <label class="form-label">Название теста</label>
-                        <input type="text" class="form-control" name="test_title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Описание</label>
-                        <textarea class="form-control" name="test_description" rows="3"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <button type="submit" class="btn btn-primary">Создать</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Добавление пользователя -->
-<div class="modal fade" id="addUserModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Добавить пользователя</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{{ url_for('admin.index') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="add_user">
-                    <div class="mb-3">
-                        <label class="form-label">Имя</label>
-                        <input type="text" class="form-control" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Пароль</label>
-                        <input type="password" class="form-control" name="password" required>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <button type="submit" class="btn btn-primary">Добавить</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// График активности
+const ctx = document.getElementById('activityChart').getContext('2d');
+const activityChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ daily_activity|map(attribute='date')|list|tojson }},
+        datasets: [{
+            label: 'Регистрации',
+            data: {{ daily_activity|map(attribute='registrations')|list|tojson }},
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1
+        }, {
+            label: 'Диагностики',
+            data: {{ daily_activity|map(attribute='diagnostics')|list|tojson }},
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            tension: 0.1
+        }, {
+            label: 'Уроки',
+            data: {{ daily_activity|map(attribute='lessons')|list|tojson }},
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
 {% endblock %}

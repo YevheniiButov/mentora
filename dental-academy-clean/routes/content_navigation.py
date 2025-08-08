@@ -22,7 +22,7 @@ def inject_lang():
 
 @content_nav_bp.route("/")
 @login_required
-def categories_list(lang):
+def categories_list():
     """Список всех категорий"""
     try:
         categories = ContentCategory.query.order_by(ContentCategory.order).all()
@@ -48,7 +48,9 @@ def categories_list(lang):
     except Exception as e:
         current_app.logger.error(f"Ошибка в categories_list: {e}", exc_info=True)
         flash("Ошибка загрузки категорий", "danger")
-        return redirect(url_for('main_bp.index', lang=lang))
+        # Получаем lang из g или используем 'en' по умолчанию
+        lang = getattr(g, 'lang', 'en')
+        return redirect(url_for('.categories_list'))
 
 @content_nav_bp.route("/<category_slug>")
 @login_required  
@@ -69,7 +71,9 @@ def view_category(category_slug):
     except Exception as e:
         current_app.logger.error(f"Ошибка в view_category: {e}", exc_info=True)
         flash("Ошибка загрузки категории", "danger")
-        return redirect(url_for('.categories_list', lang=lang))
+        # Получаем lang из g или используем 'en' по умолчанию
+        lang = getattr(g, 'lang', 'en')
+        return redirect(url_for('.categories_list'))
 
 @content_nav_bp.route("/<category_slug>/<subcategory_slug>")
 @login_required
@@ -96,6 +100,8 @@ def view_subcategory(category_slug, subcategory_slug):
     except Exception as e:
         current_app.logger.error(f"Ошибка в view_subcategory: {e}", exc_info=True)
         flash("Ошибка загрузки подкатегории", "danger")
+        # Получаем lang из g или используем 'en' по умолчанию
+        lang = getattr(g, 'lang', 'en')
         return redirect(url_for('.view_category', lang=lang, category_slug=category_slug))
 
 @content_nav_bp.route("/<category_slug>/<subcategory_slug>/<topic_slug>")
@@ -128,6 +134,8 @@ def view_topic(category_slug, subcategory_slug, topic_slug):
     except Exception as e:
         current_app.logger.error(f"Ошибка в view_topic: {e}", exc_info=True)
         flash("Ошибка загрузки темы", "danger")
+        # Получаем lang из g или используем 'en' по умолчанию
+        lang = getattr(g, 'lang', 'en')
         return redirect(url_for('.view_subcategory', lang=lang, category_slug=category_slug, subcategory_slug=subcategory_slug))
 
 @content_nav_bp.route("/lesson/<int:lesson_id>")
@@ -173,4 +181,6 @@ def view_lesson(lesson_id):
     except Exception as e:
         current_app.logger.error(f"Ошибка в view_lesson: {e}", exc_info=True)
         flash("Ошибка загрузки урока", "danger")
-        return redirect(url_for('.categories_list', lang=lang))
+        # Получаем lang из g или используем 'en' по умолчанию
+        lang = getattr(g, 'lang', 'en')
+        return redirect(url_for('.categories_list'))

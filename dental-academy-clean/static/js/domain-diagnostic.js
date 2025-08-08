@@ -283,7 +283,10 @@ class DomainDiagnosticManager {
             const data = await response.json();
             
             if (data.success) {
-                if (data.session_completed) {
+                if (data.completed && data.redirect_url) {
+                    // Тест завершен, переходим на страницу результатов
+                    window.location.href = data.redirect_url;
+                } else if (data.session_completed) {
                     this.showResults(data.results);
                 } else {
                     this.showQuestion(data.next_question, data.progress);
