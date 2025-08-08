@@ -2,6 +2,7 @@ translations = {
     # Navigatie
     'home': 'Hoofdpagina',
     'learning_map': 'Leerkaart',
+    'knowledge_base': 'Kennisbank',
     'community': 'Community',
     'about_big': 'Over BIG',
     'learning': 'Leren',
@@ -446,7 +447,6 @@ translations = {
     'ai_features_description': 'Ontvang persoonlijke aanbevelingen, examengereedheidsanalyse en intelligente leerondersteuning',
     
     # Leerkaart
-    'learning_map': 'Leerkaart',
     'knowledge_center': 'Kenniscentrum',
     'knowledge_center_desc': 'Theoretische basis en kernconcepten',
     'communication': 'Communicatie',

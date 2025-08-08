@@ -2,6 +2,7 @@ translations = {
     # Navegación
     'home': 'Inicio',
     'learning_map': 'Mapa de Aprendizaje',
+    'knowledge_base': 'Base de Conocimientos',
     'community': 'Comunidad',
     'about_big': 'Acerca de BIG',
     'learning': 'Aprendizaje',

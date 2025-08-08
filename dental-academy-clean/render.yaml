@@ -6,9 +6,9 @@ services:
     buildCommand: |
       pip install --no-cache-dir -r requirements.txt &&
       echo "Installing dependencies completed" &&
-      python -c "from app import app, db; app.app_context().push(); db.create_all(); print('Tables created successfully')" &&
+      flask db upgrade &&
       echo "Database tables created" &&
-      python scripts/seed_production_data.py &&
+      flask seed-database &&
       echo "Data seeding completed"
     startCommand: gunicorn app:app
     envVars:

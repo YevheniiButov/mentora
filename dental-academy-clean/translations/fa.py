@@ -2,6 +2,7 @@ translations = {
     # ناوبری
     'home': 'خانه',
     'learning_map': 'نقشه یادگیری',
+    'knowledge_base': 'پایگاه دانش',
     'community': 'انجمن',
     'about_big': 'درباره BIG',
     'learning': 'یادگیری',

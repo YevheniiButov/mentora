@@ -2401,7 +2401,7 @@ class IRTParameters(db.Model):
             return False
         
         import numpy as np
-        from scipy.optimize import minimize
+        from scipy.optimize import minimize  # type: ignore
         from scipy.stats import logistic
         
         # Extract data

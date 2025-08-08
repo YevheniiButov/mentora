@@ -2,6 +2,7 @@ translations = {
     # Навігація
     'home': 'Головна',
     'learning_map': 'Карта навчання',
+    'knowledge_base': 'База знань',
     'community': 'Спільнота',
     'about_big': 'Про BIG',
     'learning': 'Навчання',

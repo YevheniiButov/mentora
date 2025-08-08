@@ -601,6 +601,33 @@ def calibrate_irt():
 
 logger.info("✅ IRT calibration command registered")
 
+# Seed database command
+@app.cli.command()
+def seed_database():
+    """Загрузить все данные для production"""
+    import subprocess
+    import sys
+    from pathlib import Path
+    
+    script_path = Path(__file__).parent / 'scripts' / 'seed_production_data_runner.py'
+    
+    if not script_path.exists():
+        print(f"❌ Скрипт не найден: {script_path}")
+        sys.exit(1)
+    
+    try:
+        result = subprocess.run([sys.executable, str(script_path)], 
+                              capture_output=True, text=True, check=True)
+        print(result.stdout)
+        print("✅ Загрузка данных завершена успешно!")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Ошибка при загрузке данных: {e}")
+        print(f"STDOUT: {e.stdout}")
+        print(f"STDERR: {e.stderr}")
+        sys.exit(1)
+
+logger.info("✅ Seed database command registered")
+
 # ========================================
 # APPLICATION ENTRY POINT
 # ========================================

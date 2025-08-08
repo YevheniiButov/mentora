@@ -2,6 +2,7 @@ translations = {
     # Navigasyon
     'home': 'Ana Sayfa',
     'learning_map': 'Öğrenme Haritası',
+    'knowledge_base': 'Bilgi Tabanı',
     'community': 'Topluluk',
     'about_big': 'BIG Hakkında',
     'learning': 'Öğrenme',
