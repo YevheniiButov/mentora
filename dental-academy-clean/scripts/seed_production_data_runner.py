@@ -256,6 +256,11 @@ def load_domains():
             logger.error("❌ Неизвестная структура файла доменов")
             return
         
+        # Проверяем существующие домены в базе данных
+        existing_domains = BIGDomain.query.all()
+        existing_codes = {domain.code for domain in existing_domains}
+        logger.info(f"ℹ️ Найдено {len(existing_domains)} существующих доменов в базе данных")
+        
         # Проверяем на дублирование кодов
         used_codes = set()
         domains_to_create_filtered = []
@@ -263,13 +268,27 @@ def load_domains():
         for domain_data in domains_to_create:
             if isinstance(domain_data, dict):
                 code = domain_data.get('code')
+                name = domain_data.get('name', 'Unknown')
+                
+                # Пропускаем если код уже используется в текущем пакете
                 if code in used_codes:
-                    logger.warning(f"⚠️ Пропущен домен с дублирующимся кодом: {domain_data.get('name', 'Unknown')} (код: {code})")
+                    logger.warning(f"⚠️ Пропущен домен с дублирующимся кодом в пакете: {name} (код: {code})")
                     continue
+                
+                # Пропускаем если домен уже существует в базе данных
+                if code in existing_codes:
+                    logger.info(f"ℹ️ Домен уже существует в базе данных: {name} (код: {code})")
+                    continue
+                
                 used_codes.add(code)
                 domains_to_create_filtered.append(domain_data)
+                logger.info(f"📝 Подготовлен к созданию домен: {name} (код: {code})")
             else:
                 logger.warning(f"⚠️ Пропущен неверный формат домена: {domain_data}")
+        
+        if not domains_to_create_filtered:
+            logger.info("✅ Все домены уже существуют в базе данных")
+            return
         
         for domain_data in domains_to_create_filtered:
             try:
@@ -281,7 +300,7 @@ def load_domains():
                 continue
         
         db.session.commit()
-        logger.info(f"✅ Домены загружены успешно ({len(domains_to_create_filtered)} доменов)")
+        logger.info(f"✅ Домены загружены успешно ({len(domains_to_create_filtered)} новых доменов)")
         
     except Exception as e:
         logger.error(f"❌ Ошибка при загрузке доменов: {e}")
@@ -315,6 +334,11 @@ def load_questions():
             if not questions_data:
                 continue
             
+            # Проверяем существующие вопросы в базе данных
+            existing_questions = Question.query.all()
+            existing_question_texts = {q.text for q in existing_questions}
+            logger.info(f"ℹ️ Найдено {len(existing_questions)} существующих вопросов в базе данных")
+            
             for question_data in questions_data:
                 try:
                     if isinstance(question_data, dict):
@@ -324,6 +348,11 @@ def load_questions():
                         
                         if missing_fields:
                             logger.warning(f"⚠️ Пропущен вопрос с отсутствующими полями: {missing_fields}")
+                            continue
+                        
+                        # Пропускаем если вопрос уже существует в базе данных
+                        if question_data['text'] in existing_question_texts:
+                            logger.info(f"ℹ️ Вопрос уже существует в базе данных: {question_data['text'][:50]}...")
                             continue
                         
                         question = Question(**question_data)
