@@ -8,6 +8,7 @@
 # 🔧 CRITICAL FIX: Исправлена ошибка создания вопросов - удаление поля 'id' и проверка существующих вопросов
 # Версия: 2025-08-10 - Production Hotfix
 # 🚨 CRITICAL UPDATE: Принудительное обновление production - 22:47
+# 🚀 PRODUCTION UPDATE: 2025-08-10 23:15 - Исправлены все критические ошибки загрузки данных
 import os
 import sys
 import json
@@ -248,7 +249,7 @@ def load_domains():
                         'name': domain_name,
                         'code': domain_code,
                         'description': domain_info.get('description', ''),
-                        'weight_percentage': domain_info.get('weight', 1),
+                        'weight_percentage': domain_info.get('weight_percentage', domain_info.get('weight', 1)),
                         'is_active': True
                     }
                     domains_to_create.append(domain_data)
@@ -295,7 +296,21 @@ def load_domains():
         
         for domain_data in domains_to_create_filtered:
             try:
-                domain = BIGDomain(**domain_data)
+                # Проверяем, что все обязательные поля присутствуют
+                required_fields = ['name', 'code', 'weight_percentage']
+                missing_fields = [field for field in required_fields if field not in domain_data]
+                if missing_fields:
+                    logger.error(f"❌ Отсутствуют обязательные поля для домена {domain_data.get('name', 'Unknown')}: {missing_fields}")
+                    continue
+                
+                # Создаем объект домена
+                domain = BIGDomain(
+                    name=domain_data['name'],
+                    code=domain_data['code'],
+                    description=domain_data.get('description', ''),
+                    weight_percentage=domain_data['weight_percentage'],
+                    is_active=domain_data.get('is_active', True)
+                )
                 db.session.add(domain)
                 logger.info(f"✅ Создан домен: {domain_data.get('name', 'Unknown')} (код: {domain_data.get('code', 'Unknown')})")
             except Exception as e:
@@ -362,7 +377,22 @@ def load_questions():
                         if 'id' in question_data:
                             del question_data['id']
                         
-                        question = Question(**question_data)
+                        # Создаем объект вопроса с явным указанием полей
+                        question = Question(
+                            text=question_data['text'],
+                            options=question_data['options'],
+                            correct_answer_index=question_data['correct_answer_index'],
+                            correct_answer_text=question_data['correct_answer_text'],
+                            explanation=question_data['explanation'],
+                            category=question_data['category'],
+                            domain=question_data['domain'],
+                            difficulty_level=question_data['difficulty_level'],
+                            image_url=question_data.get('image_url'),
+                            tags=question_data.get('tags'),
+                            question_type=question_data.get('question_type', 'multiple_choice'),
+                            clinical_context=question_data.get('clinical_context'),
+                            learning_objectives=question_data.get('learning_objectives')
+                        )
                         db.session.add(question)
                         total_questions += 1
                     else:
@@ -557,22 +587,20 @@ def load_achievements():
         
         for achievement_data in achievements_data:
             try:
-                # Преобразуем данные достижения в правильный формат
-                achievement_model_data = {
-                    'name': achievement_data.get('title', achievement_data.get('name', 'Unknown')),
-                    'description': achievement_data.get('description', ''),
-                    'icon': achievement_data.get('icon', 'star'),
-                    'category': achievement_data.get('category', 'general'),
-                    'requirement_type': achievement_data.get('requirement_type', 'lessons_completed'),
-                    'requirement_value': achievement_data.get('requirement_value', 1),
-                    'badge_color': achievement_data.get('badge_color', 'primary'),
-                    'is_active': achievement_data.get('is_active', True),
-                    'sort_order': achievement_data.get('sort_order', 0)
-                }
-                
-                achievement = Achievement(**achievement_model_data)
+                # Создаем объект достижения с явным указанием полей
+                achievement = Achievement(
+                    name=achievement_data.get('title', achievement_data.get('name', 'Unknown')),
+                    description=achievement_data.get('description', ''),
+                    icon=achievement_data.get('icon', 'star'),
+                    category=achievement_data.get('category', 'general'),
+                    requirement_type=achievement_data.get('requirement_type', 'lessons_completed'),
+                    requirement_value=achievement_data.get('requirement_value', 1),
+                    badge_color=achievement_data.get('badge_color', 'primary'),
+                    is_active=achievement_data.get('is_active', True),
+                    sort_order=achievement_data.get('sort_order', 0)
+                )
                 db.session.add(achievement)
-                logger.info(f"✅ Создано достижение: {achievement_model_data['name']}")
+                logger.info(f"✅ Создано достижение: {achievement.name}")
             except Exception as e:
                 logger.error(f"❌ Ошибка при создании достижения {achievement_data.get('title', 'Unknown')}: {e}")
                 continue
