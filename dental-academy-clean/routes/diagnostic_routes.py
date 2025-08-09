@@ -315,6 +315,9 @@ def submit_answer(session_id):
     """Submit answer for diagnostic session with enhanced validation"""
     try:
         logger.info(f"Submit answer called for session {session_id}")
+        logger.info(f"Request content type: {request.content_type}")
+        logger.info(f"Request is_json: {request.is_json}")
+        logger.info(f"Form data: {dict(request.form)}")
         
         # Get session with validation
         session = DiagnosticSession.query.get_or_404(session_id)
@@ -328,12 +331,20 @@ def submit_answer(session_id):
             return jsonify({'error': 'Session is not active'}), 400
         
         # Get request data - support both JSON and FormData
-        data = request.get_json()
+        data = None
+        
+        # Try to get JSON data first
+        if request.is_json:
+            data = request.get_json()
+        
+        # If no JSON data, try to get form data
         if not data:
-            # Try to get data from form
             data = request.form.to_dict()
-            if not data:
-                return jsonify({'error': 'No data provided'}), 400
+            
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        logger.info(f"Extracted data: {data}")
         
         # Extract data from either JSON or form
         question_id = data.get('question_id')
