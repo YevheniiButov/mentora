@@ -314,6 +314,8 @@ def get_next_question():
 def submit_answer(session_id):
     """Submit answer for diagnostic session with enhanced validation"""
     try:
+        logger.info(f"Submit answer called for session {session_id}")
+        
         # Get session with validation
         session = DiagnosticSession.query.get_or_404(session_id)
         
@@ -325,31 +327,52 @@ def submit_answer(session_id):
         if session.status != 'active':
             return jsonify({'error': 'Session is not active'}), 400
         
-        # Get request data
+        # Get request data - support both JSON and FormData
         data = request.get_json()
         if not data:
-            return jsonify({'error': 'No data provided'}), 400
+            # Try to get data from form
+            data = request.form.to_dict()
+            if not data:
+                return jsonify({'error': 'No data provided'}), 400
         
+        # Extract data from either JSON or form
         question_id = data.get('question_id')
-        selected_option = data.get('selected_option')
+        selected_option = data.get('selected_option') or data.get('answer')  # Support both field names
         response_time = data.get('response_time')
+        
+        # If question_id is not provided, get it from the current session
+        if not question_id:
+            question_id = session.current_question_id
+        
+        logger.info(f"Processed data: question_id={question_id}, selected_option={selected_option}, response_time={response_time}")
         
         # Validate required fields
         if not question_id:
             return jsonify({'error': 'question_id is required'}), 400
         
         if selected_option is None:
-            return jsonify({'error': 'selected_option is required'}), 400
+            return jsonify({'error': 'selected_option or answer is required'}), 400
+        
+        # Convert selected_option to int if it's a string
+        try:
+            selected_option = int(selected_option)
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Invalid selected_option format'}), 400
         
         # Validate question exists and belongs to session
         question = Question.query.get_or_404(question_id)
         
         # Validate response time
         if response_time is not None:
-            if response_time < 0:
-                return jsonify({'error': 'Invalid response time'}), 400
-            if response_time > 300000:  # 5 minutes
-                logger.warning(f"Very long response time: {response_time}ms for user {current_user.id}")
+            try:
+                response_time = float(response_time)
+                if response_time < 0:
+                    return jsonify({'error': 'Invalid response time'}), 400
+                if response_time > 300000:  # 5 minutes
+                    logger.warning(f"Very long response time: {response_time}ms for user {current_user.id}")
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid response time format: {response_time}")
+                response_time = None
         
         # Validate selected option
         if not isinstance(selected_option, int) or selected_option < 0 or selected_option >= len(question.options):
