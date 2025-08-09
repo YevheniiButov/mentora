@@ -135,7 +135,30 @@ def start_diagnostic():
                 emergency_question = Question.query.first()
                 if not emergency_question:
                     logger.error("No questions found in database at all")
-                    raise BadRequest('No questions available in database')
+                    
+                    # Try to load data automatically
+                    logger.info("Attempting to load data automatically...")
+                    try:
+                        from scripts.seed_production_data_runner import main as load_data
+                        load_data()
+                        logger.info("Data loaded successfully, trying again...")
+                        
+                        # Try again after loading
+                        irt_engine = IRTEngine(diagnostic_type=diagnostic_type)
+                        first_question = irt_engine.select_initial_question()
+                        
+                        if not first_question:
+                            emergency_question = Question.query.first()
+                            if not emergency_question:
+                                raise BadRequest('No questions available in database after loading')
+                            else:
+                                logger.warning(f"Using emergency fallback question after loading: {emergency_question.id}")
+                                first_question = emergency_question
+                        else:
+                            logger.info(f"Successfully selected question after loading: {first_question.id}")
+                    except Exception as load_error:
+                        logger.error(f"Failed to load data automatically: {load_error}")
+                        raise BadRequest('No questions available in database')
                 else:
                     logger.warning(f"Using emergency fallback question: {emergency_question.id}")
                     first_question = emergency_question

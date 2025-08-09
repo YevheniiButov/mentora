@@ -11,7 +11,9 @@ services:
   flask seed-database &&
   echo "Data seeding completed" &&
   flask check-production-data &&
-  echo "Production data check completed"
+  echo "Production data check completed" &&
+  flask force-load-data &&
+  echo "Force data loading completed"
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
