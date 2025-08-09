@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Скрываем сплеш-скрин если он есть
     hideSplashScreen();
     
-    console.log('Tandarts Navigation System initialized');
+    // Tandarts Navigation System initialized
 });
 
 /**

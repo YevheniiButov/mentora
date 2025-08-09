@@ -4,6 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: |
+  echo "🚨 CRITICAL UPDATE: Принудительное обновление production - $(date)" &&
   pip install --no-cache-dir -r requirements.txt &&
   echo "Installing dependencies completed" &&
   flask db upgrade &&
@@ -13,7 +14,8 @@ services:
   flask check-production-data &&
   echo "Production data check completed" &&
   flask force-load-data &&
-  echo "Force data loading completed"
+  echo "Force data loading completed" &&
+  echo "✅ CRITICAL UPDATE: Production обновлен - $(date)"
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
