@@ -213,8 +213,7 @@ def load_domains():
                     domain_data = {
                         'name': domain_name,
                         'description': domain_info.get('description', ''),
-                        'weight': domain_info.get('weight', 1),
-                        'priority': domain_info.get('priority', 'medium'),
+                        'weight_percentage': domain_info.get('weight', 1),
                         'is_active': True
                     }
                     domains_to_create.append(domain_data)
@@ -274,9 +273,20 @@ def load_questions():
             
             for question_data in questions_data:
                 try:
-                    question = Question(**question_data)
-                    db.session.add(question)
-                    total_questions += 1
+                    if isinstance(question_data, dict):
+                        # Проверяем обязательные поля
+                        required_fields = ['text', 'options', 'correct_answer_index', 'correct_answer_text', 'explanation', 'category', 'domain', 'difficulty_level']
+                        missing_fields = [field for field in required_fields if field not in question_data]
+                        
+                        if missing_fields:
+                            logger.warning(f"⚠️ Пропущен вопрос с отсутствующими полями: {missing_fields}")
+                            continue
+                        
+                        question = Question(**question_data)
+                        db.session.add(question)
+                        total_questions += 1
+                    else:
+                        logger.warning(f"⚠️ Пропущен неверный формат вопроса: {type(question_data)}")
                 except Exception as e:
                     logger.error(f"❌ Ошибка при создании вопроса: {e}")
                     continue
@@ -383,10 +393,37 @@ def load_virtual_patients():
             patient_data = safe_json_load(file_path)
             if patient_data:
                 try:
-                    patient = VirtualPatientScenario(**patient_data)
-                    db.session.add(patient)
-                    total_patients += 1
-                    logger.info(f"✅ Создан виртуальный пациент: {patient_data.get('name', 'Unknown')}")
+                    if isinstance(patient_data, dict):
+                        # Обрабатываем переводы для title и description
+                        title = patient_data.get('title', '')
+                        description = patient_data.get('description', '')
+                        
+                        # Если title - это словарь с переводами, берем первый доступный
+                        if isinstance(title, dict):
+                            title = title.get('en', title.get('nl', title.get('ru', str(title))))
+                        
+                        # Если description - это словарь с переводами, берем первый доступный
+                        if isinstance(description, dict):
+                            description = description.get('en', description.get('nl', description.get('ru', str(description))))
+                        
+                        # Создаем данные для модели
+                        vp_model_data = {
+                            'title': title,
+                            'description': description,
+                            'difficulty': patient_data.get('difficulty', 'medium'),
+                            'category': patient_data.get('category'),
+                            'max_score': patient_data.get('max_score', 100),
+                            'is_premium': patient_data.get('is_premium', False),
+                            'is_published': patient_data.get('is_published', False),
+                            'scenario_data': safe_json_dumps(patient_data)
+                        }
+                        
+                        patient = VirtualPatientScenario(**vp_model_data)
+                        db.session.add(patient)
+                        total_patients += 1
+                        logger.info(f"✅ Создан виртуальный пациент: {title}")
+                    else:
+                        logger.warning(f"⚠️ Пропущен неверный формат пациента: {type(patient_data)}")
                 except Exception as e:
                     logger.error(f"❌ Ошибка при создании виртуального пациента: {e}")
                     continue
