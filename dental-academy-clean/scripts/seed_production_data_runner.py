@@ -202,13 +202,39 @@ def load_domains():
             logger.error("❌ Не удалось загрузить данные доменов")
             return
         
-        for domain_data in domains_data:
+        # Проверяем структуру файла
+        if isinstance(domains_data, dict) and 'domain_mapping' in domains_data:
+            # Файл имеет структуру {"domain_mapping": {...}}
+            domain_mapping = domains_data['domain_mapping']
+            domains_to_create = []
+            
+            for domain_name, domain_info in domain_mapping.items():
+                if isinstance(domain_info, dict):
+                    domain_data = {
+                        'name': domain_name,
+                        'description': domain_info.get('description', ''),
+                        'weight': domain_info.get('weight', 1),
+                        'priority': domain_info.get('priority', 'medium'),
+                        'is_active': True
+                    }
+                    domains_to_create.append(domain_data)
+        elif isinstance(domains_data, list):
+            # Файл содержит список доменов
+            domains_to_create = domains_data
+        else:
+            logger.error("❌ Неизвестная структура файла доменов")
+            return
+        
+        for domain_data in domains_to_create:
             try:
-                domain = BIGDomain(**domain_data)
-                db.session.add(domain)
-                logger.info(f"✅ Создан домен: {domain_data.get('name', 'Unknown')}")
+                if isinstance(domain_data, dict):
+                    domain = BIGDomain(**domain_data)
+                    db.session.add(domain)
+                    logger.info(f"✅ Создан домен: {domain_data.get('name', 'Unknown')}")
+                else:
+                    logger.warning(f"⚠️ Пропущен неверный формат домена: {domain_data}")
             except Exception as e:
-                logger.error(f"❌ Ошибка при создании домена {domain_data.get('name', 'Unknown')}: {e}")
+                logger.error(f"❌ Ошибка при создании домена {domain_data.get('name', 'Unknown') if isinstance(domain_data, dict) else 'Unknown'}: {e}")
                 continue
         
         db.session.commit()
