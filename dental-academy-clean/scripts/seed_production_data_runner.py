@@ -355,6 +355,10 @@ def load_questions():
                             logger.info(f"ℹ️ Вопрос уже существует в базе данных: {question_data['text'][:50]}...")
                             continue
                         
+                        # Удаляем поле 'id' если оно есть, так как SQLAlchemy автоматически генерирует ID
+                        if 'id' in question_data:
+                            del question_data['id']
+                        
                         question = Question(**question_data)
                         db.session.add(question)
                         total_questions += 1
@@ -488,7 +492,7 @@ def load_virtual_patients():
                             'max_score': patient_data.get('max_score', 100),
                             'is_premium': patient_data.get('is_premium', False),
                             'is_published': patient_data.get('is_published', False),
-                            'scenario_data': safe_json_dumps(patient_data)
+                            'scenario_data': json.dumps(patient_data, ensure_ascii=False)
                         }
                         
                         patient = VirtualPatientScenario(**vp_model_data)
@@ -550,11 +554,24 @@ def load_achievements():
         
         for achievement_data in achievements_data:
             try:
-                achievement = Achievement(**achievement_data)
+                # Преобразуем данные достижения в правильный формат
+                achievement_model_data = {
+                    'name': achievement_data.get('title', achievement_data.get('name', 'Unknown')),
+                    'description': achievement_data.get('description', ''),
+                    'icon': achievement_data.get('icon', 'star'),
+                    'category': achievement_data.get('category', 'general'),
+                    'requirement_type': achievement_data.get('requirement_type', 'lessons_completed'),
+                    'requirement_value': achievement_data.get('requirement_value', 1),
+                    'badge_color': achievement_data.get('badge_color', 'primary'),
+                    'is_active': achievement_data.get('is_active', True),
+                    'sort_order': achievement_data.get('sort_order', 0)
+                }
+                
+                achievement = Achievement(**achievement_model_data)
                 db.session.add(achievement)
-                logger.info(f"✅ Создано достижение: {achievement_data['title']}")
+                logger.info(f"✅ Создано достижение: {achievement_model_data['name']}")
             except Exception as e:
-                logger.error(f"❌ Ошибка при создании достижения {achievement_data['title']}: {e}")
+                logger.error(f"❌ Ошибка при создании достижения {achievement_data.get('title', 'Unknown')}: {e}")
                 continue
         
         db.session.commit()
