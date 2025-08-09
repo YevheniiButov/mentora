@@ -207,11 +207,11 @@ def load_domains():
             'Algemene geneeskunde': 'ALGEMENE_GENEESKUNDE',
             'Anatomie en fysiologie': 'ANATOMIE',
             'Microbiologie': 'MICROBIOLOGIE',
-            'Biochemie': 'PATHOLOGIE',
+            'Biochemie': 'BIOCHEMIE',
             'Pathologie': 'PATHOLOGIE',
-            'Immunologie': 'PATHOLOGIE',
-            'Genetica': 'PATHOLOGIE',
-            'Epidemiologie': 'STATISTICS',
+            'Immunologie': 'IMMUNOLOGIE',
+            'Genetica': 'GENETICA',
+            'Epidemiologie': 'EPIDEMIOLOGIE',
             'Statistiek': 'STATISTICS',
             'Pedodontie': 'PEDI',
             'Parodontologie': 'PARO',
@@ -256,20 +256,32 @@ def load_domains():
             logger.error("❌ Неизвестная структура файла доменов")
             return
         
+        # Проверяем на дублирование кодов
+        used_codes = set()
+        domains_to_create_filtered = []
+        
         for domain_data in domains_to_create:
+            if isinstance(domain_data, dict):
+                code = domain_data.get('code')
+                if code in used_codes:
+                    logger.warning(f"⚠️ Пропущен домен с дублирующимся кодом: {domain_data.get('name', 'Unknown')} (код: {code})")
+                    continue
+                used_codes.add(code)
+                domains_to_create_filtered.append(domain_data)
+            else:
+                logger.warning(f"⚠️ Пропущен неверный формат домена: {domain_data}")
+        
+        for domain_data in domains_to_create_filtered:
             try:
-                if isinstance(domain_data, dict):
-                    domain = BIGDomain(**domain_data)
-                    db.session.add(domain)
-                    logger.info(f"✅ Создан домен: {domain_data.get('name', 'Unknown')}")
-                else:
-                    logger.warning(f"⚠️ Пропущен неверный формат домена: {domain_data}")
+                domain = BIGDomain(**domain_data)
+                db.session.add(domain)
+                logger.info(f"✅ Создан домен: {domain_data.get('name', 'Unknown')} (код: {domain_data.get('code', 'Unknown')})")
             except Exception as e:
-                logger.error(f"❌ Ошибка при создании домена {domain_data.get('name', 'Unknown') if isinstance(domain_data, dict) else 'Unknown'}: {e}")
+                logger.error(f"❌ Ошибка при создании домена {domain_data.get('name', 'Unknown')}: {e}")
                 continue
         
         db.session.commit()
-        logger.info("✅ Домены загружены успешно")
+        logger.info(f"✅ Домены загружены успешно ({len(domains_to_create_filtered)} доменов)")
         
     except Exception as e:
         logger.error(f"❌ Ошибка при загрузке доменов: {e}")
