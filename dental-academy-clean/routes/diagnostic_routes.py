@@ -130,7 +130,15 @@ def start_diagnostic():
             first_question = irt_engine.select_initial_question()
             
             if not first_question:
-                raise BadRequest('No questions available')
+                logger.error(f"No questions available for diagnostic type: {diagnostic_type}")
+                # Try to get any question as emergency fallback
+                emergency_question = Question.query.first()
+                if not emergency_question:
+                    logger.error("No questions found in database at all")
+                    raise BadRequest('No questions available in database')
+                else:
+                    logger.warning(f"Using emergency fallback question: {emergency_question.id}")
+                    first_question = emergency_question
             
             # Initialize new diagnostic session ONLY after we have a question
             diagnostic_session = DiagnosticSession.create_session(

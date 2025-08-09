@@ -466,49 +466,79 @@ class IRTEngine:
         Returns:
             Selected question or None if no questions available
         """
-        # Get all questions with IRT parameters
-        questions = Question.query.join(IRTParameters).all()
-        
-        if not questions:
-            logger.warning("No questions found in database")
+        try:
+            # First try: Get all questions with IRT parameters
+            questions = Question.query.join(IRTParameters).all()
+            logger.info(f"Found {len(questions)} questions with IRT parameters")
+            
+            if not questions:
+                logger.warning("No questions with IRT parameters found, trying all questions")
+                # Fallback: Get all questions without IRT requirement
+                questions = Question.query.all()
+                logger.info(f"Found {len(questions)} total questions")
+                
+                if not questions:
+                    logger.error("No questions found in database at all")
+                    return None
+                
+                # Return random question if no IRT parameters available
+                import random
+                selected = random.choice(questions)
+                logger.info(f"Selected random question without IRT: {selected.id}")
+                return selected
+            
+            # For initial question, select one with medium difficulty (close to 0)
+            import random
+            
+            medium_difficulty_questions = []
+            questions_with_irt = []
+            
+            for q in questions:
+                try:
+                    # Get IRT parameters from the relationship
+                    irt_params = q.irt_parameters
+                    if irt_params and irt_params.difficulty is not None:
+                        questions_with_irt.append(q)
+                        if -1.0 <= irt_params.difficulty <= 1.0:
+                            medium_difficulty_questions.append(q)
+                except Exception as e:
+                    logger.warning(f"Error processing question {q.id}: {e}")
+                    continue
+            
+            logger.info(f"Found {len(medium_difficulty_questions)} medium difficulty questions")
+            logger.info(f"Found {len(questions_with_irt)} questions with IRT parameters")
+            
+            if medium_difficulty_questions:
+                # Randomly select from medium difficulty questions
+                selected = random.choice(medium_difficulty_questions)
+                logger.info(f"Selected medium difficulty question: {selected.id}")
+                return selected
+            
+            if questions_with_irt:
+                # Fallback 1: select random question with any valid IRT difficulty
+                selected = random.choice(questions_with_irt)
+                logger.info(f"Selected question with IRT parameters: {selected.id}")
+                return selected
+            
+            # Fallback 2: select any random question
+            selected = random.choice(questions)
+            logger.info(f"Selected random question: {selected.id}")
+            return selected
+            
+        except Exception as e:
+            logger.error(f"Error in select_initial_question: {e}")
+            # Final fallback: try to get any question
+            try:
+                questions = Question.query.limit(10).all()
+                if questions:
+                    import random
+                    selected = random.choice(questions)
+                    logger.info(f"Emergency fallback - selected question: {selected.id}")
+                    return selected
+            except Exception as fallback_error:
+                logger.error(f"Emergency fallback also failed: {fallback_error}")
+            
             return None
-        
-        logger.info(f"Found {len(questions)} questions with IRT parameters")
-        
-        # For initial question, select one with medium difficulty (close to 0)
-        # Use random selection from questions with difficulty between -1 and 1
-        import random
-        
-        medium_difficulty_questions = []
-        questions_with_irt = []
-        
-        for q in questions:
-            # Get IRT parameters from the relationship
-            irt_params = q.irt_parameters
-            if irt_params and irt_params.difficulty is not None:
-                questions_with_irt.append(q)
-                if -1.0 <= irt_params.difficulty <= 1.0:
-                    medium_difficulty_questions.append(q)
-        
-        logger.info(f"Found {len(medium_difficulty_questions)} medium difficulty questions")
-        logger.info(f"Found {len(questions_with_irt)} questions with IRT parameters")
-        
-        if medium_difficulty_questions:
-            # Randomly select from medium difficulty questions
-            selected = random.choice(medium_difficulty_questions)
-            logger.info(f"Selected medium difficulty question: {selected.id}")
-            return selected
-        
-        if questions_with_irt:
-            # Fallback 1: select random question with any valid IRT difficulty
-            selected = random.choice(questions_with_irt)
-            logger.info(f"Selected question with IRT parameters: {selected.id}")
-            return selected
-        
-        # Fallback 2: select any random question
-        selected = random.choice(questions)
-        logger.info(f"Selected random question: {selected.id}")
-        return selected
     
     def select_next_question(self) -> Optional[Question]:
         """Выбрать следующий вопрос для адаптивного тестирования"""

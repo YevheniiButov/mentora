@@ -626,7 +626,34 @@ def seed_database():
         print(f"STDERR: {e.stderr}")
         sys.exit(1)
 
-logger.info("✅ Seed database command registered")
+        logger.info("✅ Seed database command registered")
+        
+        # Production data check command
+        @app.cli.command()
+        def check_production_data():
+            """Проверить и загрузить данные на production"""
+            import subprocess
+            import sys
+            from pathlib import Path
+
+            script_path = Path(__file__).parent / 'scripts' / 'check_production_data.py'
+
+            if not script_path.exists():
+                print(f"❌ Скрипт не найден: {script_path}")
+                sys.exit(1)
+
+            try:
+                result = subprocess.run([sys.executable, str(script_path)],
+                                      capture_output=True, text=True, check=True)
+                print(result.stdout)
+                print("✅ Проверка production данных завершена успешно!")
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Ошибка при проверке данных: {e}")
+                print(f"STDOUT: {e.stdout}")
+                print(f"STDERR: {e.stderr}")
+                sys.exit(1)
+
+        logger.info("✅ Check production data command registered")
 
 # ========================================
 # APPLICATION ENTRY POINT

@@ -4,12 +4,14 @@ services:
     env: python
     plan: free
     buildCommand: |
-      pip install --no-cache-dir -r requirements.txt &&
-      echo "Installing dependencies completed" &&
-      flask db upgrade &&
-      echo "Database tables created" &&
-      flask seed-database &&
-      echo "Data seeding completed"
+  pip install --no-cache-dir -r requirements.txt &&
+  echo "Installing dependencies completed" &&
+  flask db upgrade &&
+  echo "Database tables created" &&
+  flask seed-database &&
+  echo "Data seeding completed" &&
+  flask check-production-data &&
+  echo "Production data check completed"
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
