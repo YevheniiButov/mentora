@@ -181,7 +181,7 @@ def load_bi_toets_structure():
         raise
 
 def load_domains():
-    """Загружает домены BI-toets"""
+    """Загружает домены BI-toets из файла domain_mapping.json"""
     logger.info("🔄 Загружаем домены BI-toets...")
     
     try:
@@ -191,7 +191,35 @@ def load_domains():
             logger.info(f"✅ Домены уже существуют ({existing_domains} доменов)")
             return
         
-        # Загружаем домены из файла domain_mapping.json
+        # Маппинг названий доменов на коды из модели BIGDomain
+        domain_code_mapping = {
+            'Praktische vaardigheden': 'PRACTICAL_SKILLS',
+            'Behandelplanning': 'TREATMENT_PLANNING',
+            'Mondziekten en kaakchirurgie': 'SURG',
+            'Spoedeisende hulp': 'EMERGENCY',
+            'Complexe diagnostiek': 'DIAGNOSIS',
+            'Farmacologie': 'PHARMACOLOGY',
+            'Ethiek en recht': 'ETHIEK',
+            'Systemische aandoeningen': 'SYSTEMIC',
+            'Prothetiek en tandtechniek': 'PROTH',
+            'Orthodontie': 'ORTHO',
+            'Röntgenologie': 'RADIOLOGIE',
+            'Algemene geneeskunde': 'ALGEMENE_GENEESKUNDE',
+            'Anatomie en fysiologie': 'ANATOMIE',
+            'Microbiologie': 'MICROBIOLOGIE',
+            'Biochemie': 'PATHOLOGIE',
+            'Pathologie': 'PATHOLOGIE',
+            'Immunologie': 'PATHOLOGIE',
+            'Genetica': 'PATHOLOGIE',
+            'Epidemiologie': 'STATISTICS',
+            'Statistiek': 'STATISTICS',
+            'Pedodontie': 'PEDI',
+            'Parodontologie': 'PARO',
+            'Speeksel en orale vloeistoffen': 'SALIVA',
+            'Virtual Patient Scenarios': 'VIRTUAL_PATIENT'
+        }
+        
+        # Загружаем домены из файла
         domain_file = Path(__file__).parent.parent / 'cards' / 'domain_mapping.json'
         if not domain_file.exists():
             logger.error(f"❌ Файл доменов не найден: {domain_file}")
@@ -210,8 +238,12 @@ def load_domains():
             
             for domain_name, domain_info in domain_mapping.items():
                 if isinstance(domain_info, dict):
+                    # Получаем код домена из маппинга
+                    domain_code = domain_code_mapping.get(domain_name, domain_name.upper().replace(' ', '_'))
+                    
                     domain_data = {
                         'name': domain_name,
+                        'code': domain_code,
                         'description': domain_info.get('description', ''),
                         'weight_percentage': domain_info.get('weight', 1),
                         'is_active': True
