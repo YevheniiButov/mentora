@@ -543,4 +543,18 @@ translations = {
     'dentist_plural': 'diş hekimleri',
     'general_practitioner_plural': 'genel pratisyenler',
     'pharmacist_plural': 'eczacılar',
+    
+    # Knowledge Base translations
+    'categories': 'Kategoriler',
+    'all_subjects': 'Tüm konular',
+    'favorites': 'Favoriler',
+    'knowledge_base_description': 'Tüm konular ve konular için kapsamlı bilgi tabanı',
+    'dentistry': 'Diş hekimliği',
+    'dentistry_description': 'Kapsamlı diş hekimliği bilgisi ve prosedürler',
+    'view_subject': 'Konuyu görüntüle',
+    'pharmacology': 'Farmakoloji',
+    'pharmacology_description': 'İlaç etkileşimleri ve ilaç yönetimi',
+    'anatomy_description': 'İnsan anatomisi ve fizyolojisi',
+    'quick_search': 'Hızlı arama',
+    'search_placeholder': 'Bilgi tabanında ara...',
 }

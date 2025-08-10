@@ -655,4 +655,18 @@ translations = {
     
     # Back to home
     'back_to_home': 'بازگشت به صفحه اصلی',
+    
+    # Knowledge Base translations
+    'categories': 'دسته‌بندی‌ها',
+    'all_subjects': 'همه موضوعات',
+    'favorites': 'مورد علاقه',
+    'knowledge_base_description': 'پایگاه دانش جامع برای همه موضوعات و مباحث',
+    'dentistry': 'دندانپزشکی',
+    'dentistry_description': 'دانش جامع دندانپزشکی و روش‌ها',
+    'view_subject': 'مشاهده موضوع',
+    'pharmacology': 'فارماکولوژی',
+    'pharmacology_description': 'تعاملات دارویی و مدیریت دارو',
+    'anatomy_description': 'آناتومی و فیزیولوژی انسان',
+    'quick_search': 'جستجوی سریع',
+    'search_placeholder': 'جستجو در پایگاه دانش...',
 }
