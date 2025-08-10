@@ -613,4 +613,46 @@ translations = {
     'dentist_plural': 'دندانپزشکان',
     'general_practitioner_plural': 'پزشکان عمومی',
     'pharmacist_plural': 'داروسازان',
+    
+    # Navigation buttons for big_info.html
+    'what_is_big': 'BIG چیست؟',
+    'registration_process': 'فرآیند ثبت‌نام',
+    'per_specialism': 'بر اساس تخصص',
+    'useful_links': 'لینک‌های مفید',
+    
+    # Content sections for big_info.html
+    'big_register_description': 'ثبت BIG (حرفه‌های مراقبت‌های بهداشتی فردی) ثبت رسمی ارائه‌دهندگان مراقبت‌های بهداشتی در هلند است. ثبت‌نام BIG تأیید می‌کند که ارائه‌دهنده مراقبت‌های بهداشتی مجاز به انجام حرفه خود است و تمام الزامات قانونی را برآورده می‌کند.',
+    'only_with_big_registration': 'فقط با ثبت‌نام BIG می‌توانید در هلند به عنوان ارائه‌دهنده مراقبت‌های بهداشتی کار کنید.',
+    
+    # Registration steps
+    'diploma_evaluation': 'ارزیابی مدرک',
+    'diploma_evaluation_desc': 'اجازه دهید مدرک خارجی شما توسط CIBG ارزیابی شود',
+    'akv_test': 'آزمون AKV',
+    'akv_test_desc': 'آزمون عمومی دانش و مهارت',
+    'professional_test': 'آزمون محتوای حرفه‌ای',
+    'professional_test_desc': 'دانش خاص برای حوزه تخصص شما',
+    
+    # Specialisms
+    'theoretical_test': 'آزمون نظری',
+    'practical_test': 'آزمون عملی',
+    'dutch_language_b2': 'زبان هلندی (B2)',
+    
+    # Documents
+    'diploma_certified_copy': 'مدرک (کپی تایید شده)',
+    'certificate_good_conduct': 'گواهی رفتار خوب',
+    'identity_document': 'سند هویت',
+    'c1_language_certificate': 'گواهی زبان C1',
+    
+    # FAQ questions
+    'frequently_asked_questions': 'سوالات متداول',
+    'how_long_process': 'فرآیند ثبت‌نام چقدر طول می‌کشد؟',
+    'process_duration_answer': 'کل فرآیند به طور متوسط 1-2 سال طول می‌کشد، بسته به آمادگی شما و در دسترس بودن زمان‌های آزمون.',
+    
+    # Useful links
+    'big_register_official_website': 'وب‌سایت رسمی ثبت BIG',
+    'cbgmeb': 'CBGMEB',
+    'dutch_government_healthcare': 'دولت هلند - صلاحیت‌های مراقبت‌های بهداشتی',
+    
+    # Back to home
+    'back_to_home': 'بازگشت به صفحه اصلی',
 }
