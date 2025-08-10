@@ -930,10 +930,7 @@
     }
     
     // Apply translations when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        const currentLang = '{{ lang }}' || '{{ g.lang }}' || 'nl';
-        applyTranslations(currentLang);
-    });
+    
     
     function applyTranslations(lang) {
         console.log('Applying translations for language:', lang);
@@ -952,8 +949,8 @@
     <section class="big-hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title" style="text-align: center; width: 100%; display: block; margin: 0 auto;"><span data-translate="big_registration_2025">BIG Registratie 2025</span></h1>
-                <p class="hero-subtitle"><span data-translate="complete_guide_international">Complete gids voor internationale zorgprofessionals in Nederland</span></p>
+                <h1 class="hero-title" style="text-align: center; width: 100%; display: block; margin: 0 auto;">{{ t('big_registration_2025', lang) }}</h1>
+                <p class="hero-subtitle">{{ t('complete_guide_international', lang) }}</p>
             </div>
         </div>
     </section>
@@ -962,41 +959,41 @@
     <section class="route-selection">
         <div class="container">
             <div class="section-header">
-                <h2><span data-translate="choose_your_route">Kies jouw route</span></h2>
+                <h2>{{ t('choose_your_route', lang) }}</h2>
                 <p class="section-description">
-                    <span data-translate="procedures_requirements_different">De procedures en vereisten zijn fundamenteel verschillend afhankelijk van waar je diploma behaald hebt.</span>
+                    {{ t('procedures_requirements_different', lang) }}
                 </p>
             </div>
             
             <div class="route-cards">
                 <a href="#eu-professions" class="route-card eu-route" onclick="showEUProfessions()">
                     <span class="route-flag">🇪🇺</span>
-                    <h3 class="route-title"><span data-translate="eu_eea_diploma">EU/EEA Diploma</span></h3>
+                    <h3 class="route-title">{{ t('eu_eea_diploma', lang) }}</h3>
                     <p class="route-description">
-                        <span data-translate="eu_eea_diploma_desc">Voor diplomas behaald binnen de Europese Unie, EEA of Zwitserland</span>
+                        {{ t('eu_eea_diploma_desc', lang) }}
                     </p>
                     <ul class="route-features">
-                        <li><i class="fas fa-check-circle"></i><span data-translate="automatic_recognition_possible">Automatische erkenning mogelijk</span></li>
-                        <li><i class="fas fa-clock"></i><span data-translate="faster_process">Sneller proces (2-4 maanden)</span></li>
-                        <li><i class="fas fa-language"></i><span data-translate="dutch_b2_level">Nederlands B2 niveau</span></li>
-                        <li><i class="fas fa-euro-sign"></i><span data-translate="lower_costs">Lagere kosten</span></li>
+                        <li><i class="fas fa-check-circle"></i>{{ t('automatic_recognition_possible', lang) }}</li>
+                        <li><i class="fas fa-clock"></i>{{ t('faster_process', lang) }}</li>
+                        <li><i class="fas fa-language"></i>{{ t('dutch_b2_level', lang) }}</li>
+                        <li><i class="fas fa-euro-sign"></i>{{ t('lower_costs', lang) }}</li>
                     </ul>
-                    <div class="route-button"><span data-translate="choose_eu_route">Kies EU Route</span></div>
+                    <div class="route-button">{{ t('choose_eu_route', lang) }}</div>
                 </a>
                 
                 <a href="#non-eu-professions" class="route-card non-eu-route" onclick="showNonEUProfessions()">
                     <span class="route-flag">🌍</span>
-                    <h3 class="route-title"><span data-translate="non_eu_diploma">Niet-EU Diploma</span></h3>
+                    <h3 class="route-title">{{ t('non_eu_diploma', lang) }}</h3>
                     <p class="route-description">
-                        <span data-translate="non_eu_diploma_desc">Voor diplomas behaald buiten de EU/EEA (bijvoorbeeld VS, Canada, Australië, etc.)</span>
+                        {{ t('non_eu_diploma_desc', lang) }}
                     </p>
                     <ul class="route-features">
-                        <li><i class="fas fa-file-medical"></i><span data-translate="cbgv_assessment_required">CBGV beoordeling vereist</span></li>
-                        <li><i class="fas fa-calendar-alt"></i><span data-translate="longer_process">Langer proces (8 mnd - 4 jaar)</span></li>
-                        <li><i class="fas fa-graduation-cap"></i><span data-translate="possible_additional_study">Mogelijk aanvullende studie</span></li>
-                        <li><i class="fas fa-edit"></i><span data-translate="bi_test_required">BI-toets verplicht</span></li>
+                        <li><i class="fas fa-file-medical"></i>{{ t('cbgv_assessment_required', lang) }}</li>
+                        <li><i class="fas fa-calendar-alt"></i>{{ t('longer_process', lang) }}</li>
+                        <li><i class="fas fa-graduation-cap"></i>{{ t('possible_additional_study', lang) }}</li>
+                        <li><i class="fas fa-edit"></i>{{ t('bi_test_required', lang) }}</li>
                     </ul>
-                    <div class="route-button"><span data-translate="choose_non_eu_route">Kies niet-EU Route</span></div>
+                    <div class="route-button">{{ t('choose_non_eu_route', lang) }}</div>
                 </a>
             </div>
         </div>
@@ -1008,9 +1005,9 @@
     <section class="what-is-big">
         <div class="container">
             <div class="section-header">
-                <h2><span data-translate="what_is_big_registration">Wat is BIG registratie?</span></h2>
+                <h2>{{ t('what_is_big_registration', lang) }}</h2>
                 <p class="section-description">
-                    <span data-translate="big_register_legal">Het BIG-register is het wettelijke kwaliteitsregister voor zorgverleners in Nederland.</span>
+                    {{ t('big_register_legal', lang) }}
                 </p>
             </div>
             
@@ -1019,22 +1016,22 @@
                     <div class="explanation-icon">
                         <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h3><span data-translate="legal_protection">Wettelijke bescherming</span></h3>
-                    <p><span data-translate="legal_protection_desc">Beschermt zowel patiënten als zorgverleners door kwaliteitsstandaarden</span></p>
+                    <h3>{{ t('legal_protection', lang) }}</h3>
+                    <p>{{ t('legal_protection_desc', lang) }}</p>
                 </div>
                 <div class="explanation-card">
                     <div class="explanation-icon">
                         <i class="fas fa-globe"></i>
                     </div>
-                    <h3><span data-translate="european_recognition">Europese erkenning</span></h3>
-                    <p><span data-translate="european_recognition_desc">Met BIG registratie kun je in de hele EU/EEA werken</span></p>
+                    <h3>{{ t('european_recognition', lang) }}</h3>
+                    <p>{{ t('european_recognition_desc', lang) }}</p>
                 </div>
                 <div class="explanation-card">
                     <div class="explanation-icon">
                         <i class="fas fa-award"></i>
                     </div>
-                    <h3><span data-translate="quality_guarantee">Kwaliteitsgarantie</span></h3>
-                    <p><span data-translate="quality_guarantee_desc">Bewijs van je competentie en professionele training</span></p>
+                    <h3>{{ t('quality_guarantee', lang) }}</h3>
+                    <p>{{ t('quality_guarantee_desc', lang) }}</p>
                 </div>
             </div>
         </div>
@@ -1044,9 +1041,9 @@
     <section id="eu-professions" class="professions" style="display: none;">
         <div class="container">
             <div class="section-header">
-                <h2><span data-translate="eu_eea_specialisms">🇪🇺 EU/EEA Specialismen</span></h2>
+                <h2>{{ t('eu_eea_specialisms', lang) }}</h2>
                 <p class="section-description">
-                    <span data-translate="faster_procedure_eu">Snellere procedure voor EU/EEA diploma's met automatische erkenning</span>
+                    {{ t('faster_procedure_eu', lang) }}
                 </p>
             </div>
             
@@ -1055,56 +1052,56 @@
                     <div class="profession-icon">
                         <i class="fas fa-tooth"></i>
                     </div>
-                    <h3><span data-translate="dentist_eu">Tandarts (EU)</span></h3>
-                    <p><span data-translate="automatic_recognition_possible_short">Automatische erkenning mogelijk</span></p>
+                    <h3>{{ t('dentist_eu', lang) }}</h3>
+                    <p>{{ t('automatic_recognition_possible_short', lang) }}</p>
                     <ul class="profession-features">
-                        <li>• <span data-translate="eu_directive_dentists">EU richtlijn voor tandartsen</span></li>
-                        <li>• <span data-translate="language_b2_dental">Taal B2 + tandheelkundig jargon</span></li>
-                        <li>• <span data-translate="process_2_4_months">2-4 maanden proces</span></li>
+                        <li>• {{ t('eu_directive_dentists', lang) }}</li>
+                        <li>• {{ t('language_b2_dental', lang) }}</li>
+                        <li>• {{ t('process_2_4_months', lang) }}</li>
                     </ul>
-                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                    <div class="cta-button">{{ t('view_guide', lang) }}</div>
                 </a>
                 
                 <a href="/{{ g.lang }}/big-info/eu/huisarts" class="profession-card">
                     <div class="profession-icon">
                         <i class="fas fa-user-md"></i>
                     </div>
-                    <h3><span data-translate="general_practitioner_eu">Huisarts (EU)</span></h3>
-                    <p><span data-translate="eu_directive_procedure">EU richtlijn procedure</span></p>
+                    <h3>{{ t('general_practitioner_eu', lang) }}</h3>
+                    <p>{{ t('eu_directive_procedure', lang) }}</p>
                     <ul class="profession-features">
-                        <li>• <span data-translate="automatic_recognition_short">Automatische erkenning</span></li>
-                        <li>• <span data-translate="dutch_language_b2">Nederlandse taal B2</span></li>
-                        <li>• <span data-translate="process_3_6_months">3-6 maanden proces</span></li>
+                        <li>• {{ t('automatic_recognition_short', lang) }}</li>
+                        <li>• {{ t('dutch_language_b2', lang) }}</li>
+                        <li>• {{ t('process_3_6_months', lang) }}</li>
                     </ul>
-                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                    <div class="cta-button">{{ t('view_guide', lang) }}</div>
                 </a>
                 
                 <a href="/{{ g.lang }}/big-info/eu/apotheker" class="profession-card">
                     <div class="profession-icon">
                         <i class="fas fa-pills"></i>
                     </div>
-                    <h3><span data-translate="pharmacist_eu">Apotheker (EU)</span></h3>
-                    <p><span data-translate="fast_eu_procedure">Snelle EU procedure</span></p>
+                    <h3>{{ t('pharmacist_eu', lang) }}</h3>
+                    <p>{{ t('fast_eu_procedure', lang) }}</p>
                     <ul class="profession-features">
-                        <li>• <span data-translate="automatic_recognition_short">Automatische erkenning</span></li>
-                        <li>• <span data-translate="dutch_pharmacy_legislation">Nederlandse farmacie wetgeving</span></li>
-                        <li>• <span data-translate="process_4_8_months">4-8 maanden proces</span></li>
+                        <li>• {{ t('automatic_recognition_short', lang) }}</li>
+                        <li>• {{ t('dutch_pharmacy_legislation', lang) }}</li>
+                        <li>• {{ t('process_4_8_months', lang) }}</li>
                     </ul>
-                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                    <div class="cta-button">{{ t('view_guide', lang) }}</div>
                 </a>
                 
                 <a href="/{{ g.lang }}/big-info/eu/verpleegkundige" class="profession-card">
                     <div class="profession-icon">
                         <i class="fas fa-heartbeat"></i>
                     </div>
-                    <h3><span data-translate="nurse_eu">Verpleegkundige (EU)</span></h3>
-                    <p><span data-translate="eu_directive_advantage">EU richtlijn voordeel</span></p>
+                    <h3>{{ t('nurse_eu', lang) }}</h3>
+                    <p>{{ t('eu_directive_advantage', lang) }}</p>
                     <ul class="profession-features">
-                        <li>• <span data-translate="automatic_recognition_short">Automatische erkenning</span></li>
-                        <li>• <span data-translate="dutch_b2_short">Nederlands B2</span></li>
-                        <li>• <span data-translate="process_2_4_months">2-4 maanden proces</span></li>
+                        <li>• {{ t('automatic_recognition_short', lang) }}</li>
+                        <li>• {{ t('dutch_b2_short', lang) }}</li>
+                        <li>• {{ t('process_2_4_months', lang) }}</li>
                     </ul>
-                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                    <div class="cta-button">{{ t('view_guide', lang) }}</div>
                 </a>
             </div>
         </div>
@@ -1114,9 +1111,9 @@
     <section id="non-eu-professions" class="professions" style="display: none;">
         <div class="container">
             <div class="section-header">
-                <h2><span data-translate="non_eu_specialisms">🌍 Niet-EU Specialismen</span></h2>
+                <h2>{{ t('non_eu_specialisms', lang) }}</h2>
                 <p class="section-description">
-                    <span data-translate="extensive_procedure_non_eu">Uitgebreide procedure voor niet-EU diploma's via CBGV commissie</span>
+                    {{ t('extensive_procedure_non_eu', lang) }}
                 </p>
             </div>
             
@@ -1125,56 +1122,56 @@
                     <div class="profession-icon">
                         <i class="fas fa-tooth"></i>
                     </div>
-                    <h3><span data-translate="dentist_non_eu">Tandarts (niet-EU)</span></h3>
-                    <p><span data-translate="cbgv_bi_test_procedure">CBGV + BI-toets procedure</span></p>
+                    <h3>{{ t('dentist_non_eu', lang) }}</h3>
+                    <p>{{ t('cbgv_bi_test_procedure', lang) }}</p>
                     <ul class="profession-features">
-                        <li>• <span data-translate="cbgv_assessment">CBGV beoordeling</span></li>
-                        <li>• <span data-translate="bi_test_required_short">BI-toets verplicht</span></li>
-                        <li>• <span data-translate="process_1_2_years">1-2 jaar proces</span></li>
+                        <li>• {{ t('cbgv_assessment', lang) }}</li>
+                        <li>• {{ t('bi_test_required_short', lang) }}</li>
+                        <li>• {{ t('process_1_2_years', lang) }}</li>
                     </ul>
-                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                    <div class="cta-button">{{ t('view_guide', lang) }}</div>
                 </a>
                 
                 <a href="/{{ g.lang }}/big-info/huisarts" class="profession-card">
                     <div class="profession-icon">
                         <i class="fas fa-user-md"></i>
                     </div>
-                    <h3><span data-translate="general_practitioner_non_eu">Huisarts (niet-EU)</span></h3>
-                    <p><span data-translate="complex_cbgv_procedure">Complexe CBGV procedure</span></p>
+                    <h3>{{ t('general_practitioner_non_eu', lang) }}</h3>
+                    <p>{{ t('complex_cbgv_procedure', lang) }}</p>
                     <ul class="profession-features">
-                        <li>• <span data-translate="declaration_competence">Verklaring vakbekwaamheid</span></li>
-                        <li>• <span data-translate="possible_additional_training">Mogelijke aanvullende opleiding</span></li>
-                        <li>• <span data-translate="process_2_4_years">2-4 jaar proces</span></li>
+                        <li>• {{ t('declaration_competence', lang) }}</li>
+                        <li>• {{ t('possible_additional_training', lang) }}</li>
+                        <li>• {{ t('process_2_4_years', lang) }}</li>
                     </ul>
-                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                    <div class="cta-button">{{ t('view_guide', lang) }}</div>
                 </a>
                 
                 <a href="/{{ g.lang }}/big-info/apotheker" class="profession-card">
                     <div class="profession-icon">
                         <i class="fas fa-pills"></i>
                     </div>
-                    <h3><span data-translate="pharmacist_non_eu">Apotheker (niet-EU)</span></h3>
-                    <p><span data-translate="usually_3_year_master">Meestal 3-jaar master vereist</span></p>
+                    <h3>{{ t('pharmacist_non_eu', lang) }}</h3>
+                    <p>{{ t('usually_3_year_master', lang) }}</p>
                     <ul class="profession-features">
-                        <li>• <span data-translate="cbgv_almost_always_master">CBGV vrijwel altijd master</span></li>
-                        <li>• <span data-translate="process_3_4_years_35000">3-4 jaar + €35.000</span></li>
-                        <li>• <span data-translate="alternatives_available">Alternatieven beschikbaar</span></li>
+                        <li>• {{ t('cbgv_almost_always_master', lang) }}</li>
+                        <li>• {{ t('process_3_4_years_35000', lang) }}</li>
+                        <li>• {{ t('alternatives_available', lang) }}</li>
                     </ul>
-                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                    <div class="cta-button">{{ t('view_guide', lang) }}</div>
                 </a>
                 
                 <a href="/{{ g.lang }}/big-info/verpleegkundige" class="profession-card">
                     <div class="profession-icon">
                         <i class="fas fa-heartbeat"></i>
                     </div>
-                    <h3><span data-translate="nurse_non_eu">Verpleegkundige (niet-EU)</span></h3>
-                    <p><span data-translate="bi_test_cbgv_assessment">BI-toets + CBGV beoordeling</span></p>
+                    <h3>{{ t('nurse_non_eu', lang) }}</h3>
+                    <p>{{ t('bi_test_cbgv_assessment', lang) }}</p>
                     <ul class="profession-features">
-                        <li>• <span data-translate="bi_test_required_2025">BI-toets verplicht 2025</span></li>
-                        <li>• <span data-translate="process_8_15_months">8-15 maanden</span></li>
-                        <li>• <span data-translate="vig_alternative_available">VIG alternatief beschikbaar</span></li>
+                        <li>• {{ t('bi_test_required_2025', lang) }}</li>
+                        <li>• {{ t('process_8_15_months', lang) }}</li>
+                        <li>• {{ t('vig_alternative_available', lang) }}</li>
                     </ul>
-                    <div class="cta-button"><span data-translate="view_guide">Bekijk gids</span></div>
+                    <div class="cta-button">{{ t('view_guide', lang) }}</div>
                 </a>
             </div>
         </div>
@@ -1271,16 +1268,16 @@
     <section class="big-cta">
         <div class="container">
             <div class="cta-content">
-                <h2><span data-translate="ready_to_start">Klaar om te beginnen?</span></h2>
-                <p><span data-translate="choose_route_start_preparation">Kies je route en start vandaag nog met je BIG registratie voorbereiding</span></p>
+                <h2>{{ t('ready_to_start', lang) }}</h2>
+                <p>{{ t('choose_route_start_preparation', lang) }}</p>
                 <div class="cta-buttons">
                     <a href="#route-selection" class="btn btn-primary" onclick="document.querySelector('.route-selection').scrollIntoView({behavior: 'smooth'})">
                         <i class="fas fa-route"></i>
-                        <span data-translate="choose_your_route_button">Kies jouw route</span>
+                        {{ t('choose_your_route_button', lang) }}
                     </a>
                     <a href="{{ url_for('main.community', lang=g.lang) }}" class="btn btn-secondary">
                         <i class="fas fa-users"></i>
-                        <span data-translate="ask_community">Vraag de community</span>
+                        {{ t('ask_community', lang) }}
                     </a>
                 </div>
             </div>
@@ -1289,8 +1286,8 @@
 
     <!-- Компактное предупреждение перенесено в конец -->
     <div class="important-notice-2025">
-        <h3><i class="fas fa-exclamation-triangle"></i> <span data-translate="important_changes_2025">Belangrijke wijzigingen in 2025</span></h3>
-        <p><span data-translate="big_registration_procedure_differs">De BIG registratie procedure verschilt sterk tussen EU/EEA en niet-EU landen. Kies de juiste route voor jouw situatie hierboven.</span></p>
+        <h3><i class="fas fa-exclamation-triangle"></i> {{ t('important_changes_2025', lang) }}</h3>
+        <p>{{ t('big_registration_procedure_differs', lang) }}</p>
     </div>
 </div>
 {% endblock %}
