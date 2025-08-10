@@ -13,9 +13,9 @@
       
       <!-- Mobile Toggle -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
+        <span></span>
+        <span></span>
+        <span></span>
       </button>
       
       <!-- Navigation -->
@@ -33,13 +33,13 @@
           {% if current_user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'daily_learning.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
-               href="{{ url_for('daily_learning.learning_map', lang=lang|default('en')) }}">
+               href="{{ url_for('daily_learning.learning_map') }}">
               {{ t('learning_map', lang|default('en'))|default('Learning Map') }}
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'daily_learning.knowledge_base' }}" 
-               href="{{ url_for('daily_learning.knowledge_base', lang=lang|default('en')) }}">
+               href="{{ url_for('daily_learning.knowledge_base') }}">
               {{ t('knowledge_base', lang|default('en'))|default('Knowledge Base') }}
             </a>
           </li>
@@ -1104,43 +1104,11 @@ body {
 /* Mobile Responsive */
 @media (max-width: 992px) {
   
-  /* Улучшенный hamburger menu */
+  
   .navbar-toggler {
-    display: flex !important;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 44px;
-    height: 44px;
-    padding: 8px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    display: block;
     order: 3;
     margin-left: auto;
-  }
-
-  .hamburger-line {
-    display: block;
-    width: 24px;
-    height: 2px;
-    background: var(--text-primary);
-    margin: 2px 0;
-    transition: all 0.3s ease;
-    border-radius: 1px;
-  }
-
-  .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-  }
-
-  .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(2) {
-    opacity: 0;
-  }
-
-  .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
   }
   
   .navbar-brand {
@@ -1150,6 +1118,9 @@ body {
   .navbar-collapse {
     order: 4;
     width: 100%;
+  }
+  
+  .navbar-collapse {
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
@@ -1163,42 +1134,24 @@ body {
     right: 0;
     flex-direction: column;
     align-items: stretch;
-    max-height: calc(100vh - 100%);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   .navbar-nav {
     flex-direction: column;
     width: 100%;
-    gap: 0.5rem;
   }
 
   .nav-link {
-    margin: 0;
-    padding: 1rem;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-  }
-
-  .nav-link:hover,
-  .nav-link.active {
-    background: rgba(102, 126, 234, 0.1);
-    transform: translateX(5px);
+    margin: 0.25rem 0;
   }
 
   .navbar-actions {
-    margin-top: 1rem;
-    padding-top: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
     border-top: 1px solid var(--border-color);
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 0.75rem;
+    gap: 1rem;
     margin-left: 0;
   }
 
@@ -1209,20 +1162,6 @@ body {
   .dropdown-toggle {
     width: 100%;
     justify-content: space-between;
-    padding: 1rem;
-    min-height: 44px;
-  }
-
-  .dropdown-menu {
-    width: 100%;
-    margin-top: 0.5rem;
-  }
-
-  .dropdown-item {
-    padding: 1rem;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
   }
 
   .guest-actions {
