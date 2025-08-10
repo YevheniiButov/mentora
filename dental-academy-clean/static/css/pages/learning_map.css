@@ -5,11 +5,16 @@
 .learning-map-container {
   height: calc(100vh - var(--header-height, 80px));
   background: var(--subject-view-bg, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
-  position: relative;
+  position: fixed;
+  top: var(--header-height, 80px);
+  left: 0;
+  right: 0;
+  bottom: 0;
   overflow: hidden;
-  margin-top: var(--header-height, 80px);
+  margin: 0;
   padding: 0;
   transition: background var(--transition-normal, 0.3s ease);
+  z-index: 1;
 }
 
 /* Убираем отступ для Knowledge Base */
@@ -67,6 +72,7 @@
   z-index: 1;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 /* === ЛЕВАЯ КОЛОНКА === */
@@ -79,11 +85,12 @@
   padding: 2rem 1.5rem;
   padding-bottom: 4rem; /* Добавляем отступ снизу для контента */
   overflow-y: auto;
-  height: calc(100vh - var(--header-height, 80px));
-  min-height: calc(100vh - var(--header-height, 80px));
+  height: 100%;
+  min-height: 100%;
   flex-shrink: 0;
   box-shadow: 0 0 32px rgba(0, 0, 0, 0.1);
   transition: all var(--transition-normal, 0.3s ease);
+  -webkit-overflow-scrolling: touch; /* Улучшенный скроллинг для iOS */
 }
 
 .section-header {
@@ -411,8 +418,9 @@ div[id^="category-"].expanded {
   padding: 2rem;
   padding-bottom: 4rem; /* Добавляем отступ снизу для контента */
   overflow-y: auto;
-  height: calc(100vh - var(--header-height, 72px));
-  min-height: calc(100vh - var(--header-height, 72px));
+  height: 100%;
+  min-height: 100%;
+  -webkit-overflow-scrolling: touch; /* Улучшенный скроллинг для iOS */
 }
 
 .page-header {
@@ -858,11 +866,12 @@ div[id^="category-"].expanded {
   padding: 2rem 1.5rem;
   padding-bottom: 4rem; /* Добавляем отступ снизу для контента */
   overflow-y: auto;
-  height: calc(100vh - var(--header-height, 72px));
-  min-height: calc(100vh - var(--header-height, 72px));
+  height: 100%;
+  min-height: 100%;
   flex-shrink: 0;
   box-shadow: 0 0 32px rgba(0, 0, 0, 0.1);
   color: var(--subject-view-text, white);
+  -webkit-overflow-scrolling: touch; /* Улучшенный скроллинг для iOS */
 }
 
 .right-column h2 {
@@ -1433,7 +1442,7 @@ div[id^="category-"].expanded {
   .middle-column {
     padding: 1rem;
     padding-bottom: 3rem; /* Уменьшаем отступ для мобильных */
-    height: calc(100vh - var(--header-height, 72px));
+    height: 100%;
     margin: 0;
     -webkit-overflow-scrolling: touch; /* Улучшенный скроллинг для iOS */
   }
@@ -1441,6 +1450,7 @@ div[id^="category-"].expanded {
   .right-column {
     padding: 1rem;
     padding-bottom: 3rem; /* Уменьшаем отступ для мобильных */
+    height: 100%;
     -webkit-overflow-scrolling: touch; /* Улучшенный скроллинг для iOS */
   }
   
@@ -2681,7 +2691,7 @@ body.learning-map-page .main-content {
 /* Устранение полосы внизу страницы */
 .learning-map-page .learning-map-container {
     min-height: calc(100vh - var(--header-height, 80px));
-    margin-top: calc(var(--header-height, 80px) + 10px);
+    margin: 0;
     padding: 0;
     border-bottom: 0;
     overflow: hidden;
