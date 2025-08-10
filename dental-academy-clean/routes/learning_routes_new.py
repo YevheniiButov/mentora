@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, g
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, g, session
 from flask_login import login_required, current_user
 from utils.daily_learning_algorithm import DailyLearningAlgorithm, generate_from_personal_plan, create_emergency_plan
 from utils.domain_mapping import get_domain_name
