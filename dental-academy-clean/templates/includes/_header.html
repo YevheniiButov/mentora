@@ -33,13 +33,13 @@
           {% if current_user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'daily_learning.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
-               href="{{ url_for('daily_learning.learning_map') }}">
+               href="{{ url_for('daily_learning.learning_map', lang=lang|default('en')) }}">
               {{ t('learning_map', lang|default('en'))|default('Learning Map') }}
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'daily_learning.knowledge_base' }}" 
-               href="{{ url_for('daily_learning.knowledge_base') }}">
+               href="{{ url_for('daily_learning.knowledge_base', lang=lang|default('en')) }}">
               {{ t('knowledge_base', lang|default('en'))|default('Knowledge Base') }}
             </a>
           </li>
