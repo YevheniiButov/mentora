@@ -284,7 +284,7 @@ def search_drugs(lang):
 def big_info(lang):
     """BIG регистрация - главная landing страница"""
     return render_template(
-        'big_info.html',
+        'big_info/index.html',
         title='BIG Registratie - Complete gids',
         current_user=current_user,
         lang=lang
