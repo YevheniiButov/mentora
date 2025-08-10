@@ -13,6 +13,30 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 daily_learning_bp = Blueprint('daily_learning', __name__)
 
+# Поддерживаемые языки
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+DEFAULT_LANGUAGE = 'en'
+
+@daily_learning_bp.before_request
+def before_request_daily_learning():
+    """Обработка языка для всех маршрутов daily_learning"""
+    lang_from_url = request.view_args.get('lang') if request.view_args else None
+    
+    if lang_from_url and lang_from_url in SUPPORTED_LANGUAGES:
+        g.lang = lang_from_url
+    else:
+        g.lang = session.get('lang') or DEFAULT_LANGUAGE
+    
+    # Обновляем сессию
+    if session.get('lang') != g.lang:
+        session['lang'] = g.lang
+
+@daily_learning_bp.context_processor
+def inject_lang_daily_learning():
+    """Добавляет lang в контекст шаблонов этого блюпринта."""
+    lang = getattr(g, 'lang', session.get('lang', DEFAULT_LANGUAGE))
+    return dict(lang=lang)
+
 
 
 def _adapt_daily_plan_for_template(daily_plan_result):
