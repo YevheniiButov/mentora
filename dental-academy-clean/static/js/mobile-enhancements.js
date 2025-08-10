@@ -79,6 +79,7 @@ class MobileEnhancements {
             .stat-card,
             .recommendation-item,
             .nav-link,
+            .nav-button,
             .btn
         `);
 
@@ -265,6 +266,86 @@ class LearningMapMobileEnhancements {
         this.setupCardInteractions();
         this.setupProgressIndicators();
     }
+}
+
+class BigInfoMobileEnhancements {
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        this.setupBigInfoNavigation();
+        this.setupMobileOptimizations();
+    }
+
+    setupBigInfoNavigation() {
+        const navButtons = document.querySelectorAll('.nav-button');
+        
+        if (navButtons.length === 0) return;
+
+        console.log('📱 Setting up BIG Info mobile navigation...');
+
+        navButtons.forEach(button => {
+            // Улучшенные touch interactions для мобильных устройств
+            button.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                button.style.transform = 'scale(0.95)';
+                
+                // Haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            });
+
+            button.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                button.style.transform = '';
+                
+                // Небольшая задержка для лучшего UX
+                setTimeout(() => {
+                    button.click();
+                }, 50);
+            });
+
+            // Улучшенная доступность с клавиатуры
+            button.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    button.click();
+                }
+            });
+        });
+    }
+
+    setupMobileOptimizations() {
+        // Адаптация для мобильных устройств
+        if (window.innerWidth <= 768) {
+            const navButtonsContainer = document.querySelector('.nav-buttons');
+            if (navButtonsContainer) {
+                // Добавляем горизонтальную прокрутку для кнопок на мобильных
+                navButtonsContainer.style.overflowX = 'auto';
+                navButtonsContainer.style.webkitOverflowScrolling = 'touch';
+                navButtonsContainer.style.scrollbarWidth = 'none';
+                navButtonsContainer.style.msOverflowStyle = 'none';
+                
+                // Скрываем scrollbar
+                const style = document.createElement('style');
+                style.textContent = `
+                    .nav-buttons::-webkit-scrollbar {
+                        display: none;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Улучшаем отступы для мобильных
+            const contentSections = document.querySelectorAll('.content-section');
+            contentSections.forEach(section => {
+                section.style.padding = '1rem';
+            });
+        }
+    }
+}
 
     /**
      * Оптимизации для Learning Map на мобильных
@@ -360,5 +441,12 @@ class LearningMapMobileEnhancements {
 if (document.querySelector('.learning-map-container')) {
     document.addEventListener('DOMContentLoaded', () => {
         new LearningMapMobileEnhancements();
+    });
+}
+
+// Инициализация улучшений для BIG Info страницы
+if (document.querySelector('.nav-button')) {
+    document.addEventListener('DOMContentLoaded', () => {
+        new BigInfoMobileEnhancements();
     });
 }

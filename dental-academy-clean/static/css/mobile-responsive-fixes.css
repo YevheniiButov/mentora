@@ -523,3 +523,137 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
 }
+
+/* 13. BIG Info Page Mobile Optimizations */
+@media (max-width: 768px) {
+  .nav-buttons {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .nav-buttons::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-button {
+    min-width: 120px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border-radius: 8px;
+    border: 2px solid var(--primary-color, #3b82f6);
+    background: transparent;
+    color: var(--primary-color, #3b82f6);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .nav-button.active {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+  }
+
+  .nav-button:hover {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .nav-button:active {
+    transform: scale(0.98);
+  }
+
+  .content-section {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .content-section:not(.active) {
+    display: none;
+  }
+
+  .registration-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .step {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+  }
+
+  .step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primary-color, #3b82f6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+
+  .specialisms-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .specialism-card {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+  }
+
+  .document-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .document-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    background: #f9fafb;
+  }
+
+  .useful-links-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+  }
+
+  .link-card:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+  }
+}

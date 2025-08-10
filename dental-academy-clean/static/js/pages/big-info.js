@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Tab Navigation System
 function initializeTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabButtons = document.querySelectorAll('.nav-button');
     const contentSections = document.querySelectorAll('.content-section');
     
     if (tabButtons.length === 0) return;
@@ -26,7 +26,7 @@ function initializeTabs() {
     
     tabButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const targetTab = this.getAttribute('data-tab');
+            const targetSection = this.getAttribute('data-section');
             
             // Remove active class from all buttons and sections
             tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -34,12 +34,12 @@ function initializeTabs() {
             
             // Add active class to clicked button and target section
             this.classList.add('active');
-            const targetSection = document.getElementById(targetTab);
-            if (targetSection) {
-                targetSection.classList.add('active');
+            const targetElement = document.getElementById(targetSection);
+            if (targetElement) {
+                targetElement.classList.add('active');
             }
             
-            console.log(`📑 Switched to tab: ${targetTab}`);
+            console.log(`📑 Switched to section: ${targetSection}`);
         });
     });
     
