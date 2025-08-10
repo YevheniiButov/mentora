@@ -3,11 +3,11 @@
 
 /* === ОСНОВНОЙ КОНТЕЙНЕР === */
 .learning-map-container {
-  height: calc(100vh - var(--header-height, 72px));
+  height: calc(100vh - var(--header-height, 80px));
   background: var(--subject-view-bg, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
   position: relative;
   overflow: hidden;
-  margin-top: var(--header-height, 72px);
+  margin-top: var(--header-height, 80px);
   padding: 0;
   transition: background var(--transition-normal, 0.3s ease);
 }
@@ -79,8 +79,8 @@
   padding: 2rem 1.5rem;
   padding-bottom: 4rem; /* Добавляем отступ снизу для контента */
   overflow-y: auto;
-  height: calc(100vh - var(--header-height, 72px));
-  min-height: calc(100vh - var(--header-height, 72px));
+  height: calc(100vh - var(--header-height, 80px));
+  min-height: calc(100vh - var(--header-height, 80px));
   flex-shrink: 0;
   box-shadow: 0 0 32px rgba(0, 0, 0, 0.1);
   transition: all var(--transition-normal, 0.3s ease);
@@ -1422,6 +1422,10 @@ div[id^="category-"].expanded {
 }
 
 @media (max-width: 768px) {
+  .learning-map-container {
+    margin-top: calc(var(--header-height, 80px) + 20px);
+  }
+  
   .left-column {
     display: none;
   }
@@ -2676,8 +2680,8 @@ body.learning-map-page .main-content {
 
 /* Устранение полосы внизу страницы */
 .learning-map-page .learning-map-container {
-    min-height: calc(100vh - var(--header-height));
-    margin: 0;
+    min-height: calc(100vh - var(--header-height, 80px));
+    margin-top: calc(var(--header-height, 80px) + 10px);
     padding: 0;
     border-bottom: 0;
     overflow: hidden;
