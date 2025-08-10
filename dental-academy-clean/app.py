@@ -405,9 +405,7 @@ except ImportError as e:
     except ImportError as diagnostic_error:
         logger.warning(f"Could not import Diagnostic routes: {diagnostic_error}")
     
-    @app.route('/big_info')
-    def big_info():
-        return render_template('big_info.html')
+
     
     @app.route('/contact')
     def contact():

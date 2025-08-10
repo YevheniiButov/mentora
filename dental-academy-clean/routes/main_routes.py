@@ -284,9 +284,10 @@ def search_drugs(lang):
 def big_info(lang):
     """BIG регистрация - главная landing страница"""
     return render_template(
-        'big_info/index.html',
+        'big_info.html',
         title='BIG Registratie - Complete gids',
-        current_user=current_user
+        current_user=current_user,
+        lang=lang
     )
 
 @main_bp.route('/big-info/eu/<profession>')
