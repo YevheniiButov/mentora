@@ -288,7 +288,7 @@ try:
     
     # Импорт новых роутов системы обучения
     from routes.subject_view_routes import subject_view_bp
-    from routes.learning_map_routes import learning_map_bp, profession_map_bp
+    from routes.learning_map_routes import profession_map_bp
     from routes.lesson_routes import lesson_bp
     from routes.modules_routes import modules_bp
     from routes.content_navigation import content_nav_bp
@@ -337,7 +337,6 @@ try:
     
     # Регистрация новых blueprint-ов системы обучения
     app.register_blueprint(subject_view_bp)
-    app.register_blueprint(learning_map_bp, url_prefix='/old-learning-map')  # Старый маршрут с префиксом
     app.register_blueprint(profession_map_bp)  # Профессиональные карты обучения
     app.register_blueprint(lesson_bp, url_prefix='/lesson')
     app.register_blueprint(modules_bp)

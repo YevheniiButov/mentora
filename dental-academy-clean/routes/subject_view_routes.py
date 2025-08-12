@@ -340,7 +340,7 @@ def all_virtual_patients(lang):
         current_app.logger.error(f"Ошибка при загрузке обзора виртуальных пациентов: {e}", exc_info=True)
         flash(t("error_loading_virtual_patients"), "danger")
         # Измените 'learning_map_bp.learning_map' на существующий маршрут, если он другой
-        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        return redirect(url_for('daily_learning.learning_map', lang=lang))
 
 
 # ФУНКЦИИ ИЗ ФРАГМЕНТА 2 (get_user_recommendations, learning_hierarchy_view, view_hierarchy, manage_test_data, view_category, get_random_fact)
@@ -494,7 +494,7 @@ def learning_hierarchy_view(lang):
     except Exception as e:
         current_app.logger.error(f"Ошибка в learning_hierarchy_view: {str(e)}", exc_info=True)
         flash(t("error_loading_data_try_again"), "danger")
-        return redirect(url_for("learning_map_bp.learning_map", lang=lang)) # Убедитесь, что маршрут 'learning_map_bp.learning_map' существует
+        return redirect(url_for("daily_learning.learning_map", lang=lang)) # Убедитесь, что маршрут 'daily_learning.learning_map' существует
 
 # Функция view_hierarchy из вашего "старого" кода кажется дублирующей learning_hierarchy_view
 # Если она нужна отдельно, можно оставить, но логика очень похожа.
