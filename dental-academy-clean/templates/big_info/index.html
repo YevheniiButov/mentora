@@ -1236,6 +1236,9 @@
     // Apply translations when page loads
     document.addEventListener('DOMContentLoaded', function() {
         const currentLang = '{{ lang }}' || '{{ g.lang }}' || 'nl';
+        console.log('DEBUG: lang from template = {{ lang }}');
+        console.log('DEBUG: g.lang from template = {{ g.lang }}');
+        console.log('DEBUG: currentLang =', currentLang);
         applyTranslations(currentLang);
     });
     
@@ -1256,8 +1259,8 @@
     <section class="big-hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title" style="text-align: center; width: 100%; display: block; margin: 0 auto;">{{ t('big_registration_2025', lang) }}</h1>
-                <p class="hero-subtitle">{{ t('complete_guide_international', lang) }}</p>
+                <h1 class="hero-title" style="text-align: center; width: 100%; display: block; margin: 0 auto;"><span data-translate="big_registration_2025">BIG Registratie 2025</span></h1>
+                <p class="hero-subtitle"><span data-translate="complete_guide_international">Complete gids voor internationale zorgprofessionals in Nederland</span></p>
             </div>
         </div>
     </section>
