@@ -2697,7 +2697,19 @@ class DiagnosticSession(db.Model):
         
         # Calculate duration
         if self.started_at and self.completed_at:
-            duration = self.completed_at - self.started_at
+            # Ensure both timestamps are timezone-aware
+            started_at = self.started_at
+            completed_at = self.completed_at
+            
+            # If started_at is naive, make it timezone-aware
+            if started_at.tzinfo is None:
+                started_at = started_at.replace(tzinfo=timezone.utc)
+            
+            # If completed_at is naive, make it timezone-aware
+            if completed_at.tzinfo is None:
+                completed_at = completed_at.replace(tzinfo=timezone.utc)
+            
+            duration = completed_at - started_at
             results['duration_minutes'] = duration.total_seconds() / 60
         
         return results

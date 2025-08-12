@@ -602,7 +602,7 @@ def submit_answer(session_id):
         diagnostic_type = session_data.get('diagnostic_type', 'express')
         
         # Validate diagnostic type
-        if diagnostic_type not in ['express', 'preliminary', 'readiness']:
+        if diagnostic_type not in ['express', 'preliminary', 'readiness', 'full', 'comprehensive']:
             logger.warning(f"Invalid diagnostic type: {diagnostic_type}")
             diagnostic_type = 'express'
         
@@ -610,7 +610,9 @@ def submit_answer(session_id):
         max_questions = {
             'express': 25,
             'preliminary': 75, 
-            'readiness': 130
+            'readiness': 130,
+            'full': 75,
+            'comprehensive': 130
         }.get(diagnostic_type, 25)
         
         # Validate question count
