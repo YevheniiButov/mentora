@@ -170,11 +170,36 @@ def start_diagnostic():
                 ip_address=request.remote_addr
             )
             
+            # Определяем правильный session_type и diagnostic_type на основе выбора пользователя
+            if diagnostic_type == 'express':
+                session_type = 'preliminary'
+                diagnostic_type = 'preliminary'  # Оставляем как есть
+                estimated_questions = 25
+                questions_per_domain = 1
+            elif diagnostic_type == 'preliminary':
+                session_type = 'full'
+                diagnostic_type = 'full'  # ИСПРАВЛЕНИЕ: меняем на 'full' для 75 вопросов
+                estimated_questions = 75
+                questions_per_domain = 3
+            elif diagnostic_type == 'readiness':
+                session_type = 'comprehensive'
+                diagnostic_type = 'comprehensive'  # ИСПРАВЛЕНИЕ: меняем на 'comprehensive' для 130 вопросов
+                estimated_questions = 130
+                questions_per_domain = 6
+            else:
+                session_type = 'preliminary'
+                diagnostic_type = 'preliminary'
+                estimated_questions = 25
+                questions_per_domain = 1
+            
+            logger.info(f"Creating session: type={session_type}, diagnostic_type={diagnostic_type}, questions={estimated_questions}")
+            
             # Сохранить тип диагностики в сессии
             session_data = {
-                'diagnostic_type': diagnostic_type,
-                'questions_per_domain': 1 if diagnostic_type == 'express' else (3 if diagnostic_type == 'preliminary' else 5),
-                'estimated_total_questions': 25 if diagnostic_type == 'express' else (75 if diagnostic_type == 'preliminary' else 130)
+                'diagnostic_type': diagnostic_type,  # Теперь правильный тип
+                'session_type': session_type,
+                'questions_per_domain': questions_per_domain,
+                'estimated_total_questions': estimated_questions
             }
             diagnostic_session.set_session_data(session_data)
             
@@ -212,11 +237,16 @@ def start_diagnostic():
 
 @diagnostic_bp.route('/next-question', methods=['POST'])
 @login_required
-@rate_limit(requests_per_minute=30)
+@rate_limit(requests_per_minute=100)  # Увеличено для диагностических тестов (может потребоваться 40+ вопросов)
 @validate_session
 def get_next_question():
     """Get next question in diagnostic session"""
     try:
+        import traceback
+        logger.info("=== DEBUGGING NEXT QUESTION START ===")
+        logger.info(f"DB session active: {db.session.is_active}")
+        logger.info(f"Session info: {db.session.info}")
+        
         data = request.get_json()
         if not data:
             raise BadRequest('Invalid request data')
@@ -228,6 +258,8 @@ def get_next_question():
         # Получить тип диагностики из сессии
         session_data = diagnostic_session.get_session_data()
         diagnostic_type = session_data.get('diagnostic_type', 'express')
+        logger.info(f"Session data: {session_data}")
+        logger.info(f"Diagnostic type from session: {diagnostic_type}")
         
         # Process previous answer if provided (for backward compatibility)
         # Note: In the new flow, answers are recorded in submit-answer endpoint
@@ -249,7 +281,12 @@ def get_next_question():
                 logger.info(f"Answer already recorded for session {diagnostic_session.id}, skipping duplicate")
         
         # Get next question using IRT with diagnostic type
-        irt_engine = IRTEngine(diagnostic_session, diagnostic_type=diagnostic_type)
+        logger.info("About to create IRT Engine...")
+        # ИСПРАВЛЕНИЕ: используем правильный diagnostic_type из session_data
+        correct_diagnostic_type = session_data.get('diagnostic_type', 'express')
+        logger.info(f"Using correct diagnostic_type: {correct_diagnostic_type}")
+        irt_engine = IRTEngine(diagnostic_session, diagnostic_type=correct_diagnostic_type)
+        logger.info("IRT Engine created successfully")
         
         # Check if session should terminate
         if irt_engine.should_terminate():
@@ -266,7 +303,12 @@ def get_next_question():
                 'redirect_url': f'/big-diagnostic/results/{diagnostic_session.id}'
             })
         
+        logger.info("About to call irt_engine.select_next_question()...")
         next_question = irt_engine.select_next_question()
+        logger.info(f"select_next_question() returned: {next_question}")
+        if next_question:
+            logger.info(f"Question ID: {next_question.id}")
+            logger.info(f"Question object session: {db.session.object_session(next_question)}")
         if not next_question:
             # No more questions available - complete the session
             diagnostic_session.status = 'completed'
@@ -282,6 +324,38 @@ def get_next_question():
                 'redirect_url': f'/big-diagnostic/results/{diagnostic_session.id}'
             })
         
+        # ИСПРАВЛЕНИЕ: Принудительно перезагружаем объект Question
+        logger.info("About to reload question object from database...")
+        try:
+            # Принудительно перезагружаем объект из базы данных
+            question_id = next_question.id
+            logger.info(f"Reloading question {question_id} from database...")
+            next_question = Question.query.options(
+                db.joinedload(Question.irt_parameters),
+                db.joinedload(Question.big_domain)
+            ).get(question_id)
+            
+            if next_question:
+                logger.info("Question reloaded successfully")
+                # Force load attributes while session is active
+                _ = next_question.id
+                _ = next_question.text
+                _ = next_question.options
+                logger.info("Question attributes loaded successfully")
+            else:
+                logger.error(f"Failed to reload question {question_id}")
+                return safe_jsonify({
+                    'success': False,
+                    'error': 'Question not found'
+                }), 404
+        except Exception as e:
+            logger.error(f"Error reloading question: {e}")
+            logger.error(f"FULL TRACEBACK: {traceback.format_exc()}")
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to load question'
+            }), 500
+        
         diagnostic_session.current_question_id = next_question.id
         db.session.commit()
         
@@ -295,9 +369,47 @@ def get_next_question():
             'estimated_questions_remaining': irt_engine.estimate_questions_remaining()
         }
         
+        # ИСПРАВЛЕНИЕ: Безопасное преобразование в dict
+        logger.info("About to convert question to dict...")
+        try:
+            logger.info("About to call next_question.to_dict()...")
+            question_dict = next_question.to_dict()
+            logger.info("to_dict() completed successfully")
+        except Exception as e:
+            logger.error(f"Error converting question to dict: {e}")
+            logger.error(f"FULL TRACEBACK: {traceback.format_exc()}")
+            logger.info("Using fallback dict creation...")
+            # Fallback: создаем dict вручную
+            try:
+                question_dict = {
+                    'id': next_question.id,
+                    'text': next_question.text,
+                    'options': next_question.options,
+                    'correct_answer_index': next_question.correct_answer_index,
+                    'correct_answer_text': next_question.correct_answer_text,
+                    'explanation': next_question.explanation,
+                    'category': next_question.category,
+                    'domain': next_question.domain,
+                    'difficulty_level': next_question.difficulty_level,
+                    'image_url': next_question.image_url,
+                    'tags': next_question.tags or [],
+                    'irt_params': next_question.get_irt_parameters() if next_question.irt_parameters else None
+                }
+                logger.info("Fallback dict creation completed successfully")
+            except Exception as fallback_error:
+                logger.error(f"Fallback dict creation also failed: {fallback_error}")
+                logger.error(f"FALLBACK TRACEBACK: {traceback.format_exc()}")
+                # Final fallback - return minimal data
+                question_dict = {
+                    'id': getattr(next_question, 'id', 'unknown'),
+                    'text': getattr(next_question, 'text', 'Question text unavailable'),
+                    'options': getattr(next_question, 'options', []),
+                    'error': 'Question data partially unavailable'
+                }
+        
         return safe_jsonify({
             'success': True,
-            'question': next_question.to_dict(),
+            'question': question_dict,
             'session_info': session_info,
             'progress': irt_engine.get_progress_percentage()
         })
@@ -318,17 +430,23 @@ def submit_answer(session_id):
         logger.info(f"Request content type: {request.content_type}")
         logger.info(f"Request is_json: {request.is_json}")
         logger.info(f"Form data: {dict(request.form)}")
+        logger.info(f"Request headers: {dict(request.headers)}")
+        logger.info(f"Current user: {current_user.id if current_user else 'None'}")
+        logger.info(f"Session user_id: {request.session.get('user_id') if hasattr(request, 'session') else 'No session'}")
+        logger.info(f"Request method: {request.method}")
+        logger.info(f"Request URL: {request.url}")
+        logger.info(f"Request remote addr: {request.remote_addr}")
         
         # Get session with validation
         session = DiagnosticSession.query.get_or_404(session_id)
         
         # Validate session ownership
         if session.user_id != current_user.id:
-            return jsonify({'error': 'Unauthorized'}), 403
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
         
         # Validate session status
         if session.status != 'active':
-            return jsonify({'error': 'Session is not active'}), 400
+            return jsonify({'success': False, 'error': 'Session is not active'}), 400
         
         # Get request data - support both JSON and FormData
         data = None
@@ -342,13 +460,17 @@ def submit_answer(session_id):
             data = request.form.to_dict()
             
         if not data:
-            return jsonify({'error': 'No data provided'}), 400
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
         
         logger.info(f"Extracted data: {data}")
+        logger.info(f"Data types: question_id={type(data.get('question_id'))}, selected_option={type(data.get('selected_option'))}, answer={type(data.get('answer'))}")
         
         # Extract data from either JSON or form
         question_id = data.get('question_id')
-        selected_option = data.get('selected_option') or data.get('answer')  # Support both field names
+        # Fix: Handle both field names, but don't use 'or' since 0 is falsy
+        selected_option = data.get('selected_option')
+        if selected_option is None:
+            selected_option = data.get('answer')
         response_time = data.get('response_time')
         
         # If question_id is not provided, get it from the current session
@@ -359,16 +481,24 @@ def submit_answer(session_id):
         
         # Validate required fields
         if not question_id:
-            return jsonify({'error': 'question_id is required'}), 400
+            return jsonify({'success': False, 'error': 'question_id is required'}), 400
         
         if selected_option is None:
-            return jsonify({'error': 'selected_option or answer is required'}), 400
+            return jsonify({'success': False, 'error': 'selected_option or answer is required'}), 400
         
         # Convert selected_option to int if it's a string
         try:
-            selected_option = int(selected_option)
+            # Handle both string and numeric inputs
+            if isinstance(selected_option, str):
+                # Handle empty string case
+                if not selected_option.strip():
+                    return jsonify({'success': False, 'error': 'selected_option cannot be empty'}), 400
+                selected_option = int(selected_option.strip())
+            else:
+                selected_option = int(selected_option)
         except (ValueError, TypeError):
-            return jsonify({'error': 'Invalid selected_option format'}), 400
+            logger.error(f"Invalid selected_option format: {selected_option} (type: {type(selected_option)})")
+            return jsonify({'success': False, 'error': f'Invalid selected_option format: {selected_option}'}), 400
         
         # Validate question exists and belongs to session
         question = Question.query.get_or_404(question_id)
@@ -378,7 +508,7 @@ def submit_answer(session_id):
             try:
                 response_time = float(response_time)
                 if response_time < 0:
-                    return jsonify({'error': 'Invalid response time'}), 400
+                    return jsonify({'success': False, 'error': 'Invalid response time'}), 400
                 if response_time > 300000:  # 5 minutes
                     logger.warning(f"Very long response time: {response_time}ms for user {current_user.id}")
             except (ValueError, TypeError):
@@ -387,7 +517,7 @@ def submit_answer(session_id):
         
         # Validate selected option
         if not isinstance(selected_option, int) or selected_option < 0 or selected_option >= len(question.options):
-            return jsonify({'error': 'Invalid selected option'}), 400
+            return jsonify({'success': False, 'error': 'Invalid selected option'}), 400
         
         # Create response with validation
         response = session.record_response(
@@ -398,9 +528,10 @@ def submit_answer(session_id):
         
         # Validate response creation
         if not response:
-            return jsonify({'error': 'Failed to create response'}), 500
+            return jsonify({'success': False, 'error': 'Failed to create response'}), 500
         
         # Validate IRT parameters before calculation
+        irt_params = None
         if hasattr(question, 'irt_parameters') and question.irt_parameters:
             irt_params = question.irt_parameters
             is_valid, error_msg = validate_irt_parameters_for_calculation(
@@ -411,7 +542,9 @@ def submit_answer(session_id):
             
             if not is_valid:
                 logger.warning(f"Invalid IRT parameters for question {question_id}: {error_msg}")
-                # Continue with fallback calculation
+                irt_params = None  # Use fallback calculation
+        else:
+            logger.info(f"Question {question_id} has no IRT parameters, using fallback calculation")
         
         # Update IRT ability estimate with validation
         try:
@@ -447,17 +580,24 @@ def submit_answer(session_id):
             
         except Exception as e:
             logger.error(f"IRT update failed: {e}")
+            import traceback
+            logger.error(f"IRT error traceback: {traceback.format_exc()}")
             # Fallback calculation
             if session.questions_answered > 0:
                 accuracy = session.correct_answers / session.questions_answered
                 session.current_ability = 2 * (accuracy - 0.5)
                 session.ability_se = 1.0 / (session.questions_answered ** 0.5)
+                logger.info(f"Fallback calculation: ability={session.current_ability:.3f}, SE={session.ability_se:.3f}")
+            else:
+                session.current_ability = 0.0
+                session.ability_se = 1.0
+                logger.info("No questions answered, using default values")
         
         # Validate session data before proceeding
         session_data = session.get_session_data()
         if not session_data:
             logger.error("Failed to get session data")
-            return jsonify({'error': 'Session data error'}), 500
+            return jsonify({'success': False, 'error': 'Session data error'}), 500
         
         diagnostic_type = session_data.get('diagnostic_type', 'express')
         
@@ -504,16 +644,17 @@ def submit_answer(session_id):
                 results = session.generate_results()
                 if not results:
                     logger.error("Failed to generate session results")
-                    return jsonify({'error': 'Failed to generate results'}), 500
+                    return jsonify({'success': False, 'error': 'Failed to generate results'}), 500
             except Exception as e:
                 logger.error(f"Error generating results: {e}")
-                return jsonify({'error': 'Failed to generate results'}), 500
+                return jsonify({'success': False, 'error': 'Failed to generate results'}), 500
         
         # Save all changes
         db.session.commit()
         
         # Prepare response
         response_data = {
+            'success': True,  # Добавляем поле success
             'is_correct': response.is_correct,
             'correct_answer': question.correct_answer_text,
             'explanation': question.explanation,
@@ -526,12 +667,23 @@ def submit_answer(session_id):
         if should_complete:
             response_data['results'] = results
         
+        # Добавляем логирование для отладки
+        logger.info(f"Sending response: {response_data}")
+        
         return jsonify(response_data)
         
     except Exception as e:
         logger.error(f"Error in submit_answer: {e}")
+        import traceback
+        logger.error(f"Submit answer error traceback: {traceback.format_exc()}")
+        logger.error(f"Session ID: {session_id}")
+        logger.error(f"Current user: {current_user.id if current_user else 'None'}")
+        logger.error(f"Request data: {request.get_data()}")
+        logger.error(f"Request method: {request.method}")
+        logger.error(f"Request URL: {request.url}")
+        logger.error(f"Request remote addr: {request.remote_addr}")
         db.session.rollback()
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'success': False, 'error': 'Internal server error', 'details': str(e)}), 500
 
 @diagnostic_bp.route('/results/<int:session_id>')
 @login_required
@@ -1241,7 +1393,7 @@ def generate_study_schedule(results, study_hours_per_week, exam_date=None):
     # Calculate total weeks needed
     if exam_date:
         exam_date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
-        weeks_until_exam = max(1, (exam_date_obj - datetime.now().date()).days // 7)
+        weeks_until_exam = max(1, (exam_date_obj - datetime.now(timezone.utc).date()).days // 7)
     else:
         # Estimate based on current ability and weak domains
         # Calculate weeks needed based on ability gap and domain weights
@@ -1313,7 +1465,7 @@ def generate_milestones(results, study_hours_per_week, exam_date=None):
     # Determine total weeks based on exam date or default
     if exam_date:
         exam_date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
-        total_weeks = max(1, (exam_date_obj - datetime.now().date()).days // 7)
+        total_weeks = max(1, (exam_date_obj - datetime.now(timezone.utc).date()).days // 7)
     else:
         total_weeks = 8  # Default to 8 weeks to match schedule
     

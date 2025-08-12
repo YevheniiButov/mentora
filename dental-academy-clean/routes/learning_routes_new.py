@@ -635,9 +635,16 @@ def complete_study_session(session_id):
         if 'correct_answers' in data:
             session.correct_answers = data['correct_answers']
         
+        # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем план обучения
+        learning_plan = session.learning_plan
+        plan_updated = learning_plan.update_progress_from_session(session)
+        
+        if not plan_updated:
+            current_app.logger.warning(f"Failed to update learning plan {learning_plan.id} from session {session.id}")
+        
         db.session.commit()
         
-        # Trigger ability recalculation
+        # Trigger ability recalculation for additional updates
         algorithm = DailyLearningAlgorithm()
         try:
             algorithm._analyze_current_abilities(current_user.id)
@@ -647,7 +654,10 @@ def complete_study_session(session_id):
         return jsonify({
             'success': True,
             'session_id': session.id,
-            'status': session.status
+            'status': session.status,
+            'plan_updated': plan_updated,
+            'new_progress': learning_plan.overall_progress,
+            'new_ability': learning_plan.current_ability
         })
         
     except Exception as e:
@@ -735,6 +745,13 @@ def complete_study_session_with_irt():
         session.status = 'completed'
         session.completed_at = datetime.now(timezone.utc)
         
+        # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем план обучения
+        learning_plan = session.learning_plan
+        plan_updated = learning_plan.update_progress_from_session(session)
+        
+        if not plan_updated:
+            logger.warning(f"Failed to update learning plan {learning_plan.id} from session {session_id}")
+        
         db.session.commit()
         
         # Update user ability based on responses (with conflict protection)
@@ -751,6 +768,9 @@ def complete_study_session_with_irt():
                     'updated_ability': new_ability,
                     'ability_updated': session.ability_updated,
                     'feedback_processed': session.feedback_processed,
+                    'plan_updated': plan_updated,
+                    'new_progress': learning_plan.overall_progress,
+                    'new_ability': learning_plan.current_ability,
                     'message': 'Session completed and ability updated successfully'
                 })
             else:
@@ -759,6 +779,9 @@ def complete_study_session_with_irt():
                     'session_id': session_id,
                     'ability_updated': session.ability_updated,
                     'feedback_processed': session.feedback_processed,
+                    'plan_updated': plan_updated,
+                    'new_progress': learning_plan.overall_progress,
+                    'new_ability': learning_plan.current_ability,
                     'message': 'Session completed but ability update failed',
                     'warning': 'No valid responses found or IRT parameters missing'
                 })
@@ -913,4 +936,53 @@ def get_session_feedback_status(session_id):
         })
         
     except Exception as e:
-        return jsonify({'error': 'Failed to get feedback status'}), 500 
+        return jsonify({'error': 'Failed to get feedback status'}), 500
+
+
+@daily_learning_bp.route('/reassessment-required')
+@daily_learning_bp.route('/<string:lang>/reassessment-required')
+@login_required
+def reassessment_required(lang='en'):
+    """Показывает страницу с требованием переоценки и прямой ссылкой на диагностику"""
+    from datetime import date
+    from models import PersonalLearningPlan
+    
+    try:
+        # Получаем активный план пользователя
+        active_plan = PersonalLearningPlan.query.filter_by(
+            user_id=current_user.id,
+            status='active'
+        ).first()
+        
+        days_overdue = 0
+        next_diagnostic_date = None
+        
+        if active_plan and active_plan.next_diagnostic_date:
+            today = date.today()
+            if active_plan.next_diagnostic_date < today:
+                days_overdue = (today - active_plan.next_diagnostic_date).days
+            next_diagnostic_date = active_plan.next_diagnostic_date
+        
+        # Определяем сообщение в зависимости от количества дней просрочки
+        if days_overdue > 7:
+            urgency_level = 'critical'
+            message = f'Переоценка просрочена на {days_overdue} дней. Ваши данные устарели и требуют обновления.'
+        elif days_overdue > 3:
+            urgency_level = 'warning'
+            message = f'Переоценка просрочена на {days_overdue} дней. Рекомендуется пройти переоценку для точного планирования обучения.'
+        else:
+            urgency_level = 'info'
+            message = f'Переоценка просрочена на {days_overdue} дней. Пройдите переоценку для продолжения обучения.'
+        
+        return render_template('daily_learning/reassessment_required.html',
+                             days_overdue=days_overdue,
+                             plan=active_plan,
+                             next_diagnostic_date=next_diagnostic_date,
+                             urgency_level=urgency_level,
+                             message=message,
+                             lang=lang)
+        
+    except Exception as e:
+        logger.error(f"Error in reassessment_required: {e}")
+        flash('Произошла ошибка при загрузке страницы переоценки', 'error')
+        return redirect(url_for('daily_learning.learning_map')) 

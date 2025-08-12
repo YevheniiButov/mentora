@@ -22,7 +22,7 @@ import gc
 
 from models import (
     Question, IRTParameters, DiagnosticSession, DiagnosticResponse,
-    StudySession, StudySessionResponse, PersonalLearningPlan, User
+    StudySession, StudySessionResponse, PersonalLearningPlan, User, BIGDomain
 )
 from extensions import db
 
@@ -138,7 +138,7 @@ class QueryOptimizer:
         Returns:
             Список вопросов
         """
-        # Используем JOIN для оптимизации
+        # Сначала пробуем получить вопросы с IRT параметрами
         query = db.session.query(Question).join(IRTParameters)
         
         if domain_code:
@@ -154,8 +154,31 @@ class QueryOptimizer:
             db.joinedload(Question.big_domain)
         )
         
-        # Ограничиваем результат
-        return query.limit(100).all()
+        # Получаем вопросы с IRT параметрами
+        questions_with_irt = query.limit(100).all()
+        
+        # Если есть вопросы с IRT параметрами, возвращаем их
+        if questions_with_irt:
+            return questions_with_irt
+        
+        # ИСПРАВЛЕНИЕ: Если нет вопросов с IRT параметрами, пробуем получить любые вопросы домена
+        if domain_code:
+            # Fallback: получаем все вопросы домена без требования IRT параметров
+            domain = BIGDomain.query.filter_by(code=domain_code).first()
+            if domain:
+                fallback_query = db.session.query(Question).filter(
+                    Question.big_domain_id == domain.id
+                ).options(
+                    db.joinedload(Question.irt_parameters),
+                    db.joinedload(Question.big_domain)
+                )
+                
+                fallback_questions = fallback_query.limit(100).all()
+                if fallback_questions:
+                    return fallback_questions
+        
+        # Если и это не помогло, возвращаем пустой список
+        return []
     
     def optimize_session_query(self, user_id: int, status: str = None) -> List[DiagnosticSession]:
         """

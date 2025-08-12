@@ -229,8 +229,16 @@ class IRTEngine:
             # Предварительная диагностика: 3 вопроса на домен
             self.questions_per_domain = 3
             self.max_questions = 75  # Максимум 75 вопросов
+        elif diagnostic_type == 'full':
+            # Полная диагностика: 3 вопроса на домен
+            self.questions_per_domain = 3
+            self.max_questions = 75  # Максимум 75 вопросов
         elif diagnostic_type == 'readiness':
             # Диагностика готовности: 6 вопросов на домен
+            self.questions_per_domain = 6
+            self.max_questions = 130  # Максимум 130 вопросов
+        elif diagnostic_type == 'comprehensive':
+            # Комплексная диагностика: 6 вопросов на домен
             self.questions_per_domain = 6
             self.max_questions = 130  # Максимум 130 вопросов
         else:
@@ -267,7 +275,11 @@ class IRTEngine:
     def min_questions(self) -> int:
         """Ленивый расчет минимального количества вопросов"""
         if self._min_questions is None:
-            self._min_questions = len(self.all_domains) * self.questions_per_domain
+            # Рассчитываем минимальное количество вопросов
+            calculated_min = len(self.all_domains) * self.questions_per_domain
+            # Но не больше максимального количества вопросов
+            self._min_questions = min(calculated_min, self.max_questions)
+            logger.info(f"Min questions calculated: {calculated_min}, but limited to max_questions: {self._min_questions}")
         return self._min_questions
     
     def load_domain_weights(self) -> Dict[str, float]:
@@ -275,41 +287,57 @@ class IRTEngine:
         return {domain.code: domain.weight_percentage for domain in self.all_domains.values()}
     
     # Оптимизируем метод get_domain_questions с кэшированием
-    @profile_function
     def get_domain_questions(self, domain_code: str, difficulty_range: Optional[Tuple[float, float]] = None, limit: int = 100) -> List[Question]:
         """Получить вопросы для конкретного домена с оптимизацией производительности"""
+        logger.info(f"=== get_domain_questions called for domain: {domain_code} ===")
+        
         # Сначала пробуем получить из кэша
         cached_questions = get_cached_domain_questions(domain_code, difficulty_range)
         if cached_questions:
-            logger.debug(f"Cache hit for domain questions: {domain_code}")
+            logger.info(f"Cache hit for domain questions: {domain_code}, returning {len(cached_questions)} questions")
             return cached_questions[:limit]
         
         # Если нет в кэше, загружаем из базы данных
+        logger.info(f"Cache miss for domain: {domain_code}, loading from database...")
         from utils.performance_optimizer import performance_optimizer
         query_optimizer = performance_optimizer.query_optimizer
         
-        questions = query_optimizer.optimize_question_query(domain_code, difficulty_range)
-        
-        logger.debug(f"Loaded {len(questions)} questions for domain {domain_code} from database")
-        return questions[:limit]
+        try:
+            questions = query_optimizer.optimize_question_query(domain_code, difficulty_range)
+            logger.info(f"Loaded {len(questions)} questions for domain {domain_code} from database")
+            
+            # Проверяем состояние объектов
+            for i, question in enumerate(questions[:3]):  # Проверяем первые 3
+                logger.info(f"Question {i}: id={question.id}, session_state={db.session.object_session(question)}")
+            
+            return questions[:limit]
+        except Exception as e:
+            logger.error(f"Error loading questions for domain {domain_code}: {e}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            return []
     
     # Оптимизируем метод select_next_question_by_domain
-    @profile_function
     def select_next_question_by_domain(self, domain_code: str, current_ability: float = 0.0, answered_question_ids: set = None) -> Optional[Question]:
-        """Выбрать следующий вопрос для конкретного домена с оптимизацией"""
+        """Выбрать следующий вопрос для конкретного домена с оптимизацией и правильным исключением отвеченных"""
         if answered_question_ids is None:
             answered_question_ids = set()
         
-        # Используем оптимизированный запрос
-        questions = self.get_domain_questions(domain_code)
-        logger.info(f"Found {len(questions)} questions for domain {domain_code}")
-        
-        # Исключить уже отвеченные вопросы
-        available_questions = [q for q in questions if q.id not in answered_question_ids]
-        logger.info(f"Available questions after filtering: {len(available_questions)}")
-        
-        if not available_questions:
-            logger.warning(f"No available questions for domain {domain_code}")
+        try:
+            # Используем оптимизированный запрос с прямым исключением отвеченных вопросов
+            questions = self.get_domain_questions(domain_code)
+            logger.info(f"Found {len(questions)} questions for domain {domain_code}")
+            
+            # Исключить уже отвеченные вопросы
+            available_questions = [q for q in questions if q.id not in answered_question_ids]
+            logger.info(f"Available questions after filtering: {len(available_questions)}")
+            
+            if not available_questions:
+                logger.warning(f"No available questions for domain {domain_code} after filtering answered questions: {answered_question_ids}")
+                return None
+        except Exception as e:
+            logger.error(f"Error selecting question for domain {domain_code}: {e}")
             return None
         
         # Детальная проверка IRT параметров с кэшированием
@@ -317,12 +345,34 @@ class IRTEngine:
         questions_without_irt = []
         
         for question in available_questions:
-            # Пробуем получить IRT параметры из кэша
-            irt_params = get_cached_irt_parameters(question.id)
+            # Убеждаемся, что объект Question привязан к session
+            try:
+                # Проверяем, что объект в session
+                _ = question.id
+            except Exception:
+                # Если объект detached, получаем его заново
+                from extensions import db
+                question = Question.query.get(question.id)
+                if not question:
+                    continue
             
-            if irt_params and irt_params.difficulty is not None:
-                questions_with_irt.append(question)
-                logger.debug(f"Question {question.id}: difficulty={irt_params.difficulty}, discrimination={irt_params.discrimination}, guessing={irt_params.guessing}")
+            # Получаем IRT параметры с правильным управлением session
+            irt_params = question.irt_parameters
+            
+            if irt_params:
+                # Убеждаемся, что объект IRTParameters привязан к session
+                try:
+                    # Проверяем, что объект в session
+                    _ = irt_params.id
+                except Exception:
+                    # Если объект detached, получаем его заново
+                    irt_params = IRTParameters.query.get(irt_params.id)
+                
+                if irt_params and irt_params.difficulty is not None:
+                    questions_with_irt.append(question)
+                    logger.debug(f"Question {question.id}: difficulty={irt_params.difficulty}, discrimination={irt_params.discrimination}, guessing={irt_params.guessing}")
+                else:
+                    questions_without_irt.append(question)
             else:
                 questions_without_irt.append(question)
         
@@ -349,9 +399,29 @@ class IRTEngine:
         questions_with_params = []
         
         for question in questions:
-            irt_params = get_cached_irt_parameters(question.id)
-            if irt_params and irt_params.difficulty is not None:
-                questions_with_params.append((question, irt_params))
+            # Убеждаемся, что объект Question привязан к session
+            try:
+                # Проверяем, что объект в session
+                _ = question.id
+            except Exception:
+                # Если объект detached, получаем его заново
+                from extensions import db
+                question = Question.query.get(question.id)
+                if not question:
+                    continue
+            
+            irt_params = question.irt_parameters
+            if irt_params:
+                # Убеждаемся, что объект IRTParameters привязан к session
+                try:
+                    # Проверяем, что объект в session
+                    _ = irt_params.id
+                except Exception:
+                    # Если объект detached, получаем его заново
+                    irt_params = IRTParameters.query.get(irt_params.id)
+                
+                if irt_params and irt_params.difficulty is not None:
+                    questions_with_params.append((question, irt_params))
         
         if not questions_with_params:
             return None
@@ -439,7 +509,6 @@ class IRTEngine:
         }
         
     # Оптимизируем метод estimate_ability с профилированием
-    @profile_function
     def estimate_ability(self, responses: List[Dict]) -> Tuple[float, float]:
         """
         Estimate ability (theta) using Maximum Likelihood Estimation (MLE) with optimization
@@ -541,26 +610,104 @@ class IRTEngine:
             return None
     
     def select_next_question(self) -> Optional[Question]:
-        """Выбрать следующий вопрос для адаптивного тестирования"""
-        if not self.session:
+        """Выбрать следующий вопрос для адаптивного тестирования с правильным отслеживанием отвеченных вопросов"""
+        logger.info("=== IRT ENGINE: select_next_question START ===")
+        
+        # CIRCUIT BREAKER для предотвращения рекурсии
+        if not hasattr(self, '_recursion_counter'):
+            self._recursion_counter = 0
+        
+        if self._recursion_counter > 10:
+            logger.error("CIRCUIT BREAKER: Stopping recursion in select_next_question")
+            self._recursion_counter = 0
             return None
         
-        # Получить историю ответов для анализа покрытия доменов
-        responses = self.session.responses.all()
-        domain_question_counts = {}
-        answered_question_ids = set()
+        self._recursion_counter += 1
         
-        for response in responses:
-            question = response.question
-            answered_question_ids.add(question.id)
-            # Используем big_domain вместо старого поля domain
-            if hasattr(question, 'big_domain') and question.big_domain:
-                domain_code = question.big_domain.code
-                domain_question_counts[domain_code] = domain_question_counts.get(domain_code, 0) + 1
+        if not self.session:
+            logger.error("No session available")
+            self._recursion_counter = 0
+            return None
+        
+        try:
+            # Получить все отвеченные вопросы из базы данных напрямую
+            answered_questions = DiagnosticResponse.query.filter_by(
+                session_id=self.session.id
+            ).with_entities(DiagnosticResponse.question_id).all()
+            
+            answered_question_ids = {q[0] for q in answered_questions}
+            logger.info(f"Session {self.session.id} already answered questions: {answered_question_ids}")
+            
+            # Проверить, есть ли еще доступные вопросы
+            total_questions = Question.query.count()
+            if len(answered_question_ids) >= total_questions:
+                logger.warning(f"All {total_questions} questions have been answered")
+                return None
+            
+            # Получить историю ответов для анализа покрытия доменов
+            logger.info("About to get session responses...")
+            responses = self.session.responses.all()
+            logger.info(f"Found {len(responses)} responses")
+            domain_question_counts = {}
+            
+            for i, response in enumerate(responses):
+                logger.info(f"Processing response {i}: question_id={response.question_id}")
+                try:
+                    logger.info(f"About to access response.question...")
+                    question = response.question
+                    logger.info(f"Question object: {question}")
+                    logger.info(f"Question session state: {db.session.object_session(question)}")
+                    
+                    # Используем big_domain вместо старого поля domain
+                    if hasattr(question, 'big_domain') and question.big_domain:
+                        logger.info(f"About to access question.big_domain...")
+                        big_domain = question.big_domain
+                        logger.info(f"Big domain: {big_domain}")
+                        
+                        logger.info(f"About to access big_domain.code...")
+                        domain_code = big_domain.code
+                        logger.info(f"Domain code: {domain_code}")
+                        
+                        domain_question_counts[domain_code] = domain_question_counts.get(domain_code, 0) + 1
+                        logger.info(f"Updated domain counts: {domain_question_counts}")
+                    else:
+                        logger.info(f"Question {question.id} has no big_domain")
+                except Exception as e:
+                    logger.error(f"Error processing response {i}: {e}")
+                    logger.error(f"Error type: {type(e)}")
+                    import traceback
+                    logger.error(f"Full traceback: {traceback.format_exc()}")
+                    # Continue processing other responses
+                    continue
+        except Exception as e:
+            logger.error(f"Error getting answered questions: {e}")
+            answered_question_ids = set()
+            domain_question_counts = {}
+        
+        # ИСПРАВЛЕНИЕ: Получить только домены с доступными вопросами
+        domains_with_questions = []
+        for domain_code in self.all_domains.keys():
+            # Проверить, есть ли доступные вопросы в домене
+            domain_questions = self.get_domain_questions(domain_code)
+            available_questions = [q for q in domain_questions if q.id not in answered_question_ids]
+            
+            if available_questions:  # Только домены с доступными вопросами
+                domains_with_questions.append(domain_code)
+                logger.debug(f"Domain {domain_code} has {len(available_questions)} available questions")
+            else:
+                logger.debug(f"Domain {domain_code} has no available questions")
+        
+        if not domains_with_questions:
+            logger.warning("No domains with available questions found")
+            logger.info(f"Total domains: {len(self.all_domains)}")
+            logger.info(f"Answered questions: {len(answered_question_ids)}")
+            logger.info(f"Total questions in DB: {Question.query.count()}")
+            self._recursion_counter = 0
+            return None
         
         # Найти домены, которые нуждаются в дополнительных вопросах
         domains_needing_questions = []
-        for domain_code in self.all_domains.keys():
+        for domain_code in domains_with_questions:  # Только домены с вопросами
             current_count = domain_question_counts.get(domain_code, 0)
             if current_count < self.questions_per_domain:
                 domains_needing_questions.append({
@@ -585,24 +732,46 @@ class IRTEngine:
                     return question
             
             # Если не удалось выбрать из приоритетных доменов, попробовать любой домен с вопросами
-            for domain_code in self.all_domains.keys():
+            for domain_code in domains_with_questions:  # Только домены с вопросами
                 question = self.select_next_question_by_domain(domain_code, self.current_ability_estimate, answered_question_ids)
                 if question:
                     return question
         
         # Если все домены покрыты, использовать стандартную логику
         # Найти вопрос с оптимальной сложностью, исключая уже отвеченные
-        all_questions = Question.query.filter(~Question.id.in_(answered_question_ids)).all()
+        # ИСПРАВЛЕНИЕ: Добавляем eager loading для предотвращения detached объектов
+        all_questions = Question.query.options(
+            db.joinedload(Question.irt_parameters),
+            db.joinedload(Question.big_domain)
+        ).filter(~Question.id.in_(answered_question_ids)).all()
         
         if not all_questions:
             # Если все вопросы отвечены, завершить диагностику
+            self._recursion_counter = 0
+            return None
+        
+        # Проверяем и исправляем detached объекты
+        valid_questions = []
+        for question in all_questions:
+            try:
+                # Проверяем, что объект в session
+                _ = question.id
+                valid_questions.append(question)
+            except Exception:
+                # Если объект detached, получаем его заново
+                fresh_question = Question.query.get(question.id)
+                if fresh_question:
+                    valid_questions.append(fresh_question)
+        
+        if not valid_questions:
+            self._recursion_counter = 0
             return None
         
         # Попробовать найти вопрос с оптимальной сложностью
         optimal_question = None
         min_distance = float('inf')
         
-        for question in all_questions:
+        for question in valid_questions:
             if not hasattr(question, 'irt_difficulty') or question.irt_difficulty is None:
                 continue
                 
@@ -616,7 +785,7 @@ class IRTEngine:
         if optimal_question is None:
             # Fallback 1: попробовать найти любой вопрос с IRT параметрами
             questions_with_irt = [
-                q for q in all_questions 
+                q for q in valid_questions 
                 if hasattr(q, 'irt_difficulty') and q.irt_difficulty is not None
             ]
             
@@ -624,10 +793,34 @@ class IRTEngine:
                 # Выбрать случайный вопрос с IRT параметрами
                 import random
                 optimal_question = random.choice(questions_with_irt)
+        
             else:
                 # Fallback 2: если нет вопросов с IRT параметрами, выбрать случайный
                 import random
-                optimal_question = random.choice(all_questions)
+                optimal_question = random.choice(valid_questions)
+        
+        # СБРОС СЧЕТЧИКА РЕКУРСИИ
+        self._recursion_counter = 0
+        
+        if optimal_question:
+            logger.info(f"=== IRT ENGINE: Returning question {optimal_question.id} ===")
+            logger.info(f"Question object session: {db.session.object_session(optimal_question)}")
+            # Force load attributes while session is active
+            try:
+                _ = optimal_question.id
+                _ = optimal_question.text
+                _ = optimal_question.options
+                logger.info("Question attributes loaded successfully")
+            except Exception as e:
+                logger.error(f"Error loading question attributes: {e}")
+                # Try to re-fetch the question
+                optimal_question = Question.query.get(optimal_question.id)
+                logger.info(f"Re-fetched question: {optimal_question}")
+        else:
+            logger.warning("=== IRT ENGINE: No optimal question found ===")
+            logger.info(f"Valid questions count: {len(valid_questions)}")
+            logger.info(f"All questions count: {len(all_questions)}")
+            logger.info(f"Answered questions count: {len(answered_question_ids)}")
         
         return optimal_question
     
@@ -865,6 +1058,16 @@ class IRTEngine:
         Returns:
             Dict with termination info
         """
+        logger.info(f"=== CHECKING TERMINATION CONDITIONS ===")
+        logger.info(f"Session ID: {session.id}")
+        logger.info(f"Questions answered: {session.questions_answered}")
+        logger.info(f"Diagnostic type: {self.diagnostic_type}")
+        logger.info(f"Max questions: {self.max_questions}")
+        logger.info(f"Min questions: {self.min_questions}")
+        logger.info(f"Questions per domain: {self.questions_per_domain}")
+        logger.info(f"Ability SE: {session.ability_se}")
+        logger.info(f"Min SE threshold: {self.min_se_threshold}")
+        
         # Получить только домены с вопросами
         domains_with_questions = []
         for domain_code in self.all_domains.keys():
@@ -872,12 +1075,20 @@ class IRTEngine:
             if questions_count > 0:
                 domains_with_questions.append(domain_code)
         
+        logger.info(f"Domains with questions: {len(domains_with_questions)}")
+        
         # Проверить покрытие доменов (минимум questions_per_domain вопросов на домен)
         min_questions_per_domain = self.questions_per_domain
         total_domains_with_questions = len(domains_with_questions)
-        min_total_questions = total_domains_with_questions * min_questions_per_domain
+        calculated_min_total = total_domains_with_questions * min_questions_per_domain
+        # Ограничиваем минимальное количество максимальным
+        min_total_questions = min(calculated_min_total, self.max_questions)
+        
+        logger.info(f"Calculated min total questions: {calculated_min_total}")
+        logger.info(f"Min total questions needed (limited): {min_total_questions}")
         
         if session.questions_answered < min_total_questions:
+            logger.info(f"CONTINUE: Need more questions for domain coverage")
             return {
                 'should_terminate': False,
                 'reason': 'domain_coverage',
@@ -886,6 +1097,7 @@ class IRTEngine:
         
         # Check minimum questions requirement
         if session.questions_answered < self.min_questions:
+            logger.info(f"CONTINUE: Need more questions (minimum not reached)")
             return {
                 'should_terminate': False,
                 'reason': 'min_questions',
@@ -894,28 +1106,93 @@ class IRTEngine:
         
         # Check maximum questions limit
         if session.questions_answered >= self.max_questions:
+            logger.info(f"TERMINATE: Maximum questions reached ({session.questions_answered} >= {self.max_questions})")
             return {
                 'should_terminate': True,
                 'reason': 'max_questions',
                 'message': f'Maximum {self.max_questions} questions reached'
             }
         
-        # Check precision threshold (only after minimum questions)
-        if session.questions_answered >= self.min_questions and session.ability_se <= self.min_se_threshold:
-            return {
-                'should_terminate': True,
-                'reason': 'precision_reached',
-                'message': 'Sufficient precision achieved'
-            }
+        # Check precision threshold based on session type (ИСПРАВЛЕНИЕ: используем session_type вместо diagnostic_type)
+        session_data = session.get_session_data()
+        session_type = session_data.get('session_type', 'preliminary')
+        diagnostic_type = session_data.get('diagnostic_type', 'preliminary')
+        
+        logger.info(f"Session type: {session_type}, Diagnostic type: {diagnostic_type}")
+        
+        # For preliminary sessions (≤40 questions): Use SE threshold
+        if session_type == 'preliminary':
+            if session.questions_answered >= self.min_questions and session.ability_se <= self.min_se_threshold:
+                logger.info(f"TERMINATE: Sufficient precision achieved for preliminary (SE: {session.ability_se} <= {self.min_se_threshold})")
+                return {
+                    'should_terminate': True,
+                    'reason': 'precision_reached',
+                    'message': 'Sufficient precision achieved for preliminary test'
+                }
+        
+        # For full sessions (75 questions): Use question count primarily, SE threshold only if very confident
+        elif session_type == 'full':
+            min_questions = max(50, session_data.get('estimated_total_questions', 75) * 0.7)
+            max_questions = session_data.get('estimated_total_questions', 75)
+            
+            logger.info(f"Full session: min_questions={min_questions}, max_questions={max_questions}")
+            
+            # Don't terminate early unless really confident
+            if session.questions_answered < min_questions:
+                logger.info(f"CONTINUE: Need more questions for full session (answered: {session.questions_answered} < min: {min_questions})")
+                return {
+                    'should_terminate': False,
+                    'reason': 'min_questions_full',
+                    'message': f'Need at least {min_questions} questions for full diagnostic'
+                }
+            elif session.questions_answered >= max_questions:
+                logger.info(f"TERMINATE: Full session question limit reached ({session.questions_answered} >= {max_questions})")
+                return {
+                    'should_terminate': True,
+                    'reason': 'max_questions_full',
+                    'message': f'Full diagnostic completed ({max_questions} questions)'
+                }
+            else:
+                # Only terminate early if extremely confident (SE < 0.25)
+                if session.ability_se < 0.25:
+                    logger.info(f"TERMINATE: Extremely confident for full session (SE: {session.ability_se} < 0.25)")
+                    return {
+                        'should_terminate': True,
+                        'reason': 'precision_reached_full',
+                        'message': 'Extremely confident - full diagnostic can end early'
+                    }
+        
+        # For comprehensive sessions (130 questions): Use question count only
+        elif session_type == 'comprehensive':
+            max_questions = session_data.get('estimated_total_questions', 130)
+            if session.questions_answered >= max_questions:
+                logger.info(f"TERMINATE: Comprehensive session completed ({session.questions_answered} >= {max_questions})")
+                return {
+                    'should_terminate': True,
+                    'reason': 'max_questions_comprehensive',
+                    'message': f'Comprehensive diagnostic completed ({max_questions} questions)'
+                }
+        
+        # Fallback: Use original SE threshold logic
+        else:
+            if session.questions_answered >= self.min_questions and session.ability_se <= self.min_se_threshold:
+                logger.info(f"TERMINATE: Sufficient precision achieved (fallback) (SE: {session.ability_se} <= {self.min_se_threshold})")
+                return {
+                    'should_terminate': True,
+                    'reason': 'precision_reached',
+                    'message': 'Sufficient precision achieved'
+                }
         
         # Check maximum questions (if set in session)
         if session.test_length and session.questions_answered >= session.test_length:
+            logger.info(f"TERMINATE: Session test length reached ({session.questions_answered} >= {session.test_length})")
             return {
                 'should_terminate': True,
                 'reason': 'max_questions',
                 'message': 'Maximum questions reached'
             }
         
+        logger.info(f"CONTINUE: All conditions met for continuing")
         return {
             'should_terminate': False,
             'reason': 'continue',
@@ -1140,7 +1417,6 @@ class IRTEngine:
             return 12  # 12 weeks as default estimate 
 
     # Оптимизируем метод update_ability_estimate
-    @profile_function
     def update_ability_estimate(self, response: 'DiagnosticResponse') -> Dict[str, float]:
         """
         Update ability estimate with optimization
@@ -1180,38 +1456,75 @@ class IRTEngine:
             return {'ability': 0.0, 'se': 1.0}
 
     def _get_session_responses_optimized(self) -> List[Dict]:
-        """Получить ответы сессии с оптимизацией"""
+        """Получить ответы сессии с оптимизацией и правильным управлением session"""
         if not self.session:
             return []
         
-        # Используем оптимизированный запрос
-        from utils.performance_optimizer import performance_optimizer
-        query_optimizer = performance_optimizer.query_optimizer
-        
-        # Получаем ответы с предзагрузкой связанных данных
-        responses = self.session.responses.options(
-            db.joinedload(DiagnosticResponse.question).joinedload(Question.irt_parameters)
-        ).all()
-        
-        # Преобразуем в формат для IRT расчетов
-        irt_responses = []
-        
-        for response in responses:
-            # Получаем IRT параметры из кэша или базы данных
-            irt_params = get_cached_irt_parameters(response.question_id)
+        try:
+            # Получаем ответы с предзагрузкой связанных данных
+            responses = self.session.responses.options(
+                db.joinedload(DiagnosticResponse.question).joinedload(Question.irt_parameters)
+            ).all()
             
-            if irt_params:
-                irt_responses.append({
-                    'question_id': response.question_id,
-                    'is_correct': response.is_correct,
-                    'irt_params': {
-                        'difficulty': irt_params.difficulty,
-                        'discrimination': irt_params.discrimination,
-                        'guessing': irt_params.guessing
-                    }
-                })
-        
-        return irt_responses
+            # Преобразуем в формат для IRT расчетов
+            irt_responses = []
+            
+            for response in responses:
+                try:
+                    # Получаем IRT параметры напрямую из связанного объекта
+                    # Это гарантирует, что объект привязан к текущей session
+                    irt_params = response.question.irt_parameters
+                    
+                    if irt_params:
+                        # Проверяем, что объект привязан к session
+                        try:
+                            # Проверяем, что объект в session
+                            _ = irt_params.id
+                        except Exception:
+                            # Если объект detached, получаем его заново
+                            irt_params = IRTParameters.query.get(irt_params.id)
+                        
+                        if irt_params:
+                            irt_responses.append({
+                                'question_id': response.question_id,
+                                'is_correct': response.is_correct,
+                                'irt_params': {
+                                    'difficulty': irt_params.difficulty,
+                                    'discrimination': irt_params.discrimination,
+                                    'guessing': irt_params.guessing
+                                }
+                            })
+                    else:
+                        # Fallback: попробуем получить из кэша
+                        cached_params = get_cached_irt_parameters(response.question_id)
+                        if cached_params:
+                            # Убеждаемся, что cached объект привязан к session
+                            try:
+                                # Проверяем, что объект в session
+                                _ = cached_params.id
+                            except Exception:
+                                # Получаем свежий объект из базы данных
+                                fresh_params = IRTParameters.query.get(cached_params.id)
+                                if fresh_params:
+                                    irt_responses.append({
+                                        'question_id': response.question_id,
+                                        'is_correct': response.is_correct,
+                                        'irt_params': {
+                                            'difficulty': fresh_params.difficulty,
+                                            'discrimination': fresh_params.discrimination,
+                                            'guessing': fresh_params.guessing
+                                        }
+                                    })
+                
+                except Exception as e:
+                    logger.warning(f"Error processing response {response.id}: {e}")
+                    continue
+            
+            return irt_responses
+            
+        except Exception as e:
+            logger.error(f"Error in _get_session_responses_optimized: {e}")
+            return []
 
 
 def update_ability_from_session_responses(user_id: int, session_id: int) -> Optional[float]:

@@ -18,7 +18,7 @@ import gzip
 
 from models import (
     Question, IRTParameters, DiagnosticSession, DiagnosticResponse,
-    StudySession, StudySessionResponse, PersonalLearningPlan, User
+    StudySession, StudySessionResponse, PersonalLearningPlan, User, BIGDomain
 )
 from extensions import db
 
@@ -246,15 +246,31 @@ class IRTCacheManager:
             return None
         
         cache_key = f"question:{question_id}"
-        cached_question = self.question_cache.get(cache_key)
+        cached_question_id = self.question_cache.get(cache_key)
         
-        if cached_question:
-            return cached_question
+        if cached_question_id:
+            # Кэшируем только ID, загружаем объект заново
+            logger.debug(f"Cache hit for question {question_id}, reloading from database")
+            fresh_question = Question.query.options(
+                db.joinedload(Question.irt_parameters),
+                db.joinedload(Question.big_domain)
+            ).get(question_id)
+            
+            if fresh_question:
+                return fresh_question
+            else:
+                # Вопрос больше не существует, удаляем из кэша
+                self.question_cache.delete(cache_key)
         
         # Загружаем из базы данных
-        question = Question.query.get(question_id)
+        question = Question.query.options(
+            db.joinedload(Question.irt_parameters),
+            db.joinedload(Question.big_domain)
+        ).get(question_id)
+        
         if question:
-            self.question_cache.set(cache_key, question, ttl_seconds=1800)  # 30 минут
+            # Кэшируем только ID
+            self.question_cache.set(cache_key, question_id, ttl_seconds=1800)  # 30 минут
         
         return question
     
@@ -272,15 +288,24 @@ class IRTCacheManager:
             return None
         
         cache_key = f"irt_params:{question_id}"
-        cached_params = self.irt_params_cache.get(cache_key)
+        cached_params_id = self.irt_params_cache.get(cache_key)
         
-        if cached_params:
-            return cached_params
+        if cached_params_id:
+            # Кэшируем только ID, загружаем объект заново
+            logger.debug(f"Cache hit for IRT params {question_id}, reloading from database")
+            fresh_params = IRTParameters.query.filter_by(question_id=question_id).first()
+            
+            if fresh_params:
+                return fresh_params
+            else:
+                # Параметры больше не существуют, удаляем из кэша
+                self.irt_params_cache.delete(cache_key)
         
         # Загружаем из базы данных
         params = IRTParameters.query.filter_by(question_id=question_id).first()
         if params:
-            self.irt_params_cache.set(cache_key, params, ttl_seconds=3600)  # 1 час
+            # Кэшируем только ID
+            self.irt_params_cache.set(cache_key, params.id, ttl_seconds=3600)  # 1 час
         
         return params
     
@@ -305,18 +330,63 @@ class IRTCacheManager:
         else:
             cache_key = f"domain_questions:{domain_code}"
         
-        cached_questions = self.question_cache.get(cache_key)
+        cached_question_ids = self.question_cache.get(cache_key)
         
-        if cached_questions:
-            return cached_questions
+        if cached_question_ids:
+            # Кэшируем только ID, загружаем объекты заново
+            logger.info(f"Cache hit for domain {domain_code}, reloading {len(cached_question_ids)} questions from database")
+            
+            try:
+                # Загружаем свежие объекты из базы данных по ID
+                fresh_questions = Question.query.options(
+                    db.joinedload(Question.irt_parameters),
+                    db.joinedload(Question.big_domain)
+                ).filter(Question.id.in_(cached_question_ids)).all()
+                
+                logger.info(f"Successfully loaded {len(fresh_questions)} fresh questions from database")
+                
+                # Проверяем, что все вопросы загружены
+                if len(fresh_questions) != len(cached_question_ids):
+                    logger.warning(f"Some questions missing: expected {len(cached_question_ids)}, got {len(fresh_questions)}")
+                    # Обновляем кэш с актуальными ID
+                    actual_ids = [q.id for q in fresh_questions]
+                    self.question_cache.set(cache_key, actual_ids, ttl_seconds=900)
+                
+                return fresh_questions
+                
+            except Exception as e:
+                logger.error(f"Error reloading questions for domain {domain_code}: {e}")
+                logger.error(f"Error type: {type(e)}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                # Очищаем поврежденный кэш
+                self.question_cache.delete(cache_key)
+                logger.info(f"Cleared damaged cache for domain {domain_code}")
         
-        # Загружаем из базы данных
-        from utils.irt_engine import IRTEngine
-        irt_engine = IRTEngine()
-        questions = irt_engine.get_domain_questions(domain_code, difficulty_range)
+        # Загружаем из базы данных напрямую (ИСПРАВЛЕНИЕ РЕКУРСИИ)
+        # from extensions import db  # Уже импортировано в начале файла
+        
+        # Прямой запрос к базе данных без использования IRTEngine
+        domain = BIGDomain.query.filter_by(code=domain_code).first()
+        if not domain:
+            return []
+        
+        query = Question.query.filter_by(big_domain_id=domain.id)
+        
+        if difficulty_range:
+            min_diff, max_diff = difficulty_range
+            query = query.join(IRTParameters).filter(
+                IRTParameters.difficulty >= min_diff,
+                IRTParameters.difficulty <= max_diff
+            )
+        
+        questions = query.limit(100).all()
         
         if questions:
-            self.question_cache.set(cache_key, questions, ttl_seconds=900)  # 15 минут
+            # Кэшируем только ID вопросов
+            question_ids = [q.id for q in questions]
+            self.question_cache.set(cache_key, question_ids, ttl_seconds=900)  # 15 минут
+            logger.info(f"Cached {len(question_ids)} question IDs for domain {domain_code}")
         
         return questions
     

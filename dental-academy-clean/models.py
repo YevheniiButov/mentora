@@ -3122,60 +3122,265 @@ class PersonalLearningPlan(db.Model, JSONSerializableMixin):
     
     def update_after_reassessment(self, new_abilities: dict, reassessment_date: date = None):
         """
-        Update plan after reassessment with new ability estimates
+        Обновляет план после переоценки диагностики
         
         Args:
-            new_abilities: Dict with domain abilities from reassessment
-            reassessment_date: Date of reassessment (default: today)
+            new_abilities: Новые способности по доменам
+            reassessment_date: Дата переоценки (по умолчанию сегодня)
         """
-        from datetime import date, timedelta
-        import json
-        
         if reassessment_date is None:
             reassessment_date = date.today()
         
-        # Update domain analysis with new abilities
-        current_analysis = self.get_domain_analysis()
-        if current_analysis:
-            for domain, ability in new_abilities.items():
-                if domain in current_analysis:
-                    current_analysis[domain]['ability_estimate'] = ability
-                    # Update accuracy based on IRT 3PL model
-                    # P(θ) = c + (1-c) / (1 + exp(-a(θ-b)))
-                    # For typical values: a=1.0, b=0.0, c=0.25
-                    # This gives more realistic accuracy estimates
-                    import math
-                    a, b, c = 1.0, 0.0, 0.25  # Typical IRT parameters
-                    accuracy = c + (1 - c) / (1 + math.exp(-a * (ability - b)))
-                    current_analysis[domain]['accuracy'] = max(0.0, min(1.0, accuracy))
+        # Обновляем domain_analysis с новыми способностями
+        domain_analysis = self.get_domain_analysis()
+        for domain_code, ability in new_abilities.items():
+            if domain_code in domain_analysis:
+                domain_analysis[domain_code]['ability_estimate'] = ability
+                domain_analysis[domain_code]['last_updated'] = reassessment_date.isoformat()
         
-        self.set_domain_analysis(current_analysis)
+        self.set_domain_analysis(domain_analysis)
         
-        # Update weak and strong domains using adaptive thresholds
+        # Пересчитываем weak_domains на основе новых способностей
         weak_domains = self.calculate_adaptive_weak_domains(new_abilities)
-        
-        # Strong domains: θ > +0.5 (approximately 70% accuracy in 3PL model)
-        strong_domains = []
-        for domain, ability in new_abilities.items():
-            if ability > 0.5:  # Strong domains (1 SD above mean)
-                strong_domains.append(domain)
-        
         self.set_weak_domains(weak_domains)
-        self.set_strong_domains(strong_domains)
         
-        # Set next diagnostic date using adaptive scheduling
-        # This will calculate the optimal interval based on user progress and learning patterns
-        self.set_next_diagnostic_date()  # Uses adaptive calculation
+        # Обновляем общую способность (среднее по всем доменам)
+        if new_abilities:
+            self.current_ability = sum(new_abilities.values()) / len(new_abilities)
+        
+        # Устанавливаем дату следующей переоценки (через 14 дней)
+        self.set_next_diagnostic_date(14)
+        
+        # Сбрасываем флаг напоминания
         self.diagnostic_reminder_sent = False
         
-        # Update last_updated
+        # Обновляем timestamp
         self.last_updated = datetime.now(timezone.utc)
         
-        # Log the reassessment update
-        from extensions import db
-        db.session.commit()
+        return self
+    
+    def update_progress_from_session(self, session: 'StudySession') -> bool:
+        """
+        Обновляет прогресс плана обучения на основе завершенной сессии
         
-        return True
+        Args:
+            session: Завершенная StudySession
+            
+        Returns:
+            bool: True если обновление прошло успешно
+        """
+        try:
+            import logging
+            logger = logging.getLogger(__name__)
+            
+            # Проверяем что сессия завершена
+            if session.status != 'completed':
+                logger.warning(f"Session {session.id} is not completed, status: {session.status}")
+                return False
+            
+            # Получаем данные сессии
+            session_accuracy = session.get_accuracy()
+            session_duration = session.actual_duration or 0
+            session_ability_change = session.ability_change or 0
+            
+            logger.info(f"Updating plan {self.id} from session {session.id}: "
+                       f"accuracy={session_accuracy:.2f}, duration={session_duration}min, "
+                       f"ability_change={session_ability_change:.3f}")
+            
+            # 1. ОБНОВЛЯЕМ ОБЩИЙ ПРОГРЕСС
+            # Рассчитываем вклад сессии в общий прогресс
+            session_weight = min(1.0, session_duration / 30.0)  # Нормализуем к 30 минутам
+            progress_contribution = session_weight * session_accuracy * 0.1  # 10% за идеальную сессию
+            
+            # Обновляем overall_progress
+            new_progress = min(100.0, self.overall_progress + progress_contribution)
+            progress_change = new_progress - self.overall_progress
+            self.overall_progress = new_progress
+            
+            logger.info(f"Plan {self.id}: overall_progress {self.overall_progress:.1f}% "
+                       f"(+{progress_change:.1f}%)")
+            
+            # 2. ОБНОВЛЯЕМ IRT СПОСОБНОСТИ
+            if session_ability_change != 0 and session.ability_confidence:
+                # Обновляем способность в соответствующем домене
+                if session.domain:
+                    domain_code = session.domain.code
+                    domain_analysis = self.get_domain_analysis()
+                    
+                    if domain_code in domain_analysis:
+                        old_ability = domain_analysis[domain_code].get('ability_estimate', 0.0)
+                        new_ability = old_ability + session_ability_change
+                        
+                        # Ограничиваем способность разумными пределами
+                        new_ability = max(-3.0, min(3.0, new_ability))
+                        
+                        # Обновляем в domain_analysis
+                        domain_analysis[domain_code]['ability_estimate'] = new_ability
+                        domain_analysis[domain_code]['last_updated'] = datetime.now(timezone.utc).isoformat()
+                        
+                        self.set_domain_analysis(domain_analysis)
+                        
+                        logger.info(f"Plan {self.id}: domain {domain_code} ability "
+                                   f"{old_ability:.3f} → {new_ability:.3f} "
+                                   f"(change: {session_ability_change:.3f})")
+                        
+                        # 3. ПРОВЕРЯЕМ НУЖНО ЛИ ОБНОВИТЬ WEAK_DOMAINS
+                        if abs(session_ability_change) > 0.1:  # Значительное изменение
+                            self._update_weak_domains_if_needed()
+            
+            # 4. ОБНОВЛЯЕМ ОБЩУЮ СПОСОБНОСТЬ
+            domain_analysis = self.get_domain_analysis()
+            if domain_analysis:
+                abilities = [data.get('ability_estimate', 0.0) for data in domain_analysis.values()]
+                if abilities:
+                    new_overall_ability = sum(abilities) / len(abilities)
+                    ability_change = new_overall_ability - self.current_ability
+                    self.current_ability = new_overall_ability
+                    
+                    logger.info(f"Plan {self.id}: overall ability "
+                               f"{self.current_ability:.3f} (change: {ability_change:.3f})")
+            
+            # 5. ОБНОВЛЯЕМ TIMESTAMP
+            self.last_updated = datetime.now(timezone.utc)
+            
+            # 6. ОБНОВЛЯЕМ next_diagnostic_date на основе прогресса
+            if self.overall_progress >= 80:
+                # Для продвинутых учеников - еженедельная переоценка
+                self.set_next_diagnostic_date(7)
+                logger.info(f"Plan {self.id}: Set next diagnostic to 7 days (advanced learner)")
+            else:
+                # Для остальных - двухнедельная переоценка
+                self.set_next_diagnostic_date(14)
+                logger.info(f"Plan {self.id}: Set next diagnostic to 14 days (standard learner)")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error updating plan {self.id} from session {session.id}: {e}")
+            return False
+    
+    def _update_weak_domains_if_needed(self):
+        """
+        Обновляет weak_domains если способности значительно изменились
+        """
+        try:
+            domain_analysis = self.get_domain_analysis()
+            if not domain_analysis:
+                return
+            
+            # Получаем текущие способности
+            current_abilities = {}
+            for domain_code, data in domain_analysis.items():
+                if isinstance(data, dict) and 'ability_estimate' in data:
+                    current_abilities[domain_code] = data['ability_estimate']
+            
+            if not current_abilities:
+                return
+            
+            # Рассчитываем новые weak_domains
+            new_weak_domains = self.calculate_adaptive_weak_domains(current_abilities)
+            current_weak_domains = self.get_weak_domains()
+            
+            # Проверяем есть ли значительные изменения
+            if set(new_weak_domains) != set(current_weak_domains):
+                self.set_weak_domains(new_weak_domains)
+                
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f"Plan {self.id}: weak_domains updated: "
+                           f"{current_weak_domains} → {new_weak_domains}")
+        
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error updating weak_domains for plan {self.id}: {e}")
+    
+    def _recalculate_weak_domains(self):
+        """
+        Пересчитывает weak domains на основе текущего анализа доменов (scores)
+        """
+        try:
+            import logging
+            logger = logging.getLogger(__name__)
+            
+            domain_analysis = self.get_domain_analysis()
+            if not domain_analysis:
+                logger.warning(f"Plan {self.id}: No domain analysis available for recalculation")
+                return
+            
+            # Рассчитываем новые weak и strong domains на основе scores
+            new_weak_domains = []
+            new_strong_domains = []
+            
+            for domain_code, domain_data in domain_analysis.items():
+                if isinstance(domain_data, dict):
+                    score = domain_data.get('score', 0)
+                    
+                    if score < 70:  # Ниже 70% - слабый домен
+                        new_weak_domains.append(domain_code)
+                    elif score >= 85:  # Выше 85% - сильный домен
+                        new_strong_domains.append(domain_code)
+            
+            # Получаем текущие списки для сравнения
+            current_weak = set(self.get_weak_domains())
+            current_strong = set(self.get_strong_domains())
+            new_weak_set = set(new_weak_domains)
+            new_strong_set = set(new_strong_domains)
+            
+            # Обновляем только если есть значительные изменения
+            if current_weak != new_weak_set or current_strong != new_strong_set:
+                self.set_weak_domains(new_weak_domains)
+                self.set_strong_domains(new_strong_domains)
+                
+                logger.info(f"Plan {self.id}: Updated weak domains: {list(current_weak)} → {new_weak_domains}")
+                logger.info(f"Plan {self.id}: Updated strong domains: {list(current_strong)} → {new_strong_domains}")
+                
+                # Если нет слабых доменов, предполагаем готовность к экзамену
+                if len(new_weak_domains) == 0:
+                    self.estimated_readiness = 0.9
+                    logger.info(f"Plan {self.id}: No weak domains found, setting estimated_readiness to 0.9")
+                else:
+                    # Рассчитываем готовность на основе количества слабых доменов
+                    total_domains = len(domain_analysis)
+                    weak_ratio = len(new_weak_domains) / total_domains
+                    self.estimated_readiness = max(0.1, 1.0 - weak_ratio)
+                    logger.info(f"Plan {self.id}: Updated estimated_readiness to {self.estimated_readiness:.2f}")
+        
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error recalculating weak domains for plan {self.id}: {e}")
+    
+    def is_valid_for_daily_tasks(self) -> tuple[bool, str]:
+        """
+        Проверяет, содержит ли план достаточно данных для генерации ежедневных задач
+        
+        Returns:
+            Tuple[bool, str]: (валиден ли план, причина невалидности)
+        """
+        try:
+            # Проверяем weak_domains
+            weak_domains = self.get_weak_domains()
+            if not weak_domains or len(weak_domains) == 0:
+                return False, "No weak domains identified"
+            
+            # Проверяем domain_analysis 
+            domain_analysis = self.get_domain_analysis()
+            if not domain_analysis:
+                return False, "No domain analysis data"
+                
+            # Проверяем, что анализ содержит данные для слабых доменов
+            for domain in weak_domains:
+                if domain not in domain_analysis:
+                    return False, f"Missing analysis for weak domain: {domain}"
+            
+            return True, "Plan is valid"
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error validating plan {self.id} for daily tasks: {e}")
+            return False, f"Validation error: {str(e)}"
     
     def get_adaptive_learning_path(self, target_domain: str = None) -> dict:
         """

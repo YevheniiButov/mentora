@@ -33,12 +33,14 @@ class DailyLearningAlgorithm:
     Интегрирует IRT, Spaced Repetition и Learning Map
     """
     
+    # Пороги для определения сложности
+    WEAK_DOMAIN_THRESHOLD = 0.5  # Порог для слабых доменов (IRT theta)
+    
     def __init__(self):
         self.srs = SimpleSpacedRepetition()
         self.irt_engine = IRTEngine()
         
         # Константы алгоритма
-        self.WEAK_DOMAIN_THRESHOLD = 0.7  # 70% - порог для слабых доменов
         self.MIN_TIME_PER_ITEM = 5  # минимальное время на элемент (минуты)
         self.MAX_TIME_PER_ITEM = 20  # максимальное время на элемент (минуты)
         self.REVIEW_TIME_WEIGHT = 1.5  # множитель времени для повторений
@@ -48,6 +50,55 @@ class DailyLearningAlgorithm:
         self.URGENCY_WEIGHT = 0.3
         self.WEAKNESS_WEIGHT = 0.3
         
+        self._overdue_reviews = []
+    
+    def _validate_learning_plan(self, plan: PersonalLearningPlan) -> Dict:
+        """
+        Валидирует план обучения на наличие необходимых данных
+        
+        Args:
+            plan: PersonalLearningPlan для валидации
+            
+        Returns:
+            Dict с результатом валидации
+        """
+        if not plan:
+            return {
+                'valid': False,
+                'error': 'Learning plan is None',
+                'requires_diagnostic': True,
+                'message': 'План обучения не найден'
+            }
+        
+        # Проверяем связь с диагностической сессией
+        if not plan.diagnostic_session_id:
+            return {
+                'valid': False,
+                'error': 'No diagnostic session linked to learning plan',
+                'requires_diagnostic': True,
+                'message': 'План обучения не связан с диагностикой'
+            }
+        
+        # Используем новый метод валидации из PersonalLearningPlan
+        is_valid, reason = plan.is_valid_for_daily_tasks()
+        if not is_valid:
+            return {
+                'valid': False,
+                'error': reason,
+                'requires_diagnostic': True,
+                'message': f'План обучения невалиден: {reason}'
+            }
+        
+        # Получаем данные для возврата
+        domain_analysis = plan.get_domain_analysis()
+        weak_domains = plan.get_weak_domains()
+        
+        return {
+            'valid': True,
+            'domain_analysis': domain_analysis,
+            'weak_domains': weak_domains
+        }
+    
     def generate_daily_plan(self, user_id: int, target_minutes: int = 30) -> Dict:
         """
         Генерирует ежедневный план обучения с интеграцией IRT + Spaced Repetition
@@ -70,6 +121,49 @@ class DailyLearningAlgorithm:
                 user_id=user_id,
                 status='active'
             ).first()
+            
+            # ПРОВЕРКА ПРОСРОЧЕННОЙ ПЕРЕОЦЕНКИ (ПЕРВЫЙ ПРИОРИТЕТ)
+            if active_plan and active_plan.next_diagnostic_date:
+                from datetime import date
+                today = date.today()
+                
+                if active_plan.next_diagnostic_date < today:
+                    days_overdue = (today - active_plan.next_diagnostic_date).days
+                    
+                    # Блокируем если просрочено более 3 дней
+                    if days_overdue > 3:
+                        logger.warning(f"User {user_id}: Reassessment overdue by {days_overdue} days, blocking daily plan")
+                        return {
+                            'success': False,
+                            'requires_reassessment': True,
+                            'days_overdue': days_overdue,
+                            'message': f'Переоценка просрочена на {days_overdue} дней. Пройдите переоценку для продолжения обучения.',
+                            'next_diagnostic_date': active_plan.next_diagnostic_date.isoformat()
+                        }
+                    else:
+                        # Предупреждение если просрочено менее 3 дней
+                        logger.info(f"User {user_id}: Reassessment overdue by {days_overdue} days, showing warning")
+                        reassessment_warning = True
+            
+            # ВАЛИДАЦИЯ: Проверяем план обучения
+            if active_plan:
+                validation_result = self._validate_learning_plan(active_plan)
+                if not validation_result['valid']:
+                    logger.error(f"User {user_id}: Learning plan validation failed: {validation_result['error']}")
+                    return {
+                        'success': False,
+                        'error': validation_result['error'],
+                        'requires_diagnostic': validation_result['requires_diagnostic'],
+                        'message': validation_result['message']
+                    }
+            else:
+                logger.error(f"User {user_id}: No active learning plan found")
+                return {
+                    'success': False,
+                    'error': 'No active learning plan',
+                    'requires_diagnostic': True,
+                    'message': 'Не найден активный план обучения. Необходимо пройти диагностику.'
+                }
             
             # Проверяем необходимость переоценки, но не блокируем генерацию
             reassessment_warning = False
@@ -107,72 +201,8 @@ class DailyLearningAlgorithm:
             return {
                 'success': False,
                 'error': str(e),
-                'message': 'Ошибка при создании ежедневного плана'
-            }
-            weak_domains = self._identify_weak_domains(abilities, user_id)
-            
-            # Получаем просроченные повторения
-            overdue_reviews = self._get_overdue_reviews(user_id)
-            
-            # Сохраняем для использования в format
-            self._overdue_reviews = overdue_reviews
-            
-            # Рассчитываем приоритеты доменов
-            domain_priorities = self._calculate_domain_priorities(
-                weak_domains, user_id, overdue_reviews
-            )
-            
-            # Распределяем время по приоритетам
-            time_allocation = self._allocate_time_by_priority(
-                domain_priorities, target_minutes, overdue_reviews
-            )
-            
-            # Выбираем контент для каждого домена с учетом адаптивного пути
-            daily_content = self._select_daily_content_with_adaptive_path(
-                time_allocation, abilities, user_id, overdue_reviews, adaptive_path
-            )
-            
-            # Форматируем для Learning Map
-            formatted_plan = self._format_for_learning_map(daily_content, user)
-            
-            # Create StudySession records for each task
-            if active_plan:
-                try:
-                    study_sessions = self._create_study_sessions(formatted_plan['sections'], user, active_plan)
-                    logger.info(f"Created {len(study_sessions)} study sessions for user {user_id}")
-                except Exception as e:
-                    logger.error(f"Error creating study sessions for user {user_id}: {str(e)}")
-                    # Continue without study sessions if creation fails
-            
-            result = {
-                'success': True,
-                'user_id': user_id,
-                'generated_at': datetime.now(timezone.utc).isoformat(),
-                'target_minutes': target_minutes,
-                'total_estimated_time': formatted_plan['total_time'],
-                'abilities': abilities,
-                'weak_domains': weak_domains,
-                'domain_priorities': domain_priorities,
-                'daily_plan': formatted_plan['sections'],
-                'adaptive_path': adaptive_path
-            }
-            
-            # Добавляем предупреждение о переоценке если необходимо
-            if reassessment_warning:
-                result['reassessment_warning'] = True
-                result['warning_message'] = 'Рекомендуется пройти переоценку для корректировки плана обучения'
-                result['reassessment_url'] = f'/big-diagnostic/reassessment/{active_plan.id}' if active_plan else None
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"User {user_id}: Error generating daily plan: {str(e)}", exc_info=True)
-            return {
-                'success': False,
-                'error': str(e),
                 'requires_diagnostic': True,
-                'redirect_url': '/big-diagnostic/choose-type',
-                'message': 'Произошла ошибка при создании плана обучения. Пожалуйста, пройдите диагностическую оценку.'
+                'message': 'Ошибка при создании ежедневного плана. Необходимо пройти диагностику.'
             }
     
     def _analyze_current_abilities(self, user_id: int) -> Dict[str, float]:
@@ -332,29 +362,56 @@ class DailyLearningAlgorithm:
             # Используем weak_domains из плана
             weak_domains = active_plan.get_weak_domains()
             
-            # Валидируем что weak_domains содержат реальные данные
+            # ВАЛИДАЦИЯ: Проверяем что weak_domains содержат реальные данные
             if weak_domains and len(weak_domains) > 0:
                 logger.info(f"User {user_id}: Using {len(weak_domains)} weak domains from learning plan")
                 return weak_domains
             else:
-                logger.warning(f"User {user_id}: No weak domains found in learning plan, calculating from abilities")
+                logger.warning(f"User {user_id}: No weak domains found in learning plan")
         
-        # Если нет плана или weak_domains пустые, определяем по порогу
-        weak_domains = []
-        valid_abilities = 0
+        # ВАЛИДАЦИЯ: Проверяем наличие abilities
+        if not abilities:
+            logger.error(f"User {user_id}: No abilities data provided")
+            raise ValueError("No ability data available. Please complete diagnostic assessment first.")
         
+        # Проверяем что abilities содержат валидные данные
+        valid_abilities = {}
         for domain, ability in abilities.items():
-            # Проверяем что ability - это реальное число
             if isinstance(ability, (int, float)) and ability is not None:
-                valid_abilities += 1
-                if ability < self.WEAK_DOMAIN_THRESHOLD:
-                    weak_domains.append(domain)
+                valid_abilities[domain] = ability
         
-        if valid_abilities == 0:
+        if not valid_abilities:
             logger.error(f"User {user_id}: No valid ability values found in abilities dict")
             raise ValueError("No valid ability data available. Please complete diagnostic assessment first.")
         
-        logger.info(f"User {user_id}: Identified {len(weak_domains)} weak domains from {valid_abilities} valid abilities")
+        # ВАЛИДАЦИЯ: Проверяем наличие диагностической сессии
+        if active_plan and not active_plan.diagnostic_session_id:
+            logger.error(f"User {user_id}: Learning plan has no diagnostic session")
+            raise ValueError("Learning plan not linked to diagnostic session. Please complete diagnostic assessment first.")
+        
+        # Если нет плана или weak_domains пустые, определяем по IRT способностям
+        weak_domains = []
+        
+        # Используем адаптивный порог на основе среднего значения способностей
+        if valid_abilities:
+            avg_ability = sum(valid_abilities.values()) / len(valid_abilities)
+            # Адаптивный порог: 0.5 стандартного отклонения ниже среднего
+            threshold = max(0.1, avg_ability - 0.5)  # Минимум 0.1
+        else:
+            threshold = 0.5  # Fallback порог
+        
+        for domain, ability in valid_abilities.items():
+            if ability < threshold:
+                weak_domains.append(domain)
+        
+        # ВАЛИДАЦИЯ: Проверяем что найдены слабые домены
+        if not weak_domains:
+            logger.warning(f"User {user_id}: No weak domains identified with threshold {threshold}")
+            # Если нет слабых доменов, берем домены с самыми низкими способностями
+            sorted_domains = sorted(valid_abilities.items(), key=lambda x: x[1])
+            weak_domains = [domain for domain, ability in sorted_domains[:3]]  # Топ-3 самых слабых
+        
+        logger.info(f"User {user_id}: Identified {len(weak_domains)} weak domains from {len(valid_abilities)} valid abilities (threshold: {threshold:.2f})")
         return weak_domains
     
     def _get_overdue_reviews(self, user_id: int) -> List[Dict]:
@@ -1359,14 +1416,74 @@ class DailyLearningAlgorithm:
                             active_plan: PersonalLearningPlan, reassessment_warning: bool) -> Dict:
         """Генерирует план обучения используя старую логику (fallback)"""
         try:
+            # ВАЛИДАЦИЯ: Проверяем наличие активного плана
+            if not active_plan:
+                logger.error(f"User {user_id}: No active learning plan found")
+                return {
+                    'success': False,
+                    'error': 'No active learning plan',
+                    'requires_diagnostic': True,
+                    'message': 'Не найден активный план обучения. Необходимо пройти диагностику.'
+                }
+            
+            # ВАЛИДАЦИЯ: Проверяем связь с диагностической сессией
+            if not active_plan.diagnostic_session_id:
+                logger.error(f"User {user_id}: Learning plan has no diagnostic session")
+                return {
+                    'success': False,
+                    'error': 'Learning plan not linked to diagnostic session',
+                    'requires_diagnostic': True,
+                    'message': 'План обучения не связан с диагностикой. Необходимо пройти диагностику.'
+                }
+            
+            # ВАЛИДАЦИЯ: Проверяем наличие domain_analysis
+            domain_analysis = active_plan.get_domain_analysis()
+            if not domain_analysis:
+                logger.error(f"User {user_id}: No domain analysis in learning plan")
+                return {
+                    'success': False,
+                    'error': 'No domain analysis in learning plan',
+                    'requires_diagnostic': True,
+                    'message': 'В плане обучения отсутствует анализ доменов. Необходимо пройти диагностику.'
+                }
+            
             # Анализируем текущие способности
             abilities = self._analyze_current_abilities(user_id)
+            
+            # ВАЛИДАЦИЯ: Проверяем что abilities содержат данные
+            if not abilities:
+                logger.error(f"User {user_id}: No abilities data available")
+                return {
+                    'success': False,
+                    'error': 'No abilities data available',
+                    'requires_diagnostic': True,
+                    'message': 'Отсутствуют данные о способностях. Необходимо пройти диагностику.'
+                }
             
             # Получаем адаптивный путь обучения
             adaptive_path = self._get_adaptive_learning_path(active_plan)
             
             # Определяем слабые домены
-            weak_domains = self._identify_weak_domains(abilities, user_id)
+            try:
+                weak_domains = self._identify_weak_domains(abilities, user_id)
+            except ValueError as e:
+                logger.error(f"User {user_id}: Error identifying weak domains: {e}")
+                return {
+                    'success': False,
+                    'error': str(e),
+                    'requires_diagnostic': True,
+                    'message': 'Ошибка определения слабых областей. Необходимо пройти диагностику.'
+                }
+            
+            # ВАЛИДАЦИЯ: Проверяем что найдены слабые домены
+            if not weak_domains:
+                logger.error(f"User {user_id}: No weak domains identified")
+                return {
+                    'success': False,
+                    'error': 'No weak domains identified',
+                    'requires_diagnostic': True,
+                    'message': 'Не удалось определить слабые области. Необходимо пройти диагностику.'
+                }
             
             # Получаем просроченные повторения
             overdue_reviews = self._get_overdue_reviews(user_id)
@@ -1393,6 +1510,14 @@ class DailyLearningAlgorithm:
             
             # Получаем пользователя для форматирования
             user = User.query.get(user_id)
+            if not user:
+                logger.error(f"User {user_id} not found")
+                return {
+                    'success': False,
+                    'error': 'User not found',
+                    'requires_diagnostic': True,
+                    'message': 'Пользователь не найден.'
+                }
             
             # Форматируем для Learning Map
             formatted_plan = self._format_for_learning_map(daily_content, user)
@@ -1405,11 +1530,12 @@ class DailyLearningAlgorithm:
             return formatted_plan
             
         except Exception as e:
-            logger.error(f"Error in legacy plan generation: {e}")
+            logger.error(f"Error in legacy plan generation for user {user_id}: {e}")
             return {
                 'success': False,
                 'error': str(e),
-                'message': 'Ошибка при создании плана обучения'
+                'requires_diagnostic': True,
+                'message': 'Ошибка при создании плана обучения. Необходимо пройти диагностику.'
             }
     
     def _format_integrated_plan(self, integrated_plan: Dict, user: User, 
@@ -1553,37 +1679,67 @@ def generate_from_personal_plan(personal_plan: PersonalLearningPlan, target_minu
     Generate daily plan using existing PersonalLearningPlan
     """
     try:
+        # ВАЛИДАЦИЯ: Проверяем наличие необходимых данных в плане
+        if not personal_plan:
+            logger.error("PersonalLearningPlan is None")
+            return {
+                'success': False,
+                'error': 'Learning plan not found',
+                'requires_diagnostic': True,
+                'message': 'Необходимо создать план обучения на основе диагностики'
+            }
+        
+        # Проверяем наличие диагностической сессии
+        if not personal_plan.diagnostic_session_id:
+            logger.error(f"PersonalLearningPlan {personal_plan.id} has no diagnostic_session_id")
+            return {
+                'success': False,
+                'error': 'No diagnostic session linked to learning plan',
+                'requires_diagnostic': True,
+                'message': 'План обучения не связан с диагностикой. Необходимо пройти диагностику.'
+            }
+        
+        # Проверяем наличие domain_analysis
+        domain_analysis = personal_plan.get_domain_analysis()
+        if not domain_analysis:
+            logger.error(f"PersonalLearningPlan {personal_plan.id} has no domain_analysis")
+            return {
+                'success': False,
+                'error': 'No domain analysis in learning plan',
+                'requires_diagnostic': True,
+                'message': 'В плане обучения отсутствует анализ доменов. Необходимо пройти диагностику.'
+            }
+        
         # Получаем weak domains из плана
         weak_domains = personal_plan.get_weak_domains()
         
-        # ИСПРАВЛЕНИЕ: Если нет weak_domains, создаем их из domain_analysis
+        # ВАЛИДАЦИЯ: Проверяем что weak_domains не пустые
         if not weak_domains:
-            logger.warning(f"No weak domains in PersonalLearningPlan {personal_plan.id}, creating from domain_analysis")
-            domain_analysis = personal_plan.get_domain_analysis()
+            logger.warning(f"PersonalLearningPlan {personal_plan.id} has empty weak_domains, creating from domain_analysis")
             
-            if domain_analysis:
-                # Создаем weak_domains на основе анализа
-                weak_domains = []
-                for domain_code, domain_data in domain_analysis.items():
-                    if isinstance(domain_data, dict) and domain_data.get('score', 100) < 70:
+            # Создаем weak_domains на основе анализа
+            weak_domains = []
+            for domain_code, domain_data in domain_analysis.items():
+                if isinstance(domain_data, dict):
+                    # Используем score если есть, иначе ability_estimate
+                    score = domain_data.get('score', domain_data.get('ability_estimate', 100))
+                    if score < 70:  # Порог для слабых доменов
                         weak_domains.append(domain_code)
-                
-                # Если все еще нет weak_domains, используем все домены
-                if not weak_domains:
-                    weak_domains = list(domain_analysis.keys())
-                
-                # Сохраняем обновленные weak_domains
-                personal_plan.set_weak_domains(weak_domains)
-                db.session.commit()
-                logger.info(f"Created {len(weak_domains)} weak domains from domain_analysis")
-            else:
-                # Если нет domain_analysis, используем все доступные домены
-                logger.warning(f"No domain_analysis in PersonalLearningPlan {personal_plan.id}, using all domains")
-                from models import BIGDomain
-                all_domains = BIGDomain.query.filter_by(is_active=True).all()
-                weak_domains = [domain.code for domain in all_domains[:5]]  # Берем первые 5 доменов
-                personal_plan.set_weak_domains(weak_domains)
-                db.session.commit()
+            
+            # ВАЛИДАЦИЯ: Если все еще нет weak_domains, это критическая ошибка
+            if not weak_domains:
+                logger.error(f"PersonalLearningPlan {personal_plan.id}: No weak domains could be identified from domain_analysis")
+                return {
+                    'success': False,
+                    'error': 'No weak domains identified in learning plan',
+                    'requires_diagnostic': True,
+                    'message': 'Не удалось определить слабые области. Необходимо пройти диагностику.'
+                }
+            
+            # Сохраняем обновленные weak_domains
+            personal_plan.set_weak_domains(weak_domains)
+            db.session.commit()
+            logger.info(f"Created {len(weak_domains)} weak domains from domain_analysis for plan {personal_plan.id}")
         
         logger.info(f"Generating daily plan from PersonalLearningPlan {personal_plan.id}")
         logger.info(f"Weak domains: {weak_domains}")
@@ -1658,24 +1814,23 @@ def generate_from_personal_plan(personal_plan: PersonalLearningPlan, target_minu
             active_plan=personal_plan
         )
         
-        logger.info(f"Generated {len(study_sessions)} study sessions for plan {personal_plan.id}")
-        
         return {
             'success': True,
-            'daily_plan': {
-                'domains': daily_content,
-                'total_time': total_allocated_time,
-                'session_count': len(study_sessions),
-                'source': 'personal_plan',
-                'plan_id': personal_plan.id
-            },
-            'study_sessions': [s.id for s in study_sessions]
+            'daily_content': daily_content,
+            'study_sessions': study_sessions,
+            'total_allocated_time': total_allocated_time,
+            'weak_domains': weak_domains,
+            'plan_id': personal_plan.id
         }
         
     except Exception as e:
-        logger.error(f"Error generating plan from PersonalLearningPlan {personal_plan.id}: {str(e)}")
-        # ИСПРАВЛЕНИЕ: Вместо возврата ошибки, создаем emergency plan
-        return create_emergency_plan(personal_plan.user_id, target_minutes)
+        logger.error(f"Error in generate_from_personal_plan for plan {personal_plan.id if personal_plan else 'None'}: {e}")
+        return {
+            'success': False,
+            'error': str(e),
+            'requires_diagnostic': True,
+            'message': 'Ошибка при создании ежедневного плана. Необходимо пройти диагностику.'
+        }
 
 def create_emergency_plan(user_id: int, target_minutes: int = 30) -> Dict:
     """
