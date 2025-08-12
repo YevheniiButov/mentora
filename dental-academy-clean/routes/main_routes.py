@@ -286,7 +286,8 @@ def big_info(lang):
     return render_template(
         'big_info/index.html',
         title='BIG Registratie - Complete gids',
-        current_user=current_user
+        current_user=current_user,
+        lang=lang
     )
 
 @main_bp.route('/big-info/eu/<profession>')

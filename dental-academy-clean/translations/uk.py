@@ -565,4 +565,18 @@ translations = {
     'dentist_plural': 'стоматологи',
     'general_practitioner_plural': 'лікарі загальної практики',
     'pharmacist_plural': 'фармацевти',
+    
+    # Knowledge Base translations
+    'categories': 'Категорії',
+    'all_subjects': 'Всі предмети',
+    'favorites': 'Улюблені',
+    'knowledge_base_description': 'Комплексна база знань для всіх предметів та тем',
+    'dentistry': 'Стоматологія',
+    'dentistry_description': 'Комплексні знання зі стоматології та процедури',
+    'view_subject': 'Переглянути предмет',
+    'pharmacology': 'Фармакологія',
+    'pharmacology_description': 'Взаємодія ліків та управління медикаментами',
+    'anatomy_description': 'Людська анатомія та фізіологія',
+    'quick_search': 'Швидкий пошук',
+    'search_placeholder': 'Пошук у базі знань...',
 }

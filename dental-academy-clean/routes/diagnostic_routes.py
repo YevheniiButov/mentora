@@ -1367,7 +1367,7 @@ def generate_learning_plan():
             'success': True,
             'message': 'Learning plan successfully created!',
             'plan_id': plan.id,
-                            'redirect_url': url_for('daily_learning.learning_map', lang='en'),
+                            'redirect_url': url_for('learning_map_bp.learning_map', lang='en'),
             'plan_summary': {
                 'current_ability': plan.current_ability,
                 'target_ability': plan.target_ability,
@@ -2287,7 +2287,7 @@ def complete_session(session_id):
                     'success': True,
                     'message': 'Session completed and learning plan created',
                     'plan_id': plan.id,
-                    'redirect_url': url_for('daily_learning.learning_map', lang='en')
+                    'redirect_url': url_for('learning_map_bp.learning_map', lang='en')
                 })
             else:
                 print(f"🔍 ОТЛАДКА: активный план уже существует {existing_plan.id}")
@@ -2295,7 +2295,7 @@ def complete_session(session_id):
                     'success': True,
                     'message': 'Session completed successfully',
                     'plan_id': existing_plan.id,
-                    'redirect_url': url_for('daily_learning.learning_map', lang='en')
+                    'redirect_url': url_for('learning_map_bp.learning_map', lang='en')
                 })
                 
         except Exception as e:
@@ -2385,7 +2385,7 @@ def update_plan_after_reassessment():
             'current_ability': plan.current_ability,
             'estimated_readiness': plan.estimated_readiness,
             'next_diagnostic_date': plan.next_diagnostic_date.isoformat() if plan.next_diagnostic_date else None,
-            'redirect_url': url_for('daily_learning.learning_map', lang='en')
+            'redirect_url': url_for('learning_map_bp.learning_map', lang='en')
         })
         
     except Exception as e:

@@ -980,4 +980,18 @@ translations = {
     'start_learning_based_on_diagnostic': 'Начать обучение на основе результатов диагностики',
     'focus_on_weak_areas': 'Сосредоточьтесь на областях, где вам нужно улучшение',
     'diagnostic_recommendations': 'Персонализированные рекомендации на основе оценки знаний',
+    
+    # Knowledge Base translations
+    'categories': 'Категории',
+    'all_subjects': 'Все предметы',
+    'favorites': 'Избранное',
+    'knowledge_base_description': 'Комплексная база знаний для всех предметов и тем',
+    'dentistry': 'Стоматология',
+    'dentistry_description': 'Комплексные знания по стоматологии и процедуры',
+    'view_subject': 'Просмотреть предмет',
+    'pharmacology': 'Фармакология',
+    'pharmacology_description': 'Взаимодействие лекарств и управление медикаментами',
+    'anatomy_description': 'Человеческая анатомия и физиология',
+    'quick_search': 'Быстрый поиск',
+    'search_placeholder': 'Поиск в базе знаний...',
 }

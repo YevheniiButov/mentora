@@ -911,4 +911,18 @@ translations = {
     'start_learning_based_on_diagnostic': 'Begin met leren op basis van uw diagnostische resultaten',
     'focus_on_weak_areas': 'Focus op gebieden waar u verbetering nodig heeft',
     'diagnostic_recommendations': 'Gepersonaliseerde aanbevelingen op basis van uw kennistoets',
+    
+    # Knowledge Base translations
+    'categories': 'Categorieën',
+    'all_subjects': 'Alle vakken',
+    'favorites': 'Favorieten',
+    'knowledge_base_description': 'Uitgebreide kennisbank voor alle vakken en onderwerpen',
+    'dentistry': 'Tandheelkunde',
+    'dentistry_description': 'Uitgebreide tandheelkundige kennis en procedures',
+    'view_subject': 'Vak bekijken',
+    'pharmacology': 'Farmacologie',
+    'pharmacology_description': 'Geneesmiddelinteracties en medicatiebeheer',
+    'anatomy_description': 'Menselijke anatomie en fysiologie',
+    'quick_search': 'Snelle zoekactie',
+    'search_placeholder': 'Zoek in kennisbank...',
 }

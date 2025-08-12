@@ -616,4 +616,18 @@ translations = {
     'dentist_plural': 'dentistas',
     'general_practitioner_plural': 'médicos generales',
     'pharmacist_plural': 'farmacéuticos',
+    
+    # Knowledge Base translations
+    'categories': 'Categorías',
+    'all_subjects': 'Todas las materias',
+    'favorites': 'Favoritos',
+    'knowledge_base_description': 'Base de conocimientos integral para todas las materias y temas',
+    'dentistry': 'Odontología',
+    'dentistry_description': 'Conocimientos odontológicos integrales y procedimientos',
+    'view_subject': 'Ver materia',
+    'pharmacology': 'Farmacología',
+    'pharmacology_description': 'Interacciones medicamentosas y gestión de medicamentos',
+    'anatomy_description': 'Anatomía y fisiología humana',
+    'quick_search': 'Búsqueda rápida',
+    'search_placeholder': 'Buscar en base de conocimientos...',
 }

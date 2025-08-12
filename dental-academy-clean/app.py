@@ -337,7 +337,7 @@ try:
     
     # Регистрация новых blueprint-ов системы обучения
     app.register_blueprint(subject_view_bp)
-    app.register_blueprint(learning_map_bp)
+    app.register_blueprint(learning_map_bp, url_prefix='/old-learning-map')  # Старый маршрут с префиксом
     app.register_blueprint(profession_map_bp)  # Профессиональные карты обучения
     app.register_blueprint(lesson_bp, url_prefix='/lesson')
     app.register_blueprint(modules_bp)
@@ -405,9 +405,7 @@ except ImportError as e:
     except ImportError as diagnostic_error:
         logger.warning(f"Could not import Diagnostic routes: {diagnostic_error}")
     
-    @app.route('/big_info')
-    def big_info():
-        return render_template('big_info.html')
+
     
     @app.route('/contact')
     def contact():

@@ -1088,4 +1088,18 @@ translations = {
     'start_learning_based_on_diagnostic': 'Start learning based on your diagnostic results',
     'focus_on_weak_areas': 'Focus on areas where you need improvement',
     'diagnostic_recommendations': 'Personalized recommendations based on your knowledge assessment',
+    
+    # Knowledge Base translations
+    'categories': 'Categories',
+    'all_subjects': 'All Subjects',
+    'favorites': 'Favorites',
+    'knowledge_base_description': 'Comprehensive knowledge base for all subjects and topics',
+    'dentistry': 'Dentistry',
+    'dentistry_description': 'Comprehensive dental knowledge and procedures',
+    'view_subject': 'View Subject',
+    'pharmacology': 'Pharmacology',
+    'pharmacology_description': 'Drug interactions and medication management',
+    'anatomy_description': 'Human anatomy and physiology',
+    'quick_search': 'Quick Search',
+    'search_placeholder': 'Search knowledge base...',
 }
