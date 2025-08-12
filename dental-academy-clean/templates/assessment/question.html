@@ -348,17 +348,18 @@ function nextQuestion() {
     });
 }
 
-function finishAssessment() {
+async function finishAssessment() {
     if (selectedOption === null) return;
     
-    submitAnswer().then((result) => {
+    try {
+        const result = await submitAnswer();
         if (result && result.success) {
             // Go to results
             window.location.href = '{{ url_for("diagnostic.show_results", session_id=session_id) }}';
         }
-    }).catch((error) => {
+    } catch (error) {
         console.error('Error in finishAssessment:', error);
-    });
+    }
 }
 
 function forceFinishDiagnostic() {
@@ -406,6 +407,18 @@ async function completeDiagnostic() {
 async function submitAnswer() {
     if (selectedOption === null) return;
     
+    // Защита от двойной отправки
+    const submitBtn = document.getElementById('submit-answer-btn');
+    if (submitBtn && submitBtn.disabled) {
+        console.log('Answer submission already in progress');
+        return;
+    }
+    
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '{{ t("sending", lang) | default("Sending...") }}';
+    }
+    
     showLoading('{{ t("sending_answer", lang) | default("Sending answer") }}...');
     
     try {
@@ -451,7 +464,20 @@ async function submitAnswer() {
         showModal('{{ t("error", lang) | default("Error") }}', '{{ t("answer_submission_error", lang) | default("An error occurred while sending the answer") }}', [
             { text: 'OK', class: 'btn-primary', onclick: hideModal }
         ]);
+        
+        // Восстановить кнопку при ошибке
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '{{ t("submit_answer", lang) | default("Submit Answer") }}';
+        }
+        
         throw error;
+    } finally {
+        // Восстановить кнопку в любом случае
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '{{ t("submit_answer", lang) | default("Submit Answer") }}';
+        }
     }
 }
 
