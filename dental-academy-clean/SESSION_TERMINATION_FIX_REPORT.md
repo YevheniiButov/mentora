@@ -79,3 +79,5 @@ min_total_questions = min(calculated_min_total, self.max_questions)
 - **Readiness**: ~130 вопросов
 
 **Система больше не завершает тесты преждевременно.**
+
+

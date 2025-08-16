@@ -115,3 +115,5 @@ logger.info(f"Session type: {session_type}, Diagnostic type: {diagnostic_type}")
 - **Readiness**: ~130 вопросов (по количеству вопросов)
 
 **Система больше не завершает 75-вопросные тесты преждевременно.**
+
+
