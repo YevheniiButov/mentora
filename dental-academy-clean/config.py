@@ -1,5 +1,5 @@
 # config.py - Конфигурация приложения Mentora Clean
-# Включает настройки для DigiD интеграции
+# Включает настройки для DigiD интеграции и Email
 
 import os
 from datetime import timedelta
@@ -42,6 +42,22 @@ class Config:
     # Кэш
     CACHE_TYPE = 'simple'
     CACHE_DEFAULT_TIMEOUT = 300
+    
+    # Email Configuration - MailerSend
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.mailersend.net')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
+    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'false').lower() in ['true', 'on', '1']
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'MS_YwCYSg@test-xkjn41mk01p4z781.mlsender.net')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'mssp.CROpK2q.neqvygmxp9zl0p7w.SF9NBoE')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Mentora <noreply@test-xkjn41mk01p4z781.mlsender.net>')
+    
+    # Email Confirmation
+    EMAIL_CONFIRMATION_EXPIRES = 3600  # 1 hour
+    EMAIL_CONFIRMATION_SALT = os.environ.get('EMAIL_CONFIRMATION_SALT', 'email-confirmation-salt')
+    
+    # Development mode - suppress email sending
+    MAIL_SUPPRESS_SEND = os.environ.get('MAIL_SUPPRESS_SEND', 'false').lower() in ['true', 'on', '1']
     
     # DigiD Configuration
     DIGID_ENABLED = True
@@ -272,4 +288,6 @@ if __name__ == '__main__':
     print(f"   DigiD Enabled: {current_config.DIGID_ENABLED}")
     print(f"   DigiD Mock Mode: {current_config.DIGID_MOCK_MODE}")
     print(f"   DigiD Session Timeout: {current_config.DIGID_SESSION_TIMEOUT} seconds")
-    print(f"   DigiD Base URL: {current_config.DIGID_BASE_URL}") 
+    print(f"   DigiD Base URL: {current_config.DIGID_BASE_URL}")
+    print(f"   Email Server: {current_config.MAIL_SERVER}")
+    print(f"   Email Suppress Send: {current_config.MAIL_SUPPRESS_SEND}")

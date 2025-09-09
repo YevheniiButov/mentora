@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template, g, send_from_directory, request, session, current_app, jsonify, redirect, url_for
 from flask_login import current_user, login_required
 from models import LearningPath, Subject, Module, Lesson, UserProgress
+from extensions import db
 
 # Создаем blueprint с языковой поддержкой
 main_bp = Blueprint('main', __name__, url_prefix='/<string:lang>')
@@ -357,264 +358,183 @@ def favicon():
 @login_required
 def community(lang):
     """Community forum page"""
-    return render_template('community/index.html', lang=lang)
+    from models import ForumCategory, ForumTopic
+    
+    # Получаем все категории с количеством тем
+    categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
+    
+    # Получаем последние темы
+    recent_topics = ForumTopic.query.order_by(ForumTopic.created_at.desc()).limit(10).all()
+    
+    # Получаем популярные темы (по количеству просмотров)
+    popular_topics = ForumTopic.query.order_by(ForumTopic.views_count.desc()).limit(5).all()
+    
+    return render_template('community/index.html', 
+                         categories=categories,
+                         recent_topics=recent_topics,
+                         popular_topics=popular_topics,
+                         lang=lang)
 
 @main_bp.route('/community/category/<category>')
 @login_required
 def community_category(lang, category):
     """Community category page"""
-    # Данные для разных категорий
-    categories_data = {
-        'trending': {
-            'title': 'Trending Discussions',
-            'topics': [
-                {
-                    'id': 1,
-                    'title': 'Complex Root Canal with Unusual Anatomy - Need Advice',
-                    'author': 'Dr. Sarah Johnson',
-                    'time': '2 hours ago',
-                    'category': 'Endodontics',
-                    'preview': 'Patient presents with a maxillary first molar with 4 canals and unusual MB2 anatomy...',
-                    'replies': 12,
-                    'views': 89,
-                    'likes': 5,
-                    'status': 'new'
-                },
-                {
-                    'id': 2,
-                    'title': 'Modern Implant Techniques - Best Practices Discussion',
-                    'author': 'Dr. Emma Rodriguez',
-                    'time': '3 hours ago',
-                    'category': 'Expert Advice',
-                    'preview': 'Let\'s discuss the latest advances in implant dentistry...',
-                    'replies': 8,
-                    'views': 67,
-                    'likes': 3,
-                    'status': 'normal'
-                }
-            ]
-        },
-        'clinical-cases': {
-            'title': 'Clinical Cases',
-            'topics': [
-                {
-                    'id': 3,
-                    'title': 'Pediatric Dentistry - Behavior Management Techniques',
-                    'author': 'Dr. Lisa Wang',
-                    'time': '1 day ago',
-                    'category': 'Clinical Cases',
-                    'preview': 'Share your most effective behavior management techniques for pediatric patients...',
-                    'replies': 22,
-                    'views': 156,
-                    'likes': 12,
-                    'status': 'normal'
-                },
-                {
-                    'id': 4,
-                    'title': 'Emergency Case: Acute Dental Trauma',
-                    'author': 'Dr. Robert Smith',
-                    'time': '4 hours ago',
-                    'category': 'Clinical Cases',
-                    'preview': 'Patient with fractured anterior tooth after sports injury...',
-                    'replies': 15,
-                    'views': 98,
-                    'likes': 7,
-                    'status': 'new'
-                }
-            ]
-        },
-        'study-materials': {
-            'title': 'Study Materials',
-            'topics': [
-                {
-                    'id': 5,
-                    'title': '📌 BIG Exam Study Guide - Periodontics Section',
-                    'author': 'Dr. Michael Chen',
-                    'time': '1 day ago',
-                    'category': 'Study Materials',
-                    'preview': 'Comprehensive study notes for the periodontics section of the BIG exam...',
-                    'replies': 34,
-                    'views': 234,
-                    'likes': 18,
-                    'status': 'pinned'
-                },
-                {
-                    'id': 6,
-                    'title': 'Anatomy Review: Cranial Nerves in Dentistry',
-                    'author': 'Dr. Anna Kowalski',
-                    'time': '2 days ago',
-                    'category': 'Study Materials',
-                    'preview': 'Detailed review of cranial nerves relevant to dental practice...',
-                    'replies': 28,
-                    'views': 189,
-                    'likes': 14,
-                    'status': 'normal'
-                }
-            ]
-        },
-        'expert-advice': {
-            'title': 'Expert Advice',
-            'topics': [
-                {
-                    'id': 7,
-                    'title': 'Practice Management: Patient Communication Strategies',
-                    'author': 'Dr. Jennifer Davis',
-                    'time': '6 hours ago',
-                    'category': 'Expert Advice',
-                    'preview': 'What communication techniques do you find most effective...',
-                    'replies': 19,
-                    'views': 145,
-                    'likes': 9,
-                    'status': 'normal'
-                }
-            ]
-        },
-        'research': {
-            'title': 'Research & Publications',
-            'topics': [
-                {
-                    'id': 8,
-                    'title': 'Latest Research on Bioactive Materials',
-                    'author': 'Dr. Carlos Mendez',
-                    'time': '1 day ago',
-                    'category': 'Research',
-                    'preview': 'Review of recent studies on bioactive materials in restorative dentistry...',
-                    'replies': 11,
-                    'views': 87,
-                    'likes': 6,
-                    'status': 'normal'
-                }
-            ]
-        },
-        'equipment': {
-            'title': 'Equipment & Technology',
-            'topics': [
-                {
-                    'id': 9,
-                    'title': 'Digital Workflow Integration - Software Recommendations',
-                    'author': 'Dr. Alex Kim',
-                    'time': '5 hours ago',
-                    'category': 'Equipment',
-                    'preview': 'Looking to upgrade our digital workflow. What software solutions...',
-                    'replies': 15,
-                    'views': 112,
-                    'likes': 3,
-                    'status': 'normal'
-                }
-            ]
-        }
-    }
+    from models import ForumCategory, ForumTopic
     
-    category_data = categories_data.get(category, categories_data['trending'])
+    # Находим категорию по slug
+    forum_category = ForumCategory.query.filter_by(slug=category, is_active=True).first()
+    
+    if not forum_category:
+        return redirect(url_for('main.community', lang=lang))
+    
+    # Получаем темы в этой категории
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    # Сначала закрепленные темы, потом обычные
+    topics_query = ForumTopic.query.filter_by(category_id=forum_category.id)
+    topics = topics_query.order_by(
+        ForumTopic.is_sticky.desc(),
+        ForumTopic.created_at.desc()
+    ).paginate(
+        page=page, 
+        per_page=per_page, 
+        error_out=False
+    )
+    
+    # Получаем все категории для навигации
+    all_categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
+    
     return render_template('community/category.html', 
                          category=category,
-                         category_data=category_data,
+                         forum_category=forum_category,
+                         topics=topics,
+                         all_categories=all_categories,
                          lang=lang)
 
 @main_bp.route('/community/topic/<int:topic_id>')
 @login_required
 def community_topic(lang, topic_id):
     """Individual topic page"""
-    # Данные для тем (в реальном приложении это было бы из базы данных)
-    topics_data = {
-        1: {
-            'id': 1,
-            'title': 'Complex Root Canal with Unusual Anatomy - Need Advice',
-            'author': 'Dr. Sarah Johnson',
-            'time': '2 hours ago',
-            'category': 'Endodontics',
-            'content': '''
-            <p>Hello everyone,</p>
-            <p>I have a challenging case that I'd like to discuss with the community. Patient presents with a maxillary first molar with 4 canals and unusual MB2 anatomy. The patient is experiencing severe pain and the tooth has been previously treated.</p>
-            
-            <h4>Case Details:</h4>
-            <ul>
-                <li>Patient: 45-year-old female</li>
-                <li>Tooth: Maxillary first molar (#3)</li>
-                <li>Previous treatment: Incomplete root canal 2 years ago</li>
-                <li>Current symptoms: Severe pain, especially to percussion</li>
-            </ul>
-            
-            <h4>Radiographic Findings:</h4>
-            <p>CBCT shows unusual MB2 canal configuration with multiple accessory canals. The MB2 appears to have a complex branching pattern.</p>
-            
-            <p>Has anyone encountered similar cases? I'm looking for treatment approach recommendations and any tips for managing this type of anatomy.</p>
-            
-            <p>Thanks in advance for your insights!</p>
-            ''',
-            'replies': [
-                {
-                    'id': 1,
-                    'author': 'Dr. Michael Chen',
-                    'time': '1 hour ago',
-                    'content': 'I had a similar case last month. The key is to use a surgical operating microscope and take your time with the MB2. I recommend using a small file (#08 or #10) initially to negotiate the canal.',
-                    'likes': 8
-                },
-                {
-                    'id': 2,
-                    'author': 'Dr. Emma Rodriguez',
-                    'time': '45 minutes ago',
-                    'content': 'Agree with Dr. Chen. Also, consider using ultrasonic tips to remove any calcifications. The MB2 in these cases is often calcified and requires careful negotiation.',
-                    'likes': 5
-                },
-                {
-                    'id': 3,
-                    'author': 'Dr. Lisa Wang',
-                    'time': '30 minutes ago',
-                    'content': 'I would also recommend taking multiple working length radiographs from different angles. The MB2 often has a curved path that can be missed on standard views.',
-                    'likes': 3
-                }
-            ],
-            'views': 89,
-            'likes': 5
-        },
-        2: {
-            'id': 2,
-            'title': 'Modern Implant Techniques - Best Practices Discussion',
-            'author': 'Dr. Emma Rodriguez',
-            'time': '3 hours ago',
-            'category': 'Expert Advice',
-            'content': '''
-            <p>Let's discuss the latest advances in implant dentistry. What techniques are you using? Any tips for improving success rates?</p>
-            
-            <p>I've been using guided surgery more frequently and have seen excellent results. The precision and predictability are remarkable.</p>
-            
-            <p>What are your thoughts on immediate loading protocols? I've had good success with single tooth implants, but I'm more conservative with full arch cases.</p>
-            ''',
-            'replies': [
-                {
-                    'id': 1,
-                    'author': 'Dr. Alex Kim',
-                    'time': '2 hours ago',
-                    'content': 'I\'ve been using digital workflows for all my implant cases. The combination of CBCT, intraoral scanning, and guided surgery has significantly improved my outcomes.',
-                    'likes': 6
-                },
-                {
-                    'id': 2,
-                    'author': 'Dr. Sarah Johnson',
-                    'time': '1 hour ago',
-                    'content': 'For immediate loading, I stick to single tooth implants in the anterior region with good primary stability. Full arch cases I still prefer delayed loading.',
-                    'likes': 4
-                }
-            ],
-            'views': 67,
-            'likes': 3
-        }
-    }
+    from models import ForumTopic, ForumPost, ForumCategory
     
-    topic_data = topics_data.get(topic_id)
-    if not topic_data:
-        return redirect(url_for('main.community', lang=lang))
+    # Находим тему
+    topic = ForumTopic.query.get_or_404(topic_id)
+    
+    # Увеличиваем счетчик просмотров
+    topic.increment_views()
+    
+    # Получаем посты в теме
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    posts = ForumPost.query.filter_by(
+        topic_id=topic_id, 
+        is_deleted=False
+    ).order_by(ForumPost.created_at.asc()).paginate(
+        page=page, 
+        per_page=per_page, 
+        error_out=False
+    )
+    
+    # Получаем все категории для навигации
+    all_categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
     
     return render_template('community/topic.html', 
-                         topic=topic_data,
+                         topic=topic,
+                         posts=posts,
+                         all_categories=all_categories,
                          lang=lang)
 
 @main_bp.route('/community/new-topic')
 @login_required
 def new_topic(lang):
     """Create new topic page"""
-    return render_template('community/new_topic.html', lang=lang)
+    from models import ForumCategory
+    
+    # Получаем все категории для выбора
+    categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
+    
+    return render_template('community/new_topic.html', 
+                         categories=categories,
+                         lang=lang)
+
+@main_bp.route('/community/create-topic', methods=['POST'])
+@login_required
+def create_topic(lang):
+    """Create new topic"""
+    from models import ForumTopic, ForumPost, ForumCategory
+    from flask import jsonify
+    
+    try:
+        data = request.get_json()
+        
+        title = data.get('title', '').strip()
+        content = data.get('content', '').strip()
+        category_id = data.get('category_id')
+        
+        # Валидация
+        if not title or not content or not category_id:
+            return jsonify({
+                'success': False,
+                'error': 'Все поля обязательны для заполнения'
+            }), 400
+        
+        if len(title) < 5:
+            return jsonify({
+                'success': False,
+                'error': 'Заголовок должен содержать минимум 5 символов'
+            }), 400
+        
+        if len(content) < 10:
+            return jsonify({
+                'success': False,
+                'error': 'Содержимое должно содержать минимум 10 символов'
+            }), 400
+        
+        # Проверяем существование категории
+        category = ForumCategory.query.get(category_id)
+        if not category:
+            return jsonify({
+                'success': False,
+                'error': 'Категория не найдена'
+            }), 400
+        
+        # Создаем тему
+        topic = ForumTopic(
+            title=title,
+            content=content,
+            category_id=category_id,
+            author_id=current_user.id
+        )
+        
+        db.session.add(topic)
+        db.session.flush()  # Получаем ID темы
+        
+        # Создаем первый пост (содержимое темы)
+        post = ForumPost(
+            content=content,
+            topic_id=topic.id,
+            author_id=current_user.id
+        )
+        
+        db.session.add(post)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Тема успешно создана',
+            'topic_id': topic.id,
+            'redirect_url': url_for('main.community_topic', lang=lang, topic_id=topic.id)
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error creating topic: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при создании темы'
+        }), 500
 
 @main_bp.route('/test')
 def test_page():

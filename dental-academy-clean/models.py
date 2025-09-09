@@ -41,14 +41,25 @@ class User(db.Model, UserMixin):
     digid_verified = db.Column(db.Boolean, default=False)
     created_via_digid = db.Column(db.Boolean, default=False)
     
+    # Email Confirmation fields
+    email_confirmed = db.Column(db.Boolean, default=False)
+    email_confirmation_token = db.Column(db.String(100), nullable=True, index=True)
+    email_confirmation_sent_at = db.Column(db.DateTime, nullable=True)
+    
+    # Password Reset fields
+    password_reset_token = db.Column(db.String(100), nullable=True, index=True)
+    password_reset_sent_at = db.Column(db.DateTime, nullable=True)
+    
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
     
     # Personal Information (Extended Profile)
     profile_photo = db.Column(db.String(255), nullable=True)  # Path to profile photo
     phone = db.Column(db.String(20), nullable=True)
+    country_code = db.Column(db.String(10), nullable=True)  # Country code for phone
     birth_date = db.Column(db.Date, nullable=True)
     gender = db.Column(db.String(10), nullable=True)  # male, female, other
+    nationality = db.Column(db.String(50), nullable=True)  # Nationality
     
     # Registration completion fields
     registration_completed = db.Column(db.Boolean, default=False)
@@ -57,15 +68,29 @@ class User(db.Model, UserMixin):
     language_certificate = db.Column(db.String(255), nullable=True)  # Path to uploaded language certificate
     
     # Professional Information (Extended)
-    big_number = db.Column(db.String(20), nullable=True)  # BIG registration number
     workplace = db.Column(db.String(255), nullable=True)  # Current workplace/practice
     specialization = db.Column(db.String(100), nullable=True)  # Medical specialization
-    registration_date = db.Column(db.Date, nullable=True)  # Date when BIG was obtained
-    license_expiry = db.Column(db.Date, nullable=True)  # BIG license expiry date
+    other_profession = db.Column(db.String(100), nullable=True)  # Custom profession if "other" selected
+    other_nationality = db.Column(db.String(100), nullable=True)  # Custom nationality if "other" selected
+    other_legal_status = db.Column(db.String(100), nullable=True)  # Custom legal status if "other" selected
     
     # Additional Documents (JSON field for flexibility)
     additional_documents = db.Column(db.Text, nullable=True)  # JSON array of document paths
     language_certificates = db.Column(db.Text, nullable=True)  # JSON array of language cert paths
+    
+    # Extended Registration Information
+    legal_status = db.Column(db.String(50), nullable=True)  # EU citizen, non-EU resident, etc.
+    dutch_level = db.Column(db.String(10), nullable=True)  # A1, A2, B1, B2, C1, C2, native
+    english_level = db.Column(db.String(10), nullable=True)  # A1, A2, B1, B2, C1, C2, native
+    idw_assessment = db.Column(db.String(50), nullable=True)  # completed, in_progress, not_started, not_required
+    big_exam_registered = db.Column(db.String(50), nullable=True)  # registered, not_registered, planning_to_register
+    exam_date = db.Column(db.Date, nullable=True)  # Planned exam date
+    preparation_time = db.Column(db.String(50), nullable=True)  # 1_month, 3_months, 6_months, 1_year, more_than_year
+    
+    # Additional Text Information
+    diploma_info = db.Column(db.Text, nullable=True)  # Information about diploma/certificate
+    work_experience = db.Column(db.Text, nullable=True)  # Work experience description
+    additional_qualifications = db.Column(db.Text, nullable=True)  # Additional qualifications
     
     # Account status
     is_active = db.Column(db.Boolean, default=True)
@@ -87,6 +112,11 @@ class User(db.Model, UserMixin):
     
     # Subscription
     has_subscription = db.Column(db.Boolean, default=False)
+    
+    # Consent fields (new simplified structure)
+    required_consents = db.Column(db.Boolean, default=False)  # Terms, Privacy, Data Processing, Data Usage
+    optional_consents = db.Column(db.Boolean, default=False)  # Marketing, Newsletter, Research
+    digital_signature = db.Column(db.String(255), nullable=True)  # Digital signature text
     
     # Learning flow control
     requires_diagnostic = db.Column(db.Boolean, default=True)  # Flag to redirect new users to diagnostic
@@ -264,6 +294,199 @@ class User(db.Model, UserMixin):
     def can_use_password_auth(self):
         """Check if user can authenticate with password"""
         return self.password_hash is not None
+    
+    def generate_email_confirmation_token(self):
+        """Generate email confirmation token"""
+        import secrets
+        import hashlib
+        from datetime import datetime, timezone
+        
+        # Generate random token
+        token = secrets.token_urlsafe(32)
+        
+        # Create hash of token for storage
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        
+        self.email_confirmation_token = token_hash
+        self.email_confirmation_sent_at = datetime.now(timezone.utc)
+        
+        return token
+    
+    def verify_email_confirmation_token(self, token):
+        """Verify email confirmation token"""
+        import hashlib
+        from datetime import datetime, timezone, timedelta
+        
+        if not self.email_confirmation_token:
+            return False
+        
+        # Check if token is expired (1 hour)
+        if self.email_confirmation_sent_at:
+            expiry_time = self.email_confirmation_sent_at + timedelta(seconds=3600)
+            if datetime.now(timezone.utc) > expiry_time:
+                return False
+        
+        # Verify token hash
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        return token_hash == self.email_confirmation_token
+    
+    def confirm_email(self):
+        """Confirm user's email"""
+        self.email_confirmed = True
+        self.email_confirmation_token = None
+        self.email_confirmation_sent_at = None
+    
+    def generate_password_reset_token(self):
+        """Generate password reset token"""
+        import secrets
+        import hashlib
+        from datetime import datetime, timezone
+        
+        # Generate random token
+        token = secrets.token_urlsafe(32)
+        
+        # Create hash of token for storage
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        
+        self.password_reset_token = token_hash
+        self.password_reset_sent_at = datetime.now(timezone.utc)
+        
+        return token
+    
+    def verify_password_reset_token(self, token):
+        """Verify password reset token"""
+        import hashlib
+        from datetime import datetime, timezone, timedelta
+        
+        if not self.password_reset_token or not self.password_reset_sent_at:
+            return False
+        
+        # Check if token is expired (1 hour)
+        # Ensure password_reset_sent_at is timezone-aware
+        sent_at = self.password_reset_sent_at
+        if sent_at and sent_at.tzinfo is None:
+            sent_at = sent_at.replace(tzinfo=timezone.utc)
+        
+        if sent_at and datetime.now(timezone.utc) - sent_at > timedelta(hours=1):
+            return False
+        
+        # Verify token hash
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        return token_hash == self.password_reset_token
+    
+    def clear_password_reset_token(self):
+        """Clear password reset token"""
+        self.password_reset_token = None
+        self.password_reset_sent_at = None
+
+# Analytics Models
+class WebsiteVisit(db.Model):
+    """Track website visits and user analytics"""
+    __tablename__ = 'website_visits'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(45), nullable=False, index=True)  # IPv6 support
+    user_agent = db.Column(db.Text, nullable=True)
+    referrer = db.Column(db.String(500), nullable=True)
+    page_url = db.Column(db.String(500), nullable=False)
+    page_title = db.Column(db.String(200), nullable=True)
+    session_id = db.Column(db.String(100), nullable=True, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    browser = db.Column(db.String(50), nullable=True)
+    os = db.Column(db.String(50), nullable=True)
+    device_type = db.Column(db.String(20), nullable=True)  # desktop, mobile, tablet
+    visit_duration = db.Column(db.Integer, nullable=True)  # seconds
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    # Relationship
+    user = db.relationship('User', backref='visits')
+    
+    def __repr__(self):
+        return f'<WebsiteVisit {self.id}: {self.ip_address} -> {self.page_url}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'referrer': self.referrer,
+            'page_url': self.page_url,
+            'page_title': self.page_title,
+            'session_id': self.session_id,
+            'user_id': self.user_id,
+            'country': self.country,
+            'city': self.city,
+            'browser': self.browser,
+            'os': self.os,
+            'device_type': self.device_type,
+            'visit_duration': self.visit_duration,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class PageView(db.Model):
+    """Track individual page views with more detail"""
+    __tablename__ = 'page_views'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    visit_id = db.Column(db.Integer, db.ForeignKey('website_visits.id'), nullable=False)
+    page_url = db.Column(db.String(500), nullable=False)
+    page_title = db.Column(db.String(200), nullable=True)
+    time_on_page = db.Column(db.Integer, nullable=True)  # seconds
+    scroll_depth = db.Column(db.Integer, nullable=True)  # percentage
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    # Relationship
+    visit = db.relationship('WebsiteVisit', backref='page_views')
+    
+    def __repr__(self):
+        return f'<PageView {self.id}: {self.page_url}>'
+
+class UserSession(db.Model):
+    """Track user sessions"""
+    __tablename__ = 'user_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    ip_address = db.Column(db.String(45), nullable=False)
+    user_agent = db.Column(db.Text, nullable=True)
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    browser = db.Column(db.String(50), nullable=True)
+    os = db.Column(db.String(50), nullable=True)
+    device_type = db.Column(db.String(20), nullable=True)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    last_activity = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    ended_at = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    total_visits = db.Column(db.Integer, default=0)
+    
+    # Relationship
+    user = db.relationship('User', backref='sessions')
+    
+    def __repr__(self):
+        return f'<UserSession {self.session_id}: {self.ip_address}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'session_id': self.session_id,
+            'user_id': self.user_id,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'country': self.country,
+            'city': self.city,
+            'browser': self.browser,
+            'os': self.os,
+            'device_type': self.device_type,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
+            'ended_at': self.ended_at.isoformat() if self.ended_at else None,
+            'is_active': self.is_active,
+            'total_visits': self.total_visits
+        }
     
     def can_use_digid_auth(self):
         """Check if user can authenticate with DigiD"""
@@ -1693,6 +1916,209 @@ class ContentTopic(db.Model):
     
     subtopics = db.relationship('ContentTopic', backref=db.backref('parent', remote_side=[id]), lazy='dynamic', cascade="all, delete-orphan")
     __table_args__ = (db.UniqueConstraint('slug', 'subcategory_id', name='uc_topic_slug_subcategory'),) 
+
+# ========================================
+# COMMUNITY FORUM MODELS
+# ========================================
+
+class ForumCategory(db.Model):
+    """Категории форума"""
+    __tablename__ = 'forum_categories'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    icon = db.Column(db.String(50))  # Bootstrap icon class
+    color = db.Column(db.String(20))  # CSS color
+    order = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    topics = db.relationship('ForumTopic', backref='category', lazy='dynamic', cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f'<ForumCategory {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'slug': self.slug,
+            'description': self.description,
+            'icon': self.icon,
+            'color': self.color,
+            'order': self.order,
+            'is_active': self.is_active,
+            'topics_count': self.topics.count(),
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class ForumTopic(db.Model):
+    """Темы форума"""
+    __tablename__ = 'forum_topics'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('forum_categories.id'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Статус темы
+    status = db.Column(db.String(20), default='normal')  # normal, pinned, locked, hidden
+    is_sticky = db.Column(db.Boolean, default=False)
+    is_locked = db.Column(db.Boolean, default=False)
+    
+    # Статистика
+    views_count = db.Column(db.Integer, default=0)
+    replies_count = db.Column(db.Integer, default=0)
+    likes_count = db.Column(db.Integer, default=0)
+    
+    # Временные метки
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_reply_at = db.Column(db.DateTime)
+    last_reply_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Relationships
+    author = db.relationship('User', foreign_keys=[author_id], backref='forum_topics')
+    last_reply_user = db.relationship('User', foreign_keys=[last_reply_by], backref='last_replies')
+    posts = db.relationship('ForumPost', backref='topic', lazy='dynamic', cascade="all, delete-orphan")
+    likes = db.relationship('ForumTopicLike', backref='topic', lazy='dynamic', cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f'<ForumTopic {self.title}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'content': self.content,
+            'category_id': self.category_id,
+            'author_id': self.author_id,
+            'author_name': self.author.full_name if self.author else 'Unknown',
+            'status': self.status,
+            'is_sticky': self.is_sticky,
+            'is_locked': self.is_locked,
+            'views_count': self.views_count,
+            'replies_count': self.replies_count,
+            'likes_count': self.likes_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'last_reply_at': self.last_reply_at.isoformat() if self.last_reply_at else None,
+            'last_reply_by': self.last_reply_by,
+            'last_reply_user': self.last_reply_user.full_name if self.last_reply_user else None
+        }
+    
+    def increment_views(self):
+        """Увеличить счетчик просмотров"""
+        self.views_count += 1
+        db.session.commit()
+    
+    def update_reply_stats(self):
+        """Обновить статистику ответов"""
+        self.replies_count = self.posts.count() - 1  # -1 для исключения первого поста (сама тема)
+        if self.replies_count > 0:
+            last_post = self.posts.order_by(ForumPost.created_at.desc()).first()
+            if last_post:
+                self.last_reply_at = last_post.created_at
+                self.last_reply_by = last_post.author_id
+        else:
+            self.last_reply_at = None
+            self.last_reply_by = None
+        db.session.commit()
+
+class ForumPost(db.Model):
+    """Посты в темах форума"""
+    __tablename__ = 'forum_posts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    topic_id = db.Column(db.Integer, db.ForeignKey('forum_topics.id'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    parent_post_id = db.Column(db.Integer, db.ForeignKey('forum_posts.id'), nullable=True)
+    
+    # Статус поста
+    is_edited = db.Column(db.Boolean, default=False)
+    edited_at = db.Column(db.DateTime)
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_at = db.Column(db.DateTime)
+    deleted_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Статистика
+    likes_count = db.Column(db.Integer, default=0)
+    
+    # Временные метки
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    author = db.relationship('User', foreign_keys=[author_id], backref='forum_posts')
+    deleted_by_user = db.relationship('User', foreign_keys=[deleted_by], backref='deleted_posts')
+    parent_post = db.relationship('ForumPost', remote_side=[id], backref='replies')
+    likes = db.relationship('ForumPostLike', backref='post', lazy='dynamic', cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f'<ForumPost {self.id}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'topic_id': self.topic_id,
+            'author_id': self.author_id,
+            'author_name': self.author.full_name if self.author else 'Unknown',
+            'parent_post_id': self.parent_post_id,
+            'is_edited': self.is_edited,
+            'edited_at': self.edited_at.isoformat() if self.edited_at else None,
+            'is_deleted': self.is_deleted,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
+            'likes_count': self.likes_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def mark_as_edited(self):
+        """Отметить пост как отредактированный"""
+        self.is_edited = True
+        self.edited_at = datetime.utcnow()
+        db.session.commit()
+    
+    def soft_delete(self, deleted_by_user_id):
+        """Мягкое удаление поста"""
+        self.is_deleted = True
+        self.deleted_at = datetime.utcnow()
+        self.deleted_by = deleted_by_user_id
+        db.session.commit()
+
+class ForumTopicLike(db.Model):
+    """Лайки тем форума"""
+    __tablename__ = 'forum_topic_likes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey('forum_topics.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='topic_likes')
+    
+    __table_args__ = (db.UniqueConstraint('topic_id', 'user_id', name='uc_topic_like'),)
+
+class ForumPostLike(db.Model):
+    """Лайки постов форума"""
+    __tablename__ = 'forum_post_likes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_posts.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='post_likes')
+    
+    __table_args__ = (db.UniqueConstraint('post_id', 'user_id', name='uc_post_like'),)
 
 # ========================================
 # DIGID AUTHENTICATION

@@ -557,4 +557,142 @@ translations = {
     'anatomy_description': 'İnsan anatomisi ve fizyolojisi',
     'quick_search': 'Hızlı arama',
     'search_placeholder': 'Bilgi tabanında ara...',
+    
+    # Kayıt ve giriş çevirileri
+    'registration_title': 'Kayıt',
+    'registration_subtitle': 'Öğrenmeye başlamak için hesabınızı oluşturun',
+    'login_title': 'Giriş',
+    'login_subtitle': 'Tekrar hoş geldiniz! Hesabınıza giriş yapın',
+    'forgot_password': 'Şifrenizi mi unuttunuz?',
+    'remember_me': 'Beni hatırla',
+    'dont_have_account': 'Hesabınız yok mu?',
+    'already_have_account': 'Zaten hesabınız var mı?',
+    'create_account': 'Hesap oluştur',
+    'sign_in': 'Giriş yap',
+    'sign_up': 'Kayıt ol',
+    
+    # Kayıt formu alanları
+    'personal_information': 'Kişisel bilgiler',
+    'first_name': 'Ad',
+    'last_name': 'Soyad',
+    'email': 'E-posta',
+    'password': 'Şifre',
+    'confirm_password': 'Şifreyi onayla',
+    'date_of_birth': 'Doğum tarihi',
+    'nationality': 'Uyruk',
+    'phone_number': 'Telefon numarası',
+    
+    # Mesleki bilgiler
+    'professional_information': 'Mesleki bilgiler',
+    'legal_status': 'Yasal durum',
+    'profession': 'Meslek',
+    'work_experience': 'İş deneyimi',
+    'additional_qualifications': 'Ek yeterlilikler',
+    
+    # Dil sertifikaları
+    'language_certificates': 'Dil sertifikaları',
+    'dutch_level': 'Hollandaca seviyesi',
+    'english_level': 'İngilizce seviyesi',
+    'idw_assessment': 'IDW değerlendirmesi',
+    'language_certificate_upload': 'Dil sertifikası yükle',
+    'language_certificate_text': 'Dil sertifikası bilgileri',
+    
+    # BIG sınav bilgileri
+    'big_exam_information': 'BIG sınav bilgileri',
+    'big_exam_registered': 'BIG sınavı kayıtlı',
+    'exam_date': 'Sınav tarihi',
+    'preparation_time': 'Hazırlık süresi',
+    
+    # Belge yüklemeleri
+    'document_uploads': 'Belge yüklemeleri',
+    'diploma_upload': 'Diploma yükle',
+    'diploma_info': 'Diploma bilgileri',
+    'cv_upload': 'CV yükle',
+    'cv_info': 'CV bilgileri',
+    'other_documents': 'Diğer belgeler',
+    'other_documents_info': 'Diğer belgeler bilgileri',
+    
+    # Onaylar ve anlaşmalar
+    'consent_and_agreements': 'Onaylar ve anlaşmalar',
+    'data_usage_consent': 'Verilerimin eğitim amaçlı kullanılmasına onay veriyorum',
+    'privacy_policy_consent': 'Gizlilik Politikasını kabul ediyorum',
+    'terms_consent': 'Hizmet Şartlarını kabul ediyorum',
+    'marketing_consent': 'Pazarlama iletişimlerini almayı kabul ediyorum',
+    
+    # Form doğrulama mesajları
+    'field_required': 'Bu alan zorunludur',
+    'email_invalid': 'Lütfen geçerli bir e-posta adresi girin',
+    'password_too_short': 'Şifre en az 8 karakter olmalıdır',
+    'passwords_dont_match': 'Şifreler eşleşmiyor',
+    'terms_required': 'Şartları ve koşulları kabul etmelisiniz',
+    'file_too_large': 'Dosya boyutu 5MB\'ı geçmemelidir',
+    'invalid_file_type': 'Geçersiz dosya türü. Sadece PDF dosyaları yükleyin',
+    
+    # Başarı mesajları
+    'registration_success': 'Kayıt başarıyla tamamlandı!',
+    'login_success': 'Giriş başarılı!',
+    'password_reset_sent': 'Şifre sıfırlama talimatları e-postanıza gönderildi',
+    'password_reset_success': 'Şifre başarıyla sıfırlandı!',
+    
+    # Hata mesajları
+    'registration_error': 'Kayıt başarısız. Lütfen tekrar deneyin.',
+    'login_error': 'Giriş başarısız. Bilgilerinizi kontrol edin.',
+    'user_already_exists': 'Bu e-posta adresiyle zaten bir kullanıcı var',
+    'invalid_credentials': 'Geçersiz e-posta veya şifre',
+    'account_not_verified': 'Lütfen e-posta adresinizi doğrulayın',
+    'password_reset_error': 'Şifre sıfırlama başarısız. Lütfen tekrar deneyin.',
+    
+    # Yasal durum seçenekleri
+    'legal_status_eu_citizen': 'AB Vatandaşı',
+    'legal_status_non_eu_citizen': 'AB Dışı Vatandaş',
+    'legal_status_refugee': 'Mülteci',
+    'legal_status_student': 'Öğrenci',
+    'legal_status_other': 'Diğer',
+    
+    # Meslek seçenekleri
+    'profession_dentist': 'Diş Hekimi',
+    'profession_pharmacist': 'Eczacı',
+    'profession_general_practitioner': 'Genel Pratisyen',
+    'profession_nurse': 'Hemşire',
+    'profession_other': 'Diğer',
+    
+    # Dil seviyeleri
+    'language_level_a1': 'A1 - Başlangıç',
+    'language_level_a2': 'A2 - Temel',
+    'language_level_b1': 'B1 - Orta',
+    'language_level_b2': 'B2 - Orta Üst',
+    'language_level_c1': 'C1 - İleri',
+    'language_level_c2': 'C2 - Uzman',
+    'language_level_native': 'Ana Dil',
+    
+    # IDW değerlendirme seçenekleri
+    'idw_assessment_yes': 'Evet, IDW değerlendirmem var',
+    'idw_assessment_no': 'Hayır, IDW değerlendirmem yok',
+    'idw_assessment_planned': 'Planlandı',
+    
+    # BIG sınav durumu
+    'big_exam_status_registered': 'Kayıtlı',
+    'big_exam_status_not_registered': 'Kayıtlı değil',
+    'big_exam_status_planning': 'Kayıt planlanıyor',
+    
+    # Hazırlık süresi seçenekleri
+    'preparation_time_1_month': '1 ay',
+    'preparation_time_3_months': '3 ay',
+    'preparation_time_6_months': '6 ay',
+    'preparation_time_1_year': '1 yıl',
+    'preparation_time_more': '1 yıldan fazla',
+    
+    # Form placeholder\'ları
+    'enter_first_name': 'Adınızı girin',
+    'enter_last_name': 'Soyadınızı girin',
+    'enter_email': 'E-posta adresinizi girin',
+    'enter_password': 'Şifrenizi girin',
+    'confirm_password_placeholder': 'Şifrenizi onaylayın',
+    'enter_phone': 'Telefon numaranızı girin',
+    'enter_work_experience': 'İş deneyiminizi açıklayın',
+    'enter_qualifications': 'Ek yeterliliklerinizi listeleyin',
+    'enter_diploma_info': 'Diploma bilgilerini girin',
+    'enter_cv_info': 'CV bilgilerini girin',
+    'enter_other_docs': 'Diğer belge bilgilerini girin',
+    'enter_language_cert_info': 'Dil sertifikası bilgilerini girin',
 }

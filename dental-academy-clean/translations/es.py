@@ -630,4 +630,142 @@ translations = {
     'anatomy_description': 'Anatomía y fisiología humana',
     'quick_search': 'Búsqueda rápida',
     'search_placeholder': 'Buscar en base de conocimientos...',
+    
+    # Traducciones de registro e inicio de sesión
+    'registration_title': 'Registro',
+    'registration_subtitle': 'Crea tu cuenta para comenzar a aprender',
+    'login_title': 'Iniciar sesión',
+    'login_subtitle': '¡Bienvenido de nuevo! Inicia sesión en tu cuenta',
+    'forgot_password': '¿Olvidaste tu contraseña?',
+    'remember_me': 'Recordarme',
+    'dont_have_account': '¿No tienes cuenta?',
+    'already_have_account': '¿Ya tienes cuenta?',
+    'create_account': 'Crear cuenta',
+    'sign_in': 'Iniciar sesión',
+    'sign_up': 'Registrarse',
+    
+    # Campos del formulario de registro
+    'personal_information': 'Información personal',
+    'first_name': 'Nombre',
+    'last_name': 'Apellido',
+    'email': 'Correo electrónico',
+    'password': 'Contraseña',
+    'confirm_password': 'Confirmar contraseña',
+    'date_of_birth': 'Fecha de nacimiento',
+    'nationality': 'Nacionalidad',
+    'phone_number': 'Número de teléfono',
+    
+    # Información profesional
+    'professional_information': 'Información profesional',
+    'legal_status': 'Estado legal',
+    'profession': 'Profesión',
+    'work_experience': 'Experiencia laboral',
+    'additional_qualifications': 'Calificaciones adicionales',
+    
+    # Certificados de idioma
+    'language_certificates': 'Certificados de idioma',
+    'dutch_level': 'Nivel de holandés',
+    'english_level': 'Nivel de inglés',
+    'idw_assessment': 'Evaluación IDW',
+    'language_certificate_upload': 'Subir certificado de idioma',
+    'language_certificate_text': 'Información del certificado de idioma',
+    
+    # Información del examen BIG
+    'big_exam_information': 'Información del examen BIG',
+    'big_exam_registered': 'Examen BIG registrado',
+    'exam_date': 'Fecha del examen',
+    'preparation_time': 'Tiempo de preparación',
+    
+    # Subida de documentos
+    'document_uploads': 'Subida de documentos',
+    'diploma_upload': 'Subir diploma',
+    'diploma_info': 'Información del diploma',
+    'cv_upload': 'Subir CV',
+    'cv_info': 'Información del CV',
+    'other_documents': 'Otros documentos',
+    'other_documents_info': 'Información de otros documentos',
+    
+    # Consentimientos y acuerdos
+    'consent_and_agreements': 'Consentimientos y acuerdos',
+    'data_usage_consent': 'Consiento el uso de mis datos para fines educativos',
+    'privacy_policy_consent': 'Acepto la Política de Privacidad',
+    'terms_consent': 'Acepto los Términos de Servicio',
+    'marketing_consent': 'Consiento recibir comunicaciones de marketing',
+    
+    # Mensajes de validación del formulario
+    'field_required': 'Este campo es obligatorio',
+    'email_invalid': 'Por favor ingresa un correo electrónico válido',
+    'password_too_short': 'La contraseña debe tener al menos 8 caracteres',
+    'passwords_dont_match': 'Las contraseñas no coinciden',
+    'terms_required': 'Debes aceptar los términos y condiciones',
+    'file_too_large': 'El tamaño del archivo no debe exceder 5MB',
+    'invalid_file_type': 'Tipo de archivo inválido. Sube solo archivos PDF',
+    
+    # Mensajes de éxito
+    'registration_success': '¡Registro completado exitosamente!',
+    'login_success': '¡Inicio de sesión exitoso!',
+    'password_reset_sent': 'Instrucciones de restablecimiento de contraseña enviadas a tu correo',
+    'password_reset_success': '¡Contraseña restablecida exitosamente!',
+    
+    # Mensajes de error
+    'registration_error': 'Registro fallido. Por favor intenta de nuevo.',
+    'login_error': 'Inicio de sesión fallido. Verifica tus credenciales.',
+    'user_already_exists': 'Ya existe un usuario con este correo electrónico',
+    'invalid_credentials': 'Correo electrónico o contraseña inválidos',
+    'account_not_verified': 'Por favor verifica tu dirección de correo electrónico',
+    'password_reset_error': 'Restablecimiento de contraseña fallido. Por favor intenta de nuevo.',
+    
+    # Opciones de estado legal
+    'legal_status_eu_citizen': 'Ciudadano de la UE',
+    'legal_status_non_eu_citizen': 'Ciudadano no-UE',
+    'legal_status_refugee': 'Refugiado',
+    'legal_status_student': 'Estudiante',
+    'legal_status_other': 'Otro',
+    
+    # Opciones de profesión
+    'profession_dentist': 'Dentista',
+    'profession_pharmacist': 'Farmacéutico',
+    'profession_general_practitioner': 'Médico general',
+    'profession_nurse': 'Enfermero/a',
+    'profession_other': 'Otro',
+    
+    # Niveles de idioma
+    'language_level_a1': 'A1 - Principiante',
+    'language_level_a2': 'A2 - Elemental',
+    'language_level_b1': 'B1 - Intermedio',
+    'language_level_b2': 'B2 - Intermedio alto',
+    'language_level_c1': 'C1 - Avanzado',
+    'language_level_c2': 'C2 - Competente',
+    'language_level_native': 'Nativo',
+    
+    # Opciones de evaluación IDW
+    'idw_assessment_yes': 'Sí, tengo evaluación IDW',
+    'idw_assessment_no': 'No, no tengo evaluación IDW',
+    'idw_assessment_planned': 'Planificado',
+    
+    # Estado del examen BIG
+    'big_exam_status_registered': 'Registrado',
+    'big_exam_status_not_registered': 'No registrado',
+    'big_exam_status_planning': 'Planeando registrarse',
+    
+    # Opciones de tiempo de preparación
+    'preparation_time_1_month': '1 mes',
+    'preparation_time_3_months': '3 meses',
+    'preparation_time_6_months': '6 meses',
+    'preparation_time_1_year': '1 año',
+    'preparation_time_more': 'Más de 1 año',
+    
+    # Placeholders del formulario
+    'enter_first_name': 'Ingresa tu nombre',
+    'enter_last_name': 'Ingresa tu apellido',
+    'enter_email': 'Ingresa tu correo electrónico',
+    'enter_password': 'Ingresa tu contraseña',
+    'confirm_password_placeholder': 'Confirma tu contraseña',
+    'enter_phone': 'Ingresa tu número de teléfono',
+    'enter_work_experience': 'Describe tu experiencia laboral',
+    'enter_qualifications': 'Lista tus calificaciones adicionales',
+    'enter_diploma_info': 'Ingresa información del diploma',
+    'enter_cv_info': 'Ingresa información del CV',
+    'enter_other_docs': 'Ingresa información de otros documentos',
+    'enter_language_cert_info': 'Ingresa información del certificado de idioma',
 }

@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+
+{% block title %}Visitors Analytics - {{ t('dental_academy', lang) | default('Dental Academy') }}{% endblock %}
+
+{% block description %}Detailed visitor analytics and IP tracking{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-unified.css') }}">
+<style>
+.visitors-analytics {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.page-header h1 {
+    color: #2c3e50;
+    margin: 0;
+}
+
+.search-filters {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.search-filters input,
+.search-filters select {
+    padding: 8px 12px;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.search-filters button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.search-filters button:hover {
+    background: #2980b9;
+}
+
+.visitors-table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.visitors-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.visitors-table th,
+.visitors-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.visitors-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    position: sticky;
+    top: 0;
+}
+
+.visitors-table tr:hover {
+    background: #f8f9fa;
+}
+
+.ip-address {
+    font-family: monospace;
+    background: #ecf0f1;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.country-flag {
+    margin-right: 5px;
+}
+
+.device-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.device-desktop {
+    background: #3498db;
+    color: white;
+}
+
+.device-mobile {
+    background: #2ecc71;
+    color: white;
+}
+
+.device-tablet {
+    background: #f39c12;
+    color: white;
+}
+
+.browser-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #95a5a6;
+    color: white;
+}
+
+.time-ago {
+    color: #7f8c8d;
+    font-size: 12px;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+.error {
+    background: #e74c3c;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 20px;
+}
+
+.pagination button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.pagination button:hover {
+    background: #2980b9;
+}
+
+.pagination button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.pagination .page-info {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .search-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .visitors-table-container {
+        overflow-x: auto;
+    }
+    
+    .visitors-table {
+        min-width: 800px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="visitors-analytics">
+    <div class="page-header">
+        <h1>👥 Visitors Analytics</h1>
+        <div>
+            <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="error">
+        <strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="search-filters">
+        <input type="text" id="ip-search" placeholder="Search by IP address...">
+        <select id="device-filter">
+            <option value="">All Devices</option>
+            <option value="desktop">Desktop</option>
+            <option value="mobile">Mobile</option>
+            <option value="tablet">Tablet</option>
+        </select>
+        <select id="browser-filter">
+            <option value="">All Browsers</option>
+            <option value="Chrome">Chrome</option>
+            <option value="Firefox">Firefox</option>
+            <option value="Safari">Safari</option>
+            <option value="Edge">Edge</option>
+        </select>
+        <select id="period-filter">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+        </select>
+        <button onclick="loadVisitors()">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
+
+    <div id="loading" class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading visitors data...
+    </div>
+
+    <div id="visitors-content" style="display: none;">
+        <div class="visitors-table-container">
+            <table class="visitors-table">
+                <thead>
+                    <tr>
+                        <th>IP Address</th>
+                        <th>Country</th>
+                        <th>Device</th>
+                        <th>Browser</th>
+                        <th>OS</th>
+                        <th>Visits</th>
+                        <th>First Visit</th>
+                        <th>Last Visit</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="visitors-table-body">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button id="prev-page" onclick="changePage(-1)">
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <span class="page-info" id="page-info">Page 1 of 1</span>
+            <button id="next-page" onclick="changePage(1)">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let totalPages = 1;
+let currentFilters = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadVisitors();
+    
+    // Add event listeners for filters
+    document.getElementById('ip-search').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            loadVisitors();
+        }
+    });
+});
+
+function loadVisitors() {
+    currentFilters = {
+        ip: document.getElementById('ip-search').value,
+        device: document.getElementById('device-filter').value,
+        browser: document.getElementById('browser-filter').value,
+        days: document.getElementById('period-filter').value
+    };
+    
+    currentPage = 1;
+    fetchVisitors();
+}
+
+function changePage(direction) {
+    currentPage += direction;
+    if (currentPage < 1) currentPage = 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    fetchVisitors();
+}
+
+async function fetchVisitors() {
+    try {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('visitors-content').style.display = 'none';
+        
+        const params = new URLSearchParams({
+            page: currentPage,
+            ...currentFilters
+        });
+        
+        const response = await fetch(`{{ url_for('analytics.api_ip_analytics') }}?${params}`);
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        updateVisitorsTable(data.ip_analytics);
+        updatePagination();
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('visitors-content').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading visitors:', error);
+        document.getElementById('loading').innerHTML = `
+            <div class="error">
+                <strong>Error loading visitors:</strong> ${error.message}
+            </div>
+        `;
+    }
+}
+
+function updateVisitorsTable(visitors) {
+    const tbody = document.getElementById('visitors-table-body');
+    tbody.innerHTML = '';
+    
+    if (visitors.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #7f8c8d;">No visitors found</td></tr>';
+        return;
+    }
+    
+    visitors.forEach(visitor => {
+        const row = tbody.insertRow();
+        
+        // IP Address
+        row.insertCell(0).innerHTML = `<span class="ip-address">${visitor.ip_address}</span>`;
+        
+        // Country
+        const countryCell = row.insertCell(1);
+        if (visitor.countries && visitor.countries.length > 0) {
+            countryCell.innerHTML = `<span class="country-flag">🌍</span>${visitor.countries[0]}`;
+        } else {
+            countryCell.textContent = 'Unknown';
+        }
+        
+        // Device
+        const deviceCell = row.insertCell(2);
+        const deviceType = getDeviceType(visitor);
+        deviceCell.innerHTML = `<span class="device-badge device-${deviceType}">${deviceType}</span>`;
+        
+        // Browser
+        const browserCell = row.insertCell(3);
+        const browser = getBrowser(visitor);
+        browserCell.innerHTML = `<span class="browser-badge">${browser}</span>`;
+        
+        // OS
+        row.insertCell(4).textContent = getOS(visitor);
+        
+        // Visits
+        row.insertCell(5).textContent = visitor.total_visits;
+        
+        // First Visit
+        const firstVisitCell = row.insertCell(6);
+        firstVisitCell.innerHTML = `<span class="time-ago">${formatDate(visitor.first_visit)}</span>`;
+        
+        // Last Visit
+        const lastVisitCell = row.insertCell(7);
+        lastVisitCell.innerHTML = `<span class="time-ago">${formatDate(visitor.last_visit)}</span>`;
+        
+        // Actions
+        const actionsCell = row.insertCell(8);
+        actionsCell.innerHTML = `
+            <button onclick="viewVisitorDetails('${visitor.ip_address}')" class="btn btn-sm btn-primary">
+                <i class="fas fa-eye"></i> Details
+            </button>
+        `;
+    });
+}
+
+function getDeviceType(visitor) {
+    // This would need to be determined from the visitor data
+    // For now, return a default
+    return 'desktop';
+}
+
+function getBrowser(visitor) {
+    // This would need to be determined from the visitor data
+    // For now, return a default
+    return 'Chrome';
+}
+
+function getOS(visitor) {
+    // This would need to be determined from the visitor data
+    // For now, return a default
+    return 'Windows';
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+function updatePagination() {
+    // This would be calculated based on the total number of visitors
+    // For now, set to 1
+    totalPages = 1;
+    
+    document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById('prev-page').disabled = currentPage <= 1;
+    document.getElementById('next-page').disabled = currentPage >= totalPages;
+}
+
+function viewVisitorDetails(ipAddress) {
+    // Open visitor details in a modal or new page
+    alert(`Viewing details for IP: ${ipAddress}`);
+}
+</script>
+{% endblock %}
+

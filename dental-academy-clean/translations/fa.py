@@ -669,4 +669,142 @@ translations = {
     'anatomy_description': 'آناتومی و فیزیولوژی انسان',
     'quick_search': 'جستجوی سریع',
     'search_placeholder': 'جستجو در پایگاه دانش...',
+    
+    # ترجمه‌های ثبت‌نام و ورود
+    'registration_title': 'ثبت‌نام',
+    'registration_subtitle': 'حساب کاربری خود را ایجاد کنید تا یادگیری را شروع کنید',
+    'login_title': 'ورود',
+    'login_subtitle': 'خوش آمدید! وارد حساب کاربری خود شوید',
+    'forgot_password': 'رمز عبور را فراموش کرده‌اید؟',
+    'remember_me': 'مرا به خاطر بسپار',
+    'dont_have_account': 'حساب کاربری ندارید؟',
+    'already_have_account': 'قبلاً حساب کاربری دارید؟',
+    'create_account': 'ایجاد حساب کاربری',
+    'sign_in': 'ورود',
+    'sign_up': 'ثبت‌نام',
+    
+    # فیلدهای فرم ثبت‌نام
+    'personal_information': 'اطلاعات شخصی',
+    'first_name': 'نام',
+    'last_name': 'نام خانوادگی',
+    'email': 'ایمیل',
+    'password': 'رمز عبور',
+    'confirm_password': 'تأیید رمز عبور',
+    'date_of_birth': 'تاریخ تولد',
+    'nationality': 'ملیت',
+    'phone_number': 'شماره تلفن',
+    
+    # اطلاعات حرفه‌ای
+    'professional_information': 'اطلاعات حرفه‌ای',
+    'legal_status': 'وضعیت قانونی',
+    'profession': 'حرفه',
+    'work_experience': 'تجربه کاری',
+    'additional_qualifications': 'مدارک اضافی',
+    
+    # گواهینامه‌های زبانی
+    'language_certificates': 'گواهینامه‌های زبانی',
+    'dutch_level': 'سطح هلندی',
+    'english_level': 'سطح انگلیسی',
+    'idw_assessment': 'ارزیابی IDW',
+    'language_certificate_upload': 'آپلود گواهینامه زبانی',
+    'language_certificate_text': 'اطلاعات گواهینامه زبانی',
+    
+    # اطلاعات امتحان BIG
+    'big_exam_information': 'اطلاعات امتحان BIG',
+    'big_exam_registered': 'امتحان BIG ثبت شده',
+    'exam_date': 'تاریخ امتحان',
+    'preparation_time': 'زمان آمادگی',
+    
+    # آپلود اسناد
+    'document_uploads': 'آپلود اسناد',
+    'diploma_upload': 'آپلود دیپلم',
+    'diploma_info': 'اطلاعات دیپلم',
+    'cv_upload': 'آپلود رزومه',
+    'cv_info': 'اطلاعات رزومه',
+    'other_documents': 'سایر اسناد',
+    'other_documents_info': 'اطلاعات سایر اسناد',
+    
+    # رضایت‌ها و توافق‌ها
+    'consent_and_agreements': 'رضایت‌ها و توافق‌ها',
+    'data_usage_consent': 'من با استفاده از اطلاعاتم برای اهداف آموزشی موافقم',
+    'privacy_policy_consent': 'من سیاست حریم خصوصی را می‌پذیرم',
+    'terms_consent': 'من شرایط استفاده را می‌پذیرم',
+    'marketing_consent': 'من با دریافت پیام‌های بازاریابی موافقم',
+    
+    # پیام‌های اعتبارسنجی فرم
+    'field_required': 'این فیلد الزامی است',
+    'email_invalid': 'لطفاً یک آدرس ایمیل معتبر وارد کنید',
+    'password_too_short': 'رمز عبور باید حداقل ۸ کاراکتر باشد',
+    'passwords_dont_match': 'رمزهای عبور مطابقت ندارند',
+    'terms_required': 'شما باید شرایط و مقررات را بپذیرید',
+    'file_too_large': 'اندازه فایل نباید از ۵ مگابایت بیشتر باشد',
+    'invalid_file_type': 'نوع فایل نامعتبر است. فقط فایل‌های PDF آپلود کنید',
+    
+    # پیام‌های موفقیت
+    'registration_success': 'ثبت‌نام با موفقیت تکمیل شد!',
+    'login_success': 'ورود موفقیت‌آمیز!',
+    'password_reset_sent': 'دستورالعمل‌های بازنشانی رمز عبور به ایمیل شما ارسال شد',
+    'password_reset_success': 'رمز عبور با موفقیت بازنشانی شد!',
+    
+    # پیام‌های خطا
+    'registration_error': 'ثبت‌نام ناموفق بود. لطفاً دوباره تلاش کنید.',
+    'login_error': 'ورود ناموفق بود. اطلاعات خود را بررسی کنید.',
+    'user_already_exists': 'کاربری با این آدرس ایمیل قبلاً وجود دارد',
+    'invalid_credentials': 'ایمیل یا رمز عبور نامعتبر',
+    'account_not_verified': 'لطفاً آدرس ایمیل خود را تأیید کنید',
+    'password_reset_error': 'بازنشانی رمز عبور ناموفق بود. لطفاً دوباره تلاش کنید.',
+    
+    # گزینه‌های وضعیت قانونی
+    'legal_status_eu_citizen': 'شهروند EU',
+    'legal_status_non_eu_citizen': 'شهروند غیر EU',
+    'legal_status_refugee': 'پناهنده',
+    'legal_status_student': 'دانشجو',
+    'legal_status_other': 'سایر',
+    
+    # گزینه‌های حرفه
+    'profession_dentist': 'دندانپزشک',
+    'profession_pharmacist': 'داروساز',
+    'profession_general_practitioner': 'پزشک عمومی',
+    'profession_nurse': 'پرستار',
+    'profession_other': 'سایر',
+    
+    # سطوح زبان
+    'language_level_a1': 'A1 - مبتدی',
+    'language_level_a2': 'A2 - ابتدایی',
+    'language_level_b1': 'B1 - متوسط',
+    'language_level_b2': 'B2 - متوسط پیشرفته',
+    'language_level_c1': 'C1 - پیشرفته',
+    'language_level_c2': 'C2 - مسلط',
+    'language_level_native': 'زبان مادری',
+    
+    # گزینه‌های ارزیابی IDW
+    'idw_assessment_yes': 'بله، من ارزیابی IDW دارم',
+    'idw_assessment_no': 'خیر، من ارزیابی IDW ندارم',
+    'idw_assessment_planned': 'برنامه‌ریزی شده',
+    
+    # وضعیت امتحان BIG
+    'big_exam_status_registered': 'ثبت شده',
+    'big_exam_status_not_registered': 'ثبت نشده',
+    'big_exam_status_planning': 'برنامه‌ریزی برای ثبت‌نام',
+    
+    # گزینه‌های زمان آمادگی
+    'preparation_time_1_month': '۱ ماه',
+    'preparation_time_3_months': '۳ ماه',
+    'preparation_time_6_months': '۶ ماه',
+    'preparation_time_1_year': '۱ سال',
+    'preparation_time_more': 'بیش از ۱ سال',
+    
+    # متن‌های راهنما فرم
+    'enter_first_name': 'نام خود را وارد کنید',
+    'enter_last_name': 'نام خانوادگی خود را وارد کنید',
+    'enter_email': 'ایمیل خود را وارد کنید',
+    'enter_password': 'رمز عبور خود را وارد کنید',
+    'confirm_password_placeholder': 'رمز عبور خود را تأیید کنید',
+    'enter_phone': 'شماره تلفن خود را وارد کنید',
+    'enter_work_experience': 'تجربه کاری خود را شرح دهید',
+    'enter_qualifications': 'مدارک اضافی خود را فهرست کنید',
+    'enter_diploma_info': 'اطلاعات دیپلم خود را وارد کنید',
+    'enter_cv_info': 'اطلاعات رزومه خود را وارد کنید',
+    'enter_other_docs': 'اطلاعات سایر اسناد را وارد کنید',
+    'enter_language_cert_info': 'اطلاعات گواهینامه زبانی را وارد کنید',
 }

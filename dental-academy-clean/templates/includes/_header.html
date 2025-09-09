@@ -212,10 +212,15 @@
               
               <li><hr class="dropdown-divider"></li>
               
-              <!-- DigiD Login -->
-              <li><a class="dropdown-item" href="/digid/login">
-                <i class="bi bi-shield-lock fs-5 me-2"></i>
-                {{ t('login_with_digid', lang)|default('Login with DigiD') }}
+              <!-- Login -->
+              <li><a class="dropdown-item" href="{{ url_for('auth.login') }}">
+                <i class="bi bi-box-arrow-in-right fs-5 me-2"></i>
+                {{ t('login', lang)|default('Login') }}
+              </a></li>
+              <!-- Register -->
+              <li><a class="dropdown-item" href="{{ url_for('auth.register') }}">
+                <i class="bi bi-person-plus fs-5 me-2"></i>
+                {{ t('register', lang)|default('Register') }}
               </a></li>
             </ul>
           </div>

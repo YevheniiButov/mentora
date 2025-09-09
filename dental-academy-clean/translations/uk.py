@@ -579,4 +579,142 @@ translations = {
     'anatomy_description': 'Людська анатомія та фізіологія',
     'quick_search': 'Швидкий пошук',
     'search_placeholder': 'Пошук у базі знань...',
+    
+    # Переклади реєстрації та входу
+    'registration_title': 'Реєстрація',
+    'registration_subtitle': 'Створіть свій обліковий запис, щоб почати навчання',
+    'login_title': 'Вхід',
+    'login_subtitle': 'З поверненням! Увійдіть у свій обліковий запис',
+    'forgot_password': 'Забули пароль?',
+    'remember_me': 'Запам\'ятати мене',
+    'dont_have_account': 'Немає облікового запису?',
+    'already_have_account': 'Вже є обліковий запис?',
+    'create_account': 'Створити обліковий запис',
+    'sign_in': 'Увійти',
+    'sign_up': 'Зареєструватися',
+    
+    # Поля форми реєстрації
+    'personal_information': 'Особиста інформація',
+    'first_name': 'Ім\'я',
+    'last_name': 'Прізвище',
+    'email': 'Електронна пошта',
+    'password': 'Пароль',
+    'confirm_password': 'Підтвердити пароль',
+    'date_of_birth': 'Дата народження',
+    'nationality': 'Національність',
+    'phone_number': 'Номер телефону',
+    
+    # Професійна інформація
+    'professional_information': 'Професійна інформація',
+    'legal_status': 'Правовий статус',
+    'profession': 'Професія',
+    'work_experience': 'Досвід роботи',
+    'additional_qualifications': 'Додаткові кваліфікації',
+    
+    # Мовні сертифікати
+    'language_certificates': 'Мовні сертифікати',
+    'dutch_level': 'Рівень голландської',
+    'english_level': 'Рівень англійської',
+    'idw_assessment': 'Оцінка IDW',
+    'language_certificate_upload': 'Завантажити мовний сертифікат',
+    'language_certificate_text': 'Інформація про мовний сертифікат',
+    
+    # Інформація про іспит BIG
+    'big_exam_information': 'Інформація про іспит BIG',
+    'big_exam_registered': 'Іспит BIG зареєстровано',
+    'exam_date': 'Дата іспиту',
+    'preparation_time': 'Час підготовки',
+    
+    # Завантаження документів
+    'document_uploads': 'Завантаження документів',
+    'diploma_upload': 'Завантажити диплом',
+    'diploma_info': 'Інформація про диплом',
+    'cv_upload': 'Завантажити резюме',
+    'cv_info': 'Інформація про резюме',
+    'other_documents': 'Інші документи',
+    'other_documents_info': 'Інформація про інші документи',
+    
+    # Згоди та угоди
+    'consent_and_agreements': 'Згоди та угоди',
+    'data_usage_consent': 'Я згоден на використання моїх даних для освітніх цілей',
+    'privacy_policy_consent': 'Я приймаю Політику конфіденційності',
+    'terms_consent': 'Я приймаю Умови використання',
+    'marketing_consent': 'Я згоден отримувати маркетингові повідомлення',
+    
+    # Повідомлення валідації форми
+    'field_required': 'Це поле обов\'язкове',
+    'email_invalid': 'Будь ласка, введіть дійсну адресу електронної пошти',
+    'password_too_short': 'Пароль повинен містити принаймні 8 символів',
+    'passwords_dont_match': 'Паролі не співпадають',
+    'terms_required': 'Ви повинні прийняти умови та положення',
+    'file_too_large': 'Розмір файлу не повинен перевищувати 5МБ',
+    'invalid_file_type': 'Недійсний тип файлу. Завантажуйте лише PDF файли',
+    
+    # Повідомлення про успіх
+    'registration_success': 'Реєстрація успішно завершена!',
+    'login_success': 'Вхід успішний!',
+    'password_reset_sent': 'Інструкції зі скидання пароля надіслано на вашу електронну пошту',
+    'password_reset_success': 'Пароль успішно скинуто!',
+    
+    # Повідомлення про помилки
+    'registration_error': 'Реєстрація не вдалася. Будь ласка, спробуйте ще раз.',
+    'login_error': 'Вхід не вдався. Перевірте свої дані.',
+    'user_already_exists': 'Користувач з цією адресою електронної пошти вже існує',
+    'invalid_credentials': 'Недійсна електронна пошта або пароль',
+    'account_not_verified': 'Будь ласка, підтвердіть свою адресу електронної пошти',
+    'password_reset_error': 'Скидання пароля не вдалося. Будь ласка, спробуйте ще раз.',
+    
+    # Опції правового статусу
+    'legal_status_eu_citizen': 'Громадянин ЄС',
+    'legal_status_non_eu_citizen': 'Громадянин поза ЄС',
+    'legal_status_refugee': 'Біженець',
+    'legal_status_student': 'Студент',
+    'legal_status_other': 'Інше',
+    
+    # Опції професії
+    'profession_dentist': 'Стоматолог',
+    'profession_pharmacist': 'Фармацевт',
+    'profession_general_practitioner': 'Лікар загальної практики',
+    'profession_nurse': 'Медсестра',
+    'profession_other': 'Інше',
+    
+    # Рівні мови
+    'language_level_a1': 'A1 - Початківець',
+    'language_level_a2': 'A2 - Елементарний',
+    'language_level_b1': 'B1 - Середній',
+    'language_level_b2': 'B2 - Середньо-просунутий',
+    'language_level_c1': 'C1 - Просунутий',
+    'language_level_c2': 'C2 - Вільний',
+    'language_level_native': 'Рідна мова',
+    
+    # Опції оцінки IDW
+    'idw_assessment_yes': 'Так, у мене є оцінка IDW',
+    'idw_assessment_no': 'Ні, у мене немає оцінки IDW',
+    'idw_assessment_planned': 'Заплановано',
+    
+    # Статус іспиту BIG
+    'big_exam_status_registered': 'Зареєстровано',
+    'big_exam_status_not_registered': 'Не зареєстровано',
+    'big_exam_status_planning': 'Планується реєстрація',
+    
+    # Опції часу підготовки
+    'preparation_time_1_month': '1 місяць',
+    'preparation_time_3_months': '3 місяці',
+    'preparation_time_6_months': '6 місяців',
+    'preparation_time_1_year': '1 рік',
+    'preparation_time_more': 'Більше 1 року',
+    
+    # Плейсхолдери форми
+    'enter_first_name': 'Введіть ваше ім\'я',
+    'enter_last_name': 'Введіть ваше прізвище',
+    'enter_email': 'Введіть вашу електронну пошту',
+    'enter_password': 'Введіть ваш пароль',
+    'confirm_password_placeholder': 'Підтвердіть ваш пароль',
+    'enter_phone': 'Введіть ваш номер телефону',
+    'enter_work_experience': 'Опишіть ваш досвід роботи',
+    'enter_qualifications': 'Перелічіть ваші додаткові кваліфікації',
+    'enter_diploma_info': 'Введіть інформацію про диплом',
+    'enter_cv_info': 'Введіть інформацію про резюме',
+    'enter_other_docs': 'Введіть інформацію про інші документи',
+    'enter_language_cert_info': 'Введіть інформацію про мовний сертифікат',
 }

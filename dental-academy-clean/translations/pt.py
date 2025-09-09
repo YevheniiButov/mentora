@@ -579,4 +579,142 @@ translations = {
     'anatomy_description': 'Anatomia e fisiologia humana',
     'quick_search': 'Busca rápida',
     'search_placeholder': 'Buscar na base de conhecimento...',
+    
+    # Traduções de registro e login
+    'registration_title': 'Registro',
+    'registration_subtitle': 'Crie sua conta para começar a aprender',
+    'login_title': 'Entrar',
+    'login_subtitle': 'Bem-vindo de volta! Faça login em sua conta',
+    'forgot_password': 'Esqueceu sua senha?',
+    'remember_me': 'Lembrar de mim',
+    'dont_have_account': 'Não tem conta?',
+    'already_have_account': 'Já tem conta?',
+    'create_account': 'Criar conta',
+    'sign_in': 'Entrar',
+    'sign_up': 'Registrar',
+    
+    # Campos do formulário de registro
+    'personal_information': 'Informações pessoais',
+    'first_name': 'Nome',
+    'last_name': 'Sobrenome',
+    'email': 'E-mail',
+    'password': 'Senha',
+    'confirm_password': 'Confirmar senha',
+    'date_of_birth': 'Data de nascimento',
+    'nationality': 'Nacionalidade',
+    'phone_number': 'Número de telefone',
+    
+    # Informações profissionais
+    'professional_information': 'Informações profissionais',
+    'legal_status': 'Status legal',
+    'profession': 'Profissão',
+    'work_experience': 'Experiência de trabalho',
+    'additional_qualifications': 'Qualificações adicionais',
+    
+    # Certificados de idioma
+    'language_certificates': 'Certificados de idioma',
+    'dutch_level': 'Nível de holandês',
+    'english_level': 'Nível de inglês',
+    'idw_assessment': 'Avaliação IDW',
+    'language_certificate_upload': 'Upload de certificado de idioma',
+    'language_certificate_text': 'Informações do certificado de idioma',
+    
+    # Informações do exame BIG
+    'big_exam_information': 'Informações do exame BIG',
+    'big_exam_registered': 'Exame BIG registrado',
+    'exam_date': 'Data do exame',
+    'preparation_time': 'Tempo de preparação',
+    
+    # Upload de documentos
+    'document_uploads': 'Upload de documentos',
+    'diploma_upload': 'Upload de diploma',
+    'diploma_info': 'Informações do diploma',
+    'cv_upload': 'Upload de CV',
+    'cv_info': 'Informações do CV',
+    'other_documents': 'Outros documentos',
+    'other_documents_info': 'Informações de outros documentos',
+    
+    # Consentimentos e acordos
+    'consent_and_agreements': 'Consentimentos e acordos',
+    'data_usage_consent': 'Consinto o uso dos meus dados para fins educacionais',
+    'privacy_policy_consent': 'Aceito a Política de Privacidade',
+    'terms_consent': 'Aceito os Termos de Serviço',
+    'marketing_consent': 'Consinto receber comunicações de marketing',
+    
+    # Mensagens de validação do formulário
+    'field_required': 'Este campo é obrigatório',
+    'email_invalid': 'Por favor, insira um e-mail válido',
+    'password_too_short': 'A senha deve ter pelo menos 8 caracteres',
+    'passwords_dont_match': 'As senhas não coincidem',
+    'terms_required': 'Você deve aceitar os termos e condições',
+    'file_too_large': 'O tamanho do arquivo não deve exceder 5MB',
+    'invalid_file_type': 'Tipo de arquivo inválido. Faça upload apenas de arquivos PDF',
+    
+    # Mensagens de sucesso
+    'registration_success': 'Registro concluído com sucesso!',
+    'login_success': 'Login realizado com sucesso!',
+    'password_reset_sent': 'Instruções de redefinição de senha enviadas para seu e-mail',
+    'password_reset_success': 'Senha redefinida com sucesso!',
+    
+    # Mensagens de erro
+    'registration_error': 'Registro falhou. Por favor, tente novamente.',
+    'login_error': 'Login falhou. Verifique suas credenciais.',
+    'user_already_exists': 'Já existe um usuário com este e-mail',
+    'invalid_credentials': 'E-mail ou senha inválidos',
+    'account_not_verified': 'Por favor, verifique seu endereço de e-mail',
+    'password_reset_error': 'Redefinição de senha falhou. Por favor, tente novamente.',
+    
+    # Opções de status legal
+    'legal_status_eu_citizen': 'Cidadão da UE',
+    'legal_status_non_eu_citizen': 'Cidadão não-UE',
+    'legal_status_refugee': 'Refugiado',
+    'legal_status_student': 'Estudante',
+    'legal_status_other': 'Outro',
+    
+    # Opções de profissão
+    'profession_dentist': 'Dentista',
+    'profession_pharmacist': 'Farmacêutico',
+    'profession_general_practitioner': 'Médico geral',
+    'profession_nurse': 'Enfermeiro/a',
+    'profession_other': 'Outro',
+    
+    # Níveis de idioma
+    'language_level_a1': 'A1 - Iniciante',
+    'language_level_a2': 'A2 - Elementar',
+    'language_level_b1': 'B1 - Intermediário',
+    'language_level_b2': 'B2 - Intermediário superior',
+    'language_level_c1': 'C1 - Avançado',
+    'language_level_c2': 'C2 - Proficiente',
+    'language_level_native': 'Nativo',
+    
+    # Opções de avaliação IDW
+    'idw_assessment_yes': 'Sim, tenho avaliação IDW',
+    'idw_assessment_no': 'Não, não tenho avaliação IDW',
+    'idw_assessment_planned': 'Planejado',
+    
+    # Status do exame BIG
+    'big_exam_status_registered': 'Registrado',
+    'big_exam_status_not_registered': 'Não registrado',
+    'big_exam_status_planning': 'Planejando se registrar',
+    
+    # Opções de tempo de preparação
+    'preparation_time_1_month': '1 mês',
+    'preparation_time_3_months': '3 meses',
+    'preparation_time_6_months': '6 meses',
+    'preparation_time_1_year': '1 ano',
+    'preparation_time_more': 'Mais de 1 ano',
+    
+    # Placeholders do formulário
+    'enter_first_name': 'Digite seu nome',
+    'enter_last_name': 'Digite seu sobrenome',
+    'enter_email': 'Digite seu e-mail',
+    'enter_password': 'Digite sua senha',
+    'confirm_password_placeholder': 'Confirme sua senha',
+    'enter_phone': 'Digite seu número de telefone',
+    'enter_work_experience': 'Descreva sua experiência de trabalho',
+    'enter_qualifications': 'Liste suas qualificações adicionais',
+    'enter_diploma_info': 'Digite informações do diploma',
+    'enter_cv_info': 'Digite informações do CV',
+    'enter_other_docs': 'Digite informações de outros documentos',
+    'enter_language_cert_info': 'Digite informações do certificado de idioma',
 }

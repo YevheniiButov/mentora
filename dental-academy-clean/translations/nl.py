@@ -925,4 +925,142 @@ translations = {
     'anatomy_description': 'Menselijke anatomie en fysiologie',
     'quick_search': 'Snelle zoekactie',
     'search_placeholder': 'Zoek in kennisbank...',
+    
+    # Registratie en Login vertalingen
+    'registration_title': 'Registratie',
+    'registration_subtitle': 'Maak uw account aan om te beginnen met leren',
+    'login_title': 'Inloggen',
+    'login_subtitle': 'Welkom terug! Log in op uw account',
+    'forgot_password': 'Wachtwoord vergeten?',
+    'remember_me': 'Onthoud mij',
+    'dont_have_account': 'Geen account?',
+    'already_have_account': 'Al een account?',
+    'create_account': 'Account aanmaken',
+    'sign_in': 'Inloggen',
+    'sign_up': 'Registreren',
+    
+    # Registratie formulier velden
+    'personal_information': 'Persoonlijke informatie',
+    'first_name': 'Voornaam',
+    'last_name': 'Achternaam',
+    'email': 'E-mail',
+    'password': 'Wachtwoord',
+    'confirm_password': 'Bevestig wachtwoord',
+    'date_of_birth': 'Geboortedatum',
+    'nationality': 'Nationaliteit',
+    'phone_number': 'Telefoonnummer',
+    
+    # Professionele informatie
+    'professional_information': 'Professionele informatie',
+    'legal_status': 'Rechtelijke status',
+    'profession': 'Beroep',
+    'work_experience': 'Werkervaring',
+    'additional_qualifications': 'Aanvullende kwalificaties',
+    
+    # Taalcertificaten
+    'language_certificates': 'Taalcertificaten',
+    'dutch_level': 'Nederlands niveau',
+    'english_level': 'Engels niveau',
+    'idw_assessment': 'IDW beoordeling',
+    'language_certificate_upload': 'Taalcertificaat upload',
+    'language_certificate_text': 'Taalcertificaat informatie',
+    
+    # BIG examen informatie
+    'big_exam_information': 'BIG examen informatie',
+    'big_exam_registered': 'BIG examen geregistreerd',
+    'exam_date': 'Examen datum',
+    'preparation_time': 'Voorbereidingstijd',
+    
+    # Document uploads
+    'document_uploads': 'Document uploads',
+    'diploma_upload': 'Diploma upload',
+    'diploma_info': 'Diploma informatie',
+    'cv_upload': 'CV upload',
+    'cv_info': 'CV informatie',
+    'other_documents': 'Andere documenten',
+    'other_documents_info': 'Andere documenten informatie',
+    
+    # Toestemming en overeenkomsten
+    'consent_and_agreements': 'Toestemming en overeenkomsten',
+    'data_usage_consent': 'Ik stem in met het gebruik van mijn gegevens voor educatieve doeleinden',
+    'privacy_policy_consent': 'Ik ga akkoord met het Privacybeleid',
+    'terms_consent': 'Ik ga akkoord met de Gebruiksvoorwaarden',
+    'marketing_consent': 'Ik stem in met het ontvangen van marketingcommunicatie',
+    
+    # Formulier validatie berichten
+    'field_required': 'Dit veld is verplicht',
+    'email_invalid': 'Voer een geldig e-mailadres in',
+    'password_too_short': 'Wachtwoord moet minimaal 8 tekens bevatten',
+    'passwords_dont_match': 'Wachtwoorden komen niet overeen',
+    'terms_required': 'U moet akkoord gaan met de voorwaarden',
+    'file_too_large': 'Bestandsgrootte mag niet meer dan 5MB zijn',
+    'invalid_file_type': 'Ongeldig bestandstype. Upload alleen PDF bestanden',
+    
+    # Succes berichten
+    'registration_success': 'Registratie succesvol voltooid!',
+    'login_success': 'Inloggen succesvol!',
+    'password_reset_sent': 'Wachtwoord reset instructies verzonden naar uw e-mail',
+    'password_reset_success': 'Wachtwoord succesvol gereset!',
+    
+    # Fout berichten
+    'registration_error': 'Registratie mislukt. Probeer opnieuw.',
+    'login_error': 'Inloggen mislukt. Controleer uw gegevens.',
+    'user_already_exists': 'Gebruiker met dit e-mailadres bestaat al',
+    'invalid_credentials': 'Ongeldig e-mailadres of wachtwoord',
+    'account_not_verified': 'Controleer uw e-mailadres',
+    'password_reset_error': 'Wachtwoord reset mislukt. Probeer opnieuw.',
+    
+    # Rechtelijke status opties
+    'legal_status_eu_citizen': 'EU Burger',
+    'legal_status_non_eu_citizen': 'Niet-EU Burger',
+    'legal_status_refugee': 'Vluchteling',
+    'legal_status_student': 'Student',
+    'legal_status_other': 'Anders',
+    
+    # Beroep opties
+    'profession_dentist': 'Tandarts',
+    'profession_pharmacist': 'Apotheker',
+    'profession_general_practitioner': 'Huisarts',
+    'profession_nurse': 'Verpleegkundige',
+    'profession_other': 'Anders',
+    
+    # Taalniveaus
+    'language_level_a1': 'A1 - Beginner',
+    'language_level_a2': 'A2 - Elementair',
+    'language_level_b1': 'B1 - Gemiddeld',
+    'language_level_b2': 'B2 - Bovengemiddeld',
+    'language_level_c1': 'C1 - Gevorderd',
+    'language_level_c2': 'C2 - Vloeiend',
+    'language_level_native': 'Moedertaal',
+    
+    # IDW beoordeling opties
+    'idw_assessment_yes': 'Ja, ik heb IDW beoordeling',
+    'idw_assessment_no': 'Nee, ik heb geen IDW beoordeling',
+    'idw_assessment_planned': 'Gepland',
+    
+    # BIG examen status
+    'big_exam_status_registered': 'Geregistreerd',
+    'big_exam_status_not_registered': 'Niet geregistreerd',
+    'big_exam_status_planning': 'Van plan te registreren',
+    
+    # Voorbereidingstijd opties
+    'preparation_time_1_month': '1 maand',
+    'preparation_time_3_months': '3 maanden',
+    'preparation_time_6_months': '6 maanden',
+    'preparation_time_1_year': '1 jaar',
+    'preparation_time_more': 'Meer dan 1 jaar',
+    
+    # Formulier placeholders
+    'enter_first_name': 'Voer uw voornaam in',
+    'enter_last_name': 'Voer uw achternaam in',
+    'enter_email': 'Voer uw e-mailadres in',
+    'enter_password': 'Voer uw wachtwoord in',
+    'confirm_password_placeholder': 'Bevestig uw wachtwoord',
+    'enter_phone': 'Voer uw telefoonnummer in',
+    'enter_work_experience': 'Beschrijf uw werkervaring',
+    'enter_qualifications': 'Lijst uw aanvullende kwalificaties op',
+    'enter_diploma_info': 'Voer diploma informatie in',
+    'enter_cv_info': 'Voer CV informatie in',
+    'enter_other_docs': 'Voer andere documenten informatie in',
+    'enter_language_cert_info': 'Voer taalcertificaat informatie in',
 }

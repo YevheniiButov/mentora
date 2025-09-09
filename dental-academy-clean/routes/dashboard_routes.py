@@ -254,7 +254,7 @@ def learning_plan(plan_id):
     # Проверяем, авторизован ли пользователь
     if not current_user.is_authenticated:
         flash('Для просмотра плана обучения необходимо авторизоваться', 'warning')
-        return redirect(url_for('auth.digid_login'))
+        return redirect(url_for('auth.login'))
     
     # Get the learning plan
     plan = PersonalLearningPlan.query.filter_by(
@@ -321,7 +321,7 @@ def start_learning_plan(plan_id):
     # Проверяем, авторизован ли пользователь
     if not current_user.is_authenticated:
         flash('Для начала обучения необходимо авторизоваться', 'warning')
-        return redirect(url_for('auth.digid_login'))
+        return redirect(url_for('auth.login'))
     
     # Get the learning plan
     plan = PersonalLearningPlan.query.get_or_404(plan_id)

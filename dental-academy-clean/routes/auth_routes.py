@@ -40,12 +40,13 @@ def get_file_size(file):
     file.seek(0)  # Reset to beginning
     return size
 
-# Удаляю старые маршруты:
-# @auth_bp.route('/login', methods=['GET', 'POST'])
-# @auth_bp.route('/register', methods=['GET', 'POST'])
-# @auth_bp.route('/logout')
-# @auth_bp.route('/forgot-password')
-# @auth_bp.route('/reset-password')
+# Активирую маршруты аутентификации:
+@auth_bp.route('/logout')
+@login_required
+def logout():
+    """Logout user"""
+    logout_user()
+    return redirect(url_for('main.index'))
 
 # Оставляю только DigiD:
 @auth_bp.route('/digid/login')
@@ -114,6 +115,7 @@ def handle_personal_data_update():
     last_name = request.form.get('last_name', '').strip()
     email = request.form.get('email', '').strip()
     phone = request.form.get('phone', '').strip()
+    country_code = request.form.get('country_code', '').strip()
     
     # Validation
     errors = []
@@ -138,6 +140,8 @@ def handle_personal_data_update():
         changes.append(('email', current_user.email, email))
     if phone != current_user.phone:
         changes.append(('phone', current_user.phone, phone))
+    if country_code != current_user.country_code:
+        changes.append(('country_code', current_user.country_code, country_code))
     
     # Handle profile photo upload
     if 'profile_photo' in request.files:
@@ -169,6 +173,7 @@ def handle_personal_data_update():
     current_user.last_name = last_name or None
     current_user.email = email
     current_user.phone = phone or None
+    current_user.country_code = country_code or None
     current_user.profile_updated_at = datetime.now(timezone.utc)
     
     # Log changes
@@ -181,23 +186,27 @@ def handle_personal_data_update():
 
 def handle_professional_data_update():
     """Handle professional data section updates"""
-    big_number = request.form.get('big_number', '').strip()
     workplace = request.form.get('workplace', '').strip()
     specialization = request.form.get('specialization', '').strip()
+    profession = request.form.get('profession', '').strip()
+    other_profession = request.form.get('other_profession', '').strip()
     
     # Track changes
     changes = []
-    if big_number != current_user.big_number:
-        changes.append(('big_number', current_user.big_number, big_number))
     if workplace != current_user.workplace:
         changes.append(('workplace', current_user.workplace, workplace))
     if specialization != current_user.specialization:
         changes.append(('specialization', current_user.specialization, specialization))
+    if profession != current_user.profession:
+        changes.append(('profession', current_user.profession, profession))
+    if other_profession != current_user.other_profession:
+        changes.append(('other_profession', current_user.other_profession, other_profession))
     
     # Update data
-    current_user.big_number = big_number or None
     current_user.workplace = workplace or None
     current_user.specialization = specialization or None
+    current_user.profession = profession or None
+    current_user.other_profession = other_profession or None
     current_user.profile_updated_at = datetime.now(timezone.utc)
     
     # Log changes
@@ -423,4 +432,473 @@ def change_password():
             db.session.rollback()
             flash('Failed to change password. Please try again.', 'error')
     
-    return render_template('auth/change_password.html') 
+    return render_template('auth/change_password.html')
+
+@auth_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    """Extended registration form for new users"""
+    if request.method == 'GET':
+        return render_template('auth/register.html')
+    
+    try:
+        # Get form data
+        data = request.form.to_dict()
+        files = request.files
+        
+        # Validate required fields
+        required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'birth_date', 'nationality', 'profession', 'legal_status', 'dutch_level', 'diploma_info', 'required_consents', 'digital_signature']
+        errors = []
+        
+        for field in required_fields:
+            if not data.get(field):
+                errors.append(f'{field} is required')
+        
+        # Validate password
+        password = data.get('password', '')
+        confirm_password = data.get('confirm_password', '')
+        
+        if password != confirm_password:
+            errors.append('Passwords do not match')
+        
+        if len(password) < 8:
+            errors.append('Password must be at least 8 characters long')
+        
+        if not any(c.isalpha() for c in password):
+            errors.append('Password must contain at least one letter')
+        
+        if not any(c.isdigit() for c in password):
+            errors.append('Password must contain at least one number')
+        
+        # Check if email already exists
+        existing_user = User.query.filter_by(email=data['email']).first()
+        if existing_user:
+            errors.append('Email already registered')
+        
+        # Validate "Other" fields
+        if data.get('profession') == 'other' and not data.get('other_profession'):
+            errors.append('Please specify your profession')
+        
+        if data.get('nationality') == 'OTHER' and not data.get('other_nationality'):
+            errors.append('Please specify your nationality')
+        
+        if data.get('legal_status') == 'other' and not data.get('other_legal_status'):
+            errors.append('Please specify your legal status')
+        
+        # Validate digital signature (more flexible)
+        digital_signature = data.get('digital_signature', '').strip()
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        
+        if not digital_signature:
+            errors.append('Digital signature is required')
+        elif len(digital_signature) < 3:
+            errors.append('Digital signature must be at least 3 characters long')
+        elif first_name and last_name:
+            # Check if signature contains both first and last name (flexible matching)
+            first_name_lower = first_name.lower()
+            last_name_lower = last_name.lower()
+            signature_lower = digital_signature.lower()
+            
+            if not (first_name_lower in signature_lower and last_name_lower in signature_lower):
+                errors.append('Digital signature should contain your first and last name')
+        
+        if errors:
+            return jsonify({
+                'success': False,
+                'error': '; '.join(errors)
+            }), 400
+        
+        # Create new user
+        user = User(
+            email=data['email'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            birth_date=datetime.strptime(data['birth_date'], '%Y-%m-%d').date() if data['birth_date'] else None,
+            gender=data.get('gender'),
+            phone=data.get('phone'),
+            country_code=data.get('country_code'),
+            nationality=data['nationality'],
+            language=data.get('language', 'nl'),
+            profession=data['profession'],
+            workplace=data.get('workplace'),
+            specialization=data.get('specialization'),
+            legal_status=data.get('legal_status'),
+            dutch_level=data.get('dutch_level'),
+            english_level=data.get('english_level'),
+            idw_assessment=data.get('idw_assessment'),
+            big_exam_registered=data.get('big_exam_registered'),
+            exam_date=datetime.strptime(data['exam_date'], '%Y-%m-%d').date() if data.get('exam_date') else None,
+            preparation_time=data.get('preparation_time'),
+            diploma_info=data.get('diploma_info'),
+            work_experience=data.get('work_experience'),
+            additional_qualifications=data.get('additional_qualifications'),
+            # New fields
+            other_profession=data.get('other_profession'),
+            other_nationality=data.get('other_nationality'),
+            other_legal_status=data.get('other_legal_status'),
+            required_consents=bool(data.get('required_consents')),
+            optional_consents=bool(data.get('optional_consents')),
+            digital_signature=data.get('digital_signature'),
+            registration_completed=True,
+            is_active=True
+        )
+        
+        # Set password from form
+        user.set_password(password)
+        
+        # Generate email confirmation token
+        confirmation_token = user.generate_email_confirmation_token()
+        
+        db.session.add(user)
+        db.session.flush()  # Get user ID
+        
+        # Handle file uploads
+        uploaded_files = {}
+        
+        # Diploma file
+        if 'diploma_file' in files and files['diploma_file'].filename:
+            diploma_file = files['diploma_file']
+            if allowed_file(diploma_file.filename, ALLOWED_DOCUMENT_EXTENSIONS):
+                filename = secure_filename(f"diploma_{user.id}_{diploma_file.filename}")
+                filepath = os.path.join(DOCUMENTS_FOLDER, filename)
+                diploma_file.save(filepath)
+                user.diploma_file = filepath
+                uploaded_files['diploma'] = filepath
+        
+        # Language certificates
+        language_certs = []
+        if 'language_certificates' in files:
+            for file in files.getlist('language_certificates'):
+                if file.filename and allowed_file(file.filename, ALLOWED_DOCUMENT_EXTENSIONS):
+                    filename = secure_filename(f"lang_cert_{user.id}_{file.filename}")
+                    filepath = os.path.join(DOCUMENTS_FOLDER, filename)
+                    file.save(filepath)
+                    language_certs.append(filepath)
+        
+        if language_certs:
+            user.language_certificates = json.dumps(language_certs)
+        
+        # Additional documents
+        additional_docs = []
+        if 'additional_documents' in files:
+            for file in files.getlist('additional_documents'):
+                if file.filename and allowed_file(file.filename, ALLOWED_DOCUMENT_EXTENSIONS):
+                    filename = secure_filename(f"additional_{user.id}_{file.filename}")
+                    filepath = os.path.join(DOCUMENTS_FOLDER, filename)
+                    file.save(filepath)
+                    additional_docs.append(filepath)
+        
+        if additional_docs:
+            user.additional_documents = json.dumps(additional_docs)
+        
+        # Store additional registration data
+        registration_data = {
+            'legal_status': data.get('legal_status'),
+            'dutch_level': data.get('dutch_level'),
+            'english_level': data.get('english_level'),
+            'idw_assessment': data.get('idw_assessment'),
+            'big_exam_registered': data.get('big_exam_registered'),
+            'exam_date': data.get('exam_date'),
+            'preparation_time': data.get('preparation_time'),
+            'registration_date': datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Store in user's additional data
+        user.notification_settings = json.dumps(registration_data)
+        
+        db.session.commit()
+        
+        # Send email confirmation
+        from utils.email_service import send_email_confirmation
+        email_sent = send_email_confirmation(user, confirmation_token)
+        
+        # Log registration
+        user.log_profile_change('registration', 'user_registered', 'User completed registration')
+        
+        return jsonify({
+            'success': True,
+            'message': 'Registration completed successfully. Please check your email to confirm your account.',
+            'user_id': user.id,
+            'email_sent': email_sent
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Registration error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Registration failed. Please try again.'
+        }), 500
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login form for registered users"""
+    if request.method == 'GET':
+        return render_template('auth/login.html')
+    
+    try:
+        data = request.get_json() if request.is_json else request.form.to_dict()
+        
+        email = data.get('email')
+        password = data.get('password')
+        
+        if not email or not password:
+            return jsonify({
+                'success': False,
+                'error': 'Email and password are required'
+            }), 400
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if user and user.check_password(password):
+            if not user.is_active:
+                return jsonify({
+                    'success': False,
+                    'error': 'Account is deactivated'
+                }), 400
+            
+            # Check if email is confirmed
+            if not user.email_confirmed:
+                return jsonify({
+                    'success': False,
+                    'error': 'Please confirm your email before logging in. Check your inbox for confirmation link.',
+                    'email_not_confirmed': True
+                }), 400
+            
+            login_user(user, remember=True)
+            user.last_login = datetime.now(timezone.utc)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Login successful',
+                'redirect_url': url_for('dashboard.index')
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid email or password'
+            }), 401
+            
+    except Exception as e:
+        current_app.logger.error(f"Login error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Login failed. Please try again.'
+        }), 500
+
+@auth_bp.route('/confirm-email/<token>')
+def confirm_email(token):
+    """Confirm user's email with token"""
+    try:
+        # Find user by token
+        user = User.query.filter_by(email_confirmation_token=token).first()
+        
+        if not user:
+            # Try to find by hashed token
+            import hashlib
+            token_hash = hashlib.sha256(token.encode()).hexdigest()
+            user = User.query.filter_by(email_confirmation_token=token_hash).first()
+        
+        if not user:
+            flash('Неверная или истекшая ссылка подтверждения', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Verify token
+        if not user.verify_email_confirmation_token(token):
+            flash('Ссылка подтверждения истекла. Пожалуйста, запросите новую.', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Confirm email
+        user.confirm_email()
+        db.session.commit()
+        
+        # Send welcome email
+        from utils.email_service import send_welcome_email
+        send_welcome_email(user)
+        
+        flash('Email успешно подтвержден! Добро пожаловать в Dental Academy!', 'success')
+        return redirect(url_for('auth.login'))
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Email confirmation error: {str(e)}")
+        flash('Произошла ошибка при подтверждении email', 'error')
+        return redirect(url_for('auth.login'))
+
+@auth_bp.route('/resend-confirmation', methods=['POST'])
+def resend_confirmation():
+    """Resend email confirmation"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        
+        if not email:
+            return jsonify({
+                'success': False,
+                'error': 'Email is required'
+            }), 400
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            return jsonify({
+                'success': False,
+                'error': 'User not found'
+            }), 404
+        
+        if user.email_confirmed:
+            return jsonify({
+                'success': False,
+                'error': 'Email already confirmed'
+            }), 400
+        
+        # Generate new token
+        confirmation_token = user.generate_email_confirmation_token()
+        db.session.commit()
+        
+        # Send email
+        from utils.email_service import send_email_confirmation
+        email_sent = send_email_confirmation(user, confirmation_token)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Confirmation email sent successfully',
+            'email_sent': email_sent
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Resend confirmation error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to resend confirmation email'
+        }), 500
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Forgot password form"""
+    if request.method == 'GET':
+        return render_template('auth/forgot_password.html')
+    
+    try:
+        data = request.get_json() if request.is_json else request.form.to_dict()
+        email = data.get('email', '').strip()
+        
+        if not email:
+            return jsonify({
+                'success': False,
+                'error': 'Email is required'
+            }), 400
+        
+        # Find user by email
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Don't reveal if email exists or not for security
+            return jsonify({
+                'success': True,
+                'message': 'If the email exists, a password reset link has been sent.'
+            })
+        
+        # Generate password reset token
+        reset_token = user.generate_password_reset_token()
+        db.session.commit()
+        
+        # Send password reset email
+        from utils.email_service import send_password_reset_email
+        email_sent = send_password_reset_email(user, reset_token)
+        
+        return jsonify({
+            'success': True,
+            'message': 'If the email exists, a password reset link has been sent.',
+            'email_sent': email_sent
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Forgot password error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to process password reset request'
+        }), 500
+
+@auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Reset password with token"""
+    try:
+        # Find user by token
+        user = User.query.filter_by(password_reset_token=token).first()
+        
+        if not user:
+            # Try to find by hashed token
+            import hashlib
+            token_hash = hashlib.sha256(token.encode()).hexdigest()
+            user = User.query.filter_by(password_reset_token=token_hash).first()
+        
+        if not user:
+            flash('Неверная или истекшая ссылка сброса пароля', 'error')
+            return redirect(url_for('auth.forgot_password'))
+        
+        # Verify token
+        if not user.verify_password_reset_token(token):
+            flash('Ссылка сброса пароля истекла. Пожалуйста, запросите новую.', 'error')
+            return redirect(url_for('auth.forgot_password'))
+        
+        if request.method == 'GET':
+            return render_template('auth/reset_password.html', token=token)
+        
+        # Handle POST request
+        data = request.get_json() if request.is_json else request.form.to_dict()
+        password = data.get('password', '').strip()
+        confirm_password = data.get('confirm_password', '').strip()
+        
+        # Validate password
+        if not password or not confirm_password:
+            return jsonify({
+                'success': False,
+                'error': 'Password and confirmation are required'
+            }), 400
+        
+        if password != confirm_password:
+            return jsonify({
+                'success': False,
+                'error': 'Passwords do not match'
+            }), 400
+        
+        if len(password) < 8:
+            return jsonify({
+                'success': False,
+                'error': 'Password must be at least 8 characters long'
+            }), 400
+        
+        if not any(c.isalpha() for c in password):
+            return jsonify({
+                'success': False,
+                'error': 'Password must contain at least one letter'
+            }), 400
+        
+        if not any(c.isdigit() for c in password):
+            return jsonify({
+                'success': False,
+                'error': 'Password must contain at least one number'
+            }), 400
+        
+        # Update password
+        user.set_password(password)
+        user.clear_password_reset_token()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Password has been reset successfully. You can now log in with your new password.',
+            'redirect_url': url_for('auth.login')
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Reset password error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to reset password'
+        }), 500 

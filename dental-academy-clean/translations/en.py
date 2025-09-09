@@ -1102,4 +1102,142 @@ translations = {
     'anatomy_description': 'Human anatomy and physiology',
     'quick_search': 'Quick Search',
     'search_placeholder': 'Search knowledge base...',
+    
+    # Registration and Login translations
+    'registration_title': 'Registration',
+    'registration_subtitle': 'Create your account to start learning',
+    'login_title': 'Login',
+    'login_subtitle': 'Welcome back! Please sign in to your account',
+    'forgot_password': 'Forgot password?',
+    'remember_me': 'Remember me',
+    'dont_have_account': "Don't have an account?",
+    'already_have_account': 'Already have an account?',
+    'create_account': 'Create account',
+    'sign_in': 'Sign in',
+    'sign_up': 'Sign up',
+    
+    # Registration form fields
+    'personal_information': 'Personal Information',
+    'first_name': 'First Name',
+    'last_name': 'Last Name',
+    'email': 'Email',
+    'password': 'Password',
+    'confirm_password': 'Confirm Password',
+    'date_of_birth': 'Date of Birth',
+    'nationality': 'Nationality',
+    'phone_number': 'Phone Number',
+    
+    # Professional information
+    'professional_information': 'Professional Information',
+    'legal_status': 'Legal Status',
+    'profession': 'Profession',
+    'work_experience': 'Work Experience',
+    'additional_qualifications': 'Additional Qualifications',
+    
+    # Language certificates
+    'language_certificates': 'Language Certificates',
+    'dutch_level': 'Dutch Level',
+    'english_level': 'English Level',
+    'idw_assessment': 'IDW Assessment',
+    'language_certificate_upload': 'Language Certificate Upload',
+    'language_certificate_text': 'Language Certificate Information',
+    
+    # BIG exam information
+    'big_exam_information': 'BIG Exam Information',
+    'big_exam_registered': 'BIG Exam Registered',
+    'exam_date': 'Exam Date',
+    'preparation_time': 'Preparation Time',
+    
+    # Document uploads
+    'document_uploads': 'Document Uploads',
+    'diploma_upload': 'Diploma Upload',
+    'diploma_info': 'Diploma Information',
+    'cv_upload': 'CV Upload',
+    'cv_info': 'CV Information',
+    'other_documents': 'Other Documents',
+    'other_documents_info': 'Other Documents Information',
+    
+    # Consent and agreements
+    'consent_and_agreements': 'Consent and Agreements',
+    'data_usage_consent': 'I consent to the use of my data for educational purposes',
+    'privacy_policy_consent': 'I agree to the Privacy Policy',
+    'terms_consent': 'I agree to the Terms of Service',
+    'marketing_consent': 'I consent to receive marketing communications',
+    
+    # Form validation messages
+    'field_required': 'This field is required',
+    'email_invalid': 'Please enter a valid email address',
+    'password_too_short': 'Password must be at least 8 characters',
+    'passwords_dont_match': 'Passwords do not match',
+    'terms_required': 'You must agree to the terms and conditions',
+    'file_too_large': 'File size must not exceed 5MB',
+    'invalid_file_type': 'Invalid file type. Please upload PDF files only',
+    
+    # Success messages
+    'registration_success': 'Registration completed successfully!',
+    'login_success': 'Login successful!',
+    'password_reset_sent': 'Password reset instructions sent to your email',
+    'password_reset_success': 'Password reset successfully!',
+    
+    # Error messages
+    'registration_error': 'Registration failed. Please try again.',
+    'login_error': 'Login failed. Please check your credentials.',
+    'user_already_exists': 'User with this email already exists',
+    'invalid_credentials': 'Invalid email or password',
+    'account_not_verified': 'Please verify your email address',
+    'password_reset_error': 'Password reset failed. Please try again.',
+    
+    # Legal status options
+    'legal_status_eu_citizen': 'EU Citizen',
+    'legal_status_non_eu_citizen': 'Non-EU Citizen',
+    'legal_status_refugee': 'Refugee',
+    'legal_status_student': 'Student',
+    'legal_status_other': 'Other',
+    
+    # Profession options
+    'profession_dentist': 'Dentist',
+    'profession_pharmacist': 'Pharmacist',
+    'profession_general_practitioner': 'General Practitioner',
+    'profession_nurse': 'Nurse',
+    'profession_other': 'Other',
+    
+    # Language levels
+    'language_level_a1': 'A1 - Beginner',
+    'language_level_a2': 'A2 - Elementary',
+    'language_level_b1': 'B1 - Intermediate',
+    'language_level_b2': 'B2 - Upper Intermediate',
+    'language_level_c1': 'C1 - Advanced',
+    'language_level_c2': 'C2 - Proficient',
+    'language_level_native': 'Native',
+    
+    # IDW assessment options
+    'idw_assessment_yes': 'Yes, I have IDW assessment',
+    'idw_assessment_no': 'No, I do not have IDW assessment',
+    'idw_assessment_planned': 'Planned',
+    
+    # BIG exam status
+    'big_exam_status_registered': 'Registered',
+    'big_exam_status_not_registered': 'Not Registered',
+    'big_exam_status_planning': 'Planning to Register',
+    
+    # Preparation time options
+    'preparation_time_1_month': '1 month',
+    'preparation_time_3_months': '3 months',
+    'preparation_time_6_months': '6 months',
+    'preparation_time_1_year': '1 year',
+    'preparation_time_more': 'More than 1 year',
+    
+    # Form placeholders
+    'enter_first_name': 'Enter your first name',
+    'enter_last_name': 'Enter your last name',
+    'enter_email': 'Enter your email address',
+    'enter_password': 'Enter your password',
+    'confirm_password_placeholder': 'Confirm your password',
+    'enter_phone': 'Enter your phone number',
+    'enter_work_experience': 'Describe your work experience',
+    'enter_qualifications': 'List your additional qualifications',
+    'enter_diploma_info': 'Enter diploma information',
+    'enter_cv_info': 'Enter CV information',
+    'enter_other_docs': 'Enter other documents information',
+    'enter_language_cert_info': 'Enter language certificate information',
 }

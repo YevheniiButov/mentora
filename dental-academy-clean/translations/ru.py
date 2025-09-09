@@ -994,4 +994,142 @@ translations = {
     'anatomy_description': 'Человеческая анатомия и физиология',
     'quick_search': 'Быстрый поиск',
     'search_placeholder': 'Поиск в базе знаний...',
+    
+    # Переводы для регистрации и входа
+    'registration_title': 'Регистрация',
+    'registration_subtitle': 'Создайте аккаунт, чтобы начать обучение',
+    'login_title': 'Вход',
+    'login_subtitle': 'Добро пожаловать! Войдите в свой аккаунт',
+    'forgot_password': 'Забыли пароль?',
+    'remember_me': 'Запомнить меня',
+    'dont_have_account': 'Нет аккаунта?',
+    'already_have_account': 'Уже есть аккаунт?',
+    'create_account': 'Создать аккаунт',
+    'sign_in': 'Войти',
+    'sign_up': 'Зарегистрироваться',
+    
+    # Поля формы регистрации
+    'personal_information': 'Личная информация',
+    'first_name': 'Имя',
+    'last_name': 'Фамилия',
+    'email': 'Email',
+    'password': 'Пароль',
+    'confirm_password': 'Подтвердите пароль',
+    'date_of_birth': 'Дата рождения',
+    'nationality': 'Национальность',
+    'phone_number': 'Номер телефона',
+    
+    # Профессиональная информация
+    'professional_information': 'Профессиональная информация',
+    'legal_status': 'Правовой статус',
+    'profession': 'Профессия',
+    'work_experience': 'Опыт работы',
+    'additional_qualifications': 'Дополнительные квалификации',
+    
+    # Языковые сертификаты
+    'language_certificates': 'Языковые сертификаты',
+    'dutch_level': 'Уровень голландского',
+    'english_level': 'Уровень английского',
+    'idw_assessment': 'Оценка IDW',
+    'language_certificate_upload': 'Загрузка языкового сертификата',
+    'language_certificate_text': 'Информация о языковом сертификате',
+    
+    # Информация об экзамене BIG
+    'big_exam_information': 'Информация об экзамене BIG',
+    'big_exam_registered': 'Зарегистрирован на экзамен BIG',
+    'exam_date': 'Дата экзамена',
+    'preparation_time': 'Время подготовки',
+    
+    # Загрузка документов
+    'document_uploads': 'Загрузка документов',
+    'diploma_upload': 'Загрузка диплома',
+    'diploma_info': 'Информация о дипломе',
+    'cv_upload': 'Загрузка резюме',
+    'cv_info': 'Информация о резюме',
+    'other_documents': 'Другие документы',
+    'other_documents_info': 'Информация о других документах',
+    
+    # Согласия и договоры
+    'consent_and_agreements': 'Согласия и договоры',
+    'data_usage_consent': 'Я согласен на использование моих данных в образовательных целях',
+    'privacy_policy_consent': 'Я согласен с Политикой конфиденциальности',
+    'terms_consent': 'Я согласен с Условиями использования',
+    'marketing_consent': 'Я согласен получать маркетинговые сообщения',
+    
+    # Сообщения валидации формы
+    'field_required': 'Это поле обязательно',
+    'email_invalid': 'Пожалуйста, введите корректный email',
+    'password_too_short': 'Пароль должен содержать минимум 8 символов',
+    'passwords_dont_match': 'Пароли не совпадают',
+    'terms_required': 'Вы должны согласиться с условиями',
+    'file_too_large': 'Размер файла не должен превышать 5MB',
+    'invalid_file_type': 'Неверный тип файла. Загружайте только PDF файлы',
+    
+    # Сообщения об успехе
+    'registration_success': 'Регистрация завершена успешно!',
+    'login_success': 'Вход выполнен успешно!',
+    'password_reset_sent': 'Инструкции по сбросу пароля отправлены на ваш email',
+    'password_reset_success': 'Пароль успешно сброшен!',
+    
+    # Сообщения об ошибках
+    'registration_error': 'Регистрация не удалась. Попробуйте еще раз.',
+    'login_error': 'Вход не удался. Проверьте ваши данные.',
+    'user_already_exists': 'Пользователь с таким email уже существует',
+    'invalid_credentials': 'Неверный email или пароль',
+    'account_not_verified': 'Пожалуйста, подтвердите ваш email',
+    'password_reset_error': 'Сброс пароля не удался. Попробуйте еще раз.',
+    
+    # Варианты правового статуса
+    'legal_status_eu_citizen': 'Гражданин ЕС',
+    'legal_status_non_eu_citizen': 'Гражданин не-ЕС',
+    'legal_status_refugee': 'Беженец',
+    'legal_status_student': 'Студент',
+    'legal_status_other': 'Другое',
+    
+    # Варианты профессий
+    'profession_dentist': 'Стоматолог',
+    'profession_pharmacist': 'Фармацевт',
+    'profession_general_practitioner': 'Врач общей практики',
+    'profession_nurse': 'Медсестра',
+    'profession_other': 'Другое',
+    
+    # Уровни языка
+    'language_level_a1': 'A1 - Начальный',
+    'language_level_a2': 'A2 - Элементарный',
+    'language_level_b1': 'B1 - Средний',
+    'language_level_b2': 'B2 - Выше среднего',
+    'language_level_c1': 'C1 - Продвинутый',
+    'language_level_c2': 'C2 - Профессиональный',
+    'language_level_native': 'Родной',
+    
+    # Варианты оценки IDW
+    'idw_assessment_yes': 'Да, у меня есть оценка IDW',
+    'idw_assessment_no': 'Нет, у меня нет оценки IDW',
+    'idw_assessment_planned': 'Запланировано',
+    
+    # Статус экзамена BIG
+    'big_exam_status_registered': 'Зарегистрирован',
+    'big_exam_status_not_registered': 'Не зарегистрирован',
+    'big_exam_status_planning': 'Планирую зарегистрироваться',
+    
+    # Варианты времени подготовки
+    'preparation_time_1_month': '1 месяц',
+    'preparation_time_3_months': '3 месяца',
+    'preparation_time_6_months': '6 месяцев',
+    'preparation_time_1_year': '1 год',
+    'preparation_time_more': 'Более 1 года',
+    
+    # Плейсхолдеры формы
+    'enter_first_name': 'Введите ваше имя',
+    'enter_last_name': 'Введите вашу фамилию',
+    'enter_email': 'Введите ваш email',
+    'enter_password': 'Введите ваш пароль',
+    'confirm_password_placeholder': 'Подтвердите ваш пароль',
+    'enter_phone': 'Введите ваш номер телефона',
+    'enter_work_experience': 'Опишите ваш опыт работы',
+    'enter_qualifications': 'Перечислите ваши дополнительные квалификации',
+    'enter_diploma_info': 'Введите информацию о дипломе',
+    'enter_cv_info': 'Введите информацию о резюме',
+    'enter_other_docs': 'Введите информацию о других документах',
+    'enter_language_cert_info': 'Введите информацию о языковом сертификате',
 }

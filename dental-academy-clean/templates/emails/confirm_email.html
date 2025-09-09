@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подтверждение email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .title {
+            color: #2c3e50;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background: linear-gradient(135deg, #2980b9, #1f4e79);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🦷 Mentora - Dental Academy</div>
+        </div>
+        
+        <h1 class="title">Подтвердите ваш email</h1>
+        
+        <div class="content">
+            <p>Здравствуйте, {{ user.first_name or 'Пользователь' }}!</p>
+            
+            <p>Спасибо за регистрацию в Dental Academy. Для завершения регистрации и активации вашего аккаунта, пожалуйста, подтвердите ваш email адрес.</p>
+            
+            <p>Нажмите на кнопку ниже для подтверждения:</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ confirmation_url }}" class="button">Подтвердить email</a>
+            </div>
+            
+            <div class="warning">
+                <strong>Важно:</strong> Ссылка действительна в течение 1 часа. Если вы не подтвердите email в течение этого времени, вам потребуется запросить новую ссылку.
+            </div>
+            
+            <p>Если кнопка не работает, скопируйте и вставьте следующую ссылку в ваш браузер:</p>
+            <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace;">
+                {{ confirmation_url }}
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>Если вы не регистрировались в Dental Academy, просто проигнорируйте это письмо.</p>
+            <p>© 2024 Mentora - Dental Academy. Все права защищены.</p>
+        </div>
+    </div>
+</body>
+</html>

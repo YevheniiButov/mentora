@@ -33,7 +33,8 @@ except ImportError:
 
 # Import extensions and models
 from extensions import init_extensions, db, login_manager, babel
-from models import User, LearningPath, Subject, Module, Lesson, create_sample_data, DigiDSession, UserProgress, Test, Question, QuestionCategory
+from utils.analytics_middleware import init_analytics_middleware
+from models import User, LearningPath, Subject, Module, Lesson, create_sample_data, DigiDSession, UserProgress, Test, Question, QuestionCategory, WebsiteVisit, PageView, UserSession
 from translations import get_translation, get_available_languages, DEFAULT_LANGUAGE, LANGUAGE_NAMES, RTL_LANGUAGES, COUNTRY_CODES
 from flask_wtf.csrf import CSRFProtect
 from utils.serializers import setup_json_serialization
@@ -57,6 +58,9 @@ else:
 
 # Initialize extensions
 init_extensions(app)
+
+# Initialize analytics middleware
+init_analytics_middleware(app)
 
 # Create all database tables
 with app.app_context():
@@ -373,6 +377,10 @@ try:
     # Регистрация IRT + Spaced Repetition Integration blueprint
     app.register_blueprint(irt_spaced_bp)
     
+    # Регистрация Analytics blueprint
+    from routes.analytics_routes import analytics_bp
+    app.register_blueprint(analytics_bp)
+    
 
     
     # CSRF exemptions for API endpoints (only in development)
@@ -426,19 +434,7 @@ except ImportError as e:
     
     @app.route('/login', methods=['GET', 'POST'])
     def login():
-        if request.method == 'POST':
-            username = request.form.get('username')
-            password = request.form.get('password')
-            
-            user = User.query.filter_by(username=username).first()
-            if user and user.check_password(password):
-                login_user(user)
-                return redirect(url_for('index'))
-            else:
-                from flask import flash
-                flash('Неверное имя пользователя или пароль', 'error')
-        
-        return redirect(url_for('auth.digid_login'))
+        return redirect(url_for('auth.login'))
     
     @app.route('/register', methods=['GET', 'POST'])
     def register():
