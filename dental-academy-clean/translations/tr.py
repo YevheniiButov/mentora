@@ -1094,4 +1094,10 @@ translations = {
     'withdraw_consent': 'Rızayı geri çekme',
     'privacy_contact': 'Bu Gizlilik Politikası hakkında sorularınız varsa, lütfen bizimle iletişime geçin.',
     'back_to_home': 'Ana Sayfaya Dön',
+    
+    # Şifre sıfırlama sayfası çevirileri
+    'forgot_password_subtitle': 'E-posta adresinizi girin, şifrenizi sıfırlamak için size bir bağlantı göndereceğiz',
+    'email_placeholder': 'E-posta adresinizi girin',
+    'send_reset_link': 'Sıfırlama Bağlantısı Gönder',
+    'back_to_login': 'Girişe Dön',
 }

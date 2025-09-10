@@ -1116,4 +1116,10 @@ translations = {
     'withdraw_consent': 'Retirar o consentimento',
     'privacy_contact': 'Se você tiver dúvidas sobre esta Política de Privacidade, entre em contato conosco.',
     'back_to_home': 'Voltar ao Início',
+    
+    # Traduções da página de redefinição de senha
+    'forgot_password_subtitle': 'Digite seu endereço de e-mail e enviaremos um link para redefinir sua senha',
+    'email_placeholder': 'Digite seu endereço de e-mail',
+    'send_reset_link': 'Enviar Link de Redefinição',
+    'back_to_login': 'Voltar ao Login',
 }

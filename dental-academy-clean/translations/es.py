@@ -1167,4 +1167,10 @@ translations = {
     'withdraw_consent': 'Retirar el consentimiento',
     'privacy_contact': 'Si tiene preguntas sobre esta Política de Privacidad, por favor contáctenos.',
     'back_to_home': 'Volver al Inicio',
+    
+    # Traducciones de página de restablecimiento de contraseña
+    'forgot_password_subtitle': 'Ingrese su dirección de correo electrónico y le enviaremos un enlace para restablecer su contraseña',
+    'email_placeholder': 'Ingrese su dirección de correo electrónico',
+    'send_reset_link': 'Enviar Enlace de Restablecimiento',
+    'back_to_login': 'Volver al Inicio de Sesión',
 }

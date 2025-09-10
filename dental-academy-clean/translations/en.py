@@ -1627,4 +1627,10 @@ translations = {
     'withdraw_consent': 'Withdraw consent',
     'privacy_contact': 'If you have any questions about this Privacy Policy, please contact us.',
     'back_to_home': 'Back to Home',
+    
+    # Password reset page translations
+    'forgot_password_subtitle': 'Enter your email address and we will send you a link to reset your password',
+    'email_placeholder': 'Enter your email address',
+    'send_reset_link': 'Send Reset Link',
+    'back_to_login': 'Back to Login',
 }

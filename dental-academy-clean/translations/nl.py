@@ -1462,4 +1462,10 @@ translations = {
     'withdraw_consent': 'Toestemming intrekken',
     'privacy_contact': 'Als u vragen heeft over dit Privacybeleid, neem dan contact met ons op.',
     'back_to_home': 'Terug naar Home',
+    
+    # Wachtwoord reset pagina vertalingen
+    'forgot_password_subtitle': 'Voer uw e-mailadres in en wij sturen u een link om uw wachtwoord te resetten',
+    'email_placeholder': 'Voer uw e-mailadres in',
+    'send_reset_link': 'Reset Link Verzenden',
+    'back_to_login': 'Terug naar Inloggen',
 }
