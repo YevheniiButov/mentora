@@ -797,10 +797,15 @@ def forgot_password():
         return render_template('auth/forgot_password.html', lang=lang)
     
     try:
+        print("=== FORGOT PASSWORD REQUEST START ===")
+        
         data = request.get_json() if request.is_json else request.form.to_dict()
         email = data.get('email', '').strip()
         
+        print(f"=== EMAIL RECEIVED: {email} ===")
+        
         if not email:
+            print("=== ERROR: No email provided ===")
             return jsonify({
                 'success': False,
                 'error': 'Email is required'
@@ -808,21 +813,38 @@ def forgot_password():
         
         # Find user by email
         user = User.query.filter_by(email=email).first()
+        print(f"=== USER FOUND: {user is not None} ===")
         
         if not user:
+            print("=== USER NOT FOUND - returning generic message ===")
             # Don't reveal if email exists or not for security
             return jsonify({
                 'success': True,
                 'message': 'If the email exists, a password reset link has been sent.'
             })
         
+        print(f"=== USER FOUND: {user.email} ===")
+        
         # Generate password reset token
+        print("=== GENERATING PASSWORD RESET TOKEN ===")
         reset_token = user.generate_password_reset_token()
+        print(f"=== TOKEN GENERATED: {reset_token[:20]}... ===")
+        
         db.session.commit()
+        print("=== DATABASE COMMITTED ===")
         
         # Send password reset email
+        print("=== STARTING EMAIL SENDING ===")
         from utils.email_service import send_password_reset_email
+        
+        # Check email configuration
+        print(f"=== MAIL_SUPPRESS_SEND: {current_app.config.get('MAIL_SUPPRESS_SEND')} ===")
+        print(f"=== MAIL_USERNAME: {current_app.config.get('MAIL_USERNAME')} ===")
+        print(f"=== MAIL_PASSWORD: {'***' if current_app.config.get('MAIL_PASSWORD') else 'NOT SET'} ===")
+        print(f"=== MAIL_SERVER: {current_app.config.get('MAIL_SERVER')} ===")
+        
         email_sent = send_password_reset_email(user, reset_token)
+        print(f"=== EMAIL SENDING RESULT: {email_sent} ===")
         
         return jsonify({
             'success': True,
@@ -831,6 +853,10 @@ def forgot_password():
         })
         
     except Exception as e:
+        print(f"=== FORGOT PASSWORD ERROR: {str(e)} ===")
+        import traceback
+        print(f"=== TRACEBACK: {traceback.format_exc()} ===")
+        
         db.session.rollback()
         current_app.logger.error(f"Forgot password error: {str(e)}")
         return jsonify({
