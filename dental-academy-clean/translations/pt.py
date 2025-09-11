@@ -1169,12 +1169,16 @@ translations = {
     # reCAPTCHA
     'recaptcha_help': 'Este site é protegido pelo reCAPTCHA e a Política de Privacidade e Termos de Serviço do Google se aplicam.',
     'recaptcha_required': 'Por favor, complete a verificação reCAPTCHA',
+    'recaptcha_verification': 'Verificação reCAPTCHA',
+    'recaptcha_not_robot': 'Não sou um robô',
     
     # Marketing consent
     'marketing_consent': 'Comunicações de Marketing',
     'marketing_consent_text': 'Consinto em receber comunicações de marketing da Mentora:',
     'marketing_consent_important': 'Importante:',
     'marketing_consent_note': 'Você pode cancelar a inscrição a qualquer momento clicando no link de cancelamento em qualquer email.',
+    'marketing_consent_data': 'Seu endereço de email será usado exclusivamente para comunicações de marketing.',
+    'marketing_consent_privacy': 'Respeitamos sua privacidade e não compartilharemos seus dados com terceiros.',
     'accept_marketing_consent': 'Consinto em receber comunicações de marketing da Mentora',
     'newsletter_consent': 'Newsletter com atualizações sobre o programa',
     'events_consent': 'Informações sobre eventos e webinars',

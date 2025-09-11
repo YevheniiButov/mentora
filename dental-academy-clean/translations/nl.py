@@ -1515,12 +1515,16 @@ translations = {
     # reCAPTCHA
     'recaptcha_help': 'Deze site is beschermd door reCAPTCHA en de Google Privacy Policy en Terms of Service zijn van toepassing.',
     'recaptcha_required': 'Voltooi de reCAPTCHA verificatie',
+    'recaptcha_verification': 'reCAPTCHA Verificatie',
+    'recaptcha_not_robot': 'Ik ben geen robot',
     
     # Marketing consent
     'marketing_consent': 'Marketing Communicatie',
     'marketing_consent_text': 'Ik stem in met het ontvangen van marketing communicatie van Mentora:',
     'marketing_consent_important': 'Belangrijk:',
     'marketing_consent_note': 'U kunt zich op elk moment afmelden door op de afmeldlink in een e-mail te klikken.',
+    'marketing_consent_data': 'Uw e-mailadres wordt uitsluitend gebruikt voor marketingcommunicatie.',
+    'marketing_consent_privacy': 'Wij respecteren uw privacy en delen uw gegevens niet met derden.',
     'accept_marketing_consent': 'Ik stem in met het ontvangen van marketing communicatie van Mentora',
     'newsletter_consent': 'Nieuwsbrief met updates over het programma',
     'events_consent': 'Informatie over evenementen en webinars',

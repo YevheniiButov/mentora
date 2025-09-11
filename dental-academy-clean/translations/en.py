@@ -1681,6 +1681,8 @@ translations = {
     # reCAPTCHA
     'recaptcha_help': 'This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.',
     'recaptcha_required': 'Please complete the reCAPTCHA verification',
+    'recaptcha_verification': 'reCAPTCHA Verification',
+    'recaptcha_not_robot': 'I\'m not a robot',
     
     # Marketing consent
     'marketing_consent': 'Marketing Communications (Optional)',

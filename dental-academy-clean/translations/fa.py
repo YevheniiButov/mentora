@@ -1259,12 +1259,16 @@ translations = {
     # reCAPTCHA
     'recaptcha_help': 'این سایت توسط reCAPTCHA محافظت می‌شود و سیاست حریم خصوصی و شرایط خدمات Google اعمال می‌شود.',
     'recaptcha_required': 'لطفاً تأیید reCAPTCHA را تکمیل کنید',
+    'recaptcha_verification': 'تأیید reCAPTCHA',
+    'recaptcha_not_robot': 'من ربات نیستم',
     
     # Marketing consent
     'marketing_consent': 'ارتباطات بازاریابی',
     'marketing_consent_text': 'من موافقم که ارتباطات بازاریابی از Mentora دریافت کنم:',
     'marketing_consent_important': 'مهم:',
     'marketing_consent_note': 'می‌توانید در هر زمان با کلیک روی لینک لغو اشتراک در هر ایمیل، لغو اشتراک کنید.',
+    'marketing_consent_data': 'آدرس ایمیل شما فقط برای ارتباطات بازاریابی استفاده خواهد شد.',
+    'marketing_consent_privacy': 'ما حریم خصوصی شما را محترم می‌شماریم و اطلاعات شما را با اشخاص ثالث به اشتراک نمی‌گذاریم.',
     'accept_marketing_consent': 'من موافقم که ارتباطات بازاریابی از Mentora دریافت کنم',
     'newsletter_consent': 'خبرنامه با به‌روزرسانی‌های برنامه',
     'events_consent': 'اطلاعات در مورد رویدادها و وبینارها',

@@ -1584,6 +1584,8 @@ translations = {
     # reCAPTCHA
     'recaptcha_help': 'Этот сайт защищен reCAPTCHA и применяются Политика конфиденциальности и Условия использования Google.',
     'recaptcha_required': 'Пожалуйста, завершите проверку reCAPTCHA',
+    'recaptcha_verification': 'Проверка reCAPTCHA',
+    'recaptcha_not_robot': 'Я не робот',
     
     # Marketing consent
     'marketing_consent': 'Маркетинговые коммуникации (необязательно)',

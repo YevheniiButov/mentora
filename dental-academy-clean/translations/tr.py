@@ -1147,12 +1147,16 @@ translations = {
     # reCAPTCHA
     'recaptcha_help': 'Bu site reCAPTCHA tarafından korunmaktadır ve Google Gizlilik Politikası ve Hizmet Şartları geçerlidir.',
     'recaptcha_required': 'Lütfen reCAPTCHA doğrulamasını tamamlayın',
+    'recaptcha_verification': 'reCAPTCHA Doğrulama',
+    'recaptcha_not_robot': 'Ben robot değilim',
     
     # Marketing consent
     'marketing_consent': 'Pazarlama İletişimi',
     'marketing_consent_text': 'Mentora\'dan pazarlama iletişimi almayı kabul ediyorum:',
     'marketing_consent_important': 'Önemli:',
     'marketing_consent_note': 'Herhangi bir e-postadaki abonelikten çıkma bağlantısına tıklayarak istediğiniz zaman abonelikten çıkabilirsiniz.',
+    'marketing_consent_data': 'E-posta adresiniz yalnızca pazarlama iletişimi için kullanılacaktır.',
+    'marketing_consent_privacy': 'Gizliliğinize saygı duyuyoruz ve verilerinizi üçüncü taraflarla paylaşmayacağız.',
     'accept_marketing_consent': 'Mentora\'dan pazarlama iletişimi almayı kabul ediyorum',
     'newsletter_consent': 'Program hakkında güncellemelerle bülten',
     'events_consent': 'Etkinlikler ve webinarlar hakkında bilgi',

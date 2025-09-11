@@ -1169,12 +1169,16 @@ translations = {
     # reCAPTCHA
     'recaptcha_help': 'Цей сайт захищений reCAPTCHA і застосовуються Політика конфіденційності та Умови використання Google.',
     'recaptcha_required': 'Будь ласка, завершіть перевірку reCAPTCHA',
+    'recaptcha_verification': 'Перевірка reCAPTCHA',
+    'recaptcha_not_robot': 'Я не робот',
     
     # Marketing consent
     'marketing_consent': 'Маркетингові комунікації',
     'marketing_consent_text': 'Я згоден отримувати маркетингові повідомлення від Mentora:',
     'marketing_consent_important': 'Важливо:',
     'marketing_consent_note': 'Ви можете відписатися в будь-який час, натиснувши на посилання відписки в будь-якому листі.',
+    'marketing_consent_data': 'Ваша електронна адреса буде використовуватися виключно для маркетингових комунікацій.',
+    'marketing_consent_privacy': 'Ми поважаємо вашу конфіденційність і не передаємо ваші дані третім особам.',
     'accept_marketing_consent': 'Я згоден отримувати маркетингові повідомлення від Mentora',
     'newsletter_consent': 'Новинна розсилка з оновленнями про програму',
     'events_consent': 'Інформація про заходи та вебінари',
