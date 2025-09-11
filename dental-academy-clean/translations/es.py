@@ -1214,4 +1214,6 @@ translations = {
     'personal_info': 'Información Personal',
     'big_exam_info': 'Información del Examen BIG',
     'review': 'Revisión',
+    'check_spam_folder': '¡Importante: Revisa tu carpeta de spam!',
+    'spam_folder_warning': 'El correo de confirmación podría estar en tu carpeta de spam/no deseado. Por favor revisa y marca como "no spam" si lo encuentras.',
 }

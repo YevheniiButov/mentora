@@ -1675,4 +1675,6 @@ translations = {
     'personal_info': 'Personal Info',
     'big_exam_info': 'BIG Exam Info',
     'review': 'Review',
+    'check_spam_folder': 'Important: Please check your spam folder!',
+    'spam_folder_warning': 'Confirmation email might be in your spam/junk folder. Please check and mark as not spam if found.',
 }

@@ -1141,4 +1141,6 @@ translations = {
     'personal_info': 'Kişisel Bilgiler',
     'big_exam_info': 'BIG Sınav Bilgileri',
     'review': 'İnceleme',
+    'check_spam_folder': 'Önemli: Spam klasörünüzü kontrol edin!',
+    'spam_folder_warning': 'Onay e-postası spam/istenmeyen klasörünüzde olabilir. Lütfen kontrol edin ve bulursanız "spam değil" olarak işaretleyin.',
 }

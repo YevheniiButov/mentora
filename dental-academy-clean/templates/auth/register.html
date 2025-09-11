@@ -1657,13 +1657,16 @@ async function submitForm() {
         const result = await response.json();
         
         if (result.success) {
-            // Show success message
-            showSuccessMessage('{{ t("registration_success", lang) | default("Registration completed successfully!") }}');
+            // Show success message with spam folder warning
+            const successMessage = '{{ t("registration_success", lang) | default("Registration completed successfully!") }}' + 
+                '<br><br><strong>📧 {{ t("check_spam_folder", lang) | default("Important: Please check your spam folder!") }}</strong><br>' +
+                '{{ t("spam_folder_warning", lang) | default("Confirmation email might be in your spam/junk folder. Please check and mark as not spam if found.") }}';
+            showSuccessMessage(successMessage);
             
             // Redirect to login or dashboard
             setTimeout(() => {
                 window.location.href = '{{ url_for("auth.login") }}';
-            }, 2000);
+            }, 5000); // Increased timeout to give time to read the message
         } else {
             // Show error message
             showErrorMessage(result.error || '{{ t("registration_error", lang) | default("Registration failed. Please try again.") }}');

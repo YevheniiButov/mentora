@@ -1509,4 +1509,6 @@ translations = {
     'personal_info': 'Persoonlijke info',
     'big_exam_info': 'BIG examen info',
     'review': 'Beoordeling',
+    'check_spam_folder': 'Belangrijk: Controleer uw spam-map!',
+    'spam_folder_warning': 'Bevestigingsmail kan in uw spam/ongewenste map staan. Controleer en markeer als "geen spam" indien gevonden.',
 }
