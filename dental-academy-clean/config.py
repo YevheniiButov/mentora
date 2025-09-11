@@ -56,7 +56,7 @@ class Config:
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Mentora <noreply@mentora.com.in>')
     
     # Email Confirmation
-    EMAIL_CONFIRMATION_EXPIRES = 3600  # 1 hour
+    EMAIL_CONFIRMATION_EXPIRES = 86400  # 24 hours
     EMAIL_CONFIRMATION_SALT = os.environ.get('EMAIL_CONFIRMATION_SALT', 'email-confirmation-salt')
     
     # Development mode - suppress email sending

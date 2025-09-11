@@ -329,7 +329,7 @@ class User(db.Model, UserMixin):
         if not self.email_confirmation_token:
             return False
         
-        # Check if token is expired (1 hour)
+        # Check if token is expired
         if self.email_confirmation_sent_at:
             # Ensure both dates are timezone-aware
             sent_at = self.email_confirmation_sent_at
@@ -337,10 +337,22 @@ class User(db.Model, UserMixin):
                 # If sent_at is naive, assume it's UTC
                 sent_at = sent_at.replace(tzinfo=timezone.utc)
             
-            expiry_time = sent_at + timedelta(seconds=3600)
+            # Get expiry time from config (default 24 hours)
+            from flask import current_app
+            expiry_seconds = current_app.config.get('EMAIL_CONFIRMATION_EXPIRES', 86400)  # 24 hours default
+            expiry_time = sent_at + timedelta(seconds=expiry_seconds)
             current_time = datetime.now(timezone.utc)
             
+            # Debug logging
+            print(f"=== TOKEN EXPIRY CHECK ===")
+            print(f"Token sent at: {sent_at}")
+            print(f"Current time: {current_time}")
+            print(f"Expiry time: {expiry_time}")
+            print(f"Expiry seconds: {expiry_seconds}")
+            print(f"Time until expiry: {(expiry_time - current_time).total_seconds()} seconds")
+            
             if current_time > expiry_time:
+                print(f"=== TOKEN EXPIRED ===")
                 return False
         
         # Verify token hash
