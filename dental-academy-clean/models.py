@@ -503,15 +503,21 @@ class UserSession(db.Model):
     
     def log_profile_change(self, field, old_value, new_value, changed_by=None):
         """Log a profile change for audit trail"""
-        audit_log = ProfileAuditLog(
-            user_id=self.id,
-            field_changed=field,
-            old_value=str(old_value) if old_value is not None else None,
-            new_value=str(new_value) if new_value is not None else None,
-            changed_by=changed_by or self.id,
-            change_type='profile_update'
-        )
-        db.session.add(audit_log)
+        try:
+            audit_log = ProfileAuditLog(
+                user_id=self.id,
+                field_changed=field,
+                old_value=str(old_value) if old_value is not None else None,
+                new_value=str(new_value) if new_value is not None else None,
+                changed_by=changed_by or self.id,
+                change_type='profile_update'
+            )
+            db.session.add(audit_log)
+            db.session.commit()
+        except Exception as e:
+            # Log the error but don't fail the main operation
+            print(f"Warning: Could not log profile change: {e}")
+            db.session.rollback()
     
     # ========================================
     # GAMIFICATION METHODS
