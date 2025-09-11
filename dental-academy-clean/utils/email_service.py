@@ -15,8 +15,11 @@ def init_mail(app):
 def send_email_confirmation(user, token):
     """Send email confirmation to user"""
     try:
-        # Generate confirmation URL
-        confirmation_url = f"{current_app.config.get('BASE_URL', 'https://mentora.com.in')}/auth/confirm-email/{token}"
+        # Generate URLs
+        base_url = current_app.config.get('BASE_URL', 'https://mentora.com.in')
+        confirmation_url = f"{base_url}/auth/confirm-email/{token}"
+        unsubscribe_url = f"{base_url}/auth/unsubscribe/{user.id}"
+        privacy_policy_url = f"{base_url}/privacy"
         
         # Check if email sending is suppressed (development mode)
         if current_app.config.get('MAIL_SUPPRESS_SEND', False):
@@ -46,10 +49,14 @@ def send_email_confirmation(user, token):
         # Render email template
         msg.html = render_template('emails/confirm_email.html', 
                                  user=user, 
-                                 confirmation_url=confirmation_url)
+                                 confirmation_url=confirmation_url,
+                                 unsubscribe_url=unsubscribe_url,
+                                 privacy_policy_url=privacy_policy_url)
         msg.body = render_template('emails/confirm_email.txt', 
                                  user=user, 
-                                 confirmation_url=confirmation_url)
+                                 confirmation_url=confirmation_url,
+                                 unsubscribe_url=unsubscribe_url,
+                                 privacy_policy_url=privacy_policy_url)
         
         # Send email
         mail.send(msg)

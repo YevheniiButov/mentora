@@ -1687,6 +1687,8 @@ translations = {
     'marketing_consent_text': 'I would like to receive marketing communications from Mentora:',
     'marketing_consent_important': 'Important:',
     'marketing_consent_note': 'You can unsubscribe at any time by clicking the unsubscribe link in any email.',
+    'marketing_consent_data': 'Your email address will be used solely for marketing communications.',
+    'marketing_consent_privacy': 'We respect your privacy and will not share your data with third parties.',
     'accept_marketing_consent': 'I consent to receive marketing communications from Mentora',
     'newsletter_consent': 'Newsletter with updates about the program',
     'events_consent': 'Information about events and webinars',
