@@ -1154,6 +1154,9 @@ translations = {
     'marketing_consent_important': 'Önemli:',
     'marketing_consent_note': 'Herhangi bir e-postadaki abonelikten çıkma bağlantısına tıklayarak istediğiniz zaman abonelikten çıkabilirsiniz.',
     'accept_marketing_consent': 'Mentora\'dan pazarlama iletişimi almayı kabul ediyorum',
+    'newsletter_consent': 'Program hakkında güncellemelerle bülten',
+    'events_consent': 'Etkinlikler ve webinarlar hakkında bilgi',
+    'promotional_consent': 'Promosyon teklifleri ve özel duyurular',
     
     # Research consent
     'research_consent_title': 'Araştırma Katılımı (İsteğe Bağlı)',

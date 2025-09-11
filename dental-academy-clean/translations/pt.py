@@ -1176,6 +1176,9 @@ translations = {
     'marketing_consent_important': 'Importante:',
     'marketing_consent_note': 'Você pode cancelar a inscrição a qualquer momento clicando no link de cancelamento em qualquer email.',
     'accept_marketing_consent': 'Consinto em receber comunicações de marketing da Mentora',
+    'newsletter_consent': 'Newsletter com atualizações sobre o programa',
+    'events_consent': 'Informações sobre eventos e webinars',
+    'promotional_consent': 'Ofertas promocionais e anúncios especiais',
     
     # Research consent
     'research_consent_title': 'Participação em Pesquisa (Opcional)',

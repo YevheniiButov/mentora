@@ -1266,6 +1266,9 @@ translations = {
     'marketing_consent_important': 'مهم:',
     'marketing_consent_note': 'می‌توانید در هر زمان با کلیک روی لینک لغو اشتراک در هر ایمیل، لغو اشتراک کنید.',
     'accept_marketing_consent': 'من موافقم که ارتباطات بازاریابی از Mentora دریافت کنم',
+    'newsletter_consent': 'خبرنامه با به‌روزرسانی‌های برنامه',
+    'events_consent': 'اطلاعات در مورد رویدادها و وبینارها',
+    'promotional_consent': 'پیشنهادات تبلیغاتی و اعلانات ویژه',
     
     # Research consent
     'research_consent_title': 'شرکت در تحقیقات (اختیاری)',

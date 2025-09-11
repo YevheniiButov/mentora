@@ -1591,6 +1591,9 @@ translations = {
     'marketing_consent_important': 'Важно:',
     'marketing_consent_note': 'Вы можете отписаться в любое время, нажав на ссылку отписки в любом письме.',
     'accept_marketing_consent': 'Я согласен получать маркетинговые сообщения от Mentora',
+    'newsletter_consent': 'Новостная рассылка с обновлениями о программе',
+    'events_consent': 'Информация о мероприятиях и вебинарах',
+    'promotional_consent': 'Промо-предложения и специальные объявления',
     
     # Research consent
     'research_consent_title': 'Участие в исследованиях (необязательно)',

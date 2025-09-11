@@ -1522,6 +1522,9 @@ translations = {
     'marketing_consent_important': 'Belangrijk:',
     'marketing_consent_note': 'U kunt zich op elk moment afmelden door op de afmeldlink in een e-mail te klikken.',
     'accept_marketing_consent': 'Ik stem in met het ontvangen van marketing communicatie van Mentora',
+    'newsletter_consent': 'Nieuwsbrief met updates over het programma',
+    'events_consent': 'Informatie over evenementen en webinars',
+    'promotional_consent': 'Promotionele aanbiedingen en speciale aankondigingen',
     
     # Research consent
     'research_consent_title': 'Onderzoek Deelname (Optioneel)',
