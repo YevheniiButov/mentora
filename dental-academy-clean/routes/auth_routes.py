@@ -641,7 +641,11 @@ def register():
         email_sent = send_email_confirmation(user, confirmation_token)
         
         # Log registration
-        user.log_profile_change('registration', 'user_registered', 'User completed registration')
+        try:
+            user.log_profile_change('registration', 'user_registered', 'User completed registration')
+        except Exception as e:
+            print(f"Warning: Could not log registration: {e}")
+            # Continue without failing the registration
         
         return jsonify({
             'success': True,
