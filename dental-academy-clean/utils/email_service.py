@@ -40,7 +40,7 @@ def send_email_confirmation(user, token):
         msg = Message(
             subject='Registration approve',
             recipients=[user.email],
-            sender=('Mentora', 'xapstom@gmail.com')
+            sender=('Mentora', 'noreply@mentora.com.in')
         )
         
         # Render email template
@@ -67,7 +67,7 @@ def send_welcome_email(user):
         msg = Message(
             subject='Welcome to Mentora!',
             recipients=[user.email],
-            sender=('Mentora', 'xapstom@gmail.com')
+            sender=('Mentora', 'noreply@mentora.com.in')
         )
         
         # Render email template
@@ -135,7 +135,7 @@ def send_password_reset_email(user, token):
         msg = Message(
             subject='Password Reset - Mentora',
             recipients=[user.email],
-            sender=('Mentora', 'xapstom@gmail.com')
+            sender=('Mentora', 'noreply@mentora.com.in')
         )
         print("=== MESSAGE CREATED ===")
         
