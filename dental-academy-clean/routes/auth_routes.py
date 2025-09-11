@@ -448,7 +448,7 @@ def register():
         files = request.files
         
         # Validate required fields
-        required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'birth_date', 'nationality', 'profession', 'legal_status', 'dutch_level', 'diploma_info', 'required_consents', 'digital_signature']
+        required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'birth_date', 'nationality', 'profession', 'legal_status', 'dutch_level', 'university_name', 'degree_type', 'study_start_year', 'study_end_year', 'study_country', 'required_consents', 'digital_signature']
         errors = []
         
         for field in required_fields:
@@ -531,7 +531,16 @@ def register():
             big_exam_registered=data.get('big_exam_registered'),
             exam_date=datetime.strptime(data['exam_date'], '%Y-%m-%d').date() if data.get('exam_date') else None,
             preparation_time=data.get('preparation_time'),
-            diploma_info=data.get('diploma_info'),
+            # New structured diploma fields
+            university_name=data.get('university_name'),
+            degree_type=data.get('degree_type'),
+            study_start_year=int(data.get('study_start_year')) if data.get('study_start_year') else None,
+            study_end_year=int(data.get('study_end_year')) if data.get('study_end_year') else None,
+            study_country=data.get('study_country'),
+            medical_specialization=data.get('specialization'),
+            additional_education_info=data.get('additional_education_info'),
+            # Legacy field for backward compatibility
+            diploma_info=f"{data.get('university_name', '')} - {data.get('degree_type', '')} ({data.get('study_start_year', '')}-{data.get('study_end_year', '')})",
             work_experience=data.get('work_experience'),
             additional_qualifications=data.get('additional_qualifications'),
             # New fields

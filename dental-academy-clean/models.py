@@ -88,9 +88,18 @@ class User(db.Model, UserMixin):
     preparation_time = db.Column(db.String(50), nullable=True)  # 1_month, 3_months, 6_months, 1_year, more_than_year
     
     # Additional Text Information
-    diploma_info = db.Column(db.Text, nullable=True)  # Information about diploma/certificate
+    diploma_info = db.Column(db.Text, nullable=True)  # Information about diploma/certificate (legacy)
     work_experience = db.Column(db.Text, nullable=True)  # Work experience description
     additional_qualifications = db.Column(db.Text, nullable=True)  # Additional qualifications
+    
+    # Structured Education Information
+    university_name = db.Column(db.String(255), nullable=True)  # University/Institution name
+    degree_type = db.Column(db.String(50), nullable=True)  # bachelor, master, doctorate, medical_degree, etc.
+    study_start_year = db.Column(db.Integer, nullable=True)  # Start year of studies
+    study_end_year = db.Column(db.Integer, nullable=True)  # End year of studies
+    study_country = db.Column(db.String(50), nullable=True)  # Country where studies were completed
+    medical_specialization = db.Column(db.String(100), nullable=True)  # Medical specialization
+    additional_education_info = db.Column(db.Text, nullable=True)  # Additional education information
     
     # Account status
     is_active = db.Column(db.Boolean, default=True)
