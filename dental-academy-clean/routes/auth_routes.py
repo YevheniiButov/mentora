@@ -438,7 +438,9 @@ def change_password():
 def register():
     """Extended registration form for new users"""
     if request.method == 'GET':
-        return render_template('auth/register.html')
+        from flask import g
+        lang = g.get('lang', 'nl')
+        return render_template('auth/register.html', lang=lang)
     
     try:
         # Get form data
@@ -634,7 +636,9 @@ def register():
 def login():
     """Login form for registered users"""
     if request.method == 'GET':
-        return render_template('auth/login.html')
+        from flask import g
+        lang = g.get('lang', 'nl')
+        return render_template('auth/login.html', lang=lang)
     
     try:
         data = request.get_json() if request.is_json else request.form.to_dict()
@@ -779,7 +783,9 @@ def resend_confirmation():
 def forgot_password():
     """Forgot password form"""
     if request.method == 'GET':
-        return render_template('auth/forgot_password.html')
+        from flask import g
+        lang = g.get('lang', 'nl')
+        return render_template('auth/forgot_password.html', lang=lang)
     
     try:
         data = request.get_json() if request.is_json else request.form.to_dict()
@@ -846,7 +852,9 @@ def reset_password(token):
             return redirect(url_for('auth.forgot_password'))
         
         if request.method == 'GET':
-            return render_template('auth/reset_password.html', token=token)
+            from flask import g
+            lang = g.get('lang', 'nl')
+            return render_template('auth/reset_password.html', token=token, lang=lang)
         
         # Handle POST request
         data = request.get_json() if request.is_json else request.form.to_dict()
