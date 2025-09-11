@@ -791,7 +791,12 @@ def resend_confirmation():
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     """Forgot password form"""
+    print(f"=== FORGOT PASSWORD ROUTE CALLED - METHOD: {request.method} ===")
+    print(f"=== REQUEST URL: {request.url} ===")
+    print(f"=== REQUEST HEADERS: {dict(request.headers)} ===")
+    
     if request.method == 'GET':
+        print("=== HANDLING GET REQUEST ===")
         from flask import g
         lang = g.get('lang', 'nl')
         return render_template('auth/forgot_password.html', lang=lang)
