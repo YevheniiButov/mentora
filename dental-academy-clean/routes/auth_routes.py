@@ -496,11 +496,13 @@ def register():
         data = request.form.to_dict()
         files = request.files
         
-        # Validate reCAPTCHA
-        recaptcha_response = data.get('g-recaptcha-response')
-        if not recaptcha_response or not verify_recaptcha(recaptcha_response):
-            print("=== reCAPTCHA VALIDATION FAILED ===")
-            return jsonify({'success': False, 'error': 'Please complete the reCAPTCHA verification'}), 400
+        # Validate reCAPTCHA (only if configured)
+        recaptcha_secret = current_app.config.get('RECAPTCHA_PRIVATE_KEY')
+        if recaptcha_secret:
+            recaptcha_response = data.get('g-recaptcha-response')
+            if not recaptcha_response or not verify_recaptcha(recaptcha_response):
+                print("=== reCAPTCHA VALIDATION FAILED ===")
+                return jsonify({'success': False, 'error': 'Please complete the reCAPTCHA verification'}), 400
         
         # Validate email format and domain
         email = data.get('email', '').strip().lower()

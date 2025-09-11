@@ -361,12 +361,35 @@
     }
     
     .progress-indicator {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 20px;
     }
     
     .progress-step {
-        margin: 5px 0;
+        margin: 2px;
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+    }
+    
+    .progress-step .step-number {
+        width: 25px;
+        height: 25px;
+        font-size: 12px;
+        margin: 0 auto 5px auto;
+    }
+    
+    .progress-step .step-label {
+        font-size: 10px;
+        line-height: 1.2;
+        word-break: break-word;
+        display: block;
     }
     
     .consent-block,
@@ -523,18 +546,18 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="first_name">{{ t('first_name', lang) | default('First Name') }} <span class="required">*</span></label>
-                    <input type="text" id="first_name" name="first_name" required>
+                    <input type="text" id="first_name" name="first_name" autocomplete="given-name" required>
                 </div>
                 <div class="form-group">
                     <label for="last_name">{{ t('last_name', lang) | default('Last Name') }} <span class="required">*</span></label>
-                    <input type="text" id="last_name" name="last_name" required>
+                    <input type="text" id="last_name" name="last_name" autocomplete="family-name" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="email">{{ t('email', lang) | default('Email') }} <span class="required">*</span></label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
                 <div class="form-group">
                     <label for="phone">{{ t('phone', lang) | default('Phone Number') }}</label>
@@ -607,7 +630,7 @@
                             <option value="+355">🇦🇱 +355 (Albania)</option>
                             <option value="+373">🇲🇩 +373 (Moldova)</option>
                         </select>
-                        <input type="tel" id="phone" name="phone" placeholder="{{ t('phone_placeholder', lang) | default('123456789') }}" class="phone-number-input">
+                        <input type="tel" id="phone" name="phone" placeholder="{{ t('phone_placeholder', lang) | default('123456789') }}" class="phone-number-input" autocomplete="tel">
                     </div>
                 </div>
             </div>
@@ -1037,12 +1060,14 @@
             </div>
 
             <!-- reCAPTCHA -->
+            {% if config.RECAPTCHA_PUBLIC_KEY %}
             <div class="recaptcha-block" style="margin: 20px 0; text-align: center;">
                 <div class="g-recaptcha" data-sitekey="{{ config.RECAPTCHA_PUBLIC_KEY }}"></div>
                 <div class="recaptcha-help" style="font-size: 12px; color: #666; margin-top: 5px;">
                     {{ t('recaptcha_help', lang) | default('This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.') }}
                 </div>
             </div>
+            {% endif %}
 
             <!-- Marketing Communications Consent -->
             <div class="consent-block">
@@ -1793,6 +1818,11 @@ function initializeNationalitySearch() {
 
 // reCAPTCHA validation
 function validateRecaptcha() {
+    // Check if reCAPTCHA is configured
+    if (typeof grecaptcha === 'undefined') {
+        return true; // Skip validation if reCAPTCHA is not configured
+    }
+    
     const recaptchaResponse = grecaptcha.getResponse();
     if (recaptchaResponse.length === 0) {
         showErrorMessage('{{ t("recaptcha_required", lang) | default("Please complete the reCAPTCHA verification") }}');
@@ -1803,5 +1833,7 @@ function validateRecaptcha() {
 </script>
 
 <!-- reCAPTCHA Script -->
+{% if config.RECAPTCHA_PUBLIC_KEY %}
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endif %}
 {% endblock %}
