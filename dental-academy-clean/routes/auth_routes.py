@@ -20,7 +20,7 @@ auth_bp = Blueprint('auth', __name__)
 # reCAPTCHA validation
 def verify_recaptcha(response_token):
     """Verify reCAPTCHA token with Google"""
-    secret_key = current_app.config.get('RECAPTCHA_SECRET_KEY', '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
+    secret_key = current_app.config.get('RECAPTCHA_PRIVATE_KEY', '6LdnzsYrAAAAABe7nFDNs9L7PfSNujJZLQOywdKd')
     
     data = {
         'secret': secret_key,
