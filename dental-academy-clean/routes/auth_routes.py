@@ -537,7 +537,7 @@ def register():
             study_start_year=int(data.get('study_start_year')) if data.get('study_start_year') else None,
             study_end_year=int(data.get('study_end_year')) if data.get('study_end_year') else None,
             study_country=data.get('study_country'),
-            medical_specialization=data.get('specialization'),
+            medical_specialization=data.get('medical_specialization'),
             additional_education_info=data.get('additional_education_info'),
             # Legacy field for backward compatibility
             diploma_info=f"{data.get('university_name', '')} - {data.get('degree_type', '')} ({data.get('study_start_year', '')}-{data.get('study_end_year', '')})",

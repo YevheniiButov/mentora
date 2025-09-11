@@ -497,7 +497,7 @@
         </div>
         <div class="progress-step">
             <div class="step-number">2</div>
-            <div class="step-label">{{ t('professional_info', lang) | default('Professional Info') }}</div>
+            <div class="step-label">{{ t('language_certificates', lang) | default('Language Certificates') }}</div>
         </div>
         <div class="progress-step">
             <div class="step-number">3</div>
@@ -505,6 +505,10 @@
         </div>
         <div class="progress-step">
             <div class="step-number">4</div>
+            <div class="step-label">{{ t('big_exam_info', lang) | default('BIG Exam Info') }}</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">5</div>
             <div class="step-label">{{ t('review', lang) | default('Review') }}</div>
         </div>
     </div>
@@ -612,7 +616,7 @@
                 <div class="form-group">
                     <label for="password">{{ t('password', lang) | default('Password') }} <span class="required">*</span></label>
                     <div class="password-input-container">
-                        <input type="password" id="password" name="password" required minlength="8" placeholder="{{ t('password_placeholder', lang) | default('Enter your password') }}">
+                        <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password" placeholder="{{ t('password_placeholder', lang) | default('Enter your password') }}">
                         <button type="button" class="password-toggle" onclick="togglePassword('password')">
                             <i class="fas fa-eye" id="password-eye"></i>
                         </button>
@@ -622,7 +626,7 @@
                 <div class="form-group">
                     <label for="confirm_password">{{ t('confirm_password', lang) | default('Confirm Password') }} <span class="required">*</span></label>
                     <div class="password-input-container">
-                        <input type="password" id="confirm_password" name="confirm_password" required minlength="8" placeholder="{{ t('confirm_password_placeholder', lang) | default('Confirm your password') }}">
+                        <input type="password" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password" placeholder="{{ t('confirm_password_placeholder', lang) | default('Confirm your password') }}">
                         <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
                             <i class="fas fa-eye" id="confirm_password-eye"></i>
                         </button>
@@ -733,61 +737,6 @@
             </div>
         </div>
 
-        <!-- Professional Information Section -->
-        <div class="form-section">
-            <h3><i class="fas fa-briefcase"></i> {{ t('professional_information', lang) | default('Professional Information') }}</h3>
-            
-            <div class="form-group">
-                <label for="profession">{{ t('profession', lang) | default('Profession') }} <span class="required">*</span></label>
-                <select id="profession" name="profession" required onchange="toggleOtherField('profession', 'other_profession')">
-                    <option value="">{{ t('select_profession', lang) | default('Select Profession') }}</option>
-                    <option value="tandarts">{{ t('dentist', lang) | default('Dentist') }}</option>
-                    <option value="apotheker">{{ t('pharmacist', lang) | default('Pharmacist') }}</option>
-                    <option value="huisarts">{{ t('general_practitioner', lang) | default('General Practitioner') }}</option>
-                    <option value="verpleegkundige">{{ t('nurse', lang) | default('Nurse') }}</option>
-                    <option value="fysiotherapeut">{{ t('physiotherapist', lang) | default('Physiotherapist') }}</option>
-                    <option value="psycholoog">{{ t('psychologist', lang) | default('Psychologist') }}</option>
-                    <option value="dietist">{{ t('dietitian', lang) | default('Dietitian') }}</option>
-                    <option value="logopedist">{{ t('speech_therapist', lang) | default('Speech Therapist') }}</option>
-                    <option value="ergotherapeut">{{ t('occupational_therapist', lang) | default('Occupational Therapist') }}</option>
-                    <option value="podotherapeut">{{ t('podiatrist', lang) | default('Podiatrist') }}</option>
-                    <option value="other">{{ t('other_medical', lang) | default('Other Medical Profession') }}</option>
-                </select>
-            </div>
-
-            <div class="form-group" id="other_profession_group" style="display: none;">
-                <label for="other_profession">{{ t('specify_profession', lang) | default('Please specify your profession') }} <span class="required">*</span></label>
-                <input type="text" id="other_profession" name="other_profession" placeholder="{{ t('profession_placeholder', lang) | default('Enter your medical profession') }}">
-            </div>
-
-                <div class="form-group">
-                    <label for="workplace">{{ t('current_workplace', lang) | default('Current Workplace') }}</label>
-                    <input type="text" id="workplace" name="workplace" placeholder="{{ t('workplace_placeholder', lang) | default('Hospital, Clinic, Practice, etc.') }}">
-            </div>
-
-            <div class="form-group">
-                <label for="specialization">{{ t('specialization', lang) | default('Specialization') }}</label>
-                <input type="text" id="specialization" name="specialization" placeholder="{{ t('specialization_placeholder', lang) | default('Your medical specialization') }}">
-            </div>
-
-            <div class="form-group">
-                <label for="legal_status">{{ t('legal_status', lang) | default('Legal Status in Netherlands') }} <span class="required">*</span></label>
-                <select id="legal_status" name="legal_status" required onchange="toggleOtherField('legal_status', 'other_legal_status')">
-                    <option value="">{{ t('select_legal_status', lang) | default('Select Legal Status') }}</option>
-                    <option value="eu_citizen">{{ t('eu_citizen', lang) | default('EU Citizen') }}</option>
-                    <option value="non_eu_resident">{{ t('non_eu_resident', lang) | default('Non-EU Resident') }}</option>
-                    <option value="refugee">{{ t('refugee', lang) | default('Refugee') }}</option>
-                    <option value="student_visa">{{ t('student_visa', lang) | default('Student Visa') }}</option>
-                    <option value="work_visa">{{ t('work_visa', lang) | default('Work Visa') }}</option>
-                    <option value="other">{{ t('other_status', lang) | default('Other') }}</option>
-                </select>
-            </div>
-
-            <div class="form-group" id="other_legal_status_group" style="display: none;">
-                <label for="other_legal_status">{{ t('specify_legal_status', lang) | default('Please specify your legal status') }} <span class="required">*</span></label>
-                <input type="text" id="other_legal_status" name="other_legal_status" placeholder="{{ t('legal_status_placeholder', lang) | default('Enter your legal status') }}">
-            </div>
-        </div>
 
         <!-- Language Certificates Section -->
         <div class="form-section">
@@ -837,6 +786,59 @@
         <!-- Documents Section -->
         <div class="form-section">
             <h3><i class="fas fa-file-alt"></i> {{ t('documents', lang) | default('Documents') }}</h3>
+            
+            <!-- Professional Information -->
+            <div class="form-group">
+                <label for="profession">{{ t('profession', lang) | default('Profession') }} <span class="required">*</span></label>
+                <select id="profession" name="profession" required onchange="toggleOtherField('profession', 'other_profession')">
+                    <option value="">{{ t('select_profession', lang) | default('Select Profession') }}</option>
+                    <option value="tandarts">{{ t('dentist', lang) | default('Dentist') }}</option>
+                    <option value="apotheker">{{ t('pharmacist', lang) | default('Pharmacist') }}</option>
+                    <option value="huisarts">{{ t('general_practitioner', lang) | default('General Practitioner') }}</option>
+                    <option value="verpleegkundige">{{ t('nurse', lang) | default('Nurse') }}</option>
+                    <option value="fysiotherapeut">{{ t('physiotherapist', lang) | default('Physiotherapist') }}</option>
+                    <option value="psycholoog">{{ t('psychologist', lang) | default('Psychologist') }}</option>
+                    <option value="dietist">{{ t('dietitian', lang) | default('Dietitian') }}</option>
+                    <option value="logopedist">{{ t('speech_therapist', lang) | default('Speech Therapist') }}</option>
+                    <option value="ergotherapeut">{{ t('occupational_therapist', lang) | default('Occupational Therapist') }}</option>
+                    <option value="podotherapeut">{{ t('podiatrist', lang) | default('Podiatrist') }}</option>
+                    <option value="other">{{ t('other_medical', lang) | default('Other Medical Profession') }}</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="other_profession_group" style="display: none;">
+                <label for="other_profession">{{ t('specify_profession', lang) | default('Please specify your profession') }} <span class="required">*</span></label>
+                <input type="text" id="other_profession" name="other_profession" placeholder="{{ t('profession_placeholder', lang) | default('Enter your medical profession') }}">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="workplace">{{ t('current_workplace', lang) | default('Current Workplace') }}</label>
+                    <input type="text" id="workplace" name="workplace" placeholder="{{ t('workplace_placeholder', lang) | default('Hospital, Clinic, Practice, etc.') }}">
+                </div>
+                <div class="form-group">
+                    <label for="workplace_specialization">{{ t('specialization', lang) | default('Specialization') }}</label>
+                    <input type="text" id="workplace_specialization" name="workplace_specialization" placeholder="{{ t('specialization_placeholder', lang) | default('Your medical specialization') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="legal_status">{{ t('legal_status', lang) | default('Legal Status in Netherlands') }} <span class="required">*</span></label>
+                <select id="legal_status" name="legal_status" required onchange="toggleOtherField('legal_status', 'other_legal_status')">
+                    <option value="">{{ t('select_legal_status', lang) | default('Select Legal Status') }}</option>
+                    <option value="eu_citizen">{{ t('eu_citizen', lang) | default('EU Citizen') }}</option>
+                    <option value="non_eu_resident">{{ t('non_eu_resident', lang) | default('Non-EU Resident') }}</option>
+                    <option value="refugee">{{ t('refugee', lang) | default('Refugee') }}</option>
+                    <option value="student_visa">{{ t('student_visa', lang) | default('Student Visa') }}</option>
+                    <option value="work_visa">{{ t('work_visa', lang) | default('Work Visa') }}</option>
+                    <option value="other">{{ t('other_status', lang) | default('Other') }}</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="other_legal_status_group" style="display: none;">
+                <label for="other_legal_status">{{ t('specify_legal_status', lang) | default('Please specify your legal status') }} <span class="required">*</span></label>
+                <input type="text" id="other_legal_status" name="other_legal_status" placeholder="{{ t('legal_status_placeholder', lang) | default('Enter your legal status') }}">
+            </div>
             
             <div class="form-group">
                 <label>{{ t('diploma_information', lang) | default('Diploma/Certificate Information') }} <span class="required">*</span></label>
@@ -917,8 +919,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="specialization">{{ t('medical_specialization', lang) | default('Medical Specialization') }}</label>
-                    <input type="text" id="specialization" name="specialization" placeholder="{{ t('specialization_placeholder', lang) | default('e.g., General Medicine, Dentistry, Pharmacy, Nursing, etc.') }}">
+                    <label for="medical_specialization">{{ t('medical_specialization', lang) | default('Medical Specialization') }}</label>
+                    <input type="text" id="medical_specialization" name="medical_specialization" placeholder="{{ t('specialization_placeholder', lang) | default('e.g., General Medicine, Dentistry, Pharmacy, Nursing, etc.') }}">
                 </div>
 
                 <div class="form-group">
@@ -967,7 +969,7 @@
 
         <!-- BIG Exam Information Section -->
         <div class="form-section">
-            <h3><i class="fas fa-graduation-cap"></i> {{ t('big_exam_information', lang) | default('BIG Exam Information') }}</h3>
+            <h3><i class="fas fa-graduation-cap"></i> {{ t('big_exam_info', lang) | default('BIG Exam Information') }}</h3>
             
             <div class="form-group">
                 <label for="idw_assessment">{{ t('idw_assessment', lang) | default('IDW Assessment Status') }}</label>
@@ -1569,6 +1571,9 @@ function validateField(event) {
 }
 
 function showFieldError(field, message) {
+    if (!field || !field.parentNode) {
+        return;
+    }
     clearFieldError(field);
     
     const errorDiv = document.createElement('div');
@@ -1580,6 +1585,9 @@ function showFieldError(field, message) {
 }
 
 function clearFieldError(field) {
+    if (!field || !field.parentNode) {
+        return;
+    }
     const errorDiv = field.parentNode.querySelector('.error-message');
     if (errorDiv) {
         errorDiv.remove();
