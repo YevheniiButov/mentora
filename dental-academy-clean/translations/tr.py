@@ -1161,6 +1161,7 @@ translations = {
     # Research consent
     'research_consent_title': 'Araştırma Katılımı (İsteğe Bağlı)',
     'research_consent_text': 'Programı geliştirmeye yardımcı olmak için araştırma çalışmalarına katılmak istiyorum:',
+    'research_consent': 'Araştırma çalışmalarına katılım davetleri',
     'feedback_consent': 'Anketler ve geri bildirim talepleri',
     'accept_research_consent': 'İsteğe bağlı araştırma katılımını kabul ediyorum',
 }

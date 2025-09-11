@@ -1234,6 +1234,7 @@ translations = {
     # Research consent
     'research_consent_title': 'Participación en Investigación (Opcional)',
     'research_consent_text': 'Me gustaría participar en estudios de investigación para ayudar a mejorar el programa:',
+    'research_consent': 'Invitaciones a participar en estudios de investigación',
     'feedback_consent': 'Encuestas y solicitudes de comentarios',
     'accept_research_consent': 'Acepto la participación opcional en investigación',
 }

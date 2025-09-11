@@ -1183,6 +1183,7 @@ translations = {
     # Research consent
     'research_consent_title': 'Участь у дослідженнях (необов\'язково)',
     'research_consent_text': 'Я хотів би брати участь у дослідженнях для покращення програми:',
+    'research_consent': 'Запрошення до участі в дослідженнях',
     'feedback_consent': 'Опитування та запити зворотного зв\'язку',
     'accept_research_consent': 'Я приймаю необов\'язкову участь у дослідженнях',
 }

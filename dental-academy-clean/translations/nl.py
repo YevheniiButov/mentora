@@ -1529,6 +1529,7 @@ translations = {
     # Research consent
     'research_consent_title': 'Onderzoek Deelname (Optioneel)',
     'research_consent_text': 'Ik zou graag deelnemen aan onderzoek om het programma te verbeteren:',
+    'research_consent': 'Uitnodigingen om deel te nemen aan onderzoek',
     'feedback_consent': 'Enquêtes en feedback verzoeken',
     'accept_research_consent': 'Ik accepteer optionele onderzoeksdeelname',
 }

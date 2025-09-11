@@ -1273,6 +1273,7 @@ translations = {
     # Research consent
     'research_consent_title': 'شرکت در تحقیقات (اختیاری)',
     'research_consent_text': 'می‌خواهم در مطالعات تحقیقاتی برای بهبود برنامه شرکت کنم:',
+    'research_consent': 'دعوت‌نامه‌های شرکت در مطالعات تحقیقاتی',
     'feedback_consent': 'نظرسنجی‌ها و درخواست‌های بازخورد',
     'accept_research_consent': 'من شرکت اختیاری در تحقیقات را می‌پذیرم',
 }
