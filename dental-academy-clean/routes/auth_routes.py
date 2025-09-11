@@ -459,9 +459,14 @@ def register():
         required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'birth_date', 'nationality', 'profession', 'legal_status', 'dutch_level', 'university_name', 'degree_type', 'study_start_year', 'study_end_year', 'study_country', 'required_consents', 'digital_signature']
         errors = []
         
+        print("=== VALIDATING REQUIRED FIELDS ===")
         for field in required_fields:
-            if not data.get(field):
+            value = data.get(field)
+            print(f"=== {field}: '{value}' ===")
+            if not value:
                 errors.append(f'{field} is required')
+        
+        print(f"=== VALIDATION ERRORS: {errors} ===")
         
         # Validate password
         password = data.get('password', '')
@@ -480,8 +485,11 @@ def register():
             errors.append('Password must contain at least one number')
         
         # Check if email already exists
+        print(f"=== CHECKING EMAIL: {data['email']} ===")
         existing_user = User.query.filter_by(email=data['email']).first()
+        print(f"=== EXISTING USER FOUND: {existing_user is not None} ===")
         if existing_user:
+            print(f"=== EXISTING USER: {existing_user.email} ({existing_user.first_name} {existing_user.last_name}) ===")
             errors.append('Email already registered')
         
         # Validate "Other" fields
@@ -513,6 +521,7 @@ def register():
                 errors.append('Digital signature should contain your first and last name')
         
         if errors:
+            print(f"=== RETURNING ERRORS: {errors} ===")
             return jsonify({
                 'success': False,
                 'error': '; '.join(errors)
