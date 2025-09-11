@@ -331,8 +331,16 @@ class User(db.Model, UserMixin):
         
         # Check if token is expired (1 hour)
         if self.email_confirmation_sent_at:
-            expiry_time = self.email_confirmation_sent_at + timedelta(seconds=3600)
-            if datetime.now(timezone.utc) > expiry_time:
+            # Ensure both dates are timezone-aware
+            sent_at = self.email_confirmation_sent_at
+            if sent_at.tzinfo is None:
+                # If sent_at is naive, assume it's UTC
+                sent_at = sent_at.replace(tzinfo=timezone.utc)
+            
+            expiry_time = sent_at + timedelta(seconds=3600)
+            current_time = datetime.now(timezone.utc)
+            
+            if current_time > expiry_time:
                 return False
         
         # Verify token hash

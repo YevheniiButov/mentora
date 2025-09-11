@@ -731,12 +731,12 @@ def confirm_email(token):
             user = User.query.filter_by(email_confirmation_token=token_hash).first()
         
         if not user:
-            flash('Неверная или истекшая ссылка подтверждения', 'error')
+            flash('Invalid or expired confirmation link', 'error')
             return redirect(url_for('auth.login'))
         
         # Verify token
         if not user.verify_email_confirmation_token(token):
-            flash('Ссылка подтверждения истекла. Пожалуйста, запросите новую.', 'error')
+            flash('Confirmation link has expired. Please request a new one.', 'error')
             return redirect(url_for('auth.login'))
         
         # Confirm email
@@ -747,13 +747,13 @@ def confirm_email(token):
         from utils.email_service import send_welcome_email
         send_welcome_email(user)
         
-        flash('Email успешно подтвержден! Добро пожаловать в Dental Academy!', 'success')
+        flash('Email successfully confirmed! Welcome to Mentora!', 'success')
         return redirect(url_for('auth.login'))
         
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Email confirmation error: {str(e)}")
-        flash('Произошла ошибка при подтверждении email', 'error')
+        flash('An error occurred while confirming email', 'error')
         return redirect(url_for('auth.login'))
 
 @auth_bp.route('/resend-confirmation', methods=['POST'])
