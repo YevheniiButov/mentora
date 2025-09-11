@@ -817,8 +817,21 @@ def forgot_password():
             }), 400
         
         # Find user by email
+        print(f"=== SEARCHING FOR USER WITH EMAIL: '{email}' ===")
+        print(f"=== EMAIL LENGTH: {len(email)} ===")
+        print(f"=== EMAIL BYTES: {email.encode('utf-8')} ===")
+        
         user = User.query.filter_by(email=email).first()
         print(f"=== USER FOUND: {user is not None} ===")
+        
+        if user:
+            print(f"=== USER DETAILS: {user.email} ({user.first_name} {user.last_name}) ===")
+        else:
+            # Попробуем найти по части email для отладки
+            similar_users = User.query.filter(User.email.like(f'%{email.split("@")[0]}%')).all()
+            print(f"=== SIMILAR USERS FOUND: {len(similar_users)} ===")
+            for u in similar_users:
+                print(f"=== SIMILAR: '{u.email}' ===")
         
         if not user:
             print("=== USER NOT FOUND - returning generic message ===")
