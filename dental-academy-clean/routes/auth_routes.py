@@ -868,6 +868,27 @@ def resend_confirmation():
             'error': 'Failed to resend confirmation email'
         }), 500
 
+@auth_bp.route('/auth/unsubscribe/<int:user_id>')
+def unsubscribe(user_id):
+    """Handle unsubscribe requests"""
+    try:
+        user = User.query.get(user_id)
+        if user:
+            # Update user's marketing consent
+            user.marketing_consent = False
+            db.session.commit()
+            
+            flash('You have been successfully unsubscribed from marketing communications.', 'success')
+            current_app.logger.info(f"User {user.email} unsubscribed from marketing")
+        else:
+            flash('User not found.', 'error')
+            
+    except Exception as e:
+        current_app.logger.error(f"Unsubscribe error: {e}")
+        flash('An error occurred while processing your unsubscribe request.', 'error')
+    
+    return redirect(url_for('main.index'))
+
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     """Forgot password form"""
