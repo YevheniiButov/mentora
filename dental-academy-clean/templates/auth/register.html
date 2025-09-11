@@ -1032,27 +1032,54 @@
                     <input type="checkbox" id="required_consents" name="required_consents" required>
                     <label for="required_consents">
                         {{ t('accept_required_consents', lang) | default('I accept all required terms and consents') }} <span class="required">*</span>
-                </label>
-            </div>
+                    </label>
+                </div>
             </div>
 
-            <!-- Optional Consents -->
+            <!-- reCAPTCHA -->
+            <div class="recaptcha-block" style="margin: 20px 0; text-align: center;">
+                <div class="g-recaptcha" data-sitekey="{{ config.RECAPTCHA_PUBLIC_KEY }}"></div>
+                <div class="recaptcha-help" style="font-size: 12px; color: #666; margin-top: 5px;">
+                    {{ t('recaptcha_help', lang) | default('This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.') }}
+                </div>
+            </div>
+
+            <!-- Marketing Communications Consent -->
             <div class="consent-block">
-                <h4>{{ t('optional_consents', lang) | default('Optional Consents') }}</h4>
+                <h4>{{ t('marketing_consent', lang) | default('Marketing Communications') }}</h4>
                 <div class="consent-content">
-                    <p>{{ t('optional_consents_text', lang) | default('I would like to receive:') }}</p>
+                    <p>{{ t('marketing_consent_text', lang) | default('I would like to receive marketing communications from Mentora:') }}</p>
                     <ul>
-                        <li>{{ t('marketing_communications', lang) | default('Marketing communications and promotional materials') }}</li>
-                        <li>{{ t('newsletters_updates', lang) | default('Newsletters and updates about the program') }}</li>
-                        <li>{{ t('research_participation', lang) | default('Opportunities to participate in research (anonymized data sharing)') }}</li>
+                        <li>{{ t('newsletter_consent', lang) | default('Newsletter with updates about the program') }}</li>
+                        <li>{{ t('events_consent', lang) | default('Information about events and webinars') }}</li>
+                        <li>{{ t('promotional_consent', lang) | default('Promotional offers and special announcements') }}</li>
                     </ul>
+                    <p><strong>{{ t('marketing_consent_important', lang) | default('Important:') }}</strong> {{ t('marketing_consent_note', lang) | default('You can unsubscribe at any time by clicking the unsubscribe link in any email.') }}</p>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="marketing_consent" name="marketing_consent">
+                    <label for="marketing_consent">
+                        {{ t('accept_marketing_consent', lang) | default('I consent to receive marketing communications from Mentora') }}
+                    </label>
+                </div>
             </div>
-            <div class="checkbox-group">
-                    <input type="checkbox" id="optional_consents" name="optional_consents">
-                    <label for="optional_consents">
-                        {{ t('accept_optional_consents', lang) | default('I accept optional communications and research participation') }}
-                </label>
-            </div>
+
+            <!-- Optional Research Consent -->
+            <div class="consent-block">
+                <h4>{{ t('research_consent_title', lang) | default('Research Participation (Optional)') }}</h4>
+                <div class="consent-content">
+                    <p>{{ t('research_consent_text', lang) | default('I would like to participate in research studies to help improve the program:') }}</p>
+                    <ul>
+                        <li>{{ t('research_consent', lang) | default('Invitations to participate in research studies') }}</li>
+                        <li>{{ t('feedback_consent', lang) | default('Surveys and feedback requests') }}</li>
+                    </ul>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="research_consent" name="research_consent">
+                    <label for="research_consent">
+                        {{ t('accept_research_consent', lang) | default('I accept optional research participation') }}
+                    </label>
+                </div>
             </div>
 
             <!-- Digital Signature -->
@@ -1644,6 +1671,11 @@ async function submitForm() {
     const submitBtn = document.getElementById('submitBtn');
     const formData = new FormData(form);
     
+    // Validate reCAPTCHA
+    if (!validateRecaptcha()) {
+        return;
+    }
+    
     // Disable submit button
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ t("processing", lang) | default("Processing...") }}';
@@ -1758,5 +1790,18 @@ function initializeNationalitySearch() {
         });
     }
 }
+
+// reCAPTCHA validation
+function validateRecaptcha() {
+    const recaptchaResponse = grecaptcha.getResponse();
+    if (recaptchaResponse.length === 0) {
+        showErrorMessage('{{ t("recaptcha_required", lang) | default("Please complete the reCAPTCHA verification") }}');
+        return false;
+    }
+    return true;
+}
 </script>
+
+<!-- reCAPTCHA Script -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 {% endblock %}

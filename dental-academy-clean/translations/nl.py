@@ -1511,4 +1511,21 @@ translations = {
     'review': 'Beoordeling',
     'check_spam_folder': 'Belangrijk: Controleer uw spam-map!',
     'spam_folder_warning': 'Bevestigingsmail kan in uw spam/ongewenste map staan. Controleer en markeer als "geen spam" indien gevonden.',
+    
+    # reCAPTCHA
+    'recaptcha_help': 'Deze site is beschermd door reCAPTCHA en de Google Privacy Policy en Terms of Service zijn van toepassing.',
+    'recaptcha_required': 'Voltooi de reCAPTCHA verificatie',
+    
+    # Marketing consent
+    'marketing_consent': 'Marketing Communicatie',
+    'marketing_consent_text': 'Ik stem in met het ontvangen van marketing communicatie van Mentora:',
+    'marketing_consent_important': 'Belangrijk:',
+    'marketing_consent_note': 'U kunt zich op elk moment afmelden door op de afmeldlink in een e-mail te klikken.',
+    'accept_marketing_consent': 'Ik stem in met het ontvangen van marketing communicatie van Mentora',
+    
+    # Research consent
+    'research_consent_title': 'Onderzoek Deelname (Optioneel)',
+    'research_consent_text': 'Ik zou graag deelnemen aan onderzoek om het programma te verbeteren:',
+    'feedback_consent': 'Enquêtes en feedback verzoeken',
+    'accept_research_consent': 'Ik accepteer optionele onderzoeksdeelname',
 }

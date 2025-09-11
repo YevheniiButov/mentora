@@ -1143,4 +1143,21 @@ translations = {
     'review': 'İnceleme',
     'check_spam_folder': 'Önemli: Spam klasörünüzü kontrol edin!',
     'spam_folder_warning': 'Onay e-postası spam/istenmeyen klasörünüzde olabilir. Lütfen kontrol edin ve bulursanız "spam değil" olarak işaretleyin.',
+    
+    # reCAPTCHA
+    'recaptcha_help': 'Bu site reCAPTCHA tarafından korunmaktadır ve Google Gizlilik Politikası ve Hizmet Şartları geçerlidir.',
+    'recaptcha_required': 'Lütfen reCAPTCHA doğrulamasını tamamlayın',
+    
+    # Marketing consent
+    'marketing_consent': 'Pazarlama İletişimi',
+    'marketing_consent_text': 'Mentora\'dan pazarlama iletişimi almayı kabul ediyorum:',
+    'marketing_consent_important': 'Önemli:',
+    'marketing_consent_note': 'Herhangi bir e-postadaki abonelikten çıkma bağlantısına tıklayarak istediğiniz zaman abonelikten çıkabilirsiniz.',
+    'accept_marketing_consent': 'Mentora\'dan pazarlama iletişimi almayı kabul ediyorum',
+    
+    # Research consent
+    'research_consent_title': 'Araştırma Katılımı (İsteğe Bağlı)',
+    'research_consent_text': 'Programı geliştirmeye yardımcı olmak için araştırma çalışmalarına katılmak istiyorum:',
+    'feedback_consent': 'Anketler ve geri bildirim talepleri',
+    'accept_research_consent': 'İsteğe bağlı araştırma katılımını kabul ediyorum',
 }

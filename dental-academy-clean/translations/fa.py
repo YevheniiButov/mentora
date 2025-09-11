@@ -1255,4 +1255,21 @@ translations = {
     'review': 'بررسی',
     'check_spam_folder': 'مهم: پوشه اسپم خود را بررسی کنید!',
     'spam_folder_warning': 'ایمیل تأیید ممکن است در پوشه اسپم/ناخواسته شما باشد. لطفاً بررسی کنید و در صورت یافتن، آن را به عنوان "اسپم نیست" علامت‌گذاری کنید.',
+    
+    # reCAPTCHA
+    'recaptcha_help': 'این سایت توسط reCAPTCHA محافظت می‌شود و سیاست حریم خصوصی و شرایط خدمات Google اعمال می‌شود.',
+    'recaptcha_required': 'لطفاً تأیید reCAPTCHA را تکمیل کنید',
+    
+    # Marketing consent
+    'marketing_consent': 'ارتباطات بازاریابی',
+    'marketing_consent_text': 'من موافقم که ارتباطات بازاریابی از Mentora دریافت کنم:',
+    'marketing_consent_important': 'مهم:',
+    'marketing_consent_note': 'می‌توانید در هر زمان با کلیک روی لینک لغو اشتراک در هر ایمیل، لغو اشتراک کنید.',
+    'accept_marketing_consent': 'من موافقم که ارتباطات بازاریابی از Mentora دریافت کنم',
+    
+    # Research consent
+    'research_consent_title': 'شرکت در تحقیقات (اختیاری)',
+    'research_consent_text': 'می‌خواهم در مطالعات تحقیقاتی برای بهبود برنامه شرکت کنم:',
+    'feedback_consent': 'نظرسنجی‌ها و درخواست‌های بازخورد',
+    'accept_research_consent': 'من شرکت اختیاری در تحقیقات را می‌پذیرم',
 }

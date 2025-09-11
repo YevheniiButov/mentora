@@ -1165,4 +1165,21 @@ translations = {
     'review': 'Revisão',
     'check_spam_folder': 'Importante: Verifique sua pasta de spam!',
     'spam_folder_warning': 'O email de confirmação pode estar em sua pasta de spam/lixo eletrônico. Por favor, verifique e marque como "não é spam" se encontrar.',
+    
+    # reCAPTCHA
+    'recaptcha_help': 'Este site é protegido pelo reCAPTCHA e a Política de Privacidade e Termos de Serviço do Google se aplicam.',
+    'recaptcha_required': 'Por favor, complete a verificação reCAPTCHA',
+    
+    # Marketing consent
+    'marketing_consent': 'Comunicações de Marketing',
+    'marketing_consent_text': 'Consinto em receber comunicações de marketing da Mentora:',
+    'marketing_consent_important': 'Importante:',
+    'marketing_consent_note': 'Você pode cancelar a inscrição a qualquer momento clicando no link de cancelamento em qualquer email.',
+    'accept_marketing_consent': 'Consinto em receber comunicações de marketing da Mentora',
+    
+    # Research consent
+    'research_consent_title': 'Participação em Pesquisa (Opcional)',
+    'research_consent_text': 'Gostaria de participar em estudos de pesquisa para ajudar a melhorar o programa:',
+    'feedback_consent': 'Pesquisas e solicitações de feedback',
+    'accept_research_consent': 'Aceito participação opcional em pesquisa',
 }

@@ -11,9 +11,50 @@ from models import User, ProfileAuditLog
 from extensions import db
 import os
 import json
+import requests
+import re
 from datetime import datetime, timezone
 
 auth_bp = Blueprint('auth', __name__)
+
+# reCAPTCHA validation
+def verify_recaptcha(response_token):
+    """Verify reCAPTCHA token with Google"""
+    secret_key = current_app.config.get('RECAPTCHA_SECRET_KEY', '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
+    
+    data = {
+        'secret': secret_key,
+        'response': response_token
+    }
+    
+    try:
+        response = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data, timeout=10)
+        result = response.json()
+        return result.get('success', False)
+    except Exception as e:
+        print(f"reCAPTCHA verification error: {e}")
+        return False
+
+# Email validation
+def validate_email_format(email):
+    """Validate email format using regex"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+def validate_email_domain(email):
+    """Check if email domain exists (basic validation)"""
+    domain = email.split('@')[1] if '@' in email else ''
+    
+    # List of common disposable email domains
+    disposable_domains = [
+        '10minutemail.com', 'tempmail.org', 'guerrillamail.com',
+        'mailinator.com', 'yopmail.com', 'temp-mail.org'
+    ]
+    
+    if domain.lower() in disposable_domains:
+        return False
+    
+    return True
 
 # Constants for file uploads
 UPLOAD_FOLDER = 'static/uploads'
@@ -454,6 +495,22 @@ def register():
         # Get form data
         data = request.form.to_dict()
         files = request.files
+        
+        # Validate reCAPTCHA
+        recaptcha_response = data.get('g-recaptcha-response')
+        if not recaptcha_response or not verify_recaptcha(recaptcha_response):
+            print("=== reCAPTCHA VALIDATION FAILED ===")
+            return jsonify({'success': False, 'error': 'Please complete the reCAPTCHA verification'}), 400
+        
+        # Validate email format and domain
+        email = data.get('email', '').strip().lower()
+        if not validate_email_format(email):
+            print("=== EMAIL FORMAT VALIDATION FAILED ===")
+            return jsonify({'success': False, 'error': 'Invalid email format'}), 400
+        
+        if not validate_email_domain(email):
+            print("=== EMAIL DOMAIN VALIDATION FAILED ===")
+            return jsonify({'success': False, 'error': 'Disposable email addresses are not allowed'}), 400
         
         # Validate required fields
         required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'birth_date', 'nationality', 'profession', 'legal_status', 'dutch_level', 'university_name', 'degree_type', 'study_start_year', 'study_end_year', 'study_country', 'required_consents', 'digital_signature']

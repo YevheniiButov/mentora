@@ -59,6 +59,10 @@ class Config:
     EMAIL_CONFIRMATION_EXPIRES = 86400  # 24 hours
     EMAIL_CONFIRMATION_SALT = os.environ.get('EMAIL_CONFIRMATION_SALT', 'email-confirmation-salt')
     
+    # reCAPTCHA Configuration
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')
+    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
+    
     # Development mode - suppress email sending
     MAIL_SUPPRESS_SEND = os.environ.get('MAIL_SUPPRESS_SEND', 'false').lower() in ['true', 'on', '1']
     

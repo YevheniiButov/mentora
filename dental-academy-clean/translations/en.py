@@ -1677,4 +1677,21 @@ translations = {
     'review': 'Review',
     'check_spam_folder': 'Important: Please check your spam folder!',
     'spam_folder_warning': 'Confirmation email might be in your spam/junk folder. Please check and mark as not spam if found.',
+    
+    # reCAPTCHA
+    'recaptcha_help': 'This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.',
+    'recaptcha_required': 'Please complete the reCAPTCHA verification',
+    
+    # Marketing consent
+    'marketing_consent': 'Marketing Communications (Optional)',
+    'marketing_consent_text': 'I would like to receive marketing communications from Mentora:',
+    'marketing_consent_important': 'Important:',
+    'marketing_consent_note': 'You can unsubscribe at any time by clicking the unsubscribe link in any email.',
+    'accept_marketing_consent': 'I consent to receive marketing communications from Mentora',
+    
+    # Research consent
+    'research_consent_title': 'Research Participation (Optional)',
+    'research_consent_text': 'I would like to participate in research studies to help improve the program:',
+    'feedback_consent': 'Surveys and feedback requests',
+    'accept_research_consent': 'I accept optional research participation',
 }

@@ -1165,4 +1165,21 @@ translations = {
     'review': 'Перевірка',
     'check_spam_folder': 'Важливо: Перевірте папку спам!',
     'spam_folder_warning': 'Лист підтвердження може бути в папці спам/небажана пошта. Перевірте і позначте як "не спам", якщо знайдете.',
+    
+    # reCAPTCHA
+    'recaptcha_help': 'Цей сайт захищений reCAPTCHA і застосовуються Політика конфіденційності та Умови використання Google.',
+    'recaptcha_required': 'Будь ласка, завершіть перевірку reCAPTCHA',
+    
+    # Marketing consent
+    'marketing_consent': 'Маркетингові комунікації',
+    'marketing_consent_text': 'Я згоден отримувати маркетингові повідомлення від Mentora:',
+    'marketing_consent_important': 'Важливо:',
+    'marketing_consent_note': 'Ви можете відписатися в будь-який час, натиснувши на посилання відписки в будь-якому листі.',
+    'accept_marketing_consent': 'Я згоден отримувати маркетингові повідомлення від Mentora',
+    
+    # Research consent
+    'research_consent_title': 'Участь у дослідженнях (необов\'язково)',
+    'research_consent_text': 'Я хотів би брати участь у дослідженнях для покращення програми:',
+    'feedback_consent': 'Опитування та запити зворотного зв\'язку',
+    'accept_research_consent': 'Я приймаю необов\'язкову участь у дослідженнях',
 }
