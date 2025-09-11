@@ -133,7 +133,16 @@ def cleanup():
 def track_event():
     """Track custom events from JavaScript"""
     try:
-        data = request.get_json()
+        # Handle both JSON and form data
+        if request.is_json:
+            data = request.get_json()
+        else:
+            # Try to parse as JSON from form data
+            try:
+                data = json.loads(request.form.get('data', '{}'))
+            except (json.JSONDecodeError, TypeError):
+                data = request.form.to_dict()
+        
         event_name = data.get('event_name')
         event_data = data.get('event_data')
         

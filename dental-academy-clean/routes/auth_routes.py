@@ -437,12 +437,20 @@ def change_password():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     """Extended registration form for new users"""
+    print(f"=== REGISTER ROUTE CALLED - METHOD: {request.method} ===")
+    print(f"=== REQUEST URL: {request.url} ===")
+    
     if request.method == 'GET':
+        print("=== HANDLING GET REQUEST ===")
         from flask import g
         lang = g.get('lang', 'nl')
         return render_template('auth/register.html', lang=lang)
     
     try:
+        print("=== HANDLING POST REQUEST ===")
+        print(f"=== FORM DATA KEYS: {list(request.form.keys())} ===")
+        print(f"=== FILES: {list(request.files.keys())} ===")
+        
         # Get form data
         data = request.form.to_dict()
         files = request.files
