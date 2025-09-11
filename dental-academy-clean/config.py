@@ -9,7 +9,7 @@ class Config:
     """Базовая конфигурация приложения"""
     
     # Основные настройки Flask
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'temporary-secret-key-for-production')
     
     # Язык по умолчанию
     DEFAULT_LANGUAGE = 'nl'
@@ -48,9 +48,9 @@ class Config:
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
     MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'false').lower() in ['true', 'on', '1']
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'temporary-username')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'temporary-password')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Mentora <noreply@mentora.com>')
     
     # Email Confirmation
     EMAIL_CONFIRMATION_EXPIRES = 3600  # 1 hour
