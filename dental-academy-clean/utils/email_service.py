@@ -38,9 +38,9 @@ def send_email_confirmation(user, token):
         
         # Production mode - send real email
         msg = Message(
-            subject='Подтвердите ваш email - Dental Academy',
+            subject='Registration approve',
             recipients=[user.email],
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@dentalacademy.nl')
+            sender=('Mentora', 'noreply@mentora.com.in')
         )
         
         # Render email template
@@ -65,9 +65,9 @@ def send_welcome_email(user):
     """Send welcome email after successful registration"""
     try:
         msg = Message(
-            subject='Добро пожаловать в Dental Academy!',
+            subject='Welcome to Mentora!',
             recipients=[user.email],
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@dentalacademy.nl')
+            sender=('Mentora', 'noreply@mentora.com.in')
         )
         
         # Render email template
@@ -110,9 +110,9 @@ def send_password_reset_email(user, token):
         
         # Production mode - send real email
         msg = Message(
-            subject='Сброс пароля - Dental Academy',
+            subject='Password Reset - Mentora',
             recipients=[user.email],
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@dentalacademy.nl')
+            sender=('Mentora', 'noreply@mentora.com.in')
         )
         
         # Render email template
