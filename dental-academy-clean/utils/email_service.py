@@ -16,7 +16,7 @@ def send_email_confirmation(user, token):
     """Send email confirmation to user"""
     try:
         # Generate confirmation URL
-        confirmation_url = f"{current_app.config.get('BASE_URL', 'http://localhost:5000')}/auth/confirm-email/{token}"
+        confirmation_url = f"{current_app.config.get('BASE_URL', 'https://mentora.com.in')}/auth/confirm-email/{token}"
         
         # Check if email sending is suppressed (development mode)
         if current_app.config.get('MAIL_SUPPRESS_SEND', False):
@@ -40,7 +40,7 @@ def send_email_confirmation(user, token):
         msg = Message(
             subject='Registration approve',
             recipients=[user.email],
-            sender=('Mentora', 'noreply@mentora.com.in')
+            sender=('Mentora', current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@mentora.com.in'))
         )
         
         # Render email template
@@ -67,7 +67,7 @@ def send_welcome_email(user):
         msg = Message(
             subject='Welcome to Mentora!',
             recipients=[user.email],
-            sender=('Mentora', 'noreply@mentora.com.in')
+            sender=('Mentora', current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@mentora.com.in'))
         )
         
         # Render email template
@@ -94,7 +94,7 @@ def send_password_reset_email(user, token):
         print(f"=== MAIL APP CHECK: {hasattr(mail, 'app') and mail.app is not None} ===")
         
         # Generate reset URL
-        reset_url = f"{current_app.config.get('BASE_URL', 'http://localhost:5000')}/auth/reset-password/{token}"
+        reset_url = f"{current_app.config.get('BASE_URL', 'https://mentora.com.in')}/auth/reset-password/{token}"
         print(f"=== RESET URL GENERATED: {reset_url} ===")
         
         # Check if email sending is suppressed (development mode)
@@ -135,7 +135,7 @@ def send_password_reset_email(user, token):
         msg = Message(
             subject='Password Reset - Mentora',
             recipients=[user.email],
-            sender=('Mentora', 'noreply@mentora.com.in')
+            sender=('Mentora', current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@mentora.com.in'))
         )
         print("=== MESSAGE CREATED ===")
         

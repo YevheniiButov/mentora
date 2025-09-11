@@ -43,6 +43,9 @@ class Config:
     CACHE_TYPE = 'simple'
     CACHE_DEFAULT_TIMEOUT = 300
     
+    # Base URL for email links
+    BASE_URL = os.environ.get('BASE_URL', 'https://mentora.com.in')
+    
     # Email Configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
