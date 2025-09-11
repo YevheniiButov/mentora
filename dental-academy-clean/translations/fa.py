@@ -1248,4 +1248,9 @@ translations = {
     'end_year_before_start': 'سال پایان باید بعد از سال شروع باشد',
     'invalid_start_year': 'سال شروع باید بین 1950 و سال جاری باشد',
     'invalid_end_year': 'سال پایان باید بین 1950 و سال جاری باشد',
+    
+    # Registration form section headers
+    'personal_info': 'اطلاعات شخصی',
+    'big_exam_info': 'اطلاعات امتحان BIG',
+    'review': 'بررسی',
 }

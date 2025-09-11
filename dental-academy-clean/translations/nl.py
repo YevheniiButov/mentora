@@ -1504,4 +1504,9 @@ translations = {
     'end_year_before_start': 'Eindjaar moet na startjaar zijn',
     'invalid_start_year': 'Startjaar moet tussen 1950 en huidig jaar zijn',
     'invalid_end_year': 'Eindjaar moet tussen 1950 en huidig jaar zijn',
+    
+    # Registration form section headers
+    'personal_info': 'Persoonlijke info',
+    'big_exam_info': 'BIG examen info',
+    'review': 'Beoordeling',
 }

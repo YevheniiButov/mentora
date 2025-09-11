@@ -1158,4 +1158,9 @@ translations = {
     'end_year_before_start': 'O ano de conclusão deve ser posterior ao ano de início',
     'invalid_start_year': 'O ano de início deve estar entre 1950 e o ano atual',
     'invalid_end_year': 'O ano de conclusão deve estar entre 1950 e o ano atual',
+    
+    # Registration form section headers
+    'personal_info': 'Informações Pessoais',
+    'big_exam_info': 'Informações do Exame BIG',
+    'review': 'Revisão',
 }

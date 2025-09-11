@@ -1573,4 +1573,9 @@ translations = {
     'end_year_before_start': 'Год окончания должен быть после года начала',
     'invalid_start_year': 'Год начала должен быть между 1950 и текущим годом',
     'invalid_end_year': 'Год окончания должен быть между 1950 и текущим годом',
+    
+    # Registration form section headers
+    'personal_info': 'Личная информация',
+    'big_exam_info': 'Информация об экзамене BIG',
+    'review': 'Проверка',
 }

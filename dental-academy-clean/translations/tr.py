@@ -1136,4 +1136,9 @@ translations = {
     'end_year_before_start': 'Bitiş yılı başlangıç yılından sonra olmalıdır',
     'invalid_start_year': 'Başlangıç yılı 1950 ile mevcut yıl arasında olmalıdır',
     'invalid_end_year': 'Bitiş yılı 1950 ile mevcut yıl arasında olmalıdır',
+    
+    # Registration form section headers
+    'personal_info': 'Kişisel Bilgiler',
+    'big_exam_info': 'BIG Sınav Bilgileri',
+    'review': 'İnceleme',
 }

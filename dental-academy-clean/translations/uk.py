@@ -1158,4 +1158,9 @@ translations = {
     'end_year_before_start': 'Рік закінчення повинен бути після року початку',
     'invalid_start_year': 'Рік початку повинен бути між 1950 та поточним роком',
     'invalid_end_year': 'Рік закінчення повинен бути між 1950 та поточним роком',
+    
+    # Registration form section headers
+    'personal_info': 'Особиста інформація',
+    'big_exam_info': 'Інформація про іспит BIG',
+    'review': 'Перевірка',
 }
