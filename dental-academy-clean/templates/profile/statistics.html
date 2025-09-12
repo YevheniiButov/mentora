@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('statistics', lang) | default('Статистика') }} - Mentora{% endblock %}
+
+{% block extra_css %}
+<style>
+    .statistics-container {
+        min-height: 80vh;
+        padding: 2rem 0;
+    }
+    
+    .statistics-header {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 16px 16px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .statistics-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        opacity: 0.3;
+    }
+    
+    .statistics-header-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+    }
+    
+    .statistics-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1rem;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .statistics-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .statistics-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+    
+    .statistics-content {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .coming-soon-notice {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #92400e;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        text-align: center;
+        border: 1px solid #f59e0b;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .coming-soon-notice h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .coming-soon-notice p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+        color: white;
+    }
+    
+    .stat-icon.study-time {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .stat-icon.modules {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+    }
+    
+    .stat-icon.score {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+    }
+    
+    .stat-icon.streak {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+    }
+    
+    .stat-icon.achievements {
+        background: linear-gradient(135deg, #fa709a, #fee140);
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        color: #718096;
+        font-weight: 500;
+    }
+    
+    .progress-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+    }
+    
+    .section-icon.progress {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .section-icon.achievements {
+        background: linear-gradient(135deg, #fa709a, #fee140);
+    }
+    
+    .progress-item {
+        margin-bottom: 1.5rem;
+    }
+    
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .progress-label {
+        font-weight: 600;
+        color: #4a5568;
+    }
+    
+    .progress-percentage {
+        font-weight: 600;
+        color: #667eea;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .achievement-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .achievement-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .achievement-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+    }
+    
+    .achievement-icon.locked {
+        background: #e2e8f0;
+        color: #a0aec0;
+    }
+    
+    .achievement-icon.unlocked {
+        background: linear-gradient(135deg, #fa709a, #fee140);
+    }
+    
+    .achievement-info h4 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .achievement-info p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #718096;
+    }
+    
+    .btn-back {
+        background: #f1f5f9;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .btn-back:hover {
+        background: #e2e8f0;
+        color: #2d3748;
+        text-decoration: none;
+    }
+    
+    @media (max-width: 768px) {
+        .statistics-header {
+            padding: 1.5rem 0;
+        }
+        
+        .statistics-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .statistics-title {
+            font-size: 1.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+        }
+        
+        .progress-section {
+            padding: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+        }
+        
+        .achievement-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="statistics-container">
+    <!-- Заголовок статистики -->
+    <div class="statistics-header">
+        <div class="container">
+            <div class="statistics-header-content">
+                <div class="statistics-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h1 class="statistics-title">
+                    {{ t('statistics', lang) | default('Статистика') }}
+                </h1>
+                <p class="statistics-subtitle">
+                    {{ t('statistics_subtitle', lang) | default('Ваш прогресс обучения и достижения') }}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="statistics-content">
+            <!-- Уведомление о разработке -->
+            <div class="coming-soon-notice">
+                <h3>{{ t('feature_coming_soon', lang) | default('Функция скоро появится') }}</h3>
+                <p>{{ t('statistics_coming_soon_desc', lang) | default('Детальная статистика и аналитика будут доступны в ближайшее время. Мы работаем над этой функцией.') }}</p>
+            </div>
+            
+            <a href="{{ url_for('profile.index') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                {{ t('back_to_profile', lang) | default('Назад к профилю') }}
+            </a>
+            
+            <!-- Основная статистика -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon study-time">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.total_study_time }}</div>
+                    <div class="stat-label">{{ t('total_study_time', lang) | default('Общее время обучения') }}</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon modules">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.completed_modules }}</div>
+                    <div class="stat-label">{{ t('completed_modules', lang) | default('Завершенные модули') }}</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon score">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.average_score }}%</div>
+                    <div class="stat-label">{{ t('average_score', lang) | default('Средний балл') }}</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon streak">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.current_streak }}</div>
+                    <div class="stat-label">{{ t('current_streak', lang) | default('Текущая серия') }}</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon achievements">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.total_achievements }}</div>
+                    <div class="stat-label">{{ t('total_achievements', lang) | default('Всего достижений') }}</div>
+                </div>
+            </div>
+            
+            <!-- Прогресс обучения -->
+            <div class="progress-section">
+                <h2 class="section-title">
+                    <div class="section-icon progress">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    {{ t('learning_progress', lang) | default('Прогресс обучения') }}
+                </h2>
+                
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ t('basic_medical_knowledge', lang) | default('Базовые медицинские знания') }}</span>
+                        <span class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ t('clinical_skills', lang) | default('Клинические навыки') }}</span>
+                        <span class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ t('communication_skills', lang) | default('Навыки коммуникации') }}</span>
+                        <span class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ t('professional_ethics', lang) | default('Профессиональная этика') }}</span>
+                        <span class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Достижения -->
+            <div class="progress-section">
+                <h2 class="section-title">
+                    <div class="section-icon achievements">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    {{ t('achievements', lang) | default('Достижения') }}
+                </h2>
+                
+                <div class="achievement-grid">
+                    <div class="achievement-item">
+                        <div class="achievement-icon locked">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>{{ t('first_steps', lang) | default('Первые шаги') }}</h4>
+                            <p>{{ t('complete_first_module', lang) | default('Завершите первый модуль') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon locked">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>{{ t('streak_master', lang) | default('Мастер серий') }}</h4>
+                            <p>{{ t('study_7_days', lang) | default('Учитесь 7 дней подряд') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon locked">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>{{ t('excellent_student', lang) | default('Отличный студент') }}</h4>
+                            <p>{{ t('get_90_percent', lang) | default('Получите 90% в тесте') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon locked">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>{{ t('knowledge_seeker', lang) | default('Искатель знаний') }}</h4>
+                            <p>{{ t('complete_10_modules', lang) | default('Завершите 10 модулей') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon locked">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>{{ t('big_expert', lang) | default('Эксперт БИГ') }}</h4>
+                            <p>{{ t('pass_big_exam', lang) | default('Сдайте БИГ экзамен') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon locked">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>{{ t('perfectionist', lang) | default('Перфекционист') }}</h4>
+                            <p>{{ t('get_100_percent', lang) | default('Получите 100% в тесте') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек статистики
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100 + (index * 100));
+    });
+    
+    // Анимация прогресс-баров
+    setTimeout(() => {
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach((bar, index) => {
+            setTimeout(() => {
+                bar.style.width = '0%';
+            }, 500 + (index * 200));
+        });
+    }, 1000);
+});
+</script>
+{% endblock %}
