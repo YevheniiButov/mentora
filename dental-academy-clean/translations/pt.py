@@ -1592,4 +1592,5 @@ translations = {
     'reply': 'Responder',
     'write_message': 'Escreva uma mensagem...',
     'reply_sent': 'Resposta enviada com sucesso!',
+    'reply_error': 'Erro ao enviar resposta',
 }

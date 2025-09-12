@@ -1963,4 +1963,5 @@ translations = {
     'reply': 'Reply',
     'write_message': 'Write a message...',
     'reply_sent': 'Reply sent successfully!',
+    'reply_error': 'Error sending reply',
 }

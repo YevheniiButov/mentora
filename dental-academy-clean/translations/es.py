@@ -1644,4 +1644,5 @@ translations = {
     'reply': 'Responder',
     'write_message': 'Escribe un mensaje...',
     'reply_sent': '¡Respuesta enviada exitosamente!',
+    'reply_error': 'Error al enviar respuesta',
 }

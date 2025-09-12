@@ -1796,4 +1796,5 @@ translations = {
     'reply': 'Antwoorden',
     'write_message': 'Schrijf een bericht...',
     'reply_sent': 'Antwoord succesvol verzonden!',
+    'reply_error': 'Fout bij verzenden van antwoord',
 }

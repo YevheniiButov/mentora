@@ -876,16 +876,141 @@ document.addEventListener('DOMContentLoaded', function() {
         sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         sendBtn.disabled = true;
         
-        // Here you would send the reply via AJAX
-        // For now, just show a success message
-        setTimeout(() => {
-            alert('{{ t("reply_sent", lang) | default("Reply sent successfully!") }}');
-            textarea.value = '';
-            autoResize(textarea);
+        // Send reply via AJAX
+        fetch(`{{ url_for('main.reply_to_topic', lang=lang, topic_id=topic.id) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                content: content
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add new reply to the page
+                addReplyToPage(data.post);
+                
+                // Clear textarea
+                textarea.value = '';
+                autoResize(textarea);
+                
+                // Show success message
+                showNotification('{{ t("reply_sent", lang) | default("Reply sent successfully!") }}', 'success');
+                
+                // Update replies count
+                updateRepliesCount();
+            } else {
+                showNotification(data.error || '{{ t("reply_error", lang) | default("Error sending reply") }}', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('{{ t("reply_error", lang) | default("Error sending reply") }}', 'error');
+        })
+        .finally(() => {
+            // Restore button state
             sendBtn.innerHTML = originalHTML;
             sendBtn.disabled = true;
-        }, 1000);
+        });
     };
+    
+    // Add new reply to the page
+    function addReplyToPage(post) {
+        const repliesContainer = document.querySelector('.topic-replies');
+        if (!repliesContainer) return;
+        
+        const replyHTML = `
+            <div class="reply-item" data-post-id="${post.id}">
+                <div class="reply-avatar">
+                    <div class="avatar-circle">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="reply-content">
+                    <div class="reply-header">
+                        <span class="reply-author">${post.author_name}</span>
+                        <span class="reply-time">${post.created_at}</span>
+                    </div>
+                    <div class="reply-text">${escapeHtml(post.content)}</div>
+                </div>
+            </div>
+        `;
+        
+        repliesContainer.insertAdjacentHTML('beforeend', replyHTML);
+        
+        // Scroll to new reply
+        const newReply = repliesContainer.lastElementChild;
+        newReply.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    // Update replies count
+    function updateRepliesCount() {
+        const countElement = document.querySelector('.topic-stats .replies-count');
+        if (countElement) {
+            const currentCount = parseInt(countElement.textContent) || 0;
+            countElement.textContent = currentCount + 1;
+        }
+    }
+    
+    // Show notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Style the notification
+        Object.assign(notification.style, {
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            color: 'white',
+            fontWeight: '500',
+            zIndex: '10000',
+            maxWidth: '300px',
+            wordWrap: 'break-word',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            transform: 'translateX(100%)',
+            transition: 'transform 0.3s ease'
+        });
+        
+        // Set background color based on type
+        if (type === 'success') {
+            notification.style.backgroundColor = '#10b981';
+        } else if (type === 'error') {
+            notification.style.backgroundColor = '#ef4444';
+        } else {
+            notification.style.backgroundColor = '#3b82f6';
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+    
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
     
     // Send button click handler
     if (sendBtn) {

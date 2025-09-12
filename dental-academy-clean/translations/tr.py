@@ -1553,4 +1553,5 @@ translations = {
     'reply': 'Yanıtla',
     'write_message': 'Mesaj yazın...',
     'reply_sent': 'Yanıt başarıyla gönderildi!',
+    'reply_error': 'Yanıt gönderme hatası',
 }

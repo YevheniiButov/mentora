@@ -548,6 +548,72 @@ def create_topic(lang):
             'error': 'Ошибка при создании темы'
         }), 500
 
+@main_bp.route('/community/topic/<int:topic_id>/reply', methods=['POST'])
+@login_required
+def reply_to_topic(lang, topic_id):
+    """Reply to a topic"""
+    from models import ForumTopic, ForumPost
+    
+    try:
+        data = request.get_json()
+        content = data.get('content', '').strip()
+        
+        # Валидация
+        if not content:
+            return jsonify({
+                'success': False,
+                'error': 'Сообщение не может быть пустым'
+            }), 400
+        
+        if len(content) < 1:
+            return jsonify({
+                'success': False,
+                'error': 'Сообщение должно содержать минимум 1 символ'
+            }), 400
+        
+        # Проверяем существование темы
+        topic = ForumTopic.query.get(topic_id)
+        if not topic:
+            return jsonify({
+                'success': False,
+                'error': 'Тема не найдена'
+            }), 404
+        
+        # Создаем ответ
+        post = ForumPost(
+            content=content,
+            topic_id=topic_id,
+            author_id=current_user.id
+        )
+        
+        db.session.add(post)
+        
+        # Обновляем счетчик ответов в теме
+        topic.replies_count = ForumPost.query.filter_by(topic_id=topic_id).count() + 1
+        topic.last_activity = db.func.now()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Ответ успешно добавлен',
+            'post': {
+                'id': post.id,
+                'content': post.content,
+                'author_name': f"{current_user.first_name} {current_user.last_name}",
+                'created_at': post.created_at.strftime('%d.%m.%Y %H:%M'),
+                'author_id': current_user.id
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error creating reply: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при отправке ответа'
+        }), 500
+
 @main_bp.route('/test')
 def test_page():
     """Тестовая страница для отладки"""
