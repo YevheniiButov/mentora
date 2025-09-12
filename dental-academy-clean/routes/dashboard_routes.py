@@ -146,81 +146,8 @@ def achievements():
 @dashboard_bp.route('/activity')
 @login_required
 def activity():
-    """Detailed progress tracking page"""
-    
-    # Get comprehensive progress data for all learning paths
-    progress_data = []
-    
-    # Get all learning paths
-    learning_paths = LearningPath.query.filter_by(is_active=True).all()
-    
-    for path in learning_paths:
-        path_progress = {
-            'id': path.id,
-            'name': path.name,
-            'description': path.description,
-            'icon': 'bi-book',
-            'progress_percent': 0,
-            'completed_lessons': 0,
-            'total_lessons': 0,
-            'subjects': []
-        }
-        
-        # Get subjects for this path
-        subjects = Subject.query.filter_by(learning_path_id=path.id).all()
-        
-        for subject in subjects:
-            subject_progress = {
-                'id': subject.id,
-                'name': subject.name,
-                'progress_percent': 0,
-                'completed_lessons': 0,
-                'total_lessons': 0,
-                'modules': []
-            }
-            
-            # Get modules for this subject
-            modules = Module.query.filter_by(subject_id=subject.id).all()
-            
-            for module in modules:
-                module_progress = {
-                    'id': module.id,
-                    'title': module.title,
-                    'description': module.description,
-                    'progress_percent': 0,
-                    'completed_lessons': 0,
-                    'total_lessons': 0
-                }
-                
-                # Get lessons for this module
-                lessons = Lesson.query.filter_by(module_id=module.id).all()
-                module_progress['total_lessons'] = len(lessons)
-                
-                # Calculate completed lessons
-                completed_lessons = UserProgress.query.filter_by(
-                    user_id=current_user.id,
-                    completed=True
-                ).join(Lesson).filter(Lesson.module_id == module.id).count()
-                
-                module_progress['completed_lessons'] = completed_lessons
-                module_progress['progress_percent'] = int((completed_lessons / module_progress['total_lessons']) * 100) if module_progress['total_lessons'] > 0 else 0
-                
-                subject_progress['modules'].append(module_progress)
-                subject_progress['total_lessons'] += module_progress['total_lessons']
-                subject_progress['completed_lessons'] += module_progress['completed_lessons']
-            
-            # Calculate subject progress
-            subject_progress['progress_percent'] = int((subject_progress['completed_lessons'] / subject_progress['total_lessons']) * 100) if subject_progress['total_lessons'] > 0 else 0
-            path_progress['subjects'].append(subject_progress)
-            path_progress['total_lessons'] += subject_progress['total_lessons']
-            path_progress['completed_lessons'] += subject_progress['completed_lessons']
-        
-        # Calculate path progress
-        path_progress['progress_percent'] = int((path_progress['completed_lessons'] / path_progress['total_lessons']) * 100) if path_progress['total_lessons'] > 0 else 0
-        progress_data.append(path_progress)
-    
-    return render_template('dashboard/progress.html',
-                         progress_data=progress_data)
+    """Redirect to coming soon page"""
+    return redirect(url_for('main.coming_soon', lang=g.get('lang', 'nl')))
 
 @dashboard_bp.route('/reminders')
 @login_required
