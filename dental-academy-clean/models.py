@@ -407,137 +407,6 @@ class User(db.Model, UserMixin):
         """Clear password reset token"""
         self.password_reset_token = None
         self.password_reset_sent_at = None
-
-# Analytics Models
-class WebsiteVisit(db.Model):
-    """Track website visits and user analytics"""
-    __tablename__ = 'website_visits'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(45), nullable=False, index=True)  # IPv6 support
-    user_agent = db.Column(db.Text, nullable=True)
-    referrer = db.Column(db.String(500), nullable=True)
-    page_url = db.Column(db.String(500), nullable=False)
-    page_title = db.Column(db.String(200), nullable=True)
-    session_id = db.Column(db.String(100), nullable=True, index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
-    country = db.Column(db.String(100), nullable=True)
-    city = db.Column(db.String(100), nullable=True)
-    browser = db.Column(db.String(50), nullable=True)
-    os = db.Column(db.String(50), nullable=True)
-    device_type = db.Column(db.String(20), nullable=True)  # desktop, mobile, tablet
-    visit_duration = db.Column(db.Integer, nullable=True)  # seconds
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    
-    # Relationship
-    user = db.relationship('User', backref='visits')
-    
-    def __repr__(self):
-        return f'<WebsiteVisit {self.id}: {self.ip_address} -> {self.page_url}>'
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'ip_address': self.ip_address,
-            'user_agent': self.user_agent,
-            'referrer': self.referrer,
-            'page_url': self.page_url,
-            'page_title': self.page_title,
-            'session_id': self.session_id,
-            'user_id': self.user_id,
-            'country': self.country,
-            'city': self.city,
-            'browser': self.browser,
-            'os': self.os,
-            'device_type': self.device_type,
-            'visit_duration': self.visit_duration,
-            'created_at': self.created_at.isoformat() if self.created_at else None
-        }
-
-class PageView(db.Model):
-    """Track individual page views with more detail"""
-    __tablename__ = 'page_views'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    visit_id = db.Column(db.Integer, db.ForeignKey('website_visits.id'), nullable=False)
-    page_url = db.Column(db.String(500), nullable=False)
-    page_title = db.Column(db.String(200), nullable=True)
-    time_on_page = db.Column(db.Integer, nullable=True)  # seconds
-    scroll_depth = db.Column(db.Integer, nullable=True)  # percentage
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    
-    # Relationship
-    visit = db.relationship('WebsiteVisit', backref='page_views')
-    
-    def __repr__(self):
-        return f'<PageView {self.id}: {self.page_url}>'
-
-class UserSession(db.Model):
-    """Track user sessions"""
-    __tablename__ = 'user_sessions'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
-    ip_address = db.Column(db.String(45), nullable=False)
-    user_agent = db.Column(db.Text, nullable=True)
-    country = db.Column(db.String(100), nullable=True)
-    city = db.Column(db.String(100), nullable=True)
-    browser = db.Column(db.String(50), nullable=True)
-    os = db.Column(db.String(50), nullable=True)
-    device_type = db.Column(db.String(20), nullable=True)
-    started_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    last_activity = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    ended_at = db.Column(db.DateTime, nullable=True)
-    is_active = db.Column(db.Boolean, default=True, index=True)
-    total_visits = db.Column(db.Integer, default=0)
-    
-    # Relationship
-    user = db.relationship('User', backref='sessions')
-    
-    def __repr__(self):
-        return f'<UserSession {self.session_id}: {self.ip_address}>'
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'session_id': self.session_id,
-            'user_id': self.user_id,
-            'ip_address': self.ip_address,
-            'user_agent': self.user_agent,
-            'country': self.country,
-            'city': self.city,
-            'browser': self.browser,
-            'os': self.os,
-            'device_type': self.device_type,
-            'started_at': self.started_at.isoformat() if self.started_at else None,
-            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
-            'ended_at': self.ended_at.isoformat() if self.ended_at else None,
-            'is_active': self.is_active,
-            'total_visits': self.total_visits
-        }
-    
-    def can_use_digid_auth(self):
-        """Check if user can authenticate with DigiD"""
-        return self.digid_verified and self.bsn is not None
-    
-    def log_profile_change(self, field, old_value, new_value, changed_by=None):
-        """Log a profile change for audit trail"""
-        try:
-            audit_log = ProfileAuditLog(
-                user_id=self.id,
-                field_changed=field,
-                old_value=str(old_value) if old_value is not None else None,
-                new_value=str(new_value) if new_value is not None else None,
-                changed_by=changed_by or self.id,
-                change_type='profile_update'
-            )
-            db.session.add(audit_log)
-            db.session.commit()
-        except Exception as e:
-            # Log the error but don't fail the main operation
-            print(f"Warning: Could not log profile change: {e}")
-            db.session.rollback()
     
     # ========================================
     # GAMIFICATION METHODS
@@ -764,87 +633,140 @@ class UserSession(db.Model):
         incomplete_modules.sort(key=lambda x: x['progress']['progress_percent'], reverse=True)
         
         return incomplete_modules[:limit]
+
+# Analytics Models
+class WebsiteVisit(db.Model):
+    """Track website visits and user analytics"""
+    __tablename__ = 'website_visits'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(45), nullable=False, index=True)  # IPv6 support
+    user_agent = db.Column(db.Text, nullable=True)
+    referrer = db.Column(db.String(500), nullable=True)
+    page_url = db.Column(db.String(500), nullable=False)
+    page_title = db.Column(db.String(200), nullable=True)
+    session_id = db.Column(db.String(100), nullable=True, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    browser = db.Column(db.String(50), nullable=True)
+    os = db.Column(db.String(50), nullable=True)
+    device_type = db.Column(db.String(20), nullable=True)  # desktop, mobile, tablet
+    visit_duration = db.Column(db.Integer, nullable=True)  # seconds
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    # Relationship
+    user = db.relationship('User', backref='visits')
     
     def __repr__(self):
-        username_display = self.username or self.digid_username or self.email
-        return f'<User {username_display}>'
-
-    def get_path_progress(self, path_id):
-        """Получить прогресс по конкретному пути"""
-        return UserLearningProgress.query.filter_by(
-            user_id=self.id,
-            learning_path_id=path_id
-        ).first()
+        return f'<WebsiteVisit {self.id}: {self.ip_address} -> {self.page_url}>'
     
-    def get_all_path_progress(self):
-        """Получить прогресс по всем путям"""
-        progress_records = UserLearningProgress.query.filter_by(
-            user_id=self.id
-        ).all()
-        
-        return {record.learning_path_id: record for record in progress_records}
-    
-    def get_completed_paths(self):
-        """Получить завершенные пути обучения"""
-        return UserLearningProgress.query.filter_by(
-            user_id=self.id,
-            progress_percentage=100
-        ).all()
-    
-    def get_active_paths(self):
-        """Получить активные пути обучения"""
-        return UserLearningProgress.query.filter_by(
-            user_id=self.id,
-            is_active=True
-        ).filter(UserLearningProgress.progress_percentage < 100).all()
-    
-    def get_bi_toets_readiness(self):
-        """Рассчитать готовность к BI-toets"""
-        all_progress = self.get_all_path_progress()
-        
-        # Веса компонентов
-        component_weights = {
-            'THEORETICAL': 70,
-            'METHODOLOGY': 10,
-            'PRACTICAL': 15,
-            'CLINICAL': 5
-        }
-        
-        total_score = 0
-        component_scores = {}
-        
-        for component, weight in component_weights.items():
-            component_paths = LearningPath.get_by_component(component)
-            component_total = 0
-            component_completed = 0
-            
-            for path in component_paths:
-                progress = all_progress.get(path.id)
-                if progress:
-                    component_total += path.exam_weight
-                    component_completed += path.exam_weight * (progress.progress_percentage / 100)
-            
-            if component_total > 0:
-                component_score = (component_completed / component_total) * weight
-                component_scores[component] = component_score
-                total_score += component_score
-        
+    def to_dict(self):
         return {
-            'total_score': total_score,
-            'component_scores': component_scores,
-            'readiness_level': self._get_readiness_level(total_score)
+            'id': self.id,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'referrer': self.referrer,
+            'page_url': self.page_url,
+            'page_title': self.page_title,
+            'session_id': self.session_id,
+            'user_id': self.user_id,
+            'country': self.country,
+            'city': self.city,
+            'browser': self.browser,
+            'os': self.os,
+            'device_type': self.device_type,
+            'visit_duration': self.visit_duration,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class PageView(db.Model):
+    """Track individual page views with more detail"""
+    __tablename__ = 'page_views'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    visit_id = db.Column(db.Integer, db.ForeignKey('website_visits.id'), nullable=False)
+    page_url = db.Column(db.String(500), nullable=False)
+    page_title = db.Column(db.String(200), nullable=True)
+    time_on_page = db.Column(db.Integer, nullable=True)  # seconds
+    scroll_depth = db.Column(db.Integer, nullable=True)  # percentage
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    # Relationship
+    visit = db.relationship('WebsiteVisit', backref='page_views')
+    
+    def __repr__(self):
+        return f'<PageView {self.id}: {self.page_url}>'
+
+class UserSession(db.Model):
+    """Track user sessions"""
+    __tablename__ = 'user_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    ip_address = db.Column(db.String(45), nullable=False)
+    user_agent = db.Column(db.Text, nullable=True)
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    browser = db.Column(db.String(50), nullable=True)
+    os = db.Column(db.String(50), nullable=True)
+    device_type = db.Column(db.String(20), nullable=True)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    last_activity = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    ended_at = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    total_visits = db.Column(db.Integer, default=0)
+    
+    # Relationship
+    user = db.relationship('User', backref='sessions')
+    
+    def __repr__(self):
+        return f'<UserSession {self.session_id}: {self.ip_address}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'session_id': self.session_id,
+            'user_id': self.user_id,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'country': self.country,
+            'city': self.city,
+            'browser': self.browser,
+            'os': self.os,
+            'device_type': self.device_type,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
+            'ended_at': self.ended_at.isoformat() if self.ended_at else None,
+            'is_active': self.is_active,
+            'total_visits': self.total_visits
         }
     
-    def _get_readiness_level(self, score):
-        """Определить уровень готовности"""
-        if score >= 85:
-            return 'excellent'
-        elif score >= 70:
-            return 'good'
-        elif score >= 50:
-            return 'fair'
-        else:
-            return 'needs_improvement'
+    def can_use_digid_auth(self):
+        """Check if user can authenticate with DigiD"""
+        return self.digid_verified and self.bsn is not None
+    
+    def log_profile_change(self, field, old_value, new_value, changed_by=None):
+        """Log a profile change for audit trail"""
+        try:
+            audit_log = ProfileAuditLog(
+                user_id=self.id,
+                field_changed=field,
+                old_value=str(old_value) if old_value is not None else None,
+                new_value=str(new_value) if new_value is not None else None,
+                changed_by=changed_by or self.id,
+                change_type='profile_update'
+            )
+            db.session.add(audit_log)
+            db.session.commit()
+        except Exception as e:
+            # Log the error but don't fail the main operation
+            print(f"Warning: Could not log profile change: {e}")
+            db.session.rollback()
+    
+    def __repr__(self):
+        return f'<UserSession {self.session_id}: {self.ip_address}>'
 
 class ProfileAuditLog(db.Model):
     """Audit log for tracking profile changes"""
