@@ -255,78 +255,56 @@
                 <p class="topic-subtitle">Share your knowledge, ask questions, or start a discussion</p>
             </div>
 
-            <form class="topic-form">
+            <form class="topic-form" id="newTopicForm" method="POST" action="{{ url_for('main.create_topic', lang=lang) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
                 <div class="form-group">
-                    <label class="form-label">Topic Title</label>
-                    <input type="text" class="form-control" placeholder="Enter a clear and descriptive title for your topic..." required>
+                    <label class="form-label" for="title">{{ t('topic_title', lang) | default('Topic Title') }}</label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="{{ t('topic_title_placeholder', lang) | default('Enter a clear and descriptive title for your topic...') }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Category</label>
+                    <label class="form-label">{{ t('category', lang) | default('Category') }}</label>
                     <div class="category-select">
+                        {% for category in categories %}
                         <label class="category-option">
-                            <input type="radio" name="category" value="trending" required>
+                            <input type="radio" name="category_id" value="{{ category.id }}" required>
                             <span class="category-icon">
-                                <i class="fas fa-fire"></i>
+                                {% if category.slug == 'general' %}
+                                    <i class="fas fa-comments"></i>
+                                {% elif category.slug == 'clinical-cases' %}
+                                    <i class="fas fa-tooth"></i>
+                                {% elif category.slug == 'study-materials' %}
+                                    <i class="fas fa-book-medical"></i>
+                                {% elif category.slug == 'expert-advice' %}
+                                    <i class="fas fa-graduation-cap"></i>
+                                {% elif category.slug == 'research' %}
+                                    <i class="fas fa-microscope"></i>
+                                {% elif category.slug == 'equipment' %}
+                                    <i class="fas fa-tools"></i>
+                                {% else %}
+                                    <i class="fas fa-folder"></i>
+                                {% endif %}
                             </span>
-                            <span>Trending</span>
+                            <span>{{ category.name }}</span>
                         </label>
-                        <label class="category-option">
-                            <input type="radio" name="category" value="clinical-cases">
-                            <span class="category-icon">
-                                <i class="fas fa-tooth"></i>
-                            </span>
-                            <span>Clinical Cases</span>
-                        </label>
-                        <label class="category-option">
-                            <input type="radio" name="category" value="study-materials">
-                            <span class="category-icon">
-                                <i class="fas fa-book-medical"></i>
-                            </span>
-                            <span>Study Materials</span>
-                        </label>
-                        <label class="category-option">
-                            <input type="radio" name="category" value="expert-advice">
-                            <span class="category-icon">
-                                <i class="fas fa-graduation-cap"></i>
-                            </span>
-                            <span>Expert Advice</span>
-                        </label>
-                        <label class="category-option">
-                            <input type="radio" name="category" value="research">
-                            <span class="category-icon">
-                                <i class="fas fa-microscope"></i>
-                            </span>
-                            <span>Research</span>
-                        </label>
-                        <label class="category-option">
-                            <input type="radio" name="category" value="equipment">
-                            <span class="category-icon">
-                                <i class="fas fa-tools"></i>
-                            </span>
-                            <span>Equipment</span>
-                        </label>
+                        {% endfor %}
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Topic Content</label>
-                    <textarea class="form-control textarea" placeholder="Write your topic content here. You can use markdown formatting for better presentation..." required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Tags (optional)</label>
-                    <input type="text" class="form-control" placeholder="Add relevant tags separated by commas (e.g., endodontics, implants, BIG-exam)">
+                    <label class="form-label" for="content">{{ t('topic_content', lang) | default('Topic Content') }}</label>
+                    <textarea id="content" name="content" class="form-control textarea" placeholder="{{ t('topic_content_placeholder', lang) | default('Write your topic content here. You can use markdown formatting for better presentation...') }}" required></textarea>
                 </div>
 
                 <div class="form-actions">
-                    <a href="{{ url_for('main.community', lang=g.lang) }}" class="btn btn-secondary">
+                    <a href="{{ url_for('main.community', lang=lang) }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i>
-                        Cancel
+                        {{ t('cancel', lang) | default('Cancel') }}
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
                         <i class="fas fa-paper-plane"></i>
-                        Create Topic
+                        {{ t('create_topic', lang) | default('Create Topic') }}
                     </button>
                 </div>
             </form>
@@ -354,11 +332,55 @@ document.querySelectorAll('input[name="category"]').forEach(radio => {
 document.querySelector('form').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Show success message (in a real app, this would submit to the server)
-    alert('Topic created successfully! (This is a demo - no actual topic was created)');
+    const form = this;
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
     
-    // Redirect back to community
-    window.location.href = '{{ url_for("main.community", lang=g.lang) }}';
+    // Show loading state
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ t("creating", lang) | default("Creating...") }}';
+    submitBtn.disabled = true;
+    
+    // Get form data
+    const formData = new FormData(form);
+    
+    // Submit form via AJAX
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            alert(data.message || '{{ t("topic_created_success", lang) | default("Topic created successfully!") }}');
+            
+            // Redirect to the new topic
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else {
+                window.location.href = '{{ url_for("main.community", lang=lang) }}';
+            }
+        } else {
+            // Show error message
+            alert(data.message || '{{ t("error_creating_topic", lang) | default("Error creating topic. Please try again.") }}');
+            
+            // Reset button
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('{{ t("error_creating_topic", lang) | default("Error creating topic. Please try again.") }}');
+        
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
 });
 </script>
+{% endblock %} 
 {% endblock %} 

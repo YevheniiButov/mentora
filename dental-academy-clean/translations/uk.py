@@ -1557,4 +1557,14 @@ translations = {
     'specify_study_country': 'Будь ласка, вкажіть країну навчання',
     'study_country_placeholder': 'Введіть країну, де ви навчалися',
     'other_study_country_required': 'Будь ласка, вкажіть країну навчання',
+    
+    # Forum translations
+    'topic_title': 'Назва теми',
+    'topic_title_placeholder': 'Введіть чітку та описову назву для вашої теми...',
+    'topic_content': 'Зміст теми',
+    'topic_content_placeholder': 'Напишіть зміст теми тут. Ви можете використовувати форматування markdown для кращого представлення...',
+    'create_topic': 'Створити тему',
+    'creating': 'Створення...',
+    'topic_created_success': 'Тему успішно створено!',
+    'error_creating_topic': 'Помилка створення теми. Будь ласка, спробуйте знову.',
 }

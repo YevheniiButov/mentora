@@ -1928,4 +1928,14 @@ translations = {
     'specify_study_country': 'Please specify the country of study',
     'study_country_placeholder': 'Enter the country where you studied',
     'other_study_country_required': 'Please specify the country of study',
+    
+    # Forum translations
+    'topic_title': 'Topic Title',
+    'topic_title_placeholder': 'Enter a clear and descriptive title for your topic...',
+    'topic_content': 'Topic Content',
+    'topic_content_placeholder': 'Write your topic content here. You can use markdown formatting for better presentation...',
+    'create_topic': 'Create Topic',
+    'creating': 'Creating...',
+    'topic_created_success': 'Topic created successfully!',
+    'error_creating_topic': 'Error creating topic. Please try again.',
 }
