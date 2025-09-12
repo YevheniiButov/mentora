@@ -298,8 +298,8 @@ try:
     from routes.content_navigation import content_nav_bp
     from routes.content_routes import content_bp
     
-    # Импорт DigiD роутов
-    from routes.digid_routes import digid_bp
+    # Импорт DigiD роутов (ОТКЛЮЧЕНО - не используется)
+    # from routes.digid_routes import digid_bp
     
     # Импорт AI Assistant роутов
     from routes.ai_assistant_routes import ai_assistant_bp
@@ -347,8 +347,8 @@ try:
     # app.register_blueprint(content_nav_bp, url_prefix='/content')  # ОТКЛЮЧЕНО для предварительного запуска
     # app.register_blueprint(content_bp, url_prefix='/content')  # ОТКЛЮЧЕНО для предварительного запуска
     
-    # Регистрация DigiD blueprint
-    app.register_blueprint(digid_bp)
+    # Регистрация DigiD blueprint (ОТКЛЮЧЕНО - не используется)
+    # app.register_blueprint(digid_bp)
     
     # Регистрация AI Assistant blueprint (ВКЛЮЧЕНО с декораторами блокировки)
     app.register_blueprint(ai_assistant_bp)
@@ -387,7 +387,7 @@ try:
     
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
-        csrf.exempt(digid_bp)
+        # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется
         csrf.exempt(diagnostic_bp)
     
     logger.info("✅ All route blueprints registered successfully")
@@ -404,15 +404,15 @@ except ImportError as e:
     logger.warning(f"Could not import routes: {e}")
     logger.info("Creating minimal routes...")
     
-    # Все равно пытаемся зарегистрировать DigiD blueprint
-    try:
-        from routes.digid_routes import digid_bp
-        app.register_blueprint(digid_bp)
-        if app.config.get('FLASK_ENV') != 'production':
-            csrf.exempt(digid_bp)
-        logger.info("✅ DigiD blueprint registered successfully")
-    except ImportError as digid_error:
-        logger.warning(f"Could not import DigiD routes: {digid_error}")
+    # Все равно пытаемся зарегистрировать DigiD blueprint (ОТКЛЮЧЕНО - не используется)
+    # try:
+    #     from routes.digid_routes import digid_bp
+    #     app.register_blueprint(digid_bp)
+    #     if app.config.get('FLASK_ENV') != 'production':
+    #         csrf.exempt(digid_bp)
+    #     logger.info("✅ DigiD blueprint registered successfully")
+    # except ImportError as digid_error:
+    #     logger.warning(f"Could not import DigiD routes: {digid_error}")
     
     # Пытаемся зарегистрировать Diagnostic blueprint
     try:

@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 import os
 from werkzeug.utils import secure_filename
 from utils.file_upload import allowed_file, validate_file_size
-from translations import t
+from translations import get_translation as t
 
 profile_bp = Blueprint('profile', __name__)
 
