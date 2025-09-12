@@ -110,11 +110,13 @@
         background: rgba(255, 255, 255, 0.1);
         border-radius: 10px;
         transition: all 0.3s ease;
+        justify-content: center;
+        text-align: center;
     }
     
     .feature-item:hover {
         background: rgba(255, 255, 255, 0.2);
-        transform: translateX(10px);
+        transform: translateY(-2px);
     }
     
     .feature-icon {
@@ -325,12 +327,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const elements = document.querySelectorAll('.feature-item');
     elements.forEach((element, index) => {
         element.style.opacity = '0';
-        element.style.transform = 'translateX(-20px)';
+        element.style.transform = 'translateY(20px)';
         
         setTimeout(() => {
             element.style.transition = 'all 0.5s ease';
             element.style.opacity = '1';
-            element.style.transform = 'translateX(0)';
+            element.style.transform = 'translateY(0)';
         }, 500 + (index * 100));
     });
 });
