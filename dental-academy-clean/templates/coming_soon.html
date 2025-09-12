@@ -187,49 +187,6 @@
         color: white;
     }
     
-    .countdown {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .countdown-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: white;
-    }
-    
-    .countdown-timer {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-    
-    .countdown-item {
-        text-align: center;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        padding: 1rem;
-        min-width: 80px;
-    }
-    
-    .countdown-number {
-        font-size: 2rem;
-        font-weight: 700;
-        color: white;
-        display: block;
-    }
-    
-    .countdown-label {
-        font-size: 0.9rem;
-        opacity: 0.8;
-        margin-top: 0.25rem;
-    }
     
     @media (max-width: 768px) {
         .coming-soon-content {
@@ -266,18 +223,6 @@
             justify-content: center;
         }
         
-        .countdown-timer {
-            gap: 0.5rem;
-        }
-        
-        .countdown-item {
-            min-width: 60px;
-            padding: 0.75rem;
-        }
-        
-        .countdown-number {
-            font-size: 1.5rem;
-        }
     }
 </style>
 {% endblock %}
@@ -301,30 +246,6 @@
             {{ t('coming_soon_description', lang) | default('Эта функция находится в активной разработке. Мы приложим все усилия, чтобы сделать её доступной как можно скорее.') }}
         </p>
         
-        <!-- Счетчик обратного отсчета -->
-        <div class="countdown">
-            <div class="countdown-title">
-                {{ t('launch_countdown', lang) | default('До запуска осталось') }}
-            </div>
-            <div class="countdown-timer" id="countdown">
-                <div class="countdown-item">
-                    <span class="countdown-number" id="days">--</span>
-                    <div class="countdown-label">{{ t('days', lang) | default('дней') }}</div>
-                </div>
-                <div class="countdown-item">
-                    <span class="countdown-number" id="hours">--</span>
-                    <div class="countdown-label">{{ t('hours', lang) | default('часов') }}</div>
-                </div>
-                <div class="countdown-item">
-                    <span class="countdown-number" id="minutes">--</span>
-                    <div class="countdown-label">{{ t('minutes', lang) | default('минут') }}</div>
-                </div>
-                <div class="countdown-item">
-                    <span class="countdown-number" id="seconds">--</span>
-                    <div class="countdown-label">{{ t('seconds', lang) | default('секунд') }}</div>
-                </div>
-            </div>
-        </div>
         
         <!-- Список функций -->
         <div class="features-list">
@@ -395,37 +316,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Устанавливаем дату запуска (например, через 30 дней)
-    const launchDate = new Date();
-    launchDate.setDate(launchDate.getDate() + 30);
-    
-    function updateCountdown() {
-        const now = new Date().getTime();
-        const distance = launchDate.getTime() - now;
-        
-        if (distance < 0) {
-            document.getElementById('days').innerHTML = '00';
-            document.getElementById('hours').innerHTML = '00';
-            document.getElementById('minutes').innerHTML = '00';
-            document.getElementById('seconds').innerHTML = '00';
-            return;
-        }
-        
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
-        document.getElementById('days').innerHTML = days.toString().padStart(2, '0');
-        document.getElementById('hours').innerHTML = hours.toString().padStart(2, '0');
-        document.getElementById('minutes').innerHTML = minutes.toString().padStart(2, '0');
-        document.getElementById('seconds').innerHTML = seconds.toString().padStart(2, '0');
-    }
-    
-    // Обновляем счетчик каждую секунду
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-    
     // Анимация появления элементов
     const elements = document.querySelectorAll('.feature-item');
     elements.forEach((element, index) => {
