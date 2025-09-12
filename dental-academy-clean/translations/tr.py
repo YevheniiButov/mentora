@@ -1292,4 +1292,17 @@ translations = {
     'coming_soon_overlay_description': 'Bu özellik geliştiriliyor',
     'coming_soon_overlay_home': '🏠 Ana Sayfa',
     'coming_soon_overlay_community': '👥 Topluluk',
+    
+    # Coming Soon Page Translations
+    'coming_soon': 'Yakında',
+    'coming_soon_title': 'Yakında!',
+    'coming_soon_subtitle': 'Yeni bir özellik üzerinde çalışıyoruz',
+    'coming_soon_description': 'Bu özellik aktif olarak geliştiriliyor. Mümkün olan en kısa sürede kullanıma sunmak için elimizden geleni yapıyoruz.',
+    'coming_soon_patience': 'Sabrınız için teşekkürler!',
+    'coming_features': 'Neler kullanılabilir olacak',
+    'diagnostic_testing': 'Tanı testleri',
+    'interactive_learning': 'Etkileşimli öğrenme',
+    'practice_tests': 'Uygulama testleri',
+    'ai_assistant': 'AI asistanı',
+    'virtual_patients': 'Sanal hastalar',
 }

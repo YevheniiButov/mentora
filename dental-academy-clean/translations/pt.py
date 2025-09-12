@@ -1314,4 +1314,17 @@ translations = {
     'coming_soon_overlay_description': 'Esta função está em desenvolvimento',
     'coming_soon_overlay_home': '🏠 Início',
     'coming_soon_overlay_community': '👥 Comunidade',
+    
+    # Coming Soon Page Translations
+    'coming_soon': 'Em breve',
+    'coming_soon_title': 'Em breve!',
+    'coming_soon_subtitle': 'Estamos trabalhando em uma nova função',
+    'coming_soon_description': 'Esta função está em desenvolvimento ativo. Estamos fazendo o nosso melhor para torná-la disponível o mais rápido possível.',
+    'coming_soon_patience': 'Obrigado pela sua paciência!',
+    'coming_features': 'O que estará disponível',
+    'diagnostic_testing': 'Testes diagnósticos',
+    'interactive_learning': 'Aprendizagem interativa',
+    'practice_tests': 'Testes de prática',
+    'ai_assistant': 'Assistente de IA',
+    'virtual_patients': 'Pacientes virtuais',
 }

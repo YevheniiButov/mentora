@@ -1404,4 +1404,17 @@ translations = {
     'coming_soon_overlay_description': 'این ویژگی در حال توسعه است',
     'coming_soon_overlay_home': '🏠 خانه',
     'coming_soon_overlay_community': '👥 انجمن',
+    
+    # Coming Soon Page Translations
+    'coming_soon': 'به زودی',
+    'coming_soon_title': 'به زودی!',
+    'coming_soon_subtitle': 'ما روی یک ویژگی جدید کار می‌کنیم',
+    'coming_soon_description': 'این ویژگی در حال توسعه فعال است. ما تمام تلاش خود را می‌کنیم تا آن را در اسرع وقت در دسترس قرار دهیم.',
+    'coming_soon_patience': 'از صبر شما متشکریم!',
+    'coming_features': 'آنچه در دسترس خواهد بود',
+    'diagnostic_testing': 'تست‌های تشخیصی',
+    'interactive_learning': 'یادگیری تعاملی',
+    'practice_tests': 'تست‌های تمرینی',
+    'ai_assistant': 'دستیار هوش مصنوعی',
+    'virtual_patients': 'بیماران مجازی',
 }
