@@ -1471,4 +1471,13 @@ translations = {
     'required_documents': 'اسناد مورد نیاز',
     'upload_documents': 'آپلود اسناد',
     'file_selected': 'فایل انتخاب شد',
+    
+    # Profile page translations
+    'profile_completion': 'تکمیل پروفایل',
+    'profile_completion_text': '75% پروفایل تکمیل شده',
+    'personal_info_description': 'اطلاعات پایه، تماس‌ها و داده‌های شخصی',
+    'documents_description': 'آپلود مدارک، گواهینامه‌ها و سایر اسناد',
+    'settings_description': 'زبان، اعلان‌ها، تم',
+    'security_description': 'تغییر رمز عبور و تنظیمات امنیتی',
+    'statistics_description': 'پیشرفت یادگیری و دستاوردها',
 }

@@ -1381,4 +1381,13 @@ translations = {
     'required_documents': 'Необхідні документи',
     'upload_documents': 'Завантажити документи',
     'file_selected': 'Файл вибрано',
+    
+    # Profile page translations
+    'profile_completion': 'Заповнення профілю',
+    'profile_completion_text': '75% профілю заповнено',
+    'personal_info_description': 'Базова інформація, контакти та особисті дані',
+    'documents_description': 'Завантаження дипломів, сертифікатів та інших документів',
+    'settings_description': 'Мова, сповіщення, тема оформлення',
+    'security_description': 'Зміна пароля та налаштування безпеки',
+    'statistics_description': 'Прогрес навчання та досягнення',
 }

@@ -1342,4 +1342,13 @@ translations = {
     'required_documents': 'Gerekli Belgeler',
     'upload_documents': 'Belgeleri Yükle',
     'file_selected': 'Dosya Seçildi',
+    
+    # Profile page translations
+    'profile_completion': 'Profil Tamamlama',
+    'profile_completion_text': 'Profil %75 tamamlandı',
+    'personal_info_description': 'Temel bilgiler, iletişim ve kişisel veriler',
+    'documents_description': 'Diploma, sertifika ve diğer belgeleri yükleme',
+    'settings_description': 'Dil, bildirimler, tema',
+    'security_description': 'Şifre değiştirme ve güvenlik ayarları',
+    'statistics_description': 'Öğrenme ilerlemesi ve başarılar',
 }

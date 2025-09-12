@@ -1381,4 +1381,13 @@ translations = {
     'required_documents': 'Documentos Necessários',
     'upload_documents': 'Enviar Documentos',
     'file_selected': 'Arquivo Selecionado',
+    
+    # Profile page translations
+    'profile_completion': 'Completar Perfil',
+    'profile_completion_text': '75% do perfil concluído',
+    'personal_info_description': 'Informações básicas, contatos e dados pessoais',
+    'documents_description': 'Enviar diplomas, certificados e outros documentos',
+    'settings_description': 'Idioma, notificações, tema',
+    'security_description': 'Alteração de senha e configurações de segurança',
+    'statistics_description': 'Progresso de aprendizagem e conquistas',
 }
