@@ -720,60 +720,31 @@
                     Categories
                 </h3>
                 <ul class="category-list">
+                    {% for category in categories %}
                     <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='trending') }}" class="category-link active">
+                        <a href="{{ url_for('main.community_category', lang=lang, category=category.slug) }}" class="category-link">
                             <span class="category-icon">
-                                <i class="fas fa-fire"></i>
+                                {% if category.slug == 'general' %}
+                                    <i class="fas fa-comments"></i>
+                                {% elif category.slug == 'clinical-cases' %}
+                                    <i class="fas fa-tooth"></i>
+                                {% elif category.slug == 'study-materials' %}
+                                    <i class="fas fa-book-medical"></i>
+                                {% elif category.slug == 'expert-advice' %}
+                                    <i class="fas fa-graduation-cap"></i>
+                                {% elif category.slug == 'research' %}
+                                    <i class="fas fa-microscope"></i>
+                                {% elif category.slug == 'equipment' %}
+                                    <i class="fas fa-tools"></i>
+                                {% else %}
+                                    <i class="fas fa-folder"></i>
+                                {% endif %}
                             </span>
-                            <span>Trending</span>
-                            <span class="category-count">24</span>
+                            <span>{{ category.name }}</span>
+                            <span class="category-count">{{ category.topics.count() }}</span>
                         </a>
                     </li>
-                    <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='clinical-cases') }}" class="category-link">
-                            <span class="category-icon">
-                                <i class="fas fa-tooth"></i>
-                            </span>
-                            <span>Clinical Cases</span>
-                            <span class="category-count">156</span>
-                        </a>
-                    </li>
-                    <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='study-materials') }}" class="category-link">
-                            <span class="category-icon">
-                                <i class="fas fa-book-medical"></i>
-                            </span>
-                            <span>Study Materials</span>
-                            <span class="category-count">89</span>
-                        </a>
-                    </li>
-                    <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='expert-advice') }}" class="category-link">
-                            <span class="category-icon">
-                                <i class="fas fa-graduation-cap"></i>
-                            </span>
-                            <span>Expert Advice</span>
-                            <span class="category-count">67</span>
-                        </a>
-                    </li>
-                    <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='research') }}" class="category-link">
-                            <span class="category-icon">
-                                <i class="fas fa-microscope"></i>
-                            </span>
-                            <span>Research</span>
-                            <span class="category-count">43</span>
-                        </a>
-                    </li>
-                    <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='equipment') }}" class="category-link">
-                            <span class="category-icon">
-                                <i class="fas fa-tools"></i>
-                            </span>
-                            <span>Equipment</span>
-                            <span class="category-count">31</span>
-                        </a>
-                    </li>
+                    {% endfor %}
                 </ul>
             </div>
 
@@ -801,160 +772,45 @@
             </div>
 
             <div class="topics-list">
-                <article class="topic-item status-new" onclick="window.location.href='{{ url_for('main.community_topic', lang=g.lang, topic_id=1) }}';">
+                {% for topic in recent_topics %}
+                <article class="topic-item {% if topic.is_sticky %}status-pinned{% endif %}" onclick="window.location.href='{{ url_for('main.community_topic', lang=lang, topic_id=topic.id) }}';">
                     <div class="topic-header">
-                        <div class="topic-avatar">SJ</div>
+                        <div class="topic-avatar">{{ topic.author.first_name[0] if topic.author.first_name else 'U' }}{{ topic.author.last_name[0] if topic.author.last_name else 'U' }}</div>
                         <div class="topic-info">
-                            <h3 class="topic-title">Complex Root Canal with Unusual Anatomy - Need Advice</h3>
+                            <h3 class="topic-title">{% if topic.is_sticky %}📌 {% endif %}{{ topic.title }}</h3>
                             <div class="topic-meta">
-                                <span class="topic-author">Dr. Sarah Johnson</span>
-                                <span class="topic-time">2 hours ago</span>
-                                <span class="topic-category">Endodontics</span>
+                                <span class="topic-author">{{ topic.author.first_name }} {{ topic.author.last_name }}</span>
+                                <span class="topic-time">{{ topic.created_at.strftime('%d.%m.%Y') }}</span>
+                                <span class="topic-category">{{ topic.category.name }}</span>
                             </div>
                         </div>
                     </div>
                     <p class="topic-preview">
-                        Patient presents with a maxillary first molar with 4 canals and unusual MB2 anatomy. Has anyone encountered similar cases? Looking for treatment approach recommendations...
+                        {{ topic.content[:150] }}{% if topic.content|length > 150 %}...{% endif %}
                     </p>
                     <div class="topic-stats">
                         <span class="stat-item">
                             <i class="fas fa-comment"></i>
-                            12 replies
+                            {{ topic.replies_count }} replies
                         </span>
                         <span class="stat-item">
                             <i class="fas fa-eye"></i>
-                            89 views
+                            {{ topic.views_count }} views
                         </span>
                         <span class="stat-item">
                             <i class="fas fa-heart"></i>
-                            5 likes
+                            0 likes
                         </span>
                     </div>
                 </article>
+                {% endfor %}
+                
+                {% if not recent_topics %}
+                <div class="no-topics">
+                    <p>No topics found. Be the first to start a discussion!</p>
+                </div>
+                {% endif %}
 
-                <article class="topic-item status-pinned" onclick="window.location.href='{{ url_for('main.community_topic', lang=g.lang, topic_id=5) }}';">
-                    <div class="topic-header">
-                        <div class="topic-avatar">MC</div>
-                        <div class="topic-info">
-                            <h3 class="topic-title">📌 BIG Exam Study Guide - Periodontics Section</h3>
-                            <div class="topic-meta">
-                                <span class="topic-author">Dr. Michael Chen</span>
-                                <span class="topic-time">1 day ago</span>
-                                <span class="topic-category">Study Materials</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="topic-preview">
-                        Comprehensive study notes for the periodontics section of the BIG exam. Includes key concepts, common questions, and practice scenarios...
-                    </p>
-                    <div class="topic-stats">
-                        <span class="stat-item">
-                            <i class="fas fa-comment"></i>
-                            34 replies
-                        </span>
-                        <span class="stat-item">
-                            <i class="fas fa-eye"></i>
-                            234 views
-                        </span>
-                        <span class="stat-item">
-                            <i class="fas fa-heart"></i>
-                            18 likes
-                        </span>
-                    </div>
-                </article>
-
-                <article class="topic-item" onclick="window.location.href='{{ url_for('main.community_topic', lang=g.lang, topic_id=2) }}';">
-                    <div class="topic-header">
-                        <div class="topic-avatar">ER</div>
-                        <div class="topic-info">
-                            <h3 class="topic-title">Modern Implant Techniques - Best Practices Discussion</h3>
-                            <div class="topic-meta">
-                                <span class="topic-author">Dr. Emma Rodriguez</span>
-                                <span class="topic-time">3 hours ago</span>
-                                <span class="topic-category">Expert Advice</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="topic-preview">
-                        Let's discuss the latest advances in implant dentistry. What techniques are you using? Any tips for improving success rates?
-                    </p>
-                    <div class="topic-stats">
-                        <span class="stat-item">
-                            <i class="fas fa-comment"></i>
-                            8 replies
-                        </span>
-                        <span class="stat-item">
-                            <i class="fas fa-eye"></i>
-                            67 views
-                        </span>
-                        <span class="stat-item">
-                            <i class="fas fa-heart"></i>
-                            3 likes
-                        </span>
-                    </div>
-                </article>
-
-                <article class="topic-item">
-                    <div class="topic-header">
-                        <div class="topic-avatar">AK</div>
-                        <div class="topic-info">
-                            <h3 class="topic-title">Digital Workflow Integration - Software Recommendations</h3>
-                            <div class="topic-meta">
-                                <span class="topic-author">Dr. Alex Kim</span>
-                                <span class="topic-time">5 hours ago</span>
-                                <span class="topic-category">Equipment</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="topic-preview">
-                        Looking to upgrade our digital workflow. What software solutions are you using for treatment planning and patient communication?
-                    </p>
-                    <div class="topic-stats">
-                        <span class="stat-item">
-                            <i class="fas fa-comment"></i>
-                            15 replies
-                        </span>
-                        <span class="stat-item">
-                            <i class="fas fa-eye"></i>
-                            112 views
-                        </span>
-                        <span class="stat-item">
-                            <i class="fas fa-heart"></i>
-                            3 likes
-                        </span>
-                    </div>
-                </article>
-
-                <article class="topic-item">
-                    <div class="topic-header">
-                        <div class="topic-avatar">LW</div>
-                        <div class="topic-info">
-                            <h3 class="topic-title">Pediatric Dentistry - Behavior Management Techniques</h3>
-                            <div class="topic-meta">
-                                <span class="topic-author">Dr. Lisa Wang</span>
-                                <span class="topic-time">1 day ago</span>
-                                <span class="topic-category">Clinical Cases</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="topic-preview">
-                        Share your most effective behavior management techniques for pediatric patients. What works best for anxious children?
-                    </p>
-                    <div class="topic-stats">
-                        <span class="stat-item">
-                            <i class="fas fa-comment"></i>
-                            22 replies
-                        </span>
-                        <span class="stat-item">
-                            <i class="fas fa-eye"></i>
-                            156 views
-                        </span>
-                        <span class="stat-item">
-                            <i class="fas fa-heart"></i>
-                            12 likes
-                        </span>
-                    </div>
-                </article>
             </div>
         </main>
 
@@ -967,31 +823,8 @@
                 </h3>
                 <ul class="activity-list">
                     <li class="activity-item">
-                        <div class="activity-avatar">SJ</div>
                         <div class="activity-content">
-                            <p class="activity-text">Dr. Sarah Johnson replied to "Complex Root Canal"</p>
-                            <span class="activity-time">2 min ago</span>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-avatar">MC</div>
-                        <div class="activity-content">
-                            <p class="activity-text">Dr. Michael Chen shared study materials</p>
-                            <span class="activity-time">15 min ago</span>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-avatar">ER</div>
-                        <div class="activity-content">
-                            <p class="activity-text">Dr. Emma Rodriguez joined the forum</p>
-                            <span class="activity-time">1 hour ago</span>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-avatar">AK</div>
-                        <div class="activity-content">
-                            <p class="activity-text">Dr. Alex Kim liked "Digital Workflow"</p>
-                            <span class="activity-time">2 hours ago</span>
+                            <p class="activity-text">No recent activity</p>
                         </div>
                     </li>
                 </ul>
@@ -1005,27 +838,7 @@
                 <div class="online-list">
                     <div class="online-user">
                         <span class="online-indicator"></span>
-                        <span>Dr. Sarah J.</span>
-                    </div>
-                    <div class="online-user">
-                        <span class="online-indicator"></span>
-                        <span>Dr. Michael C.</span>
-                    </div>
-                    <div class="online-user">
-                        <span class="online-indicator"></span>
-                        <span>Dr. Emma R.</span>
-                    </div>
-                    <div class="online-user">
-                        <span class="online-indicator"></span>
-                        <span>Dr. Alex K.</span>
-                    </div>
-                    <div class="online-user">
-                        <span class="online-indicator"></span>
-                        <span>Dr. Lisa W.</span>
-                    </div>
-                    <div class="online-user">
-                        <span class="online-indicator"></span>
-                        <span>+7 more</span>
+                        <span>No users online</span>
                     </div>
                 </div>
             </div>
