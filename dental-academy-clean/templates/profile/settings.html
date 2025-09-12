@@ -7,6 +7,7 @@
     .settings-container {
         min-height: 80vh;
         padding: 2rem 0;
+        margin-top: 80px; /* Отступ под шапку */
     }
     
     .settings-header {
@@ -248,6 +249,10 @@
     }
     
     @media (max-width: 768px) {
+        .settings-container {
+            margin-top: 70px; /* Мобильный отступ под шапку */
+        }
+        
         .settings-header {
             padding: 1.5rem 0;
         }
@@ -275,30 +280,11 @@
 
 {% block content %}
 <div class="settings-container">
-    <!-- Заголовок настроек -->
-    <div class="settings-header">
-        <div class="container">
-            <div class="settings-header-content">
-                <div class="settings-icon">
-                    <i class="fas fa-cog"></i>
-                </div>
-                <h1 class="settings-title">
-                    {{ t('settings', lang) | default('Настройки') }}
-                </h1>
-                <p class="settings-subtitle">
-                    {{ t('settings_subtitle', lang) | default('Настройте ваш профиль и предпочтения') }}
-                </p>
-            </div>
-        </div>
-    </div>
+    <!-- Заголовок настроек убран по запросу пользователя -->
     
     <div class="container">
         <div class="settings-content">
-            <!-- Уведомление о разработке -->
-            <div class="coming-soon-notice">
-                <h3>{{ t('feature_coming_soon', lang) | default('Функция скоро появится') }}</h3>
-                <p>{{ t('settings_coming_soon_desc', lang) | default('Расширенные настройки будут доступны в ближайшее время. Мы работаем над этой функцией.') }}</p>
-            </div>
+            <!-- Уведомление о разработке убрано по запросу пользователя -->
             
             <form method="POST" action="{{ url_for('profile.settings') }}">
                 <!-- Языковые настройки -->
@@ -350,6 +336,9 @@
                             <i class="fas fa-palette"></i>
                         </div>
                         {{ t('theme_settings', lang) | default('Настройки темы') }}
+                        <span class="coming-soon-badge" style="background: #fbbf24; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-left: 0.5rem;">
+                            {{ t('coming_soon', lang) | default('Скоро') }}
+                        </span>
                     </h2>
                     
                     <div class="form-group">
