@@ -1639,4 +1639,6 @@ translations = {
     'achievement_goal_achiever_desc': 'اولین هدف خود را تکمیل کنید',
     'achievement_exam_ready': 'آماده برای امتحان',
     'achievement_exam_ready_desc': 'برای امتحان BIG آماده شوید',
+
+    'personal_info_subtitle': 'اطلاعات شخصی و جزئیات حرفه‌ای خود را به‌روزرسانی کنید',
 }

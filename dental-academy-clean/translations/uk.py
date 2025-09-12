@@ -1549,4 +1549,6 @@ translations = {
     'achievement_goal_achiever_desc': 'Завершіть свою першу ціль',
     'achievement_exam_ready': 'Готовий до Іспиту',
     'achievement_exam_ready_desc': 'Підготуйтеся до БІГ іспиту',
+
+    'personal_info_subtitle': 'Оновіть вашу особисту інформацію та професійні дані',
 }

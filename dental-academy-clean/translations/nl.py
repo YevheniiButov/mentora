@@ -1753,4 +1753,6 @@ translations = {
     'required_documents': 'Vereiste Documenten',
     'upload_documents': 'Documenten Uploaden',
     'file_selected': 'Bestand Geselecteerd',
+
+    'personal_info_subtitle': 'Werk uw persoonlijke informatie en professionele gegevens bij',
 }

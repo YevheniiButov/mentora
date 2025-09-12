@@ -1920,4 +1920,6 @@ translations = {
     'required_documents': 'Required Documents',
     'upload_documents': 'Upload Documents',
     'file_selected': 'File Selected',
+
+    'personal_info_subtitle': 'Update your personal information and professional details',
 }

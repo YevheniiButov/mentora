@@ -1510,4 +1510,6 @@ translations = {
     'achievement_goal_achiever_desc': 'İlk hedefinizi tamamlayın',
     'achievement_exam_ready': 'Sınava Hazır',
     'achievement_exam_ready_desc': 'BIG sınavına hazırlanın',
+
+    'personal_info_subtitle': 'Kişisel bilgilerinizi ve mesleki detaylarınızı güncelleyin',
 }

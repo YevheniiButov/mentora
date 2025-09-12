@@ -1601,4 +1601,6 @@ translations = {
     'achievement_goal_achiever_desc': 'Completa tu primer objetivo',
     'achievement_exam_ready': 'Listo para el Examen',
     'achievement_exam_ready_desc': 'Prepárate para el examen BIG',
+
+    'personal_info_subtitle': 'Actualice su información personal y detalles profesionales',
 }

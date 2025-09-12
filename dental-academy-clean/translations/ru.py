@@ -1822,4 +1822,6 @@ translations = {
     'required_documents': 'Необходимые документы',
     'upload_documents': 'Загрузить документы',
     'file_selected': 'Файл выбран',
+
+    'personal_info_subtitle': 'Обновите вашу личную информацию и профессиональные данные',
 }
