@@ -1456,16 +1456,16 @@ translations = {
 
     
     # Security validation messages
-    'new_email_required': 'Новий email обов'язковий',
+    'new_email_required': 'Новий email обов\'язковий',
     'invalid_email_format': 'Невірний формат email',
     'emails_do_not_match': 'Email не співпадають',
-    'password_required': 'Пароль обов'язковий',
+    'password_required': 'Пароль обов\'язковий',
     'new_email_same_as_current': 'Новий email не може бути таким же як поточний',
     'email_already_taken': 'Цей email вже використовується',
     'incorrect_password': 'Невірний пароль',
     'email_changed_successfully': 'Email успішно змінено',
-    'current_password_required': 'Поточний пароль обов'язковий',
-    'new_password_required': 'Новий пароль обов'язковий',
+    'current_password_required': 'Поточний пароль обов\'язковий',
+    'new_password_required': 'Новий пароль обов\'язковий',
     'password_min_length': 'Пароль повинен містити мінімум 8 символів',
     'passwords_do_not_match': 'Паролі не співпадають',
     'incorrect_current_password': 'Невірний поточний пароль',
