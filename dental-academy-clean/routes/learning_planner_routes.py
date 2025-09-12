@@ -14,9 +14,6 @@ learning_planner_bp = Blueprint('learning_planner', __name__)
 def learning_planner(plan_id):
     """Enhanced learning planner with calendar and charts"""
     
-    print(f"🔍 ОТЛАДКА: learning_planner вызван")
-    print(f"🔍 ОТЛАДКА: current_user.id = {current_user.id}")
-    
     # Get current language
     lang = request.args.get('lang', 'en')
     
@@ -24,15 +21,13 @@ def learning_planner(plan_id):
     diagnostic_results = DiagnosticDataManager.get_user_diagnostic_data(current_user.id)
     learning_plan_data = DiagnosticDataManager.get_learning_plan_data(current_user.id)
     
-    print(f"🔍 ОТЛАДКА: diagnostic_results = {diagnostic_results}")
-    print(f"🔍 ОТЛАДКА: learning_plan_data = {learning_plan_data}")
-    
-    # Переводим названия доменов
+    # Переводим названия доменов (только для доменов с данными)
     for domain in diagnostic_results.get('domains', []):
-        translated_name = get_translation(domain['code'], lang)
-        if translated_name == domain['code']:
-            translated_name = domain['name']
-        domain['name'] = translated_name
+        if domain.get('has_data', False):  # Переводим только домены с данными
+            translated_name = get_translation(domain['code'], lang)
+            if translated_name == domain['code']:
+                translated_name = domain['name']
+            domain['name'] = translated_name
     
     response = make_response(render_template('dashboard/learning_planner_translated.html',
                          diagnostic_results=clean_for_template(diagnostic_results),

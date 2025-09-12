@@ -7,6 +7,7 @@ from utils.domain_mapping import convert_abilities_to_new_format, convert_abilit
 from datetime import datetime, timezone
 import json
 import logging
+from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,19 @@ class DiagnosticDataManager:
     """Менеджер для работы с данными диагностики"""
     
     @staticmethod
+    def clear_cache(user_id: int = None):
+        """Очистить кэш для пользователя или весь кэш"""
+        if user_id:
+            # Очищаем кэш для конкретного пользователя
+            DiagnosticDataManager.get_user_diagnostic_data.cache_clear()
+            DiagnosticDataManager.get_learning_plan_data.cache_clear()
+        else:
+            # Очищаем весь кэш
+            DiagnosticDataManager.get_user_diagnostic_data.cache_clear()
+            DiagnosticDataManager.get_learning_plan_data.cache_clear()
+    
+    @staticmethod
+    @lru_cache(maxsize=128, typed=False)
     def get_user_diagnostic_data(user_id: int) -> dict:
         """
         Получить актуальные данные диагностики пользователя
@@ -69,8 +83,17 @@ class DiagnosticDataManager:
                 'domains': []
             }
             
-            # Обрабатываем все домены
-            for domain_code in ALL_BIG_DOMAINS:
+            # Обрабатываем только домены с данными для ускорения
+            domains_with_data = set()
+            if diagnostic_data.get('domain_statistics'):
+                domains_with_data.update(diagnostic_data['domain_statistics'].keys())
+            if diagnostic_data.get('domain_abilities'):
+                domains_with_data.update(diagnostic_data['domain_abilities'].keys())
+            
+            # Если есть данные, обрабатываем только их, иначе берем первые 10 доменов
+            domains_to_process = list(domains_with_data) if domains_with_data else ALL_BIG_DOMAINS[:10]
+            
+            for domain_code in domains_to_process:
                 domain_name = get_domain_name(domain_code)
                 domain_result = DiagnosticDataManager._process_domain_data(
                     domain_code, domain_name, diagnostic_data
@@ -142,6 +165,7 @@ class DiagnosticDataManager:
         }
     
     @staticmethod
+    @lru_cache(maxsize=128, typed=False)
     def get_learning_plan_data(user_id: int) -> dict:
         """
         Получить данные плана обучения пользователя
