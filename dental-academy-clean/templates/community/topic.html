@@ -509,6 +509,99 @@
         padding: 1rem;
     }
 }
+
+/* Reply Input - Telegram Style */
+.reply-input-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-top: 1px solid #e1e5e9;
+    padding: 1rem;
+    z-index: 1000;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reply-input-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.reply-input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    background: #f8f9fa;
+    border: 1px solid #e1e5e9;
+    border-radius: 20px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.reply-input-box:focus-within {
+    border-color: #0088cc;
+    box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.1);
+}
+
+.reply-textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    resize: none;
+    outline: none;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    max-height: 120px;
+    min-height: 20px;
+    font-family: inherit;
+    color: #2c3e50;
+}
+
+.reply-textarea::placeholder {
+    color: #6c757d;
+}
+
+.reply-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reply-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #0088cc;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.reply-send-btn:hover {
+    background: #006bb3;
+    transform: scale(1.05);
+}
+
+.reply-send-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.reply-send-btn i {
+    font-size: 0.875rem;
+}
+
+/* Auto-resize textarea */
+.reply-textarea {
+    overflow: hidden;
+}
 </style>
 {% endblock %}
 
@@ -645,10 +738,6 @@
             <div class="replies-section">
                 <div class="replies-header">
                     <h2 class="replies-title">{{ t('replies', lang) | default('Replies') }} ({{ topic.replies_count }})</h2>
-                    <button class="reply-btn">
-                        <i class="fas fa-reply"></i>
-                        {{ t('reply', lang) | default('Reply') }}
-                    </button>
                 </div>
 
                 <div class="replies-list">
@@ -714,5 +803,92 @@
             </div>
         </aside>
     </div>
+    
+    <!-- Reply Input - Telegram Style -->
+    <div class="reply-input-container">
+        <div class="reply-input-wrapper">
+            <div class="reply-input-box">
+                <textarea 
+                    id="replyTextarea" 
+                    class="reply-textarea" 
+                    placeholder="{{ t('write_message', lang) | default('Write a message...') }}"
+                    rows="1"
+                ></textarea>
+                <div class="reply-actions">
+                    <button class="reply-send-btn" id="sendReplyBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+// Auto-resize textarea
+function autoResize(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+}
+
+// Initialize textarea auto-resize
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('replyTextarea');
+    const sendBtn = document.getElementById('sendReplyBtn');
+    
+    if (textarea) {
+        // Auto-resize on input
+        textarea.addEventListener('input', function() {
+            autoResize(this);
+            
+            // Enable/disable send button
+            if (this.value.trim()) {
+                sendBtn.disabled = false;
+            } else {
+                sendBtn.disabled = true;
+            }
+        });
+        
+        // Send on Enter (but allow Shift+Enter for new line)
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendReply();
+            }
+        });
+        
+        // Initial state
+        sendBtn.disabled = true;
+    }
+    
+    // Send reply function
+    window.sendReply = function() {
+        const textarea = document.getElementById('replyTextarea');
+        const sendBtn = document.getElementById('sendReplyBtn');
+        const content = textarea.value.trim();
+        
+        if (!content) return;
+        
+        // Show loading state
+        const originalHTML = sendBtn.innerHTML;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        sendBtn.disabled = true;
+        
+        // Here you would send the reply via AJAX
+        // For now, just show a success message
+        setTimeout(() => {
+            alert('{{ t("reply_sent", lang) | default("Reply sent successfully!") }}');
+            textarea.value = '';
+            autoResize(textarea);
+            sendBtn.innerHTML = originalHTML;
+            sendBtn.disabled = true;
+        }, 1000);
+    };
+    
+    // Send button click handler
+    if (sendBtn) {
+        sendBtn.addEventListener('click', sendReply);
+    }
+});
+</script>
 {% endblock %} 

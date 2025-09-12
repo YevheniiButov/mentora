@@ -1551,4 +1551,6 @@ translations = {
     'views': 'görüntüleme',
     'likes': 'beğeni',
     'reply': 'Yanıtla',
+    'write_message': 'Mesaj yazın...',
+    'reply_sent': 'Yanıt başarıyla gönderildi!',
 }

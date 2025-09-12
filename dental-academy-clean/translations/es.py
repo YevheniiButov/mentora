@@ -1642,4 +1642,6 @@ translations = {
     'views': 'vistas',
     'likes': 'me gusta',
     'reply': 'Responder',
+    'write_message': 'Escribe un mensaje...',
+    'reply_sent': '¡Respuesta enviada exitosamente!',
 }

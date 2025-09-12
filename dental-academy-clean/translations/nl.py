@@ -1794,4 +1794,6 @@ translations = {
     'views': 'weergaven',
     'likes': 'likes',
     'reply': 'Antwoorden',
+    'write_message': 'Schrijf een bericht...',
+    'reply_sent': 'Antwoord succesvol verzonden!',
 }

@@ -1680,4 +1680,6 @@ translations = {
     'views': 'بازدیدها',
     'likes': 'لایک‌ها',
     'reply': 'پاسخ',
+    'write_message': 'پیام بنویسید...',
+    'reply_sent': 'پاسخ با موفقیت ارسال شد!',
 }

@@ -1961,4 +1961,6 @@ translations = {
     'views': 'views',
     'likes': 'likes',
     'reply': 'Reply',
+    'write_message': 'Write a message...',
+    'reply_sent': 'Reply sent successfully!',
 }

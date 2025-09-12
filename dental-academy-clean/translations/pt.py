@@ -1590,4 +1590,6 @@ translations = {
     'views': 'visualizações',
     'likes': 'curtidas',
     'reply': 'Responder',
+    'write_message': 'Escreva uma mensagem...',
+    'reply_sent': 'Resposta enviada com sucesso!',
 }
