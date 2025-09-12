@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="{{ url_for('static', filename='css/main.min.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/universal-styles.min.css') }}" as="style">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
@@ -16,5 +20,9 @@
 </head>
 <body>
     {% block content %}{% endblock %}
+
+    <!-- Image Optimization -->
+    <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/image-optimization.min.css') }}">
 </body>
 </html> 

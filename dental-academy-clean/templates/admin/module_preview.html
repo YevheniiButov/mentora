@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="{{ url_for('static', filename='css/main.min.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/universal-styles.min.css') }}" as="style">
+
     <title>Предпросмотр: {{ module.title }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -165,5 +169,9 @@
         </div>
         {% endif %}
     </div>
+
+    <!-- Image Optimization -->
+    <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/image-optimization.min.css') }}">
 </body>
 </html>

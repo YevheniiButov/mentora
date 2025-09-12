@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="{{ url_for('static', filename='css/main.min.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/universal-styles.min.css') }}" as="style">
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>{% block title %}{% if admin_view is defined and admin_view.category %}{{ admin_view.category }} - {% endif %}{% if admin_view is defined %}{{ admin_view.name }} - {{ admin_view.admin.name }}{% else %}Mentora Admin{% endif %}{% endblock %}</title>
@@ -147,5 +151,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     {% block tail %}{% endblock %}
+
+    <!-- Image Optimization -->
+    <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/image-optimization.min.css') }}">
 </body>
 </html> 
