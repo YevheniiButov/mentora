@@ -1,6 +1,6 @@
 # routes/dashboard_routes.py - Enhanced Learning Dashboard Routes
 
-from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash, session, g
 from flask_login import login_required, current_user
 from models import (
     LearningPath, Subject, Module, Lesson, UserProgress, 
