@@ -97,6 +97,30 @@ def personal_info():
     
     return render_template('profile/personal_info.html', user=current_user, lang=lang)
 
+@profile_bp.route('/profile/update-personal-info', methods=['POST'])
+@login_required
+def update_personal_info():
+    """Обновление личной информации"""
+    lang = session.get('lang', 'nl')
+    
+    try:
+        # Обновляем данные пользователя
+        current_user.first_name = request.form.get('first_name', '').strip()
+        current_user.last_name = request.form.get('last_name', '').strip()
+        current_user.profession = request.form.get('profession', '').strip()
+        current_user.big_number = request.form.get('big_number', '').strip()
+        current_user.workplace = request.form.get('workplace', '').strip()
+        current_user.language = request.form.get('language', 'nl')
+        
+        db.session.commit()
+        flash('Личная информация успешно обновлена!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Ошибка при обновлении информации: ' + str(e), 'error')
+    
+    return redirect(url_for('profile.personal_info', lang=lang))
+
 @profile_bp.route('/profile/documents', methods=['GET', 'POST'])
 @login_required
 def documents():

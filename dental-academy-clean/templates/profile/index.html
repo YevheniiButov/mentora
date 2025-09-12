@@ -59,45 +59,6 @@
         font-weight: 500;
     }
     
-    .profile-stats {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    
-    .stat-item {
-        text-align: center;
-        background: rgba(255, 255, 255, 0.15);
-        padding: 0.75rem 1rem;
-        border-radius: 12px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        min-width: 100px;
-        transition: all 0.3s ease;
-    }
-    
-    .stat-item:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-    }
-    
-    .stat-value {
-        font-size: 1.1rem;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 0.25rem;
-    }
-    
-    .stat-label {
-        font-size: 0.75rem;
-        opacity: 0.85;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
     
     .profile-menu {
         display: grid;
@@ -239,24 +200,6 @@
             margin-bottom: 0.75rem;
         }
         
-        .profile-stats {
-            gap: 0.75rem;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .stat-item {
-            min-width: 120px;
-            padding: 0.5rem 0.75rem;
-        }
-        
-        .stat-value {
-            font-size: 1rem;
-        }
-        
-        .stat-label {
-            font-size: 0.7rem;
-        }
         
         .profile-menu {
             grid-template-columns: 1fr;
@@ -285,26 +228,6 @@
                     {{ user.profession or t('profession_not_specified', lang) | default('Профессия не указана') }}
                 </p>
                 
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <span class="stat-value">{{ stats.registration_date }}</span>
-                        <span class="stat-label">{{ t('registration_date', lang) | default('Регистрация') }}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">{{ stats.last_login }}</span>
-                        <span class="stat-label">{{ t('last_login', lang) | default('Вход') }}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">
-                            {% if stats.email_confirmed %}
-                                <i class="fas fa-check-circle"></i>
-                            {% else %}
-                                <i class="fas fa-times-circle"></i>
-                            {% endif %}
-                        </span>
-                        <span class="stat-label">{{ t('email_confirmed', lang) | default('Email') }}</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

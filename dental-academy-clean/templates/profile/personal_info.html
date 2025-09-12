@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('personal_info', lang) | default('Личная информация') }} - Mentora{% endblock %}
+
+{% block extra_css %}
+<style>
+    .personal-info-container {
+        min-height: 80vh;
+        padding: 2rem 0;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .info-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    
+    .info-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .info-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-back {
+        background: #f1f5f9;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 1rem;
+    }
+    
+    .btn-back:hover {
+        background: #e2e8f0;
+        color: #2d3748;
+        text-decoration: none;
+    }
+    
+    .readonly-field {
+        background: #f7fafc;
+        color: #718096;
+        cursor: not-allowed;
+    }
+    
+    @media (max-width: 768px) {
+        .personal-info-container {
+            padding: 1rem 0;
+        }
+        
+        .info-card {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .info-icon {
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="personal-info-container">
+    <div class="container">
+        <div class="info-card">
+            <div class="info-header">
+                <div class="info-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h1 class="info-title">
+                    {{ t('personal_info', lang) | default('Личная информация') }}
+                </h1>
+            </div>
+            
+            <form method="POST" action="{{ url_for('profile.update_personal_info', lang=lang) }}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                {{ t('first_name', lang) | default('Имя') }}
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="first_name" 
+                                   value="{{ user.first_name or '' }}"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                {{ t('last_name', lang) | default('Фамилия') }}
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="last_name" 
+                                   value="{{ user.last_name or '' }}"
+                                   required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                {{ t('email', lang) | default('Email') }}
+                            </label>
+                            <input type="email" 
+                                   class="form-control readonly-field" 
+                                   value="{{ user.email }}"
+                                   readonly>
+                            <small class="text-muted">
+                                {{ t('email_cannot_be_changed', lang) | default('Email нельзя изменить') }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                {{ t('username', lang) | default('Имя пользователя') }}
+                            </label>
+                            <input type="text" 
+                                   class="form-control readonly-field" 
+                                   value="{{ user.username }}"
+                                   readonly>
+                            <small class="text-muted">
+                                {{ t('username_cannot_be_changed', lang) | default('Имя пользователя нельзя изменить') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                {{ t('profession', lang) | default('Профессия') }}
+                            </label>
+                            <select class="form-control" name="profession">
+                                <option value="">{{ t('select_profession', lang) | default('Выберите профессию') }}</option>
+                                <option value="tandarts" {% if user.profession == 'tandarts' %}selected{% endif %}>
+                                    {{ t('dentist', lang) | default('Стоматолог') }}
+                                </option>
+                                <option value="huisarts" {% if user.profession == 'huisarts' %}selected{% endif %}>
+                                    {{ t('general_practitioner', lang) | default('Врач общей практики') }}
+                                </option>
+                                <option value="apotheker" {% if user.profession == 'apotheker' %}selected{% endif %}>
+                                    {{ t('pharmacist', lang) | default('Фармацевт') }}
+                                </option>
+                                <option value="verpleegkundige" {% if user.profession == 'verpleegkundige' %}selected{% endif %}>
+                                    {{ t('nurse', lang) | default('Медсестра') }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                {{ t('big_number', lang) | default('BIG номер') }}
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="big_number" 
+                                   value="{{ user.big_number or '' }}"
+                                   placeholder="{{ t('big_number_placeholder', lang) | default('Введите ваш BIG номер') }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        {{ t('workplace', lang) | default('Место работы') }}
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="workplace" 
+                           value="{{ user.workplace or '' }}"
+                           placeholder="{{ t('workplace_placeholder', lang) | default('Введите место работы') }}">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        {{ t('language', lang) | default('Язык интерфейса') }}
+                    </label>
+                    <select class="form-control" name="language">
+                        <option value="en" {% if user.language == 'en' %}selected{% endif %}>English</option>
+                        <option value="ru" {% if user.language == 'ru' %}selected{% endif %}>Русский</option>
+                        <option value="nl" {% if user.language == 'nl' %}selected{% endif %}>Nederlands</option>
+                        <option value="es" {% if user.language == 'es' %}selected{% endif %}>Español</option>
+                        <option value="pt" {% if user.language == 'pt' %}selected{% endif %}>Português</option>
+                        <option value="uk" {% if user.language == 'uk' %}selected{% endif %}>Українська</option>
+                        <option value="fa" {% if user.language == 'fa' %}selected{% endif %}>فارسی</option>
+                        <option value="tr" {% if user.language == 'tr' %}selected{% endif %}>Türkçe</option>
+                    </select>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('profile.index', lang=lang) }}" class="btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        {{ t('back_to_profile', lang) | default('Назад к профилю') }}
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save"></i>
+                        {{ t('save_changes', lang) | default('Сохранить изменения') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
