@@ -1327,4 +1327,15 @@ translations = {
     'practice_tests': 'Testes de prática',
     'ai_assistant': 'Assistente de IA',
     'virtual_patients': 'Pacientes virtuais',
+    
+    # Profile Personal Info Page Translations
+    'personal_info': 'Informações pessoais',
+    'email_cannot_be_changed': 'Email não pode ser alterado',
+    'username_cannot_be_changed': 'Nome de usuário não pode ser alterado',
+    'select_profession': 'Selecionar profissão',
+    'big_number': 'Número BIG',
+    'workplace': 'Local de trabalho',
+    'workplace_placeholder': 'Digite local de trabalho',
+    'back_to_profile': 'Voltar ao perfil',
+    'save_changes': 'Salvar alterações',
 }

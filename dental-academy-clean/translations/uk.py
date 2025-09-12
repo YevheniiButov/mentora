@@ -1327,4 +1327,15 @@ translations = {
     'practice_tests': 'Практичні тести',
     'ai_assistant': 'AI-помічник',
     'virtual_patients': 'Віртуальні пацієнти',
+    
+    # Profile Personal Info Page Translations
+    'personal_info': 'Особиста інформація',
+    'email_cannot_be_changed': 'Email не можна змінити',
+    'username_cannot_be_changed': 'Ім\'я користувача не можна змінити',
+    'select_profession': 'Виберіть професію',
+    'big_number': 'BIG номер',
+    'workplace': 'Місце роботи',
+    'workplace_placeholder': 'Введіть місце роботи',
+    'back_to_profile': 'Назад до профілю',
+    'save_changes': 'Зберегти зміни',
 }

@@ -1667,6 +1667,17 @@ translations = {
     'practice_tests': 'Praktijktests',
     'ai_assistant': 'AI-assistent',
     'virtual_patients': 'Virtuele patiënten',
+    
+    # Profile Personal Info Page Translations
+    'personal_info': 'Persoonlijke informatie',
+    'email_cannot_be_changed': 'E-mail kan niet worden gewijzigd',
+    'username_cannot_be_changed': 'Gebruikersnaam kan niet worden gewijzigd',
+    'select_profession': 'Selecteer beroep',
+    'big_number': 'BIG nummer',
+    'workplace': 'Werkplek',
+    'workplace_placeholder': 'Voer werkplek in',
+    'back_to_profile': 'Terug naar profiel',
+    'save_changes': 'Wijzigingen opslaan',
     'development_progress': 'Ontwikkeling: 75% voltooid',
     'diagnostic_testing': 'Diagnostisch testen',
     'interactive_learning': 'Interactief leren',

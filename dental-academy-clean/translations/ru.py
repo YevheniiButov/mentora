@@ -1736,6 +1736,17 @@ translations = {
     'practice_tests': 'Практические тесты',
     'ai_assistant': 'AI-помощник',
     'virtual_patients': 'Виртуальные пациенты',
+    
+    # Profile Personal Info Page Translations
+    'personal_info': 'Личная информация',
+    'email_cannot_be_changed': 'Email нельзя изменить',
+    'username_cannot_be_changed': 'Имя пользователя нельзя изменить',
+    'select_profession': 'Выберите профессию',
+    'big_number': 'BIG номер',
+    'workplace': 'Место работы',
+    'workplace_placeholder': 'Введите место работы',
+    'back_to_profile': 'Назад к профилю',
+    'save_changes': 'Сохранить изменения',
     'development_progress': 'Разработка: 75% завершено',
     'diagnostic_testing': 'Диагностическое тестирование',
     'interactive_learning': 'Интерактивное обучение',

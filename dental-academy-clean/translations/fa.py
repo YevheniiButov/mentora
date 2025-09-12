@@ -1417,4 +1417,15 @@ translations = {
     'practice_tests': 'تست‌های تمرینی',
     'ai_assistant': 'دستیار هوش مصنوعی',
     'virtual_patients': 'بیماران مجازی',
+    
+    # Profile Personal Info Page Translations
+    'personal_info': 'اطلاعات شخصی',
+    'email_cannot_be_changed': 'ایمیل قابل تغییر نیست',
+    'username_cannot_be_changed': 'نام کاربری قابل تغییر نیست',
+    'select_profession': 'انتخاب حرفه',
+    'big_number': 'شماره BIG',
+    'workplace': 'محل کار',
+    'workplace_placeholder': 'محل کار را وارد کنید',
+    'back_to_profile': 'بازگشت به پروفایل',
+    'save_changes': 'ذخیره تغییرات',
 }

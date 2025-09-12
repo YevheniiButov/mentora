@@ -1842,6 +1842,17 @@ translations = {
     'back_to_home': 'Back to Home',
     'join_community': 'Join Community',
     
+    # Profile Personal Info Page Translations
+    'personal_info': 'Personal Information',
+    'email_cannot_be_changed': 'Email cannot be changed',
+    'username_cannot_be_changed': 'Username cannot be changed',
+    'select_profession': 'Select profession',
+    'big_number': 'BIG number',
+    'workplace': 'Workplace',
+    'workplace_placeholder': 'Enter workplace',
+    'back_to_profile': 'Back to profile',
+    'save_changes': 'Save changes',
+    
     # Profile Page Translations
     'profile': 'Profile',
     'profession_not_specified': 'Profession not specified',
