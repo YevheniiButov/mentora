@@ -237,4 +237,6 @@ def api_scenarios():
         }
         scenarios_data.append(scenario_info)
     
-    return jsonify(scenarios_data) 
+    return jsonify(scenarios_data)
+
+# Блокировка через CSS overlay - убрано для использования JavaScript overlay 

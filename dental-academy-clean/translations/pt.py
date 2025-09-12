@@ -12,6 +12,7 @@ translations = {
     'logout': 'Sair',
     'login': 'Entrar',
     'register': 'Registrar',
+    'registration': 'Registro',
     'patients': 'Pacientes',
     'ai_assistant': 'Assistente IA',
     
@@ -1190,4 +1191,127 @@ translations = {
     'research_consent': 'Convites para participar em estudos de pesquisa',
     'feedback_consent': 'Pesquisas e solicitações de feedback',
     'accept_research_consent': 'Aceito participação opcional em pesquisa',
+    
+    # FAQ traduções
+    'faq_title': 'Perguntas Frequentes',
+    'faq_subtitle': 'Encontre respostas para as perguntas mais comuns sobre nossa plataforma',
+    'faq_general': 'Perguntas Gerais',
+    'faq_diagnostic': 'Testes Diagnósticos',
+    'faq_learning': 'Sistema de Aprendizagem',
+    'faq_big_exam': 'Exame BIG',
+    'faq_technical': 'Suporte Técnico',
+    'faq_community': 'Comunidade',
+    'faq_need_help': 'Ainda precisa de ajuda?',
+    'faq_contact_us': 'Se você não conseguir encontrar a resposta para sua pergunta, sinta-se à vontade para nos contatar.',
+    
+    # FAQ Perguntas e Respostas
+    'faq_what_is_mentora': 'O que é Mentora?',
+    'faq_what_is_mentora_answer': 'Mentora é uma plataforma abrangente para educação médica na Holanda. Fornecemos caminhos de aprendizagem estruturados, testes diagnósticos e preparação para o exame BIG para profissionais de saúde.',
+    
+    'faq_languages': 'Quais idiomas são suportados?',
+    'faq_languages_answer': 'Suportamos 8 idiomas: Holandês, Inglês, Espanhol, Português, Ucraniano, Persa, Turco e Russo. Você pode alterar o idioma usando o seletor de idioma na navegação superior.',
+    
+    'faq_registration': 'Como me registro?',
+    'faq_registration_answer': 'Clique no botão "Registrar" na navegação superior, preencha seus dados e verifique seu endereço de email. Você também pode se registrar usando DigiD se tiver um número de seguro social holandês.',
+    
+    'faq_what_is_diagnostic': 'O que é um teste diagnóstico?',
+    'faq_what_is_diagnostic_answer': 'Um teste diagnóstico é uma avaliação adaptativa que avalia seu conhecimento em diferentes domínios médicos. Usa IRT (Teoria de Resposta ao Item) para fornecer estimativas precisas de habilidade e recomendações de aprendizagem personalizadas.',
+    
+    'faq_diagnostic_types': 'Quais tipos de testes diagnósticos estão disponíveis?',
+    'faq_diagnostic_types_answer': 'Oferecemos vários tipos: Express (avaliação rápida), Preliminar (3 perguntas por domínio), Completo (abrangente), Preparação (6 perguntas por domínio) e Abrangente (mais completo). Cada tipo fornece diferentes níveis de detalhe.',
+    
+    'faq_irt_system': 'Como funciona o sistema IRT?',
+    'faq_irt_system_answer': 'IRT (Teoria de Resposta ao Item) adapta perguntas com base no seu desempenho. Se você responder corretamente, as perguntas ficam mais difíceis. Se responder incorretamente, ficam mais fáceis. Isso fornece uma avaliação mais precisa de suas habilidades.',
+    
+    'faq_learning_map': 'O que é o Mapa de Aprendizagem?',
+    'faq_learning_map_answer': 'O Mapa de Aprendizagem é seu guia de estudo personalizado. Mostra seu progresso em diferentes domínios médicos, recomenda próximos passos e ajuda você a acompanhar sua preparação para o exame BIG.',
+    
+    'faq_domains': 'O que são domínios?',
+    'faq_domains_answer': 'Domínios são diferentes áreas do conhecimento médico, como Farmacologia, Odontologia Terapêutica, Odontologia Cirúrgica, Odontologia Pediátrica, etc. Cada domínio tem objetivos de aprendizagem específicos e critérios de avaliação.',
+    
+    'faq_virtual_patients': 'O que são Pacientes Virtuais?',
+    'faq_virtual_patients_answer': 'Pacientes Virtuais são cenários clínicos interativos onde você pode praticar diagnósticos e decisões de tratamento em um ambiente seguro. Eles ajudam você a desenvolver habilidades de raciocínio clínico.',
+    
+    'faq_what_is_big': 'O que é o exame BIG?',
+    'faq_what_is_big_answer': 'O exame BIG é o exame oficial para profissionais de saúde na Holanda. Avalia seu conhecimento e habilidades para garantir que você possa praticar com segurança no sistema de saúde holandês.',
+    
+    'faq_big_preparation': 'Como devo me preparar para o exame BIG?',
+    'faq_big_preparation_answer': 'Comece com um teste diagnóstico para identificar seus pontos fortes e fracos. Use o Mapa de Aprendizagem para seguir um plano de estudo estruturado. Pratique com pacientes virtuais e faça avaliações regulares para acompanhar seu progresso.',
+    
+    'faq_big_documents': 'Quais documentos preciso?',
+    'faq_big_documents_answer': 'Você precisa do seu diploma médico, certificados de idioma (Holandês/Inglês) e comprovante de identidade. Verifique o site do BIG para a lista completa de documentos necessários para sua profissão específica.',
+    
+    'faq_login_issues': 'Não consigo fazer login. O que devo fazer?',
+    'faq_login_issues_answer': 'Verifique seu email e senha. Se esqueceu sua senha, use o link "Esqueci minha senha". Para usuários DigiD, certifique-se de que sua sessão DigiD esteja ativa. Entre em contato com suporte se os problemas persistirem.',
+    
+    'faq_mobile_issues': 'A plataforma funciona em dispositivos móveis?',
+    'faq_mobile_issues_answer': 'Sim, nossa plataforma é totalmente responsiva e funciona em smartphones e tablets. No entanto, para a melhor experiência com testes diagnósticos, recomendamos usar um desktop ou laptop.',
+    
+    'faq_diagnostic_not_working': 'O teste diagnóstico não está funcionando. O que devo fazer?',
+    'faq_diagnostic_not_working_answer': 'Tente atualizar a página ou limpar o cache do seu navegador. Certifique-se de ter uma conexão com a internet estável. Se o problema persistir, entre em contato com nossa equipe de suporte técnico.',
+    
+    'faq_forum_usage': 'Como uso o fórum?',
+    'faq_forum_usage_answer': 'O fórum é um lugar para discutir tópicos médicos, fazer perguntas e compartilhar experiências. Você pode navegar por tópicos existentes ou criar novos. Por favor, siga nossas diretrizes da comunidade para comunicação respeitosa.',
+    
+    'faq_forum_rules': 'Quais são as regras do fórum?',
+    'faq_forum_rules_answer': 'Seja respeitoso, mantenha-se no tópico e forneça informações úteis. Não compartilhe conselhos médicos pessoais ou spam. Moderadores podem remover conteúdo inadequado.',
+    
+    # BIG Info Page Translations
+    'big_registration_dentist': 'Registro BIG Dentista',
+    'big_registration_dentist_description': 'Guia completo para dentistas que querem se registrar no registro BIG',
+    'which_procedure': 'Qual procedimento?',
+    'step_by_step': 'Passo a passo',
+    'documents': 'Documentos',
+    'language_requirements': 'Requisitos de idioma',
+    'bi_exam': 'Exame BI',
+    'compensation': 'Compensação',
+    'faq': 'Perguntas frequentes',
+    'resources': 'Recursos',
+    'which_procedure_applies': 'Qual procedimento se aplica a você?',
+    'determine_big_procedure': 'Determine qual procedimento de registro BIG se aplica a você',
+    'advisor_simulator': 'Simulador de consultor',
+    'question_1_diploma': 'Pergunta 1: Onde seu diploma foi obtido?',
+    'eu_eea_switzerland': 'UE/EEE/Suíça',
+    'non_eu': 'Não UE/EEE',
+    'duration': 'Duração',
+    'language': 'Idioma',
+    'special_requirements': 'Requisitos especiais',
+    'gather_documents': 'Coletar documentos',
+    'documents_work_experience': 'Documentos + experiência de trabalho',
+    'bi_exam_preparation': 'Preparação para o exame BI',
+    'non_eu_diploma': 'Diploma não UE/EEE',
+    'dutch_b2_english_b2': 'Holandês B2+ + Inglês B2',
+    'language_certificates_bi_exam': 'Certificados de idioma (NT2-II, CEFR B2) + exame BI',
+    'bi_exam_preparation_title': 'Preparação para o exame BI',
+    'prepare_professional_exam': 'Preparar-se para o exame profissional',
+    'take_bi_exam': 'Fazer exame BI',
+    'practical_theoretical_exam': 'Exame prático e teórico',
+    'language_requirements_title': 'Requisitos de idioma',
+    'language_level_certificates': 'Nível de idioma e certificados que você precisa para o registro BIG',
+    'bi_exam_dentists': 'Exame BI para dentistas',
+    'everything_about_exam': 'Tudo que você precisa saber sobre o exame profissional',
+    'bi_exam_overview': 'Visão geral do exame BI',
+    'bi_exam_description': 'O exame profissional (exame BI) é um teste abrangente que avalia seu conhecimento profissional e habilidades práticas como dentista de acordo com os padrões holandeses.',
+    'compensation_exceptions': 'Compensação e exceções',
+    'possible_exceptions_compensation': 'Possíveis exceções e medidas de compensação para o registro BIG',
+    'automatic_recognition': 'Reconhecimento automático de diplomas da UE/EEE',
+    'simplified_procedure': 'Procedimento simplificado',
+    'possible_bi_exam_exemption': 'Possível isenção do exame BI (dependendo do país de origem)',
+    'faster_processing': 'Processamento mais rápido da aplicação',
+    'minimum_3_years': 'Mínimo 3 anos de experiência de trabalho relevante',
+    'recognition_practical_experience': 'Reconhecimento de experiência prática',
+    'possible_bi_exam_parts_exemption': 'Possível isenção de partes do exame BI',
+    'simplified_language_requirements': 'Requisitos de idioma simplificados com experiência de longo prazo',
+    'language_compensation': 'Compensação de idioma',
+    'individual_assessment': 'Avaliação individual: Cada aplicação é avaliada individualmente. Compensação e exceções não são automáticas e dependem da sua situação específica e antecedentes.',
+    'advice_consult': 'Conselho: Sempre consulte o registro BIG ou um consultor especializado para sua situação específica.',
+    'total_process_duration': 'O processo total leva em média 1-2 anos, dependendo do seu tempo de preparação para o teste de idioma e exame BI, e o tempo de espera para exames.',
+    'what_happens_fail_bi_exam': 'O que acontece se eu falhar no exame BI?',
+    'bi_exam_retake': 'Você pode refazer o exame BI após 6 meses. Você deve pagar a taxa completa do exame novamente.',
+    
+    # Coming Soon Overlay translations
+    'coming_soon_overlay_title': 'Em breve',
+    'coming_soon_overlay_description': 'Esta função está em desenvolvimento',
+    'coming_soon_overlay_home': '🏠 Início',
+    'coming_soon_overlay_community': '👥 Comunidade',
 }

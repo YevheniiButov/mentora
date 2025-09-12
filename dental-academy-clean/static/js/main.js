@@ -149,15 +149,8 @@ Mentora.navigationManager = {
     },
     
     bindMobileToggle() {
-        const toggler = document.querySelector('.navbar-toggler');
-        const collapse = document.querySelector('.navbar-collapse');
-        
-        if (toggler && collapse) {
-            toggler.addEventListener('click', () => {
-                collapse.classList.toggle('show');
-                toggler.classList.toggle('active');
-            });
-        }
+        // Отключено - используем простую реализацию в base.html
+        console.log('Mobile toggle binding disabled - using simple implementation');
     },
     
     // Оставляем функцию, но не используем ее

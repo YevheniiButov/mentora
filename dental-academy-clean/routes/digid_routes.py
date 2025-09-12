@@ -306,15 +306,19 @@ def authenticate():
                     redirect_url = '/digid/complete-registration'
                     print(f"🔍 DEBUG: New/incomplete user - redirecting to registration (show_registration: {show_registration}, registration_completed: {user.registration_completed})")
                 else:
-                    # Проверяем, нужна ли диагностика
-                    if user.requires_diagnostic:
-                        # Новый пользователь без диагностики → на диагностику
-                        redirect_url = '/big-diagnostic/choose-type'
-                        print(f"🔍 DEBUG: User requires diagnostic - redirecting to diagnostic: {redirect_url}")
-                    else:
-                        # Зарегистрированный пользователь с диагностикой → на карту обучения
-                        redirect_url = get_learning_map_url_by_profession(user.profession)
-                        print(f"🔍 DEBUG: Registered user - redirecting to learning map: {redirect_url}")
+                    # Проверяем, нужна ли диагностика (временно отключено для предварительного запуска)
+                    # if user.requires_diagnostic:
+                    #     # Новый пользователь без диагностики → на диагностику
+                    #     redirect_url = '/big-diagnostic/choose-type'
+                    #     print(f"🔍 DEBUG: User requires diagnostic - redirecting to diagnostic: {redirect_url}")
+                    # else:
+                    #     # Зарегистрированный пользователь с диагностикой → на карту обучения
+                    #     redirect_url = get_learning_map_url_by_profession(user.profession)
+                    #     print(f"🔍 DEBUG: Registered user - redirecting to learning map: {redirect_url}")
+                    
+                    # Временно перенаправляем всех на главную страницу
+                    redirect_url = f'/{user.language or "nl"}/'
+                    print(f"🔍 DEBUG: Redirecting to main page: {redirect_url}")
             
             print(f"🔍 DEBUG: Final redirect URL: {redirect_url}")
             
@@ -627,13 +631,16 @@ def complete_registration():
             
             flash(t('registration_completed_successfully', lang), 'success')
             
-            # Проверяем, нужна ли диагностика
-            if current_user.requires_diagnostic:
-                # Новый пользователь → на диагностику
-                return redirect('/big-diagnostic/choose-type')
-            else:
-                # Пользователь с диагностикой → на карту обучения
-                return redirect(get_learning_map_url_by_profession(profession))
+            # Проверяем, нужна ли диагностика (временно отключено для предварительного запуска)
+            # if current_user.requires_diagnostic:
+            #     # Новый пользователь → на диагностику
+            #     return redirect('/big-diagnostic/choose-type')
+            # else:
+            #     # Пользователь с диагностикой → на карту обучения
+            #     return redirect(get_learning_map_url_by_profession(profession))
+            
+            # Временно перенаправляем на главную страницу
+            return redirect(f'/{current_user.language or "nl"}/')
             
         except Exception as e:
             logger.error(f"Error completing registration: {e}")

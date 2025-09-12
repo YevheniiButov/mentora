@@ -334,29 +334,29 @@ try:
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
-    app.register_blueprint(learning_bp, url_prefix='/learning')
-    app.register_blueprint(test_bp, url_prefix='/tests')
+    app.register_blueprint(learning_bp, url_prefix='/learning')  # ВКЛЮЧЕНО с декораторами блокировки
+    # app.register_blueprint(test_bp, url_prefix='/tests')  # ОТКЛЮЧЕНО для предварительного запуска
     app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(virtual_patient_bp)
+    app.register_blueprint(virtual_patient_bp)  # ВКЛЮЧЕНО с декораторами блокировки
     
     # Регистрация новых blueprint-ов системы обучения
     app.register_blueprint(subject_view_bp)
     app.register_blueprint(profession_map_bp)  # Профессиональные карты обучения
-    app.register_blueprint(lesson_bp, url_prefix='/lesson')
-    app.register_blueprint(modules_bp)
-    app.register_blueprint(content_nav_bp, url_prefix='/content')
-    app.register_blueprint(content_bp, url_prefix='/content')
+    # app.register_blueprint(lesson_bp, url_prefix='/lesson')  # ОТКЛЮЧЕНО для предварительного запуска
+    # app.register_blueprint(modules_bp)  # ОТКЛЮЧЕНО для предварительного запуска
+    # app.register_blueprint(content_nav_bp, url_prefix='/content')  # ОТКЛЮЧЕНО для предварительного запуска
+    # app.register_blueprint(content_bp, url_prefix='/content')  # ОТКЛЮЧЕНО для предварительного запуска
     
     # Регистрация DigiD blueprint
     app.register_blueprint(digid_bp)
     
-    # Регистрация AI Assistant blueprint
+    # Регистрация AI Assistant blueprint (ВКЛЮЧЕНО с декораторами блокировки)
     app.register_blueprint(ai_assistant_bp)
     
-    # Регистрация Diagnostic blueprint
+    # Регистрация Diagnostic blueprint (ВКЛЮЧЕНО с декораторами блокировки)
     app.register_blueprint(diagnostic_bp, url_prefix='/big-diagnostic')
     
-    # Регистрация Testing blueprint
+    # Регистрация Testing blueprint (ВКЛЮЧЕНО с декораторами блокировки)
     app.register_blueprint(testing_bp, url_prefix='/testing')
     
     # Регистрация Learning Planner blueprint
@@ -381,7 +381,9 @@ try:
     from routes.analytics_routes import analytics_bp
     app.register_blueprint(analytics_bp)
     
-
+    # Регистрация Profile blueprint
+    from routes.profile_routes import profile_bp
+    app.register_blueprint(profile_bp)
     
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
@@ -389,6 +391,14 @@ try:
         csrf.exempt(diagnostic_bp)
     
     logger.info("✅ All route blueprints registered successfully")
+    
+    # Регистрация системы контроля доступа ПОСЛЕ всех остальных blueprints
+    try:
+        from utils.access_control import register_access_control
+        register_access_control(app)
+        logger.info("✅ Access control system registered successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import access control: {e}")
     
 except ImportError as e:
     logger.warning(f"Could not import routes: {e}")
@@ -460,7 +470,7 @@ except ImportError as e:
                 
                 # Проверяем необходимость диагностики после входа
                 if user.requires_diagnostic:
-                    return redirect(url_for('diagnostic_bp.choose_diagnostic_type'))
+                    return redirect(url_for('diagnostic.choose_diagnostic_type'))
                 
                 return redirect(url_for('index'))
         

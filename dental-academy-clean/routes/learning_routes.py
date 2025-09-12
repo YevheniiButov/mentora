@@ -1198,3 +1198,5 @@ def learning_cards(path):
         current_app.logger.error(f"Error loading learning cards: {e}")
         flash("Ошибка при загрузке карточек", "danger")
         return redirect(url_for('learning_bp.index'))
+
+# Блокировка через CSS overlay - убрано для использования JavaScript overlay

@@ -628,7 +628,7 @@ section {
               {{ t('scenarios', g.lang)|default('Scenarios') }}
             </span>
           </div>
-          <a href="{{ url_for('virtual_patient.list_scenarios') }}" class="feature-link">
+          <a href="/virtual-patient" class="feature-link">
             {{ t('start_scenario', g.lang)|default('Start scenario →') }}
           </a>
         </div>
@@ -909,16 +909,10 @@ section {
 {% block body_scripts %}
 {{ super() }}
 
-<!-- Отключаем все логи для главной страницы -->
+<!-- Временно включаем логи для отладки мобильного меню -->
 <script>
-// Отключаем все console.log для главной страницы
-const originalLog = console.log;
-const originalWarn = console.warn;
-const originalError = console.error;
-
-console.log = function() {};
-console.warn = function() {};
-console.error = function() {};
+// Временно включаем логи для отладки мобильного меню
+console.log('🔧 Главная страница: логи включены для отладки');
 </script>
 
 <!-- 🚀 Встроенная анимация телефона (работает всегда) -->

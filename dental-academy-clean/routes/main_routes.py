@@ -87,6 +87,12 @@ def terms(lang):
     """Terms of service page"""
     return render_template('terms.html', lang=lang)
 
+@main_bp.route('/faq')
+def faq(lang):
+    """FAQ page"""
+    return render_template('faq.html', lang=lang)
+
+
 @main_bp.route('/farmacie/advanced-drug-checker')
 @login_required
 def advanced_drug_checker(lang):

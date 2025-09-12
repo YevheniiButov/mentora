@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import redirect, url_for, flash, request, jsonify
+from flask import redirect, url_for, flash, request, jsonify, g
 from flask_login import current_user
 from werkzeug.exceptions import TooManyRequests
 
@@ -13,7 +13,7 @@ def admin_required(f):
         
         if not current_user.is_admin:
             flash('Доступ запрещен. Требуются права администратора', 'danger')
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.index', lang='en'))
         
         return f(*args, **kwargs)
     return decorated_function

@@ -367,4 +367,6 @@ def health_check(lang):
         'status': 'healthy',
         'version': '1.0.0',
         'language': lang
-    }) 
+    })
+
+# Блокировка через CSS overlay - убрано для использования JavaScript overlay 

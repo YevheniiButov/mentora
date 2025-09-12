@@ -1233,7 +1233,7 @@ def generate_learning_plan():
 
         if not latest_diagnostic:
             flash('Необходимо пройти диагностику перед созданием плана', 'warning')
-            return redirect(url_for('diagnostic_bp.choose_diagnostic_type'))
+            return redirect(url_for('diagnostic.choose_diagnostic_type'))
         
         data = request.get_json()
         if not data:
@@ -2468,5 +2468,7 @@ def get_irt_statistics():
             'success': False,
             'error': f'Ошибка получения статистики: {str(e)}'
         }), 500
+
+# Блокировка через CSS overlay - убрано для использования JavaScript overlay
 
  

@@ -1,6 +1,6 @@
 # routes/auth_routes.py - Authentication routes
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, current_app, g
 from flask_login import login_user, logout_user, login_required, current_user
 try:
     from werkzeug.urls import url_parse
@@ -87,7 +87,7 @@ def get_file_size(file):
 def logout():
     """Logout user"""
     logout_user()
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index', lang=g.get('lang', 'en')))
 
 # Оставляю только DigiD:
 @auth_bp.route('/digid/login')
@@ -107,7 +107,7 @@ def digid_logout():
     from flask_login import logout_user
     logout_user()
     # Можно добавить очистку сессии, если нужно: session.clear()
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index', lang=g.get('lang', 'en')))
 
 @auth_bp.route('/profile')
 @login_required
@@ -765,7 +765,7 @@ def login():
             return jsonify({
                 'success': True,
                 'message': 'Login successful',
-                'redirect_url': url_for('dashboard.index')
+                'redirect_url': url_for('profile.index')
             })
         else:
             return jsonify({
@@ -887,7 +887,7 @@ def unsubscribe(user_id):
         current_app.logger.error(f"Unsubscribe error: {e}")
         flash('An error occurred while processing your unsubscribe request.', 'error')
     
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index', lang=g.get('lang', 'en')))
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

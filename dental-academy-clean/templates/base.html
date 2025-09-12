@@ -2,12 +2,16 @@
 <html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'light' }}">
 <head>
     <!-- Preload critical CSS -->
-    <link rel="preload" href="{{ url_for('static', filename='css/main.min.css') }}" as="style">
-    <link rel="preload" href="{{ url_for('static', filename='css/universal-styles.min.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/main.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/universal-styles.css') }}" as="style">
 
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Prevent caching in development -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>{% block title %}{% endblock %} - Mentora</title>
     
     <!-- PWA Meta Tags -->
@@ -62,6 +66,8 @@
     
     <!-- 6. Мобильные исправления -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-responsive-fixes.css') }}">
+    
+    <!-- 7. Coming Soon Overlay (встроенный) -->
     
     <!-- Page-specific styles -->
     {% block head %}{% endblock %}
@@ -222,12 +228,33 @@
 
     <!-- Инициализация Bootstrap компонентов -->
     <script>
+        // Принудительное обновление кэша
+            console.log('Page loaded at:', new Date().toISOString());
+            console.log('🚀 Starting mobile menu initialization...');
+            
+        // Добавляем обработчик ошибок
+        window.addEventListener('error', function(e) {
+            console.error('❌ JavaScript Error:', e.error);
+            console.error('❌ Error message:', e.message);
+            console.error('❌ Error file:', e.filename);
+            console.error('❌ Error line:', e.lineno);
+        });
+            
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM Content Loaded event fired');
+            console.log('🔧 Starting Bootstrap initialization...');
+            
             // Инициализация всех выпадающих меню Bootstrap
-            var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
-            var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl);
-            });
+            try {
+                var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+                console.log('📋 Found dropdown elements:', dropdownElementList.length);
+                var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                    return new bootstrap.Dropdown(dropdownToggleEl);
+                });
+                console.log('✅ Bootstrap dropdowns initialized');
+            } catch (error) {
+                console.error('❌ Bootstrap dropdown error:', error);
+            }
             
             // Отладка выпадающих меню
             // Инициализировано выпадающих меню
@@ -241,12 +268,110 @@
                 }
             });
             
+            console.log('🔧 Initializing user dropdown...');
+            
             // Прямая инициализация меню профиля и языка
-            var userDropdown = document.getElementById('userDropdown');
-            if (userDropdown) {
-                var userDropdownInstance = new bootstrap.Dropdown(userDropdown);
-                // Меню профиля инициализировано напрямую
+            try {
+                var userDropdown = document.getElementById('userDropdown');
+                if (userDropdown) {
+                    var userDropdownInstance = new bootstrap.Dropdown(userDropdown);
+                    console.log('✅ User dropdown initialized');
+                } else {
+                    console.log('⚠️ User dropdown not found');
+                }
+            } catch (error) {
+                console.error('❌ User dropdown error:', error);
             }
+            
+            // НАДЕЖНОЕ решение мобильного меню
+            function initMobileMenu() {
+                console.log('🔧 Initializing reliable mobile menu...');
+                
+                const navbarToggler = document.querySelector('.navbar-toggler');
+                const navbarCollapse = document.querySelector('.navbar-collapse');
+                
+                if (!navbarToggler || !navbarCollapse) {
+                    console.log('❌ Mobile menu elements not found');
+                    return;
+                }
+                
+                console.log('✅ Mobile menu elements found');
+                
+                // Удаляем все старые обработчики
+                const newToggler = navbarToggler.cloneNode(true);
+                navbarToggler.parentNode.replaceChild(newToggler, navbarToggler);
+                
+                // Переменная для отслеживания состояния
+                let isMenuOpen = false;
+                
+                // Добавляем обработчик на новый элемент
+                newToggler.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('🔘 Toggle clicked! Current state:', isMenuOpen);
+                    
+                    if (isMenuOpen) {
+                        // Закрываем меню
+                        navbarCollapse.classList.remove('show');
+                        newToggler.setAttribute('aria-expanded', 'false');
+                        navbarCollapse.style.display = 'none';
+                        navbarCollapse.style.visibility = 'hidden';
+                        isMenuOpen = false;
+                        console.log('📱 Menu closed');
+                    } else {
+                        // Открываем меню
+                        navbarCollapse.classList.add('show');
+                        newToggler.setAttribute('aria-expanded', 'true');
+                        navbarCollapse.style.display = 'block';
+                        navbarCollapse.style.visibility = 'visible';
+                        isMenuOpen = true;
+                        console.log('📱 Menu opened');
+                    }
+                });
+                
+                // Обработчик для ссылок навигации
+                const navLinks = navbarCollapse.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        console.log('🔗 Nav link clicked:', this.href);
+                        
+                        // Закрываем меню
+                        if (isMenuOpen) {
+                            navbarCollapse.classList.remove('show');
+                            newToggler.setAttribute('aria-expanded', 'false');
+                            navbarCollapse.style.display = 'none';
+                            navbarCollapse.style.visibility = 'hidden';
+                            isMenuOpen = false;
+                            console.log('📱 Menu closed after link click');
+                        }
+                        
+                        // НЕ блокируем переход
+                        // e.preventDefault() убран!
+                    });
+                });
+                
+                // Обработчик для кликов вне меню
+                document.addEventListener('click', function(e) {
+                    // Если клик вне меню и не по toggle
+                    if (!navbarCollapse.contains(e.target) && !newToggler.contains(e.target)) {
+                        if (isMenuOpen) {
+                            navbarCollapse.classList.remove('show');
+                            newToggler.setAttribute('aria-expanded', 'false');
+                            navbarCollapse.style.display = 'none';
+                            navbarCollapse.style.visibility = 'hidden';
+                            isMenuOpen = false;
+                            console.log('📱 Menu closed after outside click');
+                        }
+                    }
+                });
+                
+                console.log('✅ Reliable mobile menu initialized');
+            }
+            
+            // Инициализируем сразу и с задержкой
+            initMobileMenu();
+            setTimeout(initMobileMenu, 500);
             
             var languageDropdown = document.getElementById('languageDropdown');
             if (languageDropdown) {
@@ -464,17 +589,22 @@
     <!-- Mobile Enhancements -->
     <script src="{{ url_for('static', filename='js/mobile-enhancements.js') }}"></script>
     
+    <!-- Coming Soon Overlay (встроенный) -->
+    
     <!-- Page-specific scripts -->
     {% block extra_js %}{% endblock %}
     {% block page_scripts %}{% endblock %}
     {% block scripts %}{% endblock %}
     {% block body_scripts %}{% endblock %}
     
+    <!-- Simple Coming Soon Overlay -->
+    {% include 'simple_coming_soon.html' %}
+    
     <!-- Mobile Dropdown Fix - Load last to avoid conflicts -->
-    <script src="{{ url_for('static', filename='js/mobile-dropdown-fix.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='js/mobile-dropdown-fix.js') }}"></script> -->
     
     <!-- Dropdown Test Script (temporary) -->
-    <script src="{{ url_for('static', filename='js/dropdown-test.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='js/dropdown-test.js') }}"></script> -->
 
     <!-- Image Optimization -->
     <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}"></script>

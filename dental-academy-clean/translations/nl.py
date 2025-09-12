@@ -12,6 +12,7 @@ translations = {
     'logout': 'Uitloggen',
     'login': 'Inloggen',
     'register': 'Registreren',
+    'registration': 'Registratie',
     'patients': 'Patiënten',
     'ai_assistant': 'AI Assistent',
     
@@ -1247,6 +1248,70 @@ translations = {
     'nigeria': 'Nigeria',
     'kenya': 'Kenia',
     'ghana': 'Ghana',
+    
+    # FAQ vertalingen
+    'faq_title': 'Veelgestelde Vragen',
+    'faq_subtitle': 'Vind antwoorden op de meest gestelde vragen over ons platform',
+    'faq_general': 'Algemene Vragen',
+    'faq_diagnostic': 'Diagnostisch Testen',
+    'faq_learning': 'Leersysteem',
+    'faq_big_exam': 'BIG Examen',
+    'faq_technical': 'Technische Ondersteuning',
+    'faq_community': 'Gemeenschap',
+    'faq_need_help': 'Nog steeds hulp nodig?',
+    'faq_contact_us': 'Als je het antwoord op je vraag niet kunt vinden, neem dan gerust contact met ons op.',
+    
+    # FAQ Vragen en Antwoorden
+    'faq_what_is_mentora': 'Wat is Mentora?',
+    'faq_what_is_mentora_answer': 'Mentora is een uitgebreid platform voor medisch onderwijs in Nederland. We bieden gestructureerde leerpaden, diagnostisch testen en voorbereiding op het BIG-examen voor zorgverleners.',
+    
+    'faq_languages': 'Welke talen worden ondersteund?',
+    'faq_languages_answer': 'We ondersteunen 8 talen: Nederlands, Engels, Spaans, Portugees, Oekraïens, Perzisch, Turks en Russisch. Je kunt de taal wijzigen met de taalselector in de bovenste navigatie.',
+    
+    'faq_registration': 'Hoe registreer ik me?',
+    'faq_registration_answer': 'Klik op de "Registreren" knop in de bovenste navigatie, vul je gegevens in en bevestig je e-mailadres. Je kunt je ook registreren met DigiD als je een Nederlands burgerservicenummer hebt.',
+    
+    'faq_what_is_diagnostic': 'Wat is een diagnostische test?',
+    'faq_what_is_diagnostic_answer': 'Een diagnostische test is een adaptieve beoordeling die je kennis over verschillende medische domeinen evalueert. Het gebruikt IRT (Item Response Theory) om nauwkeurige vaardigheidsschattingen en gepersonaliseerde leeradviezen te bieden.',
+    
+    'faq_diagnostic_types': 'Welke soorten diagnostische tests zijn beschikbaar?',
+    'faq_diagnostic_types_answer': 'We bieden verschillende soorten: Express (snelle beoordeling), Voorlopig (3 vragen per domein), Volledig (uitgebreid), Gereedheid (6 vragen per domein) en Uitgebreid (meest grondig). Elk type biedt verschillende niveaus van detail.',
+    
+    'faq_irt_system': 'Hoe werkt het IRT-systeem?',
+    'faq_irt_system_answer': 'IRT (Item Response Theory) past vragen aan op basis van je prestaties. Als je correct antwoordt, worden vragen moeilijker. Als je incorrect antwoordt, worden ze makkelijker. Dit zorgt voor een nauwkeurigere beoordeling van je vaardigheden.',
+    
+    'faq_learning_map': 'Wat is de Leerkaart?',
+    'faq_learning_map_answer': 'De Leerkaart is je gepersonaliseerde studiegids. Het toont je voortgang over verschillende medische domeinen, beveelt volgende stappen aan en helpt je je voorbereiding op het BIG-examen bij te houden.',
+    
+    'faq_domains': 'Wat zijn domeinen?',
+    'faq_domains_answer': 'Domeinen zijn verschillende gebieden van medische kennis, zoals Farmacologie, Therapeutische Tandheelkunde, Chirurgische Tandheelkunde, Kinder Tandheelkunde, enz. Elk domein heeft specifieke leerdoelen en beoordelingscriteria.',
+    
+    'faq_virtual_patients': 'Wat zijn Virtuele Patiënten?',
+    'faq_virtual_patients_answer': 'Virtuele Patiënten zijn interactieve klinische scenario\'s waar je diagnose en behandelingsbeslissingen kunt oefenen in een veilige omgeving. Ze helpen je klinische redeneervaardigheden te ontwikkelen.',
+    
+    'faq_what_is_big': 'Wat is het BIG-examen?',
+    'faq_what_is_big_answer': 'Het BIG-examen is het officiële examen voor zorgverleners in Nederland. Het beoordeelt je kennis en vaardigheden om ervoor te zorgen dat je veilig kunt werken in het Nederlandse zorgsysteem.',
+    
+    'faq_big_preparation': 'Hoe moet ik me voorbereiden op het BIG-examen?',
+    'faq_big_preparation_answer': 'Begin met een diagnostische test om je sterke en zwakke punten te identificeren. Gebruik de Leerkaart om een gestructureerd studieplan te volgen. Oefen met virtuele patiënten en neem regelmatig beoordelingen om je voortgang bij te houden.',
+    
+    'faq_big_documents': 'Welke documenten heb ik nodig?',
+    'faq_big_documents_answer': 'Je hebt je medisch diploma, taalcertificaten (Nederlands/Engels) en identiteitsbewijs nodig. Controleer de BIG-website voor de volledige lijst van vereiste documenten voor je specifieke beroep.',
+    
+    'faq_login_issues': 'Ik kan niet inloggen. Wat moet ik doen?',
+    'faq_login_issues_answer': 'Controleer je e-mail en wachtwoord. Als je je wachtwoord bent vergeten, gebruik dan de "Wachtwoord vergeten" link. Voor DigiD-gebruikers, zorg ervoor dat je DigiD-sessie actief is. Neem contact op met ondersteuning als problemen aanhouden.',
+    
+    'faq_mobile_issues': 'Werkt het platform op mobiele apparaten?',
+    'faq_mobile_issues_answer': 'Ja, ons platform is volledig responsief en werkt op smartphones en tablets. Voor de beste ervaring met diagnostische tests raden we echter aan om een desktop of laptop te gebruiken.',
+    
+    'faq_diagnostic_not_working': 'De diagnostische test werkt niet. Wat moet ik doen?',
+    'faq_diagnostic_not_working_answer': 'Probeer de pagina te vernieuwen of je browsercache te wissen. Zorg voor een stabiele internetverbinding. Als het probleem aanhoudt, neem contact op met ons technisch ondersteuningsteam.',
+    
+    'faq_forum_usage': 'Hoe gebruik ik het forum?',
+    'faq_forum_usage_answer': 'Het forum is een plek om medische onderwerpen te bespreken, vragen te stellen en ervaringen te delen. Je kunt bestaande onderwerpen bekijken of nieuwe maken. Volg onze gemeenschapsrichtlijnen voor respectvolle communicatie.',
+    
+    'faq_forum_rules': 'Wat zijn de forumregels?',
+    'faq_forum_rules_answer': 'Wees respectvol, blijf bij het onderwerp en bied nuttige informatie. Deel geen persoonlijk medisch advies of spam. Moderators kunnen ongepaste inhoud verwijderen.',
     'ethiopia': 'Ethiopië',
     
     # Nationaliteitsadjectieven
@@ -1536,4 +1601,95 @@ translations = {
     'research_consent': 'Uitnodigingen om deel te nemen aan onderzoek',
     'feedback_consent': 'Enquêtes en feedback verzoeken',
     'accept_research_consent': 'Ik accepteer optionele onderzoeksdeelname',
+    
+    # BIG Info Page Translations
+    'big_registration_dentist': 'BIG Registratie Tandarts',
+    'big_registration_dentist_description': 'Complete gids voor tandheelkundigen die zich willen registreren in het BIG-register',
+    'which_procedure': 'Welke procedure?',
+    'step_by_step': 'Stap voor stap',
+    'documents': 'Documenten',
+    'language_requirements': 'Taalvereisten',
+    'bi_exam': 'BI-toets',
+    'compensation': 'Compensatie',
+    'faq': 'FAQ',
+    'resources': 'Resources',
+    'which_procedure_applies': 'Welke procedure geldt voor jou?',
+    'determine_big_procedure': 'Bepaal welke BIG registratie procedure voor jou van toepassing is',
+    'advisor_simulator': 'Advieswijzer Simulator',
+    'question_1_diploma': 'Vraag 1: Waar is je diploma behaald?',
+    'eu_eea_switzerland': 'EU/EEA/Zwitserland',
+    'non_eu': 'Niet-EU/EEA',
+    'duration': 'Duur',
+    'language': 'Taal',
+    'special_requirements': 'Bijzonderheden',
+    'gather_documents': 'Documenten verzamelen',
+    'documents_work_experience': 'Documenten + werkervaring',
+    'bi_exam_preparation': 'BI-toets voorbereiding',
+    'non_eu_diploma': 'Niet-EU/EEA diploma',
+    'dutch_b2_english_b2': 'Nederlands B2+ + Engels B2',
+    'language_certificates_bi_exam': 'Taalcertificaten (NT2-II, CEFR B2) + BI-toets',
+    'bi_exam_preparation_title': 'BI-toets voorbereiding',
+    'prepare_professional_exam': 'Voorbereiden op beroepsinhoudelijke toets',
+    'take_bi_exam': 'BI-toets afleggen',
+    'practical_theoretical_exam': 'Praktische en theoretische toets',
+    'language_requirements_title': 'Taalvereisten',
+    'language_level_certificates': 'Taalniveau en certificaten die je nodig hebt voor BIG registratie',
+    'bi_exam_dentists': 'BI-toets voor tandartsen',
+    'everything_about_exam': 'Alles wat je moet weten over de beroepsinhoudelijke toets',
+    'bi_exam_overview': 'Overzicht BI-toets',
+    'bi_exam_description': 'De beroepsinhoudelijke toets (BI-toets) is een uitgebreid examen dat je vakkennis en praktische vaardigheden als tandarts test volgens Nederlandse standaarden.',
+    'compensation_exceptions': 'Compensatie en Uitzonderingen',
+    'possible_exceptions_compensation': 'Mogelijke uitzonderingen en compensatiemaatregelen voor BIG registratie',
+    'automatic_recognition': 'Automatische erkenning van diploma\'s uit EU/EEA',
+    'simplified_procedure': 'Vereenvoudigde procedure',
+    'possible_bi_exam_exemption': 'Mogelijke vrijstelling van BI-toets (afhankelijk van land van herkomst)',
+    'faster_processing': 'Snellere verwerking van aanvraag',
+    'minimum_3_years': 'Minimaal 3 jaar relevante werkervaring',
+    'recognition_practical_experience': 'Erkenning van praktijkervaring',
+    'possible_bi_exam_parts_exemption': 'Mogelijke vrijstelling van onderdelen van BI-toets',
+    'simplified_language_requirements': 'Vereenvoudigde taalvereisten bij langdurige ervaring',
+    'language_compensation': 'Taal Compensatie',
+    'individual_assessment': 'Individuele beoordeling: Elke aanvraag wordt individueel beoordeeld. Compensatie en uitzonderingen zijn niet automatisch en hangen af van je specifieke situatie en achtergrond.',
+    'advice_consult': 'Advies: Raadpleeg altijd het BIG-register of een gespecialiseerde adviseur voor jouw specifieke situatie.',
+    'total_process_duration': 'Het totale proces duurt gemiddeld 1-2 jaar, afhankelijk van je voorbereidingstijd voor de taaltoets en BI-toets, en de wachttijd voor examens.',
+    'what_happens_fail_bi_exam': 'Wat gebeurt er als ik zak voor de BI-toets?',
+    'bi_exam_retake': 'Je kunt de BI-toets herhalen na 6 maanden. Je moet wel opnieuw het volledige examengeld betalen.',
+    
+    # Coming Soon Page Translations
+    'coming_soon': 'Binnenkort beschikbaar',
+    'coming_soon_title': 'Binnenkort beschikbaar!',
+    'coming_soon_description': 'We werken actief aan de functie',
+    'coming_soon_patience': 'Bedankt voor je geduld!',
+    'development_progress': 'Ontwikkeling: 75% voltooid',
+    'diagnostic_testing': 'Diagnostisch testen',
+    'interactive_learning': 'Interactief leren',
+    'ai_assistant': 'AI-assistent',
+    'virtual_patients': 'Virtuele patiënten',
+    'back_to_home': 'Terug naar home',
+    'join_community': 'Gemeenschap',
+    
+    # Profile Page Translations
+    'profile': 'Profiel',
+    'profession_not_specified': 'Beroep niet gespecificeerd',
+    'registration_date': 'Registratie',
+    'last_login': 'Login',
+    'email_confirmed': 'E-mail',
+    'profile_completion': 'Profiel voltooiing',
+    'profile_completion_text': '75% profiel voltooid',
+    'personal_info': 'Persoonlijke info',
+    'personal_info_description': 'Basisinformatie, contacten en persoonlijke gegevens',
+    'documents': 'Documenten',
+    'documents_description': 'Upload diploma\'s, certificaten en andere documenten',
+    'settings': 'Instellingen',
+    'settings_description': 'Taal, meldingen, thema',
+    'security': 'Beveiliging',
+    'security_description': 'Wachtwoord wijzigen en beveiligingsinstellingen',
+    'statistics': 'Statistieken',
+    'statistics_description': 'Leervoortgang en prestaties',
+    
+    # Coming Soon Overlay translations
+    'coming_soon_overlay_title': 'Binnenkort beschikbaar',
+    'coming_soon_overlay_description': 'Deze functie is in ontwikkeling',
+    'coming_soon_overlay_home': '🏠 Home',
+    'coming_soon_overlay_community': '👥 Community',
 }

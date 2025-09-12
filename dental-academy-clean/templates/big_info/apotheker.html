@@ -7,7 +7,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIG Registratie Apotheker (niet-EU) - Complete gids 2025 - Mentora</title>
+    <title>{{ t('big_registration_dentist', lang) | default('BIG Registration Pharmacist') }} - {{ t('big_registration_dentist_description', lang) | default('Complete guide') }} - Mentora</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -862,12 +862,12 @@
         <div class="header-container">
             <!-- Left part: logo and back button -->
             <div class="header-left">
-                <a href="/nl/" class="logo-link">
+                <a href="/{{ lang }}/" class="logo-link">
                     <img src="/static/images/logo.png" alt="Mentora" class="header-logo">
                 </a>
-                <a href="/nl/big-info" class="back-button">
+                <a href="/{{ lang }}/big-info" class="back-button">
                     <i class="fas fa-arrow-left"></i>
-                    Terug
+                    {{ t('back', lang) | default('Back') }}
                 </a>
             </div>
             
@@ -877,17 +877,32 @@
                 <div class="header-dropdown">
                     <button class="header-btn" id="langBtn">
                         <i class="fas fa-globe"></i>
-                        NL
+                        {{ lang.upper() }}
                     </button>
                     <div class="dropdown-content" id="langDropdown">
-                        <a href="/nl/big-info/apotheker" class="dropdown-item active">
+                        <a href="/nl/big-info/apotheker" class="dropdown-item {{ 'active' if lang == 'nl' else '' }}">
                             <span class="flag-icon">🇳🇱</span> Nederlands
                         </a>
-                        <a href="/en/big-info/apotheker" class="dropdown-item">
+                        <a href="/en/big-info/apotheker" class="dropdown-item {{ 'active' if lang == 'en' else '' }}">
                             <span class="flag-icon">🇬🇧</span> English
                         </a>
-                        <a href="/ru/big-info/apotheker" class="dropdown-item">
+                        <a href="/ru/big-info/apotheker" class="dropdown-item {{ 'active' if lang == 'ru' else '' }}">
                             <span class="flag-icon">🇷🇺</span> Русский
+                        </a>
+                        <a href="/es/big-info/apotheker" class="dropdown-item {{ 'active' if lang == 'es' else '' }}">
+                            <span class="flag-icon">🇪🇸</span> Español
+                        </a>
+                        <a href="/pt/big-info/apotheker" class="dropdown-item {{ 'active' if lang == 'pt' else '' }}">
+                            <span class="flag-icon">🇵🇹</span> Português
+                        </a>
+                        <a href="/uk/big-info/apotheker" class="dropdown-item {{ 'active' if lang == 'uk' else '' }}">
+                            <span class="flag-icon">🇺🇦</span> Українська
+                        </a>
+                        <a href="/fa/big-info/apotheker" class="dropdown-item {{ 'active' if lang == 'fa' else '' }}">
+                            <span class="flag-icon">🇮🇷</span> فارسی
+                        </a>
+                        <a href="/tr/big-info/apotheker" class="dropdown-item {{ 'active' if lang == 'tr' else '' }}">
+                            <span class="flag-icon">🇹🇷</span> Türkçe
                         </a>
                     </div>
                 </div>
@@ -900,18 +915,18 @@
                     <div class="dropdown-content" id="settingsDropdown">
                         <div class="dropdown-item theme-item" onclick="setTheme('light')">
                             <i class="fas fa-sun"></i>
-                            Lichte thema
+                            {{ t('light_theme', lang) | default('Light Theme') }}
                             <span class="check" id="light-check">✓</span>
                         </div>
                         <div class="dropdown-item theme-item" onclick="setTheme('dark')">
                             <i class="fas fa-moon"></i>
-                            Donkere thema
+                            {{ t('dark_theme', lang) | default('Dark Theme') }}
                             <span class="check" id="dark-check"></span>
                         </div>
                         <hr class="dropdown-divider">
                         <a href="{{ url_for('auth.login') }}" class="dropdown-item">
                             <i class="fas fa-sign-in-alt"></i>
-                            Login
+                            {{ t('login', lang) | default('Login') }}
                         </a>
                     </div>
                 </div>
@@ -947,27 +962,27 @@
                 <nav class="tab-navigation">
                     <button class="tab-btn active" data-tab="requirements">
                         <i class="fas fa-list-check"></i>
-                        Vereisten
+                        {{ t('language_requirements', lang) | default('Requirements') }}
                     </button>
                     <button class="tab-btn" data-tab="process">
                         <i class="fas fa-route"></i>
-                        Procedure 2025
+                        {{ t('step_by_step', lang) | default('Procedure 2025') }}
                     </button>
                     <button class="tab-btn" data-tab="documents">
                         <i class="fas fa-file-alt"></i>
-                        Documenten
+                        {{ t('documents', lang) | default('Documents') }}
                     </button>
                     <button class="tab-btn" data-tab="alternatives">
                         <i class="fas fa-lightbulb"></i>
-                        Alternatieven
+                        {{ t('compensation', lang) | default('Alternatives') }}
                     </button>
                     <button class="tab-btn" data-tab="faq">
                         <i class="fas fa-question-circle"></i>
-                        FAQ
+                        {{ t('faq', lang) | default('FAQ') }}
                     </button>
                     <button class="tab-btn" data-tab="links">
                         <i class="fas fa-external-link-alt"></i>
-                        Links
+                        {{ t('resources', lang) | default('Links') }}
                     </button>
                 </nav>
             </div>

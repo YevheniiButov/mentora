@@ -3,7 +3,7 @@
 Маршруты для системы промежуточного тестирования
 """
 
-from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash, g
 from flask_login import login_required, current_user
 from models import Module, TestSession, TestResult
 from extensions import db
@@ -243,4 +243,6 @@ def api_test_history():
         return jsonify({
             'success': False,
             'message': f'Ошибка при получении истории: {str(e)}'
-        }), 500 
+        }), 500
+
+# Блокировка через CSS overlay - убрано для использования JavaScript overlay

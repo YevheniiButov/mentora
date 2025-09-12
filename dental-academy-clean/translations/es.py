@@ -12,6 +12,7 @@ translations = {
     'logout': 'Cerrar sesión',
     'login': 'Iniciar sesión',
     'register': 'Registrarse',
+    'registration': 'Registro',
     'patients': 'Pacientes',
     'ai_assistant': 'Asistente IA',
     
@@ -1241,4 +1242,127 @@ translations = {
     'research_consent': 'Invitaciones a participar en estudios de investigación',
     'feedback_consent': 'Encuestas y solicitudes de comentarios',
     'accept_research_consent': 'Acepto la participación opcional en investigación',
+    
+    # FAQ traducciones
+    'faq_title': 'Preguntas Frecuentes',
+    'faq_subtitle': 'Encuentra respuestas a las preguntas más comunes sobre nuestra plataforma',
+    'faq_general': 'Preguntas Generales',
+    'faq_diagnostic': 'Pruebas Diagnósticas',
+    'faq_learning': 'Sistema de Aprendizaje',
+    'faq_big_exam': 'Examen BIG',
+    'faq_technical': 'Soporte Técnico',
+    'faq_community': 'Comunidad',
+    'faq_need_help': '¿Aún necesitas ayuda?',
+    'faq_contact_us': 'Si no puedes encontrar la respuesta a tu pregunta, no dudes en contactarnos.',
+    
+    # FAQ Preguntas y Respuestas
+    'faq_what_is_mentora': '¿Qué es Mentora?',
+    'faq_what_is_mentora_answer': 'Mentora es una plataforma integral para la educación médica en los Países Bajos. Proporcionamos rutas de aprendizaje estructuradas, pruebas diagnósticas y preparación para el examen BIG para profesionales de la salud.',
+    
+    'faq_languages': '¿Qué idiomas están soportados?',
+    'faq_languages_answer': 'Soportamos 8 idiomas: Holandés, Inglés, Español, Portugués, Ucraniano, Persa, Turco y Ruso. Puedes cambiar el idioma usando el selector de idioma en la navegación superior.',
+    
+    'faq_registration': '¿Cómo me registro?',
+    'faq_registration_answer': 'Haz clic en el botón "Registrarse" en la navegación superior, completa tus datos y verifica tu dirección de correo electrónico. También puedes registrarte usando DigiD si tienes un número de seguridad social holandés.',
+    
+    'faq_what_is_diagnostic': '¿Qué es una prueba diagnóstica?',
+    'faq_what_is_diagnostic_answer': 'Una prueba diagnóstica es una evaluación adaptativa que evalúa tu conocimiento en diferentes dominios médicos. Utiliza IRT (Teoría de Respuesta al Ítem) para proporcionar estimaciones precisas de habilidad y recomendaciones de aprendizaje personalizadas.',
+    
+    'faq_diagnostic_types': '¿Qué tipos de pruebas diagnósticas están disponibles?',
+    'faq_diagnostic_types_answer': 'Ofrecemos varios tipos: Express (evaluación rápida), Preliminar (3 preguntas por dominio), Completa (integral), Preparación (6 preguntas por dominio) y Integral (más exhaustiva). Cada tipo proporciona diferentes niveles de detalle.',
+    
+    'faq_irt_system': '¿Cómo funciona el sistema IRT?',
+    'faq_irt_system_answer': 'IRT (Teoría de Respuesta al Ítem) adapta las preguntas según tu rendimiento. Si respondes correctamente, las preguntas se vuelven más difíciles. Si respondes incorrectamente, se vuelven más fáciles. Esto proporciona una evaluación más precisa de tus habilidades.',
+    
+    'faq_learning_map': '¿Qué es el Mapa de Aprendizaje?',
+    'faq_learning_map_answer': 'El Mapa de Aprendizaje es tu guía de estudio personalizada. Muestra tu progreso en diferentes dominios médicos, recomienda próximos pasos y te ayuda a rastrear tu preparación para el examen BIG.',
+    
+    'faq_domains': '¿Qué son los dominios?',
+    'faq_domains_answer': 'Los dominios son diferentes áreas del conocimiento médico, como Farmacología, Odontología Terapéutica, Odontología Quirúrgica, Odontología Pediátrica, etc. Cada dominio tiene objetivos de aprendizaje específicos y criterios de evaluación.',
+    
+    'faq_virtual_patients': '¿Qué son los Pacientes Virtuales?',
+    'faq_virtual_patients_answer': 'Los Pacientes Virtuales son escenarios clínicos interactivos donde puedes practicar diagnósticos y decisiones de tratamiento en un entorno seguro. Te ayudan a desarrollar habilidades de razonamiento clínico.',
+    
+    'faq_what_is_big': '¿Qué es el examen BIG?',
+    'faq_what_is_big_answer': 'El examen BIG es el examen oficial para profesionales de la salud en los Países Bajos. Evalúa tu conocimiento y habilidades para asegurar que puedas practicar de manera segura en el sistema de salud holandés.',
+    
+    'faq_big_preparation': '¿Cómo debo prepararme para el examen BIG?',
+    'faq_big_preparation_answer': 'Comienza con una prueba diagnóstica para identificar tus fortalezas y debilidades. Usa el Mapa de Aprendizaje para seguir un plan de estudio estructurado. Practica con pacientes virtuales y toma evaluaciones regulares para rastrear tu progreso.',
+    
+    'faq_big_documents': '¿Qué documentos necesito?',
+    'faq_big_documents_answer': 'Necesitas tu diploma médico, certificados de idioma (Holandés/Inglés) y prueba de identidad. Consulta el sitio web de BIG para la lista completa de documentos requeridos para tu profesión específica.',
+    
+    'faq_login_issues': 'No puedo iniciar sesión. ¿Qué debo hacer?',
+    'faq_login_issues_answer': 'Verifica tu correo electrónico y contraseña. Si olvidaste tu contraseña, usa el enlace "Olvidé mi contraseña". Para usuarios de DigiD, asegúrate de que tu sesión DigiD esté activa. Contacta soporte si los problemas persisten.',
+    
+    'faq_mobile_issues': '¿Funciona la plataforma en dispositivos móviles?',
+    'faq_mobile_issues_answer': 'Sí, nuestra plataforma es completamente responsiva y funciona en smartphones y tablets. Sin embargo, para la mejor experiencia con pruebas diagnósticas, recomendamos usar una computadora de escritorio o laptop.',
+    
+    'faq_diagnostic_not_working': 'La prueba diagnóstica no funciona. ¿Qué debo hacer?',
+    'faq_diagnostic_not_working_answer': 'Intenta actualizar la página o limpiar la caché de tu navegador. Asegúrate de tener una conexión a internet estable. Si el problema persiste, contacta a nuestro equipo de soporte técnico.',
+    
+    'faq_forum_usage': '¿Cómo uso el foro?',
+    'faq_forum_usage_answer': 'El foro es un lugar para discutir temas médicos, hacer preguntas y compartir experiencias. Puedes navegar por temas existentes o crear nuevos. Por favor sigue nuestras pautas de comunidad para una comunicación respetuosa.',
+    
+    'faq_forum_rules': '¿Cuáles son las reglas del foro?',
+    'faq_forum_rules_answer': 'Sé respetuoso, mantente en el tema y proporciona información útil. No compartas consejos médicos personales o spam. Los moderadores pueden eliminar contenido inapropiado.',
+    
+    # BIG Info Page Translations
+    'big_registration_dentist': 'Registro BIG Dentista',
+    'big_registration_dentist_description': 'Guía completa para dentistas que quieren registrarse en el registro BIG',
+    'which_procedure': '¿Qué procedimiento?',
+    'step_by_step': 'Paso a paso',
+    'documents': 'Documentos',
+    'language_requirements': 'Requisitos de idioma',
+    'bi_exam': 'Examen BI',
+    'compensation': 'Compensación',
+    'faq': 'Preguntas frecuentes',
+    'resources': 'Recursos',
+    'which_procedure_applies': '¿Qué procedimiento se aplica a ti?',
+    'determine_big_procedure': 'Determina qué procedimiento de registro BIG se aplica a ti',
+    'advisor_simulator': 'Simulador de asesor',
+    'question_1_diploma': 'Pregunta 1: ¿Dónde se obtuvo tu diploma?',
+    'eu_eea_switzerland': 'UE/EEE/Suiza',
+    'non_eu': 'No UE/EEE',
+    'duration': 'Duración',
+    'language': 'Idioma',
+    'special_requirements': 'Requisitos especiales',
+    'gather_documents': 'Recopilar documentos',
+    'documents_work_experience': 'Documentos + experiencia laboral',
+    'bi_exam_preparation': 'Preparación para el examen BI',
+    'non_eu_diploma': 'Diploma no UE/EEE',
+    'dutch_b2_english_b2': 'Holandés B2+ + Inglés B2',
+    'language_certificates_bi_exam': 'Certificados de idioma (NT2-II, CEFR B2) + examen BI',
+    'bi_exam_preparation_title': 'Preparación para el examen BI',
+    'prepare_professional_exam': 'Prepararse para el examen profesional',
+    'take_bi_exam': 'Realizar examen BI',
+    'practical_theoretical_exam': 'Examen práctico y teórico',
+    'language_requirements_title': 'Requisitos de idioma',
+    'language_level_certificates': 'Nivel de idioma y certificados que necesitas para el registro BIG',
+    'bi_exam_dentists': 'Examen BI para dentistas',
+    'everything_about_exam': 'Todo lo que necesitas saber sobre el examen profesional',
+    'bi_exam_overview': 'Resumen del examen BI',
+    'bi_exam_description': 'El examen profesional (examen BI) es una prueba integral que evalúa tu conocimiento profesional y habilidades prácticas como dentista según los estándares holandeses.',
+    'compensation_exceptions': 'Compensación y excepciones',
+    'possible_exceptions_compensation': 'Posibles excepciones y medidas de compensación para el registro BIG',
+    'automatic_recognition': 'Reconocimiento automático de diplomas de la UE/EEE',
+    'simplified_procedure': 'Procedimiento simplificado',
+    'possible_bi_exam_exemption': 'Posible exención del examen BI (dependiendo del país de origen)',
+    'faster_processing': 'Procesamiento más rápido de la solicitud',
+    'minimum_3_years': 'Mínimo 3 años de experiencia laboral relevante',
+    'recognition_practical_experience': 'Reconocimiento de experiencia práctica',
+    'possible_bi_exam_parts_exemption': 'Posible exención de partes del examen BI',
+    'simplified_language_requirements': 'Requisitos de idioma simplificados con experiencia a largo plazo',
+    'language_compensation': 'Compensación de idioma',
+    'individual_assessment': 'Evaluación individual: Cada solicitud se evalúa individualmente. La compensación y excepciones no son automáticas y dependen de tu situación específica y antecedentes.',
+    'advice_consult': 'Consejo: Siempre consulta el registro BIG o un asesor especializado para tu situación específica.',
+    'total_process_duration': 'El proceso total toma un promedio de 1-2 años, dependiendo de tu tiempo de preparación para la prueba de idioma y el examen BI, y el tiempo de espera para los exámenes.',
+    'what_happens_fail_bi_exam': '¿Qué pasa si fallo en el examen BI?',
+    'bi_exam_retake': 'Puedes repetir el examen BI después de 6 meses. Debes pagar la tarifa completa del examen nuevamente.',
+    
+    # Coming Soon Overlay translations
+    'coming_soon_overlay_title': 'Próximamente',
+    'coming_soon_overlay_description': 'Esta función está en desarrollo',
+    'coming_soon_overlay_home': '🏠 Inicio',
+    'coming_soon_overlay_community': '👥 Comunidad',
 }

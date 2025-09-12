@@ -21,17 +21,17 @@ dashboard_bp = Blueprint('dashboard', __name__)
 def index():
     """Enhanced main dashboard with gamification widgets"""
     
-    # Проверка необходимости диагностики
-    if current_user.requires_diagnostic:
-        # Проверяем есть ли завершенная диагностика
-        completed_diagnostic = DiagnosticSession.query.filter_by(
-            user_id=current_user.id,
-            status='completed'
-        ).first()
-        
-        if not completed_diagnostic:
-            flash('Для персонализации обучения необходимо пройти диагностический тест.', 'info')
-            return redirect(url_for('diagnostic_bp.choose_diagnostic_type'))
+    # Проверка необходимости диагностики (временно отключено для предварительного запуска)
+    # if current_user.requires_diagnostic:
+    #     # Проверяем есть ли завершенная диагностика
+    #     completed_diagnostic = DiagnosticSession.query.filter_by(
+    #         user_id=current_user.id,
+    #         status='completed'
+    #     ).first()
+    #     
+    #     if not completed_diagnostic:
+    #         flash('Для персонализации обучения необходимо пройти диагностический тест.', 'info')
+    #         return redirect(url_for('diagnostic.choose_diagnostic_type'))
     
     # Get comprehensive dashboard stats
     dashboard_stats = current_user.get_dashboard_stats()

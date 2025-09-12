@@ -11,6 +11,7 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
+    padding-top: 100px; /* Отступ сверху для шапки */
 }
 
 .registration-header {
@@ -214,51 +215,7 @@
     margin-top: 5px;
 }
 
-.progress-indicator {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 30px;
-}
-
-.progress-step {
-    display: flex;
-    align-items: center;
-    margin: 0 10px;
-}
-
-.progress-step .step-number {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: #ecf0f1;
-    color: #7f8c8d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-.progress-step.active .step-number {
-    background: #3498db;
-    color: white;
-}
-
-.progress-step.completed .step-number {
-    background: #27ae60;
-    color: white;
-}
-
-.progress-step .step-label {
-    font-size: 12px;
-    color: #7f8c8d;
-}
-
-.progress-step.active .step-label,
-.progress-step.completed .step-label {
-    color: #2c3e50;
-    font-weight: 600;
-}
+/* Шаги навигации удалены */
 
 .consent-block {
     background: #f8f9fa;
@@ -360,37 +317,7 @@
         gap: 0;
     }
     
-    .progress-indicator {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 5px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-    
-    .progress-step {
-        margin: 2px;
-        flex: 1;
-        min-width: 0;
-        text-align: center;
-    }
-    
-    .progress-step .step-number {
-        width: 25px;
-        height: 25px;
-        font-size: 12px;
-        margin: 0 auto 5px auto;
-    }
-    
-    .progress-step .step-label {
-        font-size: 10px;
-        line-height: 1.2;
-        word-break: break-word;
-        display: block;
-    }
+    /* Мобильные стили для шагов навигации удалены */
     
     .consent-block,
     .signature-block {
@@ -513,28 +440,6 @@
         <p>{{ t('registration_subtitle', lang) | default('Complete your registration to access the Dental Academy BIG preparation program') }}</p>
     </div>
 
-    <div class="progress-indicator">
-        <div class="progress-step active">
-            <div class="step-number">1</div>
-            <div class="step-label">{{ t('personal_info', lang) | default('Personal Info') }}</div>
-        </div>
-        <div class="progress-step">
-            <div class="step-number">2</div>
-            <div class="step-label">{{ t('language_certificates', lang) | default('Language Certificates') }}</div>
-        </div>
-        <div class="progress-step">
-            <div class="step-number">3</div>
-            <div class="step-label">{{ t('documents', lang) | default('Documents') }}</div>
-        </div>
-        <div class="progress-step">
-            <div class="step-number">4</div>
-            <div class="step-label">{{ t('big_exam_info', lang) | default('BIG Exam Info') }}</div>
-        </div>
-        <div class="progress-step">
-            <div class="step-number">5</div>
-            <div class="step-label">{{ t('review', lang) | default('Review') }}</div>
-        </div>
-    </div>
 
     <form class="registration-form" id="registrationForm" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

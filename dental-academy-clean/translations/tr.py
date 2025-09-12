@@ -12,6 +12,7 @@ translations = {
     'logout': 'Çıkış',
     'login': 'Giriş',
     'register': 'Kayıt Ol',
+    'registration': 'Kayıt',
     'patients': 'Hastalar',
     'ai_assistant': 'AI Asistan',
     
@@ -1168,4 +1169,127 @@ translations = {
     'research_consent': 'Araştırma çalışmalarına katılım davetleri',
     'feedback_consent': 'Anketler ve geri bildirim talepleri',
     'accept_research_consent': 'İsteğe bağlı araştırma katılımını kabul ediyorum',
+    
+    # FAQ çevirileri
+    'faq_title': 'Sık Sorulan Sorular',
+    'faq_subtitle': 'Platformumuz hakkında en yaygın soruların cevaplarını bulun',
+    'faq_general': 'Genel Sorular',
+    'faq_diagnostic': 'Tanısal Testler',
+    'faq_learning': 'Öğrenme Sistemi',
+    'faq_big_exam': 'BIG Sınavı',
+    'faq_technical': 'Teknik Destek',
+    'faq_community': 'Topluluk',
+    'faq_need_help': 'Hala yardıma mı ihtiyacınız var?',
+    'faq_contact_us': 'Sorunuzun cevabını bulamıyorsanız, lütfen bizimle iletişime geçin.',
+    
+    # FAQ Sorular ve Cevaplar
+    'faq_what_is_mentora': 'Mentora nedir?',
+    'faq_what_is_mentora_answer': 'Mentora, Hollanda\'da tıp eğitimi için kapsamlı bir platformdur. Sağlık profesyonelleri için yapılandırılmış öğrenme yolları, tanısal testler ve BIG sınavına hazırlık sağlıyoruz.',
+    
+    'faq_languages': 'Hangi diller destekleniyor?',
+    'faq_languages_answer': '8 dili destekliyoruz: Flemenkçe, İngilizce, İspanyolca, Portekizce, Ukraynaca, Farsça, Türkçe ve Rusça. Üst navigasyondaki dil seçiciyi kullanarak dili değiştirebilirsiniz.',
+    
+    'faq_registration': 'Nasıl kayıt olurum?',
+    'faq_registration_answer': 'Üst navigasyondaki "Kayıt Ol" düğmesine tıklayın, bilgilerinizi doldurun ve e-posta adresinizi doğrulayın. Hollanda sosyal güvenlik numaranız varsa DigiD kullanarak da kayıt olabilirsiniz.',
+    
+    'faq_what_is_diagnostic': 'Tanısal test nedir?',
+    'faq_what_is_diagnostic_answer': 'Tanısal test, farklı tıbbi alanlardaki bilginizi değerlendiren adaptif bir değerlendirmedir. Doğru yetenek tahminleri ve kişiselleştirilmiş öğrenme önerileri sağlamak için IRT (Madde Tepki Teorisi) kullanır.',
+    
+    'faq_diagnostic_types': 'Hangi tanısal test türleri mevcut?',
+    'faq_diagnostic_types_answer': 'Çeşitli türler sunuyoruz: Express (hızlı değerlendirme), Ön (alan başına 3 soru), Tam (kapsamlı), Hazırlık (alan başına 6 soru) ve Kapsamlı (en detaylı). Her tür farklı detay seviyeleri sağlar.',
+    
+    'faq_irt_system': 'IRT sistemi nasıl çalışır?',
+    'faq_irt_system_answer': 'IRT (Madde Tepki Teorisi) performansınıza göre soruları uyarlar. Doğru cevap verirseniz, sorular zorlaşır. Yanlış cevap verirseniz, kolaylaşır. Bu, yeteneklerinizin daha doğru bir değerlendirmesini sağlar.',
+    
+    'faq_learning_map': 'Öğrenme haritası nedir?',
+    'faq_learning_map_answer': 'Öğrenme haritası kişiselleştirilmiş çalışma rehberinizdir. Farklı tıbbi alanlardaki ilerlemenizi gösterir, sonraki adımları önerir ve BIG sınavına hazırlığınızı takip etmenize yardımcı olur.',
+    
+    'faq_domains': 'Alanlar nedir?',
+    'faq_domains_answer': 'Alanlar, Farmakoloji, Terapötik Diş Hekimliği, Cerrahi Diş Hekimliği, Pediatrik Diş Hekimliği vb. gibi tıbbi bilginin farklı alanlarıdır. Her alanın belirli öğrenme hedefleri ve değerlendirme kriterleri vardır.',
+    
+    'faq_virtual_patients': 'Sanal hastalar nedir?',
+    'faq_virtual_patients_answer': 'Sanal hastalar, güvenli bir ortamda tanı ve tedavi kararlarını uygulayabileceğiniz etkileşimli klinik senaryolardır. Klinik akıl yürütme becerilerinizi geliştirmenize yardımcı olurlar.',
+    
+    'faq_what_is_big': 'BIG sınavı nedir?',
+    'faq_what_is_big_answer': 'BIG sınavı, Hollanda\'daki sağlık profesyonelleri için resmi sınavdır. Hollanda sağlık sisteminde güvenle çalışabilmenizi sağlamak için bilgi ve becerilerinizi değerlendirir.',
+    
+    'faq_big_preparation': 'BIG sınavına nasıl hazırlanmalıyım?',
+    'faq_big_preparation_answer': 'Güçlü ve zayıf yönlerinizi belirlemek için tanısal bir testle başlayın. Yapılandırılmış bir çalışma planı takip etmek için öğrenme haritasını kullanın. Sanal hastalarla pratik yapın ve ilerlemenizi takip etmek için düzenli değerlendirmeler yapın.',
+    
+    'faq_big_documents': 'Hangi belgelere ihtiyacım var?',
+    'faq_big_documents_answer': 'Tıp diplomanız, dil sertifikalarınız (Flemenkçe/İngilizce) ve kimlik belgeniz gerekiyor. Belirli mesleğiniz için gerekli belgelerin tam listesi için BIG web sitesini kontrol edin.',
+    
+    'faq_login_issues': 'Giriş yapamıyorum. Ne yapmalıyım?',
+    'faq_login_issues_answer': 'E-posta ve şifrenizi kontrol edin. Şifrenizi unuttuysanız, "Şifremi Unuttum" bağlantısını kullanın. DigiD kullanıcıları için DigiD oturumunuzun aktif olduğundan emin olun. Sorunlar devam ederse destek ile iletişime geçin.',
+    
+    'faq_mobile_issues': 'Platform mobil cihazlarda çalışıyor mu?',
+    'faq_mobile_issues_answer': 'Evet, platformumuz tamamen duyarlıdır ve akıllı telefonlarda ve tabletlerde çalışır. Ancak tanısal testlerle en iyi deneyim için masaüstü veya dizüstü bilgisayar kullanmanızı öneririz.',
+    
+    'faq_diagnostic_not_working': 'Tanısal test çalışmıyor. Ne yapmalıyım?',
+    'faq_diagnostic_not_working_answer': 'Sayfayı yenilemeyi veya tarayıcı önbelleğinizi temizlemeyi deneyin. Kararlı bir internet bağlantınız olduğundan emin olun. Sorun devam ederse teknik destek ekibimizle iletişime geçin.',
+    
+    'faq_forum_usage': 'Forumu nasıl kullanırım?',
+    'faq_forum_usage_answer': 'Forum, tıbbi konuları tartışmak, soru sormak ve deneyimleri paylaşmak için bir yerdir. Mevcut konuları gözden geçirebilir veya yeni konular oluşturabilirsiniz. Saygılı iletişim için topluluk yönergelerimizi takip edin.',
+    
+    'faq_forum_rules': 'Forum kuralları nelerdir?',
+    'faq_forum_rules_answer': 'Saygılı olun, konuya bağlı kalın ve yararlı bilgi sağlayın. Kişisel tıbbi tavsiye veya spam paylaşmayın. Moderatorler uygunsuz içeriği kaldırabilir.',
+    
+    # BIG Info Page Translations
+    'big_registration_dentist': 'BIG Kayıt Diş Hekimi',
+    'big_registration_dentist_description': 'BIG kaydına kaydolmak isteyen diş hekimleri için kapsamlı rehber',
+    'which_procedure': 'Hangi prosedür?',
+    'step_by_step': 'Adım adım',
+    'documents': 'Belgeler',
+    'language_requirements': 'Dil gereksinimleri',
+    'bi_exam': 'BI Sınavı',
+    'compensation': 'Tazminat',
+    'faq': 'Sık sorulan sorular',
+    'resources': 'Kaynaklar',
+    'which_procedure_applies': 'Hangi prosedür size uygulanır?',
+    'determine_big_procedure': 'Hangi BIG kayıt prosedürünün size uygulandığını belirleyin',
+    'advisor_simulator': 'Danışman simülatörü',
+    'question_1_diploma': 'Soru 1: Diplomanız nerede alındı?',
+    'eu_eea_switzerland': 'AB/AEA/İsviçre',
+    'non_eu': 'AB/AEA dışı',
+    'duration': 'Süre',
+    'language': 'Dil',
+    'special_requirements': 'Özel gereksinimler',
+    'gather_documents': 'Belgeleri topla',
+    'documents_work_experience': 'Belgeler + iş deneyimi',
+    'bi_exam_preparation': 'BI sınavına hazırlık',
+    'non_eu_diploma': 'AB/AEA dışı diploma',
+    'dutch_b2_english_b2': 'Flemenkçe B2+ + İngilizce B2',
+    'language_certificates_bi_exam': 'Dil sertifikaları (NT2-II, CEFR B2) + BI sınavı',
+    'bi_exam_preparation_title': 'BI sınavına hazırlık',
+    'prepare_professional_exam': 'Mesleki sınava hazırlan',
+    'take_bi_exam': 'BI sınavına gir',
+    'practical_theoretical_exam': 'Pratik ve teorik sınav',
+    'language_requirements_title': 'Dil gereksinimleri',
+    'language_level_certificates': 'BIG kaydı için ihtiyacınız olan dil seviyesi ve sertifikalar',
+    'bi_exam_dentists': 'Diş hekimleri için BI sınavı',
+    'everything_about_exam': 'Mesleki sınav hakkında bilmeniz gereken her şey',
+    'bi_exam_overview': 'BI sınavına genel bakış',
+    'bi_exam_description': 'Mesleki sınav (BI sınavı), diş hekimi olarak mesleki bilginizi ve pratik becerilerinizi Hollanda standartlarına göre değerlendiren kapsamlı bir testtir.',
+    'compensation_exceptions': 'Tazminat ve istisnalar',
+    'possible_exceptions_compensation': 'BIG kaydı için olası istisnalar ve tazminat önlemleri',
+    'automatic_recognition': 'AB/AEA diplomalarının otomatik tanınması',
+    'simplified_procedure': 'Basitleştirilmiş prosedür',
+    'possible_bi_exam_exemption': 'BI sınavından muafiyet (menşe ülkeye bağlı)',
+    'faster_processing': 'Başvurunun daha hızlı işlenmesi',
+    'minimum_3_years': 'En az 3 yıl ilgili iş deneyimi',
+    'recognition_practical_experience': 'Pratik deneyimin tanınması',
+    'possible_bi_exam_parts_exemption': 'BI sınavının bölümlerinden muafiyet',
+    'simplified_language_requirements': 'Uzun süreli deneyimle basitleştirilmiş dil gereksinimleri',
+    'language_compensation': 'Dil tazminatı',
+    'individual_assessment': 'Bireysel değerlendirme: Her başvuru bireysel olarak değerlendirilir. Tazminat ve istisnalar otomatik değildir ve özel durumunuz ve geçmişinize bağlıdır.',
+    'advice_consult': 'Tavsiye: Özel durumunuz için her zaman BIG kaydına veya uzman bir danışmana başvurun.',
+    'total_process_duration': 'Toplam süreç ortalama 1-2 yıl sürer, dil testi ve BI sınavı için hazırlık sürenize ve sınavlar için bekleme süresine bağlı olarak.',
+    'what_happens_fail_bi_exam': 'BI sınavında başarısız olursam ne olur?',
+    'bi_exam_retake': 'BI sınavını 6 ay sonra tekrar alabilirsiniz. Tam sınav ücretini tekrar ödemeniz gerekir.',
+    
+    # Coming Soon Overlay translations
+    'coming_soon_overlay_title': 'Yakında',
+    'coming_soon_overlay_description': 'Bu özellik geliştiriliyor',
+    'coming_soon_overlay_home': '🏠 Ana Sayfa',
+    'coming_soon_overlay_community': '👥 Topluluk',
 }

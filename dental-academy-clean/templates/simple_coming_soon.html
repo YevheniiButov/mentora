@@ -1,0 +1,180 @@
+<!-- Простой overlay "Скоро будет" - всегда видимый на заблокированных страницах -->
+<div class="simple-coming-soon-overlay">
+    <div class="overlay-content">
+        <div class="overlay-icon">🔧</div>
+        <h1>{{ t('coming_soon_overlay_title', lang)|default('Coming Soon') }}</h1>
+        <p>{{ t('coming_soon_overlay_description', lang)|default('This feature is under development') }}</p>
+        <div class="progress">
+            <div class="progress-bar"></div>
+        </div>
+        <div class="buttons">
+            <a href="{{ url_for('main.index', lang=lang) }}" class="btn-home">{{ t('coming_soon_overlay_home', lang)|default('🏠 Home') }}</a>
+            <a href="{{ url_for('main.community', lang=lang) }}" class="btn-community">{{ t('coming_soon_overlay_community', lang)|default('👥 Community') }}</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.simple-coming-soon-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+}
+
+.overlay-content {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.overlay-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.overlay-content h1 {
+    font-size: 36px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.overlay-content p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 75%;
+    height: 100%;
+    background: linear-gradient(90deg, #f093fb, #f5576c);
+    border-radius: 4px;
+    animation: progressGlow 2s infinite alternate;
+}
+
+@keyframes progressGlow {
+    0% { box-shadow: 0 0 5px rgba(240, 147, 251, 0.5); }
+    100% { box-shadow: 0 0 20px rgba(240, 147, 251, 0.8); }
+}
+
+.buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-home, .btn-community {
+    padding: 12px 24px;
+    border-radius: 25px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-home {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-community {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-home:hover, .btn-community:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .overlay-content {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .overlay-content h1 {
+        font-size: 28px;
+    }
+    
+    .buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-home, .btn-community {
+        width: 100%;
+        max-width: 250px;
+    }
+}
+</style>
+
+<script>
+// Простой JavaScript для скрытия overlay на разрешенных страницах
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    
+    // Список разрешенных страниц (где НЕ нужно показывать overlay)
+    const allowedPaths = [
+        '/',
+        '/en/',
+        '/ru/',
+        '/nl/',
+        '/big-info',
+        '/contact',
+        '/community',
+        '/about',
+        '/privacy',
+        '/terms',
+        '/faq',
+        '/auth/login',
+        '/auth/register',
+        '/profile'
+    ];
+    
+    // Проверяем, разрешена ли текущая страница
+    const isAllowed = allowedPaths.some(path => currentPath === path || currentPath.startsWith(path + '/'));
+    
+    if (isAllowed) {
+        // Если страница разрешена - скрываем все overlay
+        const overlays = document.querySelectorAll('.simple-coming-soon-overlay');
+        overlays.forEach((overlay, index) => {
+            overlay.style.display = 'none';
+            console.log(`✅ Overlay ${index + 1} скрыт для разрешенной страницы:`, currentPath);
+        });
+    } else {
+        // Если страница заблокирована - оставляем overlay видимым
+        console.log('🔒 Overlay показан для заблокированной страницы:', currentPath);
+    }
+});
+</script>
