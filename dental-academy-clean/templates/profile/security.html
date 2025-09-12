@@ -7,6 +7,7 @@
     .security-container {
         min-height: 80vh;
         padding: 2rem 0;
+        margin-top: 80px; /* Отступ под шапку */
     }
     
     .security-header {
@@ -321,6 +322,10 @@
     }
     
     @media (max-width: 768px) {
+        .security-container {
+            margin-top: 70px; /* Мобильный отступ под шапку */
+        }
+        
         .security-header {
             padding: 1.5rem 0;
         }
@@ -373,11 +378,7 @@
     
     <div class="container">
         <div class="security-content">
-            <!-- Уведомление о разработке -->
-            <div class="coming-soon-notice">
-                <h3>{{ t('feature_coming_soon', lang) | default('Функция скоро появится') }}</h3>
-                <p>{{ t('security_coming_soon_desc', lang) | default('Расширенные настройки безопасности будут доступны в ближайшее время. Мы работаем над этой функцией.') }}</p>
-            </div>
+            <!-- Уведомление о разработке убрано по запросу пользователя -->
             
             <!-- Статус безопасности -->
             <div class="security-section">
@@ -412,6 +413,52 @@
                 </div>
             </div>
             
+            <!-- Смена email -->
+            <div class="security-section">
+                <h2 class="section-title">
+                    <div class="section-icon password">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    {{ t('change_email', lang) | default('Смена email') }}
+                </h2>
+                
+                <form method="POST" action="{{ url_for('profile.security') }}">
+                    <input type="hidden" name="action" value="change_email">
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('current_email', lang) | default('Текущий email') }}
+                        </label>
+                        <input type="email" value="{{ user.email }}" class="form-control" readonly style="background: #f1f5f9;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('new_email', lang) | default('Новый email') }}
+                        </label>
+                        <input type="email" name="new_email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('confirm_new_email', lang) | default('Подтвердите новый email') }}
+                        </label>
+                        <input type="email" name="confirm_new_email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('current_password', lang) | default('Текущий пароль') }}
+                        </label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-envelope"></i>
+                        {{ t('change_email', lang) | default('Изменить email') }}
+                    </button>
+                </form>
+            </div>
+            
             <!-- Смена пароля -->
             <div class="security-section">
                 <h2 class="section-title">
@@ -422,6 +469,7 @@
                 </h2>
                 
                 <form method="POST" action="{{ url_for('profile.security') }}">
+                    <input type="hidden" name="action" value="change_password">
                     <div class="form-group">
                         <label class="form-label">
                             {{ t('current_password', lang) | default('Текущий пароль') }}

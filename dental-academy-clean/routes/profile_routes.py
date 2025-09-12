@@ -264,37 +264,80 @@ def security():
     
     if request.method == 'POST':
         try:
-            current_password = request.form.get('current_password', '').strip()
-            new_password = request.form.get('new_password', '').strip()
-            confirm_password = request.form.get('confirm_password', '').strip()
+            action = request.form.get('action', 'change_password')
             
-            # Валидация
-            errors = []
-            if not current_password:
-                errors.append('Текущий пароль обязателен')
-            if not new_password:
-                errors.append('Новый пароль обязателен')
-            if len(new_password) < 8:
-                errors.append('Новый пароль должен содержать минимум 8 символов')
-            if new_password != confirm_password:
-                errors.append('Пароли не совпадают')
-            
-            # Проверяем текущий пароль
-            if not current_user.check_password(current_password):
-                errors.append('Неверный текущий пароль')
-            
-            if errors:
-                for error in errors:
-                    flash(error, 'error')
-                return render_template('profile/security.html', user=current_user, lang=lang)
-            
-            # Обновляем пароль
-            current_user.set_password(new_password)
-            # current_user.updated_at = datetime.now(timezone.utc)  # Поле может отсутствовать
-            
-            db.session.commit()
-            flash(t('password_changed_successfully', lang), 'success')
-            return redirect(url_for('profile.security'))
+            if action == 'change_email':
+                # Обработка смены email
+                new_email = request.form.get('new_email', '').strip()
+                confirm_new_email = request.form.get('confirm_new_email', '').strip()
+                password = request.form.get('password', '').strip()
+                
+                # Валидация
+                errors = []
+                if not new_email:
+                    errors.append(t('new_email_required', lang))
+                elif not new_email or '@' not in new_email:
+                    errors.append(t('invalid_email_format', lang))
+                if new_email != confirm_new_email:
+                    errors.append(t('emails_do_not_match', lang))
+                if not password:
+                    errors.append(t('password_required', lang))
+                
+                # Проверяем, что новый email не совпадает с текущим
+                if new_email == current_user.email:
+                    errors.append(t('new_email_same_as_current', lang))
+                
+                # Проверяем, что новый email не занят другим пользователем
+                existing_user = User.query.filter_by(email=new_email).first()
+                if existing_user and existing_user.id != current_user.id:
+                    errors.append(t('email_already_taken', lang))
+                
+                # Проверяем пароль
+                if not current_user.check_password(password):
+                    errors.append(t('incorrect_password', lang))
+                
+                if errors:
+                    for error in errors:
+                        flash(error, 'error')
+                    return render_template('profile/security.html', user=current_user, lang=lang)
+                
+                # Обновляем email
+                current_user.email = new_email
+                db.session.commit()
+                flash(t('email_changed_successfully', lang), 'success')
+                return redirect(url_for('profile.security', lang=lang))
+                
+            else:
+                # Обработка смены пароля
+                current_password = request.form.get('current_password', '').strip()
+                new_password = request.form.get('new_password', '').strip()
+                confirm_password = request.form.get('confirm_password', '').strip()
+                
+                # Валидация
+                errors = []
+                if not current_password:
+                    errors.append(t('current_password_required', lang))
+                if not new_password:
+                    errors.append(t('new_password_required', lang))
+                if len(new_password) < 8:
+                    errors.append(t('password_min_length', lang))
+                if new_password != confirm_password:
+                    errors.append(t('passwords_do_not_match', lang))
+                
+                # Проверяем текущий пароль
+                if not current_user.check_password(current_password):
+                    errors.append(t('incorrect_current_password', lang))
+                
+                if errors:
+                    for error in errors:
+                        flash(error, 'error')
+                    return render_template('profile/security.html', user=current_user, lang=lang)
+                
+                # Обновляем пароль
+                current_user.set_password(new_password)
+                db.session.commit()
+                flash(t('password_changed_successfully', lang), 'success')
+                return redirect(url_for('profile.security', lang=lang))
             
         except Exception as e:
             db.session.rollback()
