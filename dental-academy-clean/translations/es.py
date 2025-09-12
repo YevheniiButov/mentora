@@ -1609,4 +1609,33 @@ translations = {
     'specify_study_country': 'Por favor especifique el país de estudio',
     'study_country_placeholder': 'Ingrese el país donde estudió',
     'other_study_country_required': 'Por favor especifique el país de estudio',
+    
+    # Forum translations
+    'topic_title': 'Título del Tema',
+    'topic_title_placeholder': 'Ingrese un título claro y descriptivo para su tema...',
+    'topic_content': 'Contenido del Tema',
+    'topic_content_placeholder': 'Escriba el contenido de su tema aquí. Puede usar formato markdown para mejor presentación...',
+    'create_topic': 'Crear Tema',
+    'creating': 'Creando...',
+    'topic_created_success': '¡Tema creado exitosamente!',
+    'error_creating_topic': 'Error al crear tema. Por favor intente de nuevo.',
+    
+    # Forum categories
+    'general_discussion': 'Discusión General',
+    'clinical_cases': 'Casos Clínicos',
+    'study_materials': 'Materiales de Estudio',
+    'expert_advice': 'Consejos de Expertos',
+    'research': 'Investigación',
+    'equipment': 'Equipamiento',
+    
+    # Forum page elements
+    'dental_community_forum': 'Foro de la Comunidad Dental',
+    'recent_discussions': 'Discusiones Recientes',
+    'categories': 'Categorías',
+    'recent_activity': 'Actividad Reciente',
+    'online_now': 'En Línea Ahora',
+    'new_topic': 'Nuevo Tema',
+    'no_recent_activity': 'Sin actividad reciente',
+    'no_users_online': 'No hay usuarios en línea',
+    'no_topics_found': 'No se encontraron temas. ¡Sé el primero en iniciar una discusión!',
 }

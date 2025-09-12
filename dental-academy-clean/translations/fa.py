@@ -1647,4 +1647,33 @@ translations = {
     'specify_study_country': 'لطفاً کشور تحصیل را مشخص کنید',
     'study_country_placeholder': 'کشوری که در آن تحصیل کرده‌اید را وارد کنید',
     'other_study_country_required': 'لطفاً کشور تحصیل را مشخص کنید',
+    
+    # Forum translations
+    'topic_title': 'عنوان موضوع',
+    'topic_title_placeholder': 'عنوان واضح و توصیفی برای موضوع خود وارد کنید...',
+    'topic_content': 'محتوای موضوع',
+    'topic_content_placeholder': 'محتوای موضوع خود را اینجا بنویسید. می‌توانید از فرمت markdown برای ارائه بهتر استفاده کنید...',
+    'create_topic': 'ایجاد موضوع',
+    'creating': 'در حال ایجاد...',
+    'topic_created_success': 'موضوع با موفقیت ایجاد شد!',
+    'error_creating_topic': 'خطا در ایجاد موضوع. لطفاً دوباره تلاش کنید.',
+    
+    # Forum categories
+    'general_discussion': 'بحث عمومی',
+    'clinical_cases': 'موارد بالینی',
+    'study_materials': 'مواد آموزشی',
+    'expert_advice': 'مشاوره متخصصان',
+    'research': 'تحقیقات',
+    'equipment': 'تجهیزات',
+    
+    # Forum page elements
+    'dental_community_forum': 'انجمن جامعه دندانپزشکی',
+    'recent_discussions': 'بحث‌های اخیر',
+    'categories': 'دسته‌بندی‌ها',
+    'recent_activity': 'فعالیت اخیر',
+    'online_now': 'آنلاین الان',
+    'new_topic': 'موضوع جدید',
+    'no_recent_activity': 'هیچ فعالیت اخیری وجود ندارد',
+    'no_users_online': 'هیچ کاربری آنلاین نیست',
+    'no_topics_found': 'هیچ موضوعی یافت نشد. اولین کسی باشید که بحثی را شروع می‌کند!',
 }

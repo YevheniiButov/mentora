@@ -1761,4 +1761,33 @@ translations = {
     'specify_study_country': 'Geef het land van studie op',
     'study_country_placeholder': 'Voer het land in waar je hebt gestudeerd',
     'other_study_country_required': 'Geef het land van studie op',
+    
+    # Forum translations
+    'topic_title': 'Onderwerp Titel',
+    'topic_title_placeholder': 'Voer een duidelijke en beschrijvende titel in voor je onderwerp...',
+    'topic_content': 'Onderwerp Inhoud',
+    'topic_content_placeholder': 'Schrijf je onderwerp inhoud hier. Je kunt markdown formatting gebruiken voor betere presentatie...',
+    'create_topic': 'Onderwerp Maken',
+    'creating': 'Maken...',
+    'topic_created_success': 'Onderwerp succesvol aangemaakt!',
+    'error_creating_topic': 'Fout bij het maken van onderwerp. Probeer het opnieuw.',
+    
+    # Forum categories
+    'general_discussion': 'Algemene Discussie',
+    'clinical_cases': 'Klinische Gevallen',
+    'study_materials': 'Studiemateriaal',
+    'expert_advice': 'Expert Advies',
+    'research': 'Onderzoek',
+    'equipment': 'Uitrusting',
+    
+    # Forum page elements
+    'dental_community_forum': 'Tandheelkundige Gemeenschap Forum',
+    'recent_discussions': 'Recente Discussies',
+    'categories': 'Categorieën',
+    'recent_activity': 'Recente Activiteit',
+    'online_now': 'Nu Online',
+    'new_topic': 'Nieuw Onderwerp',
+    'no_recent_activity': 'Geen recente activiteit',
+    'no_users_online': 'Geen gebruikers online',
+    'no_topics_found': 'Geen onderwerpen gevonden. Wees de eerste om een discussie te starten!',
 }

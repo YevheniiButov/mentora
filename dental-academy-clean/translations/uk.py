@@ -1567,4 +1567,23 @@ translations = {
     'creating': 'Створення...',
     'topic_created_success': 'Тему успішно створено!',
     'error_creating_topic': 'Помилка створення теми. Будь ласка, спробуйте знову.',
+    
+    # Forum categories
+    'general_discussion': 'Загальні обговорення',
+    'clinical_cases': 'Клінічні випадки',
+    'study_materials': 'Навчальні матеріали',
+    'expert_advice': 'Поради експертів',
+    'research': 'Дослідження',
+    'equipment': 'Обладнання',
+    
+    # Forum page elements
+    'dental_community_forum': 'Форум стоматологічної спільноти',
+    'recent_discussions': 'Останні обговорення',
+    'categories': 'Категорії',
+    'recent_activity': 'Остання активність',
+    'online_now': 'Зараз онлайн',
+    'new_topic': 'Нова тема',
+    'no_recent_activity': 'Немає останньої активності',
+    'no_users_online': 'Немає користувачів онлайн',
+    'no_topics_found': 'Теми не знайдено. Станьте першим, хто почне обговорення!',
 }

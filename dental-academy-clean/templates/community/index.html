@@ -691,7 +691,7 @@
         <div class="header-content">
             <div class="forum-title">
                 <i class="fas fa-comments"></i>
-                Dental Community Forum
+                {{ t('dental_community_forum', lang) | default('Dental Community Forum') }}
             </div>
             <div class="header-actions">
                 <div class="search-box">
@@ -717,7 +717,7 @@
             <div class="sidebar-section">
                 <h3 class="sidebar-title">
                     <i class="fas fa-layer-group"></i>
-                    Categories
+                    {{ t('categories', lang) | default('Categories') }}
                 </h3>
                 <ul class="category-list">
                     {% for category in categories %}
@@ -764,10 +764,10 @@
         <!-- Main Content - Topics -->
         <main class="forum-main">
             <div class="topics-header">
-                <h2 class="topics-title">Recent Discussions</h2>
-                <a href="{{ url_for('main.new_topic', lang=g.lang) }}" class="new-topic-btn">
+                <h2 class="topics-title">{{ t('recent_discussions', lang) | default('Recent Discussions') }}</h2>
+                <a href="{{ url_for('main.new_topic', lang=lang) }}" class="new-topic-btn">
                     <i class="fas fa-plus"></i>
-                    New Topic
+                    {{ t('new_topic', lang) | default('New Topic') }}
                 </a>
             </div>
 
@@ -807,7 +807,7 @@
                 
                 {% if not recent_topics %}
                 <div class="no-topics">
-                    <p>No topics found. Be the first to start a discussion!</p>
+                    <p>{{ t('no_topics_found', lang) | default('No topics found. Be the first to start a discussion!') }}</p>
                 </div>
                 {% endif %}
 
@@ -819,12 +819,12 @@
             <div class="sidebar-section">
                 <h3 class="sidebar-title">
                     <i class="fas fa-bolt"></i>
-                    Recent Activity
+                    {{ t('recent_activity', lang) | default('Recent Activity') }}
                 </h3>
                 <ul class="activity-list">
                     <li class="activity-item">
                         <div class="activity-content">
-                            <p class="activity-text">No recent activity</p>
+                            <p class="activity-text">{{ t('no_recent_activity', lang) | default('No recent activity') }}</p>
                         </div>
                     </li>
                 </ul>
@@ -833,12 +833,12 @@
             <div class="online-users">
                 <h3 class="sidebar-title">
                     <i class="fas fa-circle"></i>
-                    Online Now (12)
+                    {{ t('online_now', lang) | default('Online Now') }}
                 </h3>
                 <div class="online-list">
                     <div class="online-user">
                         <span class="online-indicator"></span>
-                        <span>No users online</span>
+                        <span>{{ t('no_users_online', lang) | default('No users online') }}</span>
                     </div>
                 </div>
             </div>

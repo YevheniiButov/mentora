@@ -1938,4 +1938,23 @@ translations = {
     'creating': 'Creating...',
     'topic_created_success': 'Topic created successfully!',
     'error_creating_topic': 'Error creating topic. Please try again.',
+    
+    # Forum categories
+    'general_discussion': 'General Discussion',
+    'clinical_cases': 'Clinical Cases',
+    'study_materials': 'Study Materials',
+    'expert_advice': 'Expert Advice',
+    'research': 'Research',
+    'equipment': 'Equipment',
+    
+    # Forum page elements
+    'dental_community_forum': 'Dental Community Forum',
+    'recent_discussions': 'Recent Discussions',
+    'categories': 'Categories',
+    'recent_activity': 'Recent Activity',
+    'online_now': 'Online Now',
+    'new_topic': 'New Topic',
+    'no_recent_activity': 'No recent activity',
+    'no_users_online': 'No users online',
+    'no_topics_found': 'No topics found. Be the first to start a discussion!',
 }

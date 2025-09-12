@@ -1518,4 +1518,33 @@ translations = {
     'specify_study_country': 'Lütfen eğitim ülkesini belirtin',
     'study_country_placeholder': 'Eğitim gördüğünüz ülkeyi girin',
     'other_study_country_required': 'Lütfen eğitim ülkesini belirtin',
+    
+    # Forum translations
+    'topic_title': 'Konu Başlığı',
+    'topic_title_placeholder': 'Konunuz için net ve açıklayıcı bir başlık girin...',
+    'topic_content': 'Konu İçeriği',
+    'topic_content_placeholder': 'Konu içeriğinizi buraya yazın. Daha iyi sunum için markdown formatını kullanabilirsiniz...',
+    'create_topic': 'Konu Oluştur',
+    'creating': 'Oluşturuluyor...',
+    'topic_created_success': 'Konu başarıyla oluşturuldu!',
+    'error_creating_topic': 'Konu oluşturulurken hata oluştu. Lütfen tekrar deneyin.',
+    
+    # Forum categories
+    'general_discussion': 'Genel Tartışma',
+    'clinical_cases': 'Klinik Vakalar',
+    'study_materials': 'Çalışma Materyalleri',
+    'expert_advice': 'Uzman Tavsiyeleri',
+    'research': 'Araştırma',
+    'equipment': 'Ekipman',
+    
+    # Forum page elements
+    'dental_community_forum': 'Diş Hekimliği Topluluğu Forumu',
+    'recent_discussions': 'Son Tartışmalar',
+    'categories': 'Kategoriler',
+    'recent_activity': 'Son Aktivite',
+    'online_now': 'Şimdi Çevrimiçi',
+    'new_topic': 'Yeni Konu',
+    'no_recent_activity': 'Son aktivite yok',
+    'no_users_online': 'Çevrimiçi kullanıcı yok',
+    'no_topics_found': 'Konu bulunamadı. Tartışma başlatan ilk kişi olun!',
 }
