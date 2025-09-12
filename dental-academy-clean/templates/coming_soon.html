@@ -1,348 +1,443 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t('coming_soon', lang)|default('Coming Soon') }} - {{ feature_name }} - Mentora{% endblock %}
+{% block title %}{{ t('coming_soon', lang) | default('Скоро будет') }} - Mentora{% endblock %}
 
-{% block extra_head %}
+{% block extra_css %}
 <style>
-.coming-soon-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
-}
-
-.coming-soon-content {
-  text-align: center;
-  background: white;
-  padding: 3rem;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-  max-width: 600px;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-}
-
-.coming-soon-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
-}
-
-.icon-container {
-  font-size: 4rem;
-  color: #667eea;
-  margin-bottom: 1.5rem;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-.coming-soon-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #2d3748;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.coming-soon-description {
-  font-size: 1.2rem;
-  color: #4a5568;
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-.progress-container {
-  margin: 2rem 0;
-}
-
-.progress-label {
-  font-size: 0.9rem;
-  color: #718096;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 12px;
-  background: #e2e8f0;
-  border-radius: 6px;
-  overflow: hidden;
-  position: relative;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
-  border-radius: 6px;
-  width: 75%;
-  position: relative;
-  animation: progressGlow 2s ease-in-out infinite alternate;
-}
-
-@keyframes progressGlow {
-  0% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
-  100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
-}
-
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.feature-info {
-  background: #f7fafc;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin: 2rem 0;
-  border-left: 4px solid #667eea;
-}
-
-.feature-info h4 {
-  color: #2d3748;
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
-}
-
-.feature-info p {
-  color: #4a5568;
-  margin: 0;
-  font-size: 0.95rem;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 2rem;
-}
-
-.btn-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  text-decoration: none;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.btn-back:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  color: white;
-  text-decoration: none;
-}
-
-.btn-community {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 2rem;
-  background: white;
-  color: #667eea;
-  text-decoration: none;
-  border: 2px solid #667eea;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.btn-community:hover {
-  background: #667eea;
-  color: white;
-  text-decoration: none;
-  transform: translateY(-2px);
-}
-
-.countdown-container {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f093fb, #f5576c);
-  border-radius: 15px;
-  color: white;
-}
-
-.countdown-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.countdown-timer {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.countdown-item {
-  text-align: center;
-  background: rgba(255,255,255,0.2);
-  padding: 1rem;
-  border-radius: 10px;
-  min-width: 80px;
-}
-
-.countdown-number {
-  font-size: 2rem;
-  font-weight: 700;
-  display: block;
-}
-
-.countdown-label {
-  font-size: 0.8rem;
-  opacity: 0.9;
-}
-
-/* Мобильная адаптивность */
-@media (max-width: 768px) {
-  .coming-soon-container {
-    padding: 1rem;
-  }
-  
-  .coming-soon-content {
-    padding: 2rem 1.5rem;
-  }
-  
-  .coming-soon-title {
-    font-size: 2rem;
-  }
-  
-  .coming-soon-description {
-    font-size: 1.1rem;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .btn-back, .btn-community {
-    width: 100%;
-    max-width: 300px;
-    justify-content: center;
-  }
-  
-  .countdown-timer {
-    gap: 0.5rem;
-  }
-  
-  .countdown-item {
-    min-width: 60px;
-    padding: 0.75rem;
-  }
-  
-  .countdown-number {
-    font-size: 1.5rem;
-  }
-}
+    .coming-soon-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .coming-soon-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        opacity: 0.3;
+    }
+    
+    .coming-soon-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        color: white;
+        max-width: 600px;
+        padding: 2rem;
+    }
+    
+    .coming-soon-icon {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 2rem;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+        }
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
+    }
+    
+    .coming-soon-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .coming-soon-subtitle {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+    
+    .coming-soon-description {
+        font-size: 1.1rem;
+        margin-bottom: 3rem;
+        opacity: 0.8;
+        line-height: 1.6;
+    }
+    
+    .features-list {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .features-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .feature-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(10px);
+    }
+    
+    .feature-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+    }
+    
+    .feature-text {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-primary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .btn-primary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: white;
+    }
+    
+    .countdown {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .countdown-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: white;
+    }
+    
+    .countdown-timer {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .countdown-item {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 1rem;
+        min-width: 80px;
+    }
+    
+    .countdown-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        display: block;
+    }
+    
+    .countdown-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-top: 0.25rem;
+    }
+    
+    @media (max-width: 768px) {
+        .coming-soon-content {
+            padding: 1rem;
+        }
+        
+        .coming-soon-icon {
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+        }
+        
+        .coming-soon-title {
+            font-size: 2.5rem;
+        }
+        
+        .coming-soon-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .features-list {
+            padding: 1.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+        
+        .countdown-timer {
+            gap: 0.5rem;
+        }
+        
+        .countdown-item {
+            min-width: 60px;
+            padding: 0.75rem;
+        }
+        
+        .countdown-number {
+            font-size: 1.5rem;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="coming-soon-container">
-  <div class="coming-soon-content">
-    <div class="icon-container">
-      <i class="fas fa-tools"></i>
-    </div>
-    
-    <h1 class="coming-soon-title">
-      {{ feature_name }}
-    </h1>
-    
-    <p class="coming-soon-description">
-      {{ t('coming_soon_description', lang)|default('Эта функция находится в разработке и скоро будет доступна. Мы работаем над тем, чтобы предоставить вам лучший опыт обучения.') }}
-    </p>
-    
-    {% if feature_description %}
-    <div class="feature-info">
-      <h4>{{ t('what_to_expect', lang)|default('Что вас ждет:') }}</h4>
-      <p>{{ feature_description }}</p>
-    </div>
-    {% endif %}
-    
-    <div class="progress-container">
-      <div class="progress-label">
-        {{ t('development_progress', lang)|default('Прогресс разработки') }}: 75%
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill"></div>
-      </div>
-    </div>
-    
-    <div class="countdown-container">
-      <div class="countdown-title">
-        {{ t('estimated_launch', lang)|default('Ожидаемый запуск') }}
-      </div>
-      <div class="countdown-timer">
-        <div class="countdown-item">
-          <span class="countdown-number">30</span>
-          <span class="countdown-label">{{ t('days', lang)|default('дней') }}</span>
+    <div class="coming-soon-content">
+        <div class="coming-soon-icon">
+            <i class="fas fa-rocket"></i>
         </div>
-        <div class="countdown-item">
-          <span class="countdown-number">12</span>
-          <span class="countdown-label">{{ t('hours', lang)|default('часов') }}</span>
+        
+        <h1 class="coming-soon-title">
+            {{ t('coming_soon', lang) | default('Скоро будет') }}
+        </h1>
+        
+        <p class="coming-soon-subtitle">
+            {{ t('coming_soon_subtitle', lang) | default('Мы работаем над новой функцией') }}
+        </p>
+        
+        <p class="coming-soon-description">
+            {{ t('coming_soon_description', lang) | default('Эта функция находится в активной разработке. Мы приложим все усилия, чтобы сделать её доступной как можно скорее.') }}
+        </p>
+        
+        <!-- Счетчик обратного отсчета -->
+        <div class="countdown">
+            <div class="countdown-title">
+                {{ t('launch_countdown', lang) | default('До запуска осталось') }}
+            </div>
+            <div class="countdown-timer" id="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-number" id="days">--</span>
+                    <div class="countdown-label">{{ t('days', lang) | default('дней') }}</div>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="hours">--</span>
+                    <div class="countdown-label">{{ t('hours', lang) | default('часов') }}</div>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="minutes">--</span>
+                    <div class="countdown-label">{{ t('minutes', lang) | default('минут') }}</div>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="seconds">--</span>
+                    <div class="countdown-label">{{ t('seconds', lang) | default('секунд') }}</div>
+                </div>
+            </div>
         </div>
-        <div class="countdown-item">
-          <span class="countdown-number">45</span>
-          <span class="countdown-label">{{ t('minutes', lang)|default('минут') }}</span>
+        
+        <!-- Список функций -->
+        <div class="features-list">
+            <h3 class="features-title">
+                {{ t('coming_features', lang) | default('Что будет доступно') }}
+            </h3>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="feature-text">
+                    {{ t('diagnostic_testing', lang) | default('Диагностическое тестирование') }}
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="feature-text">
+                    {{ t('interactive_learning', lang) | default('Интерактивное обучение') }}
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="feature-text">
+                    {{ t('practice_tests', lang) | default('Практические тесты') }}
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="feature-text">
+                    {{ t('ai_assistant', lang) | default('AI-помощник') }}
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="feature-text">
+                    {{ t('virtual_patients', lang) | default('Виртуальные пациенты') }}
+                </div>
+            </div>
         </div>
-      </div>
+        
+        <!-- Кнопки действий -->
+        <div class="action-buttons">
+            <a href="{{ url_for('main.index', lang=lang) }}" class="btn-primary">
+                <i class="fas fa-home"></i>
+                {{ t('back_to_home', lang) | default('На главную') }}
+            </a>
+            
+            <a href="{{ url_for('main.community', lang=lang) }}" class="btn-secondary">
+                <i class="fas fa-users"></i>
+                {{ t('join_community', lang) | default('Сообщество') }}
+            </a>
+        </div>
     </div>
-    
-    <div class="action-buttons">
-      <a href="{{ url_for('main.index', lang=lang) }}" class="btn-back">
-        <i class="fas fa-home"></i>
-        {{ t('back_to_home', lang)|default('Вернуться на главную') }}
-      </a>
-      
-      <a href="{{ url_for('main.community', lang=lang) }}" class="btn-community">
-        <i class="fas fa-users"></i>
-        {{ t('join_community', lang)|default('Присоединиться к сообществу') }}
-      </a>
-    </div>
-  </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-// Простая анимация счетчика (опционально)
 document.addEventListener('DOMContentLoaded', function() {
-  // Можно добавить JavaScript для анимации счетчика
-  console.log('Coming Soon page loaded for: {{ feature_name }}');
+    // Устанавливаем дату запуска (например, через 30 дней)
+    const launchDate = new Date();
+    launchDate.setDate(launchDate.getDate() + 30);
+    
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = launchDate.getTime() - now;
+        
+        if (distance < 0) {
+            document.getElementById('days').innerHTML = '00';
+            document.getElementById('hours').innerHTML = '00';
+            document.getElementById('minutes').innerHTML = '00';
+            document.getElementById('seconds').innerHTML = '00';
+            return;
+        }
+        
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        document.getElementById('days').innerHTML = days.toString().padStart(2, '0');
+        document.getElementById('hours').innerHTML = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').innerHTML = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').innerHTML = seconds.toString().padStart(2, '0');
+    }
+    
+    // Обновляем счетчик каждую секунду
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    
+    // Анимация появления элементов
+    const elements = document.querySelectorAll('.feature-item');
+    elements.forEach((element, index) => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+            element.style.transition = 'all 0.5s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'translateX(0)';
+        }, 500 + (index * 100));
+    });
 });
 </script>
 {% endblock %}

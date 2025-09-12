@@ -92,6 +92,11 @@ def faq(lang):
     """FAQ page"""
     return render_template('faq.html', lang=lang)
 
+@main_bp.route('/coming-soon')
+def coming_soon(lang):
+    """Coming Soon page"""
+    return render_template('coming_soon.html', lang=lang)
+
 
 @main_bp.route('/farmacie/advanced-drug-checker')
 @login_required
