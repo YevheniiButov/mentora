@@ -1475,9 +1475,12 @@ translations = {
     # Profile page translations
     'profile_completion': 'تکمیل پروفایل',
     'profile_completion_text': '75% پروفایل تکمیل شده',
+    'profession_not_specified': 'حرفه مشخص نشده',
     'personal_info_description': 'اطلاعات پایه، تماس‌ها و داده‌های شخصی',
     'documents_description': 'آپلود مدارک، گواهینامه‌ها و سایر اسناد',
     'settings_description': 'زبان، اعلان‌ها، تم',
+    'security': 'امنیت',
     'security_description': 'تغییر رمز عبور و تنظیمات امنیتی',
+    'statistics': 'آمار',
     'statistics_description': 'پیشرفت یادگیری و دستاوردها',
 }

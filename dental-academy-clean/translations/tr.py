@@ -1346,9 +1346,12 @@ translations = {
     # Profile page translations
     'profile_completion': 'Profil Tamamlama',
     'profile_completion_text': 'Profil %75 tamamlandı',
+    'profession_not_specified': 'Meslek belirtilmemiş',
     'personal_info_description': 'Temel bilgiler, iletişim ve kişisel veriler',
     'documents_description': 'Diploma, sertifika ve diğer belgeleri yükleme',
     'settings_description': 'Dil, bildirimler, tema',
+    'security': 'Güvenlik',
     'security_description': 'Şifre değiştirme ve güvenlik ayarları',
+    'statistics': 'İstatistikler',
     'statistics_description': 'Öğrenme ilerlemesi ve başarılar',
 }

@@ -1436,9 +1436,12 @@ translations = {
     # Profile page translations
     'profile_completion': 'Completar Perfil',
     'profile_completion_text': '75% del perfil completado',
+    'profession_not_specified': 'Profesión no especificada',
     'personal_info_description': 'Información básica, contactos y datos personales',
     'documents_description': 'Subir diplomas, certificados y otros documentos',
     'settings_description': 'Idioma, notificaciones, tema',
+    'security': 'Seguridad',
     'security_description': 'Cambio de contraseña y configuración de seguridad',
+    'statistics': 'Estadísticas',
     'statistics_description': 'Progreso de aprendizaje y logros',
 }
