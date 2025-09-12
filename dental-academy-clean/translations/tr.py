@@ -1323,4 +1323,21 @@ translations = {
     'document_uploaded_successfully': 'Belge başarıyla yüklendi!',
     'document_deleted_successfully': 'Belge başarıyla silindi!',
     'error_processing_request': 'İstek işlenirken hata: {error}',
+    
+    # Documents page translations
+    'diploma': 'Yüksek Öğretim Diploması',
+    'diploma_description': 'Tıp alanında Lisans, Yüksek Lisans veya Uzmanlık diploması',
+    'language_certificate': 'Dil Sertifikası',
+    'language_cert_description': 'IELTS, TOEFL veya eşdeğer dil sertifikası',
+    'passport': 'Pasaport',
+    'passport_description': 'Fotoğraf ve kişisel bilgilerle sayfa',
+    'additional_documents': 'Ek Belgeler',
+    'additional_docs_description': 'Referanslar, tavsiyeler, diğer belgeler',
+    'required': 'Zorunlu',
+    'optional': 'İsteğe bağlı',
+    'click_to_upload': 'Yüklemek için tıklayın',
+    'preview': 'Önizleme',
+    'feature_coming_soon': 'Özellik Yakında',
+    'documents_coming_soon_desc': 'Belge yükleme yakında kullanılabilir olacak. Bu özellik üzerinde çalışıyoruz.',
+    'required_documents': 'Gerekli Belgeler',
 }

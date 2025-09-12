@@ -1734,4 +1734,21 @@ translations = {
     'coming_soon_overlay_community': '👥 Community',
     'file_too_large': 'Bestand te groot. Maximale grootte: 10MB',
     'invalid_file_type': 'Ongeldig bestandstype. Toegestaan: PDF, DOC, DOCX, JPG, PNG',
+    
+    # Documents page translations
+    'diploma': 'Hoger Onderwijs Diploma',
+    'diploma_description': 'Bachelor, Master of Specialist diploma in medisch veld',
+    'language_certificate': 'Taalcertificaat',
+    'language_cert_description': 'IELTS, TOEFL of equivalent taalcertificaat',
+    'passport': 'Paspoort',
+    'passport_description': 'Pagina met foto en persoonlijke gegevens',
+    'additional_documents': 'Aanvullende Documenten',
+    'additional_docs_description': 'Referenties, aanbevelingen, andere documenten',
+    'required': 'Verplicht',
+    'optional': 'Optioneel',
+    'click_to_upload': 'Klik om te uploaden',
+    'preview': 'Voorbeeld',
+    'feature_coming_soon': 'Functie Binnenkort Beschikbaar',
+    'documents_coming_soon_desc': 'Document upload wordt binnenkort beschikbaar. We werken aan deze functie.',
+    'required_documents': 'Vereiste Documenten',
 }

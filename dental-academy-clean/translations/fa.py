@@ -1452,4 +1452,21 @@ translations = {
     'error_changing_password': 'خطا در تغییر رمز عبور: {error}',
     'file_too_large': 'فایل خیلی بزرگ است. حداکثر اندازه: 10MB',
     'invalid_file_type': 'نوع فایل نامعتبر. مجاز: PDF, DOC, DOCX, JPG, PNG',
+    
+    # Documents page translations
+    'diploma': 'دیپلم آموزش عالی',
+    'diploma_description': 'لیسانس، فوق لیسانس یا تخصص در رشته پزشکی',
+    'language_certificate': 'گواهی زبان',
+    'language_cert_description': 'گواهی IELTS، TOEFL یا معادل آن',
+    'passport': 'پاسپورت',
+    'passport_description': 'صفحه با عکس و اطلاعات شخصی',
+    'additional_documents': 'اسناد اضافی',
+    'additional_docs_description': 'مراجع، توصیه‌نامه‌ها، اسناد دیگر',
+    'required': 'اجباری',
+    'optional': 'اختیاری',
+    'click_to_upload': 'برای آپلود کلیک کنید',
+    'preview': 'پیش‌نمایش',
+    'feature_coming_soon': 'قابلیت به زودی',
+    'documents_coming_soon_desc': 'آپلود اسناد به زودی در دسترس خواهد بود. ما روی این قابلیت کار می‌کنیم.',
+    'required_documents': 'اسناد مورد نیاز',
 }

@@ -1362,4 +1362,21 @@ translations = {
     'error_changing_password': 'Помилка при зміні пароля: {error}',
     'file_too_large': 'Файл занадто великий. Максимальний розмір: 10MB',
     'invalid_file_type': 'Недопустимий формат файлу. Дозволені: PDF, DOC, DOCX, JPG, PNG',
+    
+    # Documents page translations
+    'diploma': 'Диплом про вищу освіту',
+    'diploma_description': 'Диплом бакалавра, магістра або спеціаліста з медичної спеціальності',
+    'language_certificate': 'Сертифікат знання мови',
+    'language_cert_description': 'Сертифікат IELTS, TOEFL або еквівалентний документ',
+    'passport': 'Паспорт',
+    'passport_description': 'Сторінка з фотографією та особистими даними',
+    'additional_documents': 'Додаткові документи',
+    'additional_docs_description': 'Довідки, рекомендації, інші документи',
+    'required': 'Обов\'язково',
+    'optional': 'Необов\'язково',
+    'click_to_upload': 'Натисніть для завантаження',
+    'preview': 'Попередній перегляд',
+    'feature_coming_soon': 'Функція скоро з\'явиться',
+    'documents_coming_soon_desc': 'Завантаження документів буде доступне найближчим часом. Ми працюємо над цією функцією.',
+    'required_documents': 'Необхідні документи',
 }

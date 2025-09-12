@@ -1362,4 +1362,21 @@ translations = {
     'error_changing_password': 'Erro ao alterar senha: {error}',
     'file_too_large': 'Arquivo muito grande. Tamanho máximo: 10MB',
     'invalid_file_type': 'Tipo de arquivo inválido. Permitidos: PDF, DOC, DOCX, JPG, PNG',
+    
+    # Documents page translations
+    'diploma': 'Diploma de Ensino Superior',
+    'diploma_description': 'Bacharelado, Mestrado ou Especialização em área médica',
+    'language_certificate': 'Certificado de Idioma',
+    'language_cert_description': 'Certificado IELTS, TOEFL ou equivalente',
+    'passport': 'Passaporte',
+    'passport_description': 'Página com foto e informações pessoais',
+    'additional_documents': 'Documentos Adicionais',
+    'additional_docs_description': 'Referências, recomendações, outros documentos',
+    'required': 'Obrigatório',
+    'optional': 'Opcional',
+    'click_to_upload': 'Clique para enviar',
+    'preview': 'Visualização',
+    'feature_coming_soon': 'Função Em Breve',
+    'documents_coming_soon_desc': 'O upload de documentos estará disponível em breve. Estamos trabalhando nesta função.',
+    'required_documents': 'Documentos Necessários',
 }
