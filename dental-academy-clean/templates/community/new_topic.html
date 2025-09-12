@@ -340,14 +340,21 @@ document.querySelector('form').addEventListener('submit', function(e) {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ t("creating", lang) | default("Creating...") }}';
     submitBtn.disabled = true;
     
-    // Get form data
+    // Get form data as JSON
     const formData = new FormData(form);
+    const jsonData = {};
+    
+    // Convert FormData to JSON
+    for (let [key, value] of formData.entries()) {
+        jsonData[key] = value;
+    }
     
     // Submit form via AJAX
     fetch(form.action, {
         method: 'POST',
-        body: formData,
+        body: JSON.stringify(jsonData),
         headers: {
+            'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
