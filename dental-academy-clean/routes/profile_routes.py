@@ -174,8 +174,45 @@ def documents():
                     else:
                         flash(t('invalid_file_type', lang), 'error')
             
+            # Обработка загрузки паспорта
+            if 'passport' in request.files:
+                passport_file = request.files['passport']
+                if passport_file and passport_file.filename:
+                    if allowed_file(passport_file.filename):
+                        if validate_file_size(passport_file):
+                            filename = secure_filename(f"passport_{current_user.id}_{passport_file.filename}")
+                            filepath = os.path.join(UPLOAD_FOLDER, filename)
+                            passport_file.save(filepath)
+                            # Сохраняем в дополнительное поле или создаем новое поле
+                            if not hasattr(current_user, 'passport_file'):
+                                # Если поле не существует, используем дополнительные документы
+                                current_user.additional_documents = filepath
+                            else:
+                                current_user.passport_file = filepath
+                            flash(t('document_uploaded_successfully', lang), 'success')
+                        else:
+                            flash(t('file_too_large', lang), 'error')
+                    else:
+                        flash(t('invalid_file_type', lang), 'error')
+            
+            # Обработка загрузки дополнительных документов
+            if 'additional_documents' in request.files:
+                additional_file = request.files['additional_documents']
+                if additional_file and additional_file.filename:
+                    if allowed_file(additional_file.filename):
+                        if validate_file_size(additional_file):
+                            filename = secure_filename(f"additional_{current_user.id}_{additional_file.filename}")
+                            filepath = os.path.join(UPLOAD_FOLDER, filename)
+                            additional_file.save(filepath)
+                            current_user.additional_documents = filepath
+                            flash(t('document_uploaded_successfully', lang), 'success')
+                        else:
+                            flash(t('file_too_large', lang), 'error')
+                    else:
+                        flash(t('invalid_file_type', lang), 'error')
+            
             db.session.commit()
-            return redirect(url_for('profile.documents'))
+            return redirect(url_for('profile.documents', lang=lang))
             
         except Exception as e:
             db.session.rollback()
