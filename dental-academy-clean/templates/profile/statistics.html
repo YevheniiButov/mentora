@@ -92,8 +92,8 @@
     
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
         margin-bottom: 2rem;
     }
     
@@ -325,6 +325,10 @@
             padding: 1.5rem;
         }
         
+        .stat-value {
+            font-size: 2rem;
+        }
+        
         .progress-section {
             padding: 1.5rem;
         }
@@ -335,6 +339,14 @@
         
         .achievement-grid {
             grid-template-columns: 1fr;
+        }
+        
+        .progress-label {
+            font-size: 0.9rem;
+        }
+        
+        .progress-percentage {
+            font-size: 0.9rem;
         }
     }
 </style>
@@ -378,7 +390,7 @@
                     <div class="stat-icon study-time">
                         <i class="fas fa-clock"></i>
                     </div>
-                    <div class="stat-value">{{ stats.total_study_time }}</div>
+                    <div class="stat-value">0 {{ t('hours', lang) | default('часов') }}</div>
                     <div class="stat-label">{{ t('total_study_time', lang) | default('Общее время обучения') }}</div>
                 </div>
                 
@@ -386,7 +398,7 @@
                     <div class="stat-icon modules">
                         <i class="fas fa-book"></i>
                     </div>
-                    <div class="stat-value">{{ stats.completed_modules }}</div>
+                    <div class="stat-value">0</div>
                     <div class="stat-label">{{ t('completed_modules', lang) | default('Завершенные модули') }}</div>
                 </div>
                 
@@ -394,7 +406,7 @@
                     <div class="stat-icon score">
                         <i class="fas fa-star"></i>
                     </div>
-                    <div class="stat-value">{{ stats.average_score }}%</div>
+                    <div class="stat-value">0%</div>
                     <div class="stat-label">{{ t('average_score', lang) | default('Средний балл') }}</div>
                 </div>
                 
@@ -402,7 +414,7 @@
                     <div class="stat-icon streak">
                         <i class="fas fa-fire"></i>
                     </div>
-                    <div class="stat-value">{{ stats.current_streak }}</div>
+                    <div class="stat-value">0</div>
                     <div class="stat-label">{{ t('current_streak', lang) | default('Текущая серия') }}</div>
                 </div>
                 
@@ -410,7 +422,7 @@
                     <div class="stat-icon achievements">
                         <i class="fas fa-trophy"></i>
                     </div>
-                    <div class="stat-value">{{ stats.total_achievements }}</div>
+                    <div class="stat-value">0</div>
                     <div class="stat-label">{{ t('total_achievements', lang) | default('Всего достижений') }}</div>
                 </div>
             </div>
@@ -457,6 +469,16 @@
                 <div class="progress-item">
                     <div class="progress-header">
                         <span class="progress-label">{{ t('professional_ethics', lang) | default('Профессиональная этика') }}</span>
+                        <span class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ t('big_exam_preparation', lang) | default('Подготовка к БИГ экзамену') }}</span>
                         <span class="progress-percentage">0%</span>
                     </div>
                     <div class="progress-bar">
