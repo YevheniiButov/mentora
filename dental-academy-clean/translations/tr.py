@@ -1340,4 +1340,6 @@ translations = {
     'feature_coming_soon': 'Özellik Yakında',
     'documents_coming_soon_desc': 'Belge yükleme yakında kullanılabilir olacak. Bu özellik üzerinde çalışıyoruz.',
     'required_documents': 'Gerekli Belgeler',
+    'upload_documents': 'Belgeleri Yükle',
+    'file_selected': 'Dosya Seçildi',
 }

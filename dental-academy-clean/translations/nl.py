@@ -1751,4 +1751,6 @@ translations = {
     'feature_coming_soon': 'Functie Binnenkort Beschikbaar',
     'documents_coming_soon_desc': 'Document upload wordt binnenkort beschikbaar. We werken aan deze functie.',
     'required_documents': 'Vereiste Documenten',
+    'upload_documents': 'Documenten Uploaden',
+    'file_selected': 'Bestand Geselecteerd',
 }

@@ -1430,4 +1430,6 @@ translations = {
     'feature_coming_soon': 'Función Próximamente',
     'documents_coming_soon_desc': 'La carga de documentos estará disponible pronto. Estamos trabajando en esta función.',
     'required_documents': 'Documentos Requeridos',
+    'upload_documents': 'Subir Documentos',
+    'file_selected': 'Archivo Seleccionado',
 }

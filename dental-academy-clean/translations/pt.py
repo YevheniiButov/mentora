@@ -1379,4 +1379,6 @@ translations = {
     'feature_coming_soon': 'Função Em Breve',
     'documents_coming_soon_desc': 'O upload de documentos estará disponível em breve. Estamos trabalhando nesta função.',
     'required_documents': 'Documentos Necessários',
+    'upload_documents': 'Enviar Documentos',
+    'file_selected': 'Arquivo Selecionado',
 }

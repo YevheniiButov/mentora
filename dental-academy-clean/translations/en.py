@@ -1918,4 +1918,6 @@ translations = {
     'feature_coming_soon': 'Feature Coming Soon',
     'documents_coming_soon_desc': 'Document upload will be available soon. We are working on this feature.',
     'required_documents': 'Required Documents',
+    'upload_documents': 'Upload Documents',
+    'file_selected': 'File Selected',
 }

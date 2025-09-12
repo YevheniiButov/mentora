@@ -1820,4 +1820,6 @@ translations = {
     'feature_coming_soon': 'Функция скоро появится',
     'documents_coming_soon_desc': 'Загрузка документов будет доступна в ближайшее время. Мы работаем над этой функцией.',
     'required_documents': 'Необходимые документы',
+    'upload_documents': 'Загрузить документы',
+    'file_selected': 'Файл выбран',
 }

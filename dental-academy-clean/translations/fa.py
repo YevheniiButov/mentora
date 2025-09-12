@@ -1469,4 +1469,6 @@ translations = {
     'feature_coming_soon': 'قابلیت به زودی',
     'documents_coming_soon_desc': 'آپلود اسناد به زودی در دسترس خواهد بود. ما روی این قابلیت کار می‌کنیم.',
     'required_documents': 'اسناد مورد نیاز',
+    'upload_documents': 'آپلود اسناد',
+    'file_selected': 'فایل انتخاب شد',
 }

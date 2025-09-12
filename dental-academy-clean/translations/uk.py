@@ -1379,4 +1379,6 @@ translations = {
     'feature_coming_soon': 'Функція скоро з\'явиться',
     'documents_coming_soon_desc': 'Завантаження документів буде доступне найближчим часом. Ми працюємо над цією функцією.',
     'required_documents': 'Необхідні документи',
+    'upload_documents': 'Завантажити документи',
+    'file_selected': 'Файл вибрано',
 }

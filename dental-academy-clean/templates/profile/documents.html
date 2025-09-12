@@ -125,6 +125,72 @@
         color: #319795;
     }
     
+    .form-actions {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f1f5f9;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #4338ca, #6d28d9);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+    }
+    
+    .preview-image-container,
+    .preview-pdf-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .preview-image {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .file-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .file-name {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 0.9rem;
+    }
+    
+    .file-size {
+        font-size: 0.8rem;
+        color: #718096;
+    }
+    
     .document-upload {
         display: flex;
         justify-content: center;
@@ -306,6 +372,7 @@
             </div>
             
             
+            <form method="POST" enctype="multipart/form-data" class="documents-form">
             <div class="documents-list">
                 <h3>{{ t('documents', lang) | default('Документы') }}</h3>
                 
@@ -433,6 +500,15 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Кнопка отправки -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-upload"></i>
+                    {{ t('upload_documents', lang) | default('Загрузить документы') }}
+                </button>
+            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -482,26 +558,54 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function handleFile(file, documentType, uploadArea) {
-        // Показываем уведомление о том, что функция в разработке
-        alert('{{ t("feature_in_development", lang) | default("Функция загрузки документов находится в разработке") }}');
+        // Валидация файла
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        const maxSize = 10 * 1024 * 1024; // 10MB
         
-        // В будущем здесь будет:
-        // 1. Валидация файла
-        // 2. Загрузка на сервер
-        // 3. Обновление предпросмотра
-        // 4. Сохранение в базе данных
+        if (!allowedTypes.includes(file.type)) {
+            alert('{{ t("invalid_file_type", lang) | default("Недопустимый формат файла. Разрешены: PDF, JPG, PNG") }}');
+            return;
+        }
         
-        // Пример обновления предпросмотра (закомментировано)
-        /*
+        if (file.size > maxSize) {
+            alert('{{ t("file_too_large", lang) | default("Файл слишком большой. Максимальный размер: 10MB") }}');
+            return;
+        }
+        
+        // Обновляем предпросмотр
+        const preview = uploadArea.closest('.document-row').querySelector('.document-preview');
+        
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const preview = uploadArea.closest('.document-row').querySelector('.document-preview');
-                preview.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Preview">`;
+                preview.innerHTML = `
+                    <div class="preview-image-container">
+                        <img src="${e.target.result}" class="preview-image" alt="Preview">
+                        <div class="file-info">
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                        </div>
+                    </div>
+                `;
             };
             reader.readAsDataURL(file);
+        } else if (file.type === 'application/pdf') {
+            preview.innerHTML = `
+                <div class="preview-pdf-container">
+                    <i class="fas fa-file-pdf" style="font-size: 3rem; color: #e53e3e;"></i>
+                    <div class="file-info">
+                        <span class="file-name">${file.name}</span>
+                        <span class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                    </div>
+                </div>
+            `;
         }
-        */
+        
+        // Обновляем текст в области загрузки
+        const uploadContent = uploadArea.querySelector('.upload-content span');
+        uploadContent.textContent = '{{ t("file_selected", lang) | default("Файл выбран") }}';
+        uploadArea.style.borderColor = '#4f46e5';
+        uploadArea.style.backgroundColor = '#f0f4ff';
     }
 });
 </script>
