@@ -109,12 +109,6 @@ def digid_logout():
     # Можно добавить очистку сессии, если нужно: session.clear()
     return redirect(url_for('main.index', lang=g.get('lang', 'en')))
 
-@auth_bp.route('/profile')
-@login_required
-def profile():
-    """User profile page"""
-    user_stats = current_user.get_progress_stats()
-    return render_template('auth/profile.html', user_stats=user_stats)
 
 @auth_bp.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
@@ -223,7 +217,7 @@ def handle_personal_data_update():
     
     db.session.commit()
     flash('Personal information updated successfully!', 'success')
-    return redirect(url_for('auth.profile'))
+    return redirect(url_for('profile.index', lang=g.get('lang', 'en')))
 
 def handle_professional_data_update():
     """Handle professional data section updates"""
@@ -256,7 +250,7 @@ def handle_professional_data_update():
     
     db.session.commit()
     flash('Professional information updated successfully!', 'success')
-    return redirect(url_for('auth.profile'))
+    return redirect(url_for('profile.index', lang=g.get('lang', 'en')))
 
 def handle_documents_update():
     """Handle documents section updates"""
@@ -396,7 +390,7 @@ def handle_settings_update():
     
     db.session.commit()
     flash('Settings updated successfully!', 'success')
-    return redirect(url_for('auth.profile'))
+    return redirect(url_for('profile.index', lang=g.get('lang', 'en')))
 
 @auth_bp.route('/profile/delete-document', methods=['POST'])
 @login_required
@@ -467,7 +461,7 @@ def change_password():
             db.session.commit()
             
             flash('Password changed successfully!', 'success')
-            return redirect(url_for('auth.profile'))
+            return redirect(url_for('profile.index', lang=g.get('lang', 'en')))
             
         except Exception as e:
             db.session.rollback()
