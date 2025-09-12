@@ -1960,4 +1960,5 @@ translations = {
     'replies': 'replies',
     'views': 'views',
     'likes': 'likes',
+    'reply': 'Reply',
 }

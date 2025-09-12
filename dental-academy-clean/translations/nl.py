@@ -1793,4 +1793,5 @@ translations = {
     'replies': 'antwoorden',
     'views': 'weergaven',
     'likes': 'likes',
+    'reply': 'Antwoorden',
 }

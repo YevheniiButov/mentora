@@ -1862,4 +1862,5 @@ translations = {
     'replies': 'ответов',
     'views': 'просмотров',
     'likes': 'лайков',
+    'reply': 'Ответить',
 }

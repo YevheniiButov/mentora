@@ -1641,4 +1641,5 @@ translations = {
     'replies': 'respuestas',
     'views': 'vistas',
     'likes': 'me gusta',
+    'reply': 'Responder',
 }

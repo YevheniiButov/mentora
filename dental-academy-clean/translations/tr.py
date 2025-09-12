@@ -1550,4 +1550,5 @@ translations = {
     'replies': 'yanıtlar',
     'views': 'görüntüleme',
     'likes': 'beğeni',
+    'reply': 'Yanıtla',
 }

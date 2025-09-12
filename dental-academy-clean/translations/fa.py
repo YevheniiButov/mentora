@@ -1679,4 +1679,5 @@ translations = {
     'replies': 'پاسخ‌ها',
     'views': 'بازدیدها',
     'likes': 'لایک‌ها',
+    'reply': 'پاسخ',
 }
