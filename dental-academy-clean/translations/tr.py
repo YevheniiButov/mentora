@@ -1305,4 +1305,22 @@ translations = {
     'practice_tests': 'Uygulama testleri',
     'ai_assistant': 'AI asistanı',
     'virtual_patients': 'Sanal hastalar',
+    
+    # Flash Messages
+    'personal_info_updated_successfully': 'Kişisel bilgiler başarıyla güncellendi!',
+    'error_updating_info': 'Bilgileri güncellerken hata: {error}',
+    'diploma_uploaded_successfully': 'Diploma başarıyla yüklendi!',
+    'language_certificate_uploaded_successfully': 'Dil sertifikası başarıyla yüklendi!',
+    'settings_saved_successfully': 'Ayarlar başarıyla kaydedildi!',
+    'password_changed_successfully': 'Şifre başarıyla değiştirildi!',
+    'diploma_deleted': 'Diploma silindi',
+    'language_certificate_deleted': 'Dil sertifikası silindi',
+    'document_not_found': 'Belge bulunamadı',
+    'error_deleting_document': 'Belgeyi silerken hata: {error}',
+    'error_uploading_document': 'Belgeyi yüklerken hata: {error}',
+    'file_too_large': 'Dosya çok büyük. Maksimum boyut: 10MB',
+    'invalid_file_type': 'Geçersiz dosya türü. İzin verilen: PDF, DOC, DOCX, JPG, PNG',
+    'document_uploaded_successfully': 'Belge başarıyla yüklendi!',
+    'document_deleted_successfully': 'Belge başarıyla silindi!',
+    'error_processing_request': 'İstek işlenirken hata: {error}',
 }

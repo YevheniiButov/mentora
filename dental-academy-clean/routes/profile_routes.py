@@ -2,7 +2,7 @@
 Profile Routes - Новый профессиональный личный кабинет
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, g
 from flask_login import login_required, current_user
 from models import User
 from extensions import db
@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import os
 from werkzeug.utils import secure_filename
 from utils.file_upload import allowed_file, validate_file_size
+from translations import t
 
 profile_bp = Blueprint('profile', __name__)
 
@@ -87,12 +88,12 @@ def personal_info():
             # current_user.updated_at = datetime.now(timezone.utc)  # Поле может отсутствовать
             
             db.session.commit()
-            flash('Личная информация успешно обновлена!', 'success')
+            flash(t('personal_info_updated_successfully', lang), 'success')
             return redirect(url_for('profile.personal_info'))
             
         except Exception as e:
             db.session.rollback()
-            flash('Ошибка при обновлении информации: ' + str(e), 'error')
+            flash(t('error_updating_info', lang).format(error=str(e)), 'error')
             return render_template('profile/personal_info.html', user=current_user, lang=lang)
     
     return render_template('profile/personal_info.html', user=current_user, lang=lang)
@@ -113,11 +114,11 @@ def update_personal_info():
         current_user.language = request.form.get('language', 'nl')
         
         db.session.commit()
-        flash('Личная информация успешно обновлена!', 'success')
+        flash(t('personal_info_updated_successfully', lang), 'success')
         
     except Exception as e:
         db.session.rollback()
-        flash('Ошибка при обновлении информации: ' + str(e), 'error')
+        flash(t('error_updating_info', lang).format(error=str(e)), 'error')
     
     return redirect(url_for('profile.personal_info', lang=lang))
 
@@ -139,11 +140,11 @@ def documents():
                             filepath = os.path.join(UPLOAD_FOLDER, filename)
                             diploma_file.save(filepath)
                             current_user.diploma_file = filepath
-                            flash('Диплом успешно загружен!', 'success')
+                            flash(t('diploma_uploaded_successfully', lang), 'success')
                         else:
-                            flash('Файл слишком большой. Максимальный размер: 10MB', 'error')
+                            flash(t('file_too_large', lang), 'error')
                     else:
-                        flash('Недопустимый формат файла. Разрешены: PDF, DOC, DOCX, JPG, PNG', 'error')
+                        flash(t('invalid_file_type', lang), 'error')
             
             # Обработка загрузки языкового сертификата
             if 'language_certificate' in request.files:
@@ -155,18 +156,18 @@ def documents():
                             filepath = os.path.join(UPLOAD_FOLDER, filename)
                             cert_file.save(filepath)
                             current_user.language_certificate = filepath
-                            flash('Языковой сертификат успешно загружен!', 'success')
+                            flash(t('language_certificate_uploaded_successfully', lang), 'success')
                         else:
-                            flash('Файл слишком большой. Максимальный размер: 10MB', 'error')
+                            flash(t('file_too_large', lang), 'error')
                     else:
-                        flash('Недопустимый формат файла. Разрешены: PDF, DOC, DOCX, JPG, PNG', 'error')
+                        flash(t('invalid_file_type', lang), 'error')
             
             db.session.commit()
             return redirect(url_for('profile.documents'))
             
         except Exception as e:
             db.session.rollback()
-            flash('Ошибка при загрузке документа: ' + str(e), 'error')
+            flash(t('error_uploading_document', lang).format(error=str(e)), 'error')
     
     return render_template('profile/documents.html', user=current_user, lang=lang)
 
@@ -191,12 +192,12 @@ def settings():
             session['lang'] = language
             
             db.session.commit()
-            flash('Настройки успешно сохранены!', 'success')
+            flash(t('settings_saved_successfully', lang), 'success')
             return redirect(url_for('profile.settings'))
             
         except Exception as e:
             db.session.rollback()
-            flash('Ошибка при сохранении настроек: ' + str(e), 'error')
+            flash(t('error_processing_request', lang).format(error=str(e)), 'error')
     
     return render_template('profile/settings.html', user=current_user, lang=lang)
 
@@ -237,12 +238,12 @@ def security():
             # current_user.updated_at = datetime.now(timezone.utc)  # Поле может отсутствовать
             
             db.session.commit()
-            flash('Пароль успешно изменен!', 'success')
+            flash(t('password_changed_successfully', lang), 'success')
             return redirect(url_for('profile.security'))
             
         except Exception as e:
             db.session.rollback()
-            flash('Ошибка при изменении пароля: ' + str(e), 'error')
+            flash(t('error_processing_request', lang).format(error=str(e)), 'error')
     
     return render_template('profile/security.html', user=current_user, lang=lang)
 
@@ -278,20 +279,20 @@ def delete_document():
             if os.path.exists(current_user.diploma_file):
                 os.remove(current_user.diploma_file)
             current_user.diploma_file = None
-            flash('Диплом удален', 'success')
+            flash(t('diploma_deleted', lang), 'success')
         elif document_type == 'language_certificate' and current_user.language_certificate:
             # Удаляем файл с диска
             if os.path.exists(current_user.language_certificate):
                 os.remove(current_user.language_certificate)
             current_user.language_certificate = None
-            flash('Языковой сертификат удален', 'success')
+            flash(t('language_certificate_deleted', lang), 'success')
         else:
-            flash('Документ не найден', 'error')
+            flash(t('document_not_found', lang), 'error')
         
         db.session.commit()
         
     except Exception as e:
         db.session.rollback()
-        flash('Ошибка при удалении документа: ' + str(e), 'error')
+        flash(t('error_deleting_document', lang).format(error=str(e)), 'error')
     
     return redirect(url_for('profile.documents'))
