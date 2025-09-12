@@ -45,9 +45,30 @@
   {# Защитная проверка: если request.endpoint не задан — вернём просто главную страницу с нужным языком #}
   {% if request.endpoint %}
     {% set args = (request.view_args or {}).copy() %}
-    {% set args = args.update({'lang': language}) or args %}
-    {{ url_for(request.endpoint, **args) }}
+    {% set _ = args.update({'lang': language}) %}
+    
+    {# Специальная обработка для маршрутов профиля #}
+    {% if request.endpoint.startswith('profile.') %}
+      {# Для страниц профиля используем прямые URL с параметром lang #}
+      {% if request.endpoint == 'profile.index' %}
+        {{ url_for('profile.index', lang=language) }}
+      {% elif request.endpoint == 'profile.personal_info' %}
+        {{ url_for('profile.personal_info', lang=language) }}
+      {% elif request.endpoint == 'profile.documents' %}
+        {{ url_for('profile.documents', lang=language) }}
+      {% elif request.endpoint == 'profile.settings' %}
+        {{ url_for('profile.settings', lang=language) }}
+      {% elif request.endpoint == 'profile.security' %}
+        {{ url_for('profile.security', lang=language) }}
+      {% elif request.endpoint == 'profile.statistics' %}
+        {{ url_for('profile.statistics', lang=language) }}
+      {% else %}
+        {{ url_for(request.endpoint, **args) }}
+      {% endif %}
+    {% else %}
+      {{ url_for(request.endpoint, **args) }}
+    {% endif %}
   {% else %}
-    {{ url_for('index') }}
+    {{ url_for('index', lang=language) }}
   {% endif %}
 {% endmacro %}

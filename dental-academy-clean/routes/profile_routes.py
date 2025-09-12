@@ -23,7 +23,10 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 @login_required
 def index():
     """Главная страница профиля"""
-    lang = session.get('lang', 'nl')
+    # Получаем язык из URL параметра или сессии
+    lang = request.args.get('lang') or session.get('lang', 'nl')
+    # Обновляем язык в сессии
+    session['lang'] = lang
     
     # Получаем статистику пользователя
     user_stats = {
@@ -46,7 +49,10 @@ def index():
 @login_required
 def personal_info():
     """Редактирование личной информации"""
-    lang = session.get('lang', 'nl')
+    # Получаем язык из URL параметра или сессии
+    lang = request.args.get('lang') or session.get('lang', 'nl')
+    # Обновляем язык в сессии
+    session['lang'] = lang
     
     if request.method == 'POST':
         try:
@@ -102,7 +108,10 @@ def personal_info():
 @login_required
 def update_personal_info():
     """Обновление личной информации"""
-    lang = session.get('lang', 'nl')
+    # Получаем язык из URL параметра или сессии
+    lang = request.args.get('lang') or session.get('lang', 'nl')
+    # Обновляем язык в сессии
+    session['lang'] = lang
     
     try:
         # Обновляем данные пользователя
@@ -126,7 +135,10 @@ def update_personal_info():
 @login_required
 def documents():
     """Управление документами"""
-    lang = session.get('lang', 'nl')
+    # Получаем язык из URL параметра или сессии
+    lang = request.args.get('lang') or session.get('lang', 'nl')
+    # Обновляем язык в сессии
+    session['lang'] = lang
     
     if request.method == 'POST':
         try:
@@ -175,7 +187,10 @@ def documents():
 @login_required
 def settings():
     """Настройки профиля"""
-    lang = session.get('lang', 'nl')
+    # Получаем язык из URL параметра или сессии
+    lang = request.args.get('lang') or session.get('lang', 'nl')
+    # Обновляем язык в сессии
+    session['lang'] = lang
     
     if request.method == 'POST':
         try:
@@ -205,7 +220,10 @@ def settings():
 @login_required
 def security():
     """Настройки безопасности"""
-    lang = session.get('lang', 'nl')
+    # Получаем язык из URL параметра или сессии
+    lang = request.args.get('lang') or session.get('lang', 'nl')
+    # Обновляем язык в сессии
+    session['lang'] = lang
     
     if request.method == 'POST':
         try:
@@ -251,7 +269,10 @@ def security():
 @login_required
 def statistics():
     """Статистика пользователя (заглушка)"""
-    lang = session.get('lang', 'nl')
+    # Получаем язык из URL параметра или сессии
+    lang = request.args.get('lang') or session.get('lang', 'nl')
+    # Обновляем язык в сессии
+    session['lang'] = lang
     
     # Заглушка для статистики
     stats = {
