@@ -203,9 +203,15 @@
         request.endpoint.startswith('learning_map_bp.') or 
         request.endpoint.startswith('subject_view_bp.') or 
         request.endpoint.startswith('profession_map_bp.') or
+        request.endpoint.startswith('main.community') or
+        request.endpoint.startswith('main.community_category') or
+        request.endpoint.startswith('main.community_topic') or
+        request.endpoint.startswith('main.new_topic') or
+        request.endpoint.startswith('main.create_topic') or
         'leerkaart' in request.path or
         'learning-map' in request.path or
-        'subject-view' in request.path
+        'subject-view' in request.path or
+        'community/topic' in request.path
     ) %}
         {% include 'includes/_footer.html' %}
     {% endif %}
