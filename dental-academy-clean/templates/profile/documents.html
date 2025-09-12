@@ -46,143 +46,171 @@
         margin: 0;
     }
     
-    .upload-section {
-        background: #f8fafc;
-        border: 2px dashed #cbd5e0;
-        border-radius: 12px;
-        padding: 2rem;
-        text-align: center;
-        margin-bottom: 2rem;
-        transition: all 0.3s ease;
-    }
-    
-    .upload-section:hover {
-        border-color: #667eea;
-        background: #f0f4ff;
-    }
-    
-    .upload-section.dragover {
-        border-color: #667eea;
-        background: #e6f3ff;
-        transform: scale(1.02);
-    }
-    
-    .upload-icon {
-        font-size: 3rem;
-        color: #a0aec0;
-        margin-bottom: 1rem;
-    }
-    
-    .upload-text {
-        font-size: 1.1rem;
-        color: #4a5568;
-        margin-bottom: 1rem;
-    }
-    
-    .upload-hint {
-        font-size: 0.9rem;
-        color: #718096;
-        margin-bottom: 1.5rem;
-    }
-    
-    .file-input {
-        display: none;
-    }
-    
-    .upload-btn {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 1rem;
-    }
-    
-    .upload-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    }
-    
     .documents-list {
         margin-top: 2rem;
     }
     
-    .document-item {
-        display: flex;
+    .document-row {
+        display: grid;
+        grid-template-columns: 1fr 200px 150px;
+        gap: 1.5rem;
         align-items: center;
-        padding: 1rem;
+        padding: 1.5rem;
         background: white;
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        border-radius: 12px;
         margin-bottom: 1rem;
         transition: all 0.3s ease;
     }
     
-    .document-item:hover {
+    .document-row:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         transform: translateY(-1px);
     }
     
+    .document-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
     .document-icon {
-        width: 40px;
-        height: 40px;
-        background: #f7fafc;
-        border-radius: 8px;
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 1rem;
-        color: #4a5568;
+        color: white;
+        font-size: 1.2rem;
     }
     
-    .document-info {
-        flex: 1;
-    }
-    
-    .document-name {
+    .document-details h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
         font-weight: 600;
         color: #2d3748;
-        margin-bottom: 0.25rem;
     }
     
-    .document-meta {
-        font-size: 0.85rem;
+    .document-details p {
+        margin: 0 0 0.75rem 0;
+        font-size: 0.9rem;
         color: #718096;
+        line-height: 1.4;
     }
     
-    .document-actions {
+    .document-status {
         display: flex;
         gap: 0.5rem;
     }
     
-    .btn-action {
-        padding: 0.5rem;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
-    .btn-download {
-        background: #e6fffa;
-        color: #319795;
-    }
-    
-    .btn-download:hover {
-        background: #b2f5ea;
-    }
-    
-    .btn-delete {
+    .status-required {
         background: #fed7d7;
         color: #e53e3e;
     }
     
-    .btn-delete:hover {
-        background: #feb2b2;
+    .status-optional {
+        background: #e6fffa;
+        color: #319795;
+    }
+    
+    .document-upload {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .upload-area {
+        width: 100%;
+        height: 80px;
+        background: #f8fafc;
+        border: 2px dashed #cbd5e0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .upload-area:hover {
+        border-color: #667eea;
+        background: #f0f4ff;
+    }
+    
+    .upload-area.dragover {
+        border-color: #667eea;
+        background: #e6f3ff;
+        transform: scale(1.05);
+    }
+    
+    .upload-content {
+        text-align: center;
+        color: #718096;
+    }
+    
+    .upload-content i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .upload-content span {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .file-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .document-preview {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .preview-placeholder {
+        width: 100%;
+        height: 80px;
+        background: #f7fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #a0aec0;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+    
+    .preview-placeholder i {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .preview-image {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
     }
     
     .btn-back {
@@ -245,22 +273,31 @@
             margin-bottom: 1rem;
         }
         
-        .upload-section {
-            padding: 1.5rem;
+        .document-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            text-align: center;
         }
         
-        .document-item {
+        .document-info {
             flex-direction: column;
             text-align: center;
         }
         
-        .document-icon {
-            margin-right: 0;
-            margin-bottom: 1rem;
+        .document-upload {
+            order: 2;
         }
         
-        .document-actions {
-            margin-top: 1rem;
+        .document-preview {
+            order: 3;
+        }
+        
+        .upload-area {
+            height: 60px;
+        }
+        
+        .preview-placeholder {
+            height: 60px;
         }
     }
 </style>
@@ -289,52 +326,131 @@
                 <p>{{ t('documents_coming_soon_desc', lang) | default('Загрузка документов будет доступна в ближайшее время. Мы работаем над этой функцией.') }}</p>
             </div>
             
-            <div class="upload-section" id="uploadSection">
-                <div class="upload-icon">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                </div>
-                <div class="upload-text">
-                    {{ t('upload_documents', lang) | default('Загрузите ваши документы') }}
-                </div>
-                <div class="upload-hint">
-                    {{ t('upload_hint', lang) | default('Перетащите файлы сюда или нажмите для выбора') }}
-                </div>
-                <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-plus"></i>
-                    {{ t('select_files', lang) | default('Выбрать файлы') }}
-                </button>
-            </div>
-            
             <div class="documents-list">
-                <h3>{{ t('uploaded_documents', lang) | default('Загруженные документы') }}</h3>
+                <h3>{{ t('required_documents', lang) | default('Необходимые документы') }}</h3>
                 
-                <!-- Пример документа (заглушка) -->
-                <div class="document-item">
-                    <div class="document-icon">
-                        <i class="fas fa-file-pdf"></i>
-                    </div>
+                <!-- Диплом о высшем образовании -->
+                <div class="document-row">
                     <div class="document-info">
-                        <div class="document-name">{{ t('diploma_example', lang) | default('Диплом о высшем образовании') }}</div>
-                        <div class="document-meta">
-                            {{ t('uploaded_on', lang) | default('Загружено') }}: 12.09.2025 | 
-                            {{ t('size', lang) | default('Размер') }}: 2.4 MB
+                        <div class="document-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="document-details">
+                            <h4>{{ t('diploma', lang) | default('Диплом о высшем образовании') }}</h4>
+                            <p>{{ t('diploma_description', lang) | default('Диплом бакалавра, магистра или специалиста по медицинской специальности') }}</p>
+                            <div class="document-status">
+                                <span class="status-badge status-required">{{ t('required', lang) | default('Обязательно') }}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="document-actions">
-                        <button class="btn-action btn-download" title="{{ t('download', lang) | default('Скачать') }}">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <button class="btn-action btn-delete" title="{{ t('delete', lang) | default('Удалить') }}">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <div class="document-upload">
+                        <div class="upload-area" data-document="diploma">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>{{ t('click_to_upload', lang) | default('Нажмите для загрузки') }}</span>
+                            </div>
+                            <input type="file" class="file-input" accept=".pdf,.jpg,.jpeg,.png" data-document="diploma">
+                        </div>
+                    </div>
+                    <div class="document-preview">
+                        <div class="preview-placeholder">
+                            <i class="fas fa-file-image"></i>
+                            <span>{{ t('preview', lang) | default('Предпросмотр') }}</span>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Сообщение, если документов нет -->
-                <div class="text-center text-muted" style="display: none;" id="noDocuments">
-                    <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
-                    <p>{{ t('no_documents', lang) | default('Документы не загружены') }}</p>
+                <!-- Сертификат о знании языка -->
+                <div class="document-row">
+                    <div class="document-info">
+                        <div class="document-icon">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <div class="document-details">
+                            <h4>{{ t('language_certificate', lang) | default('Сертификат о знании языка') }}</h4>
+                            <p>{{ t('language_cert_description', lang) | default('Сертификат IELTS, TOEFL или эквивалентный документ') }}</p>
+                            <div class="document-status">
+                                <span class="status-badge status-required">{{ t('required', lang) | default('Обязательно') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="document-upload">
+                        <div class="upload-area" data-document="language">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>{{ t('click_to_upload', lang) | default('Нажмите для загрузки') }}</span>
+                            </div>
+                            <input type="file" class="file-input" accept=".pdf,.jpg,.jpeg,.png" data-document="language">
+                        </div>
+                    </div>
+                    <div class="document-preview">
+                        <div class="preview-placeholder">
+                            <i class="fas fa-file-image"></i>
+                            <span>{{ t('preview', lang) | default('Предпросмотр') }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Паспорт -->
+                <div class="document-row">
+                    <div class="document-info">
+                        <div class="document-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <div class="document-details">
+                            <h4>{{ t('passport', lang) | default('Паспорт') }}</h4>
+                            <p>{{ t('passport_description', lang) | default('Страница с фотографией и личными данными') }}</p>
+                            <div class="document-status">
+                                <span class="status-badge status-required">{{ t('required', lang) | default('Обязательно') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="document-upload">
+                        <div class="upload-area" data-document="passport">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>{{ t('click_to_upload', lang) | default('Нажмите для загрузки') }}</span>
+                            </div>
+                            <input type="file" class="file-input" accept=".pdf,.jpg,.jpeg,.png" data-document="passport">
+                        </div>
+                    </div>
+                    <div class="document-preview">
+                        <div class="preview-placeholder">
+                            <i class="fas fa-file-image"></i>
+                            <span>{{ t('preview', lang) | default('Предпросмотр') }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Дополнительные документы -->
+                <div class="document-row">
+                    <div class="document-info">
+                        <div class="document-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="document-details">
+                            <h4>{{ t('additional_documents', lang) | default('Дополнительные документы') }}</h4>
+                            <p>{{ t('additional_docs_description', lang) | default('Справки, рекомендации, другие документы') }}</p>
+                            <div class="document-status">
+                                <span class="status-badge status-optional">{{ t('optional', lang) | default('Необязательно') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="document-upload">
+                        <div class="upload-area" data-document="additional">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>{{ t('click_to_upload', lang) | default('Нажмите для загрузки') }}</span>
+                            </div>
+                            <input type="file" class="file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" data-document="additional">
+                        </div>
+                    </div>
+                    <div class="document-preview">
+                        <div class="preview-placeholder">
+                            <i class="fas fa-file-image"></i>
+                            <span>{{ t('preview', lang) | default('Предпросмотр') }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -343,40 +459,69 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const uploadSection = document.getElementById('uploadSection');
-    const fileInput = document.getElementById('fileInput');
+    const uploadAreas = document.querySelectorAll('.upload-area');
+    const fileInputs = document.querySelectorAll('.file-input');
     
-    // Drag and drop functionality
-    uploadSection.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        uploadSection.classList.add('dragover');
-    });
-    
-    uploadSection.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        uploadSection.classList.remove('dragover');
-    });
-    
-    uploadSection.addEventListener('drop', function(e) {
-        e.preventDefault();
-        uploadSection.classList.remove('dragover');
+    // Обработка для каждого поля загрузки
+    uploadAreas.forEach((uploadArea, index) => {
+        const fileInput = fileInputs[index];
+        const documentType = uploadArea.dataset.document;
         
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFiles(files);
-        }
+        // Клик по области загрузки
+        uploadArea.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0], documentType, uploadArea);
+            }
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0], documentType, uploadArea);
+            }
+        });
     });
     
-    // File input change
-    fileInput.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            handleFiles(e.target.files);
-        }
-    });
-    
-    function handleFiles(files) {
+    function handleFile(file, documentType, uploadArea) {
         // Показываем уведомление о том, что функция в разработке
         alert('{{ t("feature_in_development", lang) | default("Функция загрузки документов находится в разработке") }}');
+        
+        // В будущем здесь будет:
+        // 1. Валидация файла
+        // 2. Загрузка на сервер
+        // 3. Обновление предпросмотра
+        // 4. Сохранение в базе данных
+        
+        // Пример обновления предпросмотра (закомментировано)
+        /*
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = uploadArea.closest('.document-row').querySelector('.document-preview');
+                preview.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Preview">`;
+            };
+            reader.readAsDataURL(file);
+        }
+        */
     }
 });
 </script>
