@@ -1512,4 +1512,10 @@ translations = {
     'achievement_exam_ready_desc': 'BIG sınavına hazırlanın',
 
     'personal_info_subtitle': 'Kişisel bilgilerinizi ve mesleki detaylarınızı güncelleyin',
+
+    'other_country': 'Diğer ülke',
+
+    'specify_study_country': 'Lütfen eğitim ülkesini belirtin',
+    'study_country_placeholder': 'Eğitim gördüğünüz ülkeyi girin',
+    'other_study_country_required': 'Lütfen eğitim ülkesini belirtin',
 }

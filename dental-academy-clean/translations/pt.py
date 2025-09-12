@@ -1551,4 +1551,10 @@ translations = {
     'achievement_exam_ready_desc': 'Prepare-se para o exame BIG',
 
     'personal_info_subtitle': 'Atualize suas informações pessoais e detalhes profissionais',
+
+    'other_country': 'Outro país',
+
+    'specify_study_country': 'Por favor especifique o país de estudo',
+    'study_country_placeholder': 'Digite o país onde você estudou',
+    'other_study_country_required': 'Por favor especifique o país de estudo',
 }

@@ -784,7 +784,7 @@
                     </div>
                     <div class="form-group">
                         <label for="study_country">{{ t('study_country', lang) | default('Country of Study') }} <span class="required">*</span></label>
-                        <select id="study_country" name="study_country" required>
+                        <select id="study_country" name="study_country" required onchange="toggleOtherField('study_country', 'other_study_country')">
                             <option value="">{{ t('select_country', lang) | default('Select Country') }}</option>
                             <option value="NL">{{ t('netherlands', lang) | default('Netherlands') }}</option>
                             <option value="DE">{{ t('germany', lang) | default('Germany') }}</option>
@@ -823,6 +823,11 @@
                             <option value="OTHER">{{ t('other_country', lang) | default('Other') }}</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="form-group" id="other_study_country_group" style="display: none;">
+                    <label for="other_study_country">{{ t('specify_study_country', lang) | default('Please specify the country of study') }} <span class="required">*</span></label>
+                    <input type="text" id="other_study_country" name="other_study_country" value="{{ user.other_study_country or '' }}" placeholder="{{ t('study_country_placeholder', lang) | default('Enter the country where you studied') }}">
                 </div>
 
                 <div class="form-group">
@@ -905,6 +910,9 @@ function initializeOtherFields() {
     
     // Check legal status field
     toggleOtherField('legal_status', 'other_legal_status');
+    
+    // Check study country field
+    toggleOtherField('study_country', 'other_study_country');
     
     // Initialize phone number formatting
     setupPhoneNumberFormatting();
@@ -1238,6 +1246,13 @@ function validateForm() {
     const otherLegalStatus = document.getElementById('other_legal_status');
     if (legalStatus.value === 'other' && !otherLegalStatus.value.trim()) {
         showFieldError(otherLegalStatus, '{{ t("other_legal_status_required", lang) | default("Please specify your legal status") }}');
+        isValid = false;
+    }
+    
+    const studyCountry = document.getElementById('study_country');
+    const otherStudyCountry = document.getElementById('other_study_country');
+    if (studyCountry.value === 'OTHER' && !otherStudyCountry.value.trim()) {
+        showFieldError(otherStudyCountry, '{{ t("other_study_country_required", lang) | default("Please specify the country of study") }}');
         isValid = false;
     }
     

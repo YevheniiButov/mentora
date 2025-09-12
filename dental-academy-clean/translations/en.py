@@ -1922,4 +1922,10 @@ translations = {
     'file_selected': 'File Selected',
 
     'personal_info_subtitle': 'Update your personal information and professional details',
+
+    'other_country': 'Other Country',
+
+    'specify_study_country': 'Please specify the country of study',
+    'study_country_placeholder': 'Enter the country where you studied',
+    'other_study_country_required': 'Please specify the country of study',
 }

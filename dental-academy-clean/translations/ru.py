@@ -1824,4 +1824,10 @@ translations = {
     'file_selected': 'Файл выбран',
 
     'personal_info_subtitle': 'Обновите вашу личную информацию и профессиональные данные',
+
+    'other_country': 'Другая страна',
+
+    'specify_study_country': 'Пожалуйста, укажите страну обучения',
+    'study_country_placeholder': 'Введите страну, где вы учились',
+    'other_study_country_required': 'Пожалуйста, укажите страну обучения',
 }

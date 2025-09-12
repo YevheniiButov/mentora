@@ -1755,4 +1755,10 @@ translations = {
     'file_selected': 'Bestand Geselecteerd',
 
     'personal_info_subtitle': 'Werk uw persoonlijke informatie en professionele gegevens bij',
+
+    'other_country': 'Ander land',
+
+    'specify_study_country': 'Geef het land van studie op',
+    'study_country_placeholder': 'Voer het land in waar je hebt gestudeerd',
+    'other_study_country_required': 'Geef het land van studie op',
 }

@@ -1551,4 +1551,10 @@ translations = {
     'achievement_exam_ready_desc': 'Підготуйтеся до БІГ іспиту',
 
     'personal_info_subtitle': 'Оновіть вашу особисту інформацію та професійні дані',
+
+    'other_country': 'Інша країна',
+
+    'specify_study_country': 'Будь ласка, вкажіть країну навчання',
+    'study_country_placeholder': 'Введіть країну, де ви навчалися',
+    'other_study_country_required': 'Будь ласка, вкажіть країну навчання',
 }
