@@ -1547,4 +1547,7 @@ translations = {
     'no_recent_activity': 'Son aktivite yok',
     'no_users_online': 'Çevrimiçi kullanıcı yok',
     'no_topics_found': 'Konu bulunamadı. Tartışma başlatan ilk kişi olun!',
+    'replies': 'yanıtlar',
+    'views': 'görüntüleme',
+    'likes': 'beğeni',
 }

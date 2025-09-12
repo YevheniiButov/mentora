@@ -419,6 +419,7 @@ def community_category(lang, category):
     return render_template('community/category.html', 
                          category=category,
                          forum_category=forum_category,
+                         category_data=forum_category,  # Добавляем для совместимости с шаблоном
                          topics=topics,
                          all_categories=all_categories,
                          lang=lang)

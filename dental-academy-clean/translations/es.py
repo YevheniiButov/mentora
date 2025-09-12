@@ -1638,4 +1638,7 @@ translations = {
     'no_recent_activity': 'Sin actividad reciente',
     'no_users_online': 'No hay usuarios en línea',
     'no_topics_found': 'No se encontraron temas. ¡Sé el primero en iniciar una discusión!',
+    'replies': 'respuestas',
+    'views': 'vistas',
+    'likes': 'me gusta',
 }

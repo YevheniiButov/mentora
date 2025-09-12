@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ category_data.title }} - Community Forum{% endblock %}
+{% block title %}{{ forum_category.name }} - Community Forum{% endblock %}
 
 {% block page_styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
@@ -432,7 +432,7 @@
                 </h3>
                 <ul class="category-list">
                     <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='trending') }}" class="category-link {% if category == 'trending' %}active{% endif %}">
+                        <a href="{{ url_for('main.community_category', lang=lang, category='trending') }}" class="category-link {% if category == 'trending' %}active{% endif %}">
                             <span class="category-icon">
                                 <i class="fas fa-fire"></i>
                             </span>
@@ -441,7 +441,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='clinical-cases') }}" class="category-link {% if category == 'clinical-cases' %}active{% endif %}">
+                        <a href="{{ url_for('main.community_category', lang=lang, category='clinical-cases') }}" class="category-link {% if category == 'clinical-cases' %}active{% endif %}">
                             <span class="category-icon">
                                 <i class="fas fa-tooth"></i>
                             </span>
@@ -450,7 +450,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='study-materials') }}" class="category-link {% if category == 'study-materials' %}active{% endif %}">
+                        <a href="{{ url_for('main.community_category', lang=lang, category='study-materials') }}" class="category-link {% if category == 'study-materials' %}active{% endif %}">
                             <span class="category-icon">
                                 <i class="fas fa-book-medical"></i>
                             </span>
@@ -459,7 +459,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='expert-advice') }}" class="category-link {% if category == 'expert-advice' %}active{% endif %}">
+                        <a href="{{ url_for('main.community_category', lang=lang, category='expert-advice') }}" class="category-link {% if category == 'expert-advice' %}active{% endif %}">
                             <span class="category-icon">
                                 <i class="fas fa-graduation-cap"></i>
                             </span>
@@ -468,7 +468,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='research') }}" class="category-link {% if category == 'research' %}active{% endif %}">
+                        <a href="{{ url_for('main.community_category', lang=lang, category='research') }}" class="category-link {% if category == 'research' %}active{% endif %}">
                             <span class="category-icon">
                                 <i class="fas fa-microscope"></i>
                             </span>
@@ -477,7 +477,7 @@
                         </a>
                     </li>
                     <li class="category-item">
-                        <a href="{{ url_for('main.community_category', lang=g.lang, category='equipment') }}" class="category-link {% if category == 'equipment' %}active{% endif %}">
+                        <a href="{{ url_for('main.community_category', lang=lang, category='equipment') }}" class="category-link {% if category == 'equipment' %}active{% endif %}">
                             <span class="category-icon">
                                 <i class="fas fa-tools"></i>
                             </span>
@@ -492,52 +492,58 @@
         <!-- Main Content - Topics -->
         <main class="forum-main">
             <div class="breadcrumb">
-                <a href="{{ url_for('main.community', lang=g.lang) }}">Community</a>
+                <a href="{{ url_for('main.community', lang=lang) }}">{{ t('dental_community_forum', lang) | default('Community') }}</a>
                 <span class="separator">›</span>
-                <span class="current">{{ category_data.title }}</span>
+                <span class="current">{{ forum_category.name }}</span>
             </div>
             
             <div class="topics-header">
-                <h2 class="topics-title">{{ category_data.title }}</h2>
-                <a href="{{ url_for('main.new_topic', lang=g.lang) }}" class="new-topic-btn">
+                <h2 class="topics-title">{{ forum_category.name }}</h2>
+                <a href="{{ url_for('main.new_topic', lang=lang) }}" class="new-topic-btn">
                     <i class="fas fa-plus"></i>
-                    New Topic
+                    {{ t('new_topic', lang) | default('New Topic') }}
                 </a>
             </div>
 
             <div class="topics-list">
-                {% for topic in category_data.topics %}
-                <article class="topic-item status-{{ topic.status }}" onclick="window.location.href='{{ url_for('main.community_topic', lang=g.lang, topic_id=topic.id) }}';">
+                {% for topic in topics.items %}
+                <article class="topic-item {% if topic.is_sticky %}status-pinned{% endif %}" onclick="window.location.href='{{ url_for('main.community_topic', lang=lang, topic_id=topic.id) }}';">
                     <div class="topic-header">
-                        <div class="topic-avatar">{{ topic.author.split()[-1][0] }}{{ topic.author.split()[0][0] }}</div>
+                        <div class="topic-avatar">{{ topic.author.first_name[0] if topic.author.first_name else 'U' }}{{ topic.author.last_name[0] if topic.author.last_name else 'U' }}</div>
                         <div class="topic-info">
-                            <h3 class="topic-title">{{ topic.title }}</h3>
+                            <h3 class="topic-title">{% if topic.is_sticky %}📌 {% endif %}{{ topic.title }}</h3>
                             <div class="topic-meta">
-                                <span class="topic-author">{{ topic.author }}</span>
-                                <span class="topic-time">{{ topic.time }}</span>
-                                <span class="topic-category">{{ topic.category }}</span>
+                                <span class="topic-author">{{ topic.author.first_name }} {{ topic.author.last_name }}</span>
+                                <span class="topic-time">{{ topic.created_at.strftime('%d.%m.%Y') }}</span>
+                                <span class="topic-category">{{ topic.category.name }}</span>
                             </div>
                         </div>
                     </div>
                     <p class="topic-preview">
-                        {{ topic.preview }}
+                        {{ topic.content[:150] }}{% if topic.content|length > 150 %}...{% endif %}
                     </p>
                     <div class="topic-stats">
                         <span class="stat-item">
                             <i class="fas fa-comment"></i>
-                            {{ topic.replies }} replies
+                            {{ topic.replies_count }} {{ t('replies', lang) | default('replies') }}
                         </span>
                         <span class="stat-item">
                             <i class="fas fa-eye"></i>
-                            {{ topic.views }} views
+                            {{ topic.views_count }} {{ t('views', lang) | default('views') }}
                         </span>
                         <span class="stat-item">
                             <i class="fas fa-heart"></i>
-                            {{ topic.likes }} likes
+                            0 {{ t('likes', lang) | default('likes') }}
                         </span>
                     </div>
                 </article>
                 {% endfor %}
+                
+                {% if not topics.items %}
+                <div class="no-topics">
+                    <p>{{ t('no_topics_found', lang) | default('No topics found. Be the first to start a discussion!') }}</p>
+                </div>
+                {% endif %}
             </div>
         </main>
 

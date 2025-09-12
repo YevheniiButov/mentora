@@ -1957,4 +1957,7 @@ translations = {
     'no_recent_activity': 'No recent activity',
     'no_users_online': 'No users online',
     'no_topics_found': 'No topics found. Be the first to start a discussion!',
+    'replies': 'replies',
+    'views': 'views',
+    'likes': 'likes',
 }

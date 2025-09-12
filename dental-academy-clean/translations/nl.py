@@ -1790,4 +1790,7 @@ translations = {
     'no_recent_activity': 'Geen recente activiteit',
     'no_users_online': 'Geen gebruikers online',
     'no_topics_found': 'Geen onderwerpen gevonden. Wees de eerste om een discussie te starten!',
+    'replies': 'antwoorden',
+    'views': 'weergaven',
+    'likes': 'likes',
 }
