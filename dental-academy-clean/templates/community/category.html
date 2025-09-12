@@ -428,7 +428,7 @@
             <div class="sidebar-section">
                 <h3 class="sidebar-title">
                     <i class="fas fa-layer-group"></i>
-                    Categories
+                    {{ t('categories', lang) | default('Categories') }}
                 </h3>
                 <ul class="category-list">
                     <li class="category-item">
@@ -437,7 +437,7 @@
                                 <i class="fas fa-fire"></i>
                             </span>
                             <span>Trending</span>
-                            <span class="category-count">24</span>
+                            <span class="category-count">{{ all_categories[0].topics.count() if all_categories else 0 }}</span>
                         </a>
                     </li>
                     <li class="category-item">
@@ -446,7 +446,7 @@
                                 <i class="fas fa-tooth"></i>
                             </span>
                             <span>Clinical Cases</span>
-                            <span class="category-count">156</span>
+                            <span class="category-count">{{ all_categories[1].topics.count() if all_categories|length > 1 else 0 }}</span>
                         </a>
                     </li>
                     <li class="category-item">
@@ -455,7 +455,7 @@
                                 <i class="fas fa-book-medical"></i>
                             </span>
                             <span>Study Materials</span>
-                            <span class="category-count">89</span>
+                            <span class="category-count">{{ all_categories[2].topics.count() if all_categories|length > 2 else 0 }}</span>
                         </a>
                     </li>
                     <li class="category-item">
@@ -464,7 +464,7 @@
                                 <i class="fas fa-graduation-cap"></i>
                             </span>
                             <span>Expert Advice</span>
-                            <span class="category-count">67</span>
+                            <span class="category-count">{{ all_categories[3].topics.count() if all_categories|length > 3 else 0 }}</span>
                         </a>
                     </li>
                     <li class="category-item">
@@ -473,7 +473,7 @@
                                 <i class="fas fa-microscope"></i>
                             </span>
                             <span>Research</span>
-                            <span class="category-count">43</span>
+                            <span class="category-count">{{ all_categories[4].topics.count() if all_categories|length > 4 else 0 }}</span>
                         </a>
                     </li>
                     <li class="category-item">
@@ -482,7 +482,7 @@
                                 <i class="fas fa-tools"></i>
                             </span>
                             <span>Equipment</span>
-                            <span class="category-count">31</span>
+                            <span class="category-count">{{ all_categories[5].topics.count() if all_categories|length > 5 else 0 }}</span>
                         </a>
                     </li>
                 </ul>
@@ -552,28 +552,12 @@
             <div class="sidebar-section">
                 <h3 class="sidebar-title">
                     <i class="fas fa-bolt"></i>
-                    Recent Activity
+                    {{ t('recent_activity', lang) | default('Recent Activity') }}
                 </h3>
                 <ul class="activity-list">
                     <li class="activity-item">
-                        <div class="activity-avatar">SJ</div>
                         <div class="activity-content">
-                            <p class="activity-text">Dr. Sarah Johnson replied to "Complex Root Canal"</p>
-                            <span class="activity-time">2 min ago</span>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-avatar">MC</div>
-                        <div class="activity-content">
-                            <p class="activity-text">Dr. Michael Chen shared study materials</p>
-                            <span class="activity-time">15 min ago</span>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-avatar">ER</div>
-                        <div class="activity-content">
-                            <p class="activity-text">Dr. Emma Rodriguez joined the forum</p>
-                            <span class="activity-time">1 hour ago</span>
+                            <p class="activity-text">{{ t('no_recent_activity', lang) | default('No recent activity') }}</p>
                         </div>
                     </li>
                 </ul>
@@ -582,24 +566,12 @@
             <div class="online-users">
                 <h3 class="sidebar-title">
                     <i class="fas fa-circle"></i>
-                    Online Now (12)
+                    {{ t('online_now', lang) | default('Online Now') }}
                 </h3>
                 <div class="online-list">
                     <div class="online-user">
                         <span class="online-indicator"></span>
-                        <span>Dr. Sarah J.</span>
-                    </div>
-                    <div class="online-user">
-                        <span class="online-indicator"></span>
-                        <span>Dr. Michael C.</span>
-                    </div>
-                    <div class="online-user">
-                        <span class="online-indicator"></span>
-                        <span>Dr. Emma R.</span>
-                    </div>
-                    <div class="online-user">
-                        <span class="online-indicator"></span>
-                        <span>+9 more</span>
+                        <span>{{ t('no_users_online', lang) | default('No users online') }}</span>
                     </div>
                 </div>
             </div>
