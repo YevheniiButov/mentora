@@ -12,7 +12,7 @@
     <h1 class="h2">
         <i class="bi bi-circle-fill text-success me-2"></i>
         Онлайн пользователи
-        <small class="text-muted" id="last-updated">(обновлено: {{ moment().format('HH:mm:ss') }})</small>
+        <small class="text-muted" id="last-updated">(обновлено: загружено)</small>
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
@@ -154,7 +154,7 @@
                                 </td>
                                 <td>
                                     <span title="{{ user.last_login.strftime('%d.%m.%Y %H:%M:%S') }}">
-                                        {{ moment(user.last_login).fromNow() }}
+                                        {{ user.last_login.strftime('%d.%m.%Y %H:%M') }}
                                     </span>
                                 </td>
                                 <td>
@@ -216,7 +216,7 @@
                                 </td>
                                 <td>
                                     <span title="{{ session.last_activity.strftime('%d.%m.%Y %H:%M:%S') }}">
-                                        {{ moment(session.last_activity).fromNow() }}
+                                        {{ session.last_activity.strftime('%d.%m.%Y %H:%M') }}
                                     </span>
                                 </td>
                             </tr>
@@ -260,7 +260,7 @@
                     <tr>
                         <td>
                             <span title="{{ visit.created_at.strftime('%d.%m.%Y %H:%M:%S') }}">
-                                {{ moment(visit.created_at).fromNow() }}
+                                {{ visit.created_at.strftime('%d.%m.%Y %H:%M') }}
                             </span>
                         </td>
                         <td>
@@ -317,7 +317,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script>
 // Auto-refresh data every 30 seconds
 function refreshData() {
@@ -330,7 +329,9 @@ function refreshData() {
             document.getElementById('page-views-count').textContent = data.visits_today;
             
             // Update timestamp
-            document.getElementById('last-updated').textContent = `(обновлено: ${moment().format('HH:mm:ss')})`;
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+            document.getElementById('last-updated').textContent = `(обновлено: ${timeString})`;
         })
         .catch(error => {
             console.log('Error refreshing data:', error);
@@ -339,34 +340,6 @@ function refreshData() {
 
 // Auto-refresh every 30 seconds
 setInterval(refreshData, 30000);
-
-// Real-time updates simulation
-function simulateRealTimeUpdates() {
-    // This would be replaced with WebSocket connections in a real implementation
-    const tables = ['online-users-table', 'active-sessions-table', 'recent-visits-table'];
-    
-    tables.forEach(tableId => {
-        const table = document.getElementById(tableId);
-        if (table) {
-            // Update "time ago" displays
-            const timeElements = table.querySelectorAll('[title]');
-            timeElements.forEach(element => {
-                const datetime = element.getAttribute('title');
-                if (datetime) {
-                    element.textContent = moment(datetime, 'DD.MM.YYYY HH:mm:ss').fromNow();
-                }
-            });
-        }
-    });
-}
-
-// Update relative times every minute
-setInterval(simulateRealTimeUpdates, 60000);
-
-// Initial update
-document.addEventListener('DOMContentLoaded', function() {
-    simulateRealTimeUpdates();
-});
 
 // Manual refresh button
 window.refreshData = refreshData;

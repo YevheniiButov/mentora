@@ -2219,38 +2219,72 @@ def bulk_user_actions():
 @admin_required
 def online_users():
     """Show currently online users"""
-    # Users active in the last 5 minutes
-    online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+    try:
+        # Users active in the last 5 minutes
+        online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+        
+        # Initialize empty lists in case of errors
+        online_users = []
+        active_sessions = []
+        recent_visits = []
+        
+        try:
+            online_users = User.query.filter(
+                User.last_login >= online_threshold,
+                User.is_active == True
+            ).order_by(User.last_login.desc()).all()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching online users: {str(e)}")
+            online_users = []
+        
+        try:
+            # Get active sessions
+            active_sessions = UserSession.query.filter(
+                UserSession.is_active == True,
+                UserSession.last_activity >= online_threshold
+            ).order_by(UserSession.last_activity.desc()).all()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching active sessions: {str(e)}")
+            active_sessions = []
+        
+        try:
+            # Get current page views
+            recent_visits = WebsiteVisit.query.filter(
+                WebsiteVisit.created_at >= online_threshold
+            ).order_by(WebsiteVisit.created_at.desc()).limit(50).all()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching recent visits: {str(e)}")
+            recent_visits = []
+        
+        # Statistics
+        stats = {
+            'online_users': len(online_users),
+            'active_sessions': len(active_sessions),
+            'recent_page_views': len(recent_visits),
+            'unique_visitors': len(set(visit.ip_address for visit in recent_visits if visit.ip_address))
+        }
+        
+        return render_template('admin/online_users.html',
+                             online_users=online_users,
+                             active_sessions=active_sessions,
+                             recent_visits=recent_visits,
+                             stats=stats)
     
-    online_users = User.query.filter(
-        User.last_login >= online_threshold,
-        User.is_active == True
-    ).order_by(User.last_login.desc()).all()
-    
-    # Get active sessions
-    active_sessions = UserSession.query.filter(
-        UserSession.is_active == True,
-        UserSession.last_activity >= online_threshold
-    ).order_by(UserSession.last_activity.desc()).all()
-    
-    # Get current page views
-    recent_visits = WebsiteVisit.query.filter(
-        WebsiteVisit.created_at >= online_threshold
-    ).order_by(WebsiteVisit.created_at.desc()).limit(50).all()
-    
-    # Statistics
-    stats = {
-        'online_users': len(online_users),
-        'active_sessions': len(active_sessions),
-        'recent_page_views': len(recent_visits),
-        'unique_visitors': len(set(visit.ip_address for visit in recent_visits))
-    }
-    
-    return render_template('admin/online_users.html',
-                         online_users=online_users,
-                         active_sessions=active_sessions,
-                         recent_visits=recent_visits,
-                         stats=stats)
+    except Exception as e:
+        current_app.logger.error(f"Error in online_users route: {str(e)}")
+        flash(f'Ошибка загрузки данных: {str(e)}', 'error')
+        
+        # Return empty data in case of error
+        return render_template('admin/online_users.html',
+                             online_users=[],
+                             active_sessions=[],
+                             recent_visits=[],
+                             stats={
+                                 'online_users': 0,
+                                 'active_sessions': 0,
+                                 'recent_page_views': 0,
+                                 'unique_visitors': 0
+                             })
 
 @admin_bp.route('/analytics/visitors')
 @login_required
@@ -2471,35 +2505,64 @@ def force_verify_email(user_id):
 @admin_required
 def api_user_stats():
     """Real-time user statistics API"""
-    # Online users (last 5 minutes)
-    online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
-    online_users = User.query.filter(
-        User.last_login >= online_threshold,
-        User.is_active == True
-    ).count()
+    try:
+        # Online users (last 5 minutes)
+        online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+        
+        try:
+            online_users = User.query.filter(
+                User.last_login >= online_threshold,
+                User.is_active == True
+            ).count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting online users: {str(e)}")
+            online_users = 0
+        
+        # Today's statistics
+        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        try:
+            new_users_today = User.query.filter(
+                User.created_at >= today_start
+            ).count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting new users: {str(e)}")
+            new_users_today = 0
+        
+        try:
+            active_sessions_today = UserSession.query.filter(
+                UserSession.started_at >= today_start
+            ).count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting active sessions: {str(e)}")
+            active_sessions_today = 0
+        
+        try:
+            visits_today = WebsiteVisit.query.filter(
+                WebsiteVisit.created_at >= today_start
+            ).count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting visits: {str(e)}")
+            visits_today = 0
+        
+        return jsonify({
+            'online_users': online_users,
+            'new_users_today': new_users_today,
+            'active_sessions_today': active_sessions_today,
+            'visits_today': visits_today,
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        })
     
-    # Today's statistics
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    
-    new_users_today = User.query.filter(
-        User.created_at >= today_start
-    ).count()
-    
-    active_sessions_today = UserSession.query.filter(
-        UserSession.started_at >= today_start
-    ).count()
-    
-    visits_today = WebsiteVisit.query.filter(
-        WebsiteVisit.created_at >= today_start
-    ).count()
-    
-    return jsonify({
-        'online_users': online_users,
-        'new_users_today': new_users_today,
-        'active_sessions_today': active_sessions_today,
-        'visits_today': visits_today,
-        'timestamp': datetime.now(timezone.utc).isoformat()
-    })
+    except Exception as e:
+        current_app.logger.error(f"Error in api_user_stats: {str(e)}")
+        return jsonify({
+            'online_users': 0,
+            'new_users_today': 0,
+            'active_sessions_today': 0,
+            'visits_today': 0,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'error': 'Failed to load statistics'
+        }), 500
 
 @admin_bp.route('/api/users/search')
 @login_required
