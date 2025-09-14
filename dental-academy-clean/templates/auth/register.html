@@ -1454,6 +1454,12 @@ function toggleOtherField(selectId, otherFieldId) {
     const otherGroup = document.getElementById(otherFieldId + '_group');
     const otherField = document.getElementById(otherFieldId);
     
+    // Check if elements exist before proceeding
+    if (!select || !otherGroup || !otherField) {
+        console.warn(`toggleOtherField: Missing elements for ${selectId} -> ${otherFieldId}`);
+        return;
+    }
+    
     // Check for both 'other' and 'OTHER' values
     if (select.value === 'other' || select.value === 'OTHER') {
         otherGroup.style.display = 'block';
@@ -1467,20 +1473,23 @@ function toggleOtherField(selectId, otherFieldId) {
 
 // Initialize other fields on page load
 function initializeOtherFields() {
-    // Check profession field
-    toggleOtherField('profession', 'other_profession');
-    
-    // Check nationality field
-    toggleOtherField('nationality', 'other_nationality');
-    
-    // Check legal status field
-    toggleOtherField('legal_status', 'other_legal_status');
-    
-    // Check study country field
-    toggleOtherField('study_country', 'other_country_name');
-    
-    // Initialize phone number formatting
-    setupPhoneNumberFormatting();
+    // Wait a bit to ensure DOM is fully loaded
+    setTimeout(() => {
+        // Check profession field
+        toggleOtherField('profession', 'other_profession');
+        
+        // Check nationality field
+        toggleOtherField('nationality', 'other_nationality');
+        
+        // Check legal status field
+        toggleOtherField('legal_status', 'other_legal_status');
+        
+        // Check study country field
+        toggleOtherField('study_country', 'other_country_name');
+        
+        // Initialize phone number formatting
+        setupPhoneNumberFormatting();
+    }, 100);
 }
 
 // Initialize auto-fill signature functionality
