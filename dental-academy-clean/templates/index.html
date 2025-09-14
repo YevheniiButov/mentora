@@ -205,15 +205,25 @@ section {
   z-index: 1;
 }
 
+/* Добавляем отступ для body когда баннер активен */
+body:has(.early-access-banner) {
+  padding-top: 80px !important;
+}
+
+/* Header должен быть под баннером */
+body:has(.early-access-banner) .navbar {
+  top: 80px !important;
+}
+
 /* Hero section получает padding-top */
 .hero-section {
-  padding-top: 120px !important;
+  padding-top: 20px !important;
   margin-top: 0 !important;
 }
 
 /* Дополнительная специфичность для переопределения external CSS */
 body .hero-section {
-  padding-top: 120px !important;
+  padding-top: 20px !important;
 }
 
 /* Все контейнеры видимы */
@@ -268,8 +278,11 @@ body .hero-section {
   background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
   color: white;
   padding: 1rem 0;
-  position: relative;
-  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
   border-bottom: 1px solid rgba(255,255,255,0.2);
   animation: slideDown 0.5s ease-out;
 }
@@ -473,8 +486,7 @@ body .hero-section {
 </style>
 {% endblock %}
 
-{% block content %}
-
+{% block top_banner %}
 {# === БАННЕР УВЕДОМЛЕНИЯ === #}
 <section class="early-access-banner">
   <div class="container">
@@ -503,6 +515,9 @@ body .hero-section {
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block content %}
 
 {# === ИСПРАВЛЕННАЯ HERO SECTION === #}
 <section class="hero-section">
