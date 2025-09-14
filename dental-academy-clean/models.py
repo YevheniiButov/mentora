@@ -127,6 +127,11 @@ class User(db.Model, UserMixin):
     optional_consents = db.Column(db.Boolean, default=False)  # Marketing, Newsletter, Research
     digital_signature = db.Column(db.String(255), nullable=True)  # Digital signature text
     
+    # Program interests and motivation (for early registration)
+    program_interests = db.Column(db.Text, nullable=True)  # JSON list of program interests
+    motivation = db.Column(db.Text, nullable=True)  # User motivation text
+    program_notifications = db.Column(db.Boolean, default=False)  # Consent for program notifications
+    
     # Learning flow control
     requires_diagnostic = db.Column(db.Boolean, default=True)  # Flag to redirect new users to diagnostic
     
