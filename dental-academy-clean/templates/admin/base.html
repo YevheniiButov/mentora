@@ -259,9 +259,31 @@
                             <span>Пользователи</span>
                         </h6>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'users' in request.endpoint %}active{% endif %}" 
-                               href="{{ url_for('admin.users') }}">
-                                <i class="bi bi-people"></i> Управление
+                            <a class="nav-link {% if 'users_list' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.users_list') }}">
+                                <i class="bi bi-people"></i> Все пользователи
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'online_users' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.online_users') }}">
+                                <i class="bi bi-circle-fill text-success"></i> Онлайн
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'support' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.support_dashboard') }}">
+                                <i class="bi bi-headset"></i> Поддержка
+                            </a>
+                        </li>
+                        
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                            <span>Аналитика</span>
+                        </h6>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'visitors_analytics' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.visitors_analytics') }}">
+                                <i class="bi bi-graph-up"></i> Посетители
                             </a>
                         </li>
                         

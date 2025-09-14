@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
-from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters
+from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_
@@ -1847,4 +1847,689 @@ def get_performance_metrics():
         return jsonify({
             'error': str(e),
             'timestamp': datetime.now(timezone.utc).isoformat()
-        }), 500 
+        }), 500
+
+# ========================================
+# ENHANCED USER MANAGEMENT ROUTES
+# ========================================
+
+@admin_bp.route('/users/list')
+@login_required
+@admin_required
+def users_list():
+    """Enhanced users list with filters and pagination"""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    search = request.args.get('search', '')
+    status_filter = request.args.get('status', 'all')
+    role_filter = request.args.get('role', 'all')
+    sort_by = request.args.get('sort', 'created_at')
+    sort_order = request.args.get('order', 'desc')
+    
+    # Base query
+    query = User.query
+    
+    # Apply search filter
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                User.first_name.ilike(search_term),
+                User.last_name.ilike(search_term),
+                User.email.ilike(search_term),
+                User.username.ilike(search_term)
+            )
+        )
+    
+    # Apply status filter
+    if status_filter != 'all':
+        if status_filter == 'active':
+            query = query.filter(User.is_active == True)
+        elif status_filter == 'inactive':
+            query = query.filter(User.is_active == False)
+        elif status_filter == 'email_verified':
+            query = query.filter(User.email_confirmed == True)
+        elif status_filter == 'email_unverified':
+            query = query.filter(User.email_confirmed == False)
+        elif status_filter == 'digid':
+            query = query.filter(User.created_via_digid == True)
+    
+    # Apply role filter
+    if role_filter != 'all':
+        query = query.filter(User.role == role_filter)
+    
+    # Apply sorting
+    if sort_by == 'name':
+        order_col = User.first_name
+    elif sort_by == 'email':
+        order_col = User.email
+    elif sort_by == 'last_login':
+        order_col = User.last_login
+    elif sort_by == 'created_at':
+        order_col = User.created_at
+    else:
+        order_col = User.created_at
+    
+    if sort_order == 'desc':
+        order_col = order_col.desc()
+    
+    query = query.order_by(order_col)
+    
+    # Paginate
+    users = query.paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    
+    # Get statistics
+    total_users = User.query.count()
+    active_users = User.query.filter(User.is_active == True).count()
+    admin_users = User.query.filter(User.role == 'admin').count()
+    digid_users = User.query.filter(User.created_via_digid == True).count()
+    
+    # Get online users (active in last 5 minutes)
+    online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+    online_users = User.query.filter(User.last_login >= online_threshold).count()
+    
+    stats = {
+        'total_users': total_users,
+        'active_users': active_users,
+        'admin_users': admin_users,
+        'digid_users': digid_users,
+        'online_users': online_users,
+        'inactive_users': total_users - active_users
+    }
+    
+    return render_template('admin/users_list.html',
+                         users=users,
+                         stats=stats,
+                         search=search,
+                         status_filter=status_filter,
+                         role_filter=role_filter,
+                         sort_by=sort_by,
+                         sort_order=sort_order)
+
+@admin_bp.route('/users/<int:user_id>')
+@login_required
+@admin_required
+def user_detail(user_id):
+    """Detailed user profile for admin"""
+    user = User.query.get_or_404(user_id)
+    
+    # Get user statistics
+    stats = user.get_dashboard_stats()
+    
+    # Get recent activity
+    recent_activity = user.get_recent_activity(days=30)
+    
+    # Get progress summary
+    progress_summary = user.get_progress_stats()
+    
+    # Get login history (from sessions)
+    login_history = UserSession.query.filter_by(user_id=user_id).order_by(
+        UserSession.started_at.desc()
+    ).limit(10).all()
+    
+    # Get website visits
+    recent_visits = WebsiteVisit.query.filter_by(user_id=user_id).order_by(
+        WebsiteVisit.created_at.desc()
+    ).limit(20).all()
+    
+    # Get audit logs
+    audit_logs = ProfileAuditLog.query.filter_by(user_id=user_id).order_by(
+        ProfileAuditLog.created_at.desc()
+    ).limit(20).all()
+    
+    # Check if user is currently online (active in last 5 minutes)
+    online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+    is_online = user.last_login and user.last_login >= online_threshold
+    
+    return render_template('admin/user_detail.html',
+                         user=user,
+                         stats=stats,
+                         recent_activity=recent_activity,
+                         progress_summary=progress_summary,
+                         login_history=login_history,
+                         recent_visits=recent_visits,
+                         audit_logs=audit_logs,
+                         is_online=is_online)
+
+@admin_bp.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    """Edit user profile (admin only)"""
+    user = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        try:
+            # Get old values for audit log
+            old_values = {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'role': user.role,
+                'is_active': user.is_active,
+                'profession': user.profession,
+                'language': user.language
+            }
+            
+            # Update user fields
+            user.first_name = request.form.get('first_name', '').strip()
+            user.last_name = request.form.get('last_name', '').strip()
+            user.email = request.form.get('email', '').strip()
+            user.role = request.form.get('role', 'user')
+            user.is_active = 'is_active' in request.form
+            user.profession = request.form.get('profession', '')
+            user.language = request.form.get('language', 'nl')
+            user.phone = request.form.get('phone', '')
+            user.workplace = request.form.get('workplace', '')
+            
+            # Log changes
+            for field, old_value in old_values.items():
+                new_value = getattr(user, field)
+                if old_value != new_value:
+                    user.log_profile_change(
+                        field=field,
+                        old_value=old_value,
+                        new_value=new_value,
+                        changed_by=current_user.id
+                    )
+            
+            user.profile_updated_at = datetime.now(timezone.utc)
+            db.session.commit()
+            
+            flash('Профиль пользователя успешно обновлен', 'success')
+            return redirect(url_for('admin.user_detail', user_id=user_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Ошибка при обновлении профиля: {str(e)}', 'danger')
+    
+    return render_template('admin/edit_user.html', user=user)
+
+@admin_bp.route('/users/<int:user_id>/reset-password', methods=['POST'])
+@login_required
+@admin_required
+def reset_user_password(user_id):
+    """Reset user password (admin only)"""
+    user = User.query.get_or_404(user_id)
+    
+    if user.created_via_digid:
+        flash('Нельзя сбросить пароль для пользователей DigiD', 'warning')
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+    
+    try:
+        # Generate new temporary password
+        import secrets
+        import string
+        temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+        
+        # Update password
+        user.set_password(temp_password)
+        
+        # Clear any existing reset tokens
+        user.password_reset_token = None
+        user.password_reset_sent_at = None
+        
+        # Log the password reset
+        user.log_profile_change(
+            field='password',
+            old_value='[HIDDEN]',
+            new_value='[RESET BY ADMIN]',
+            changed_by=current_user.id
+        )
+        
+        db.session.commit()
+        
+        # Here you would normally send an email with the new password
+        # For now, just show it to the admin
+        flash(f'Пароль сброшен. Временный пароль: {temp_password}', 'success')
+        
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при сбросе пароля: {str(e)}', 'danger')
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+
+@admin_bp.route('/users/<int:user_id>/toggle-status', methods=['POST'])
+@login_required
+@admin_required
+def toggle_user_status(user_id):
+    """Toggle user active status"""
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent deactivating yourself
+    if user.id == current_user.id:
+        flash('Нельзя деактивировать собственный аккаунт', 'warning')
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+    
+    try:
+        old_status = user.is_active
+        user.is_active = not user.is_active
+        
+        # Log the status change
+        user.log_profile_change(
+            field='is_active',
+            old_value=old_status,
+            new_value=user.is_active,
+            changed_by=current_user.id
+        )
+        
+        db.session.commit()
+        
+        status_text = 'активирован' if user.is_active else 'деактивирован'
+        flash(f'Пользователь {status_text}', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при изменении статуса: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin.user_detail', user_id=user_id))
+
+@admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    """Delete user (admin only)"""
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent deleting yourself
+    if user.id == current_user.id:
+        flash('Нельзя удалить собственный аккаунт', 'danger')
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+    
+    # Prevent deleting other admins without confirmation
+    if user.is_admin:
+        confirm = request.form.get('confirm_admin_delete')
+        if not confirm:
+            flash('Для удаления администратора требуется подтверждение', 'warning')
+            return redirect(url_for('admin.user_detail', user_id=user_id))
+    
+    try:
+        user_email = user.email
+        db.session.delete(user)
+        db.session.commit()
+        
+        flash(f'Пользователь {user_email} удален', 'success')
+        return redirect(url_for('admin.users_list'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при удалении пользователя: {str(e)}', 'danger')
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+
+@admin_bp.route('/users/bulk-actions', methods=['POST'])
+@login_required
+@admin_required
+def bulk_user_actions():
+    """Bulk actions on users"""
+    action = request.form.get('action')
+    user_ids = request.form.getlist('user_ids')
+    
+    if not user_ids:
+        flash('Не выбраны пользователи', 'warning')
+        return redirect(url_for('admin.users_list'))
+    
+    user_ids = [int(uid) for uid in user_ids if uid.isdigit()]
+    
+    # Prevent actions on yourself
+    if current_user.id in user_ids:
+        user_ids.remove(current_user.id)
+        flash('Действие не может быть применено к вашему аккаунту', 'warning')
+    
+    if not user_ids:
+        return redirect(url_for('admin.users_list'))
+    
+    try:
+        if action == 'activate':
+            User.query.filter(User.id.in_(user_ids)).update({'is_active': True})
+            flash(f'Активировано пользователей: {len(user_ids)}', 'success')
+            
+        elif action == 'deactivate':
+            User.query.filter(User.id.in_(user_ids)).update({'is_active': False})
+            flash(f'Деактивировано пользователей: {len(user_ids)}', 'success')
+            
+        elif action == 'delete':
+            User.query.filter(User.id.in_(user_ids)).delete()
+            flash(f'Удалено пользователей: {len(user_ids)}', 'success')
+            
+        elif action == 'make_admin':
+            User.query.filter(User.id.in_(user_ids)).update({'role': 'admin'})
+            flash(f'Назначено администраторами: {len(user_ids)}', 'success')
+            
+        elif action == 'make_user':
+            User.query.filter(User.id.in_(user_ids)).update({'role': 'user'})
+            flash(f'Понижены до обычных пользователей: {len(user_ids)}', 'success')
+        
+        db.session.commit()
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при выполнении массового действия: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin.users_list'))
+
+# ========================================
+# ONLINE USERS AND ANALYTICS
+# ========================================
+
+@admin_bp.route('/users/online')
+@login_required
+@admin_required
+def online_users():
+    """Show currently online users"""
+    # Users active in the last 5 minutes
+    online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+    
+    online_users = User.query.filter(
+        User.last_login >= online_threshold,
+        User.is_active == True
+    ).order_by(User.last_login.desc()).all()
+    
+    # Get active sessions
+    active_sessions = UserSession.query.filter(
+        UserSession.is_active == True,
+        UserSession.last_activity >= online_threshold
+    ).order_by(UserSession.last_activity.desc()).all()
+    
+    # Get current page views
+    recent_visits = WebsiteVisit.query.filter(
+        WebsiteVisit.created_at >= online_threshold
+    ).order_by(WebsiteVisit.created_at.desc()).limit(50).all()
+    
+    # Statistics
+    stats = {
+        'online_users': len(online_users),
+        'active_sessions': len(active_sessions),
+        'recent_page_views': len(recent_visits),
+        'unique_visitors': len(set(visit.ip_address for visit in recent_visits))
+    }
+    
+    return render_template('admin/online_users.html',
+                         online_users=online_users,
+                         active_sessions=active_sessions,
+                         recent_visits=recent_visits,
+                         stats=stats)
+
+@admin_bp.route('/analytics/visitors')
+@login_required
+@admin_required
+def visitors_analytics():
+    """Detailed visitor analytics"""
+    # Time filters
+    time_filter = request.args.get('timeframe', '24h')
+    
+    if time_filter == '24h':
+        start_time = datetime.now(timezone.utc) - timedelta(hours=24)
+    elif time_filter == '7d':
+        start_time = datetime.now(timezone.utc) - timedelta(days=7)
+    elif time_filter == '30d':
+        start_time = datetime.now(timezone.utc) - timedelta(days=30)
+    else:
+        start_time = datetime.now(timezone.utc) - timedelta(hours=24)
+    
+    # Get visit statistics
+    total_visits = WebsiteVisit.query.filter(
+        WebsiteVisit.created_at >= start_time
+    ).count()
+    
+    unique_visitors = db.session.query(WebsiteVisit.ip_address).filter(
+        WebsiteVisit.created_at >= start_time
+    ).distinct().count()
+    
+    registered_user_visits = WebsiteVisit.query.filter(
+        WebsiteVisit.created_at >= start_time,
+        WebsiteVisit.user_id.isnot(None)
+    ).count()
+    
+    # Popular pages
+    popular_pages = db.session.query(
+        WebsiteVisit.page_url,
+        func.count(WebsiteVisit.id).label('visits'),
+        func.count(func.distinct(WebsiteVisit.ip_address)).label('unique_visitors')
+    ).filter(
+        WebsiteVisit.created_at >= start_time
+    ).group_by(WebsiteVisit.page_url).order_by(
+        func.count(WebsiteVisit.id).desc()
+    ).limit(10).all()
+    
+    # Geographic distribution
+    countries = db.session.query(
+        WebsiteVisit.country,
+        func.count(WebsiteVisit.id).label('visits')
+    ).filter(
+        WebsiteVisit.created_at >= start_time,
+        WebsiteVisit.country.isnot(None)
+    ).group_by(WebsiteVisit.country).order_by(
+        func.count(WebsiteVisit.id).desc()
+    ).limit(10).all()
+    
+    # Browser and device stats
+    browsers = db.session.query(
+        WebsiteVisit.browser,
+        func.count(WebsiteVisit.id).label('visits')
+    ).filter(
+        WebsiteVisit.created_at >= start_time,
+        WebsiteVisit.browser.isnot(None)
+    ).group_by(WebsiteVisit.browser).order_by(
+        func.count(WebsiteVisit.id).desc()
+    ).limit(5).all()
+    
+    devices = db.session.query(
+        WebsiteVisit.device_type,
+        func.count(WebsiteVisit.id).label('visits')
+    ).filter(
+        WebsiteVisit.created_at >= start_time,
+        WebsiteVisit.device_type.isnot(None)
+    ).group_by(WebsiteVisit.device_type).order_by(
+        func.count(WebsiteVisit.id).desc()
+    ).all()
+    
+    # Hourly distribution (for 24h)
+    hourly_stats = []
+    if time_filter == '24h':
+        for hour in range(24):
+            hour_start = datetime.now(timezone.utc).replace(hour=hour, minute=0, second=0, microsecond=0)
+            hour_end = hour_start + timedelta(hours=1)
+            
+            hour_visits = WebsiteVisit.query.filter(
+                WebsiteVisit.created_at >= hour_start,
+                WebsiteVisit.created_at < hour_end
+            ).count()
+            
+            hourly_stats.append({
+                'hour': hour,
+                'visits': hour_visits
+            })
+    
+    stats = {
+        'total_visits': total_visits,
+        'unique_visitors': unique_visitors,
+        'registered_user_visits': registered_user_visits,
+        'bounce_rate': 0,  # TODO: Calculate based on session data
+        'avg_session_duration': 0  # TODO: Calculate from session data
+    }
+    
+    return render_template('admin/visitors_analytics.html',
+                         stats=stats,
+                         popular_pages=popular_pages,
+                         countries=countries,
+                         browsers=browsers,
+                         devices=devices,
+                         hourly_stats=hourly_stats,
+                         time_filter=time_filter)
+
+# ========================================
+# USER SUPPORT SYSTEM
+# ========================================
+
+@admin_bp.route('/support')
+@login_required
+@admin_required
+def support_dashboard():
+    """User support dashboard"""
+    # Recent password reset requests
+    recent_resets = User.query.filter(
+        User.password_reset_sent_at.isnot(None),
+        User.password_reset_sent_at >= datetime.now(timezone.utc) - timedelta(days=7)
+    ).order_by(User.password_reset_sent_at.desc()).limit(10).all()
+    
+    # Unverified email accounts
+    unverified_emails = User.query.filter(
+        User.email_confirmed == False,
+        User.created_at >= datetime.now(timezone.utc) - timedelta(days=30)
+    ).order_by(User.created_at.desc()).limit(20).all()
+    
+    # Inactive users (haven't logged in for 30 days)
+    inactive_users = User.query.filter(
+        or_(
+            User.last_login < datetime.now(timezone.utc) - timedelta(days=30),
+            User.last_login.is_(None)
+        ),
+        User.is_active == True
+    ).order_by(User.created_at.desc()).limit(20).all()
+    
+    # Failed login attempts (you might need to implement this)
+    failed_logins = []
+    
+    stats = {
+        'recent_resets': len(recent_resets),
+        'unverified_emails': len(unverified_emails),
+        'inactive_users': len(inactive_users),
+        'failed_logins': len(failed_logins)
+    }
+    
+    return render_template('admin/support_dashboard.html',
+                         stats=stats,
+                         recent_resets=recent_resets,
+                         unverified_emails=unverified_emails,
+                         inactive_users=inactive_users,
+                         failed_logins=failed_logins)
+
+@admin_bp.route('/support/send-verification/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def resend_verification_email(user_id):
+    """Resend verification email to user"""
+    user = User.query.get_or_404(user_id)
+    
+    if user.email_confirmed:
+        flash('Email уже подтвержден', 'info')
+        return redirect(url_for('admin.support_dashboard'))
+    
+    try:
+        # Generate new token
+        token = user.generate_email_confirmation_token()
+        
+        # Here you would send the actual email
+        # For now, just log it
+        flash(f'Письмо с подтверждением отправлено на {user.email}', 'success')
+        
+        db.session.commit()
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при отправке письма: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin.support_dashboard'))
+
+@admin_bp.route('/support/force-verify/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def force_verify_email(user_id):
+    """Force verify user email (admin action)"""
+    user = User.query.get_or_404(user_id)
+    
+    try:
+        user.confirm_email()
+        
+        # Log the action
+        user.log_profile_change(
+            field='email_confirmed',
+            old_value=False,
+            new_value=True,
+            changed_by=current_user.id
+        )
+        
+        db.session.commit()
+        
+        flash(f'Email для {user.email} принудительно подтвержден', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при подтверждении email: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin.support_dashboard'))
+
+# ========================================
+# API ENDPOINTS FOR REAL-TIME DATA
+# ========================================
+
+@admin_bp.route('/api/users/stats')
+@login_required
+@admin_required
+def api_user_stats():
+    """Real-time user statistics API"""
+    # Online users (last 5 minutes)
+    online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+    online_users = User.query.filter(
+        User.last_login >= online_threshold,
+        User.is_active == True
+    ).count()
+    
+    # Today's statistics
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    new_users_today = User.query.filter(
+        User.created_at >= today_start
+    ).count()
+    
+    active_sessions_today = UserSession.query.filter(
+        UserSession.started_at >= today_start
+    ).count()
+    
+    visits_today = WebsiteVisit.query.filter(
+        WebsiteVisit.created_at >= today_start
+    ).count()
+    
+    return jsonify({
+        'online_users': online_users,
+        'new_users_today': new_users_today,
+        'active_sessions_today': active_sessions_today,
+        'visits_today': visits_today,
+        'timestamp': datetime.now(timezone.utc).isoformat()
+    })
+
+@admin_bp.route('/api/users/search')
+@login_required
+@admin_required
+def api_user_search():
+    """User search API"""
+    query = request.args.get('q', '').strip()
+    limit = request.args.get('limit', 10, type=int)
+    
+    if not query or len(query) < 2:
+        return jsonify([])
+    
+    search_term = f"%{query}%"
+    users = User.query.filter(
+        or_(
+            User.first_name.ilike(search_term),
+            User.last_name.ilike(search_term),
+            User.email.ilike(search_term),
+            User.username.ilike(search_term)
+        )
+    ).limit(limit).all()
+    
+    return jsonify([
+        {
+            'id': user.id,
+            'name': user.get_display_name(),
+            'email': user.email,
+            'is_active': user.is_active,
+            'role': user.role,
+            'last_login': user.last_login.isoformat() if user.last_login else None
+        }
+        for user in users
+    ]) 

@@ -1,0 +1,434 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ user.get_display_name() }} - Профиль пользователя{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.users_list') }}">Пользователи</a></li>
+<li class="breadcrumb-item active">{{ user.get_display_name() }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">
+            {% if is_online %}
+            <i class="bi bi-circle-fill text-success me-2" title="Онлайн"></i>
+            {% else %}
+            <i class="bi bi-circle text-secondary me-2" title="Офлайн"></i>
+            {% endif %}
+            {{ user.get_display_name() }}
+        </h1>
+        <p class="text-muted mb-0">{{ user.email }}</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil"></i> Редактировать
+            </a>
+            {% if not user.created_via_digid %}
+            <form method="POST" action="{{ url_for('admin.reset_user_password', user_id=user.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-sm btn-outline-warning" 
+                        onclick="return confirm('Сбросить пароль пользователя?')">
+                    <i class="bi bi-key"></i> Сбросить пароль
+                </button>
+            </form>
+            {% endif %}
+            {% if user.id != current_user.id %}
+            <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-sm btn-outline-{% if user.is_active %}warning{% else %}success{% endif %}"
+                        onclick="return confirm('{% if user.is_active %}Деактивировать{% else %}Активировать{% endif %} пользователя?')">
+                    <i class="bi bi-{% if user.is_active %}pause{% else %}play{% endif %}"></i> 
+                    {% if user.is_active %}Деактивировать{% else %}Активировать{% endif %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        {% if user.id != current_user.id %}
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-outline-danger dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-trash"></i> Удалить
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
+                        {% if user.is_admin %}
+                        <input type="hidden" name="confirm_admin_delete" value="1">
+                        {% endif %}
+                        <button type="submit" class="dropdown-item text-danger"
+                                onclick="return confirm('{% if user.is_admin %}ВНИМАНИЕ! Вы удаляете администратора. {% endif %}Удалить пользователя {{ user.email }}? Это действие необратимо!')">
+                            {% if user.is_admin %}Удалить администратора{% else %}Удалить пользователя{% endif %}
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- User Status Alerts -->
+{% if not user.is_active %}
+<div class="alert alert-warning" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> Пользователь деактивирован
+</div>
+{% endif %}
+
+{% if not user.email_confirmed %}
+<div class="alert alert-info" role="alert">
+    <i class="bi bi-envelope"></i> Email не подтвержден
+    <div class="mt-2">
+        <form method="POST" action="{{ url_for('admin.resend_verification_email', user_id=user.id) }}" style="display: inline;">
+            <button type="submit" class="btn btn-sm btn-outline-primary">Отправить письмо</button>
+        </form>
+        <form method="POST" action="{{ url_for('admin.force_verify_email', user_id=user.id) }}" style="display: inline;">
+            <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Принудительно подтвердить email?')">
+                Подтвердить принудительно
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- User Information -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Информация о пользователе</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>ID:</strong></div>
+                    <div class="col-sm-8">{{ user.id }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Имя:</strong></div>
+                    <div class="col-sm-8">{{ user.first_name or 'Не указано' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Фамилия:</strong></div>
+                    <div class="col-sm-8">{{ user.last_name or 'Не указано' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Email:</strong></div>
+                    <div class="col-sm-8">
+                        {{ user.email }}
+                        {% if user.email_confirmed %}
+                        <i class="bi bi-check-circle text-success" title="Подтвержден"></i>
+                        {% else %}
+                        <i class="bi bi-exclamation-circle text-warning" title="Не подтвержден"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Роль:</strong></div>
+                    <div class="col-sm-8">
+                        {% if user.is_admin %}
+                        <span class="badge bg-danger">Администратор</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Пользователь</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Статус:</strong></div>
+                    <div class="col-sm-8">
+                        {% if user.is_active %}
+                        <span class="badge bg-success">Активен</span>
+                        {% else %}
+                        <span class="badge bg-warning">Неактивен</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Профессия:</strong></div>
+                    <div class="col-sm-8">{{ user.get_profession_display() }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Телефон:</strong></div>
+                    <div class="col-sm-8">{{ user.phone or 'Не указан' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Место работы:</strong></div>
+                    <div class="col-sm-8">{{ user.workplace or 'Не указано' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Язык:</strong></div>
+                    <div class="col-sm-8">{{ user.language or 'nl' }}</div>
+                </div>
+                {% if user.created_via_digid %}
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>DigiD:</strong></div>
+                    <div class="col-sm-8">
+                        <i class="bi bi-key text-success"></i> Аутентификация через DigiD
+                        {% if user.bsn %}
+                        <br><small class="text-muted">BSN: {{ user.bsn }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Регистрация:</strong></div>
+                    <div class="col-sm-8">{{ user.created_at.strftime('%d.%m.%Y %H:%M:%S') }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Последний вход:</strong></div>
+                    <div class="col-sm-8">
+                        {% if user.last_login %}
+                        {{ user.last_login.strftime('%d.%m.%Y %H:%M:%S') }}
+                        {% if is_online %}
+                        <span class="badge bg-success ms-2">Онлайн</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="text-muted">Никогда</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Summary -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Прогресс обучения</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-6"><strong>Уроков завершено:</strong></div>
+                    <div class="col-sm-6">{{ progress_summary.completed_lessons }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6"><strong>Времени потрачено:</strong></div>
+                    <div class="col-sm-6">{{ "%.1f"|format(progress_summary.total_time_spent) }} мин</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6"><strong>Дней активности:</strong></div>
+                    <div class="col-sm-6">{{ progress_summary.activity_days }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6"><strong>Уровень:</strong></div>
+                    <div class="col-sm-6">{{ stats.level }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6"><strong>Опыт (XP):</strong></div>
+                    <div class="col-sm-6">{{ stats.xp }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6"><strong>Текущая серия:</strong></div>
+                    <div class="col-sm-6">{{ stats.current_streak }} дн.</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6"><strong>Лучшая серия:</strong></div>
+                    <div class="col-sm-6">{{ stats.longest_streak }} дн.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Information -->
+    <div class="col-xl-8 col-lg-7">
+        <!-- Activity Chart -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Активность (последние 30 дней)</h6>
+            </div>
+            <div class="card-body">
+                {% if recent_activity %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Уроков</th>
+                                <th>Время (мин)</th>
+                                <th>XP</th>
+                                <th>Модули</th>
+                                <th>Тесты</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in recent_activity %}
+                            <tr>
+                                <td>{{ activity.activity_date.strftime('%d.%m.%Y') }}</td>
+                                <td>{{ activity.lessons_completed }}</td>
+                                <td>{{ "%.1f"|format(activity.time_spent) }}</td>
+                                <td>{{ activity.xp_earned }}</td>
+                                <td>{{ activity.modules_accessed }}</td>
+                                <td>{{ activity.tests_taken }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет данных об активности</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Login History -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">История входов</h6>
+            </div>
+            <div class="card-body">
+                {% if login_history %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Дата начала</th>
+                                <th>Последняя активность</th>
+                                <th>IP адрес</th>
+                                <th>Устройство</th>
+                                <th>Браузер</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in login_history %}
+                            <tr>
+                                <td>{{ session.started_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>{{ session.last_activity.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>{{ session.ip_address }}</td>
+                                <td>{{ session.device_type or 'Неизвестно' }}</td>
+                                <td>{{ session.browser or 'Неизвестно' }}</td>
+                                <td>
+                                    {% if session.is_active %}
+                                    <span class="badge bg-success">Активна</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Завершена</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет данных о входах</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Visits -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Последние посещения страниц</h6>
+            </div>
+            <div class="card-body">
+                {% if recent_visits %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Страница</th>
+                                <th>Заголовок</th>
+                                <th>Время на странице</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in recent_visits[:10] %}
+                            <tr>
+                                <td>{{ visit.created_at.strftime('%d.%m %H:%M') }}</td>
+                                <td>{{ visit.page_url }}</td>
+                                <td>{{ visit.page_title or 'Без заголовка' }}</td>
+                                <td>
+                                    {% if visit.visit_duration %}
+                                    {{ visit.visit_duration }}с
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет данных о посещениях</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Audit Log -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Журнал изменений профиля</h6>
+            </div>
+            <div class="card-body">
+                {% if audit_logs %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Поле</th>
+                                <th>Старое значение</th>
+                                <th>Новое значение</th>
+                                <th>Изменил</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in audit_logs %}
+                            <tr>
+                                <td>{{ log.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>{{ log.field_changed }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if log.old_value and log.old_value != '[HIDDEN]' %}
+                                        {{ log.old_value[:30] }}{% if log.old_value|length > 30 %}...{% endif %}
+                                        {% else %}
+                                        {{ log.old_value or '-' }}
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <small>
+                                        {% if log.new_value and log.new_value != '[HIDDEN]' and log.new_value != '[RESET BY ADMIN]' %}
+                                        {{ log.new_value[:30] }}{% if log.new_value|length > 30 %}...{% endif %}
+                                        {% else %}
+                                        {{ log.new_value or '-' }}
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if log.changed_by_user %}
+                                    {{ log.changed_by_user.get_display_name() }}
+                                    {% else %}
+                                    Система
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет записей об изменениях</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh online status
+function updateOnlineStatus() {
+    const userId = {{ user.id }};
+    fetch(`/admin/api/users/${userId}/status`)
+        .then(response => response.json())
+        .then(data => {
+            // Update online indicator if needed
+        })
+        .catch(error => console.log('Error updating status:', error));
+}
+
+// Update every 60 seconds
+setInterval(updateOnlineStatus, 60000);
+</script>
+{% endblock %}
