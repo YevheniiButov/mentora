@@ -188,9 +188,14 @@
       top: 80px !important;
     }
     
-    /* Добавляем отступ для body */
+    /* Добавляем отступ для body только на главной странице */
     body:has(.early-access-banner:not(.hidden)) {
-      padding-top: 150px !important;
+      padding-top: 90px !important;
+    }
+    
+    /* На других страницах убираем отступ если баннера нет */
+    body:not(:has(.early-access-banner)) {
+      padding-top: 0 !important;
     }
 
     @keyframes slideDown {
@@ -343,8 +348,9 @@
       display: none !important;
     }
     
-    /* Возвращаем header на место когда баннер скрыт */
-    body:has(.early-access-banner.hidden) .modern-header {
+    /* Возвращаем header на место когда баннер скрыт или на страницах без баннера */
+    body:has(.early-access-banner.hidden) .modern-header,
+    body:not(:has(.early-access-banner)) .modern-header {
       top: 0 !important;
     }
     

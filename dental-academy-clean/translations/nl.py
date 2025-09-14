@@ -402,7 +402,7 @@ translations = {
     'hospital_internships': 'Ziekenhuis stages',
     'mentorship': 'Mentorschap ondersteuning',
     'priority_access': 'Prioriteit toegang',
-    'launch_date': 'Lancering: Q1 2025',
+    'launch_date': 'Lancering: Q1 2026',
     'early_notification': 'Je ontvangt een melding over het starten van het programma',
     'program_interests': 'Programma interesses',
     'most_interested_in': 'Wat interesseert je het meest?',

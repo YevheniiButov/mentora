@@ -762,7 +762,7 @@ translations = {
     'hospital_internships': 'Hospital internships',
     'mentorship': 'Mentorship support',
     'priority_access': 'Priority access',
-    'launch_date': 'Launch: Q1 2025',
+    'launch_date': 'Launch: Q1 2026',
     'early_notification': 'You will receive notification about the program start',
     'program_interests': 'Program interests',
     'most_interested_in': 'What interests you most?',

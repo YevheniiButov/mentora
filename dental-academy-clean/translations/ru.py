@@ -602,7 +602,7 @@ translations = {
     'hospital_internships': 'Стажировки в больницах',
     'mentorship': 'Менторское сопровождение',
     'priority_access': 'Приоритетный доступ',
-    'launch_date': 'Запуск: Q1 2025',
+    'launch_date': 'Запуск: Q1 2026',
     'early_notification': 'Вы получите уведомление о начале программы',
     'program_interests': 'Интересы к программе',
     'most_interested_in': 'Что вас больше всего интересует?',
