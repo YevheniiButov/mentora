@@ -325,6 +325,9 @@ try:
     # Импорт Calendar Plan API роутов
     from routes.calendar_plan_api import calendar_plan_bp
     
+    # Импорт Email Test роутов
+    from routes.email_test_routes import email_test_bp
+    
     # Импорт IRT + Spaced Repetition Integration роутов
     from routes.irt_spaced_routes import irt_spaced_bp
     
@@ -373,6 +376,9 @@ try:
     
     # Регистрация Calendar Plan API blueprint
     app.register_blueprint(calendar_plan_bp)
+    
+    # Регистрация Email Test blueprint
+    app.register_blueprint(email_test_bp)
     
     # Регистрация IRT + Spaced Repetition Integration blueprint
     app.register_blueprint(irt_spaced_bp)

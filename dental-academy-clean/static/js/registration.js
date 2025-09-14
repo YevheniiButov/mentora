@@ -1,4 +1,4 @@
-
+// Clean registration.js without Jinja2 template tags
 document.addEventListener('DOMContentLoaded', function() {
     // File upload handling
     setupFileUploads();
@@ -84,9 +84,9 @@ function initializeAutoFillSignature() {
                 signatureField.style.borderColor = '#27ae60';
                 
                 // Show success message
-                showFieldSuccess(signatureField, '{{ t("signature_auto_filled", lang) | default("Signature auto-filled successfully!") }}');
+                showFieldSuccess(signatureField, 'Signature auto-filled successfully!');
             } else {
-                showFieldError(signatureField, '{{ t("fill_name_first", lang) | default("Please fill in your first and last name first") }}');
+                showFieldError(signatureField, 'Please fill in your first and last name first');
             }
         });
         
@@ -122,7 +122,7 @@ function updateSignaturePreview() {
     
     if (firstName && lastName && !signatureField.value.trim()) {
         // Show preview in placeholder
-        signatureField.placeholder = `{{ t('signature_preview', lang) | default('Will be:') }} ${firstName} ${lastName}`;
+        signatureField.placeholder = `Will be: ${firstName} ${lastName}`;
     }
 }
 
@@ -234,29 +234,37 @@ function setupFileUploads() {
     const diplomaInput = document.getElementById('diploma_file');
     const diplomaList = document.getElementById('diploma-list');
     
-    diplomaInput.addEventListener('change', function(e) {
-        handleFileUpload(e, diplomaList, 'diploma');
-    });
+    if (diplomaInput) {
+        diplomaInput.addEventListener('change', function(e) {
+            handleFileUpload(e, diplomaList, 'diploma');
+        });
+    }
     
     // Language certificates upload
     const languageInput = document.getElementById('language_certificates');
     const languageList = document.getElementById('language-certificates-list');
     
-    languageInput.addEventListener('change', function(e) {
-        handleFileUpload(e, languageList, 'language');
-    });
+    if (languageInput) {
+        languageInput.addEventListener('change', function(e) {
+            handleFileUpload(e, languageList, 'language');
+        });
+    }
     
     // Additional documents upload
     const additionalInput = document.getElementById('additional_documents');
     const additionalList = document.getElementById('additional-documents-list');
     
-    additionalInput.addEventListener('change', function(e) {
-        handleFileUpload(e, additionalList, 'additional');
-    });
+    if (additionalInput) {
+        additionalInput.addEventListener('change', function(e) {
+            handleFileUpload(e, additionalList, 'additional');
+        });
+    }
 }
 
 function handleFileUpload(event, container, type) {
     const files = event.target.files;
+    
+    if (!container) return;
     
     // Clear previous files
     container.innerHTML = '';
@@ -295,6 +303,8 @@ function setupFormValidation() {
     const form = document.getElementById('registrationForm');
     const submitBtn = document.getElementById('submitBtn');
     
+    if (!form || !submitBtn) return;
+    
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -323,123 +333,130 @@ function validateForm() {
         }
     });
     
-    // Check new diploma fields
+    // Check diploma fields
     const universityName = document.getElementById('university_name');
     const degreeType = document.getElementById('degree_type');
     const studyStartYear = document.getElementById('study_start_year');
     const studyEndYear = document.getElementById('study_end_year');
     const studyCountry = document.getElementById('study_country');
     
-    if (!universityName.value.trim()) {
-        showFieldError(universityName, '{{ t("university_required", lang) | default("University name is required") }}');
+    if (universityName && !universityName.value.trim()) {
+        showFieldError(universityName, 'University name is required');
         isValid = false;
     }
     
-    if (!degreeType.value) {
-        showFieldError(degreeType, '{{ t("degree_type_required", lang) | default("Degree type is required") }}');
+    if (degreeType && !degreeType.value) {
+        showFieldError(degreeType, 'Degree type is required');
         isValid = false;
     }
     
-    if (!studyStartYear.value || !studyEndYear.value) {
-        if (!studyStartYear.value) {
-            showFieldError(studyStartYear, '{{ t("start_year_required", lang) | default("Start year is required") }}');
-        }
-        if (!studyEndYear.value) {
-            showFieldError(studyEndYear, '{{ t("end_year_required", lang) | default("End year is required") }}');
-        }
-        isValid = false;
-    } else {
-        // Validate year range
-        const startYear = parseInt(studyStartYear.value);
-        const endYear = parseInt(studyEndYear.value);
-        const currentYear = new Date().getFullYear();
-        
-        if (startYear > endYear) {
-            showFieldError(studyEndYear, '{{ t("end_year_before_start", lang) | default("End year must be after start year") }}');
+    if (studyStartYear && studyEndYear) {
+        if (!studyStartYear.value || !studyEndYear.value) {
+            if (!studyStartYear.value) {
+                showFieldError(studyStartYear, 'Start year is required');
+            }
+            if (!studyEndYear.value) {
+                showFieldError(studyEndYear, 'End year is required');
+            }
             isValid = false;
-        }
-        
-        if (startYear < 1950 || startYear > currentYear) {
-            showFieldError(studyStartYear, '{{ t("invalid_start_year", lang) | default("Start year must be between 1950 and current year") }}');
-            isValid = false;
-        }
-        
-        if (endYear < 1950 || endYear > currentYear) {
-            showFieldError(studyEndYear, '{{ t("invalid_end_year", lang) | default("End year must be between 1950 and current year") }}');
-            isValid = false;
+        } else {
+            // Validate year range
+            const startYear = parseInt(studyStartYear.value);
+            const endYear = parseInt(studyEndYear.value);
+            const currentYear = new Date().getFullYear();
+            
+            if (startYear > endYear) {
+                showFieldError(studyEndYear, 'End year must be after start year');
+                isValid = false;
+            }
+            
+            if (startYear < 1950 || startYear > currentYear) {
+                showFieldError(studyStartYear, 'Start year must be between 1950 and current year');
+                isValid = false;
+            }
+            
+            if (endYear < 1950 || endYear > currentYear) {
+                showFieldError(studyEndYear, 'End year must be between 1950 and current year');
+                isValid = false;
+            }
         }
     }
     
-    if (!studyCountry.value) {
-        showFieldError(studyCountry, '{{ t("study_country_required", lang) | default("Country of study is required") }}');
+    if (studyCountry && !studyCountry.value) {
+        showFieldError(studyCountry, 'Country of study is required');
         isValid = false;
     }
     
     // Check other country name if "Other" is selected
     const otherCountryName = document.getElementById('other_country_name');
-    if (studyCountry.value === 'OTHER' && (!otherCountryName.value || !otherCountryName.value.trim())) {
-        showFieldError(otherCountryName, '{{ t("other_country_name_required", lang) | default("Please specify the country name") }}');
+    if (studyCountry && studyCountry.value === 'OTHER' && otherCountryName && (!otherCountryName.value || !otherCountryName.value.trim())) {
+        showFieldError(otherCountryName, 'Please specify the country name');
         isValid = false;
     }
     
     // Check "Other" fields
     const profession = document.getElementById('profession');
     const otherProfession = document.getElementById('other_profession');
-    if (profession.value === 'other' && !otherProfession.value.trim()) {
-        showFieldError(otherProfession, '{{ t("other_profession_required", lang) | default("Please specify your profession") }}');
+    if (profession && profession.value === 'other' && otherProfession && !otherProfession.value.trim()) {
+        showFieldError(otherProfession, 'Please specify your profession');
         isValid = false;
     }
     
     const nationality = document.getElementById('nationality');
     const otherNationality = document.getElementById('other_nationality');
-    if (nationality.value === 'OTHER' && !otherNationality.value.trim()) {
-        showFieldError(otherNationality, '{{ t("other_nationality_required", lang) | default("Please specify your nationality") }}');
+    if (nationality && nationality.value === 'OTHER' && otherNationality && !otherNationality.value.trim()) {
+        showFieldError(otherNationality, 'Please specify your nationality');
         isValid = false;
     }
     
     const legalStatus = document.getElementById('legal_status');
     const otherLegalStatus = document.getElementById('other_legal_status');
-    if (legalStatus.value === 'other' && !otherLegalStatus.value.trim()) {
-        showFieldError(otherLegalStatus, '{{ t("other_legal_status_required", lang) | default("Please specify your legal status") }}');
+    if (legalStatus && legalStatus.value === 'other' && otherLegalStatus && !otherLegalStatus.value.trim()) {
+        showFieldError(otherLegalStatus, 'Please specify your legal status');
         isValid = false;
     }
     
     // Check password confirmation
     const password = document.getElementById('password');
     const confirmPassword = document.getElementById('confirm_password');
-    if (password.value !== confirmPassword.value) {
-        showFieldError(confirmPassword, '{{ t("passwords_dont_match", lang) | default("Passwords do not match") }}');
+    if (password && confirmPassword && password.value !== confirmPassword.value) {
+        showFieldError(confirmPassword, 'Passwords do not match');
         isValid = false;
     }
     
     // Check password strength
-    if (password.value && !isPasswordStrong(password.value)) {
-        showFieldError(password, '{{ t("password_weak", lang) | default("Password must contain at least 8 characters with letters and numbers") }}');
+    if (password && password.value && !isPasswordStrong(password.value)) {
+        showFieldError(password, 'Password must contain at least 8 characters with letters and numbers');
         isValid = false;
     }
     
     // Check digital signature
     const digitalSignature = document.getElementById('digital_signature');
-    const firstName = document.getElementById('first_name').value.trim();
-    const lastName = document.getElementById('last_name').value.trim();
-    const signature = digitalSignature.value.trim();
+    const firstName = document.getElementById('first_name');
+    const lastName = document.getElementById('last_name');
     
-    if (!signature) {
-        showFieldError(digitalSignature, '{{ t("signature_required", lang) | default("Digital signature is required") }}');
-        isValid = false;
-    } else if (signature.length < 3) {
-        showFieldError(digitalSignature, '{{ t("signature_too_short", lang) | default("Digital signature must be at least 3 characters long") }}');
-        isValid = false;
-    } else {
-        // Check if signature contains both first and last name (flexible matching)
-        const firstNameLower = firstName.toLowerCase();
-        const lastNameLower = lastName.toLowerCase();
-        const signatureLower = signature.toLowerCase();
+    if (digitalSignature) {
+        const signature = digitalSignature.value.trim();
         
-        if (firstNameLower && lastNameLower && 
-            (!signatureLower.includes(firstNameLower) || !signatureLower.includes(lastNameLower))) {
-            showFieldError(digitalSignature, '{{ t("signature_should_contain_name", lang) | default("Digital signature should contain your first and last name") }}');
+        if (!signature) {
+            showFieldError(digitalSignature, 'Digital signature is required');
             isValid = false;
+        } else if (signature.length < 3) {
+            showFieldError(digitalSignature, 'Digital signature must be at least 3 characters long');
+            isValid = false;
+        } else if (firstName && lastName) {
+            // Check if signature contains both first and last name (flexible matching)
+            const firstNameValue = firstName.value.trim();
+            const lastNameValue = lastName.value.trim();
+            const firstNameLower = firstNameValue.toLowerCase();
+            const lastNameLower = lastNameValue.toLowerCase();
+            const signatureLower = signature.toLowerCase();
+            
+            if (firstNameLower && lastNameLower && 
+                (!signatureLower.includes(firstNameLower) || !signatureLower.includes(lastNameLower))) {
+                showFieldError(digitalSignature, 'Digital signature should contain your first and last name');
+                isValid = false;
+            }
         }
     }
     
@@ -467,7 +484,7 @@ function validateField(event) {
     clearFieldError(field);
     
     if (field.hasAttribute('required') && !value) {
-        showFieldError(field, '{{ t("field_required", lang) | default("This field is required") }}');
+        showFieldError(field, 'This field is required');
         return false;
     }
     
@@ -475,7 +492,7 @@ function validateField(event) {
     if (field.type === 'email' && value) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
-            showFieldError(field, '{{ t("invalid_email", lang) | default("Please enter a valid email address") }}');
+            showFieldError(field, 'Please enter a valid email address');
             return false;
         }
     }
@@ -484,7 +501,7 @@ function validateField(event) {
     if (field.type === 'tel' && value) {
         const phoneRegex = /^[0-9\s\-\(\)]{7,15}$/;
         if (!phoneRegex.test(value)) {
-            showFieldError(field, '{{ t("invalid_phone", lang) | default("Please enter a valid phone number") }}');
+            showFieldError(field, 'Please enter a valid phone number');
             return false;
         }
     }
@@ -495,12 +512,12 @@ function validateField(event) {
         const today = new Date();
         
         if (field.id === 'birth_date' && date >= today) {
-            showFieldError(field, '{{ t("invalid_birth_date", lang) | default("Birth date cannot be in the future") }}');
+            showFieldError(field, 'Birth date cannot be in the future');
             return false;
         }
         
         if (field.id === 'exam_date' && date <= today) {
-            showFieldError(field, '{{ t("invalid_exam_date", lang) | default("Exam date must be in the future") }}');
+            showFieldError(field, 'Exam date must be in the future');
             return false;
         }
     }
@@ -679,7 +696,8 @@ function showSuccessMessage(message) {
         countdown--;
         
         if (countdown < 0) {
-            window.location.href = '{{ url_for("auth.login", lang=lang) }}';
+            // Use relative URL for redirect
+            window.location.href = '/auth/login';
         }
     };
     
@@ -688,14 +706,14 @@ function showSuccessMessage(message) {
     
     continueBtn.addEventListener('click', () => {
         clearInterval(interval);
-        window.location.href = '{{ url_for("auth.login", lang=lang) }}';
+        window.location.href = '/auth/login';
     });
     
     // Close on overlay click
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
             clearInterval(interval);
-            window.location.href = '{{ url_for("auth.login", lang=lang) }}';
+            window.location.href = '/auth/login';
         }
     });
 }
@@ -805,7 +823,8 @@ async function submitForm() {
     progressBar.style.width = '30%';
     
     try {
-        const response = await fetch('{{ url_for("auth.register", lang=lang) }}', {
+        // Use relative URL for the fetch request
+        const response = await fetch('/auth/register', {
             method: 'POST',
             body: formData
         });
@@ -836,7 +855,7 @@ async function submitForm() {
                 We sent a confirmation email to <strong>${userEmail}</strong><br><br>
                 ⚠️ <strong>Important:</strong> Check your "Spam" or "Junk" folder<br>
                 The email might have ended up there. If you find it - mark as "Not Spam"<br><br>
-                🚀 After confirming your email, you will be able to log in and receive notifications about the program launch in Q1 2026
+                🚀 After confirming your email, you will be able to log in and receive notifications about the program launch in Q1 2025
             `;
             showSuccessMessage(successMessage);
         } else {
@@ -875,6 +894,8 @@ async function submitForm() {
 // Auto-save form to localStorage
 function setupFormAutoSave() {
     const form = document.getElementById('registrationForm');
+    
+    if (!form) return;
     
     // Load saved data on page load
     const savedData = localStorage.getItem('mentora_registration_draft');
@@ -943,14 +964,16 @@ function togglePassword(fieldId) {
     const passwordField = document.getElementById(fieldId);
     const eyeIcon = document.getElementById(fieldId + '-eye');
     
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
-    } else {
-        passwordField.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
+    if (passwordField && eyeIcon) {
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
     }
 }
 
@@ -995,22 +1018,20 @@ function initializeNationalitySearch() {
 
 // reCAPTCHA validation
 function validateRecaptcha() {
-    // Check if reCAPTCHA is configured
+    // Check if reCAPTCHA is configured and loaded
     if (typeof grecaptcha === 'undefined') {
         return true; // Skip validation if reCAPTCHA is not configured
     }
     
-    const recaptchaResponse = grecaptcha.getResponse();
-    if (recaptchaResponse.length === 0) {
-        showErrorMessage('{{ t("recaptcha_required", lang) | default("Please complete the reCAPTCHA verification") }}');
-        return false;
+    try {
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (recaptchaResponse.length === 0) {
+            showErrorMessage('Please complete the reCAPTCHA verification');
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.warn('reCAPTCHA validation error:', error);
+        return true; // Skip validation if there's an error
     }
-    return true;
 }
-</script>
-
-<!-- reCAPTCHA Script -->
-{% if config.RECAPTCHA_PUBLIC_KEY %}
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-{% endif %}
-{% endblock %}
