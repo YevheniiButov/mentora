@@ -537,11 +537,11 @@ body .hero-section {
         
         <div class="hero-buttons">
           {% if not current_user.is_authenticated %}
-            <a href="{{ url_for('auth.login') }}" class="btn-modern btn-primary">
+            <a href="{{ url_for('auth.login', lang=g.lang) }}" class="btn-modern btn-primary">
               <i class="bi bi-box-arrow-in-right me-2"></i>
               {{ t('login', g.lang) }}
             </a>
-            <a href="{{ url_for('auth.register') }}" class="btn-modern btn-secondary">
+            <a href="{{ url_for('auth.register', lang=g.lang) }}" class="btn-modern btn-secondary">
               <i class="bi bi-person-plus me-2"></i>
               {{ t('register', g.lang) }}
             </a>
@@ -920,7 +920,7 @@ body .hero-section {
           {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
         </a>
       {% else %}
-                                         <a href="{{ url_for('auth.login') }}" class="btn-modern btn-primary btn-lg">
+                                         <a href="{{ url_for('auth.login', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
               <i class="bi bi-box-arrow-in-right me-2"></i>
               {{ t('login', g.lang)|default('Login') }}
             </a>
@@ -1125,7 +1125,7 @@ body .hero-section {
           </p>
           <div class="cta-buttons">
             {% if not current_user.is_authenticated %}
-            <a href="{{ url_for('auth.login') }}" class="btn-modern btn-primary btn-lg">
+            <a href="{{ url_for('auth.login', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
               <i class="bi bi-box-arrow-in-right me-2"></i>
               {{ t('login', g.lang)|default('Login') }}
             </a>
