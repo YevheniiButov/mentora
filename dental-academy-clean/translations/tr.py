@@ -2140,7 +2140,7 @@ translations = {
     'patient_communication': 'Hasta iletişimi',
     'apply_big_registration': 'BIG kaydına başvur',
     'collect_all_documents': 'Tüm belgeleri topla',
-    'online_application_cibg': 'CIBG'de online başvuru',
+    'online_application_cibg': 'CIBG\'de online başvuru',
     'pay_registration_costs': 'Kayıt maliyetlerini öde',
     'receive_big_number': 'BIG numaranı al',
     'big_number_assigned': 'BIG numarası atanır',
