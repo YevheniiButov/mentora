@@ -24,7 +24,7 @@ MAIL_PASSWORD=mssp.eTIPhpXlO2nu.e6t7xgcGA1kl.Bw3hiAB80JpM
 MAIL_DEFAULT_SENDER=Mentora <noreply@mentora.com>
 
 # Email Settings
-MAIL_SUPPRESS_SEND=true
+MAIL_SUPPRESS_SEND=false
 EMAIL_CONFIRMATION_SALT=mentora-production-salt-$(date +%s)
 EOF
 
