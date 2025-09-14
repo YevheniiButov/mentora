@@ -168,11 +168,19 @@
     <!-- Баннер уведомлений - стили -->
     <style>
     /* ===== СТИЛИ ДЛЯ БАННЕРА УВЕДОМЛЕНИЯ ===== */
+    /* Добавляем отступ сверху для body когда есть баннер */
+    body:has(.early-access-banner) {
+      padding-top: 80px !important;
+    }
+    
     .early-access-banner {
       background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
       color: white;
       padding: 1rem 0;
-      position: relative;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
       z-index: 1001;
       border-bottom: 1px solid rgba(255,255,255,0.2);
       animation: slideDown 0.5s ease-out;
@@ -325,8 +333,12 @@
     }
 
     /* Если баннер скрыт, убираем отступ */
-    .early-access-banner.hidden + .hero-section {
-      margin-top: 0;
+    body:has(.early-access-banner.hidden) {
+      padding-top: 0 !important;
+    }
+    
+    body:has(.early-access-banner[style*="display: none"]) {
+      padding-top: 0 !important;
     }
     </style>
     
