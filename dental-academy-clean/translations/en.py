@@ -748,7 +748,7 @@ translations = {
     'practice_description': 'Clinical cases and patient simulation',
     'exam_title': 'Exam',
     'exam_description': 'Preparation for real exams with result analysis',
-    'most_popular': 'Most popular',
+    'most_popular': 'Coming soon',
     'case_studies': 'Case studies',
     'communication': 'Communication',
     'medical_dutch': 'Medical Dutch',

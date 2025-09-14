@@ -388,7 +388,7 @@ translations = {
     'practice_description': 'Klinische gevallen en patiëntsimulatie',
     'exam_title': 'Examen',
     'exam_description': 'Voorbereiding op echte examens met resultaatanalyse',
-    'most_popular': 'Meest populair',
+    'most_popular': 'Binnenkort',
     'case_studies': 'Casestudies',
     'communication': 'Communicatie',
     'medical_dutch': 'Medisch Nederlands',

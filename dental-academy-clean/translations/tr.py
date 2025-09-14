@@ -253,7 +253,7 @@ translations = {
     'theory_description': 'Anatomi, fizyoloji ve radyoloji için yapılandırılmış modüller',
     'practice_title': 'Pratik',
     'practice_description': 'Klinik vakalar ve hasta çalışması simülasyonu',
-    'most_popular': 'En popüler',
+    'most_popular': 'Yakında',
     
     # Platform özellikleri - ek bölüm
     'platform_features': 'Platform özellikleri',

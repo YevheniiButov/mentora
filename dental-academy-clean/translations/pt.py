@@ -275,7 +275,7 @@ translations = {
     'theory_description': 'Módulos estruturados de anatomia, fisiologia e radiologia',
     'practice_title': 'Prática',
     'practice_description': 'Casos clínicos e simulação de trabalho com pacientes',
-    'most_popular': 'Mais popular',
+    'most_popular': 'Em breve',
     
     # Características da plataforma - seção adicional
     'platform_features': 'Características da plataforma',

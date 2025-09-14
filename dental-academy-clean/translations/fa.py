@@ -274,7 +274,7 @@ translations = {
     'theory_description': 'ماژول‌های ساختاریافته آناتومی، فیزیولوژی و رادیولوژی',
     'practice_title': 'تمرین',
     'practice_description': 'موارد بالینی و شبیه‌سازی کار با بیماران',
-    'most_popular': 'محبوب‌ترین',
+    'most_popular': 'به زودی',
     
     # ویژگی‌های پلتفرم - بخش دوم
     'platform_features': 'ویژگی‌های پلتفرم',

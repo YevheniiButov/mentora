@@ -275,7 +275,7 @@ translations = {
     'theory_description': 'Структуровані модулі з анатомії, фізіології та радіології',
     'practice_title': 'Практика',
     'practice_description': 'Клінічні випадки та симуляція роботи з пацієнтами',
-    'most_popular': 'Найпопулярніше',
+    'most_popular': 'Незабаром',
     
     # Особливості платформи - додаткова секція
     'platform_features': 'Можливості платформи',
@@ -2588,5 +2588,53 @@ translations = {
     'qp_certification_specialized_training': 'Сертифікація QP через спеціалізоване навчання',
     'research_masters_drug_innovation_biopharmaceutical_sciences_pharmaceutical_technology': 'Дослідницькі магістри: Інновації ліків, Біофармацевтичні науки, Фармацевтична технологія',
     'industry_roles_medical_affairs_clinical_research_market_access': 'Ролі в промисловості: Медичні справи, Клінічні дослідження, Доступ до ринку',
-    'knmp_mentor_network_support_career_choices': 'Менторська мережа KNMP: Підтримка при виборі кар\'єри'
+    'knmp_mentor_network_support_career_choices': 'Менторська мережа KNMP: Підтримка при виборі кар\'єри',
+    
+    # Додаткові переклади для apotheker.html (FAQ розділ)
+    'frequently_asked_questions_2025': 'Часті питання 2025',
+    'specific_questions_non_eu_pharmacists': 'Специфічні питання для фармацевтів не-ЄС',
+    'why_must_i_do_3_year_master_already_pharmacist': 'Чому я повинен робити 3-річний магістр, якщо я вже фармацевт?',
+    'dutch_pharmaceutical_practice_fundamentally_differs_most_countries': 'Нідерландська фармацевтична практика принципово відрізняється від більшості країн. Нідерландські фармацевти набагато більше залучені до догляду за пацієнтами, медикаментозного супроводу та клінічних фармацевтичних завдань. Навчальна програма в Нідерландах містить специфічні предмети, такі як фармацевтичний догляд за пацієнтами, оцінка ліків, аудит та ІКТ-навички, які зазвичай відсутні в традиційних міжнародних освітніх програмах.',
+    'can_i_start_pharmacy_assistant_later_upgrade': 'Чи можу я почати як помічник фармацевта і пізніше підвищитися?',
+    'yes_common_strategy_pharmacy_assistant_faster_start_working': 'Так, це дуже популярна стратегія. Як помічник фармацевта ви можете набагато швидше почати працювати (часто протягом 6-12 місяців) і вивчати нідерландську в робочому контексті. Пізніше ви все ще можете пройти магістр фармації для повного визнання фармацевта. Багато міжнародних фармацевтів обирають цей шлях.',
+    'what_costs_full_procedure': 'Які витрати повної процедури?',
+    'total_costs_considerable_cbgv_application_premaster_master_pharmacy': 'Загальні витрати значні: заявка CBGV (~€500), підготовчий курс (~€3.000), магістр фармації (~€25.000), курс нідерландської мови (~€2.000), документи та переклади (~€1.500). Загалом приблизно €30.000-35.000 плюс 3-4 роки навчання. Це робить альтернативи, такі як дослідницькі магістри або робота в промисловості, дуже привабливими.',
+    'can_i_work_during_master_pharmacy': 'Чи можу я працювати під час магістра фармації?',
+    'master_pharmacy_full_time_very_intensive_limited_part_time_work_possible': 'Магістр фармації є повний робочий день і дуже інтенсивний. Обмежена робота на неповний робочий день можлива, але не рекомендується. Як помічник фармацевта ви можете працювати на неповний робочий день поряд з навчанням. Багато студентів поєднують це зі стажуванням в аптеках, щоб набути досвіду.',
+    'which_universities_offer_master_pharmacy': 'Які університети пропонують магістр фармації?',
+    'netherlands_pharmacy_utrecht_groningen_leiden_all_offer_premaster_programs': 'В Нідерландах ви можете вивчати фармацію в Утрехтському університеті, Гронінгенському університеті та Лейденському університеті. Всі три пропонують підготовчі програми для міжнародних студентів. Утрехт має найбільшу потужність і найбільше досвіду з міжнародними студентами.',
+    'how_long_full_procedure_start_big_registration': 'Як довго триває повна процедура від початку до реєстрації BIG?',
+    'non_eu_pharmacists_average_4_5_years_cbgv_assessment_premaster_master_pharmacy': 'Для фармацевтів не-ЄС це зазвичай триває 4-5 років: оцінка CBGV (3-6 місяців), підготовчий курс (6-12 місяців), магістр фармації (3 роки), підготовка мови (паралельно), заявка BIG (2-3 місяці). Ось чому багато фармацевтів обирають альтернативи, такі як дослідницькі магістри або робота в промисловості.',
+    
+    # Додаткові переклади для apotheker.html (заголовки та важливі посилання)
+    'big_registration_pharmacist_non_eu_2025': 'BIG Реєстрація Фармацевта (не-ЄС) 2025',
+    'complete_guide_pharmacists_diplomas_outside_eu_eea_register_netherlands': 'Повний посібник для фармацевтів з дипломами поза ЄС/ЄЕЗ, які хочуть зареєструватися в Нідерландах',
+    'important_non_eu_pharmacists': 'Важливо для фармацевтів не-ЄС',
+    'pharmacists_diplomas_outside_eu_eea_procedure_complexer_requires_3_year_master_pharmacy_premaster': 'Для фармацевтів з дипломами поза ЄС/ЄЕЗ процедура складніша і зазвичай вимагає 3-річного магістра фармації + підготовчого курсу в Нідерландах.',
+    'important_links_2025': 'Важливі посилання для 2025',
+    'official_websites_resources_non_eu_pharmacists': 'Офіційні веб-сайти та ресурси для фармацевтів не-ЄС',
+    'cibg_application_declaration_professional_competence': 'CIBG - Заявка на Декларацію професійної компетентності',
+    'online_application_recognition_non_eu_diplomas': 'Онлайн заявка на визнання дипломів не-ЄС',
+    'utrecht_university_master_pharmacy': 'Утрехтський університет - Магістр фармації',
+    'largest_pharmaceutical_faculty_netherlands': 'Найбільший фармацевтичний факультет Нідерландів',
+    'knmp_mentor_network': 'KNMP - Менторська мережа',
+    'professional_association_career_support': 'Професійна асоціація та підтримка кар\'єри',
+    'dutch_industry_pharmacists': 'Нідерландські промислові фармацевти',
+    'association_pharmacists_industry': 'Асоціація фармацевтів в промисловості',
+    'eca_academy_qp_training': 'ECA Academy - QP Навчання',
+    'courses_qualified_person_certification': 'Курси для сертифікації Qualified Person',
+    'cnavt_dutch_language_test': 'CNaVT - Нідерландська мовна перевірка',
+    'official_dutch_language_certification_b2': 'Офіційна нідерландська мовна сертифікація B2.',
+    
+    # Оновлення для verpleegkundige.html на основі офіційних джерел BIG-register
+    'work_without_big_registration': 'Робота без BIG реєстрації',
+    'nurse_non_eu_without_big_can_work': 'Медсестра з не-ЄС без BIG може працювати:',
+    'vig_verzorgende_ig_no_big_registration_required': 'VIG (Verzorgende IG) - не вимагає BIG реєстрації, робота під наглядом',
+    'verzorgende_medical_assistant_can_work_under_responsibility': 'Verzorgende (медичний помічник) - може працювати під відповідальністю BIG-зареєстрованого спеціаліста',
+    'during_big_procedure_work_nurse_under_supervision': 'Під час процедури BIG - працювати медсестрою під наглядом, але без самостійного виконання захищених медичних дій',
+    'important_restrictions': 'ВАЖЛИВО:',
+    'cannot_independently_perform_voorbehouden_handelingen': 'Не можна самостійно виконувати "voorbehouden handelingen"',
+    'always_under_supervision_big_registered_personnel': 'Завжди під наглядом BIG-зареєстрованого персоналу',
+    'need_diploma_recognition_netherlands': 'Потрібне визнання диплома в Нідерландах',
+    'doktersassistent_separate_3_year_mbo4_education': 'Для doktersassistent потрібна окрема 3-річна MBO-4 освіта - це не просто робота з наявним дипломом медсестри.'
 }

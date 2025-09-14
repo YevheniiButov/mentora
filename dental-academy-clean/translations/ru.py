@@ -588,7 +588,7 @@ translations = {
     'practice_description': 'Клинические случаи и симуляция работы с пациентами',
     'exam_title': 'Экзамен',
     'exam_description': 'Подготовка к реальным экзаменам с анализом результатов',
-    'most_popular': 'Популярное',
+    'most_popular': 'Скоро',
     'case_studies': 'Разбор случаев',
     'communication': 'Коммуникация',
     'medical_dutch': 'Медицинский голландский',
