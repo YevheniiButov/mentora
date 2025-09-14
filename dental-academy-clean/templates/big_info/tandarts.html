@@ -359,7 +359,7 @@
                     </button>
                     <div class="dropdown-content" id="langDropdown">
                         <a href="/nl/big-info/tandarts" class="dropdown-item {{ 'active' if lang == 'nl' else '' }}">
-                            <span class="flag-icon">🇳🇱</span> Nederlands
+                            <span class="flag-icon">🇳🇱</span> {{ t('netherlands', lang) | default('Nederland') }}
                         </a>
                         <a href="/en/big-info/tandarts" class="dropdown-item {{ 'active' if lang == 'en' else '' }}">
                             <span class="flag-icon">🇬🇧</span> English
@@ -503,29 +503,29 @@
                                 </div>
                                 
                                 <div class="question-step hidden" id="step-2">
-                                    <h4>Vraag 2: Wanneer is je opleiding gestart?</h4>
+                                    <h4>{{ t('question_2_education_start_detailed', lang) | default('Vraag 2: Wanneer is je opleiding gestart?') }}</h4>
                                     <div class="answer-options">
                                         <button class="answer-btn" data-result="procedure-1" data-path="after">
                                             <i class="fas fa-calendar-check"></i>
-                                            Na toetreding van je land tot EU/EEA
+                                            {{ t('after_country_joined_eu', lang) | default('Na toetreding van je land tot EU/EEA') }}
                                         </button>
                                         <button class="answer-btn" data-next="step-3" data-path="before">
                                             <i class="fas fa-calendar-minus"></i>
-                                            Voor toetreding
+                                            {{ t('before_country_joined_eu', lang) | default('Voor toetreding') }}
                                         </button>
                                     </div>
                                 </div>
                                 
                                 <div class="question-step hidden" id="step-3">
-                                    <h4>Vraag 3: Heb je minimaal 3 jaar werkervaring in EU/EEA?</h4>
+                                    <h4>{{ t('question_3_work_experience_detailed', lang) | default('Vraag 3: Heb je minimaal 3 jaar werkervaring in EU/EEA?') }}</h4>
                                     <div class="answer-options">
                                         <button class="answer-btn" data-result="procedure-2" data-path="yes">
                                             <i class="fas fa-check-circle"></i>
-                                            Ja
+                                            {{ t('yes', lang) | default('Ja') }}
                                         </button>
                                         <button class="answer-btn" data-result="procedure-1" data-path="no">
                                             <i class="fas fa-times-circle"></i>
-                                            Nee
+                                            {{ t('no', lang) | default('Nee') }}
                                         </button>
                                     </div>
                                 </div>
@@ -533,51 +533,51 @@
                                 <div class="result-step hidden" id="procedure-1">
                                     <div class="result-header">
                                         <i class="fas fa-star"></i>
-                                        <h4>Procedure 1: Automatische Erkenning</h4>
+                                        <h4>{{ t('procedure_1_automatic_recognition', lang) | default('Procedure 1: Automatische Erkenning') }}</h4>
                                     </div>
                                     <div class="result-details">
-                                        <p><strong>Voor wie:</strong> EU/EEA diploma na toetreding</p>
-                                        <p><strong>Duur:</strong> 4-12 weken</p>
-                                        <p><strong>Taal:</strong> B2+ Nederlands vereist</p>
-                                        <p><strong>Bijzonderheden:</strong> Directe registratie mogelijk</p>
+                                        <p><strong>{{ t('for_whom', lang) | default('Voor wie:') }}</strong> {{ t('for_whom_eu_after', lang) | default('EU/EEA diploma na toetreding') }}</p>
+                                        <p><strong>{{ t('duration', lang) | default('Duur:') }}</strong> 4-12 weken</p>
+                                        <p><strong>{{ t('language', lang) | default('Taal:') }}</strong> {{ t('language_required', lang) | default('B2+ Nederlands vereist') }}</p>
+                                        <p><strong>{{ t('special_requirements', lang) | default('Bijzonderheden:') }}</strong> {{ t('direct_registration_possible', lang) | default('Directe registratie mogelijk') }}</p>
                                     </div>
                                     <button class="reset-btn" onclick="resetAdvieswijzer()">
                                         <i class="fas fa-redo"></i>
-                                        Opnieuw beginnen
+                                        {{ t('start_again', lang) | default('Opnieuw beginnen') }}
                                     </button>
                                 </div>
                                 
                                 <div class="result-step hidden" id="procedure-2">
                                     <div class="result-header">
                                         <i class="fas fa-certificate"></i>
-                                        <h4>Procedure 2: Erkenning Beroepskwalificaties</h4>
+                                        <h4>{{ t('procedure_2_qualification_recognition', lang) | default('Procedure 2: Erkenning Beroepskwalificaties') }}</h4>
                                     </div>
                                     <div class="result-details">
-                                        <p><strong>Voor wie:</strong> EU/EEA diploma voor toetreding + 3 jaar ervaring</p>
-                                        <p><strong>Duur:</strong> 8-16 weken</p>
-                                        <p><strong>Taal:</strong> B2+ Nederlands vereist</p>
-                                        <p><strong>Bijzonderheden:</strong> CBGV beoordeling mogelijk</p>
+                                        <p><strong>{{ t('for_whom', lang) | default('Voor wie:') }}</strong> {{ t('for_whom_eu_before', lang) | default('EU/EEA diploma voor toetreding + 3 jaar ervaring') }}</p>
+                                        <p><strong>{{ t('duration', lang) | default('Duur') }}:</strong> {{ t('8_16_weeks', lang) | default('8-16 weken') }}</p>
+                                        <p><strong>{{ t('language', lang) | default('Taal:') }}</strong> {{ t('language_required', lang) | default('B2+ Nederlands vereist') }}</p>
+                                        <p><strong>{{ t('special_requirements', lang) | default('Bijzonderheden:') }}</strong> {{ t('cbgv_assessment_possible', lang) | default('CBGV beoordeling mogelijk') }}</p>
                                     </div>
                                     <button class="reset-btn" onclick="resetAdvieswijzer()">
                                         <i class="fas fa-redo"></i>
-                                        Opnieuw beginnen
+                                        {{ t('start_again', lang) | default('Opnieuw beginnen') }}
                                     </button>
                                 </div>
                                 
                                 <div class="result-step hidden" id="procedure-3">
                                     <div class="result-header">
                                         <i class="fas fa-graduation-cap"></i>
-                                        <h4>Procedure 3: Verklaring van Vakbekwaamheid</h4>
+                                        <h4>{{ t('procedure_3_competence_declaration', lang) | default('Procedure 3: Verklaring van Vakbekwaamheid') }}</h4>
                                     </div>
                                     <div class="result-details">
-                                        <p><strong>Voor wie:</strong> Niet-EU/EEA diploma's</p>
-                                        <p><strong>Duur:</strong> 6 maanden - 2 jaar</p>
-                                        <p><strong>Taal:</strong> B2+ Nederlands + B2 Engels (bij aanvraag)</p>
-                                        <p><strong>Bijzonderheden:</strong> Taalcertificaten + BI-toets verplicht</p>
+                                        <p><strong>{{ t('for_whom', lang) | default('Voor wie:') }}</strong> {{ t('for_whom_non_eu', lang) | default('Niet-EU/EEA diploma\'s') }}</p>
+                                        <p><strong>{{ t('duration', lang) | default('Duur') }}:</strong> {{ t('6_months_2_years', lang) | default('6 maanden - 2 jaar') }}</p>
+                                        <p><strong>{{ t('language', lang) | default('Taal:') }}</strong> {{ t('language_required_english', lang) | default('B2+ Nederlands + B2 Engels (bij aanvraag)') }}</p>
+                                        <p><strong>{{ t('special_requirements', lang) | default('Bijzonderheden:') }}</strong> {{ t('special_requirements', lang) | default('Taalcertificaten + BI-toets verplicht') }}</p>
                                     </div>
                                     <button class="reset-btn" onclick="resetAdvieswijzer()">
                                         <i class="fas fa-redo"></i>
-                                        Opnieuw beginnen
+                                        {{ t('start_again', lang) | default('Opnieuw beginnen') }}
                                     </button>
                                 </div>
                             </div>
@@ -587,8 +587,8 @@
                     <!-- Procedures Overview -->
                     <div class="procedures-overview">
                         <div class="section-header">
-                            <h3>Overzicht Procedures</h3>
-                            <p class="section-description">Drie verschillende routes naar BIG registratie voor tandartsen</p>
+                            <h3>{{ t('procedures_overview', lang) | default('Overzicht Procedures') }}</h3>
+                            <p class="section-description">{{ t('three_different_routes', lang) | default('Drie verschillende routes naar BIG registratie voor tandartsen') }}</p>
                         </div>
                         
                         <div class="procedures-grid">
@@ -597,15 +597,15 @@
                                     <div class="procedure-icon">
                                         <i class="fas fa-star"></i>
                                     </div>
-                                    <h3>Procedure 1: Automatische Erkenning</h3>
-                                    <div class="procedure-badge">Snelste route</div>
+                                    <h3>{{ t('procedure_1_automatic_recognition', lang) | default('Procedure 1: Automatische Erkenning') }}</h3>
+                                    <div class="procedure-badge">{{ t('fastest_route', lang) | default('Snelste route') }}</div>
                                 </div>
                                 <div class="procedure-content">
                                     <div class="procedure-timeline">
                                         <div class="timeline-item">
                                             <span class="timeline-dot"></span>
                                             <div class="timeline-content">
-                                                <p>Documenten verzamelen</p>
+                                                <p>{{ t('collect_documents', lang) | default('Documenten verzamelen') }}</p>
                                             </div>
                                         </div>
                                         <div class="timeline-item">
@@ -617,16 +617,16 @@
                                         <div class="timeline-item">
                                             <span class="timeline-dot"></span>
                                             <div class="timeline-content">
-                                                <p>BIG registratie</p>
+                                                <p>{{ t('big_registration', lang) | default('BIG registratie') }}</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="procedure-requirements">
-                                        <h4>Vereisten:</h4>
+                                        <h4>{{ t('requirements', lang) | default('Vereisten:') }}</h4>
                                         <ul>
-                                            <li>EU/EEA diploma na toetreding</li>
-                                            <li>Nederlands B2+ niveau</li>
-                                            <li>Alle documenten met waarmerking</li>
+                                            <li>{{ t('eu_eea_diploma_after', lang) | default('EU/EEA diploma na toetreding') }}</li>
+                                            <li>{{ t('dutch_b2_level', lang) | default('Nederlands B2+ niveau') }}</li>
+                                            <li>{{ t('all_documents_with_apostille', lang) | default('Alle documenten met waarmerking') }}</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -637,36 +637,36 @@
                                     <div class="procedure-icon">
                                         <i class="fas fa-certificate"></i>
                                     </div>
-                                    <h3>Procedure 2: Erkenning Beroepskwalificaties</h3>
-                                    <div class="procedure-badge">Gemiddelde route</div>
+                                    <h3>{{ t('procedure_2_qualification_recognition', lang) | default('Procedure 2: Erkenning Beroepskwalificaties') }}</h3>
+                                    <div class="procedure-badge">{{ t('average_route', lang) | default('Gemiddelde route') }}</div>
                                 </div>
                                 <div class="procedure-content">
                                     <div class="procedure-timeline">
                                         <div class="timeline-item">
                                             <span class="timeline-dot"></span>
                                             <div class="timeline-content">
-                                                <p>Documenten + werkervaring</p>
+                                                <p>{{ t('documents_work_experience', lang) | default('Documenten + werkervaring') }}</p>
                                             </div>
                                         </div>
                                         <div class="timeline-item">
                                             <span class="timeline-dot"></span>
                                             <div class="timeline-content">
-                                                <p>CBGV beoordeling</p>
+                                                <p>{{ t('cbgv_assessment', lang) | default('CBGV beoordeling') }}</p>
                                             </div>
                                         </div>
                                         <div class="timeline-item">
                                             <span class="timeline-dot"></span>
                                             <div class="timeline-content">
-                                                <p>Besluit + registratie</p>
+                                                <p>{{ t('decision_registration', lang) | default('Besluit + registratie') }}</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="procedure-requirements">
-                                        <h4>Vereisten:</h4>
+                                        <h4>{{ t('requirements', lang) | default('Vereisten:') }}</h4>
                                         <ul>
-                                            <li>EU/EEA diploma voor toetreding</li>
-                                            <li>3+ jaar EU/EEA werkervaring</li>
-                                            <li>Nederlands B2+ niveau</li>
+                                            <li>{{ t('eu_eea_diploma_before', lang) | default('EU/EEA diploma voor toetreding') }}</li>
+                                            <li>{{ t('3_years_eu_work_experience', lang) | default('3+ jaar EU/EEA werkervaring') }}</li>
+                                            <li>{{ t('dutch_b2_level', lang) | default('Nederlands B2+ niveau') }}</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -677,36 +677,36 @@
                                     <div class="procedure-icon">
                                         <i class="fas fa-graduation-cap"></i>
                                     </div>
-                                    <h3>Procedure 3: Verklaring van Vakbekwaamheid</h3>
-                                    <div class="procedure-badge">Uitgebreide route</div>
+                                    <h3>{{ t('procedure_3_competence_declaration', lang) | default('Procedure 3: Verklaring van Vakbekwaamheid') }}</h3>
+                                    <div class="procedure-badge">{{ t('extensive_route', lang) | default('Uitgebreide route') }}</div>
                                 </div>
                                 <div class="procedure-content">
                                     <div class="procedure-timeline">
                                         <div class="timeline-item">
                                             <span class="timeline-dot"></span>
                                             <div class="timeline-content">
-                                                <p>Taalcertificaten behalen</p>
+                                                <p>{{ t('obtain_language_certificates', lang) | default('Taalcertificaten behalen') }}</p>
                                             </div>
                                         </div>
                                         <div class="timeline-item">
                                             <span class="timeline-dot"></span>
                                             <div class="timeline-content">
-                                                <p>BI-toets voorbereiding</p>
+                                                <p>{{ t('bi_test_preparation', lang) | default('BI-toets voorbereiding') }}</p>
                                             </div>
                                         </div>
                                         <div class="timeline-item">
                                             <span class="timeline-dot"></span>
                                             <div class="timeline-content">
-                                                <p>CBGV beoordeling</p>
+                                                <p>{{ t('cbgv_assessment', lang) | default('CBGV beoordeling') }}</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="procedure-requirements">
-                                        <h4>Vereisten:</h4>
+                                        <h4>{{ t('requirements', lang) | default('Vereisten:') }}</h4>
                                         <ul>
-                                            <li>Niet-EU/EEA diploma</li>
-                                            <li>Nederlands B2+ + Engels B2</li>
-                                            <li>Taalcertificaten (NT2-II, CEFR B2) + BI-toets</li>
+                                            <li>{{ t('non_eu_eea_diploma', lang) | default('Niet-EU/EEA diploma') }}</li>
+                                            <li>{{ t('dutch_b2_plus_english_b2', lang) | default('Nederlands B2+ + Engels B2') }}</li>
+                                            <li>{{ t('language_certificates_bi_test', lang) | default('Taalcertificaten (NT2-II, CEFR B2) + BI-toets') }}</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -720,8 +720,8 @@
             <section id="step-by-step" class="content-section">
                 <div class="container">
                     <div class="section-header">
-                        <h2>Registratieproces voor tandartsen</h2>
-                        <p class="section-description">Stap-voor-stap proces specifiek voor tandheelkundigen</p>
+                        <h2>{{ t('registration_process_dentists', lang) | default('Registratieproces voor tandartsen') }}</h2>
+                        <p class="section-description">{{ t('step_by_step_process_dentists', lang) | default('Stap-voor-stap proces specifiek voor tandheelkundigen') }}</p>
                     </div>
                     
                     <div class="process-timeline">
@@ -735,15 +735,15 @@
                                         <i class="fas fa-file-check"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">Diploma evaluatie</h3>
-                                        <p class="step-description">Controleer of je tandheelkunde diploma erkend wordt</p>
+                                        <h3 class="step-title">{{ t('diploma_evaluation', lang) | default('Diploma evaluatie') }}</h3>
+                                        <p class="step-description">{{ t('check_diploma_recognition', lang) | default('Controleer of je tandheelkunde diploma erkend wordt') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>EU/EEA diploma: directe erkenning mogelijk</li>
-                                        <li><i class="fas fa-arrow-right"></i>Niet-EU diploma: NUFFIC evaluatie vereist</li>
-                                        <li><i class="fas fa-arrow-right"></i>Controleer of opleiding voldoet aan Nederlandse normen</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('eu_diploma_direct', lang) | default('EU/EEA diploma: directe erkenning mogelijk') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('non_eu_diploma_nuffic', lang) | default('Niet-EU diploma: NUFFIC evaluatie vereist') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('check_education_standards', lang) | default('Controleer of opleiding voldoet aan Nederlandse normen') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -759,15 +759,15 @@
                                         <i class="fas fa-language"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">Nederlandse taaltoets</h3>
-                                        <p class="step-description">Behaal B2+ niveau Nederlands</p>
+                                        <h3 class="step-title">{{ t('dutch_language_test_step', lang) | default('Nederlandse taaltoets') }}</h3>
+                                        <p class="step-description">{{ t('achieve_b2_dutch', lang) | default('Behaal B2+ niveau Nederlands') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>CNaVT certificaat vereist</li>
-                                        <li><i class="fas fa-arrow-right"></i>Medisch Nederlands component</li>
-                                        <li><i class="fas fa-arrow-right"></i>Praktische communicatie vaardigheden</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('cnavt_certificate_required', lang) | default('CNaVT certificaat vereist') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('medical_dutch_component', lang) | default('Medisch Nederlands component') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('practical_communication_skills', lang) | default('Praktische communicatie vaardigheden') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -783,15 +783,15 @@
                                         <i class="fas fa-graduation-cap"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">BI-toets voorbereiding</h3>
-                                        <p class="step-description">Voorbereiden op beroepsinhoudelijke toets</p>
+                                        <h3 class="step-title">{{ t('bi_test_preparation', lang) | default('BI-toets voorbereiding') }}</h3>
+                                        <p class="step-description">{{ t('prepare_for_bi_test', lang) | default('Voorbereiden op beroepsinhoudelijke toets') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>Studie van Nederlandse tandheelkunde</li>
-                                        <li><i class="fas fa-arrow-right"></i>Praktische vaardigheden oefenen</li>
-                                        <li><i class="fas fa-arrow-right"></i>Kennis van Nederlandse wetgeving</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('study_dutch_dentistry', lang) | default('Studie van Nederlandse tandheelkunde') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('practice_practical_skills', lang) | default('Praktische vaardigheden oefenen') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('knowledge_dutch_legislation', lang) | default('Kennis van Nederlandse wetgeving') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -807,15 +807,15 @@
                                         <i class="fas fa-edit"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">BI-toets afleggen</h3>
-                                        <p class="step-description">Praktische en theoretische toets</p>
+                                        <h3 class="step-title">{{ t('take_bi_test', lang) | default('BI-toets afleggen') }}</h3>
+                                        <p class="step-description">{{ t('practical_theoretical_test', lang) | default('Praktische en theoretische toets') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>Theoretische kennis toets</li>
-                                        <li><i class="fas fa-arrow-right"></i>Praktische vaardigheden demonstratie</li>
-                                        <li><i class="fas fa-arrow-right"></i>Beroepsinhoudelijke toets</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('theoretical_knowledge_test', lang) | default('Theoretische kennis toets') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('practical_skills_demonstration', lang) | default('Praktische vaardigheden demonstratie') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('professional_content_test', lang) | default('Beroepsinhoudelijke toets') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -831,15 +831,15 @@
                                         <i class="fas fa-check-circle"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">BIG registratie</h3>
-                                        <p class="step-description">Ontvang je BIG-nummer</p>
+                                        <h3 class="step-title">{{ t('big_registration_step', lang) | default('BIG registratie') }}</h3>
+                                        <p class="step-description">{{ t('receive_big_number', lang) | default('Ontvang je BIG-nummer') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>BIG-nummer wordt toegekend</li>
-                                        <li><i class="fas fa-arrow-right"></i>Registratie is 5 jaar geldig</li>
-                                        <li><i class="fas fa-arrow-right"></i>Start met werken in Nederland</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('big_number_assigned', lang) | default('BIG-nummer wordt toegekend') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('registration_valid_5_years', lang) | default('Registratie is 5 jaar geldig') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('start_working_netherlands', lang) | default('Start met werken in Nederland') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -852,86 +852,86 @@
             <section id="documents" class="content-section">
                 <div class="container">
                     <div class="section-header">
-                        <h2>Benodigde documenten</h2>
-                        <p class="section-description">Alle documenten die je moet verzamelen voor je aanvraag</p>
+                        <h2>{{ t('required_documents', lang) | default('Benodigde documenten') }}</h2>
+                        <p class="section-description">{{ t('all_documents_needed', lang) | default('Alle documenten die je moet verzamelen voor je aanvraag') }}</p>
                     </div>
                     
                     <div class="documents-grid">
                         <div class="document-category">
                             <div class="category-header">
-                                <h3 class="category-title">Opleidingsdocumenten</h3>
+                                <h3 class="category-title">{{ t('education_documents', lang) | default('Opleidingsdocumenten') }}</h3>
                                 <span class="document-count">4 documenten</span>
                             </div>
                             <div class="documents-list">
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Origineel tandheelkunde diploma met apostille</span>
+                                    <span class="document-name">{{ t('original_dentistry_diploma', lang) | default('Origineel tandheelkunde diploma met apostille') }}</span>
                                 </label>
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Beëdigde Nederlandse vertaling van diploma</span>
+                                    <span class="document-name">{{ t('certified_dutch_translation', lang) | default('Beëdigde Nederlandse vertaling van diploma') }}</span>
                                 </label>
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Officiële transcripten/cijferlijsten</span>
+                                    <span class="document-name">{{ t('official_transcripts', lang) | default('Officiële transcripten/cijferlijsten') }}</span>
                                 </label>
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Bewijs van accreditatie opleidingsinstelling</span>
+                                    <span class="document-name">{{ t('proof_accreditation_institution', lang) | default('Bewijs van accreditatie opleidingsinstelling') }}</span>
                                 </label>
                             </div>
                         </div>
 
                         <div class="document-category">
                             <div class="category-header">
-                                <h3 class="category-title">Taalvaardigheid</h3>
+                                <h3 class="category-title">{{ t('language_proficiency', lang) | default('Taalvaardigheid') }}</h3>
                                 <span class="document-count">2 documenten</span>
                             </div>
                             <div class="documents-list">
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">CNaVT certificaat (Nederlands B2+)</span>
+                                    <span class="document-name">{{ t('cnavt_certificate', lang) | default('CNaVT certificaat (Nederlands B2+)') }}</span>
                                 </label>
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Bewijs medisch Nederlands</span>
+                                    <span class="document-name">{{ t('medical_dutch_proof', lang) | default('Bewijs medisch Nederlands') }}</span>
                                 </label>
                             </div>
                         </div>
 
                         <div class="document-category">
                             <div class="category-header">
-                                <h3 class="category-title">Praktijkervaring</h3>
+                                <h3 class="category-title">{{ t('practical_experience', lang) | default('Praktijkervaring') }}</h3>
                                 <span class="document-count">3 documenten</span>
                             </div>
                             <div class="documents-list">
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Werkgeversverklaringen</span>
+                                    <span class="document-name">{{ t('employer_statements', lang) | default('Werkgeversverklaringen') }}</span>
                                 </label>
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Bewijs van tandheelkundige stage</span>
+                                    <span class="document-name">{{ t('proof_dental_internship', lang) | default('Bewijs van tandheelkundige stage') }}</span>
                                 </label>
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Referenties van supervisors</span>
+                                    <span class="document-name">{{ t('references_from_supervisors', lang) | default('Referenties van supervisors') }}</span>
                                 </label>
                             </div>
                         </div>
 
                         <div class="document-category">
                             <div class="category-header">
-                                <h3 class="category-title">Juridische documenten</h3>
+                                <h3 class="category-title">{{ t('legal_documents', lang) | default('Juridische documenten') }}</h3>
                                 <span class="document-count">3 documenten</span>
                             </div>
                             <div class="documents-list">
@@ -943,12 +943,12 @@
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Bewijs van goede staat van dienst</span>
+                                    <span class="document-name">{{ t('proof_good_conduct', lang) | default('Bewijs van goede staat van dienst') }}</span>
                                 </label>
                                 <label class="document-item">
                                     <input type="checkbox" class="document-checkbox">
                                     <span class="checkmark"></span>
-                                    <span class="document-name">Bewijs van registratie in herkomstland</span>
+                                    <span class="document-name">{{ t('proof_registration_country_origin', lang) | default('Bewijs van registratie in herkomstland') }}</span>
                                 </label>
                             </div>
                         </div>
@@ -960,24 +960,24 @@
             <section id="language" class="content-section">
                 <div class="container">
                     <div class="section-header">
-                        <h2>Taalvereisten</h2>
-                        <p class="section-description">Taalniveau en certificaten die je nodig hebt voor BIG registratie</p>
+                        <h2>{{ t('language_requirements', lang) | default('Taalvereisten') }}</h2>
+                        <p class="section-description">{{ t('language_level_certificates_needed', lang) | default('Taalniveau en certificaten die je nodig hebt voor BIG registratie') }}</p>
                     </div>
                     
                     <div class="language-requirements">
                         <div class="requirement-card">
                             <div class="requirement-header">
                                 <i class="fas fa-language"></i>
-                                <h3>Nederlands Taalniveau</h3>
+                                <h3>{{ t('dutch_language_level', lang) | default('Nederlands Taalniveau') }}</h3>
                             </div>
                             <div class="requirement-content">
-                                <p><strong>Vereist niveau:</strong> B2 of hoger volgens het Europees Referentiekader (CEFR)</p>
-                                <p><strong>Geldige certificaten:</strong></p>
+                                <p><strong>{{ t('required_level', lang) | default('Vereist niveau:') }}</strong> {{ t('required_level_b2_cefr', lang) | default('B2 of hoger volgens het Europees Referentiekader (CEFR)') }}</p>
+                                <p><strong>{{ t('valid_certificates', lang) | default('Geldige certificaten:') }}</strong></p>
                                 <ul>
-                                    <li>NT2-II (Nederlands als Tweede Taal, Programma II)</li>
-                                    <li>CNaVT (Certificaat Nederlands als Vreemde Taal) - Profiel Medische Taalvaardigheid</li>
-                                    <li>Staatsexamen NT2-II</li>
-                                    <li>CEFR B2 certificaat van erkende instituten</li>
+                                    <li>{{ t('nt2_program_ii', lang) | default('NT2-II (Nederlands als Tweede Taal, Programma II)') }}</li>
+                                    <li>{{ t('cnavt_medical_profile', lang) | default('CNaVT (Certificaat Nederlands als Vreemde Taal) - Profiel Medische Taalvaardigheid') }}</li>
+                                    <li>{{ t('staatsexamen_nt2_ii', lang) | default('Staatsexamen NT2-II') }}</li>
+                                    <li>{{ t('cefr_b2_certificate', lang) | default('CEFR B2 certificaat van erkende instituten') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -985,15 +985,15 @@
                         <div class="requirement-card">
                             <div class="requirement-header">
                                 <i class="fas fa-certificate"></i>
-                                <h3>Medische Taalvaardigheid</h3>
+                                <h3>{{ t('medical_language_proficiency', lang) | default('Medische Taalvaardigheid') }}</h3>
                             </div>
                             <div class="requirement-content">
-                                <p>Naast algemene taalvaardigheid moet je ook medische termen en communicatie beheersen:</p>
+                                <p>{{ t('medical_terms_communication', lang) | default('Naast algemene taalvaardigheid moet je ook medische termen en communicatie beheersen:') }}</p>
                                 <ul>
-                                    <li>Medische terminologie in het Nederlands</li>
-                                    <li>Communicatie met patiënten</li>
-                                    <li>Schriftelijke verslaglegging</li>
-                                    <li>Professionele communicatie met collega's</li>
+                                    <li>{{ t('medical_terminology_dutch', lang) | default('Medische terminologie in het Nederlands') }}</li>
+                                    <li>{{ t('communication_with_patients', lang) | default('Communicatie met patiënten') }}</li>
+                                    <li>{{ t('written_reporting', lang) | default('Schriftelijke verslaglegging') }}</li>
+                                    <li>{{ t('professional_communication_colleagues', lang) | default('Professionele communicatie met collega\'s') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -1001,20 +1001,20 @@
                         <div class="requirement-card">
                             <div class="requirement-header">
                                 <i class="fas fa-clock"></i>
-                                <h3>Geldigheid</h3>
+                                <h3>{{ t('validity', lang) | default('Geldigheid') }}</h3>
                             </div>
                             <div class="requirement-content">
-                                <p>Taalcertificaten zijn meestal 2 jaar geldig vanaf de datum van afgifte. Zorg ervoor dat je certificaat nog geldig is op het moment van je BIG registratie aanvraag.</p>
+                                <p>{{ t('language_certificates_validity', lang) | default('Taalcertificaten zijn meestal 2 jaar geldig vanaf de datum van afgifte. Zorg ervoor dat je certificaat nog geldig is op het moment van je BIG registratie aanvraag.') }}</p>
                             </div>
                         </div>
 
                         <div class="requirement-card">
                             <div class="requirement-header">
                                 <i class="fas fa-info-circle"></i>
-                                <h3>Belangrijke Opmerking</h3>
+                                <h3>{{ t('important_note', lang) | default('Belangrijke Opmerking') }}</h3>
                             </div>
                             <div class="requirement-content">
-                                <p><strong>AKV-toets is afgeschaft:</strong> De AKV-toets (Algemene Kennis van de Nederlandse Volksgezondheid) is sinds 2022 afgeschaft. In plaats daarvan moet je nu taalcertificaten behalen die aantonen dat je Nederlands op B2-niveau beheerst.</p>
+                                <p><strong>{{ t('akv_test_abolished', lang) | default('AKV-toets is afgeschaft:') }}</strong> {{ t('akv_test_abolished_text', lang) | default('De AKV-toets (Algemene Kennis van de Nederlandse Volksgezondheid) is sinds 2022 afgeschaft. In plaats daarvan moet je nu taalcertificaten behalen die aantonen dat je Nederlands op B2-niveau beheerst.') }}</p>
                             </div>
                         </div>
                     </div>
@@ -1025,30 +1025,30 @@
             <section id="exam" class="content-section">
                 <div class="container">
                     <div class="section-header">
-                        <h2>BI-toets voor tandartsen</h2>
-                        <p class="section-description">Alles wat je moet weten over de beroepsinhoudelijke toets</p>
+                        <h2>{{ t('bi_exam_for_dentists', lang) | default('BI-toets voor tandartsen') }}</h2>
+                        <p class="section-description">{{ t('everything_about_exam', lang) | default('Alles wat je moet weten over de beroepsinhoudelijke toets') }}</p>
                     </div>
                     
                     <div class="exam-info">
-                        <h3>Overzicht BI-toets</h3>
-                        <p>De beroepsinhoudelijke toets (BI-toets) is een uitgebreid examen dat je vakkennis en praktische vaardigheden als tandarts test volgens Nederlandse standaarden.</p>
+                        <h3>{{ t('bi_exam_overview', lang) | default('Overzicht BI-toets') }}</h3>
+                        <p>{{ t('bi_exam_description', lang) | default('De beroepsinhoudelijke toets (BI-toets) is een uitgebreid examen dat je vakkennis en praktische vaardigheden als tandarts test volgens Nederlandse standaarden.') }}</p>
                         
                         <div class="exam-stats">
                             <div class="exam-stat">
                                 <span class="exam-stat-number">-</span>
-                                <span class="exam-stat-label">Toets</span>
+                                <span class="exam-stat-label">{{ t('test', lang) | default('Toets') }}</span>
                             </div>
                             <div class="exam-stat">
                                 <span class="exam-stat-number">2-3</span>
-                                <span class="exam-stat-label">Dagen examen</span>
+                                <span class="exam-stat-label">{{ t('exam_days', lang) | default('Dagen examen') }}</span>
                             </div>
                             <div class="exam-stat">
                                 <span class="exam-stat-number">70%</span>
-                                <span class="exam-stat-label">Slagingspercentage</span>
+                                <span class="exam-stat-label">{{ t('pass_rate', lang) | default('Slagingspercentage') }}</span>
                             </div>
                             <div class="exam-stat">
                                 <span class="exam-stat-number">2x</span>
-                                <span class="exam-stat-label">Per jaar</span>
+                                <span class="exam-stat-label">{{ t('per_year', lang) | default('Per jaar') }}</span>
                             </div>
                         </div>
                     </div>
@@ -1058,25 +1058,25 @@
                             <div class="info-icon">
                                 <i class="fas fa-book"></i>
                             </div>
-                            <p class="info-text">Theoretische kennis van tandheelkunde volgens Nederlandse normen</p>
+                            <p class="info-text">{{ t('theoretical_knowledge', lang) | default('Theoretische kennis van tandheelkunde volgens Nederlandse normen') }}</p>
                         </div>
                         <div class="info-card">
                             <div class="info-icon">
                                 <i class="fas fa-tools"></i>
                             </div>
-                            <p class="info-text">Praktische vaardigheden demonstratie op phantomhoofd</p>
+                            <p class="info-text">{{ t('practical_skills_demonstration_phantom', lang) | default('Praktische vaardigheden demonstratie op phantomhoofd') }}</p>
                         </div>
                         <div class="info-card">
                             <div class="info-icon">
                                 <i class="fas fa-users"></i>
                             </div>
-                            <p class="info-text">Patiëntcommunicatie en professioneel gedrag</p>
+                            <p class="info-text">{{ t('patient_communication_professional_behavior', lang) | default('Patiëntcommunicatie en professioneel gedrag') }}</p>
                         </div>
                         <div class="info-card">
                             <div class="info-icon">
                                 <i class="fas fa-gavel"></i>
                             </div>
-                            <p class="info-text">Kennis van Nederlandse wetgeving en richtlijnen</p>
+                            <p class="info-text">{{ t('dutch_legislation_knowledge', lang) | default('Kennis van Nederlandse wetgeving en richtlijnen') }}</p>
                         </div>
                     </div>
                 </div>
@@ -1086,23 +1086,23 @@
             <section id="compensation" class="content-section">
                 <div class="container">
                     <div class="section-header">
-                        <h2>Compensatie en Uitzonderingen</h2>
-                        <p class="section-description">Mogelijke uitzonderingen en compensatiemaatregelen voor BIG registratie</p>
+                        <h2>{{ t('compensation_exceptions', lang) | default('Compensatie en Uitzonderingen') }}</h2>
+                        <p class="section-description">{{ t('possible_exceptions_compensation', lang) | default('Mogelijke uitzonderingen en compensatiemaatregelen voor BIG registratie') }}</p>
                     </div>
                     
                     <div class="compensation-info">
                         <div class="compensation-card">
                             <div class="compensation-header">
                                 <i class="fas fa-star"></i>
-                                <h3>EU/EEA/Zwitserland</h3>
+                                <h3>{{ t('eu_eea_switzerland', lang) | default('EU/EEA/Zwitserland') }}</h3>
                             </div>
                             <div class="compensation-content">
-                                <p>Als je diploma behaald is in een EU/EEA-land of Zwitserland, kun je mogelijk vrijstelling krijgen van bepaalde onderdelen:</p>
+                                <p>{{ t('if_diploma_eu_country', lang) | default('Als je diploma behaald is in een EU/EEA-land of Zwitserland, kun je mogelijk vrijstelling krijgen van bepaalde onderdelen:') }}</p>
                                 <ul>
-                                    <li>Automatische erkenning van diploma's uit EU/EEA</li>
-                                    <li>Vereenvoudigde procedure</li>
-                                    <li>Mogelijke vrijstelling van BI-toets (afhankelijk van land van herkomst)</li>
-                                    <li>Snellere verwerking van aanvraag</li>
+                                    <li>{{ t('automatic_recognition_eu', lang) | default('Automatische erkenning van diploma\'s uit EU/EEA') }}</li>
+                                    <li>{{ t('simplified_procedure', lang) | default('Vereenvoudigde procedure') }}</li>
+                                    <li>{{ t('possible_bi_exam_exemption', lang) | default('Mogelijke vrijstelling van BI-toets (afhankelijk van land van herkomst)') }}</li>
+                                    <li>{{ t('faster_processing', lang) | default('Snellere verwerking van aanvraag') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -1110,15 +1110,15 @@
                         <div class="compensation-card">
                             <div class="compensation-header">
                                 <i class="fas fa-graduation-cap"></i>
-                                <h3>Erkende Opleidingen</h3>
+                                <h3>{{ t('recognized_education', lang) | default('Erkende Opleidingen') }}</h3>
                             </div>
                             <div class="compensation-content">
-                                <p>Bepaalde opleidingen kunnen automatisch erkend worden:</p>
+                                <p>{{ t('certain_education_automatically_recognized', lang) | default('Bepaalde opleidingen kunnen automatisch erkend worden:') }}</p>
                                 <ul>
-                                    <li>Nederlandse tandheelkunde opleidingen</li>
-                                    <li>Opleidingen van erkende universiteiten</li>
-                                    <li>Programma's met internationale accreditatie</li>
-                                    <li>Opleidingen die voldoen aan EU-standaarden</li>
+                                    <li>{{ t('dutch_dentistry_education', lang) | default('Nederlandse tandheelkunde opleidingen') }}</li>
+                                    <li>{{ t('education_recognized_universities', lang) | default('Opleidingen van erkende universiteiten') }}</li>
+                                    <li>{{ t('programs_international_accreditation', lang) | default('Programma\'s met internationale accreditatie') }}</li>
+                                    <li>{{ t('education_meets_eu_standards', lang) | default('Opleidingen die voldoen aan EU-standaarden') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -1126,15 +1126,15 @@
                         <div class="compensation-card">
                             <div class="compensation-header">
                                 <i class="fas fa-briefcase"></i>
-                                <h3>Werkervaring</h3>
+                                <h3>{{ t('work_experience', lang) | default('Werkervaring') }}</h3>
                             </div>
                             <div class="compensation-content">
-                                <p>Relevante werkervaring kan compenseren voor bepaalde vereisten:</p>
+                                <p>{{ t('relevant_work_experience_compensate', lang) | default('Relevante werkervaring kan compenseren voor bepaalde vereisten:') }}</p>
                                 <ul>
-                                    <li>Minimaal 3 jaar relevante werkervaring</li>
-                                    <li>Erkenning van praktijkervaring</li>
-                                    <li>Mogelijke vrijstelling van onderdelen van BI-toets</li>
-                                    <li>Vereenvoudigde taalvereisten bij langdurige ervaring</li>
+                                    <li>{{ t('minimum_3_years_relevant_work_experience', lang) | default('Minimaal 3 jaar relevante werkervaring') }}</li>
+                                    <li>{{ t('recognition_practical_experience', lang) | default('Erkenning van praktijkervaring') }}</li>
+                                    <li>{{ t('possible_exemption_bi_test_parts', lang) | default('Mogelijke vrijstelling van onderdelen van BI-toets') }}</li>
+                                    <li>{{ t('simplified_language_requirements_long_experience', lang) | default('Vereenvoudigde taalvereisten bij langdurige ervaring') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -1142,15 +1142,15 @@
                         <div class="compensation-card">
                             <div class="compensation-header">
                                 <i class="fas fa-language"></i>
-                                <h3>Taal Compensatie</h3>
+                                <h3>{{ t('language_compensation', lang) | default('Taal Compensatie') }}</h3>
                             </div>
                             <div class="compensation-content">
-                                <p>In bepaalde gevallen kun je compensatie krijgen voor taalvereisten:</p>
+                                <p>{{ t('certain_cases_compensation_language_requirements', lang) | default('In bepaalde gevallen kun je compensatie krijgen voor taalvereisten:') }}</p>
                                 <ul>
-                                    <li>Langdurige werkervaring in Nederlandstalige omgeving</li>
-                                    <li>Eerdere BIG registratie in andere beroepsgroep</li>
-                                    <li>Speciale omstandigheden (humanitaire gronden)</li>
-                                    <li>Overgangsregelingen voor bestaande professionals</li>
+                                    <li>{{ t('long_term_work_experience_dutch_environment', lang) | default('Langdurige werkervaring in Nederlandstalige omgeving') }}</li>
+                                    <li>{{ t('previous_big_registration_other_profession', lang) | default('Eerdere BIG registratie in andere beroepsgroep') }}</li>
+                                    <li>{{ t('special_circumstances_humanitarian_grounds', lang) | default('Speciale omstandigheden (humanitaire gronden)') }}</li>
+                                    <li>{{ t('transitional_arrangements_existing_professionals', lang) | default('Overgangsregelingen voor bestaande professionals') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -1158,11 +1158,11 @@
                         <div class="compensation-card">
                             <div class="compensation-header">
                                 <i class="fas fa-info-circle"></i>
-                                <h3>Belangrijke Opmerking</h3>
+                                <h3>{{ t('important_note', lang) | default('Belangrijke Opmerking') }}</h3>
                             </div>
                             <div class="compensation-content">
-                                <p><strong>Individuele beoordeling:</strong> Elke aanvraag wordt individueel beoordeeld. Compensatie en uitzonderingen zijn niet automatisch en hangen af van je specifieke situatie en achtergrond.</p>
-                                <p><strong>Advies:</strong> Raadpleeg altijd het BIG-register of een gespecialiseerde adviseur voor jouw specifieke situatie.</p>
+                                <p><strong>{{ t('individual_assessment_text', lang) | default('Individuele beoordeling: Elke aanvraag wordt individueel beoordeeld. Compensatie en uitzonderingen zijn niet automatisch en hangen af van je specifieke situatie en achtergrond.') }}</strong></p>
+                                <p><strong>{{ t('advice', lang) | default('Advies: Raadpleeg altijd het BIG-register of een gespecialiseerde adviseur voor jouw specifieke situatie.') }}</strong></p>
                             </div>
                         </div>
                     </div>
@@ -1173,58 +1173,58 @@
             <section id="faq" class="content-section">
                 <div class="container">
                     <div class="section-header">
-                        <h2>Veelgestelde vragen</h2>
-                        <p class="section-description">Antwoorden op de meest gestelde vragen over BIG registratie</p>
+                        <h2>{{ t('frequently_asked_questions', lang) | default('Veelgestelde vragen') }}</h2>
+                        <p class="section-description">{{ t('answers_most_asked_questions', lang) | default('Antwoorden op de meest gestelde vragen over BIG registratie') }}</p>
                     </div>
                     
                     <div class="faq-list">
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>Hoe lang duurt het totale proces?</span>
+                                <span>{{ t('how_long_total_process', lang) | default('Hoe lang duurt het totale proces?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                Het totale proces duurt gemiddeld 1-2 jaar, afhankelijk van je voorbereidingstijd voor de taaltoets en BI-toets, en de wachttijd voor examens.
+                                {{ t('total_process_duration_detailed', lang) | default('Het totale proces duurt gemiddeld 1-2 jaar, afhankelijk van je voorbereidingstijd voor de taaltoets en BI-toets, en de wachttijd voor examens.') }}
                             </div>
                         </div>
 
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>Wat kost de hele procedure?</span>
+                                <span>{{ t('what_costs_procedure', lang) | default('Wat kost de hele procedure?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                De kosten variëren afhankelijk van documenten, vertalingen en taalcursus.
+                                {{ t('costs_vary_documents', lang) | default('De kosten variëren afhankelijk van documenten, vertalingen en taalcursus.') }}
                             </div>
                         </div>
 
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>Kan ik werken tijdens het proces?</span>
+                                <span>{{ t('can_work_during_process', lang) | default('Kan ik werken tijdens het proces?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                Tijdens het proces kun je niet als tandarts werken in Nederland. Je kunt wel andere werk doen of als assistent werken onder supervisie.
+                                {{ t('cannot_work_dentist_during', lang) | default('Tijdens het proces kun je niet als tandarts werken in Nederland. Je kunt wel andere werk doen of als assistent werken onder supervisie.') }}
                             </div>
                         </div>
 
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>Wat gebeurt er als ik zak voor de BI-toets?</span>
+                                <span>{{ t('what_happens_fail_bi_exam', lang) | default('Wat gebeurt er als ik zak voor de BI-toets?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                Je kunt de BI-toets herhalen na 6 maanden. Je moet wel opnieuw het volledige examengeld betalen.
+                                {{ t('bi_exam_retake_detailed', lang) | default('Je kunt de BI-toets herhalen na 6 maanden. Je moet wel opnieuw het volledige examengeld betalen.') }}
                             </div>
                         </div>
 
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>Is er een leeftijdslimiet?</span>
+                                <span>{{ t('is_there_age_limit', lang) | default('Is er een leeftijdslimiet?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                Er is geen specifieke leeftijdslimiet, maar je moet wel fysiek en mentaal in staat zijn om als tandarts te praktiseren.
+                                {{ t('no_specific_age_limit', lang) | default('Er is geen specifieke leeftijdslimiet, maar je moet wel fysiek en mentaal in staat zijn om als tandarts te praktiseren.') }}
                             </div>
                         </div>
                     </div>
@@ -1235,62 +1235,62 @@
             <section id="resources" class="content-section">
                 <div class="container">
                     <div class="section-header">
-                        <h2>Nuttige links</h2>
-                        <p class="section-description">Officiële websites en bronnen voor je BIG registratie</p>
+                        <h2>{{ t('useful_links', lang) | default('Nuttige links') }}</h2>
+                        <p class="section-description">{{ t('official_websites_sources', lang) | default('Officiële websites en bronnen voor je BIG registratie') }}</p>
                     </div>
                     
                     <div class="links-grid">
                         <div class="link-card">
                             <h3 class="link-title">
                                 <i class="fas fa-external-link-alt"></i>
-                                BIG-register
+                                {{ t('big_register', lang) | default('BIG-register') }}
                             </h3>
-                            <p class="link-description">Officiële website voor BIG registratie aanvragen en informatie</p>
+                            <p class="link-description">{{ t('big_register_official', lang) | default('Officiële website voor BIG registratie aanvragen en informatie') }}</p>
                             <a href="https://www.bigregister.nl" class="link-url" target="_blank">www.bigregister.nl</a>
                         </div>
 
                         <div class="link-card">
                             <h3 class="link-title">
                                 <i class="fas fa-external-link-alt"></i>
-                                ACTA
+                                {{ t('acta', lang) | default('ACTA') }}
                             </h3>
-                            <p class="link-description">Academisch Centrum Tandheelkunde Amsterdam - BI-toets informatie</p>
+                            <p class="link-description">{{ t('acta_info', lang) | default('Academisch Centrum Tandheelkunde Amsterdam - BI-toets informatie') }}</p>
                             <a href="https://www.acta.nl" class="link-url" target="_blank">www.acta.nl</a>
                         </div>
 
                         <div class="link-card">
                             <h3 class="link-title">
                                 <i class="fas fa-external-link-alt"></i>
-                                NUFFIC
+                                {{ t('nuffic', lang) | default('NUFFIC') }}
                             </h3>
-                            <p class="link-description">Voor diploma erkenning van niet-EU landen</p>
+                            <p class="link-description">{{ t('nuffic_info', lang) | default('Voor diploma erkenning van niet-EU landen') }}</p>
                             <a href="https://www.nuffic.nl" class="link-url" target="_blank">www.nuffic.nl</a>
                         </div>
 
                         <div class="link-card">
                             <h3 class="link-title">
                                 <i class="fas fa-external-link-alt"></i>
-                                CNaVT
+                                {{ t('cnavt', lang) | default('CNaVT') }}
                             </h3>
-                            <p class="link-description">Nederlandse taaltoets voor medische professionals</p>
+                            <p class="link-description">{{ t('cnavt_info', lang) | default('Nederlandse taaltoets voor medische professionals') }}</p>
                             <a href="https://www.cnavt.org" class="link-url" target="_blank">www.cnavt.org</a>
                         </div>
 
                         <div class="link-card">
                             <h3 class="link-title">
                                 <i class="fas fa-external-link-alt"></i>
-                                KNMT
+                                {{ t('knmt', lang) | default('KNMT') }}
                             </h3>
-                            <p class="link-description">Koninklijke Nederlandse Maatschappij tot bevordering der Tandheelkunde</p>
+                            <p class="link-description">{{ t('knmt_info', lang) | default('Koninklijke Nederlandse Maatschappij tot bevordering der Tandheelkunde') }}</p>
                             <a href="https://www.knmt.nl" class="link-url" target="_blank">www.knmt.nl</a>
                         </div>
 
                         <div class="link-card">
                             <h3 class="link-title">
                                 <i class="fas fa-external-link-alt"></i>
-                                Rijksoverheid
+                                {{ t('rijksoverheid', lang) | default('Rijksoverheid') }}
                             </h3>
-                            <p class="link-description">Officiële informatie over werken in de zorg in Nederland</p>
+                            <p class="link-description">{{ t('rijksoverheid_info', lang) | default('Officiële informatie over werken in de zorg in Nederland') }}</p>
                             <a href="https://www.rijksoverheid.nl" class="link-url" target="_blank">www.rijksoverheid.nl</a>
                         </div>
                     </div>
@@ -1302,16 +1302,16 @@
         <section class="big-cta">
             <div class="container">
                 <div class="cta-content">
-                    <h2>Klaar om te beginnen?</h2>
-                    <p>Start vandaag nog met je voorbereiding op de BIG registratie</p>
+                    <h2>{{ t('ready_to_start', lang) | default('Klaar om te beginnen?') }}</h2>
+                    <p>{{ t('start_preparation_today', lang) | default('Start vandaag nog met je voorbereiding op de BIG registratie') }}</p>
                     <div class="cta-buttons">
                         <a href="#" class="btn btn-primary">
                             <i class="fas fa-rocket"></i>
-                            Start voorbereiding
+                            {{ t('start_preparation', lang) | default('Start voorbereiding') }}
                         </a>
                         <a href="#" class="btn btn-secondary">
                             <i class="fas fa-users"></i>
-                            Vraag de community
+                            {{ t('ask_community', lang) | default('Vraag de community') }}
                         </a>
                     </div>
                 </div>
