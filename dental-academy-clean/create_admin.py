@@ -10,7 +10,7 @@ from datetime import datetime
 # Добавляем путь к проекту
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app import create_app
+from app import app
 from models import User, db
 from extensions import db as db_ext
 
@@ -19,9 +19,6 @@ def create_admin():
     
     print("🔧 Создание администратора для Mentora")
     print("=" * 50)
-    
-    # Создаем Flask приложение
-    app = create_app()
     
     with app.app_context():
         try:
@@ -89,8 +86,7 @@ def create_admin():
                 is_active=True,
                 email_confirmed=True,  # Админ не нуждается в подтверждении email
                 registration_completed=True,
-                language='en',
-                created_at=datetime.utcnow()
+                language='en'
             )
             
             # Устанавливаем пароль
@@ -124,8 +120,6 @@ def list_admins():
     
     print("👥 Список администраторов")
     print("=" * 30)
-    
-    app = create_app()
     
     with app.app_context():
         try:

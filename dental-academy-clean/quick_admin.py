@@ -11,13 +11,11 @@ from datetime import datetime
 # Добавляем путь к проекту
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app import create_app
+from app import app
 from models import User, db
 
 def create_admin_quick(email, name, password):
     """Быстрое создание администратора"""
-    
-    app = create_app()
     
     with app.app_context():
         try:
@@ -51,8 +49,7 @@ def create_admin_quick(email, name, password):
                 is_active=True,
                 email_confirmed=True,
                 registration_completed=True,
-                language='en',
-                created_at=datetime.utcnow()
+                language='en'
             )
             
             admin.set_password(password)
