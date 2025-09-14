@@ -15,12 +15,12 @@
 
 ```bash
 MAIL_SUPPRESS_SEND=false
-MAIL_SERVER=smtp.mailersend.net
+MAIL_SERVER=smtp-relay.brevo.com
 MAIL_PORT=587
 MAIL_USE_TLS=true
 MAIL_USE_SSL=false
-MAIL_USERNAME=MS_uUzJtfkAxyPn@mentora.mlsender.net
-MAIL_PASSWORD=mssp.eTIPhpXlO2nu.e6t7xgcGA1kl.Bw3hiAB80JpM
+MAIL_USERNAME=96d92f001@smtp-brevo.com
+MAIL_PASSWORD=JrbVFGpHhgynKMOQ
 MAIL_DEFAULT_SENDER=Mentora <noreply@mentora.com>
 EMAIL_CONFIRMATION_SALT=mentora-production-salt-2025
 ```
@@ -34,7 +34,7 @@ envVars:
   - key: MAIL_SUPPRESS_SEND
     value: "false"
   - key: MAIL_SERVER
-    value: "smtp.mailersend.net"
+    value: "smtp-relay.brevo.com"
   - key: MAIL_PORT
     value: "587"
   - key: MAIL_USE_TLS
@@ -42,9 +42,9 @@ envVars:
   - key: MAIL_USE_SSL
     value: "false"
   - key: MAIL_USERNAME
-    value: "MS_uUzJtfkAxyPn@mentora.mlsender.net"
+    value: "96d92f001@smtp-brevo.com"
   - key: MAIL_PASSWORD
-    value: "mssp.eTIPhpXlO2nu.e6t7xgcGA1kl.Bw3hiAB80JpM"
+    value: "JrbVFGpHhgynKMOQ"
   - key: MAIL_DEFAULT_SENDER
     value: "Mentora <noreply@mentora.com>"
   - key: EMAIL_CONFIRMATION_SALT
@@ -86,8 +86,8 @@ docker-compose restart
 
 ### Важные замечания
 
-- ✅ **MailerSend учетные данные** уже настроены и работают
-- ✅ **Конфигурация проверена** локально
+- ✅ **Brevo учетные данные** уже настроены в Render Dashboard
+- ✅ **Конфигурация обновлена** для работы с Brevo
 - ⚠️ **Переменные окружения** нужно обновить в production
 - ⚠️ **Сервис нужно перезапустить** после изменений
 

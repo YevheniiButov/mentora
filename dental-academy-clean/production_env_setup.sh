@@ -14,13 +14,13 @@ FLASK_DEBUG=0
 # Database
 DATABASE_URL=your-production-database-url
 
-# Email Configuration - MailerSend
-MAIL_SERVER=smtp.mailersend.net
+# Email Configuration - Brevo
+MAIL_SERVER=smtp-relay.brevo.com
 MAIL_PORT=587
 MAIL_USE_TLS=true
 MAIL_USE_SSL=false
-MAIL_USERNAME=MS_uUzJtfkAxyPn@mentora.mlsender.net
-MAIL_PASSWORD=mssp.eTIPhpXlO2nu.e6t7xgcGA1kl.Bw3hiAB80JpM
+MAIL_USERNAME=96d92f001@smtp-brevo.com
+MAIL_PASSWORD=JrbVFGpHhgynKMOQ
 MAIL_DEFAULT_SENDER=Mentora <noreply@mentora.com>
 
 # Email Settings
