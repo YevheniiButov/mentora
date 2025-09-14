@@ -430,14 +430,265 @@
     font-weight: bold;
     font-size: 16px;
 }
+
+/* Стили для обновленной формы регистрации */
+
+.early-access-notice {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.notice-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.registration-header h1 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+.main-subtitle {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.early-access-benefits {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.early-access-benefits h3 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+}
+
+.benefit-item:hover {
+    transform: translateY(-2px);
+}
+
+.benefit-item i {
+    color: #3ECDC1;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.benefit-item span {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.launch-timeline {
+    background: rgba(62, 205, 193, 0.1);
+    border: 1px solid rgba(62, 205, 193, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.timeline-item i {
+    color: #3ECDC1;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.timeline-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.timeline-content strong {
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.timeline-content span {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.interests-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.early-access-consent {
+    background: rgba(62, 205, 193, 0.05);
+    border: 1px solid rgba(62, 205, 193, 0.1);
+}
+
+.early-access-btn {
+    background: linear-gradient(135deg, #3ECDC1, #44A08D);
+    position: relative;
+    overflow: hidden;
+}
+
+.early-access-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.early-access-btn:hover::before {
+    left: 100%;
+}
+
+.submit-note {
+    margin-top: 1rem;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .benefits-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .interests-checkboxes {
+        grid-template-columns: 1fr;
+    }
+    
+    .registration-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .early-access-benefits {
+        padding: 1.5rem;
+    }
+}
+
+/* Темная тема */
+[data-theme="dark"] .early-access-benefits {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    border: 1px solid #6b7280;
+}
+
+[data-theme="dark"] .benefit-item {
+    background: #374151;
+    border-color: #6b7280;
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .benefit-item span {
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .timeline-content strong {
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .timeline-content span {
+    color: #d1d5db;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="registration-container">
     <div class="registration-header">
-        <h1>{{ t('registration', lang) | default('Registration') }}</h1>
-        <p>{{ t('registration_subtitle', lang) | default('Complete your registration to access the Dental Academy BIG preparation program') }}</p>
+        <!-- Уведомление о предварительной регистрации -->
+        <div class="early-access-notice">
+            <div class="notice-badge">
+                <i class="bi bi-rocket-takeoff"></i>
+                {{ t('early_access', lang)|default('Ранний доступ') }}
+            </div>
+            <h1>{{ t('early_registration_title', lang)|default('Предварительная регистрация') }}</h1>
+            <p class="main-subtitle">{{ t('comprehensive_program_subtitle', lang)|default('Зарегистрируйтесь сейчас для участия в комплексной программе подготовки к BIG экзамену с практическими стажировками') }}</p>
+        </div>
+        
+        <!-- Преимущества ранней регистрации -->
+        <div class="early-access-benefits">
+            <h3>{{ t('what_you_get', lang)|default('Что вас ждет:') }}</h3>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <i class="bi bi-award-fill"></i>
+                    <span>{{ t('structured_big_prep', lang)|default('Структурированная подготовка к BIG') }}</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="bi bi-hospital-fill"></i>
+                    <span>{{ t('hospital_internships', lang)|default('Стажировки в больницах') }}</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="bi bi-people-fill"></i>
+                    <span>{{ t('mentorship', lang)|default('Менторское сопровождение') }}</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="bi bi-star-fill"></i>
+                    <span>{{ t('priority_access', lang)|default('Приоритетный доступ') }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Информация о запуске -->
+        <div class="launch-timeline">
+            <div class="timeline-item">
+                <i class="bi bi-clock-fill"></i>
+                <div class="timeline-content">
+                    <strong>{{ t('launch_date', lang)|default('Запуск: Q1 2025') }}</strong>
+                    <span>{{ t('early_notification', lang)|default('Вы получите уведомление о начале программы') }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -940,26 +1191,82 @@
             </div>
         </div>
 
+        <!-- Дополнительная секция: Интересы к программе -->
+        <div class="form-section">
+            <h3><i class="fas fa-heart"></i> {{ t('program_interests', lang)|default('Интересы к программе') }}</h3>
+            
+            <div class="form-group">
+                <label>{{ t('most_interested_in', lang)|default('Что вас больше всего интересует?') }}</label>
+                <div class="interests-checkboxes">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="big_preparation" name="program_interests" value="big_preparation">
+                        <label for="big_preparation">{{ t('big_exam_preparation', lang)|default('Подготовка к BIG экзамену') }}</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="clinical_internships" name="program_interests" value="clinical_internships">
+                        <label for="clinical_internships">{{ t('clinical_internships', lang)|default('Клинические стажировки') }}</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="dutch_language" name="program_interests" value="dutch_language">
+                        <label for="dutch_language">{{ t('medical_dutch', lang)|default('Медицинский голландский язык') }}</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="networking" name="program_interests" value="networking">
+                        <label for="networking">{{ t('professional_networking', lang)|default('Профессиональные связи') }}</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="mentorship" name="program_interests" value="mentorship">
+                        <label for="mentorship">{{ t('mentorship_program', lang)|default('Программа менторства') }}</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="motivation">{{ t('motivation', lang)|default('Расскажите о своей мотивации') }}</label>
+                <textarea id="motivation" name="motivation" rows="3" placeholder="{{ t('motivation_placeholder', lang)|default('Почему вы хотите участвовать в этой программе? Какие у вас цели?') }}"></textarea>
+                <div class="help-text">{{ t('motivation_help', lang)|default('Поделитесь своими целями и ожиданиями от программы (необязательно)') }}</div>
+            </div>
+        </div>
+
         <!-- Terms and Conditions -->
         <div class="form-section">
             <h3><i class="fas fa-shield-alt"></i> {{ t('terms_and_conditions', lang) | default('Terms and Conditions') }}</h3>
             
-            <!-- Required Consents -->
+            <!-- Основные согласия -->
             <div class="consent-block">
-                <h4>{{ t('required_consents', lang) | default('Required Consents') }} <span class="required">*</span></h4>
+                <h4>{{ t('required_consents', lang)|default('Обязательные согласия') }} <span class="required">*</span></h4>
                 <div class="consent-content">
-                    <p>{{ t('required_consents_text', lang) | default('By checking the box below, I confirm that I have read and agree to:') }}</p>
+                    <p>{{ t('registration_consent_text', lang)|default('Регистрируясь, я подтверждаю согласие с:') }}</p>
                     <ul>
-                        <li><a href="{{ url_for('main.terms', lang=lang) }}" target="_blank" class="text-decoration-none">{{ t('terms_conditions', lang) | default('Terms and Conditions') }}</a></li>
-                        <li><a href="{{ url_for('main.privacy', lang=lang) }}" target="_blank" class="text-decoration-none">{{ t('privacy_policy', lang) | default('Privacy Policy') }}</a></li>
-                        <li>{{ t('data_processing_consent', lang) | default('Processing of my personal data for registration purposes') }}</li>
-                        <li>{{ t('data_usage_consent', lang) | default('Use of my data for program development, research, and improvement of services') }}</li>
+                        <li><a href="{{ url_for('main.terms', lang=lang) }}" target="_blank">{{ t('terms_conditions', lang)|default('Пользовательским соглашением') }}</a></li>
+                        <li><a href="{{ url_for('main.privacy', lang=lang) }}" target="_blank">{{ t('privacy_policy', lang)|default('Политикой конфиденциальности') }}</a></li>
+                        <li>{{ t('data_processing_consent', lang)|default('Обработкой персональных данных') }}</li>
                     </ul>
-            </div>
-            <div class="checkbox-group">
+                </div>
+                <div class="checkbox-group">
                     <input type="checkbox" id="required_consents" name="required_consents" required>
                     <label for="required_consents">
-                        {{ t('accept_required_consents', lang) | default('I accept all required terms and consents') }} <span class="required">*</span>
+                        {{ t('accept_required_consents', lang)|default('Принимаю обязательные условия') }} <span class="required">*</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Согласие на уведомления о программе -->
+            <div class="consent-block early-access-consent">
+                <h4>{{ t('program_notifications', lang)|default('Уведомления о программе') }}</h4>
+                <div class="consent-content">
+                    <p>{{ t('program_notifications_text', lang)|default('Я хочу получать уведомления о:') }}</p>
+                    <ul>
+                        <li>{{ t('program_launch', lang)|default('Запуске программы') }}</li>
+                        <li>{{ t('important_updates', lang)|default('Важных обновлениях') }}</li>
+                        <li>{{ t('internship_opportunities', lang)|default('Возможностях стажировок') }}</li>
+                        <li>{{ t('exclusive_content', lang)|default('Эксклюзивном контенте') }}</li>
+                    </ul>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="program_notifications" name="program_notifications" checked>
+                    <label for="program_notifications">
+                        {{ t('accept_program_notifications', lang)|default('Согласен получать уведомления о программе') }}
                     </label>
                 </div>
             </div>
@@ -1035,9 +1342,11 @@
 
         <!-- Submit Section -->
         <div class="submit-section">
-            <button type="submit" class="btn-register" id="submitBtn">
-                <i class="fas fa-user-plus"></i> {{ t('complete_registration', lang) | default('Complete Registration') }}
+            <button type="submit" class="btn-register early-access-btn" id="submitBtn">
+                <i class="bi bi-bell-fill"></i> 
+                {{ t('complete_early_registration', lang)|default('Завершить предварительную регистрацию') }}
             </button>
+            <p class="submit-note">{{ t('early_access_note', lang)|default('После регистрации вы получите подтверждение на email и будете уведомлены о запуске программы') }}</p>
         </div>
     </form>
 </div>
