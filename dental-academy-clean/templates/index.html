@@ -205,15 +205,15 @@ section {
   z-index: 1;
 }
 
-/* Hero section получает padding-top */
+/* Hero section получает нормальный padding-top */
 .hero-section {
-  padding-top: 120px !important;
+  padding-top: 60px !important;
   margin-top: 0 !important;
 }
 
 /* Дополнительная специфичность для переопределения external CSS */
 body .hero-section {
-  padding-top: 120px !important;
+  padding-top: 60px !important;
 }
 
 /* Все контейнеры видимы */
@@ -272,6 +272,7 @@ body .hero-section {
   z-index: 100;
   border-bottom: 1px solid rgba(255,255,255,0.2);
   animation: slideDown 0.5s ease-out;
+  margin-bottom: 0;
 }
 
 @keyframes slideDown {
@@ -473,8 +474,7 @@ body .hero-section {
 </style>
 {% endblock %}
 
-{% block content %}
-
+{% block top_banner %}
 {# === БАННЕР УВЕДОМЛЕНИЯ === #}
 <section class="early-access-banner">
   <div class="container">
@@ -503,6 +503,9 @@ body .hero-section {
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block content %}
 
 {# === ИСПРАВЛЕННАЯ HERO SECTION === #}
 <section class="hero-section">
