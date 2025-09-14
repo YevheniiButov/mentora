@@ -10,7 +10,7 @@
 /* PROFESSIONAL FORUM DESIGN - DISCORD/SLACK STYLE */
 .community-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: #f0f2f5;
     position: relative;
     padding-bottom: 100px; /* Space for reply input */
 }
@@ -196,17 +196,17 @@
 
 /* Main Content - Topic */
 .forum-main {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .topic-header {
     padding: 1.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    background: rgba(248, 250, 252, 0.5);
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
 }
 
 .topic-title {
@@ -265,6 +265,7 @@
 /* Topic Content */
 .topic-content {
     padding: 1.5rem;
+    background: #ffffff;
 }
 
 .topic-body {
@@ -291,13 +292,14 @@
 
 /* Replies */
 .replies-section {
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid #e5e7eb;
+    background: #ffffff;
 }
 
 .replies-header {
     padding: 1rem 1.5rem;
-    background: rgba(248, 250, 252, 0.5);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -332,51 +334,128 @@
 .replies-list {
     max-height: 600px;
     overflow-y: auto;
+    background: #ffffff;
+    padding: 0.5rem 0;
 }
 
+/* Telegram-style message bubbles */
 .reply-item {
-    padding: 1.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    position: relative;
 }
 
 .reply-item:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
+/* Message bubble */
+.reply-content {
+    max-width: 70%;
+    position: relative;
+}
+
+.reply-bubble {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    word-wrap: break-word;
+}
+
+/* Own messages (right side) */
+.reply-item.own-message {
+    flex-direction: row-reverse;
+}
+
+.reply-item.own-message .reply-content {
+    max-width: 70%;
+}
+
+.reply-item.own-message .reply-bubble {
+    background: #0088cc;
+    color: white;
+    border: none;
+}
+
+/* Message header */
 .reply-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.reply-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #3ECDC1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1rem;
-    font-weight: 600;
-    flex-shrink: 0;
-}
-
-.reply-info {
-    flex: 1;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
 }
 
 .reply-author {
     font-weight: 600;
-    color: #3ECDC1;
-    font-size: 0.875rem;
+    color: #0088cc;
+}
+
+.reply-item.own-message .reply-author {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .reply-time {
     color: #9ca3af;
     font-size: 0.75rem;
+}
+
+.reply-item.own-message .reply-time {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Message text */
+.reply-text {
+    line-height: 1.4;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.reply-item.own-message .reply-text {
+    color: white;
+}
+
+/* Avatar */
+.reply-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0088cc, #00a8ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Message status indicators */
+.message-status {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.message-status i {
+    font-size: 0.6rem;
+}
+
+/* Hover effects */
+.reply-item:hover .reply-bubble {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
 }
 
 .reply-content {
@@ -517,11 +596,11 @@
     left: 0;
     right: 0;
     background: #ffffff;
-    border-top: 2px solid #0088cc;
-    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+    padding: 0.75rem 1rem;
     z-index: 9999;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
-    min-height: 80px;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .reply-input-wrapper {
@@ -532,16 +611,18 @@
 .reply-input-box {
     display: flex;
     align-items: flex-end;
-    gap: 0.75rem;
-    background: #f8f9fa;
-    border: 1px solid #e1e5e9;
+    gap: 0.5rem;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
     border-radius: 20px;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     transition: all 0.2s ease;
+    min-height: 40px;
 }
 
 .reply-input-box:focus-within {
     border-color: #0088cc;
+    background: #ffffff;
     box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.1);
 }
 
@@ -583,18 +664,22 @@
     justify-content: center;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 136, 204, 0.3);
 }
 
-.reply-send-btn:hover {
-    background: #006bb3;
+.reply-send-btn:hover:not(:disabled) {
+    background: #006ba3;
     transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 136, 204, 0.4);
 }
 
 .reply-send-btn:disabled {
-    background: #6c757d;
+    background: #d1d5db;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
+
 
 .reply-send-btn i {
     font-size: 0.875rem;
@@ -742,32 +827,35 @@
                     <h2 class="replies-title">{{ t('replies', lang) | default('Replies') }} ({{ topic.replies_count }})</h2>
                 </div>
 
-                <div class="replies-list">
+                <div class="replies-list topic-replies">
                     {% for reply in topic.replies %}
-                    <div class="reply-item">
-                        <div class="reply-header">
-                            <div class="reply-avatar">{{ reply.author.split()[-1][0] }}{{ reply.author.split()[0][0] }}</div>
-                            <div class="reply-info">
-                                <div class="reply-author">{{ reply.author }}</div>
-                                <div class="reply-time">{{ reply.time }}</div>
-                            </div>
+                    <div class="reply-item {% if reply.author_id == current_user.id %}own-message{% endif %}" data-post-id="{{ reply.id }}">
+                        <div class="reply-avatar">
+                            {% if reply.author.first_name and reply.author.last_name %}
+                                {{ reply.author.first_name[0] }}{{ reply.author.last_name[0] }}
+                            {% else %}
+                                {{ reply.author.username[0] if reply.author.username else 'U' }}
+                            {% endif %}
                         </div>
                         <div class="reply-content">
-                            {{ reply.content }}
-                        </div>
-                        <div class="reply-actions">
-                            <span class="reply-action">
-                                <i class="fas fa-heart"></i>
-                                {{ reply.likes }} likes
-                            </span>
-                            <span class="reply-action">
-                                <i class="fas fa-reply"></i>
-                                Reply
-                            </span>
-                            <span class="reply-action">
-                                <i class="fas fa-flag"></i>
-                                Report
-                            </span>
+                            <div class="reply-bubble">
+                                <div class="reply-header">
+                                    <span class="reply-author">
+                                        {% if reply.author.first_name and reply.author.last_name %}
+                                            {{ reply.author.first_name }} {{ reply.author.last_name }}
+                                        {% else %}
+                                            {{ reply.author.username if reply.author.username else 'User' }}
+                                        {% endif %}
+                                    </span>
+                                    <span class="reply-time">{{ reply.created_at.strftime('%H:%M') }}</span>
+                                </div>
+                                <div class="reply-text">{{ reply.content }}</div>
+                                {% if reply.author_id == current_user.id %}
+                                <div class="message-status">
+                                    <i class="fas fa-check-double"></i>
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
@@ -922,19 +1010,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const repliesContainer = document.querySelector('.topic-replies');
         if (!repliesContainer) return;
         
+        // Check if this is the current user's message
+        const isOwnMessage = post.author_id === {{ current_user.id if current_user.is_authenticated else 'null' }};
+        
         const replyHTML = `
-            <div class="reply-item" data-post-id="${post.id}">
+            <div class="reply-item ${isOwnMessage ? 'own-message' : ''}" data-post-id="${post.id}">
                 <div class="reply-avatar">
-                    <div class="avatar-circle">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    ${getAvatarInitials(post.author_name)}
                 </div>
                 <div class="reply-content">
-                    <div class="reply-header">
-                        <span class="reply-author">${post.author_name}</span>
-                        <span class="reply-time">${post.created_at}</span>
+                    <div class="reply-bubble">
+                        <div class="reply-header">
+                            <span class="reply-author">${post.author_name}</span>
+                            <span class="reply-time">${post.created_at}</span>
+                        </div>
+                        <div class="reply-text">${escapeHtml(post.content)}</div>
+                        ${isOwnMessage ? '<div class="message-status"><i class="fas fa-check-double"></i></div>' : ''}
                     </div>
-                    <div class="reply-text">${escapeHtml(post.content)}</div>
                 </div>
             </div>
         `;
@@ -944,6 +1036,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Scroll to new reply
         const newReply = repliesContainer.lastElementChild;
         newReply.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    // Get avatar initials from name
+    function getAvatarInitials(name) {
+        if (!name) return 'U';
+        const parts = name.trim().split(' ');
+        if (parts.length >= 2) {
+            return parts[0][0] + parts[parts.length - 1][0];
+        }
+        return name[0];
     }
     
     // Update replies count
