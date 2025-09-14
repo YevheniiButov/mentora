@@ -2403,11 +2403,11 @@ translations = {
     'complete_guide_gp_registration': 'Complete gids voor huisartsen die zich willen registreren in het BIG-register',
     
     # Verpleegkundige pagina vertalingen
-    'complete_guide_nurses_non_eu': 'Complete gids voor verpleegkundigen met diploma's van buiten de EU/EEA die zich willen registreren in Nederland',
+    'complete_guide_nurses_non_eu': 'Complete gids voor verpleegkundigen met diploma\'s van buiten de EU/EEA die zich willen registreren in Nederland',
     'good_news_nurses': 'Goed nieuws voor verpleegkundigen',
     'nurses_often_more_success_big_registration': 'Verpleegkundigen hebben vaak meer succes bij BIG registratie dan apothekers. Er zijn ook snellere alternatieven beschikbaar!',
     'requirements_non_eu_nurses': 'Vereisten voor niet-EU verpleegkundigen',
-    'specific_requirements_nurses_non_eu_2025': 'Specifieke eisen voor verpleegkundigen met diploma's van buiten de EU/EEA in 2025',
+    'specific_requirements_nurses_non_eu_2025': 'Specifieke eisen voor verpleegkundigen met diploma\'s van buiten de EU/EEA in 2025',
     'hbo_nursing_diploma_bachelor_4_years': 'HBO verpleegkunde diploma (Bachelor niveau, 4 jaar)',
     'declaration_professional_competence_cbgv': 'Verklaring van vakbekwaamheid via CBGV',
     'bi_test_professional_content_test_mandatory_2025': 'BI-toets (beroepsinhoudelijke toets) verplicht in 2025',

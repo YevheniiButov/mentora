@@ -2191,7 +2191,7 @@ translations = {
     'complete_guide_gp_registration': 'BIG kaydında kayıt olmak isteyen aile hekimleri için tam kılavuz',
     
     # Verpleegkundige (Hemşire) sayfası çevirileri
-    'complete_guide_nurses_non_eu': 'AB/AEA dışındaki diplomalara sahip hemşireler için Hollanda'da kayıt olmak isteyenler için tam kılavuz',
+    'complete_guide_nurses_non_eu': 'AB/AEA dışındaki diplomalara sahip hemşireler için Hollanda\'da kayıt olmak isteyenler için tam kılavuz',
     'good_news_nurses': 'Hemşireler için iyi haberler',
     'nurses_often_more_success_big_registration': 'Hemşireler genellikle eczacılardan daha fazla BIG kayıt başarısına sahiptir. Ayrıca daha hızlı alternatifler de mevcuttur!',
     'requirements_non_eu_nurses': 'AB dışı hemşireler için gereksinimler',
@@ -2214,7 +2214,7 @@ translations = {
     'general_application_form': 'Genel başvuru formu',
     'attachment_professional_competencies_nurses_mandatory': 'Hemşireler için mesleki yeterlilik eki (zorunlu)',
     'upload_documents_send_by_post': 'Belgeleri yükleyin veya posta ile gönderin',
-    'bi_test_new_2025': 'BI testi (2025'te yeni)',
+    'bi_test_new_2025': 'BI testi (2025\'te yeni)',
     'professional_content_test_nurses': 'Hemşireler için mesleki içerik testi',
     'test_dutch_nursing_practice': 'Hollanda hemşirelik uygulaması üzerine test',
     'information_session_preparation': 'Hazırlık için bilgi oturumu',
