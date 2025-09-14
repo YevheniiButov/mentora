@@ -2388,5 +2388,10 @@ translations = {
     'important_links_2025': 'لینک‌های مهم برای 2025',
     'official_websites_resources_non_eu_nurses': 'وب‌سایت‌های رسمی و منابع برای پرستاران غیر اتحادیه اروپا',
     'start_learning_path': 'شروع مسیر یادگیری',
-    'join_nurses_community': 'پیوستن به جامعه پرستاران'
+    'join_nurses_community': 'پیوستن به جامعه پرستاران',
+    
+    # ترجمه‌های اضافی برای huisarts.html (پاسخ‌های سوالات متداول)
+    'basisarts_university_medicine_completed_huisarts_3_years_specialization_first_line_care': 'یک پزشک پایه تحصیلات دانشگاهی پزشکی را تکمیل کرده است. یک پزشک خانواده پس از آن 3 سال دیگر تخصص را دنبال کرده و در مراقبت‌های اولیه تخصص دارد.',
+    'dutch_big_registration_huisarts_can_work_entire_eu_eea_other_countries_specific_requirements': 'با ثبت‌نام BIG هلندی به عنوان پزشک خانواده، می‌توانید در کل اتحادیه اروپا/منطقه اقتصادی اروپا کار کنید. برای سایر کشورها، الزامات خاص برای هر کشور اعمال می‌شود.',
+    'yes_after_big_registration_can_start_own_huisarts_practice_must_comply_dutch_legislation': 'بله، پس از ثبت‌نام BIG می‌توانید مطب پزشک خانواده خود را شروع کنید. با این حال، باید از قوانین هلندی برای مطب‌های پزشک خانواده پیروی کنید و احتمالاً گواهینامه‌های اضافی دریافت کنید.'
 }

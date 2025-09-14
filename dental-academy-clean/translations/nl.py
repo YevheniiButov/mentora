@@ -2575,5 +2575,10 @@ translations = {
     'cbgv_assessment': 'CBGV beoordeling',
     'big_registration_supervision': 'BIG registratie en supervisie',
     'tip': 'Tip',
-    'prepare_well_bi_test_study_dutch_guidelines_protocols': 'Bereid je goed voor op de BI-toets door Nederlandse richtlijnen en protocollen te bestuderen. Neem deel aan de informatiebijeenkomst!'
+    'prepare_well_bi_test_study_dutch_guidelines_protocols': 'Bereid je goed voor op de BI-toets door Nederlandse richtlijnen en protocollen te bestuderen. Neem deel aan de informatiebijeenkomst!',
+    
+    # Aanvullende vertalingen voor huisarts.html (FAQ antwoorden)
+    'basisarts_university_medicine_completed_huisarts_3_years_specialization_first_line_care': 'Een basisarts heeft de universitaire opleiding Geneeskunde afgerond. Een huisarts heeft daarna nog 3 jaar specialisatie gevolgd en is gespecialiseerd in eerstelijnszorg.',
+    'dutch_big_registration_huisarts_can_work_entire_eu_eea_other_countries_specific_requirements': 'Met een Nederlandse BIG registratie als huisarts kun je in de hele EU/EEA werken. Voor andere landen gelden specifieke vereisten per land.',
+    'yes_after_big_registration_can_start_own_huisarts_practice_must_comply_dutch_legislation': 'Ja, na BIG registratie kun je een eigen huisartsenpraktijk beginnen. Wel moet je voldoen aan de Nederlandse wetgeving voor huisartsenpraktijken en mogelijk aanvullende certificeringen behalen.'
 }

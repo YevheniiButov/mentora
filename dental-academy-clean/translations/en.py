@@ -2778,5 +2778,10 @@ translations = {
     'cbgv_assessment': 'CBGV assessment',
     'big_registration_supervision': 'BIG registration and supervision',
     'tip': 'Tip',
-    'prepare_well_bi_test_study_dutch_guidelines_protocols': 'Prepare well for the BI test by studying Dutch guidelines and protocols. Participate in the information session!'
+    'prepare_well_bi_test_study_dutch_guidelines_protocols': 'Prepare well for the BI test by studying Dutch guidelines and protocols. Participate in the information session!',
+    
+    # Additional translations for huisarts.html (FAQ answers)
+    'basisarts_university_medicine_completed_huisarts_3_years_specialization_first_line_care': 'A basic doctor has completed university medical education. A general practitioner has then followed 3 more years of specialization and is specialized in primary care.',
+    'dutch_big_registration_huisarts_can_work_entire_eu_eea_other_countries_specific_requirements': 'With a Dutch BIG registration as a general practitioner, you can work throughout the EU/EEA. For other countries, specific requirements apply per country.',
+    'yes_after_big_registration_can_start_own_huisarts_practice_must_comply_dutch_legislation': 'Yes, after BIG registration you can start your own general practice. However, you must comply with Dutch legislation for general practices and possibly obtain additional certifications.'
 }

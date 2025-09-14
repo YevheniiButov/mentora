@@ -2300,5 +2300,10 @@ translations = {
     'important_links_2025': 'Links importantes para 2025',
     'official_websites_resources_non_eu_nurses': 'Sites oficiais e recursos para enfermeiras não-UE',
     'start_learning_path': 'Iniciar caminho de aprendizado',
-    'join_nurses_community': 'Juntar-se à comunidade de enfermeiras'
+    'join_nurses_community': 'Juntar-se à comunidade de enfermeiras',
+    
+    # Traduções adicionais para huisarts.html (respostas FAQ)
+    'basisarts_university_medicine_completed_huisarts_3_years_specialization_first_line_care': 'Um médico básico completou a educação universitária em medicina. Um médico de família seguiu mais 3 anos de especialização e é especializado em cuidados primários.',
+    'dutch_big_registration_huisarts_can_work_entire_eu_eea_other_countries_specific_requirements': 'Com um registro BIG holandês como médico de família, você pode trabalhar em toda a UE/EEE. Para outros países, aplicam-se requisitos específicos por país.',
+    'yes_after_big_registration_can_start_own_huisarts_practice_must_comply_dutch_legislation': 'Sim, após o registro BIG você pode iniciar sua própria prática de médico de família. No entanto, você deve cumprir a legislação holandesa para práticas de médicos de família e possivelmente obter certificações adicionais.'
 }

@@ -2491,5 +2491,10 @@ translations = {
     'ready_for_fast_eu_registration': 'Готові до швидкої реєстрації ЄС?',
     'start_today_automatic_recognition_work_2_4_months_netherlands': 'Почніть сьогодні з автоматичного визнання та працюйте в Нідерландах за 2-4 місяці',
     'start_eu_procedure': 'Почати процедуру ЄС',
-    'join_eu_community': 'Приєднатися до спільноти ЄС'
+    'join_eu_community': 'Приєднатися до спільноти ЄС',
+    
+    # Додаткові переклади для huisarts.html (FAQ відповіді)
+    'basisarts_university_medicine_completed_huisarts_3_years_specialization_first_line_care': 'Базовий лікар завершив університетську освіту з медицини. Лікар загальної практики після цього пройшов ще 3 роки спеціалізації та спеціалізується на первинній медичній допомозі.',
+    'dutch_big_registration_huisarts_can_work_entire_eu_eea_other_countries_specific_requirements': 'З нідерландською реєстрацією BIG як лікар загальної практики ви можете працювати в усій ЄС/ЄЕЗ. Для інших країн діють специфічні вимоги для кожної країни.',
+    'yes_after_big_registration_can_start_own_huisarts_practice_must_comply_dutch_legislation': 'Так, після реєстрації BIG ви можете відкрити власну практику лікаря загальної практики. Однак ви повинні відповідати нідерландському законодавству для практик лікарів загальної практики та можливо отримати додаткові сертифікації.'
 }

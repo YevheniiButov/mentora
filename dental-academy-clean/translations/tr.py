@@ -2261,5 +2261,10 @@ translations = {
     'important_links_2025': '2025 için önemli bağlantılar',
     'official_websites_resources_non_eu_nurses': 'AB dışı hemşireler için resmi web siteleri ve kaynaklar',
     'start_learning_path': 'Öğrenme yolunu başlat',
-    'join_nurses_community': 'Hemşire topluluğuna katıl'
+    'join_nurses_community': 'Hemşire topluluğuna katıl',
+    
+    # huisarts.html için ek çeviriler (SSS yanıtları)
+    'basisarts_university_medicine_completed_huisarts_3_years_specialization_first_line_care': 'Temel doktor üniversite tıp eğitimini tamamlamıştır. Aile hekimi daha sonra 3 yıl daha uzmanlık eğitimi almış ve birinci basamak sağlık hizmetlerinde uzmanlaşmıştır.',
+    'dutch_big_registration_huisarts_can_work_entire_eu_eea_other_countries_specific_requirements': 'Hollanda BIG kaydı ile aile hekimi olarak tüm AB/AEA\'da çalışabilirsiniz. Diğer ülkeler için ülke başına özel gereksinimler geçerlidir.',
+    'yes_after_big_registration_can_start_own_huisarts_practice_must_comply_dutch_legislation': 'Evet, BIG kaydından sonra kendi aile hekimliği pratiğinizi başlatabilirsiniz. Ancak aile hekimliği pratikleri için Hollanda mevzuatına uymalı ve muhtemelen ek sertifikalar almalısınız.'
 }

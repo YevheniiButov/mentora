@@ -2601,5 +2601,10 @@ translations = {
     'big_number_within_4_8_weeks': 'Номер BIG в течение 4-8 недель',
     'direct_fully_work_authorized': 'Прямая полная авторизация работы',
     'no_supervision_period_required': 'Период надзора не требуется',
-    'full_career_opportunities': 'Полные карьерные возможности'
+    'full_career_opportunities': 'Полные карьерные возможности',
+    
+    # Дополнительные переводы для huisarts.html (ответы FAQ)
+    'basisarts_university_medicine_completed_huisarts_3_years_specialization_first_line_care': 'Базовый врач завершил университетское медицинское образование. Врач общей практики после этого прошел еще 3 года специализации и специализируется на первичной медицинской помощи.',
+    'dutch_big_registration_huisarts_can_work_entire_eu_eea_other_countries_specific_requirements': 'С голландской регистрацией BIG как врач общей практики вы можете работать во всей ЕС/ЕЭЗ. Для других стран действуют специфические требования для каждой страны.',
+    'yes_after_big_registration_can_start_own_huisarts_practice_must_comply_dutch_legislation': 'Да, после регистрации BIG вы можете открыть собственную практику врача общей практики. Однако вы должны соответствовать голландскому законодательству для практик врачей общей практики и возможно получить дополнительные сертификации.'
 }
