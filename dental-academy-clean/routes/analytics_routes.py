@@ -135,30 +135,41 @@ def track_event():
     try:
         data = None
         
+        # Log request details for debugging
+        current_app.logger.info(f"Track event request - Content-Type: {request.content_type}, Content-Length: {request.content_length}")
+        
         # Handle different content types
         if request.is_json:
             data = request.get_json()
+            current_app.logger.info(f"Parsed JSON data: {data}")
         elif request.content_type == 'text/plain':
             # Handle sendBeacon requests (text/plain)
+            raw_data = request.get_data(as_text=True)
+            current_app.logger.info(f"Raw sendBeacon data: {raw_data}")
             try:
-                data = json.loads(request.get_data(as_text=True))
-            except (json.JSONDecodeError, TypeError):
-                current_app.logger.warning(f"Failed to parse sendBeacon data: {request.get_data(as_text=True)}")
+                data = json.loads(raw_data)
+                current_app.logger.info(f"Parsed sendBeacon data: {data}")
+            except (json.JSONDecodeError, TypeError) as e:
+                current_app.logger.warning(f"Failed to parse sendBeacon data: {raw_data}, error: {str(e)}")
                 return jsonify({'error': 'Invalid JSON data'}), 400
         else:
             # Try to parse as JSON from form data
             try:
                 data = json.loads(request.form.get('data', '{}'))
+                current_app.logger.info(f"Parsed form JSON data: {data}")
             except (json.JSONDecodeError, TypeError):
                 data = request.form.to_dict()
+                current_app.logger.info(f"Parsed form data: {data}")
         
         if not data:
+            current_app.logger.warning("No data received in track-event request")
             return jsonify({'error': 'No data received'}), 400
         
         event_name = data.get('event_name')
         event_data = data.get('event_data')
         
         if not event_name:
+            current_app.logger.warning(f"Event name missing in data: {data}")
             return jsonify({'error': 'Event name is required'}), 400
         
         track_custom_event(event_name, event_data)
