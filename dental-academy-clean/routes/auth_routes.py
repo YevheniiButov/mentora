@@ -620,6 +620,10 @@ def register():
             required_consents=bool(data.get('required_consents')),
             optional_consents=bool(data.get('optional_consents')),
             digital_signature=data.get('digital_signature'),
+            # New program interest fields
+            program_interests=json.dumps(data.getlist('program_interests')) if data.getlist('program_interests') else None,
+            motivation=data.get('motivation'),
+            program_notifications=bool(data.get('program_notifications')),
             registration_completed=True,
             is_active=True
         )
