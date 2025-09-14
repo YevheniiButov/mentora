@@ -133,15 +133,27 @@ def cleanup():
 def track_event():
     """Track custom events from JavaScript"""
     try:
-        # Handle both JSON and form data
+        data = None
+        
+        # Handle different content types
         if request.is_json:
             data = request.get_json()
+        elif request.content_type == 'text/plain':
+            # Handle sendBeacon requests (text/plain)
+            try:
+                data = json.loads(request.get_data(as_text=True))
+            except (json.JSONDecodeError, TypeError):
+                current_app.logger.warning(f"Failed to parse sendBeacon data: {request.get_data(as_text=True)}")
+                return jsonify({'error': 'Invalid JSON data'}), 400
         else:
             # Try to parse as JSON from form data
             try:
                 data = json.loads(request.form.get('data', '{}'))
             except (json.JSONDecodeError, TypeError):
                 data = request.form.to_dict()
+        
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
         
         event_name = data.get('event_name')
         event_data = data.get('event_data')
