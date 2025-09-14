@@ -2137,5 +2137,26 @@ translations = {
     'ready_to_start': 'Готові почати?',
     'start_preparation_today': 'Почніть підготовку до реєстрації BIG сьогодні',
     'start_preparation': 'Почати підготовку',
-    'ask_community': 'Запитайте спільноту'
+    'ask_community': 'Запитайте спільноту',
+    
+    # Додаткові переклади для навігації та основних елементів
+    'which_procedure': 'Яка процедура?',
+    'step_by_step': 'Крок за кроком',
+    'documents': 'Документи',
+    'language_requirements': 'Мовні вимоги',
+    'bi_exam': 'BI Іспит',
+    'compensation': 'Компенсація',
+    'faq': 'Часті питання',
+    'resources': 'Ресурси',
+    'for_whom': 'Для кого:',
+    'duration': 'Тривалість:',
+    'language': 'Мова:',
+    'special_requirements': 'Особливості:',
+    'direct_registration_possible': 'Можлива пряма реєстрація',
+    'start_again': 'Почати спочатку',
+    'netherlands': 'Нідерланди',
+    'light_theme': 'Світла тема',
+    'dark_theme': 'Темна тема',
+    'login': 'Увійти',
+    'back': 'Назад'
 }
