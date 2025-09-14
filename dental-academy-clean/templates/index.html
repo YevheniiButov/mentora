@@ -263,7 +263,7 @@ body .hero-section {
     transform: scale(1.3) !important;
 }
 
-/* ===== СТИЛИ ДЛЯ БАННЕРА УВЕДОМЛЕНИЯ ===== */
+/* ===== СТИЛИ ДЛЯ БАННЕРА УВЕДОМЛЕНИЯ (ПЕРЕНЕСЕНЫ В BASE.HTML) ===== */
 .early-access-banner {
   background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
   color: white;
@@ -1369,32 +1369,7 @@ console.log('🔧 Главная страница: логи включены д�
     initPhoneAnimation();
 })();
 
-// === ФУНКЦИИ ДЛЯ БАННЕРА УВЕДОМЛЕНИЯ === 
-// Функция закрытия баннера
-function closeBanner() {
-    const banner = document.querySelector('.early-access-banner');
-    if (banner) {
-        banner.classList.add('hidden');
-        
-        // Удаляем элемент после анимации
-        setTimeout(() => {
-            banner.remove();
-        }, 300);
-        
-        // Сохраняем состояние в localStorage
-        localStorage.setItem('earlyAccessBannerClosed', 'true');
-    }
-}
-
-// Проверяем, был ли баннер закрыт ранее
-document.addEventListener('DOMContentLoaded', function() {
-    if (localStorage.getItem('earlyAccessBannerClosed') === 'true') {
-        const banner = document.querySelector('.early-access-banner');
-        if (banner) {
-            banner.style.display = 'none';
-        }
-    }
-});
+// === ФУНКЦИИ ДЛЯ БАННЕРА УВЕДОМЛЕНИЯ (ПЕРЕНЕСЕНЫ В BASE.HTML) ===
 
 </script>
 
