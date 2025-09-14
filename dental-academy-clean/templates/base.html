@@ -168,23 +168,16 @@
     <!-- Баннер уведомлений - стили -->
     <style>
     /* ===== СТИЛИ ДЛЯ БАННЕРА УВЕДОМЛЕНИЯ ===== */
-    /* Добавляем отступ сверху для body когда есть баннер */
-    body:has(.early-access-banner) {
-      padding-top: 80px !important;
-    }
-    
     .early-access-banner {
       background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
       color: white;
-      padding: 1rem 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1001;
+      padding: 1.25rem 0;
+      position: relative;
+      z-index: 100;
       border-bottom: 1px solid rgba(255,255,255,0.2);
       animation: slideDown 0.5s ease-out;
       margin-bottom: 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     @keyframes slideDown {
@@ -333,12 +326,8 @@
     }
 
     /* Если баннер скрыт, убираем отступ */
-    body:has(.early-access-banner.hidden) {
-      padding-top: 0 !important;
-    }
-    
-    body:has(.early-access-banner[style*="display: none"]) {
-      padding-top: 0 !important;
+    .early-access-banner.hidden {
+      display: none !important;
     }
     </style>
     
@@ -794,11 +783,6 @@
             
             // Сохраняем состояние в localStorage
             localStorage.setItem('earlyAccessBannerClosed', 'true');
-            
-            // Удаляем баннер из DOM после анимации
-            setTimeout(() => {
-                banner.style.display = 'none';
-            }, 300);
         }
     }
 
@@ -807,7 +791,7 @@
         if (localStorage.getItem('earlyAccessBannerClosed') === 'true') {
             const banner = document.querySelector('.early-access-banner');
             if (banner) {
-                banner.style.display = 'none';
+                banner.classList.add('hidden');
             }
         }
     });
