@@ -142,8 +142,8 @@ def track_event():
         if request.is_json:
             data = request.get_json()
             current_app.logger.info(f"Parsed JSON data: {data}")
-        elif request.content_type == 'text/plain':
-            # Handle sendBeacon requests (text/plain)
+        elif request.content_type and request.content_type.startswith('text/plain'):
+            # Handle sendBeacon requests (text/plain or text/plain;charset=UTF-8)
             raw_data = request.get_data(as_text=True)
             current_app.logger.info(f"Raw sendBeacon data: {raw_data}")
             try:
