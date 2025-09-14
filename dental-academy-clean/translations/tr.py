@@ -2110,5 +2110,6 @@ translations = {
     'previous_big_registration_other_profession': 'Başka meslek grubunda önceki BIG kaydı',
     'special_circumstances_humanitarian_grounds': 'Özel durumlar (insani nedenler)',
     'transitional_arrangements_existing_professionals': 'Mevcut profesyoneller için geçiş düzenlemeleri',
-    'individual_assessment_text': 'Bireysel değerlendirme: Her başvuru bireysel olarak değerlendirilir. Tazminat ve istisnalar otomatik değildir ve özel durumunuza ve geçmişinize bağlıdır.'
+    'individual_assessment_text': 'Bireysel değerlendirme: Her başvuru bireysel olarak değerlendirilir. Tazminat ve istisnalar otomatik değildir ve özel durumunuza ve geçmişinize bağlıdır.',
+    'vog_certificate': 'İyi Hal Belgesi (VOG)'
 }

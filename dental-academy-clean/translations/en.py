@@ -2520,5 +2520,6 @@ translations = {
     'previous_big_registration_other_profession': 'Previous BIG registration in other profession',
     'special_circumstances_humanitarian_grounds': 'Special circumstances (humanitarian grounds)',
     'transitional_arrangements_existing_professionals': 'Transitional arrangements for existing professionals',
-    'individual_assessment_text': 'Individual assessment: Each application is assessed individually. Compensation and exceptions are not automatic and depend on your specific situation and background.'
+    'individual_assessment_text': 'Individual assessment: Each application is assessed individually. Compensation and exceptions are not automatic and depend on your specific situation and background.',
+    'vog_certificate': 'Certificate of Good Conduct (VOG)'
 }

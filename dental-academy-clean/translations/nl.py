@@ -2322,5 +2322,6 @@ translations = {
     'ready_to_start': 'Klaar om te beginnen?',
     'start_preparation_today': 'Start vandaag nog met je voorbereiding op de BIG registratie',
     'start_preparation': 'Start voorbereiding',
-    'ask_community': 'Vraag de community'
+    'ask_community': 'Vraag de community',
+    'vog_certificate': 'Verklaring omtrent gedrag (VOG)'
 }

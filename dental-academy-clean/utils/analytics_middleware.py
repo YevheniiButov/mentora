@@ -92,3 +92,6 @@ def track_user_action(action, details=None):
         current_app.logger.error(f"Error tracking user action: {str(e)}")
 
 
+
+
+

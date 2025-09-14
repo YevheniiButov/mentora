@@ -2237,5 +2237,6 @@ translations = {
     'previous_big_registration_other_profession': 'ثبت‌نام قبلی BIG در گروه حرفه‌ای دیگر',
     'special_circumstances_humanitarian_grounds': 'شرایط خاص (دلایل انسانی)',
     'transitional_arrangements_existing_professionals': 'ترتیبات انتقالی برای متخصصان موجود',
-    'individual_assessment_text': 'ارزیابی فردی: هر درخواست به صورت فردی ارزیابی می‌شود. جبران و استثنائات خودکار نیستند و به وضعیت و پیشینه خاص شما بستگی دارند.'
+    'individual_assessment_text': 'ارزیابی فردی: هر درخواست به صورت فردی ارزیابی می‌شود. جبران و استثنائات خودکار نیستند و به وضعیت و پیشینه خاص شما بستگی دارند.',
+    'vog_certificate': 'گواهی حسن رفتار (VOG)'
 }
