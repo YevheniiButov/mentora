@@ -4772,12 +4772,12 @@ class Contact(db.Model):
             return None
         return (datetime.utcnow() - self.last_contact_date).days
     
-           @property
-           def days_until_followup(self):
-               """Calculate days until next followup"""
-               if not self.next_followup_date:
-                   return None
-               return (self.next_followup_date - datetime.utcnow()).days
+    @property
+    def days_until_followup(self):
+        """Calculate days until next followup"""
+        if not self.next_followup_date:
+            return None
+        return (self.next_followup_date - datetime.utcnow()).days
 
 # ========================================
 # ADVANCED ANALYTICS MODELS
