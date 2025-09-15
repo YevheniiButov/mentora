@@ -7,7 +7,11 @@ services:
   echo "🚀 SAFE DEPLOY: Production deployment - $(date)" &&
   pip install --no-cache-dir -r requirements.txt &&
   echo "Installing dependencies completed" &&
+  echo "🔍 Checking database before deploy..." &&
+  python check_production_database.py &&
   python scripts/safe_deploy.py &&
+  echo "🔍 Checking database after deploy..." &&
+  python check_production_database.py &&
   echo "Safe production deploy completed" &&
   echo "✅ SAFE DEPLOY: Production updated - $(date)"
     startCommand: gunicorn app:app
@@ -45,4 +49,10 @@ services:
       - key: MAIL_DEFAULT_SENDER
         value: "Mentora <noreply@mentora.com.in>"
       - key: EMAIL_CONFIRMATION_SALT
-        value: "mentora-production-salt-2025" 
+        value: "mentora-production-salt-2025"
+
+databases:
+  - name: mentora-db
+    databaseName: mentora
+    user: mentora_user
+    plan: free
