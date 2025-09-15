@@ -4630,7 +4630,7 @@ class Profession(db.Model):
     
     # Relationships
     specializations = db.relationship('ProfessionSpecialization', backref='profession', lazy='dynamic', cascade='all, delete-orphan')
-    contacts = db.relationship('Contact', backref='profession', lazy='dynamic')
+    profession_contacts = db.relationship('Contact', lazy='dynamic')
     
     def __repr__(self):
         return f'<Profession {self.code}: {self.name}>'
@@ -4721,7 +4721,7 @@ class Contact(db.Model):
     # Relationships
     user = db.relationship('User', foreign_keys=[user_id], backref='contact_profile')
     assigned_user = db.relationship('User', foreign_keys=[assigned_to], backref='assigned_contacts')
-    profession = db.relationship('Profession', backref='profession_contacts')
+    profession = db.relationship('Profession', foreign_keys=[profession_id], overlaps="profession_contacts")
     
     def __repr__(self):
         return f'<Contact {self.full_name}: {self.email}>'
