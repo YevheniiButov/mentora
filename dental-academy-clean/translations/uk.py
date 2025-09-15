@@ -404,6 +404,7 @@ translations = {
     'complete': 'Завершити',
     'finish': 'Завершити',
     'sending_answer': 'Відправка відповіді',
+    'sending': 'Відправка...',
     'completing_diagnostic': 'Завершення діагностики',
     'diagnostic_completion_error': 'Помилка завершення діагностики',
     'diagnostic_completion_error_message': 'Сталася помилка при завершенні діагностики',

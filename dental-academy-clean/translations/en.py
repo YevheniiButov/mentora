@@ -919,6 +919,7 @@ translations = {
     'complete': 'Complete',
     'finish': 'Finish',
     'sending_answer': 'Sending answer',
+    'sending': 'Sending...',
     'completing_diagnostic': 'Completing diagnostic',
     'diagnostic_completion_error': 'Diagnostic completion error',
     'diagnostic_completion_error_message': 'An error occurred while completing the diagnostic',

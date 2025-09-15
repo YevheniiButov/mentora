@@ -699,6 +699,7 @@ translations = {
     'complete': 'Voltooien',
     'finish': 'Afronden',
     'sending_answer': 'Antwoord verzenden',
+    'sending': 'Verzenden...',
     'completing_diagnostic': 'Diagnostiek voltooien',
     'diagnostic_completion_error': 'Fout bij voltooien diagnostiek',
     'diagnostic_completion_error_message': 'Er is een fout opgetreden bij het voltooien van de diagnostiek',

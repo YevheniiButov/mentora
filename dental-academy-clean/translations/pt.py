@@ -439,6 +439,7 @@ translations = {
     'complete': 'Completar',
     'finish': 'Finalizar',
     'sending_answer': 'Enviando resposta',
+    'sending': 'Enviando...',
     'completing_diagnostic': 'Completando diagnóstico',
     'diagnostic_completion_error': 'Erro ao completar diagnóstico',
     'diagnostic_completion_error_message': 'Ocorreu um erro ao completar o diagnóstico',

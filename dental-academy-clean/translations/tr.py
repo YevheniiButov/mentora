@@ -367,6 +367,7 @@ translations = {
     'complete': 'Tamamla',
     'finish': 'Bitir',
     'sending_answer': 'Cevap gönderiliyor',
+    'sending': 'Gönderiliyor...',
     'completing_diagnostic': 'Tanı tamamlanıyor',
     'diagnostic_completion_error': 'Tanı tamamlama hatası',
     'diagnostic_completion_error_message': 'Tanı tamamlanırken bir hata oluştu',

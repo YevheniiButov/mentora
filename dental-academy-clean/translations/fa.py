@@ -437,6 +437,7 @@ translations = {
     'complete': 'تکمیل',
     'finish': 'پایان',
     'sending_answer': 'ارسال پاسخ',
+    'sending': 'در حال ارسال...',
     'completing_diagnostic': 'تکمیل تشخیص',
     'diagnostic_completion_error': 'خطا در تکمیل تشخیص',
     'diagnostic_completion_error_message': 'خطایی در تکمیل تشخیص رخ داد',

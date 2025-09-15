@@ -1427,6 +1427,15 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Translation data for JavaScript -->
+<script>
+    window.translations = {
+        'sending': '{{ t("sending", lang)|default("Отправка...") }}',
+        'complete_early_registration': '{{ t("complete_early_registration", lang)|default("Завершить предварительную регистрацию") }}'
+    };
+    window.currentLang = '{{ lang }}';
+</script>
+
 <!-- External JavaScript file for registration -->
 <script src="{{ url_for('static', filename='js/registration.js') }}"></script>
 

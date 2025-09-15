@@ -358,7 +358,10 @@ Mentora.formManager = {
         if (submitBtn) {
             submitBtn.disabled = true;
             const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Отправка...';
+            
+            // Use translation if available, fallback to default
+            const sendingText = (window.translations && window.translations.sending) || 'Sending...';
+            submitBtn.textContent = sendingText;
             
             // Reset after 10 seconds (fallback)
             setTimeout(() => {

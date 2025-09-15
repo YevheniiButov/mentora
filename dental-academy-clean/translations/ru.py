@@ -818,6 +818,7 @@ translations = {
     'complete': 'Завершить',
     'finish': 'Завершить',
     'sending_answer': 'Отправка ответа',
+    'sending': 'Отправка...',
     'completing_diagnostic': 'Завершение диагностики',
     'diagnostic_completion_error': 'Ошибка завершения диагностики',
     'diagnostic_completion_error_message': 'Произошла ошибка при завершении диагностики',
