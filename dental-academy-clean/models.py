@@ -808,7 +808,7 @@ class LearningPath(db.Model):
     """Top-level learning paths (5 exam categories)"""
     __tablename__ = 'learning_path'
     
-    id = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     name_nl = db.Column(db.String(200))
     name_ru = db.Column(db.String(200))
