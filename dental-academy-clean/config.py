@@ -173,12 +173,8 @@ class StagingConfig(Config):
     
     DEBUG = False
     
-    # База данных для staging - приоритет psycopg3
-    SQLALCHEMY_DATABASE_URI = (
-        os.environ.get('SQLALCHEMY_DATABASE_URI') or 
-        os.environ.get('DATABASE_URL', '').replace('postgresql://', 'postgresql+psycopg://') or
-        os.environ.get('DATABASE_URL')
-    )
+    # База данных для staging
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     
     # DigiD для staging (pre-production environment)
     DIGID_MOCK_MODE = False
@@ -211,12 +207,8 @@ class ProductionConfig(Config):
     
     DEBUG = False
     
-    # База данных для production - приоритет psycopg3
-    SQLALCHEMY_DATABASE_URI = (
-        os.environ.get('SQLALCHEMY_DATABASE_URI') or 
-        os.environ.get('DATABASE_URL', '').replace('postgresql://', 'postgresql+psycopg://') or
-        os.environ.get('DATABASE_URL')
-    )
+    # База данных для production
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     
     # DigiD для production (real DigiD)
     DIGID_MOCK_MODE = False

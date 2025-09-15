@@ -6,8 +6,10 @@ services:
     runtime: python-3.12.7
     buildCommand: |
   echo "🚀 SAFE DEPLOY: Production deployment - $(date)" &&
+  echo "🐍 Python version: $(python --version)" &&
+  echo "📦 Installing dependencies..." &&
   pip install --no-cache-dir -r requirements.txt &&
-  echo "Installing dependencies completed" &&
+  echo "✅ Dependencies installed successfully" &&
   echo "🔍 Checking database before deploy..." &&
   python check_production_database.py &&
   python scripts/safe_deploy.py &&
@@ -27,8 +29,6 @@ services:
         fromDatabase:
           name: mentora-db
           property: connectionString
-      - key: SQLALCHEMY_DATABASE_URI
-        value: "postgresql+psycopg://mentora_user@mentora-db/mentora"
       - key: DIGID_MOCK_MODE
         value: "true"
       - key: DIGID_ENABLED
