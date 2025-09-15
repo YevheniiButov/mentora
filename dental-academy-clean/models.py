@@ -33,7 +33,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     username = db.Column(db.String(80), unique=True, nullable=True, index=True)  # Made nullable for DigiD users
-    password_hash = db.Column(db.String(128), nullable=True)  # Made nullable for DigiD users
+    password_hash = db.Column(db.String(255), nullable=True)  # Made nullable for DigiD users
     
     # DigiD Authentication fields
     digid_username = db.Column(db.String(80), unique=True, nullable=True, index=True)
@@ -43,11 +43,11 @@ class User(db.Model, UserMixin):
     
     # Email Confirmation fields
     email_confirmed = db.Column(db.Boolean, default=False)
-    email_confirmation_token = db.Column(db.String(100), nullable=True, index=True)
+    email_confirmation_token = db.Column(db.String(255), nullable=True, index=True)
     email_confirmation_sent_at = db.Column(db.DateTime, nullable=True)
     
     # Password Reset fields
-    password_reset_token = db.Column(db.String(100), nullable=True, index=True)
+    password_reset_token = db.Column(db.String(255), nullable=True, index=True)
     password_reset_sent_at = db.Column(db.DateTime, nullable=True)
     
     first_name = db.Column(db.String(100))
