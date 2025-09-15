@@ -15,14 +15,22 @@ def init_mail(app):
 def send_email_confirmation(user, token):
     """Send email confirmation to user"""
     try:
+        print(f"=== EMAIL CONFIRMATION START for {user.email} ===")
+        
         # Generate URLs - используем статические URL для избежания ошибок вне контекста запроса
         base_url = current_app.config.get('BASE_URL', 'https://mentora.com.in')
         confirmation_url = f"{base_url}/auth/confirm-email/{token}"
         unsubscribe_url = f"{base_url}/auth/unsubscribe/{user.id}"
         privacy_policy_url = f"{base_url}/privacy"
         
+        print(f"=== BASE_URL: {base_url} ===")
+        print(f"=== CONFIRMATION_URL: {confirmation_url} ===")
+        
         # Check if email sending is suppressed (development mode)
-        if current_app.config.get('MAIL_SUPPRESS_SEND', False):
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        print(f"=== MAIL_SUPPRESS_SEND: {mail_suppress} ===")
+        
+        if mail_suppress:
             # Development mode - output to console
             print(f"\n{'='*60}")
             print(f"📧 EMAIL CONFIRMATION для {user.email}")
@@ -38,6 +46,16 @@ def send_email_confirmation(user, token):
             
             current_app.logger.info(f"Email confirmation (console mode) for {user.email}")
             return True
+        
+        print("=== PRODUCTION MODE - SENDING REAL EMAIL ===")
+        
+        # Check email configuration
+        print(f"=== EMAIL CONFIG CHECK ===")
+        print(f"MAIL_SERVER: {current_app.config.get('MAIL_SERVER')}")
+        print(f"MAIL_PORT: {current_app.config.get('MAIL_PORT')}")
+        print(f"MAIL_USE_TLS: {current_app.config.get('MAIL_USE_TLS')}")
+        print(f"MAIL_USERNAME: {current_app.config.get('MAIL_USERNAME')}")
+        print(f"MAIL_DEFAULT_SENDER: {current_app.config.get('MAIL_DEFAULT_SENDER')}")
         
         # Production mode - send real email
         msg = Message(
@@ -89,12 +107,19 @@ def send_email_confirmation(user, token):
             """
         
         # Send email
+        print("=== ATTEMPTING TO SEND EMAIL ===")
         mail.send(msg)
+        print("=== EMAIL SENT SUCCESSFULLY ===")
         
         current_app.logger.info(f"Email confirmation sent to {user.email}")
         return True
         
     except Exception as e:
+        print(f"=== EMAIL CONFIRMATION ERROR: {str(e)} ===")
+        print(f"=== ERROR TYPE: {type(e).__name__} ===")
+        import traceback
+        print(f"=== TRACEBACK: {traceback.format_exc()} ===")
+        
         current_app.logger.error(f"Failed to send email confirmation to {user.email}: {str(e)}")
         return False
 
