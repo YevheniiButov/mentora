@@ -2135,6 +2135,27 @@ def user_detail(user_id):
             flash('Критическая ошибка при загрузке пользователя', 'error')
             return redirect(url_for('admin.users_list'))
 
+@admin_bp.route('/users/<int:user_id>/extended')
+@login_required
+@admin_required
+def user_detail_extended(user_id):
+    """Extended user profile with ALL registration fields"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Check if user is currently online
+        online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+        is_online = user.last_login and user.last_login >= online_threshold
+        
+        return render_template('admin/user_detail_extended.html',
+                             user=user,
+                             is_online=is_online)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in user_detail_extended route for user {user_id}: {str(e)}")
+        flash(f'Ошибка загрузки расширенной информации о пользователе: {str(e)}', 'error')
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+
 @admin_bp.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required

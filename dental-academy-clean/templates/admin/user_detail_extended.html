@@ -1,0 +1,536 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ user.get_display_name() if user else 'Пользователь' }} - Полная информация{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.users_list') }}">Пользователи</a></li>
+<li class="breadcrumb-item active">{{ user.get_display_name() if user else 'Пользователь' }} - Полная информация</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">
+            {% if is_online %}
+            <i class="bi bi-circle-fill text-success me-2" title="Онлайн"></i>
+            {% else %}
+            <i class="bi bi-circle text-secondary me-2" title="Офлайн"></i>
+            {% endif %}
+            {{ user.get_display_name() }}
+        </h1>
+        <p class="text-muted mb-0">{{ user.email }}</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Обычный вид
+            </a>
+            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil"></i> Редактировать
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Навигация по вкладкам -->
+<ul class="nav nav-tabs mb-4" id="userTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
+            <i class="bi bi-person"></i> Основная информация
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="education-tab" data-bs-toggle="tab" data-bs-target="#education" type="button" role="tab">
+            <i class="bi bi-mortarboard"></i> Образование
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="legal-tab" data-bs-toggle="tab" data-bs-target="#legal" type="button" role="tab">
+            <i class="bi bi-shield-check"></i> Правовой статус
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="languages-tab" data-bs-toggle="tab" data-bs-target="#languages" type="button" role="tab">
+            <i class="bi bi-translate"></i> Языки
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="big-tab" data-bs-toggle="tab" data-bs-target="#big" type="button" role="tab">
+            <i class="bi bi-clipboard-check"></i> BIG экзамен
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">
+            <i class="bi bi-file-earmark-text"></i> Документы
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="motivation-tab" data-bs-toggle="tab" data-bs-target="#motivation" type="button" role="tab">
+            <i class="bi bi-heart"></i> Мотивация
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="userTabsContent">
+    <!-- Основная информация -->
+    <div class="tab-pane fade show active" id="basic" role="tabpanel">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-person-badge"></i> Личные данные</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Имя:</strong></td>
+                                <td>{{ user.first_name or 'Не указано' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Фамилия:</strong></td>
+                                <td>{{ user.last_name or 'Не указано' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Телефон:</strong></td>
+                                <td>{{ user.phone or 'Не указан' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Дата рождения:</strong></td>
+                                <td>{{ user.birth_date.strftime('%d.%m.%Y') if user.birth_date else 'Не указана' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Гражданство:</strong></td>
+                                <td>{{ user.nationality or 'Не указано' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-gear"></i> Системная информация</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Роль:</strong></td>
+                                <td>
+                                    <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'teacher' %}warning{% else %}primary{% endif %}">
+                                        {{ user.role.title() }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Статус:</strong></td>
+                                <td>
+                                    <span class="badge bg-{% if user.is_active %}success{% else %}secondary{% endif %}">
+                                        {% if user.is_active %}Активен{% else %}Неактивен{% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email подтвержден:</strong></td>
+                                <td>
+                                    {% if user.email_confirmed %}
+                                        <span class="badge bg-success">Да</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Нет</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Регистрация:</strong></td>
+                                <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') if user.created_at else 'Неизвестно' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Последний вход:</strong></td>
+                                <td>{{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Никогда' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Образование -->
+    <div class="tab-pane fade" id="education" role="tabpanel">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-mortarboard"></i> Образование и квалификации</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Университет:</strong></td>
+                                <td>{{ user.university_name or 'Не указан' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Тип диплома:</strong></td>
+                                <td>{{ user.degree_type or 'Не указан' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Годы обучения:</strong></td>
+                                <td>
+                                    {% if user.study_start_year and user.study_end_year %}
+                                        {{ user.study_start_year }} - {{ user.study_end_year }}
+                                    {% else %}
+                                        Не указаны
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Страна обучения:</strong></td>
+                                <td>{{ user.study_country or 'Не указана' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Медицинская специализация:</strong></td>
+                                <td>{{ user.medical_specialization or 'Не указана' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Опыт работы (лет):</strong></td>
+                                <td>{{ user.work_experience or 'Не указан' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Дополнительные квалификации:</strong></td>
+                                <td>{{ user.additional_qualifications or 'Не указаны' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Статистика обучения</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Прогресс:</strong> {{ user.progress or 0 }}%</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" role="progressbar" style="width: {{ user.progress or 0 }}%"></div>
+                        </div>
+                        <p><strong>Завершенные уроки:</strong> {{ user.completed_lessons or 0 }}</p>
+                        <p><strong>Время обучения:</strong> {{ user.study_time or 0 }} часов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Правовой статус -->
+    <div class="tab-pane fade" id="legal" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-shield-check"></i> Правовой статус в Нидерландах</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Правовой статус:</strong></td>
+                                <td>
+                                    {% if user.legal_status %}
+                                        <span class="badge bg-info">{{ user.legal_status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Не указан</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Гражданство:</strong></td>
+                                <td>{{ user.nationality or 'Не указано' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Дата рождения:</strong></td>
+                                <td>{{ user.birth_date.strftime('%d.%m.%Y') if user.birth_date else 'Не указана' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        {% if user.legal_status %}
+                        <div class="alert alert-info">
+                            <h6>Информация о статусе:</h6>
+                            {% if 'EU' in user.legal_status %}
+                                <p>Гражданин ЕС - упрощенная процедура признания диплома</p>
+                            {% elif 'permanent' in user.legal_status %}
+                                <p>Постоянное место жительства - полные права</p>
+                            {% elif 'asylum' in user.legal_status %}
+                                <p>Статус беженца - особые условия обучения</p>
+                            {% else %}
+                                <p>Требуется дополнительная проверка документов</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Языки -->
+    <div class="tab-pane fade" id="languages" role="tabpanel">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-translate"></i> Языковые компетенции</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Уровень голландского:</strong></td>
+                                <td>
+                                    {% if user.dutch_level %}
+                                        <span class="badge bg-{% if user.dutch_level in ['B2', 'C1', 'C2'] %}success{% elif user.dutch_level in ['A2', 'B1'] %}warning{% else %}danger{% endif %}">
+                                            {{ user.dutch_level }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Не указан</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Уровень английского:</strong></td>
+                                <td>
+                                    {% if user.english_level %}
+                                        <span class="badge bg-{% if user.english_level in ['B2', 'C1', 'C2'] %}success{% elif user.english_level in ['A2', 'B1'] %}warning{% else %}danger{% endif %}">
+                                            {{ user.english_level }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Не указан</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Языковые сертификаты:</strong></td>
+                                <td>{{ user.language_certificates or 'Не указаны' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Рекомендации</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if user.dutch_level %}
+                            {% if user.dutch_level in ['A1', 'A2'] %}
+                                <div class="alert alert-warning">
+                                    <strong>Внимание:</strong> Низкий уровень голландского. Рекомендуется интенсивный курс языка.
+                                </div>
+                            {% elif user.dutch_level in ['B1'] %}
+                                <div class="alert alert-info">
+                                    <strong>Хорошо:</strong> Базовый уровень есть. Нужна подготовка к профессиональной лексике.
+                                </div>
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <strong>Отлично:</strong> Высокий уровень голландского. Готов к обучению.
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BIG экзамен -->
+    <div class="tab-pane fade" id="big" role="tabpanel">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Статус BIG экзамена</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>IDW оценка:</strong></td>
+                                <td>
+                                    {% if user.idw_assessment %}
+                                        <span class="badge bg-{% if 'positive' in user.idw_assessment %}success{% elif 'negative' in user.idw_assessment %}danger{% else %}warning{% endif %}">
+                                            {{ user.idw_assessment }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Не указана</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Регистрация на BIG:</strong></td>
+                                <td>
+                                    {% if user.big_exam_registered %}
+                                        <span class="badge bg-success">Зарегистрирован</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Не зарегистрирован</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Планируемая дата экзамена:</strong></td>
+                                <td>{{ user.exam_date.strftime('%d.%m.%Y') if user.exam_date else 'Не указана' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Время подготовки:</strong></td>
+                                <td>{{ user.preparation_time or 'Не указано' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Готовность к экзамену</h5>
+                    </div>
+                    <div class="card-body">
+                        {% set readiness = 0 %}
+                        {% if user.idw_assessment %}{% set readiness = readiness + 25 %}{% endif %}
+                        {% if user.big_exam_registered %}{% set readiness = readiness + 25 %}{% endif %}
+                        {% if user.dutch_level and user.dutch_level in ['B2', 'C1', 'C2'] %}{% set readiness = readiness + 25 %}{% endif %}
+                        {% if user.exam_date %}{% set readiness = readiness + 25 %}{% endif %}
+                        
+                        <p><strong>Общая готовность:</strong> {{ readiness }}%</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-{% if readiness >= 75 %}success{% elif readiness >= 50 %}warning{% else %}danger{% endif %}" 
+                                 role="progressbar" style="width: {{ readiness }}%"></div>
+                        </div>
+                        
+                        {% if readiness < 50 %}
+                            <div class="alert alert-warning">
+                                <small>Требуется дополнительная подготовка</small>
+                            </div>
+                        {% elif readiness >= 75 %}
+                            <div class="alert alert-success">
+                                <small>Готов к экзамену</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Документы -->
+    <div class="tab-pane fade" id="documents" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Загруженные документы</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Основные документы:</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Диплом
+                                {% if user.diploma_file %}
+                                    <span class="badge bg-success">Загружен</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Отсутствует</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Языковые сертификаты
+                                {% if user.language_certificates %}
+                                    <span class="badge bg-success">Загружены</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Отсутствуют</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Дополнительные документы
+                                {% if user.additional_documents %}
+                                    <span class="badge bg-success">Загружены</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Отсутствуют</span>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Статус проверки:</h6>
+                        {% set docs_complete = 0 %}
+                        {% if user.diploma_file %}{% set docs_complete = docs_complete + 1 %}{% endif %}
+                        {% if user.language_certificates %}{% set docs_complete = docs_complete + 1 %}{% endif %}
+                        {% if user.additional_documents %}{% set docs_complete = docs_complete + 1 %}{% endif %}
+                        
+                        <p>Загружено документов: {{ docs_complete }}/3</p>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: {{ (docs_complete/3*100)|round }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Мотивация -->
+    <div class="tab-pane fade" id="motivation" role="tabpanel">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-heart"></i> Мотивация и интересы</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>Интересы к программе:</h6>
+                        <p class="text-muted mb-3">{{ user.program_interests or 'Не указаны' }}</p>
+                        
+                        <h6>Мотивационное письмо:</h6>
+                        <div class="border rounded p-3 bg-light">
+                            {{ user.motivation or 'Не предоставлено' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-pen"></i> Подпись</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if user.digital_signature %}
+                            <p><strong>Цифровая подпись:</strong></p>
+                            <div class="border rounded p-2 text-center bg-light">
+                                {{ user.digital_signature }}
+                            </div>
+                            <small class="text-muted">Подписано при регистрации</small>
+                        {% else %}
+                            <p class="text-muted">Цифровая подпись отсутствует</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Инициализация Bootstrap табов
+document.addEventListener('DOMContentLoaded', function() {
+    var triggerTabList = [].slice.call(document.querySelectorAll('#userTabs button'))
+    triggerTabList.forEach(function (triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl)
+        
+        triggerEl.addEventListener('click', function (event) {
+            event.preventDefault()
+            tabTrigger.show()
+        })
+    })
+});
+</script>
+{% endblock %}
