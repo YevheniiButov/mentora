@@ -7,12 +7,8 @@ services:
   echo "🚀 SAFE DEPLOY: Production deployment - $(date)" &&
   pip install --no-cache-dir -r requirements.txt &&
   echo "Installing dependencies completed" &&
-  flask db upgrade &&
-  echo "Database tables created/updated" &&
-  python scripts/check_database_safety.py &&
-  echo "Database safety check completed" &&
-  python scripts/ensure_admin_production.py &&
-  echo "Admin user ensured completed" &&
+  python scripts/safe_production_deploy.py &&
+  echo "Safe production deploy completed" &&
   echo "✅ SAFE DEPLOY: Production updated - $(date)"
     startCommand: gunicorn app:app
     envVars:

@@ -1,124 +1,235 @@
 #!/usr/bin/env python3
 """
-БЕЗОПАСНЫЙ ДЕПЛОЙ SCRIPT
-Проверяет существование данных и НЕ перезаписывает пользователей
+Безопасный деплой в production с резервным копированием
 """
-
 import os
 import sys
-import logging
+import json
+from pathlib import Path
 from datetime import datetime
 
-# Add project root to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+# Добавляем путь к проекту
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
-from app import create_app
-from extensions import db
-from models import User
+from app import app
+from models import db, User, Contact, Profession
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-def check_existing_data():
-    """Проверка существующих данных"""
+def backup_users():
+    """Создает резервную копию всех пользователей"""
     try:
-        user_count = User.query.count()
-        admin_count = User.query.filter_by(role='admin').count()
+        print("💾 СОЗДАНИЕ РЕЗЕРВНОЙ КОПИИ ПОЛЬЗОВАТЕЛЕЙ")
+        print("=" * 50)
         
-        logger.info(f"📊 Current database stats:")
-        logger.info(f"   Total users: {user_count}")
-        logger.info(f"   Admin users: {admin_count}")
+        users = User.query.all()
+        backup_data = []
         
-        return {
-            'users_exist': user_count > 0,
-            'admin_exists': admin_count > 0,
-            'user_count': user_count,
-            'admin_count': admin_count
-        }
+        for user in users:
+            user_data = {
+                'id': user.id,
+                'email': user.email,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role,
+                'is_active': user.is_active,
+                'email_confirmed': user.email_confirmed,
+                'registration_completed': user.registration_completed,
+                'language': user.language,
+                'created_at': user.created_at.isoformat() if user.created_at else None,
+                'last_login': user.last_login.isoformat() if user.last_login else None,
+                'password_hash': user.password_hash  # ВАЖНО: сохраняем хеш пароля
+            }
+            backup_data.append(user_data)
+        
+        # Сохраняем в файл
+        backup_file = f"backups/users_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        os.makedirs("backups", exist_ok=True)
+        
+        with open(backup_file, 'w', encoding='utf-8') as f:
+            json.dump(backup_data, f, ensure_ascii=False, indent=2)
+        
+        print(f"✅ Резервная копия создана: {backup_file}")
+        print(f"📊 Сохранено пользователей: {len(backup_data)}")
+        
+        return backup_file, backup_data
+        
     except Exception as e:
-        logger.error(f"❌ Error checking database: {e}")
-        return {
-            'users_exist': False,
-            'admin_exists': False,
-            'user_count': 0,
-            'admin_count': 0
-        }
+        print(f"❌ Ошибка создания резервной копии: {e}")
+        return None, None
 
-def ensure_admin_user():
-    """Создание админа только если его нет"""
+def restore_users(backup_file):
+    """Восстанавливает пользователей из резервной копии"""
     try:
-        # Check if admin exists
-        admin = User.query.filter_by(role='admin').first()
+        print("🔄 ВОССТАНОВЛЕНИЕ ПОЛЬЗОВАТЕЛЕЙ")
+        print("=" * 50)
         
-        if admin:
-            logger.info(f"✅ Admin user already exists: {admin.email}")
-            return admin
+        with open(backup_file, 'r', encoding='utf-8') as f:
+            backup_data = json.load(f)
         
-        # Create admin if none exists
-        admin_email = os.environ.get('ADMIN_EMAIL', 'admin@mentora.com')
-        admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+        restored_count = 0
+        for user_data in backup_data:
+            # Проверяем, не существует ли уже пользователь
+            existing_user = User.query.filter_by(email=user_data['email']).first()
+            if existing_user:
+                print(f"⚠️  Пользователь {user_data['email']} уже существует, пропускаем")
+                continue
+            
+            # Создаем пользователя
+            user = User(
+                email=user_data['email'],
+                username=user_data['username'],
+                first_name=user_data['first_name'],
+                last_name=user_data['last_name'],
+                role=user_data['role'],
+                is_active=user_data['is_active'],
+                email_confirmed=user_data['email_confirmed'],
+                registration_completed=user_data['registration_completed'],
+                language=user_data['language']
+            )
+            
+            # Восстанавливаем хеш пароля
+            user.password_hash = user_data['password_hash']
+            
+            # Восстанавливаем даты
+            if user_data['created_at']:
+                user.created_at = datetime.fromisoformat(user_data['created_at'])
+            if user_data['last_login']:
+                user.last_login = datetime.fromisoformat(user_data['last_login'])
+            
+            db.session.add(user)
+            restored_count += 1
         
-        admin = User(
-            email=admin_email,
-            username='admin',
-            first_name='System',
-            last_name='Administrator',
-            role='admin',
-            is_active=True,
-            email_confirmed=True
-        )
-        admin.set_password(admin_password)
-        
-        db.session.add(admin)
         db.session.commit()
-        
-        logger.info(f"✅ Created new admin user: {admin_email}")
-        return admin
+        print(f"✅ Восстановлено пользователей: {restored_count}")
+        return True
         
     except Exception as e:
-        logger.error(f"❌ Error creating admin user: {e}")
+        print(f"❌ Ошибка восстановления: {e}")
         db.session.rollback()
-        return None
+        return False
 
-def safe_deploy():
-    """Безопасный деплой без потери данных"""
-    logger.info("🚀 Starting SAFE production deploy...")
-    
-    app = create_app()
-    
-    with app.app_context():
-        try:
-            # 1. Проверяем базу данных
-            logger.info("📊 Checking existing data...")
-            data_stats = check_existing_data()
-            
-            # 2. Создаем бэкап timestamp
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            logger.info(f"📅 Deploy timestamp: {timestamp}")
-            
-            # 3. Обеспечиваем наличие админа
-            logger.info("👤 Ensuring admin user exists...")
-            admin = ensure_admin_user()
-            
-            if not admin:
-                logger.error("❌ Failed to create/find admin user")
+def safe_production_deploy():
+    """Безопасный деплой с резервным копированием"""
+    try:
+        print("🚀 БЕЗОПАСНЫЙ PRODUCTION ДЕПЛОЙ")
+        print("=" * 60)
+        
+        with app.app_context():
+            # 1. Проверяем текущее состояние БД
+            print("1️⃣ ПРОВЕРКА ТЕКУЩЕГО СОСТОЯНИЯ")
+            try:
+                user_count = User.query.count()
+                print(f"   👥 Пользователей в БД: {user_count}")
+                
+                if user_count > 0:
+                    # Создаем резервную копию
+                    backup_file, backup_data = backup_users()
+                    if not backup_file:
+                        print("❌ Не удалось создать резервную копию!")
+                        return False
+                else:
+                    print("   ⚠️  БД пуста, резервная копия не нужна")
+                    backup_file = None
+                    
+            except Exception as e:
+                print(f"   ❌ Ошибка проверки БД: {e}")
                 return False
             
-            # 4. Проверяем финальное состояние
-            final_stats = check_existing_data()
+            # 2. Выполняем миграции БД
+            print("\n2️⃣ ВЫПОЛНЕНИЕ МИГРАЦИЙ БД")
+            try:
+                # Создаем все таблицы
+                db.create_all()
+                print("   ✅ Таблицы БД созданы/обновлены")
+            except Exception as e:
+                print(f"   ❌ Ошибка миграций: {e}")
+                return False
             
-            logger.info("✅ SAFE DEPLOY COMPLETED!")
-            logger.info(f"   Final user count: {final_stats['user_count']}")
-            logger.info(f"   Final admin count: {final_stats['admin_count']}")
-            logger.info(f"   Data preserved: {'YES' if data_stats['users_exist'] else 'NO'}")
+            # 3. Проверяем состояние после миграций
+            print("\n3️⃣ ПРОВЕРКА ПОСЛЕ МИГРАЦИЙ")
+            try:
+                user_count_after = User.query.count()
+                print(f"   👥 Пользователей после миграций: {user_count_after}")
+                
+                if user_count > 0 and user_count_after == 0:
+                    print("   🚨 ДАННЫЕ ПОТЕРЯНЫ! Восстанавливаем из резервной копии...")
+                    
+                    if backup_file and os.path.exists(backup_file):
+                        if restore_users(backup_file):
+                            print("   ✅ Данные восстановлены!")
+                        else:
+                            print("   ❌ Не удалось восстановить данные!")
+                            return False
+                    else:
+                        print("   ❌ Резервная копия не найдена!")
+                        return False
+                        
+            except Exception as e:
+                print(f"   ❌ Ошибка проверки после миграций: {e}")
+                return False
             
-            return True
+            # 4. Обеспечиваем наличие админа
+            print("\n4️⃣ ПРОВЕРКА АДМИНИСТРАТОРА")
+            try:
+                admins = User.query.filter_by(role='admin').all()
+                print(f"   👑 Администраторов: {len(admins)}")
+                
+                if len(admins) == 0:
+                    print("   🔨 Создаем администратора...")
+                    
+                    admin = User(
+                        email="admin@mentora.com",
+                        username="admin@mentora.com",
+                        first_name="Admin",
+                        last_name="User",
+                        role='admin',
+                        is_active=True,
+                        email_confirmed=True,
+                        registration_completed=True,
+                        language='en'
+                    )
+                    admin.set_password("AdminPass123!")
+                    db.session.add(admin)
+                    db.session.commit()
+                    print("   ✅ Администратор создан")
+                else:
+                    print("   ✅ Администраторы уже существуют")
+                    
+            except Exception as e:
+                print(f"   ❌ Ошибка создания админа: {e}")
+                return False
             
-        except Exception as e:
-            logger.error(f"❌ Deploy failed: {e}")
-            return False
+            # 5. Финальная проверка
+            print("\n5️⃣ ФИНАЛЬНАЯ ПРОВЕРКА")
+            try:
+                final_user_count = User.query.count()
+                final_admin_count = User.query.filter_by(role='admin').count()
+                
+                print(f"   👥 Итого пользователей: {final_user_count}")
+                print(f"   👑 Итого администраторов: {final_admin_count}")
+                
+                if final_admin_count > 0:
+                    print("   ✅ Деплой завершен успешно!")
+                    return True
+                else:
+                    print("   ❌ Администраторы отсутствуют!")
+                    return False
+                    
+            except Exception as e:
+                print(f"   ❌ Ошибка финальной проверки: {e}")
+                return False
+        
+    except Exception as e:
+        print(f"❌ КРИТИЧЕСКАЯ ОШИБКА ДЕПЛОЯ: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
-if __name__ == '__main__':
-    success = safe_deploy()
-    sys.exit(0 if success else 1)
+if __name__ == "__main__":
+    success = safe_production_deploy()
+    if not success:
+        print("❌ ДЕПЛОЙ ЗАВЕРШИЛСЯ С ОШИБКОЙ")
+        sys.exit(1)
+    else:
+        print("✅ ДЕПЛОЙ ВЫПОЛНЕН УСПЕШНО")
