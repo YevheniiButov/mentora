@@ -62,7 +62,8 @@ class NotificationSystem {
         // Показываем с анимацией
         requestAnimationFrame(() => {
             this.overlay.classList.add('show');
-            document.body.style.overflow = 'hidden'; // Блокируем скролл
+            // ИСПРАВЛЕНО: не блокируем прокрутку, чтобы не мешать пользователю
+            // document.body.style.overflow = 'hidden'; // Блокируем скролл
         });
         
         // Отслеживаем показ
@@ -71,7 +72,8 @@ class NotificationSystem {
     
     hide() {
         this.overlay.classList.remove('show');
-        document.body.style.overflow = ''; // Разблокируем скролл
+        // ИСПРАВЛЕНО: не нужно разблокировать прокрутку, так как мы её не блокируем
+        // document.body.style.overflow = ''; // Разблокируем скролл
         
         // Очищаем после анимации
         setTimeout(() => {
@@ -266,6 +268,7 @@ class NotificationSystem {
     // ========================================
     
     checkAutoShow() {
+        // АВТОМАТИЧЕСКИЙ ПОКАЗ ОТКЛЮЧЕН ДЛЯ ИСПРАВЛЕНИЯ ПРОБЛЕМЫ С ПРОКРУТКОЙ
         // Проверяем, показывать ли уведомление автоматически
         const lastShown = localStorage.getItem('mentora_notification_last_shown');
         const notificationDismissed = localStorage.getItem('mentora_notification_dismissed');
@@ -276,12 +279,13 @@ class NotificationSystem {
             // Если уведомление не было отклонено и не показывалось сегодня
             const today = new Date().toDateString();
             
-            if (!notificationDismissed && lastShown !== today) {
-                setTimeout(() => {
-                    this.showLaunchAnnouncement();
-                    localStorage.setItem('mentora_notification_last_shown', today);
-                }, this.autoShowDelay);
-            }
+            // ВРЕМЕННО ОТКЛЮЧЕНО: автоматический показ блокирует прокрутку
+            // if (!notificationDismissed && lastShown !== today) {
+            //     setTimeout(() => {
+            //         this.showLaunchAnnouncement();
+            //         localStorage.setItem('mentora_notification_last_shown', today);
+            //     }, this.autoShowDelay);
+            // }
         }
     }
     
