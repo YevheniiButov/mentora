@@ -9,12 +9,10 @@ services:
   echo "Installing dependencies completed" &&
   flask db upgrade &&
   echo "Database tables created" &&
-  flask seed-database &&
+  python scripts/seed_production_data_runner.py &&
   echo "Data seeding completed" &&
-  flask check-production-data &&
-  echo "Production data check completed" &&
-  flask force-load-data &&
-  echo "Force data loading completed" &&
+  python scripts/create_admin_production.py &&
+  echo "Admin user created" &&
   echo "✅ CRITICAL UPDATE: Production обновлен - $(date)"
     startCommand: gunicorn app:app
     envVars:

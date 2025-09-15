@@ -800,25 +800,47 @@ def users():
 @admin_required
 def virtual_patients():
     """Управление виртуальными пациентами"""
-    scenarios = VirtualPatientScenario.query.order_by(VirtualPatientScenario.created_at.desc()).all()
-    
-    # Добавляем статистику по каждому сценарию
-    scenarios_with_stats = []
-    for scenario in scenarios:
-        attempts_count = VirtualPatientAttempt.query.filter_by(scenario_id=scenario.id).count()
-        completed_count = VirtualPatientAttempt.query.filter_by(scenario_id=scenario.id, completed=True).count()
-        avg_score = db.session.query(db.func.avg(VirtualPatientAttempt.score)).filter_by(
-            scenario_id=scenario.id, completed=True
-        ).scalar() or 0
+    try:
+        scenarios = VirtualPatientScenario.query.order_by(VirtualPatientScenario.created_at.desc()).all()
         
-        scenarios_with_stats.append({
-            'scenario': scenario,
-            'attempts_count': attempts_count,
-            'completed_count': completed_count,
-            'avg_score': round(avg_score, 1)
-        })
+        # Добавляем статистику по каждому сценарию
+        scenarios_with_stats = []
+        for scenario in scenarios:
+            try:
+                attempts_count = VirtualPatientAttempt.query.filter_by(scenario_id=scenario.id).count()
+            except Exception as e:
+                current_app.logger.error(f"Error counting attempts for scenario {scenario.id}: {str(e)}")
+                attempts_count = 0
+            
+            try:
+                completed_count = VirtualPatientAttempt.query.filter_by(scenario_id=scenario.id, completed=True).count()
+            except Exception as e:
+                current_app.logger.error(f"Error counting completed attempts for scenario {scenario.id}: {str(e)}")
+                completed_count = 0
+            
+            try:
+                avg_score = db.session.query(db.func.avg(VirtualPatientAttempt.score)).filter_by(
+                    scenario_id=scenario.id, completed=True
+                ).scalar() or 0
+            except Exception as e:
+                current_app.logger.error(f"Error calculating avg score for scenario {scenario.id}: {str(e)}")
+                avg_score = 0
+            
+            scenarios_with_stats.append({
+                'scenario': scenario,
+                'attempts_count': attempts_count,
+                'completed_count': completed_count,
+                'avg_score': round(avg_score, 1)
+            })
+        
+        return render_template('admin/virtual_patients.html', scenarios=scenarios_with_stats)
     
-    return render_template('admin/virtual_patients.html', scenarios=scenarios_with_stats)
+    except Exception as e:
+        current_app.logger.error(f"Error in virtual_patients route: {str(e)}")
+        flash(f'Ошибка загрузки виртуальных пациентов: {str(e)}', 'error')
+        
+        # Return empty data in case of error
+        return render_template('admin/virtual_patients.html', scenarios=[])
 
 @admin_bp.route('/virtual-patients/<int:scenario_id>')
 @login_required
@@ -1858,95 +1880,140 @@ def get_performance_metrics():
 @admin_required
 def users_list():
     """Enhanced users list with filters and pagination"""
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)
-    search = request.args.get('search', '')
-    status_filter = request.args.get('status', 'all')
-    role_filter = request.args.get('role', 'all')
-    sort_by = request.args.get('sort', 'created_at')
-    sort_order = request.args.get('order', 'desc')
-    
-    # Base query
-    query = User.query
-    
-    # Apply search filter
-    if search:
-        search_term = f"%{search}%"
-        query = query.filter(
-            or_(
-                User.first_name.ilike(search_term),
-                User.last_name.ilike(search_term),
-                User.email.ilike(search_term),
-                User.username.ilike(search_term)
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        search = request.args.get('search', '')
+        status_filter = request.args.get('status', 'all')
+        role_filter = request.args.get('role', 'all')
+        sort_by = request.args.get('sort', 'created_at')
+        sort_order = request.args.get('order', 'desc')
+        
+        # Base query
+        query = User.query
+        
+        # Apply search filter
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    User.first_name.ilike(search_term),
+                    User.last_name.ilike(search_term),
+                    User.email.ilike(search_term),
+                    User.username.ilike(search_term)
+                )
             )
-        )
+        
+        # Apply status filter
+        if status_filter != 'all':
+            if status_filter == 'active':
+                query = query.filter(User.is_active == True)
+            elif status_filter == 'inactive':
+                query = query.filter(User.is_active == False)
+            elif status_filter == 'email_verified':
+                query = query.filter(User.email_confirmed == True)
+            elif status_filter == 'email_unverified':
+                query = query.filter(User.email_confirmed == False)
+            elif status_filter == 'digid':
+                query = query.filter(User.created_via_digid == True)
+        
+        # Apply role filter
+        if role_filter != 'all':
+            query = query.filter(User.role == role_filter)
+        
+        # Apply sorting
+        if sort_by == 'name':
+            order_col = User.first_name
+        elif sort_by == 'email':
+            order_col = User.email
+        elif sort_by == 'last_login':
+            order_col = User.last_login
+        elif sort_by == 'created_at':
+            order_col = User.created_at
+        else:
+            order_col = User.created_at
+        
+        if sort_order == 'desc':
+            order_col = order_col.desc()
+        
+        query = query.order_by(order_col)
+        
+        # Paginate
+        try:
+            users = query.paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+        except Exception as e:
+            current_app.logger.error(f"Error paginating users: {str(e)}")
+            users = None
+        
+        # Get statistics with error handling
+        stats = {
+            'total_users': 0,
+            'active_users': 0,
+            'admin_users': 0,
+            'digid_users': 0,
+            'online_users': 0,
+            'inactive_users': 0
+        }
+        
+        try:
+            stats['total_users'] = User.query.count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting total users: {str(e)}")
+        
+        try:
+            stats['active_users'] = User.query.filter(User.is_active == True).count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting active users: {str(e)}")
+        
+        try:
+            stats['admin_users'] = User.query.filter(User.role == 'admin').count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting admin users: {str(e)}")
+        
+        try:
+            stats['digid_users'] = User.query.filter(User.created_via_digid == True).count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting digid users: {str(e)}")
+        
+        try:
+            online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+            stats['online_users'] = User.query.filter(User.last_login >= online_threshold).count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting online users: {str(e)}")
+        
+        stats['inactive_users'] = stats['total_users'] - stats['active_users']
+        
+        return render_template('admin/users_list.html',
+                             users=users,
+                             stats=stats,
+                             search=search,
+                             status_filter=status_filter,
+                             role_filter=role_filter,
+                             sort_by=sort_by,
+                             sort_order=sort_order)
     
-    # Apply status filter
-    if status_filter != 'all':
-        if status_filter == 'active':
-            query = query.filter(User.is_active == True)
-        elif status_filter == 'inactive':
-            query = query.filter(User.is_active == False)
-        elif status_filter == 'email_verified':
-            query = query.filter(User.email_confirmed == True)
-        elif status_filter == 'email_unverified':
-            query = query.filter(User.email_confirmed == False)
-        elif status_filter == 'digid':
-            query = query.filter(User.created_via_digid == True)
-    
-    # Apply role filter
-    if role_filter != 'all':
-        query = query.filter(User.role == role_filter)
-    
-    # Apply sorting
-    if sort_by == 'name':
-        order_col = User.first_name
-    elif sort_by == 'email':
-        order_col = User.email
-    elif sort_by == 'last_login':
-        order_col = User.last_login
-    elif sort_by == 'created_at':
-        order_col = User.created_at
-    else:
-        order_col = User.created_at
-    
-    if sort_order == 'desc':
-        order_col = order_col.desc()
-    
-    query = query.order_by(order_col)
-    
-    # Paginate
-    users = query.paginate(
-        page=page, per_page=per_page, error_out=False
-    )
-    
-    # Get statistics
-    total_users = User.query.count()
-    active_users = User.query.filter(User.is_active == True).count()
-    admin_users = User.query.filter(User.role == 'admin').count()
-    digid_users = User.query.filter(User.created_via_digid == True).count()
-    
-    # Get online users (active in last 5 minutes)
-    online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
-    online_users = User.query.filter(User.last_login >= online_threshold).count()
-    
-    stats = {
-        'total_users': total_users,
-        'active_users': active_users,
-        'admin_users': admin_users,
-        'digid_users': digid_users,
-        'online_users': online_users,
-        'inactive_users': total_users - active_users
-    }
-    
-    return render_template('admin/users_list.html',
-                         users=users,
-                         stats=stats,
-                         search=search,
-                         status_filter=status_filter,
-                         role_filter=role_filter,
-                         sort_by=sort_by,
-                         sort_order=sort_order)
+    except Exception as e:
+        current_app.logger.error(f"Error in users_list route: {str(e)}")
+        flash(f'Ошибка загрузки списка пользователей: {str(e)}', 'error')
+        
+        # Return empty data in case of error
+        return render_template('admin/users_list.html',
+                             users=None,
+                             stats={
+                                 'total_users': 0,
+                                 'active_users': 0,
+                                 'admin_users': 0,
+                                 'digid_users': 0,
+                                 'online_users': 0,
+                                 'inactive_users': 0
+                             },
+                             search='',
+                             status_filter='all',
+                             role_filter='all',
+                             sort_by='created_at',
+                             sort_order='desc')
 
 @admin_bp.route('/users/<int:user_id>')
 @login_required
@@ -2291,108 +2358,166 @@ def online_users():
 @admin_required
 def visitors_analytics():
     """Detailed visitor analytics"""
-    # Time filters
-    time_filter = request.args.get('timeframe', '24h')
-    
-    if time_filter == '24h':
-        start_time = datetime.now(timezone.utc) - timedelta(hours=24)
-    elif time_filter == '7d':
-        start_time = datetime.now(timezone.utc) - timedelta(days=7)
-    elif time_filter == '30d':
-        start_time = datetime.now(timezone.utc) - timedelta(days=30)
-    else:
-        start_time = datetime.now(timezone.utc) - timedelta(hours=24)
-    
-    # Get visit statistics
-    total_visits = WebsiteVisit.query.filter(
-        WebsiteVisit.created_at >= start_time
-    ).count()
-    
-    unique_visitors = db.session.query(WebsiteVisit.ip_address).filter(
-        WebsiteVisit.created_at >= start_time
-    ).distinct().count()
-    
-    registered_user_visits = WebsiteVisit.query.filter(
-        WebsiteVisit.created_at >= start_time,
-        WebsiteVisit.user_id.isnot(None)
-    ).count()
-    
-    # Popular pages
-    popular_pages = db.session.query(
-        WebsiteVisit.page_url,
-        func.count(WebsiteVisit.id).label('visits'),
-        func.count(func.distinct(WebsiteVisit.ip_address)).label('unique_visitors')
-    ).filter(
-        WebsiteVisit.created_at >= start_time
-    ).group_by(WebsiteVisit.page_url).order_by(
-        func.count(WebsiteVisit.id).desc()
-    ).limit(10).all()
-    
-    # Geographic distribution
-    countries = db.session.query(
-        WebsiteVisit.country,
-        func.count(WebsiteVisit.id).label('visits')
-    ).filter(
-        WebsiteVisit.created_at >= start_time,
-        WebsiteVisit.country.isnot(None)
-    ).group_by(WebsiteVisit.country).order_by(
-        func.count(WebsiteVisit.id).desc()
-    ).limit(10).all()
-    
-    # Browser and device stats
-    browsers = db.session.query(
-        WebsiteVisit.browser,
-        func.count(WebsiteVisit.id).label('visits')
-    ).filter(
-        WebsiteVisit.created_at >= start_time,
-        WebsiteVisit.browser.isnot(None)
-    ).group_by(WebsiteVisit.browser).order_by(
-        func.count(WebsiteVisit.id).desc()
-    ).limit(5).all()
-    
-    devices = db.session.query(
-        WebsiteVisit.device_type,
-        func.count(WebsiteVisit.id).label('visits')
-    ).filter(
-        WebsiteVisit.created_at >= start_time,
-        WebsiteVisit.device_type.isnot(None)
-    ).group_by(WebsiteVisit.device_type).order_by(
-        func.count(WebsiteVisit.id).desc()
-    ).all()
-    
-    # Hourly distribution (for 24h)
-    hourly_stats = []
-    if time_filter == '24h':
-        for hour in range(24):
-            hour_start = datetime.now(timezone.utc).replace(hour=hour, minute=0, second=0, microsecond=0)
-            hour_end = hour_start + timedelta(hours=1)
-            
-            hour_visits = WebsiteVisit.query.filter(
-                WebsiteVisit.created_at >= hour_start,
-                WebsiteVisit.created_at < hour_end
+    try:
+        # Time filters
+        time_filter = request.args.get('timeframe', '24h')
+        
+        if time_filter == '24h':
+            start_time = datetime.now(timezone.utc) - timedelta(hours=24)
+        elif time_filter == '7d':
+            start_time = datetime.now(timezone.utc) - timedelta(days=7)
+        elif time_filter == '30d':
+            start_time = datetime.now(timezone.utc) - timedelta(days=30)
+        else:
+            start_time = datetime.now(timezone.utc) - timedelta(hours=24)
+        
+        # Initialize default values
+        total_visits = 0
+        unique_visitors = 0
+        registered_user_visits = 0
+        popular_pages = []
+        countries = []
+        
+        # Get visit statistics with error handling
+        try:
+            total_visits = WebsiteVisit.query.filter(
+                WebsiteVisit.created_at >= start_time
             ).count()
-            
-            hourly_stats.append({
-                'hour': hour,
-                'visits': hour_visits
-            })
+        except Exception as e:
+            current_app.logger.error(f"Error counting total visits: {str(e)}")
+        
+        try:
+            unique_visitors = db.session.query(WebsiteVisit.ip_address).filter(
+                WebsiteVisit.created_at >= start_time
+            ).distinct().count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting unique visitors: {str(e)}")
+        
+        try:
+            registered_user_visits = WebsiteVisit.query.filter(
+                WebsiteVisit.created_at >= start_time,
+                WebsiteVisit.user_id.isnot(None)
+            ).count()
+        except Exception as e:
+            current_app.logger.error(f"Error counting registered user visits: {str(e)}")
+        
+        # Popular pages with error handling
+        try:
+            popular_pages = db.session.query(
+                WebsiteVisit.page_url,
+                func.count(WebsiteVisit.id).label('visits'),
+                func.count(func.distinct(WebsiteVisit.ip_address)).label('unique_visitors')
+            ).filter(
+                WebsiteVisit.created_at >= start_time
+            ).group_by(WebsiteVisit.page_url).order_by(
+                func.count(WebsiteVisit.id).desc()
+            ).limit(10).all()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching popular pages: {str(e)}")
+            popular_pages = []
+        
+        # Geographic distribution with error handling
+        try:
+            countries = db.session.query(
+                WebsiteVisit.country,
+                func.count(WebsiteVisit.id).label('visits')
+            ).filter(
+                WebsiteVisit.created_at >= start_time,
+                WebsiteVisit.country.isnot(None)
+            ).group_by(WebsiteVisit.country).order_by(
+                func.count(WebsiteVisit.id).desc()
+            ).limit(10).all()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching countries: {str(e)}")
+            countries = []
+        
+        # Browser and device stats with error handling
+        browsers = []
+        devices = []
+        hourly_stats = []
+        
+        try:
+            browsers = db.session.query(
+                WebsiteVisit.browser,
+                func.count(WebsiteVisit.id).label('visits')
+            ).filter(
+                WebsiteVisit.created_at >= start_time,
+                WebsiteVisit.browser.isnot(None)
+            ).group_by(WebsiteVisit.browser).order_by(
+                func.count(WebsiteVisit.id).desc()
+            ).limit(5).all()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching browsers: {str(e)}")
+        
+        try:
+            devices = db.session.query(
+                WebsiteVisit.device_type,
+                func.count(WebsiteVisit.id).label('visits')
+            ).filter(
+                WebsiteVisit.created_at >= start_time,
+                WebsiteVisit.device_type.isnot(None)
+            ).group_by(WebsiteVisit.device_type).order_by(
+                func.count(WebsiteVisit.id).desc()
+            ).all()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching devices: {str(e)}")
+        
+        # Hourly distribution (for 24h) with error handling
+        if time_filter == '24h':
+            try:
+                for hour in range(24):
+                    hour_start = datetime.now(timezone.utc).replace(hour=hour, minute=0, second=0, microsecond=0)
+                    hour_end = hour_start + timedelta(hours=1)
+                    
+                    hour_visits = WebsiteVisit.query.filter(
+                        WebsiteVisit.created_at >= hour_start,
+                        WebsiteVisit.created_at < hour_end
+                    ).count()
+                    
+                    hourly_stats.append({
+                        'hour': hour,
+                        'visits': hour_visits
+                    })
+            except Exception as e:
+                current_app.logger.error(f"Error fetching hourly stats: {str(e)}")
+                hourly_stats = []
+        
+        stats = {
+            'total_visits': total_visits,
+            'unique_visitors': unique_visitors,
+            'registered_user_visits': registered_user_visits,
+            'bounce_rate': 0,  # TODO: Calculate based on session data
+            'avg_session_duration': 0  # TODO: Calculate from session data
+        }
+        
+        return render_template('admin/visitors_analytics.html',
+                             stats=stats,
+                             popular_pages=popular_pages,
+                             countries=countries,
+                             browsers=browsers,
+                             devices=devices,
+                             hourly_stats=hourly_stats,
+                             time_filter=time_filter)
     
-    stats = {
-        'total_visits': total_visits,
-        'unique_visitors': unique_visitors,
-        'registered_user_visits': registered_user_visits,
-        'bounce_rate': 0,  # TODO: Calculate based on session data
-        'avg_session_duration': 0  # TODO: Calculate from session data
-    }
-    
-    return render_template('admin/visitors_analytics.html',
-                         stats=stats,
-                         popular_pages=popular_pages,
-                         countries=countries,
-                         browsers=browsers,
-                         devices=devices,
-                         hourly_stats=hourly_stats,
-                         time_filter=time_filter)
+    except Exception as e:
+        current_app.logger.error(f"Error in visitors_analytics route: {str(e)}")
+        flash(f'Ошибка загрузки аналитики посетителей: {str(e)}', 'error')
+        
+        # Return empty data in case of error
+        return render_template('admin/visitors_analytics.html',
+                             stats={
+                                 'total_visits': 0,
+                                 'unique_visitors': 0,
+                                 'registered_user_visits': 0,
+                                 'bounce_rate': 0,
+                                 'avg_session_duration': 0
+                             },
+                             popular_pages=[],
+                             countries=[],
+                             browsers=[],
+                             devices=[],
+                             hourly_stats=[],
+                             time_filter='24h')
 
 # ========================================
 # USER SUPPORT SYSTEM
