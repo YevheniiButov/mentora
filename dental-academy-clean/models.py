@@ -5038,3 +5038,325 @@ class AnalyticsEvent(db.Model):
             'city': self.city,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+# ========================================
+# ADMINISTRATIVE TOOLS MODELS
+# ========================================
+
+class AdminAuditLog(db.Model):
+    """Audit log for all admin actions"""
+    __tablename__ = 'admin_audit_log'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    admin_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Action details
+    action = db.Column(db.String(100), nullable=False)  # 'user_created', 'bulk_delete', 'data_export'
+    target_type = db.Column(db.String(50), nullable=False)  # 'user', 'contact', 'profession', 'system'
+    target_id = db.Column(db.Integer, nullable=True)  # ID of affected record
+    
+    # Details
+    details = db.Column(db.Text, nullable=True)  # JSON string with action details
+    old_values = db.Column(db.Text, nullable=True)  # JSON string with old values
+    new_values = db.Column(db.Text, nullable=True)  # JSON string with new values
+    
+    # Context
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)
+    request_url = db.Column(db.String(500), nullable=True)
+    request_method = db.Column(db.String(10), nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    # Relationships
+    admin_user = db.relationship('User', backref='admin_audit_logs')
+    
+    def __repr__(self):
+        return f'<AdminAuditLog {self.action}: {self.target_type}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'admin_user_id': self.admin_user_id,
+            'admin_email': self.admin_user.email if self.admin_user else None,
+            'action': self.action,
+            'target_type': self.target_type,
+            'target_id': self.target_id,
+            'details': self.details,
+            'old_values': self.old_values,
+            'new_values': self.new_values,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'request_url': self.request_url,
+            'request_method': self.request_method,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class SystemHealthLog(db.Model):
+    """System health monitoring log"""
+    __tablename__ = 'system_health_log'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Health metrics
+    cpu_usage = db.Column(db.Float, nullable=True)  # CPU usage percentage
+    memory_usage = db.Column(db.Float, nullable=True)  # Memory usage percentage
+    disk_usage = db.Column(db.Float, nullable=True)  # Disk usage percentage
+    database_connections = db.Column(db.Integer, nullable=True)  # Active DB connections
+    response_time = db.Column(db.Float, nullable=True)  # Average response time in ms
+    
+    # Application metrics
+    active_users = db.Column(db.Integer, nullable=True)
+    total_requests = db.Column(db.Integer, nullable=True)
+    error_count = db.Column(db.Integer, nullable=True)
+    cache_hit_rate = db.Column(db.Float, nullable=True)
+    
+    # Status
+    status = db.Column(db.String(20), default='healthy')  # healthy, warning, critical
+    alerts = db.Column(db.Text, nullable=True)  # JSON string with alerts
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    def __repr__(self):
+        return f'<SystemHealthLog {self.status}: {self.created_at}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'cpu_usage': self.cpu_usage,
+            'memory_usage': self.memory_usage,
+            'disk_usage': self.disk_usage,
+            'database_connections': self.database_connections,
+            'response_time': self.response_time,
+            'active_users': self.active_users,
+            'total_requests': self.total_requests,
+            'error_count': self.error_count,
+            'cache_hit_rate': self.cache_hit_rate,
+            'status': self.status,
+            'alerts': self.alerts,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class DatabaseBackup(db.Model):
+    """Database backup records"""
+    __tablename__ = 'database_backup'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    admin_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Backup details
+    backup_name = db.Column(db.String(200), nullable=False)
+    backup_type = db.Column(db.String(50), nullable=False)  # 'manual', 'scheduled', 'before_deploy'
+    file_path = db.Column(db.String(500), nullable=True)  # Path to backup file
+    file_size = db.Column(db.BigInteger, nullable=True)  # File size in bytes
+    
+    # Backup status
+    status = db.Column(db.String(20), default='pending')  # pending, completed, failed
+    error_message = db.Column(db.Text, nullable=True)
+    
+    # Backup metadata
+    tables_count = db.Column(db.Integer, nullable=True)
+    records_count = db.Column(db.Integer, nullable=True)
+    backup_duration = db.Column(db.Float, nullable=True)  # Duration in seconds
+    
+    # Timestamps
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    expires_at = db.Column(db.DateTime, nullable=True)  # When backup should be deleted
+    
+    # Relationships
+    admin_user = db.relationship('User', backref='database_backups')
+    
+    def __repr__(self):
+        return f'<DatabaseBackup {self.backup_name}: {self.status}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'admin_user_id': self.admin_user_id,
+            'admin_email': self.admin_user.email if self.admin_user else None,
+            'backup_name': self.backup_name,
+            'backup_type': self.backup_type,
+            'file_path': self.file_path,
+            'file_size': self.file_size,
+            'status': self.status,
+            'error_message': self.error_message,
+            'tables_count': self.tables_count,
+            'records_count': self.records_count,
+            'backup_duration': self.backup_duration,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None
+        }
+
+class EmailTemplate(db.Model):
+    """Email templates for communication"""
+    __tablename__ = 'email_template'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Template details
+    name = db.Column(db.String(100), nullable=False)
+    subject = db.Column(db.String(200), nullable=False)
+    template_type = db.Column(db.String(50), nullable=False)  # 'welcome', 'reminder', 'notification', 'marketing'
+    
+    # Content
+    html_content = db.Column(db.Text, nullable=False)
+    text_content = db.Column(db.Text, nullable=True)
+    
+    # Template variables (JSON)
+    variables = db.Column(db.Text, nullable=True)  # Available template variables
+    
+    # Status
+    is_active = db.Column(db.Boolean, default=True)
+    is_system = db.Column(db.Boolean, default=False)  # System templates cannot be deleted
+    
+    # Usage statistics
+    sent_count = db.Column(db.Integer, default=0)
+    last_sent_at = db.Column(db.DateTime, nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<EmailTemplate {self.name}: {self.template_type}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'subject': self.subject,
+            'template_type': self.template_type,
+            'html_content': self.html_content,
+            'text_content': self.text_content,
+            'variables': self.variables,
+            'is_active': self.is_active,
+            'is_system': self.is_system,
+            'sent_count': self.sent_count,
+            'last_sent_at': self.last_sent_at.isoformat() if self.last_sent_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class EmailCampaign(db.Model):
+    """Email marketing campaigns"""
+    __tablename__ = 'email_campaign'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    admin_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Campaign details
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    template_id = db.Column(db.Integer, db.ForeignKey('email_template.id'), nullable=False)
+    
+    # Target audience
+    target_criteria = db.Column(db.Text, nullable=True)  # JSON with filter criteria
+    target_count = db.Column(db.Integer, nullable=True)  # Number of recipients
+    
+    # Campaign status
+    status = db.Column(db.String(20), default='draft')  # draft, scheduled, sending, sent, failed
+    scheduled_at = db.Column(db.DateTime, nullable=True)
+    started_at = db.Column(db.DateTime, nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    
+    # Results
+    sent_count = db.Column(db.Integer, default=0)
+    delivered_count = db.Column(db.Integer, default=0)
+    opened_count = db.Column(db.Integer, default=0)
+    clicked_count = db.Column(db.Integer, default=0)
+    bounced_count = db.Column(db.Integer, default=0)
+    unsubscribed_count = db.Column(db.Integer, default=0)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    admin_user = db.relationship('User', backref='email_campaigns')
+    template = db.relationship('EmailTemplate', backref='campaigns')
+    
+    def __repr__(self):
+        return f'<EmailCampaign {self.name}: {self.status}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'admin_user_id': self.admin_user_id,
+            'admin_email': self.admin_user.email if self.admin_user else None,
+            'name': self.name,
+            'description': self.description,
+            'template_id': self.template_id,
+            'template_name': self.template.name if self.template else None,
+            'target_criteria': self.target_criteria,
+            'target_count': self.target_count,
+            'status': self.status,
+            'scheduled_at': self.scheduled_at.isoformat() if self.scheduled_at else None,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'sent_count': self.sent_count,
+            'delivered_count': self.delivered_count,
+            'opened_count': self.opened_count,
+            'clicked_count': self.clicked_count,
+            'bounced_count': self.bounced_count,
+            'unsubscribed_count': self.unsubscribed_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class SystemNotification(db.Model):
+    """System notifications and alerts"""
+    __tablename__ = 'system_notification'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Notification details
+    title = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    notification_type = db.Column(db.String(50), nullable=False)  # 'info', 'warning', 'error', 'success'
+    priority = db.Column(db.String(20), default='normal')  # low, normal, high, critical
+    
+    # Target
+    target_users = db.Column(db.Text, nullable=True)  # JSON with user IDs or 'all'
+    target_roles = db.Column(db.Text, nullable=True)  # JSON with roles
+    
+    # Status
+    is_read = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Actions
+    action_url = db.Column(db.String(500), nullable=True)
+    action_text = db.Column(db.String(100), nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    
+    def __repr__(self):
+        return f'<SystemNotification {self.title}: {self.notification_type}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'message': self.message,
+            'notification_type': self.notification_type,
+            'priority': self.priority,
+            'target_users': self.target_users,
+            'target_roles': self.target_roles,
+            'is_read': self.is_read,
+            'is_active': self.is_active,
+            'action_url': self.action_url,
+            'action_text': self.action_text,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None
+        }

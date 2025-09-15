@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
-from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent
+from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, EmailCampaign, SystemNotification
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_
@@ -3433,4 +3433,359 @@ def analytics_export():
     
     except Exception as e:
         current_app.logger.error(f"Error in analytics export: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# ========================================
+# ADMINISTRATIVE TOOLS ROUTES
+# ========================================
+
+@admin_bp.route('/database')
+@login_required
+@admin_required
+def database_management():
+    """Database management dashboard"""
+    try:
+        # Get recent backups
+        recent_backups = DatabaseBackup.query.order_by(
+            DatabaseBackup.started_at.desc()
+        ).limit(10).all()
+        
+        # Get database statistics
+        total_users = User.query.count()
+        total_contacts = Contact.query.count()
+        total_professions = Profession.query.count()
+        total_analytics_events = AnalyticsEvent.query.count()
+        
+        # Get backup statistics
+        total_backups = DatabaseBackup.query.count()
+        successful_backups = DatabaseBackup.query.filter_by(status='completed').count()
+        failed_backups = DatabaseBackup.query.filter_by(status='failed').count()
+        
+        return render_template('admin/database_management.html',
+                             recent_backups=recent_backups,
+                             total_users=total_users,
+                             total_contacts=total_contacts,
+                             total_professions=total_professions,
+                             total_analytics_events=total_analytics_events,
+                             total_backups=total_backups,
+                             successful_backups=successful_backups,
+                             failed_backups=failed_backups)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in database management: {str(e)}")
+        flash(f'Ошибка загрузки управления БД: {str(e)}', 'error')
+        return render_template('admin/database_management.html',
+                             recent_backups=[], total_users=0, total_contacts=0,
+                             total_professions=0, total_analytics_events=0,
+                             total_backups=0, successful_backups=0, failed_backups=0)
+
+@admin_bp.route('/database/backup', methods=['POST'])
+@login_required
+@admin_required
+def create_database_backup():
+    """Create a manual database backup"""
+    try:
+        backup_name = f"manual_backup_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        
+        # Create backup record
+        backup = DatabaseBackup(
+            admin_user_id=current_user.id,
+            backup_name=backup_name,
+            backup_type='manual',
+            status='pending'
+        )
+        
+        db.session.add(backup)
+        db.session.commit()
+        
+        # Log admin action
+        audit_log = AdminAuditLog(
+            admin_user_id=current_user.id,
+            action='database_backup_created',
+            target_type='system',
+            details=json.dumps({'backup_name': backup_name}),
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent'),
+            request_url=request.url,
+            request_method=request.method
+        )
+        db.session.add(audit_log)
+        db.session.commit()
+        
+        flash(f'Резервная копия "{backup_name}" создана успешно', 'success')
+        return jsonify({
+            'status': 'success',
+            'message': 'Backup created successfully',
+            'backup_id': backup.id
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Error creating database backup: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/system')
+@login_required
+@admin_required
+def system_health():
+    """System health monitoring dashboard"""
+    try:
+        # Get recent health logs
+        recent_logs = SystemHealthLog.query.order_by(
+            SystemHealthLog.created_at.desc()
+        ).limit(20).all()
+        
+        # Get current system status
+        latest_log = SystemHealthLog.query.order_by(
+            SystemHealthLog.created_at.desc()
+        ).first()
+        
+        # Get system statistics
+        total_logs = SystemHealthLog.query.count()
+        healthy_logs = SystemHealthLog.query.filter_by(status='healthy').count()
+        warning_logs = SystemHealthLog.query.filter_by(status='warning').count()
+        critical_logs = SystemHealthLog.query.filter_by(status='critical').count()
+        
+        # Get recent notifications
+        recent_notifications = SystemNotification.query.filter_by(
+            is_active=True
+        ).order_by(SystemNotification.created_at.desc()).limit(10).all()
+        
+        return render_template('admin/system_health.html',
+                             recent_logs=recent_logs,
+                             latest_log=latest_log,
+                             total_logs=total_logs,
+                             healthy_logs=healthy_logs,
+                             warning_logs=warning_logs,
+                             critical_logs=critical_logs,
+                             recent_notifications=recent_notifications)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in system health: {str(e)}")
+        flash(f'Ошибка загрузки мониторинга системы: {str(e)}', 'error')
+        return render_template('admin/system_health.html',
+                             recent_logs=[], latest_log=None,
+                             total_logs=0, healthy_logs=0, warning_logs=0, critical_logs=0,
+                             recent_notifications=[])
+
+@admin_bp.route('/communication')
+@login_required
+@admin_required
+def communication_hub():
+    """Communication hub dashboard"""
+    try:
+        # Get email templates
+        email_templates = EmailTemplate.query.filter_by(is_active=True).all()
+        
+        # Get email campaigns
+        email_campaigns = EmailCampaign.query.order_by(
+            EmailCampaign.created_at.desc()
+        ).limit(10).all()
+        
+        # Get template statistics
+        total_templates = EmailTemplate.query.count()
+        active_templates = EmailTemplate.query.filter_by(is_active=True).count()
+        system_templates = EmailTemplate.query.filter_by(is_system=True).count()
+        
+        # Get campaign statistics
+        total_campaigns = EmailCampaign.query.count()
+        draft_campaigns = EmailCampaign.query.filter_by(status='draft').count()
+        sent_campaigns = EmailCampaign.query.filter_by(status='sent').count()
+        
+        return render_template('admin/communication_hub.html',
+                             email_templates=email_templates,
+                             email_campaigns=email_campaigns,
+                             total_templates=total_templates,
+                             active_templates=active_templates,
+                             system_templates=system_templates,
+                             total_campaigns=total_campaigns,
+                             draft_campaigns=draft_campaigns,
+                             sent_campaigns=sent_campaigns)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in communication hub: {str(e)}")
+        flash(f'Ошибка загрузки коммуникационного центра: {str(e)}', 'error')
+        return render_template('admin/communication_hub.html',
+                             email_templates=[], email_campaigns=[],
+                             total_templates=0, active_templates=0, system_templates=0,
+                             total_campaigns=0, draft_campaigns=0, sent_campaigns=0)
+
+@admin_bp.route('/audit')
+@login_required
+@admin_required
+def audit_logs():
+    """Admin audit logs page"""
+    try:
+        # Get filter parameters
+        action_filter = request.args.get('action', 'all')
+        target_filter = request.args.get('target', 'all')
+        admin_filter = request.args.get('admin', 'all')
+        date_from = request.args.get('date_from', '')
+        date_to = request.args.get('date_to', '')
+        
+        # Build query
+        query = AdminAuditLog.query
+        
+        if action_filter != 'all':
+            query = query.filter_by(action=action_filter)
+        
+        if target_filter != 'all':
+            query = query.filter_by(target_type=target_filter)
+        
+        if admin_filter != 'all':
+            query = query.filter_by(admin_user_id=admin_filter)
+        
+        if date_from:
+            try:
+                date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
+                query = query.filter(AdminAuditLog.created_at >= date_from_obj)
+            except ValueError:
+                pass
+        
+        if date_to:
+            try:
+                date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
+                query = query.filter(AdminAuditLog.created_at <= date_to_obj)
+            except ValueError:
+                pass
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = 50
+        audit_logs = query.order_by(AdminAuditLog.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Get filter options
+        actions = db.session.query(AdminAuditLog.action).distinct().all()
+        actions = [action[0] for action in actions]
+        
+        targets = db.session.query(AdminAuditLog.target_type).distinct().all()
+        targets = [target[0] for target in targets]
+        
+        admins = db.session.query(User.id, User.email).filter_by(role='admin').all()
+        
+        return render_template('admin/audit_logs.html',
+                             audit_logs=audit_logs,
+                             actions=actions,
+                             targets=targets,
+                             admins=admins,
+                             action_filter=action_filter,
+                             target_filter=target_filter,
+                             admin_filter=admin_filter,
+                             date_from=date_from,
+                             date_to=date_to)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in audit logs: {str(e)}")
+        flash(f'Ошибка загрузки логов аудита: {str(e)}', 'error')
+        return render_template('admin/audit_logs.html',
+                             audit_logs=None, actions=[], targets=[], admins=[],
+                             action_filter='all', target_filter='all', admin_filter='all',
+                             date_from='', date_to='')
+
+@admin_bp.route('/notifications')
+@login_required
+@admin_required
+def system_notifications():
+    """System notifications management"""
+    try:
+        # Get filter parameters
+        type_filter = request.args.get('type', 'all')
+        priority_filter = request.args.get('priority', 'all')
+        status_filter = request.args.get('status', 'all')
+        
+        # Build query
+        query = SystemNotification.query
+        
+        if type_filter != 'all':
+            query = query.filter_by(notification_type=type_filter)
+        
+        if priority_filter != 'all':
+            query = query.filter_by(priority=priority_filter)
+        
+        if status_filter == 'active':
+            query = query.filter_by(is_active=True)
+        elif status_filter == 'inactive':
+            query = query.filter_by(is_active=False)
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = 25
+        notifications = query.order_by(SystemNotification.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Get statistics
+        total_notifications = SystemNotification.query.count()
+        active_notifications = SystemNotification.query.filter_by(is_active=True).count()
+        unread_notifications = SystemNotification.query.filter_by(is_read=False).count()
+        
+        return render_template('admin/system_notifications.html',
+                             notifications=notifications,
+                             total_notifications=total_notifications,
+                             active_notifications=active_notifications,
+                             unread_notifications=unread_notifications,
+                             type_filter=type_filter,
+                             priority_filter=priority_filter,
+                             status_filter=status_filter)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in system notifications: {str(e)}")
+        flash(f'Ошибка загрузки уведомлений: {str(e)}', 'error')
+        return render_template('admin/system_notifications.html',
+                             notifications=None, total_notifications=0,
+                             active_notifications=0, unread_notifications=0,
+                             type_filter='all', priority_filter='all', status_filter='all')
+
+@admin_bp.route('/notifications/create', methods=['POST'])
+@login_required
+@admin_required
+def create_notification():
+    """Create a new system notification"""
+    try:
+        data = request.get_json()
+        
+        notification = SystemNotification(
+            title=data.get('title'),
+            message=data.get('message'),
+            notification_type=data.get('type', 'info'),
+            priority=data.get('priority', 'normal'),
+            target_users=data.get('target_users'),
+            target_roles=data.get('target_roles'),
+            action_url=data.get('action_url'),
+            action_text=data.get('action_text')
+        )
+        
+        db.session.add(notification)
+        db.session.commit()
+        
+        # Log admin action
+        audit_log = AdminAuditLog(
+            admin_user_id=current_user.id,
+            action='notification_created',
+            target_type='system',
+            target_id=notification.id,
+            details=json.dumps({
+                'title': notification.title,
+                'type': notification.notification_type,
+                'priority': notification.priority
+            }),
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent'),
+            request_url=request.url,
+            request_method=request.method
+        )
+        db.session.add(audit_log)
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Notification created successfully',
+            'notification_id': notification.id
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Error creating notification: {str(e)}")
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500 

@@ -356,6 +356,40 @@
                         </li>
                         
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                            <span>Административные инструменты</span>
+                        </h6>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'database' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.database_management') }}">
+                                <i class="bi bi-database"></i> Управление БД
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'system_health' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.system_health') }}">
+                                <i class="bi bi-heart-pulse"></i> Мониторинг системы
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'communication' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.communication_hub') }}">
+                                <i class="bi bi-chat-dots"></i> Коммуникации
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'audit' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.audit_logs') }}">
+                                <i class="bi bi-shield-check"></i> Логи аудита
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'notifications' in request.endpoint %}active{% endif %}" 
+                               href="{{ url_for('admin.system_notifications') }}">
+                                <i class="bi bi-bell"></i> Уведомления
+                            </a>
+                        </li>
+                        
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
                             <span>Система</span>
                         </h6>
                         <li class="nav-item">
@@ -368,11 +402,6 @@
                             <a class="nav-link {% if 'settings' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.system_settings') }}">
                                 <i class="bi bi-gear"></i> Настройки
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('admin.system_settings') }}">
-                                <i class="bi bi-file-text"></i> Система
                             </a>
                         </li>
                     </ul>

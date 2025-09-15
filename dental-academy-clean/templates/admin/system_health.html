@@ -1,0 +1,473 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Мониторинг системы - Админ панель{% endblock %}
+
+{% block extra_css %}
+<style>
+.health-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-left: 5px solid #667eea;
+}
+
+.status-card {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.status-card.warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #333;
+}
+
+.status-card.critical {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.status-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.status-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.health-log {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #28a745;
+}
+
+.health-log.warning {
+    border-left-color: #ffc107;
+}
+
+.health-log.critical {
+    border-left-color: #dc3545;
+}
+
+.log-header {
+    display: flex;
+    justify-content-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.log-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.log-status.healthy {
+    background: #d4edda;
+    color: #155724;
+}
+
+.log-status.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.log-status.critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.log-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.log-metric {
+    text-align: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.log-metric-value {
+    font-weight: bold;
+    color: #667eea;
+}
+
+.log-metric-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 2px;
+}
+
+.notification-card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #667eea;
+}
+
+.notification-header {
+    display: flex;
+    justify-content-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #333;
+}
+
+.notification-type {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.notification-type.info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.notification-type.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.notification-type.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.notification-type.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.warning {
+    background: linear-gradient(90deg, #ffc107, #e0a800);
+}
+
+.progress-fill.critical {
+    background: linear-gradient(90deg, #dc3545, #c82333);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">⚡ Мониторинг системы</h1>
+            <p class="text-muted">Отслеживание состояния сервера, производительности и уведомлений</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="refreshHealth()">
+                🔄 Обновить
+            </button>
+            <button class="btn btn-success" onclick="createNotification()">
+                📢 Создать уведомление
+            </button>
+        </div>
+    </div>
+
+    <!-- Current System Status -->
+    {% if latest_log %}
+    <div class="health-card">
+        <h3 class="mb-4">📊 Текущее состояние системы</h3>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="status-card {% if latest_log.status == 'healthy' %}{% elif latest_log.status == 'warning' %}warning{% else %}critical{% endif %}">
+                    <div class="status-value">
+                        {% if latest_log.status == 'healthy' %}✅
+                        {% elif latest_log.status == 'warning' %}⚠️
+                        {% else %}❌{% endif %}
+                    </div>
+                    <div class="status-label">{{ latest_log.status.title() }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="status-card">
+                    <div class="status-value">
+                        {% if latest_log.cpu_usage %}{{ "%.1f"|format(latest_log.cpu_usage) }}%{% else %}N/A{% endif %}
+                    </div>
+                    <div class="status-label">💻 CPU</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="status-card">
+                    <div class="status-value">
+                        {% if latest_log.memory_usage %}{{ "%.1f"|format(latest_log.memory_usage) }}%{% else %}N/A{% endif %}
+                    </div>
+                    <div class="status-label">🧠 Память</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="status-card">
+                    <div class="status-value">
+                        {% if latest_log.disk_usage %}{{ "%.1f"|format(latest_log.disk_usage) }}%{% else %}N/A{% endif %}
+                    </div>
+                    <div class="status-label">💾 Диск</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- System Statistics -->
+    <div class="stats-grid">
+        <div class="status-card">
+            <div class="status-value">{{ total_logs }}</div>
+            <div class="status-label">📊 Всего записей</div>
+        </div>
+        <div class="status-card">
+            <div class="status-value">{{ healthy_logs }}</div>
+            <div class="status-label">✅ Здоровые</div>
+        </div>
+        <div class="status-card warning">
+            <div class="status-value">{{ warning_logs }}</div>
+            <div class="status-label">⚠️ Предупреждения</div>
+        </div>
+        <div class="status-card critical">
+            <div class="status-value">{{ critical_logs }}</div>
+            <div class="status-label">❌ Критические</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Health Logs -->
+        <div class="col-lg-8">
+            <div class="health-card">
+                <h3 class="mb-4">📈 История состояния системы</h3>
+                
+                {% if recent_logs %}
+                    {% for log in recent_logs %}
+                    <div class="health-log {{ log.status }}">
+                        <div class="log-header">
+                            <div class="log-status {{ log.status }}">
+                                {% if log.status == 'healthy' %}✅ Здорово
+                                {% elif log.status == 'warning' %}⚠️ Предупреждение
+                                {% elif log.status == 'critical' %}❌ Критично
+                                {% else %}{{ log.status }}{% endif %}
+                            </div>
+                            <div class="text-muted small">
+                                {{ log.created_at.strftime('%d.%m.%Y %H:%M:%S') }}
+                            </div>
+                        </div>
+                        
+                        <div class="log-metrics">
+                            <div class="log-metric">
+                                <div class="log-metric-value">
+                                    {% if log.cpu_usage %}{{ "%.1f"|format(log.cpu_usage) }}%{% else %}N/A{% endif %}
+                                </div>
+                                <div class="log-metric-label">💻 CPU</div>
+                            </div>
+                            <div class="log-metric">
+                                <div class="log-metric-value">
+                                    {% if log.memory_usage %}{{ "%.1f"|format(log.memory_usage) }}%{% else %}N/A{% endif %}
+                                </div>
+                                <div class="log-metric-label">🧠 Память</div>
+                            </div>
+                            <div class="log-metric">
+                                <div class="log-metric-value">
+                                    {% if log.disk_usage %}{{ "%.1f"|format(log.disk_usage) }}%{% else %}N/A{% endif %}
+                                </div>
+                                <div class="log-metric-label">💾 Диск</div>
+                            </div>
+                            <div class="log-metric">
+                                <div class="log-metric-value">
+                                    {% if log.database_connections %}{{ log.database_connections }}{% else %}N/A{% endif %}
+                                </div>
+                                <div class="log-metric-label">🔗 БД соединения</div>
+                            </div>
+                            <div class="log-metric">
+                                <div class="log-metric-value">
+                                    {% if log.response_time %}{{ "%.1f"|format(log.response_time) }}мс{% else %}N/A{% endif %}
+                                </div>
+                                <div class="log-metric-label">⚡ Время отклика</div>
+                            </div>
+                            <div class="log-metric">
+                                <div class="log-metric-value">
+                                    {% if log.active_users %}{{ log.active_users }}{% else %}N/A{% endif %}
+                                </div>
+                                <div class="log-metric-label">👥 Активные пользователи</div>
+                            </div>
+                        </div>
+                        
+                        {% if log.alerts %}
+                        <div class="mt-2">
+                            <small class="text-warning">⚠️ Предупреждения: {{ log.alerts }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-heartbeat fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Нет данных о состоянии системы</h5>
+                        <p class="text-muted">Данные мониторинга будут доступны после накопления</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Notifications -->
+        <div class="col-lg-4">
+            <div class="health-card">
+                <h3 class="mb-4">📢 Последние уведомления</h3>
+                
+                {% if recent_notifications %}
+                    {% for notification in recent_notifications %}
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <div class="notification-title">{{ notification.title }}</div>
+                            <div class="notification-type {{ notification.notification_type }}">
+                                {{ notification.notification_type }}
+                            </div>
+                        </div>
+                        
+                        <div class="notification-message">
+                            {{ notification.message[:100] }}{% if notification.message|length > 100 %}...{% endif %}
+                        </div>
+                        
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                {{ notification.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                {% if notification.priority == 'high' %} | 🔴 Высокий приоритет
+                                {% elif notification.priority == 'critical' %} | 🚨 Критический приоритет{% endif %}
+                            </small>
+                        </div>
+                        
+                        {% if notification.action_url %}
+                        <div class="mt-2">
+                            <a href="{{ notification.action_url }}" class="btn btn-sm btn-outline-primary">
+                                {{ notification.action_text or 'Перейти' }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Нет уведомлений</h5>
+                        <p class="text-muted">Системные уведомления будут отображаться здесь</p>
+                        <button class="btn btn-primary" onclick="createNotification()">
+                            📢 Создать уведомление
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function refreshHealth() {
+    location.reload();
+}
+
+function createNotification() {
+    const title = prompt('Заголовок уведомления:');
+    if (!title) return;
+    
+    const message = prompt('Сообщение:');
+    if (!message) return;
+    
+    const type = prompt('Тип (info, warning, error, success):', 'info');
+    if (!type) return;
+    
+    const priority = prompt('Приоритет (low, normal, high, critical):', 'normal');
+    if (!priority) return;
+    
+    const data = {
+        title: title,
+        message: message,
+        type: type,
+        priority: priority
+    };
+    
+    fetch('{{ url_for("admin.create_notification") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Уведомление создано успешно!');
+            location.reload();
+        } else {
+            alert('Ошибка при создании уведомления: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка при создании уведомления');
+    });
+}
+
+// Auto-refresh every 60 seconds
+setTimeout(function() {
+    location.reload();
+}, 60000);
+
+// Add smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+});
+</script>
+{% endblock %}
