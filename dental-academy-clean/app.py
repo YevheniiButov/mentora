@@ -391,6 +391,10 @@ try:
     from routes.profile_routes import profile_bp
     app.register_blueprint(profile_bp)
     
+    # Регистрация Migration blueprint
+    from routes.migration_routes import migration_bp
+    app.register_blueprint(migration_bp)
+    
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
         # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется
