@@ -234,7 +234,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="me-2">
-                                        {% if user.last_login and (user.last_login > (moment().utc() - timedelta(minutes=5))) %}
+                                        {% if user.last_login %}
                                         <i class="bi bi-circle-fill text-success" title="Онлайн"></i>
                                         {% else %}
                                         <i class="bi bi-circle text-secondary" title="Офлайн"></i>
@@ -277,7 +277,7 @@
                             <td>
                                 {% if user.last_login %}
                                 <span title="{{ user.last_login.strftime('%d.%m.%Y %H:%M:%S') }}">
-                                    {{ moment(user.last_login).fromNow() }}
+                                    {{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Никогда' }}
                                 </span>
                                 {% else %}
                                 <span class="text-muted">Никогда</span>
@@ -426,7 +426,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<!-- Moment.js removed - using simple date formatting -->
 <script>
 // Auto-refresh online users count
 function updateOnlineUsers() {

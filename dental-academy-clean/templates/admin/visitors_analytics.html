@@ -167,17 +167,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for page, visits, unique in popular_pages %}
+                            {% for page in popular_pages %}
                             <tr>
                                 <td>
                                     <code class="text-truncate d-inline-block" style="max-width: 300px;">
-                                        {{ page }}
+                                        {{ page.page_url }}
                                     </code>
                                 </td>
-                                <td>{{ "{:,}".format(visits) }}</td>
-                                <td>{{ "{:,}".format(unique) }}</td>
+                                <td>{{ "{:,}".format(page.visits) }}</td>
+                                <td>{{ "{:,}".format(page.unique_visitors) }}</td>
                                 <td>
-                                    {% set percentage = (visits / stats.total_visits * 100) if stats.total_visits > 0 else 0 %}
+                                    {% set percentage = (page.visits / stats.total_visits * 100) if stats.total_visits > 0 else 0 %}
                                     <div class="progress" style="height: 8px;">
                                         <div class="progress-bar" role="progressbar" 
                                              style="width: {{ percentage }}%"
@@ -220,15 +220,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for country, visits in countries %}
+                            {% for country in countries %}
                             <tr>
                                 <td>
-                                    <span class="flag-icon flag-icon-{{ country.lower() if country else 'unknown' }}"></span>
-                                    {{ country or 'Неизвестно' }}
+                                    <span class="flag-icon flag-icon-{{ country.country.lower() if country.country else 'unknown' }}"></span>
+                                    {{ country.country or 'Неизвестно' }}
                                 </td>
-                                <td>{{ "{:,}".format(visits) }}</td>
+                                <td>{{ "{:,}".format(country.visits) }}</td>
                                 <td>
-                                    {% set percentage = (visits / stats.total_visits * 100) if stats.total_visits > 0 else 0 %}
+                                    {% set percentage = (country.visits / stats.total_visits * 100) if stats.total_visits > 0 else 0 %}
                                     <div class="progress" style="height: 8px;">
                                         <div class="progress-bar bg-success" role="progressbar" 
                                              style="width: {{ percentage }}%"
@@ -266,25 +266,25 @@
                 <div class="table-responsive">
                     <table class="table">
                         <tbody>
-                            {% for browser, visits in browsers %}
+                            {% for browser in browsers %}
                             <tr>
                                 <td>
-                                    {% if 'Chrome' in browser %}
+                                    {% if 'Chrome' in browser.browser %}
                                     <i class="bi bi-browser-chrome text-warning"></i>
-                                    {% elif 'Firefox' in browser %}
+                                    {% elif 'Firefox' in browser.browser %}
                                     <i class="bi bi-browser-firefox text-danger"></i>
-                                    {% elif 'Safari' in browser %}
+                                    {% elif 'Safari' in browser.browser %}
                                     <i class="bi bi-browser-safari text-primary"></i>
-                                    {% elif 'Edge' in browser %}
+                                    {% elif 'Edge' in browser.browser %}
                                     <i class="bi bi-browser-edge text-info"></i>
                                     {% else %}
                                     <i class="bi bi-browser-edge text-secondary"></i>
                                     {% endif %}
-                                    {{ browser or 'Неизвестно' }}
+                                    {{ browser.browser or 'Неизвестно' }}
                                 </td>
-                                <td width="100">{{ "{:,}".format(visits) }}</td>
+                                <td width="100">{{ "{:,}".format(browser.visits) }}</td>
                                 <td width="150">
-                                    {% set percentage = (visits / stats.total_visits * 100) if stats.total_visits > 0 else 0 %}
+                                    {% set percentage = (browser.visits / stats.total_visits * 100) if stats.total_visits > 0 else 0 %}
                                     <div class="progress" style="height: 8px;">
                                         <div class="progress-bar bg-info" role="progressbar" 
                                              style="width: {{ percentage }}%">
@@ -321,22 +321,22 @@
                 <div class="table-responsive">
                     <table class="table table-sm">
                         <tbody>
-                            {% for device, visits in devices %}
+                            {% for device in devices %}
                             <tr>
                                 <td>
-                                    {% if device == 'mobile' %}
+                                    {% if device.device_type == 'mobile' %}
                                     <i class="bi bi-phone text-success"></i> Мобильные
-                                    {% elif device == 'tablet' %}
+                                    {% elif device.device_type == 'tablet' %}
                                     <i class="bi bi-tablet text-info"></i> Планшеты
-                                    {% elif device == 'desktop' %}
+                                    {% elif device.device_type == 'desktop' %}
                                     <i class="bi bi-laptop text-primary"></i> Компьютеры
                                     {% else %}
-                                    <i class="bi bi-question-circle text-secondary"></i> {{ device or 'Неизвестно' }}
+                                    <i class="bi bi-question-circle text-secondary"></i> {{ device.device_type or 'Неизвестно' }}
                                     {% endif %}
                                 </td>
-                                <td class="text-end">{{ "{:,}".format(visits) }}</td>
+                                <td class="text-end">{{ "{:,}".format(device.visits) }}</td>
                                 <td class="text-end">
-                                    {% set percentage = (visits / stats.total_visits * 100) if stats.total_visits > 0 else 0 %}
+                                    {% set percentage = (device.visits / stats.total_visits * 100) if stats.total_visits > 0 else 0 %}
                                     {{ "%.1f"|format(percentage) }}%
                                 </td>
                             </tr>

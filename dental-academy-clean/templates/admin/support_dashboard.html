@@ -142,7 +142,7 @@
                                 <td>{{ user.email }}</td>
                                 <td>
                                     <span title="{{ user.password_reset_sent_at.strftime('%d.%m.%Y %H:%M:%S') }}">
-                                        {{ moment(user.password_reset_sent_at).fromNow() }}
+                                        {{ user.password_reset_sent_at.strftime('%d.%m.%Y %H:%M') if user.password_reset_sent_at else 'Не отправлялся' }}
                                     </span>
                                 </td>
                                 <td>
@@ -210,7 +210,7 @@
                                 </td>
                                 <td>
                                     <span title="{{ user.created_at.strftime('%d.%m.%Y %H:%M:%S') }}">
-                                        {{ moment(user.created_at).fromNow() }}
+                                        {{ user.created_at.strftime('%d.%m.%Y %H:%M') }}
                                     </span>
                                 </td>
                                 <td>
@@ -311,7 +311,7 @@
                         <td>
                             {% if user.last_login %}
                             <span title="{{ user.last_login.strftime('%d.%m.%Y %H:%M:%S') }}">
-                                {{ moment(user.last_login).fromNow() }}
+                                {{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Никогда' }}
                             </span>
                             {% else %}
                             <span class="text-muted">Никогда</span>
@@ -467,7 +467,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<!-- Moment.js removed - using simple date formatting -->
 <script>
 // Refresh data
 function refreshData() {

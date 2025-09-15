@@ -2478,7 +2478,7 @@ def visitors_analytics():
         
         # Popular pages with error handling
         try:
-            popular_pages = db.session.query(
+            popular_pages_raw = db.session.query(
                 WebsiteVisit.page_url,
                 func.count(WebsiteVisit.id).label('visits'),
                 func.count(func.distinct(WebsiteVisit.ip_address)).label('unique_visitors')
@@ -2487,13 +2487,22 @@ def visitors_analytics():
             ).group_by(WebsiteVisit.page_url).order_by(
                 func.count(WebsiteVisit.id).desc()
             ).limit(10).all()
+            
+            # Convert Row objects to dictionaries
+            popular_pages = []
+            for page in popular_pages_raw:
+                popular_pages.append({
+                    'page_url': page.page_url,
+                    'visits': page.visits,
+                    'unique_visitors': page.unique_visitors
+                })
         except Exception as e:
             current_app.logger.error(f"Error fetching popular pages: {str(e)}")
             popular_pages = []
         
         # Geographic distribution with error handling
         try:
-            countries = db.session.query(
+            countries_raw = db.session.query(
                 WebsiteVisit.country,
                 func.count(WebsiteVisit.id).label('visits')
             ).filter(
@@ -2502,6 +2511,14 @@ def visitors_analytics():
             ).group_by(WebsiteVisit.country).order_by(
                 func.count(WebsiteVisit.id).desc()
             ).limit(10).all()
+            
+            # Convert Row objects to dictionaries
+            countries = []
+            for country in countries_raw:
+                countries.append({
+                    'country': country.country,
+                    'visits': country.visits
+                })
         except Exception as e:
             current_app.logger.error(f"Error fetching countries: {str(e)}")
             countries = []
@@ -2512,7 +2529,7 @@ def visitors_analytics():
         hourly_stats = []
         
         try:
-            browsers = db.session.query(
+            browsers_raw = db.session.query(
                 WebsiteVisit.browser,
                 func.count(WebsiteVisit.id).label('visits')
             ).filter(
@@ -2521,11 +2538,19 @@ def visitors_analytics():
             ).group_by(WebsiteVisit.browser).order_by(
                 func.count(WebsiteVisit.id).desc()
             ).limit(5).all()
+            
+            # Convert Row objects to dictionaries
+            browsers = []
+            for browser in browsers_raw:
+                browsers.append({
+                    'browser': browser.browser,
+                    'visits': browser.visits
+                })
         except Exception as e:
             current_app.logger.error(f"Error fetching browsers: {str(e)}")
         
         try:
-            devices = db.session.query(
+            devices_raw = db.session.query(
                 WebsiteVisit.device_type,
                 func.count(WebsiteVisit.id).label('visits')
             ).filter(
@@ -2534,6 +2559,14 @@ def visitors_analytics():
             ).group_by(WebsiteVisit.device_type).order_by(
                 func.count(WebsiteVisit.id).desc()
             ).all()
+            
+            # Convert Row objects to dictionaries
+            devices = []
+            for device in devices_raw:
+                devices.append({
+                    'device_type': device.device_type,
+                    'visits': device.visits
+                })
         except Exception as e:
             current_app.logger.error(f"Error fetching devices: {str(e)}")
         
