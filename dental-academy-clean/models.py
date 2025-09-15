@@ -4607,3 +4607,174 @@ class StudySessionResponse(db.Model):
     def response_time_seconds(self):
         """Convert response time to seconds"""
         return self.response_time / 1000 if self.response_time else None
+
+# ========================================
+# CRM SYSTEM MODELS
+# ========================================
+
+class Profession(db.Model):
+    """Profession model for managing different medical professions"""
+    __tablename__ = 'profession'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    name_nl = db.Column(db.String(100), nullable=True)
+    code = db.Column(db.String(20), unique=True, nullable=False)
+    category = db.Column(db.String(50), nullable=False)  # medical, dental, pharmacy
+    big_exam_required = db.Column(db.Boolean, default=True)
+    description = db.Column(db.Text, nullable=True)
+    requirements = db.Column(db.Text, nullable=True)  # JSON string
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    specializations = db.relationship('ProfessionSpecialization', backref='profession', lazy='dynamic', cascade='all, delete-orphan')
+    contacts = db.relationship('Contact', backref='profession', lazy='dynamic')
+    
+    def __repr__(self):
+        return f'<Profession {self.code}: {self.name}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'name_nl': self.name_nl,
+            'code': self.code,
+            'category': self.category,
+            'big_exam_required': self.big_exam_required,
+            'description': self.description,
+            'requirements': self.requirements,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class ProfessionSpecialization(db.Model):
+    """Specialization model for professions"""
+    __tablename__ = 'profession_specialization'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    profession_id = db.Column(db.Integer, db.ForeignKey('profession.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    name_nl = db.Column(db.String(100), nullable=True)
+    code = db.Column(db.String(20), nullable=True)
+    requirements = db.Column(db.Text, nullable=True)  # JSON string
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<ProfessionSpecialization {self.name}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'profession_id': self.profession_id,
+            'name': self.name,
+            'name_nl': self.name_nl,
+            'code': self.code,
+            'requirements': self.requirements,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class Contact(db.Model):
+    """Contact model for CRM system"""
+    __tablename__ = 'contact'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Basic information
+    full_name = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(120), nullable=False, index=True)
+    phone = db.Column(db.String(20), nullable=True)
+    
+    # Professional information
+    profession_id = db.Column(db.Integer, db.ForeignKey('profession.id'), nullable=True)
+    workplace = db.Column(db.String(255), nullable=True)
+    big_number = db.Column(db.String(20), nullable=True)  # BIG registration number
+    
+    # CRM fields
+    contact_status = db.Column(db.String(50), default='lead')  # lead, prospect, client, inactive
+    lead_source = db.Column(db.String(100), nullable=True)  # website, referral, digid, social_media
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Communication tracking
+    last_contact_date = db.Column(db.DateTime, nullable=True)
+    next_followup_date = db.Column(db.DateTime, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    
+    # Analytics
+    registration_date = db.Column(db.DateTime, default=datetime.utcnow)
+    registration_source = db.Column(db.String(100), nullable=True)
+    first_visit_country = db.Column(db.String(100), nullable=True)
+    device_type = db.Column(db.String(50), nullable=True)
+    browser = db.Column(db.String(50), nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref='contact_profile')
+    assigned_user = db.relationship('User', foreign_keys=[assigned_to], backref='assigned_contacts')
+    profession = db.relationship('Profession', backref='profession_contacts')
+    
+    def __repr__(self):
+        return f'<Contact {self.full_name}: {self.email}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'full_name': self.full_name,
+            'email': self.email,
+            'phone': self.phone,
+            'profession_id': self.profession_id,
+            'profession_name': self.profession.name if self.profession else None,
+            'workplace': self.workplace,
+            'big_number': self.big_number,
+            'contact_status': self.contact_status,
+            'lead_source': self.lead_source,
+            'assigned_to': self.assigned_to,
+            'assigned_user_name': self.assigned_user.get_display_name() if self.assigned_user else None,
+            'last_contact_date': self.last_contact_date.isoformat() if self.last_contact_date else None,
+            'next_followup_date': self.next_followup_date.isoformat() if self.next_followup_date else None,
+            'notes': self.notes,
+            'registration_date': self.registration_date.isoformat() if self.registration_date else None,
+            'registration_source': self.registration_source,
+            'first_visit_country': self.first_visit_country,
+            'device_type': self.device_type,
+            'browser': self.browser,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    @property
+    def status_display(self):
+        """Get display name for contact status"""
+        status_map = {
+            'lead': 'Лид',
+            'prospect': 'Потенциальный клиент',
+            'client': 'Клиент',
+            'inactive': 'Неактивный'
+        }
+        return status_map.get(self.contact_status, self.contact_status)
+    
+    @property
+    def days_since_last_contact(self):
+        """Calculate days since last contact"""
+        if not self.last_contact_date:
+            return None
+        return (datetime.utcnow() - self.last_contact_date).days
+    
+    @property
+    def days_until_followup(self):
+        """Calculate days until next followup"""
+        if not self.next_followup_date:
+            return None
+        return (self.next_followup_date - datetime.utcnow()).days

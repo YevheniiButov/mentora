@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
-from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog
+from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_
@@ -2830,4 +2830,282 @@ def api_user_search():
             'last_login': user.last_login.isoformat() if user.last_login else None
         }
         for user in users
-    ]) 
+    ])
+
+# ========================================
+# CRM SYSTEM ROUTES
+# ========================================
+
+@admin_bp.route('/crm')
+@login_required
+@admin_required
+def crm_dashboard():
+    """CRM Dashboard with sales funnel and key metrics"""
+    try:
+        # Sales funnel data
+        leads = Contact.query.filter_by(contact_status='lead').count()
+        prospects = Contact.query.filter_by(contact_status='prospect').count()
+        clients = Contact.query.filter_by(contact_status='client').count()
+        inactive = Contact.query.filter_by(contact_status='inactive').count()
+        
+        # Key metrics
+        total_contacts = Contact.query.count()
+        new_contacts_today = Contact.query.filter(
+            func.date(Contact.created_at) == date.today()
+        ).count()
+        
+        # Conversion rate calculation
+        conversion_rate = 0
+        if total_contacts > 0:
+            conversion_rate = (clients / total_contacts) * 100
+        
+        # Recent contacts
+        recent_contacts = Contact.query.order_by(Contact.created_at.desc()).limit(10).all()
+        
+        # Follow-up tasks
+        overdue_followups = Contact.query.filter(
+            Contact.next_followup_date < datetime.utcnow(),
+            Contact.contact_status.in_(['lead', 'prospect'])
+        ).count()
+        
+        # Lead sources
+        lead_sources = db.session.query(
+            Contact.lead_source,
+            func.count(Contact.id).label('count')
+        ).group_by(Contact.lead_source).all()
+        
+        # Profession distribution
+        profession_stats = db.session.query(
+            Profession.name,
+            func.count(Contact.id).label('count')
+        ).join(Contact, Profession.id == Contact.profession_id).group_by(Profession.name).all()
+        
+        return render_template('admin/crm_dashboard.html',
+                             leads=leads,
+                             prospects=prospects,
+                             clients=clients,
+                             inactive=inactive,
+                             total_contacts=total_contacts,
+                             new_contacts_today=new_contacts_today,
+                             conversion_rate=conversion_rate,
+                             recent_contacts=recent_contacts,
+                             overdue_followups=overdue_followups,
+                             lead_sources=lead_sources,
+                             profession_stats=profession_stats)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in CRM dashboard: {str(e)}")
+        flash(f'Ошибка загрузки CRM дашборда: {str(e)}', 'error')
+        return render_template('admin/crm_dashboard.html',
+                             leads=0, prospects=0, clients=0, inactive=0,
+                             total_contacts=0, new_contacts_today=0,
+                             conversion_rate=0, recent_contacts=[],
+                             overdue_followups=0, lead_sources=[],
+                             profession_stats=[])
+
+@admin_bp.route('/crm/contacts')
+@login_required
+@admin_required
+def crm_contacts():
+    """Contact management page"""
+    try:
+        # Get filter parameters
+        status_filter = request.args.get('status', 'all')
+        profession_filter = request.args.get('profession', 'all')
+        search_query = request.args.get('search', '').strip()
+        
+        # Build query
+        query = Contact.query
+        
+        if status_filter != 'all':
+            query = query.filter_by(contact_status=status_filter)
+        
+        if profession_filter != 'all':
+            query = query.filter_by(profession_id=profession_filter)
+        
+        if search_query:
+            query = query.filter(
+                or_(
+                    Contact.full_name.ilike(f'%{search_query}%'),
+                    Contact.email.ilike(f'%{search_query}%'),
+                    Contact.phone.ilike(f'%{search_query}%')
+                )
+            )
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = 20
+        contacts = query.order_by(Contact.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Get professions for filter
+        professions = Profession.query.filter_by(is_active=True).all()
+        
+        return render_template('admin/crm_contacts.html',
+                             contacts=contacts,
+                             professions=professions,
+                             status_filter=status_filter,
+                             profession_filter=profession_filter,
+                             search_query=search_query)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in CRM contacts: {str(e)}")
+        flash(f'Ошибка загрузки контактов: {str(e)}', 'error')
+        return render_template('admin/crm_contacts.html',
+                             contacts=None, professions=[],
+                             status_filter='all', profession_filter='all',
+                             search_query='')
+
+@admin_bp.route('/crm/contacts/<int:contact_id>')
+@login_required
+@admin_required
+def crm_contact_detail(contact_id):
+    """Contact detail page"""
+    try:
+        contact = Contact.query.get_or_404(contact_id)
+        professions = Profession.query.filter_by(is_active=True).all()
+        admin_users = User.query.filter_by(role='admin').all()
+        
+        return render_template('admin/crm_contact_detail.html',
+                             contact=contact,
+                             professions=professions,
+                             admin_users=admin_users)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error loading contact detail: {str(e)}")
+        flash(f'Ошибка загрузки контакта: {str(e)}', 'error')
+        return redirect(url_for('admin.crm_contacts'))
+
+@admin_bp.route('/crm/contacts/<int:contact_id>/update', methods=['POST'])
+@login_required
+@admin_required
+def crm_contact_update(contact_id):
+    """Update contact information"""
+    try:
+        contact = Contact.query.get_or_404(contact_id)
+        
+        # Update fields
+        contact.full_name = request.form.get('full_name', contact.full_name)
+        contact.email = request.form.get('email', contact.email)
+        contact.phone = request.form.get('phone', contact.phone)
+        contact.profession_id = request.form.get('profession_id', type=int) or None
+        contact.workplace = request.form.get('workplace', contact.workplace)
+        contact.big_number = request.form.get('big_number', contact.big_number)
+        contact.contact_status = request.form.get('contact_status', contact.contact_status)
+        contact.lead_source = request.form.get('lead_source', contact.lead_source)
+        contact.assigned_to = request.form.get('assigned_to', type=int) or None
+        contact.notes = request.form.get('notes', contact.notes)
+        
+        # Update follow-up date if provided
+        followup_date = request.form.get('next_followup_date')
+        if followup_date:
+            try:
+                contact.next_followup_date = datetime.strptime(followup_date, '%Y-%m-%d')
+            except ValueError:
+                pass
+        
+        contact.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash('Контакт успешно обновлен', 'success')
+        return redirect(url_for('admin.crm_contact_detail', contact_id=contact_id))
+    
+    except Exception as e:
+        current_app.logger.error(f"Error updating contact: {str(e)}")
+        db.session.rollback()
+        flash(f'Ошибка обновления контакта: {str(e)}', 'error')
+        return redirect(url_for('admin.crm_contact_detail', contact_id=contact_id))
+
+@admin_bp.route('/crm/professions')
+@login_required
+@admin_required
+def crm_professions():
+    """Profession management page"""
+    try:
+        professions = Profession.query.filter_by(is_active=True).all()
+        
+        # Get contact counts for each profession
+        profession_stats = []
+        for profession in professions:
+            contact_count = Contact.query.filter_by(profession_id=profession.id).count()
+            profession_stats.append({
+                'profession': profession,
+                'contact_count': contact_count
+            })
+        
+        return render_template('admin/crm_professions.html',
+                             profession_stats=profession_stats)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error loading professions: {str(e)}")
+        flash(f'Ошибка загрузки профессий: {str(e)}', 'error')
+        return render_template('admin/crm_professions.html',
+                             profession_stats=[])
+
+@admin_bp.route('/crm/professions/create', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def crm_profession_create():
+    """Create new profession"""
+    if request.method == 'POST':
+        try:
+            profession = Profession(
+                name=request.form.get('name'),
+                name_nl=request.form.get('name_nl'),
+                code=request.form.get('code'),
+                category=request.form.get('category'),
+                big_exam_required=bool(request.form.get('big_exam_required')),
+                description=request.form.get('description'),
+                requirements=request.form.get('requirements')
+            )
+            
+            db.session.add(profession)
+            db.session.commit()
+            
+            flash('Профессия успешно создана', 'success')
+            return redirect(url_for('admin.crm_professions'))
+        
+        except Exception as e:
+            current_app.logger.error(f"Error creating profession: {str(e)}")
+            db.session.rollback()
+            flash(f'Ошибка создания профессии: {str(e)}', 'error')
+    
+    return render_template('admin/crm_profession_form.html')
+
+@admin_bp.route('/crm/api/contacts/stats')
+@login_required
+@admin_required
+def crm_contacts_stats():
+    """API endpoint for contact statistics"""
+    try:
+        # Status distribution
+        status_stats = db.session.query(
+            Contact.contact_status,
+            func.count(Contact.id).label('count')
+        ).group_by(Contact.contact_status).all()
+        
+        # Monthly registrations (last 12 months)
+        monthly_stats = []
+        for i in range(12):
+            month_start = datetime.utcnow().replace(day=1) - timedelta(days=30*i)
+            month_end = month_start + timedelta(days=30)
+            
+            count = Contact.query.filter(
+                Contact.created_at >= month_start,
+                Contact.created_at < month_end
+            ).count()
+            
+            monthly_stats.append({
+                'month': month_start.strftime('%Y-%m'),
+                'count': count
+            })
+        
+        return jsonify({
+            'status_stats': [{'status': s.contact_status, 'count': s.count} for s in status_stats],
+            'monthly_stats': monthly_stats
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in CRM contacts stats: {str(e)}")
+        return jsonify({'error': 'Failed to load statistics'}), 500 
