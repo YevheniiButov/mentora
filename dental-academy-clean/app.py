@@ -398,13 +398,8 @@ try:
     
     logger.info("✅ All route blueprints registered successfully")
     
-    # Регистрация системы контроля доступа ПОСЛЕ всех остальных blueprints
-    try:
-        from utils.access_control import register_access_control
-        register_access_control(app)
-        logger.info("✅ Access control system registered successfully")
-    except ImportError as e:
-        logger.warning(f"Could not import access control: {e}")
+    # Система контроля доступа отключена (модуль не существует)
+    # logger.info("ℹ️ Access control system not implemented")
     
 except ImportError as e:
     logger.warning(f"Could not import routes: {e}")
