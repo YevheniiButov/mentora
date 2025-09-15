@@ -8,6 +8,15 @@
 {% endblock %}
 
 {% block content %}
+{% if error_message %}
+<div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading">⚠️ Ошибка загрузки данных</h4>
+    <p>{{ error_message }}</p>
+    <hr>
+    <p class="mb-0">Показана базовая информация. Некоторые данные могут быть недоступны.</p>
+</div>
+{% endif %}
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Управление пользователями</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -216,6 +225,7 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if users and users.items %}
                         {% for user in users.items %}
                         <tr>
                             <td>
@@ -301,13 +311,21 @@
                             </td>
                         </tr>
                         {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="bi bi-person-x fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Нет пользователей для отображения</p>
+                            </td>
+                        </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </form>
         </div>
 
         <!-- Pagination -->
-        {% if users.pages > 1 %}
+        {% if users and users.pages > 1 %}
         <nav aria-label="User pagination">
             <ul class="pagination justify-content-center">
                 {% if users.has_prev %}
@@ -352,7 +370,11 @@
         <div class="row mt-3">
             <div class="col-sm-12 col-md-5">
                 <div class="text-muted">
+                    {% if users %}
                     Показано {{ users.per_page * (users.page - 1) + 1 }} - {{ users.per_page * (users.page - 1) + users.items|length }} из {{ users.total }} записей
+                    {% else %}
+                    Нет данных для отображения
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -1992,7 +1992,8 @@ def users_list():
                              status_filter=status_filter,
                              role_filter=role_filter,
                              sort_by=sort_by,
-                             sort_order=sort_order)
+                             sort_order=sort_order,
+                             error_message=None)
     
     except Exception as e:
         current_app.logger.error(f"Error in users_list route: {str(e)}")
@@ -2013,7 +2014,8 @@ def users_list():
                              status_filter='all',
                              role_filter='all',
                              sort_by='created_at',
-                             sort_order='desc')
+                             sort_order='desc',
+                             error_message=str(e))
 
 @admin_bp.route('/users/<int:user_id>')
 @login_required
@@ -2570,7 +2572,8 @@ def visitors_analytics():
                              browsers=browsers,
                              devices=devices,
                              hourly_stats=hourly_stats,
-                             time_filter=time_filter)
+                             time_filter=time_filter,
+                             error_message=None)
     
     except Exception as e:
         current_app.logger.error(f"Error in visitors_analytics route: {str(e)}")
@@ -2590,7 +2593,8 @@ def visitors_analytics():
                              browsers=[],
                              devices=[],
                              hourly_stats=[],
-                             time_filter='24h')
+                             time_filter='24h',
+                             error_message=str(e))
 
 # ========================================
 # USER SUPPORT SYSTEM
