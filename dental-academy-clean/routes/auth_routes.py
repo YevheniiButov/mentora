@@ -694,8 +694,16 @@ def register():
         db.session.commit()
         
         # Send email confirmation
+        print("=== STARTING EMAIL CONFIRMATION PROCESS ===")
+        print(f"=== USER ID: {user.id} ===")
+        print(f"=== USER EMAIL: {user.email} ===")
+        print(f"=== TOKEN: {confirmation_token[:20]}... ===")
+        
         from utils.email_service import send_email_confirmation
+        
+        print("=== CALLING send_email_confirmation ===")
         email_sent = send_email_confirmation(user, confirmation_token)
+        print(f"=== EMAIL CONFIRMATION RESULT: {email_sent} ===")
         
         # Log registration
         try:
