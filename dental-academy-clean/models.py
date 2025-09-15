@@ -4772,9 +4772,269 @@ class Contact(db.Model):
             return None
         return (datetime.utcnow() - self.last_contact_date).days
     
-    @property
-    def days_until_followup(self):
-        """Calculate days until next followup"""
-        if not self.next_followup_date:
-            return None
-        return (self.next_followup_date - datetime.utcnow()).days
+           @property
+           def days_until_followup(self):
+               """Calculate days until next followup"""
+               if not self.next_followup_date:
+                   return None
+               return (self.next_followup_date - datetime.utcnow()).days
+
+# ========================================
+# ADVANCED ANALYTICS MODELS
+# ========================================
+
+class CountryAnalytics(db.Model):
+    """Analytics model for country-based statistics"""
+    __tablename__ = 'country_analytics'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    country_code = db.Column(db.String(2), nullable=False, index=True)
+    country_name = db.Column(db.String(100), nullable=False)
+    
+    # User statistics
+    total_users = db.Column(db.Integer, default=0)
+    active_users = db.Column(db.Integer, default=0)
+    new_users_today = db.Column(db.Integer, default=0)
+    new_users_this_week = db.Column(db.Integer, default=0)
+    new_users_this_month = db.Column(db.Integer, default=0)
+    
+    # Conversion metrics
+    conversion_rate = db.Column(db.Float, default=0.0)  # registration to active
+    completion_rate = db.Column(db.Float, default=0.0)  # course completion
+    exam_pass_rate = db.Column(db.Float, default=0.0)   # exam success
+    
+    # Engagement metrics
+    avg_session_duration = db.Column(db.Float, default=0.0)  # in minutes
+    avg_pages_per_session = db.Column(db.Float, default=0.0)
+    bounce_rate = db.Column(db.Float, default=0.0)
+    
+    # Revenue metrics (if applicable)
+    total_revenue = db.Column(db.Float, default=0.0)
+    avg_revenue_per_user = db.Column(db.Float, default=0.0)
+    
+    # Timestamps
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<CountryAnalytics {self.country_code}: {self.country_name}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'country_code': self.country_code,
+            'country_name': self.country_name,
+            'total_users': self.total_users,
+            'active_users': self.active_users,
+            'new_users_today': self.new_users_today,
+            'new_users_this_week': self.new_users_this_week,
+            'new_users_this_month': self.new_users_this_month,
+            'conversion_rate': self.conversion_rate,
+            'completion_rate': self.completion_rate,
+            'exam_pass_rate': self.exam_pass_rate,
+            'avg_session_duration': self.avg_session_duration,
+            'avg_pages_per_session': self.avg_pages_per_session,
+            'bounce_rate': self.bounce_rate,
+            'total_revenue': self.total_revenue,
+            'avg_revenue_per_user': self.avg_revenue_per_user,
+            'last_updated': self.last_updated.isoformat() if self.last_updated else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class DeviceAnalytics(db.Model):
+    """Analytics model for device and browser statistics"""
+    __tablename__ = 'device_analytics'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Device information
+    device_category = db.Column(db.String(50), nullable=False)  # mobile, desktop, tablet
+    device_type = db.Column(db.String(100), nullable=True)      # iPhone, Samsung, etc.
+    browser = db.Column(db.String(50), nullable=False)          # Chrome, Safari, Firefox
+    browser_version = db.Column(db.String(20), nullable=True)
+    os = db.Column(db.String(50), nullable=False)               # Windows, macOS, iOS, Android
+    os_version = db.Column(db.String(20), nullable=True)
+    screen_resolution = db.Column(db.String(20), nullable=True) # 1920x1080, 375x667
+    
+    # Usage statistics
+    users_count = db.Column(db.Integer, default=0)
+    sessions_count = db.Column(db.Integer, default=0)
+    page_views_count = db.Column(db.Integer, default=0)
+    
+    # Performance metrics
+    avg_page_load_time = db.Column(db.Float, default=0.0)  # in seconds
+    bounce_rate = db.Column(db.Float, default=0.0)
+    avg_session_duration = db.Column(db.Float, default=0.0)  # in minutes
+    avg_pages_per_session = db.Column(db.Float, default=0.0)
+    
+    # Conversion metrics
+    conversion_rate = db.Column(db.Float, default=0.0)
+    completion_rate = db.Column(db.Float, default=0.0)
+    
+    # Timestamps
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<DeviceAnalytics {self.device_category} {self.browser} {self.os}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'device_category': self.device_category,
+            'device_type': self.device_type,
+            'browser': self.browser,
+            'browser_version': self.browser_version,
+            'os': self.os,
+            'os_version': self.os_version,
+            'screen_resolution': self.screen_resolution,
+            'users_count': self.users_count,
+            'sessions_count': self.sessions_count,
+            'page_views_count': self.page_views_count,
+            'avg_page_load_time': self.avg_page_load_time,
+            'bounce_rate': self.bounce_rate,
+            'avg_session_duration': self.avg_session_duration,
+            'avg_pages_per_session': self.avg_pages_per_session,
+            'conversion_rate': self.conversion_rate,
+            'completion_rate': self.completion_rate,
+            'last_updated': self.last_updated.isoformat() if self.last_updated else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class ProfessionAnalytics(db.Model):
+    """Analytics model for profession-based statistics"""
+    __tablename__ = 'profession_analytics'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    profession_id = db.Column(db.Integer, db.ForeignKey('profession.id'), nullable=False)
+    
+    # Registration statistics
+    total_registrations = db.Column(db.Integer, default=0)
+    new_registrations_today = db.Column(db.Integer, default=0)
+    new_registrations_this_week = db.Column(db.Integer, default=0)
+    new_registrations_this_month = db.Column(db.Integer, default=0)
+    
+    # Activity statistics
+    active_users = db.Column(db.Integer, default=0)
+    users_with_progress = db.Column(db.Integer, default=0)
+    users_completed_courses = db.Column(db.Integer, default=0)
+    
+    # Learning metrics
+    avg_progress = db.Column(db.Float, default=0.0)  # percentage
+    avg_time_spent = db.Column(db.Float, default=0.0)  # in hours
+    avg_lessons_completed = db.Column(db.Float, default=0.0)
+    
+    # Exam metrics
+    total_exam_attempts = db.Column(db.Integer, default=0)
+    successful_exam_attempts = db.Column(db.Integer, default=0)
+    exam_pass_rate = db.Column(db.Float, default=0.0)
+    avg_exam_score = db.Column(db.Float, default=0.0)
+    
+    # Engagement metrics
+    avg_session_duration = db.Column(db.Float, default=0.0)  # in minutes
+    avg_sessions_per_user = db.Column(db.Float, default=0.0)
+    retention_rate_7d = db.Column(db.Float, default=0.0)  # 7-day retention
+    retention_rate_30d = db.Column(db.Float, default=0.0)  # 30-day retention
+    
+    # Timestamps
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    profession = db.relationship('Profession', backref='analytics')
+    
+    def __repr__(self):
+        return f'<ProfessionAnalytics {self.profession_id}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'profession_id': self.profession_id,
+            'profession_name': self.profession.name if self.profession else None,
+            'total_registrations': self.total_registrations,
+            'new_registrations_today': self.new_registrations_today,
+            'new_registrations_this_week': self.new_registrations_this_week,
+            'new_registrations_this_month': self.new_registrations_this_month,
+            'active_users': self.active_users,
+            'users_with_progress': self.users_with_progress,
+            'users_completed_courses': self.users_completed_courses,
+            'avg_progress': self.avg_progress,
+            'avg_time_spent': self.avg_time_spent,
+            'avg_lessons_completed': self.avg_lessons_completed,
+            'total_exam_attempts': self.total_exam_attempts,
+            'successful_exam_attempts': self.successful_exam_attempts,
+            'exam_pass_rate': self.exam_pass_rate,
+            'avg_exam_score': self.avg_exam_score,
+            'avg_session_duration': self.avg_session_duration,
+            'avg_sessions_per_user': self.avg_sessions_per_user,
+            'retention_rate_7d': self.retention_rate_7d,
+            'retention_rate_30d': self.retention_rate_30d,
+            'last_updated': self.last_updated.isoformat() if self.last_updated else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class AnalyticsEvent(db.Model):
+    """Model for tracking custom analytics events"""
+    __tablename__ = 'analytics_event'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Event details
+    event_name = db.Column(db.String(100), nullable=False, index=True)
+    event_category = db.Column(db.String(50), nullable=False)  # user, system, error, performance
+    event_action = db.Column(db.String(100), nullable=False)   # click, view, submit, error
+    event_label = db.Column(db.String(200), nullable=True)     # additional context
+    
+    # Event data
+    event_data = db.Column(db.Text, nullable=True)  # JSON string
+    event_value = db.Column(db.Float, nullable=True)  # numeric value
+    
+    # Context information
+    page_url = db.Column(db.String(500), nullable=True)
+    referrer_url = db.Column(db.String(500), nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+    
+    # Device and location
+    device_type = db.Column(db.String(50), nullable=True)
+    browser = db.Column(db.String(50), nullable=True)
+    os = db.Column(db.String(50), nullable=True)
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    # Relationships
+    user = db.relationship('User', backref='analytics_events')
+    
+    def __repr__(self):
+        return f'<AnalyticsEvent {self.event_name}: {self.event_action}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'user_email': self.user.email if self.user else None,
+            'event_name': self.event_name,
+            'event_category': self.event_category,
+            'event_action': self.event_action,
+            'event_label': self.event_label,
+            'event_data': self.event_data,
+            'event_value': self.event_value,
+            'page_url': self.page_url,
+            'referrer_url': self.referrer_url,
+            'user_agent': self.user_agent,
+            'ip_address': self.ip_address,
+            'device_type': self.device_type,
+            'browser': self.browser,
+            'os': self.os,
+            'country': self.country,
+            'city': self.city,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }

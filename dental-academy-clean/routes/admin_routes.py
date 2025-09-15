@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
-from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact
+from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_
@@ -3108,4 +3108,329 @@ def crm_contacts_stats():
     
     except Exception as e:
         current_app.logger.error(f"Error in CRM contacts stats: {str(e)}")
-        return jsonify({'error': 'Failed to load statistics'}), 500 
+        return jsonify({'error': 'Failed to load statistics'}), 500
+
+# ========================================
+# ADVANCED ANALYTICS ROUTES
+# ========================================
+
+@admin_bp.route('/analytics/advanced')
+@login_required
+@admin_required
+def advanced_analytics():
+    """Advanced analytics dashboard with detailed insights"""
+    try:
+        # Get time range
+        timeframe = request.args.get('timeframe', '7d')
+        days = 7 if timeframe == '7d' else 30 if timeframe == '30d' else 90
+        
+        # Country analytics
+        country_stats = db.session.query(
+            CountryAnalytics.country_name,
+            CountryAnalytics.total_users,
+            CountryAnalytics.active_users,
+            CountryAnalytics.conversion_rate,
+            CountryAnalytics.completion_rate,
+            CountryAnalytics.avg_session_duration
+        ).order_by(CountryAnalytics.total_users.desc()).limit(10).all()
+        
+        # Device analytics
+        device_stats = db.session.query(
+            DeviceAnalytics.device_category,
+            DeviceAnalytics.browser,
+            DeviceAnalytics.os,
+            func.sum(DeviceAnalytics.users_count).label('total_users'),
+            func.avg(DeviceAnalytics.avg_session_duration).label('avg_session'),
+            func.avg(DeviceAnalytics.conversion_rate).label('avg_conversion')
+        ).group_by(
+            DeviceAnalytics.device_category,
+            DeviceAnalytics.browser,
+            DeviceAnalytics.os
+        ).order_by(func.sum(DeviceAnalytics.users_count).desc()).limit(15).all()
+        
+        # Profession analytics
+        profession_stats = db.session.query(
+            ProfessionAnalytics.profession_id,
+            Profession.name,
+            func.sum(ProfessionAnalytics.total_registrations).label('total_registrations'),
+            func.sum(ProfessionAnalytics.active_users).label('active_users'),
+            func.avg(ProfessionAnalytics.avg_progress).label('avg_progress'),
+            func.avg(ProfessionAnalytics.exam_pass_rate).label('exam_pass_rate')
+        ).join(Profession, ProfessionAnalytics.profession_id == Profession.id).group_by(
+            ProfessionAnalytics.profession_id,
+            Profession.name
+        ).order_by(func.sum(ProfessionAnalytics.total_registrations).desc()).all()
+        
+        # Recent events
+        recent_events = AnalyticsEvent.query.order_by(
+            AnalyticsEvent.created_at.desc()
+        ).limit(20).all()
+        
+        # Summary statistics
+        total_countries = CountryAnalytics.query.count()
+        total_devices = DeviceAnalytics.query.count()
+        total_professions = ProfessionAnalytics.query.count()
+        total_events = AnalyticsEvent.query.count()
+        
+        return render_template('admin/advanced_analytics.html',
+                             country_stats=country_stats,
+                             device_stats=device_stats,
+                             profession_stats=profession_stats,
+                             recent_events=recent_events,
+                             total_countries=total_countries,
+                             total_devices=total_devices,
+                             total_professions=total_professions,
+                             total_events=total_events,
+                             timeframe=timeframe)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in advanced analytics: {str(e)}")
+        flash(f'Ошибка загрузки расширенной аналитики: {str(e)}', 'error')
+        return render_template('admin/advanced_analytics.html',
+                             country_stats=[], device_stats=[], profession_stats=[],
+                             recent_events=[], total_countries=0, total_devices=0,
+                             total_professions=0, total_events=0, timeframe='7d')
+
+@admin_bp.route('/analytics/countries')
+@login_required
+@admin_required
+def analytics_countries():
+    """Detailed country analytics page"""
+    try:
+        # Get filter parameters
+        sort_by = request.args.get('sort', 'total_users')
+        order = request.args.get('order', 'desc')
+        
+        # Build query
+        query = CountryAnalytics.query
+        
+        # Apply sorting
+        if sort_by == 'total_users':
+            query = query.order_by(CountryAnalytics.total_users.desc() if order == 'desc' else CountryAnalytics.total_users.asc())
+        elif sort_by == 'conversion_rate':
+            query = query.order_by(CountryAnalytics.conversion_rate.desc() if order == 'desc' else CountryAnalytics.conversion_rate.asc())
+        elif sort_by == 'completion_rate':
+            query = query.order_by(CountryAnalytics.completion_rate.desc() if order == 'desc' else CountryAnalytics.completion_rate.asc())
+        elif sort_by == 'avg_session_duration':
+            query = query.order_by(CountryAnalytics.avg_session_duration.desc() if order == 'desc' else CountryAnalytics.avg_session_duration.asc())
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = 25
+        countries = query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        return render_template('admin/analytics_countries.html',
+                             countries=countries,
+                             sort_by=sort_by,
+                             order=order)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in country analytics: {str(e)}")
+        flash(f'Ошибка загрузки аналитики по странам: {str(e)}', 'error')
+        return render_template('admin/analytics_countries.html',
+                             countries=None, sort_by='total_users', order='desc')
+
+@admin_bp.route('/analytics/devices')
+@login_required
+@admin_required
+def analytics_devices():
+    """Detailed device analytics page"""
+    try:
+        # Get filter parameters
+        device_filter = request.args.get('device', 'all')
+        sort_by = request.args.get('sort', 'users_count')
+        order = request.args.get('order', 'desc')
+        
+        # Build query
+        query = DeviceAnalytics.query
+        
+        if device_filter != 'all':
+            query = query.filter_by(device_category=device_filter)
+        
+        # Apply sorting
+        if sort_by == 'users_count':
+            query = query.order_by(DeviceAnalytics.users_count.desc() if order == 'desc' else DeviceAnalytics.users_count.asc())
+        elif sort_by == 'avg_session_duration':
+            query = query.order_by(DeviceAnalytics.avg_session_duration.desc() if order == 'desc' else DeviceAnalytics.avg_session_duration.asc())
+        elif sort_by == 'conversion_rate':
+            query = query.order_by(DeviceAnalytics.conversion_rate.desc() if order == 'desc' else DeviceAnalytics.conversion_rate.asc())
+        elif sort_by == 'bounce_rate':
+            query = query.order_by(DeviceAnalytics.bounce_rate.asc() if order == 'desc' else DeviceAnalytics.bounce_rate.desc())
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = 25
+        devices = query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        # Get device categories for filter
+        device_categories = db.session.query(DeviceAnalytics.device_category).distinct().all()
+        device_categories = [cat[0] for cat in device_categories]
+        
+        return render_template('admin/analytics_devices.html',
+                             devices=devices,
+                             device_categories=device_categories,
+                             device_filter=device_filter,
+                             sort_by=sort_by,
+                             order=order)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in device analytics: {str(e)}")
+        flash(f'Ошибка загрузки аналитики по устройствам: {str(e)}', 'error')
+        return render_template('admin/analytics_devices.html',
+                             devices=None, device_categories=[],
+                             device_filter='all', sort_by='users_count', order='desc')
+
+@admin_bp.route('/analytics/professions')
+@login_required
+@admin_required
+def analytics_professions():
+    """Detailed profession analytics page"""
+    try:
+        # Get filter parameters
+        sort_by = request.args.get('sort', 'total_registrations')
+        order = request.args.get('order', 'desc')
+        
+        # Build query with profession join
+        query = db.session.query(
+            ProfessionAnalytics,
+            Profession.name.label('profession_name')
+        ).join(Profession, ProfessionAnalytics.profession_id == Profession.id)
+        
+        # Apply sorting
+        if sort_by == 'total_registrations':
+            query = query.order_by(ProfessionAnalytics.total_registrations.desc() if order == 'desc' else ProfessionAnalytics.total_registrations.asc())
+        elif sort_by == 'active_users':
+            query = query.order_by(ProfessionAnalytics.active_users.desc() if order == 'desc' else ProfessionAnalytics.active_users.asc())
+        elif sort_by == 'avg_progress':
+            query = query.order_by(ProfessionAnalytics.avg_progress.desc() if order == 'desc' else ProfessionAnalytics.avg_progress.asc())
+        elif sort_by == 'exam_pass_rate':
+            query = query.order_by(ProfessionAnalytics.exam_pass_rate.desc() if order == 'desc' else ProfessionAnalytics.exam_pass_rate.asc())
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = 25
+        professions = query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        return render_template('admin/analytics_professions.html',
+                             professions=professions,
+                             sort_by=sort_by,
+                             order=order)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in profession analytics: {str(e)}")
+        flash(f'Ошибка загрузки аналитики по профессиям: {str(e)}', 'error')
+        return render_template('admin/analytics_professions.html',
+                             professions=None, sort_by='total_registrations', order='desc')
+
+@admin_bp.route('/analytics/events')
+@login_required
+@admin_required
+def analytics_events():
+    """Analytics events tracking page"""
+    try:
+        # Get filter parameters
+        event_filter = request.args.get('event', 'all')
+        category_filter = request.args.get('category', 'all')
+        date_from = request.args.get('date_from', '')
+        date_to = request.args.get('date_to', '')
+        
+        # Build query
+        query = AnalyticsEvent.query
+        
+        if event_filter != 'all':
+            query = query.filter_by(event_name=event_filter)
+        
+        if category_filter != 'all':
+            query = query.filter_by(event_category=category_filter)
+        
+        if date_from:
+            try:
+                date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
+                query = query.filter(AnalyticsEvent.created_at >= date_from_obj)
+            except ValueError:
+                pass
+        
+        if date_to:
+            try:
+                date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
+                query = query.filter(AnalyticsEvent.created_at <= date_to_obj)
+            except ValueError:
+                pass
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = 50
+        events = query.order_by(AnalyticsEvent.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Get filter options
+        event_names = db.session.query(AnalyticsEvent.event_name).distinct().all()
+        event_names = [name[0] for name in event_names]
+        
+        event_categories = db.session.query(AnalyticsEvent.event_category).distinct().all()
+        event_categories = [cat[0] for cat in event_categories]
+        
+        return render_template('admin/analytics_events.html',
+                             events=events,
+                             event_names=event_names,
+                             event_categories=event_categories,
+                             event_filter=event_filter,
+                             category_filter=category_filter,
+                             date_from=date_from,
+                             date_to=date_to)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in analytics events: {str(e)}")
+        flash(f'Ошибка загрузки событий аналитики: {str(e)}', 'error')
+        return render_template('admin/analytics_events.html',
+                             events=None, event_names=[], event_categories=[],
+                             event_filter='all', category_filter='all',
+                             date_from='', date_to='')
+
+@admin_bp.route('/analytics/export')
+@login_required
+@admin_required
+def analytics_export():
+    """Export analytics data"""
+    try:
+        export_type = request.args.get('type', 'countries')
+        format_type = request.args.get('format', 'json')
+        
+        if export_type == 'countries':
+            data = CountryAnalytics.query.all()
+            data = [item.to_dict() for item in data]
+        elif export_type == 'devices':
+            data = DeviceAnalytics.query.all()
+            data = [item.to_dict() for item in data]
+        elif export_type == 'professions':
+            data = db.session.query(
+                ProfessionAnalytics,
+                Profession.name.label('profession_name')
+            ).join(Profession, ProfessionAnalytics.profession_id == Profession.id).all()
+            data = [item[0].to_dict() for item in data]
+        elif export_type == 'events':
+            data = AnalyticsEvent.query.limit(1000).all()
+            data = [item.to_dict() for item in data]
+        else:
+            return jsonify({'error': 'Invalid export type'}), 400
+        
+        if format_type == 'json':
+            return jsonify({
+                'export_type': export_type,
+                'exported_at': datetime.utcnow().isoformat(),
+                'count': len(data),
+                'data': data
+            })
+        elif format_type == 'csv':
+            # Simple CSV export (would need proper CSV library for production)
+            csv_data = "Export type,Exported at,Count\n"
+            csv_data += f"{export_type},{datetime.utcnow().isoformat()},{len(data)}\n"
+            csv_data += "Data exported as JSON (use JSON format for full data)\n"
+            return csv_data, 200, {'Content-Type': 'text/csv'}
+        else:
+            return jsonify({'error': 'Invalid format type'}), 400
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in analytics export: {str(e)}")
+        return jsonify({'error': str(e)}), 500 

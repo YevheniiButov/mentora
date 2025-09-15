@@ -1,0 +1,382 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Расширенная аналитика - Админ панель{% endblock %}
+
+{% block extra_css %}
+<style>
+.analytics-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.analytics-card h3 {
+    color: white;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #667eea;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.metric-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.country-flag {
+    width: 24px;
+    height: 16px;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+
+.device-icon {
+    font-size: 1.5rem;
+    margin-right: 10px;
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.timeframe-selector {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.timeframe-btn {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    color: #495057;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-right: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.timeframe-btn:hover, .timeframe-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+    text-decoration: none;
+}
+
+.export-buttons {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.export-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-right: 10px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.3s ease;
+}
+
+.export-btn:hover {
+    background: #218838;
+    color: white;
+    text-decoration: none;
+}
+
+.export-btn.secondary {
+    background: #6c757d;
+}
+
+.export-btn.secondary:hover {
+    background: #5a6268;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">📊 Расширенная аналитика</h1>
+            <p class="text-muted">Детальная аналитика по странам, устройствам и профессиям</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin.analytics_export', type='countries', format='json') }}" class="export-btn">
+                📥 Экспорт стран
+            </a>
+            <a href="{{ url_for('admin.analytics_export', type='devices', format='json') }}" class="export-btn secondary">
+                📱 Экспорт устройств
+            </a>
+            <a href="{{ url_for('admin.analytics_export', type='professions', format='json') }}" class="export-btn secondary">
+                👨‍⚕️ Экспорт профессий
+            </a>
+        </div>
+    </div>
+
+    <!-- Timeframe Selector -->
+    <div class="timeframe-selector">
+        <h5 class="mb-3">📅 Период анализа</h5>
+        <a href="{{ url_for('admin.advanced_analytics', timeframe='7d') }}" 
+           class="timeframe-btn {% if timeframe == '7d' %}active{% endif %}">7 дней</a>
+        <a href="{{ url_for('admin.advanced_analytics', timeframe='30d') }}" 
+           class="timeframe-btn {% if timeframe == '30d' %}active{% endif %}">30 дней</a>
+        <a href="{{ url_for('admin.advanced_analytics', timeframe='90d') }}" 
+           class="timeframe-btn {% if timeframe == '90d' %}active{% endif %}">90 дней</a>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="stats-grid">
+        <div class="metric-card">
+            <div class="metric-value">{{ total_countries }}</div>
+            <div class="metric-label">🌍 Страны</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ total_devices }}</div>
+            <div class="metric-label">📱 Устройства</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ total_professions }}</div>
+            <div class="metric-label">👨‍⚕️ Профессии</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ total_events }}</div>
+            <div class="metric-label">📈 События</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Country Analytics -->
+        <div class="col-lg-6">
+            <div class="analytics-card">
+                <h3>🌍 Топ стран по пользователям</h3>
+                {% if country_stats %}
+                    {% for country in country_stats %}
+                    <div class="metric-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ country.country_name }}</strong>
+                                <div class="text-muted small">
+                                    {{ country.total_users }} пользователей | 
+                                    {{ country.active_users }} активных
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-success">{{ "%.1f"|format(country.conversion_rate) }}%</div>
+                                <div class="text-muted small">конверсия</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-2">
+                            <div class="progress-fill" style="width: {{ (country.total_users / country_stats[0].total_users * 100) if country_stats else 0 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-chart-line fa-3x mb-3"></i>
+                        <p>Нет данных по странам</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Device Analytics -->
+        <div class="col-lg-6">
+            <div class="analytics-card">
+                <h3>📱 Аналитика устройств</h3>
+                {% if device_stats %}
+                    {% for device in device_stats %}
+                    <div class="metric-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="device-icon">
+                                    {% if device.device_category == 'mobile' %}📱
+                                    {% elif device.device_category == 'desktop' %}💻
+                                    {% elif device.device_category == 'tablet' %}📱
+                                    {% else %}🖥️{% endif %}
+                                </span>
+                                <strong>{{ device.browser }}</strong> на {{ device.os }}
+                                <div class="text-muted small">
+                                    {{ device.total_users }} пользователей
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-info">{{ "%.1f"|format(device.avg_session) }} мин</div>
+                                <div class="text-muted small">сессия</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-2">
+                            <div class="progress-fill" style="width: {{ (device.total_users / device_stats[0].total_users * 100) if device_stats else 0 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-mobile-alt fa-3x mb-3"></i>
+                        <p>Нет данных по устройствам</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Profession Analytics -->
+        <div class="col-lg-8">
+            <div class="analytics-card">
+                <h3>👨‍⚕️ Аналитика по профессиям</h3>
+                {% if profession_stats %}
+                    {% for profession in profession_stats %}
+                    <div class="metric-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ profession.name }}</strong>
+                                <div class="text-muted small">
+                                    {{ profession.total_registrations }} регистраций | 
+                                    {{ profession.active_users }} активных
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-warning">{{ "%.1f"|format(profession.avg_progress) }}%</div>
+                                <div class="text-muted small">прогресс</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-2">
+                            <div class="progress-fill" style="width: {{ profession.avg_progress }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-user-md fa-3x mb-3"></i>
+                        <p>Нет данных по профессиям</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Events -->
+        <div class="col-lg-4">
+            <div class="analytics-card">
+                <h3>📈 Последние события</h3>
+                {% if recent_events %}
+                    {% for event in recent_events %}
+                    <div class="metric-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ event.event_name }}</strong>
+                                <div class="text-muted small">
+                                    {{ event.event_action }} | {{ event.event_category }}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-muted small">
+                                    {{ event.created_at.strftime('%H:%M') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-history fa-3x mb-3"></i>
+                        <p>Нет событий</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="export-buttons">
+                <h5 class="mb-3">🚀 Быстрые действия</h5>
+                <a href="{{ url_for('admin.analytics_countries') }}" class="export-btn">
+                    🌍 Детальная аналитика стран
+                </a>
+                <a href="{{ url_for('admin.analytics_devices') }}" class="export-btn secondary">
+                    📱 Аналитика устройств
+                </a>
+                <a href="{{ url_for('admin.analytics_professions') }}" class="export-btn secondary">
+                    👨‍⚕️ Аналитика профессий
+                </a>
+                <a href="{{ url_for('admin.analytics_events') }}" class="export-btn secondary">
+                    📈 События аналитики
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh every 5 minutes
+setTimeout(function() {
+    location.reload();
+}, 300000);
+
+// Add smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+});
+</script>
+{% endblock %}
