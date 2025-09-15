@@ -174,6 +174,13 @@ class AnalyticsTracker {
             timestamp: new Date().toISOString()
         };
         
+        // Check if we're in development mode or if analytics endpoint is available
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            // Skip analytics in development mode
+            console.log('Analytics skipped in development mode');
+            return;
+        }
+        
         if (useBeacon && navigator.sendBeacon) {
             // Use sendBeacon for reliable delivery on page unload
             navigator.sendBeacon('/analytics/track-event', JSON.stringify(payload));

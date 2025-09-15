@@ -59,7 +59,7 @@ function initializeOtherFields() {
         toggleOtherField('legal_status', 'other_legal_status');
         
         // Check study country field
-        toggleOtherField('study_country', 'other_country_name');
+        toggleOtherField('study_country', 'other_country');
         
         // Initialize phone number formatting
         setupPhoneNumberFormatting();
@@ -918,7 +918,7 @@ function setupFormAutoSave() {
                 toggleOtherField('profession', 'other_profession');
                 toggleOtherField('nationality', 'other_nationality');
                 toggleOtherField('legal_status', 'other_legal_status');
-                toggleOtherField('study_country', 'other_country_name');
+                toggleOtherField('study_country', 'other_country');
             }, 100);
         } catch (e) {
             console.warn('Could not load saved form data:', e);
