@@ -4256,7 +4256,7 @@ class UserLearningProgress(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    learning_path_id = db.Column(db.String(50), db.ForeignKey('learning_path.id'), nullable=False)
+    learning_path_id = db.Column(db.Integer, db.ForeignKey('learning_path.id'), nullable=False)
     
     # Прогресс
     progress_percentage = db.Column(db.Float, default=0.0)  # 0-100%
