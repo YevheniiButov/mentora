@@ -1,14 +1,23 @@
 {% extends "admin/base.html" %}
 
-{% block title %}{{ user.get_display_name() }} - Профиль пользователя{% endblock %}
+{% block title %}{{ user.get_display_name() if user else 'Пользователь' }} - Профиль пользователя{% endblock %}
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
 <li class="breadcrumb-item"><a href="{{ url_for('admin.users_list') }}">Пользователи</a></li>
-<li class="breadcrumb-item active">{{ user.get_display_name() }}</li>
+<li class="breadcrumb-item active">{{ user.get_display_name() if user else 'Пользователь' }}</li>
 {% endblock %}
 
 {% block content %}
+{% if error_message %}
+<div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading">⚠️ Ошибка загрузки данных</h4>
+    <p>{{ error_message }}</p>
+    <hr>
+    <p class="mb-0">Показана базовая информация о пользователе. Некоторые данные могут быть недоступны.</p>
+</div>
+{% endif %}
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <div>
         <h1 class="h2">

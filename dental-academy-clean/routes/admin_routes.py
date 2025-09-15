@@ -2020,45 +2020,118 @@ def users_list():
 @admin_required
 def user_detail(user_id):
     """Detailed user profile for admin"""
-    user = User.query.get_or_404(user_id)
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Initialize default values
+        stats = {}
+        recent_activity = []
+        progress_summary = {}
+        login_history = []
+        recent_visits = []
+        audit_logs = []
+        is_online = False
+        
+        # Get user statistics with error handling
+        try:
+            stats = user.get_dashboard_stats()
+        except Exception as e:
+            current_app.logger.error(f"Error getting dashboard stats for user {user_id}: {str(e)}")
+            stats = {
+                'total_sessions': 0,
+                'completed_tests': 0,
+                'average_score': 0,
+                'last_activity': None
+            }
+        
+        # Get recent activity with error handling
+        try:
+            recent_activity = user.get_recent_activity(days=30)
+        except Exception as e:
+            current_app.logger.error(f"Error getting recent activity for user {user_id}: {str(e)}")
+            recent_activity = []
+        
+        # Get progress summary with error handling
+        try:
+            progress_summary = user.get_progress_stats()
+        except Exception as e:
+            current_app.logger.error(f"Error getting progress stats for user {user_id}: {str(e)}")
+            progress_summary = {
+                'total_progress': 0,
+                'completed_modules': 0,
+                'total_modules': 0
+            }
+        
+        # Get login history with error handling
+        try:
+            login_history = UserSession.query.filter_by(user_id=user_id).order_by(
+                UserSession.started_at.desc()
+            ).limit(10).all()
+        except Exception as e:
+            current_app.logger.error(f"Error getting login history for user {user_id}: {str(e)}")
+            login_history = []
+        
+        # Get website visits with error handling
+        try:
+            recent_visits = WebsiteVisit.query.filter_by(user_id=user_id).order_by(
+                WebsiteVisit.created_at.desc()
+            ).limit(20).all()
+        except Exception as e:
+            current_app.logger.error(f"Error getting recent visits for user {user_id}: {str(e)}")
+            recent_visits = []
+        
+        # Get audit logs with error handling
+        try:
+            audit_logs = ProfileAuditLog.query.filter_by(user_id=user_id).order_by(
+                ProfileAuditLog.created_at.desc()
+            ).limit(20).all()
+        except Exception as e:
+            current_app.logger.error(f"Error getting audit logs for user {user_id}: {str(e)}")
+            audit_logs = []
+        
+        # Check if user is currently online with error handling
+        try:
+            online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
+            is_online = user.last_login and user.last_login >= online_threshold
+        except Exception as e:
+            current_app.logger.error(f"Error checking online status for user {user_id}: {str(e)}")
+            is_online = False
+        
+        return render_template('admin/user_detail.html',
+                             user=user,
+                             stats=stats,
+                             recent_activity=recent_activity,
+                             progress_summary=progress_summary,
+                             login_history=login_history,
+                             recent_visits=recent_visits,
+                             audit_logs=audit_logs,
+                             is_online=is_online)
     
-    # Get user statistics
-    stats = user.get_dashboard_stats()
-    
-    # Get recent activity
-    recent_activity = user.get_recent_activity(days=30)
-    
-    # Get progress summary
-    progress_summary = user.get_progress_stats()
-    
-    # Get login history (from sessions)
-    login_history = UserSession.query.filter_by(user_id=user_id).order_by(
-        UserSession.started_at.desc()
-    ).limit(10).all()
-    
-    # Get website visits
-    recent_visits = WebsiteVisit.query.filter_by(user_id=user_id).order_by(
-        WebsiteVisit.created_at.desc()
-    ).limit(20).all()
-    
-    # Get audit logs
-    audit_logs = ProfileAuditLog.query.filter_by(user_id=user_id).order_by(
-        ProfileAuditLog.created_at.desc()
-    ).limit(20).all()
-    
-    # Check if user is currently online (active in last 5 minutes)
-    online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
-    is_online = user.last_login and user.last_login >= online_threshold
-    
-    return render_template('admin/user_detail.html',
-                         user=user,
-                         stats=stats,
-                         recent_activity=recent_activity,
-                         progress_summary=progress_summary,
-                         login_history=login_history,
-                         recent_visits=recent_visits,
-                         audit_logs=audit_logs,
-                         is_online=is_online)
+    except Exception as e:
+        current_app.logger.error(f"Error in user_detail route for user {user_id}: {str(e)}")
+        flash(f'Ошибка загрузки профиля пользователя: {str(e)}', 'error')
+        
+        # Try to get basic user info for error page
+        try:
+            user = User.query.get(user_id)
+            if user:
+                return render_template('admin/user_detail.html',
+                                     user=user,
+                                     stats={},
+                                     recent_activity=[],
+                                     progress_summary={},
+                                     login_history=[],
+                                     recent_visits=[],
+                                     audit_logs=[],
+                                     is_online=False,
+                                     error_message=str(e))
+            else:
+                flash('Пользователь не найден', 'error')
+                return redirect(url_for('admin.users_list'))
+        except Exception as e2:
+            current_app.logger.error(f"Error in error handling for user {user_id}: {str(e2)}")
+            flash('Критическая ошибка при загрузке пользователя', 'error')
+            return redirect(url_for('admin.users_list'))
 
 @admin_bp.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 @login_required
