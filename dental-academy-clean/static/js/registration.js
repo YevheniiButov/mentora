@@ -1020,7 +1020,15 @@ function initializeNationalitySearch() {
 function validateRecaptcha() {
     // Check if reCAPTCHA is configured and loaded
     if (typeof grecaptcha === 'undefined') {
+        console.log('reCAPTCHA not configured - skipping validation');
         return true; // Skip validation if reCAPTCHA is not configured
+    }
+    
+    // Check if reCAPTCHA element exists on the page
+    const recaptchaElement = document.querySelector('.g-recaptcha');
+    if (!recaptchaElement) {
+        console.log('reCAPTCHA element not found - skipping validation');
+        return true; // Skip validation if reCAPTCHA element is not present
     }
     
     try {
