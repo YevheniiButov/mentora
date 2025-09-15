@@ -179,7 +179,17 @@ class NotificationSystem {
                 'understand': 'I Understand',
                 'subscribe_notifications': 'Subscribe to Notifications',
                 'limited_offer': '⏰ Limited time offer. Spots in the early access program are limited!',
-                'join_hundreds': '🎯 Join hundreds of medical professionals already preparing with Mentora!'
+                'join_hundreds': '🎯 Join hundreds of medical professionals already preparing with Mentora!',
+                'launch_title': 'Mentora is now live!',
+                'launch_subtitle': 'Platform for medical professionals training',
+                'launch_content': 'Welcome to Mentora - your personal platform for preparing for the BI-toets exam in the Netherlands. Start learning today!',
+                'launch_features': [
+                    'Adaptive testing based on IRT',
+                    'Virtual patients for practice',
+                    'AI assistant for personal learning',
+                    'Preparation specifically for work in the Netherlands'
+                ],
+                'start_learning': 'Start Learning'
             },
             'nl': {
                 'pre_registration_title': 'Voorregistratie is nu open!',
@@ -197,7 +207,17 @@ class NotificationSystem {
                 'understand': 'Ik Begrijp Het',
                 'subscribe_notifications': 'Abonneren op Meldingen',
                 'limited_offer': '⏰ Beperkte tijd aanbieding. Plaatsen in het vroegtijdige toegangsprogramma zijn beperkt!',
-                'join_hundreds': '🎯 Sluit je aan bij honderden medische professionals die al voorbereiden met Mentora!'
+                'join_hundreds': '🎯 Sluit je aan bij honderden medische professionals die al voorbereiden met Mentora!',
+                'launch_title': 'Mentora is nu live!',
+                'launch_subtitle': 'Platform voor medische professionals training',
+                'launch_content': 'Welkom bij Mentora - uw persoonlijke platform voor voorbereiding op het BI-toets examen in Nederland. Begin vandaag nog met leren!',
+                'launch_features': [
+                    'Adaptief testen gebaseerd op IRT',
+                    'Virtuele patiënten voor praktijk',
+                    'AI-assistent voor persoonlijk leren',
+                    'Voorbereiding specifiek voor werk in Nederland'
+                ],
+                'start_learning': 'Begin met Leren'
             },
             'ru': {
                 'pre_registration_title': 'Предварительная регистрация открыта!',
@@ -215,7 +235,17 @@ class NotificationSystem {
                 'understand': 'Понятно',
                 'subscribe_notifications': 'Подписаться на уведомления',
                 'limited_offer': '⏰ Ограниченное предложение. Количество мест в программе раннего доступа ограничено!',
-                'join_hundreds': '🎯 Присоединяйтесь к сотням медицинских специалистов, которые уже готовятся с Mentora!'
+                'join_hundreds': '🎯 Присоединяйтесь к сотням медицинских специалистов, которые уже готовятся с Mentora!',
+                'launch_title': 'Mentora уже запущена!',
+                'launch_subtitle': 'Платформа для подготовки медицинских специалистов',
+                'launch_content': 'Добро пожаловать в Mentora - вашу персональную платформу для подготовки к BI-toets экзамену в Нидерландах. Начните обучение уже сегодня!',
+                'launch_features': [
+                    'Адаптивное тестирование на основе IRT',
+                    'Виртуальные пациенты для практики',
+                    'AI-помощник для персонального обучения',
+                    'Подготовка специально для работы в Нидерландах'
+                ],
+                'start_learning': 'Начать обучение'
             }
         };
         
@@ -278,31 +308,29 @@ class NotificationSystem {
     }
     
     showLaunchAnnouncement() {
+        const t = this.getTranslations();
         this.show({
             type: 'mentora-launch',
             icon: 'bi bi-star-fill',
-            title: 'Mentora уже запущена!',
-            subtitle: 'Платформа для подготовки медицинских специалистов',
-            content: `
-                Добро пожаловать в Mentora - вашу персональную платформу для подготовки 
-                к BI-toets экзамену в Нидерландах. Начните обучение уже сегодня!
-            `,
-            features: [
-                'Адаптивное тестирование на основе IRT',
-                'Виртуальные пациенты для практики',
-                'AI-помощник для персонального обучения',
-                'Подготовка специально для работы в Нидерландах'
+            title: t.launch_title || 'Mentora is now live!',
+            subtitle: t.launch_subtitle || 'Platform for medical professionals training',
+            content: t.launch_content || 'Welcome to Mentora - your personal platform for preparing for the BI-toets exam in the Netherlands. Start learning today!',
+            features: t.launch_features || [
+                'Adaptive testing based on IRT',
+                'Virtual patients for practice',
+                'AI assistant for personal learning',
+                'Preparation specifically for work in the Netherlands'
             ],
             primaryAction: {
-                text: 'Начать обучение',
+                text: t.start_learning || 'Start Learning',
                 url: '/auth/register',
                 icon: 'bi bi-play-circle'
             },
             secondaryAction: {
-                text: 'Узнать больше',
+                text: t.learn_more || 'Learn More',
                 icon: 'bi bi-info-circle'
             },
-            footer: '🎯 Присоединяйтесь к сотням медицинских специалистов, которые уже готовятся с Mentora!'
+            footer: t.join_hundreds || '🎯 Join hundreds of medical professionals already preparing with Mentora!'
         });
     }
     
