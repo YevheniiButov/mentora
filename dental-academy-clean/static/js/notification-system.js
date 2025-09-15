@@ -8,7 +8,7 @@ class NotificationSystem {
         this.overlay = null;
         this.popup = null;
         this.currentNotification = null;
-        this.autoShowDelay = 3000; // 3 секунды после загрузки страницы
+        this.autoShowDelay = 1000; // 1 секунда после загрузки страницы
         this.currentLang = this.detectLanguage();
         
         this.init();
