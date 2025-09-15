@@ -1,345 +1,143 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ feature_name }} - Binnenkort beschikbaar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="coming-soon-container">
+        <div class="coming-soon-content">
+            <div class="icon-container">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h2>{{ feature_name }} komt binnenkort</h2>
+            <p>{{ feature_description or 'Deze functie wordt momenteel ontwikkeld' }}</p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <span class="progress-text">75% voltooid</span>
+            </div>
+            <div class="actions">
+                <a href="{{ url_for('main.index', lang=lang) }}" class="btn-back">
+                    <i class="fas fa-home"></i> Terug naar hoofdpagina
+                </a>
+                <a href="{{ url_for('main.community', lang=lang) }}" class="btn-community">
+                    <i class="fas fa-users"></i> Ga naar community
+                </a>
+            </div>
+        </div>
+    </div>
 
-{% block title %}{{ t('coming_soon', lang) | default('Скоро будет') }} - Mentora{% endblock %}
-
-{% block extra_css %}
-<style>
+    <style>
     .coming-soon-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        position: relative;
-        overflow: hidden;
-        padding-top: 80px; /* Отступ для фиксированной шапки */
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
-    
-    .coming-soon-container::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
-        opacity: 0.3;
-    }
-    
     .coming-soon-content {
-        position: relative;
-        z-index: 1;
-        text-align: left;
-        color: white;
-        max-width: 600px;
-        padding: 2rem;
-    }
-    
-    .coming-soon-icon {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3rem;
-        margin: 0 auto 2rem;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        animation: pulse 2s infinite;
-    }
-    
-    .coming-soon-title {
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         text-align: center;
-    }
-    
-    .coming-soon-subtitle {
-        font-size: 1.3rem;
-        margin-bottom: 2rem;
-        opacity: 0.9;
-        font-weight: 500;
-        text-align: center;
-    }
-    
-    .coming-soon-description {
-        font-size: 1.1rem;
-        margin-bottom: 3rem;
-        opacity: 0.8;
-        line-height: 1.6;
-        text-align: center;
-    }
-    
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-        }
-        70% {
-            transform: scale(1.05);
-            box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
-        }
-        100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-        }
-    }
-    
-    
-    .features-list {
-        background: rgba(255, 255, 255, 0.1);
+        background: white;
+        padding: 3rem;
         border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 3rem;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        max-width: 500px;
+        width: 90%;
     }
-    
-    .features-title {
-        font-size: 1.5rem;
-        font-weight: 600;
+    .icon-container {
+        font-size: 4rem;
+        color: #667eea;
         margin-bottom: 1.5rem;
-        color: white;
-        text-align: left;
     }
-    
-    .feature-item {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
+    h2 {
+        color: #2c3e50;
         margin-bottom: 1rem;
-        padding: 0.75rem;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        justify-content: flex-start;
-        text-align: left;
+        font-weight: 700;
     }
-    
-    .feature-item:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
+    p {
+        color: #6c757d;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
     }
-    
-    .feature-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        color: white;
+    .progress-container {
+        margin: 2rem 0;
     }
-    
-    .feature-text {
-        font-size: 1rem;
-        font-weight: 500;
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #eee;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
     }
-    
-    .action-buttons {
+    .progress-fill {
+        height: 100%;
+        width: 75%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        animation: pulse 2s ease-in-out infinite;
+    }
+    .progress-text {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    .actions {
         display: flex;
         gap: 1rem;
         justify-content: center;
         flex-wrap: wrap;
     }
-    
-    .btn-primary {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        padding: 1rem 2rem;
-        border-radius: 12px;
+    .btn-back, .btn-community {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
         font-weight: 600;
-        font-size: 1.1rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        backdrop-filter: blur(10px);
-    }
-    
-    .btn-primary:hover {
-        background: rgba(255, 255, 255, 0.3);
-        border-color: rgba(255, 255, 255, 0.5);
-        transform: translateY(-2px);
-        text-decoration: none;
-        color: white;
-    }
-    
-    .btn-secondary {
-        background: transparent;
-        color: white;
-        border: 2px solid rgba(255, 255, 255, 0.5);
-        padding: 1rem 2rem;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 1.1rem;
-        text-decoration: none;
         transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
     }
-    
-    .btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.8);
-        transform: translateY(-2px);
-        text-decoration: none;
+    .btn-back {
+        background: #667eea;
         color: white;
     }
-    
-    
-    @media (max-width: 768px) {
-        .coming-soon-container {
-            padding-top: 70px; /* Меньший отступ для мобильных */
-        }
-        
+    .btn-back:hover {
+        background: #5a67d8;
+        transform: translateY(-2px);
+        color: white;
+    }
+    .btn-community {
+        background: #48bb78;
+        color: white;
+    }
+    .btn-community:hover {
+        background: #38a169;
+        transform: translateY(-2px);
+        color: white;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    @media (max-width: 576px) {
         .coming-soon-content {
-            padding: 1rem;
+            padding: 2rem 1.5rem;
         }
-        
-        .coming-soon-icon {
-            width: 100px;
-            height: 100px;
-            font-size: 2.5rem;
-        }
-        
-        .coming-soon-title {
-            font-size: 2.5rem;
-        }
-        
-        .coming-soon-subtitle {
-            font-size: 1.1rem;
-        }
-        
-        .features-list {
-            padding: 1.5rem;
-        }
-        
-        .action-buttons {
+        .actions {
             flex-direction: column;
             align-items: center;
         }
-        
-        .btn-primary,
-        .btn-secondary {
+        .btn-back, .btn-community {
             width: 100%;
-            max-width: 300px;
             justify-content: center;
         }
-        
     }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="coming-soon-container">
-    <div class="coming-soon-content">
-        <div class="coming-soon-icon">
-            <i class="fas fa-rocket"></i>
-        </div>
-        
-        <h1 class="coming-soon-title">
-            {{ t('coming_soon', lang) | default('Скоро будет') }}
-        </h1>
-        
-        <p class="coming-soon-subtitle">
-            {{ t('coming_soon_subtitle', lang) | default('Мы работаем над новой функцией') }}
-        </p>
-        
-        <p class="coming-soon-description">
-            {{ t('coming_soon_description', lang) | default('Эта функция находится в активной разработке. Мы приложим все усилия, чтобы сделать её доступной как можно скорее.') }}
-        </p>
-        
-        
-        <!-- Список функций -->
-        <div class="features-list">
-            <h3 class="features-title">
-                {{ t('coming_features', lang) | default('Что будет доступно') }}
-            </h3>
-            
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <div class="feature-text">
-                    {{ t('diagnostic_testing', lang) | default('Диагностическое тестирование') }}
-                </div>
-            </div>
-            
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <i class="fas fa-book-open"></i>
-                </div>
-                <div class="feature-text">
-                    {{ t('interactive_learning', lang) | default('Интерактивное обучение') }}
-                </div>
-            </div>
-            
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <i class="fas fa-clipboard-check"></i>
-                </div>
-                <div class="feature-text">
-                    {{ t('practice_tests', lang) | default('Практические тесты') }}
-                </div>
-            </div>
-            
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="feature-text">
-                    {{ t('ai_assistant', lang) | default('AI-помощник') }}
-                </div>
-            </div>
-            
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <i class="fas fa-user-md"></i>
-                </div>
-                <div class="feature-text">
-                    {{ t('virtual_patients', lang) | default('Виртуальные пациенты') }}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Кнопки действий -->
-        <div class="action-buttons">
-            <a href="{{ url_for('main.index', lang=lang) }}" class="btn-primary">
-                <i class="fas fa-home"></i>
-                {{ t('back_to_home', lang) | default('На главную') }}
-            </a>
-            
-            <a href="{{ url_for('main.community', lang=lang) }}" class="btn-secondary">
-                <i class="fas fa-users"></i>
-                {{ t('join_community', lang) | default('Сообщество') }}
-            </a>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Анимация появления элементов
-    const elements = document.querySelectorAll('.feature-item');
-    elements.forEach((element, index) => {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(20px)';
-        
-        setTimeout(() => {
-            element.style.transition = 'all 0.5s ease';
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0)';
-        }, 500 + (index * 100));
-    });
-});
-</script>
-{% endblock %}
+    </style>
+</body>
+</html>
