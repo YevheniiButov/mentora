@@ -46,6 +46,11 @@ class Config:
     # Base URL for email links
     BASE_URL = os.environ.get('BASE_URL', 'https://mentora.com.in')
     
+    # Server configuration for URL generation
+    SERVER_NAME = os.environ.get('SERVER_NAME', 'mentora.com.in')
+    APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
+    PREFERRED_URL_SCHEME = os.environ.get('PREFERRED_URL_SCHEME', 'https')
+    
     # Contact information
     SUPPORT_EMAIL = 'support@mentora.com.in'
     INFO_EMAIL = 'info@mentora.com.in'

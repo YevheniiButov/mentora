@@ -67,7 +67,8 @@
     <!-- 6. Мобильные исправления -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-responsive-fixes.css') }}">
     
-    <!-- 7. Coming Soon Overlay (встроенный) -->
+    <!-- 7. Notification System -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notification-system.css') }}">
     
     <!-- Page-specific styles -->
     {% block head %}{% endblock %}
@@ -165,200 +166,7 @@
     {% block styles %}{% endblock %}
     {% block extra_css %}{% endblock %}
     
-    <!-- Баннер уведомлений - стили -->
-    <style>
-    /* ===== СТИЛИ ДЛЯ БАННЕРА УВЕДОМЛЕНИЯ ===== */
-    .early-access-banner {
-      background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
-      color: white;
-      padding: 1.25rem 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1001;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      animation: slideDown 0.5s ease-out;
-      margin-bottom: 0;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Сдвигаем header вниз когда есть баннер */
-    body:has(.early-access-banner:not(.hidden)) .modern-header {
-      top: 80px !important;
-    }
-    
-    /* Добавляем отступ для body только на главной странице */
-    body:has(.early-access-banner:not(.hidden)) {
-      padding-top: 90px !important;
-    }
-    
-    /* На других страницах убираем отступ если баннера нет */
-    body:not(:has(.early-access-banner)) {
-      padding-top: 0 !important;
-    }
 
-    @keyframes slideDown {
-      from {
-        transform: translateY(-100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .banner-content {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .banner-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex: 1;
-    }
-
-    .announcement-icon {
-      font-size: 1.5rem;
-      color: white;
-    }
-
-    .announcement-text {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .announcement-text strong {
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-
-    .announcement-text span {
-      font-size: 0.9rem;
-      opacity: 0.9;
-    }
-
-    .banner-right {
-      display: flex;
-      align-items: center;
-    }
-
-    .banner-cta-btn {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .banner-cta-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-      color: white;
-      transform: translateY(-2px);
-    }
-
-    .banner-close {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 4px;
-      transition: background 0.3s ease;
-      margin-left: 1rem;
-    }
-
-    .banner-close:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Мобильная адаптация */
-    @media (max-width: 768px) {
-      .early-access-banner {
-        padding: 0.75rem 0;
-      }
-      
-      .banner-content {
-        flex-direction: column;
-        gap: 0.75rem;
-        text-align: center;
-      }
-      
-      .banner-left {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      
-      .announcement-text {
-        text-align: center;
-      }
-      
-      .banner-cta-btn {
-        padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;
-      }
-    }
-
-    /* Скрытие баннера */
-    .early-access-banner.hidden {
-      animation: slideUp 0.3s ease-out forwards;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateY(-100%);
-        opacity: 0;
-      }
-    }
-
-    /* Темная тема */
-    [data-theme="dark"] .early-access-banner {
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    [data-theme="dark"] .banner-cta-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    [data-theme="dark"] .banner-cta-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Если баннер скрыт, убираем отступ */
-    .early-access-banner.hidden {
-      display: none !important;
-    }
-    
-    /* Возвращаем header на место когда баннер скрыт или на страницах без баннера */
-    body:has(.early-access-banner.hidden) .modern-header,
-    body:not(:has(.early-access-banner)) .modern-header {
-      top: 0 !important;
-    }
-    
-    /* Убираем отступ body когда баннер скрыт */
-    body:has(.early-access-banner.hidden) {
-      padding-top: 0 !important;
-    }
-    </style>
     
     <!-- Enhanced Editor Styles -->
     {% if request.endpoint and request.endpoint == 'content_editor.enhanced_editor' %}
@@ -801,30 +609,8 @@
     {% block scripts %}{% endblock %}
     {% block body_scripts %}{% endblock %}
     
-    <!-- JavaScript для баннера уведомлений -->
-    <script>
-    // === ФУНКЦИИ ДЛЯ БАННЕРА УВЕДОМЛЕНИЯ === 
-    // Функция закрытия баннера
-    function closeBanner() {
-        const banner = document.querySelector('.early-access-banner');
-        if (banner) {
-            banner.classList.add('hidden');
-            
-            // Сохраняем состояние в localStorage
-            localStorage.setItem('earlyAccessBannerClosed', 'true');
-        }
-    }
-
-    // Проверяем, был ли баннер закрыт ранее
-    document.addEventListener('DOMContentLoaded', function() {
-        if (localStorage.getItem('earlyAccessBannerClosed') === 'true') {
-            const banner = document.querySelector('.early-access-banner');
-            if (banner) {
-                banner.classList.add('hidden');
-            }
-        }
-    });
-    </script>
+    <!-- Notification System -->
+    <script src="{{ url_for('static', filename='js/notification-system.js') }}"></script>
     
     <!-- Simple Coming Soon Overlay -->
     

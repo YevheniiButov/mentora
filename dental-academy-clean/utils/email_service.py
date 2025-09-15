@@ -15,7 +15,7 @@ def init_mail(app):
 def send_email_confirmation(user, token):
     """Send email confirmation to user"""
     try:
-        # Generate URLs
+        # Generate URLs - используем статические URL для избежания ошибок вне контекста запроса
         base_url = current_app.config.get('BASE_URL', 'https://mentora.com.in')
         confirmation_url = f"{base_url}/auth/confirm-email/{token}"
         unsubscribe_url = f"{base_url}/auth/unsubscribe/{user.id}"
@@ -47,16 +47,46 @@ def send_email_confirmation(user, token):
         )
         
         # Render email template
-        msg.html = render_template('emails/confirm_email.html', 
-                                 user=user, 
-                                 confirmation_url=confirmation_url,
-                                 unsubscribe_url=unsubscribe_url,
-                                 privacy_policy_url=privacy_policy_url)
-        msg.body = render_template('emails/confirm_email.txt', 
-                                 user=user, 
-                                 confirmation_url=confirmation_url,
-                                 unsubscribe_url=unsubscribe_url,
-                                 privacy_policy_url=privacy_policy_url)
+        try:
+            msg.html = render_template('emails/confirm_email.html', 
+                                     user=user, 
+                                     confirmation_url=confirmation_url,
+                                     unsubscribe_url=unsubscribe_url,
+                                     privacy_policy_url=privacy_policy_url)
+        except Exception as template_error:
+            current_app.logger.warning(f"Failed to render HTML email template: {template_error}")
+            # Fallback HTML content
+            msg.html = f"""
+            <h1>Подтверждение регистрации</h1>
+            <p>Здравствуйте, {user.first_name}!</p>
+            <p>Для подтверждения вашего email адреса, пожалуйста, перейдите по ссылке:</p>
+            <p><a href="{confirmation_url}">Подтвердить email</a></p>
+            <p>Если вы не регистрировались на нашем сайте, просто проигнорируйте это письмо.</p>
+            <p>С уважением,<br>Команда Mentora</p>
+            """
+        
+        try:
+            msg.body = render_template('emails/confirm_email.txt', 
+                                     user=user, 
+                                     confirmation_url=confirmation_url,
+                                     unsubscribe_url=unsubscribe_url,
+                                     privacy_policy_url=privacy_policy_url)
+        except Exception as template_error:
+            current_app.logger.warning(f"Failed to render text email template: {template_error}")
+            # Fallback text content
+            msg.body = f"""
+Подтверждение регистрации
+
+Здравствуйте, {user.first_name}!
+
+Для подтверждения вашего email адреса, пожалуйста, перейдите по ссылке:
+{confirmation_url}
+
+Если вы не регистрировались на нашем сайте, просто проигнорируйте это письмо.
+
+С уважением,
+Команда Mentora
+            """
         
         # Send email
         mail.send(msg)
