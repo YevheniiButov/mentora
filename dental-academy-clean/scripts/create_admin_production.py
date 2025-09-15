@@ -18,11 +18,17 @@ def create_admin_production():
     
     with app.app_context():
         try:
+            # Проверяем общее количество пользователей
+            total_users = User.query.count()
+            print(f"📊 Всего пользователей в системе: {total_users}")
+            
             # Проверяем, есть ли уже админы
             existing_admins = User.query.filter_by(role='admin').count()
+            print(f"👑 Администраторов: {existing_admins}")
             
             if existing_admins > 0:
                 print(f"✅ Администраторы уже существуют ({existing_admins} шт.)")
+                print("🔒 Существующие пользователи НЕ затронуты!")
                 return
             
             # Создаем администратора
@@ -54,6 +60,7 @@ def create_admin_production():
             print(f"   Email: {admin_email}")
             print(f"   Пароль: {admin_password}")
             print(f"   Роль: admin")
+            print("🔒 ВАЖНО: Существующие пользователи НЕ затронуты!")
             
         except Exception as e:
             print(f"❌ Ошибка создания администратора: {str(e)}")
