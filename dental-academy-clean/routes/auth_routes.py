@@ -19,8 +19,28 @@ auth_bp = Blueprint('auth', __name__)
 
 # reCAPTCHA validation
 def verify_recaptcha(response_token):
-    """Verify reCAPTCHA token with Google"""
+    """Verify reCAPTCHA token with Google - с экстренным обходом"""
+    
+    # === ЭКСТРЕННОЕ ИСПРАВЛЕНИЕ ===
+    # Проверяем включена ли reCAPTCHA в продакшене
+    recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
+    if not recaptcha_enabled:
+        print("=== reCAPTCHA DISABLED - BYPASSING ===")
+        return True
+    
     secret_key = current_app.config.get('RECAPTCHA_PRIVATE_KEY', '6LdnzsYrAAAAABe7nFDNs9L7PfSNujJZLQOywdKd')
+    
+    # Если нет ключа - пропускаем
+    if not secret_key or secret_key.strip() == '':
+        print("=== NO RECAPTCHA KEY - BYPASSING ===")
+        return True
+    
+    # Если нет токена - пропускаем только в development
+    if not response_token:
+        if current_app.config.get('FLASK_ENV') == 'development':
+            print("=== DEVELOPMENT MODE - BYPASSING RECAPTCHA ===")
+            return True
+        return False
     
     data = {
         'secret': secret_key,
@@ -30,9 +50,21 @@ def verify_recaptcha(response_token):
     try:
         response = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data, timeout=10)
         result = response.json()
-        return result.get('success', False)
+        success = result.get('success', False)
+        
+        print(f"=== reCAPTCHA RESULT: {success} ===")
+        if not success:
+            print(f"=== reCAPTCHA ERRORS: {result.get('error-codes', [])} ===")
+        
+        return success
     except Exception as e:
-        print(f"reCAPTCHA verification error: {e}")
+        print(f"=== reCAPTCHA ERROR: {str(e)} ===")
+        
+        # В случае ошибки API - пропускаем в development
+        if current_app.config.get('FLASK_ENV') == 'development':
+            print("=== reCAPTCHA API ERROR - BYPASSING IN DEV ===")
+            return True
+        
         return False
 
 # Email validation

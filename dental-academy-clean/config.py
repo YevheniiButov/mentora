@@ -69,6 +69,7 @@ class Config:
     EMAIL_CONFIRMATION_SALT = os.environ.get('EMAIL_CONFIRMATION_SALT', 'email-confirmation-salt')
     
     # reCAPTCHA Configuration - ENABLED WITH REAL KEYS
+    RECAPTCHA_ENABLED = os.environ.get('RECAPTCHA_ENABLED', 'true').lower() == 'true'
     RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '6LdnzsYrAAAAAPJW6XXO1gAXA2xzYOJ7GGwqV2R8')
     RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', '6LdnzsYrAAAAABe7nFDNs9L7PfSNujJZLQOywdKd')
     
