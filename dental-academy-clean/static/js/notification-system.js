@@ -167,6 +167,7 @@ class NotificationSystem {
                 'pre_registration_title': 'Pre-registration is now open!',
                 'pre_registration_subtitle': 'Be among the first to join Mentora',
                 'pre_registration_content': '🎉 We are excited to announce that pre-registration for Mentora is now open! Secure your spot in our exclusive early access program.',
+                'pre_registration_content_short': '🎉 Pre-registration for Mentora is now open! Secure your spot in our exclusive early access program.',
                 'pre_registration_features': [
                     'Early access to all courses',
                     'Personal guidance from specialists',
@@ -195,6 +196,7 @@ class NotificationSystem {
                 'pre_registration_title': 'Voorregistratie is nu open!',
                 'pre_registration_subtitle': 'Wees een van de eersten die zich bij Mentora aansluit',
                 'pre_registration_content': '🎉 We zijn verheugd aan te kondigen dat voorregistratie voor Mentora nu open is! Zeker je plek in ons exclusieve vroegtijdige toegangsprogramma.',
+                'pre_registration_content_short': '🎉 Voorregistratie voor Mentora is nu open! Zeker je plek in ons exclusieve vroegtijdige toegangsprogramma.',
                 'pre_registration_features': [
                     'Vroege toegang tot alle cursussen',
                     'Persoonlijke begeleiding van specialisten',
@@ -223,6 +225,7 @@ class NotificationSystem {
                 'pre_registration_title': 'Предварительная регистрация открыта!',
                 'pre_registration_subtitle': 'Станьте одним из первых участников Mentora',
                 'pre_registration_content': '🎉 Мы рады сообщить, что предварительная регистрация в Mentora теперь открыта! Закрепите свое место в нашей эксклюзивной программе раннего доступа.',
+                'pre_registration_content_short': '🎉 Предварительная регистрация в Mentora открыта! Закрепите свое место в программе раннего доступа.',
                 'pre_registration_features': [
                     'Ранний доступ ко всем курсам',
                     'Персональное сопровождение специалистов',
@@ -263,8 +266,7 @@ class NotificationSystem {
             icon: 'bi bi-rocket-takeoff',
             title: t.pre_registration_title,
             subtitle: t.pre_registration_subtitle,
-            content: t.pre_registration_content,
-            features: t.pre_registration_features,
+            content: t.pre_registration_content_short,
             primaryAction: {
                 text: t.register_now,
                 url: '/auth/register',
@@ -273,8 +275,7 @@ class NotificationSystem {
             secondaryAction: {
                 text: t.remind_later,
                 icon: 'bi bi-clock'
-            },
-            footer: t.limited_offer
+            }
         });
     }
     
