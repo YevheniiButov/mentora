@@ -2029,7 +2029,7 @@ translations = {
     'sources_for': 'fuentes para',
     'of_dentistry': 'de odontología',
     'that_show_you': 'que muestran que',
-    'diploma': 'diploma',
+    'diploma': 'Diploma',
     'eu_eea': 'UE/EEE',
     'validity': 'Validez',
     'entire_procedure': 'procedimiento completo',

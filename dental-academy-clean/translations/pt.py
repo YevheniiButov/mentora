@@ -1977,7 +1977,7 @@ translations = {
     'sources_for': 'fontes para',
     'of_dentistry': 'de odontologia',
     'that_show_you': 'que mostram que',
-    'diploma': 'diploma',
+    'diploma': 'Diploma',
     'eu_eea': 'UE/EEE',
     'validity': 'Validade',
     'entire_procedure': 'procedimento completo',

@@ -2250,7 +2250,7 @@ translations = {
     'sources_for': 'источники для',
     'of_dentistry': 'стоматологии',
     'that_show_you': 'которые показывают, что вы',
-    'diploma': 'диплом',
+    'diploma': 'Диплом',
     'eu_eea': 'ЕС/ЕЭЗ',
     'validity': 'Действительность',
     'entire_procedure': 'весь процесс',

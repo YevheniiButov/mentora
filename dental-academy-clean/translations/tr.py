@@ -1938,7 +1938,7 @@ translations = {
     'sources_for': 'kaynaklar için',
     'of_dentistry': 'diş hekimliği',
     'that_show_you': 'gösteren',
-    'diploma': 'diploma',
+    'diploma': 'Diploma',
     'eu_eea': 'AB/AEA',
     'validity': 'Geçerlilik',
     'entire_procedure': 'tüm prosedür',

@@ -1957,7 +1957,7 @@ translations = {
     'sources_for': 'джерела для',
     'of_dentistry': 'стоматології',
     'that_show_you': 'що показують, що ви',
-    'diploma': 'диплом',
+    'diploma': 'Диплом',
     'eu_eea': 'ЄС/ЄЕЗ',
     'validity': 'Дійсність',
     'entire_procedure': 'весь процес',

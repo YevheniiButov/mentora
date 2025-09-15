@@ -2348,7 +2348,7 @@ translations = {
     'sources_for': 'sources for',
     'of_dentistry': 'of dentistry',
     'that_show_you': 'that show you',
-    'diploma': 'diploma',
+    'diploma': 'Diploma',
     'eu_eea': 'EU/EEA',
     'validity': 'Validity',
     'entire_procedure': 'entire procedure',
