@@ -11,8 +11,8 @@ services:
   echo "Database tables created/updated" &&
   python scripts/check_database_safety.py &&
   echo "Database safety check completed" &&
-  python scripts/create_admin_production.py &&
-  echo "Admin user check completed" &&
+  python scripts/ensure_admin_production.py &&
+  echo "Admin user ensured completed" &&
   echo "✅ SAFE DEPLOY: Production updated - $(date)"
     startCommand: gunicorn app:app
     envVars:
