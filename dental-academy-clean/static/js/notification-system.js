@@ -9,8 +9,22 @@ class NotificationSystem {
         this.popup = null;
         this.currentNotification = null;
         this.autoShowDelay = 3000; // 3 секунды после загрузки страницы
+        this.currentLang = this.detectLanguage();
         
         this.init();
+    }
+    
+    detectLanguage() {
+        // Определяем язык из meta тега или localStorage
+        const metaLang = document.querySelector('meta[name="current-language"]');
+        if (metaLang) {
+            return metaLang.getAttribute('content');
+        }
+        
+        // Fallback на localStorage или браузер
+        return localStorage.getItem('mentora_language') || 
+               (navigator.language || navigator.userLanguage).split('-')[0] || 
+               'en';
     }
     
     init() {
@@ -144,8 +158,95 @@ class NotificationSystem {
     }
     
     // ========================================
+    // ПЕРЕВОДЫ
+    // ========================================
+    
+    getTranslations() {
+        const translations = {
+            'en': {
+                'pre_registration_title': 'Pre-registration is now open!',
+                'pre_registration_subtitle': 'Be among the first to join Mentora',
+                'pre_registration_content': '🎉 We are excited to announce that pre-registration for Mentora is now open! Secure your spot in our exclusive early access program.',
+                'pre_registration_features': [
+                    'Early access to all courses',
+                    'Personal guidance from specialists',
+                    'Priority technical support',
+                    'Exclusive BIG exam preparation materials'
+                ],
+                'register_now': 'Register Now',
+                'remind_later': 'Remind Later',
+                'learn_more': 'Learn More',
+                'understand': 'I Understand',
+                'subscribe_notifications': 'Subscribe to Notifications',
+                'limited_offer': '⏰ Limited time offer. Spots in the early access program are limited!',
+                'join_hundreds': '🎯 Join hundreds of medical professionals already preparing with Mentora!'
+            },
+            'nl': {
+                'pre_registration_title': 'Voorregistratie is nu open!',
+                'pre_registration_subtitle': 'Wees een van de eersten die zich bij Mentora aansluit',
+                'pre_registration_content': '🎉 We zijn verheugd aan te kondigen dat voorregistratie voor Mentora nu open is! Zeker je plek in ons exclusieve vroegtijdige toegangsprogramma.',
+                'pre_registration_features': [
+                    'Vroege toegang tot alle cursussen',
+                    'Persoonlijke begeleiding van specialisten',
+                    'Prioritaire technische ondersteuning',
+                    'Exclusieve BIG-examen voorbereidingsmaterialen'
+                ],
+                'register_now': 'Registreer Nu',
+                'remind_later': 'Later Herinneren',
+                'learn_more': 'Meer Informatie',
+                'understand': 'Ik Begrijp Het',
+                'subscribe_notifications': 'Abonneren op Meldingen',
+                'limited_offer': '⏰ Beperkte tijd aanbieding. Plaatsen in het vroegtijdige toegangsprogramma zijn beperkt!',
+                'join_hundreds': '🎯 Sluit je aan bij honderden medische professionals die al voorbereiden met Mentora!'
+            },
+            'ru': {
+                'pre_registration_title': 'Предварительная регистрация открыта!',
+                'pre_registration_subtitle': 'Станьте одним из первых участников Mentora',
+                'pre_registration_content': '🎉 Мы рады сообщить, что предварительная регистрация в Mentora теперь открыта! Закрепите свое место в нашей эксклюзивной программе раннего доступа.',
+                'pre_registration_features': [
+                    'Ранний доступ ко всем курсам',
+                    'Персональное сопровождение специалистов',
+                    'Приоритетная техническая поддержка',
+                    'Эксклюзивные материалы для подготовки к BIG экзамену'
+                ],
+                'register_now': 'Зарегистрироваться',
+                'remind_later': 'Напомнить позже',
+                'learn_more': 'Узнать больше',
+                'understand': 'Понятно',
+                'subscribe_notifications': 'Подписаться на уведомления',
+                'limited_offer': '⏰ Ограниченное предложение. Количество мест в программе раннего доступа ограничено!',
+                'join_hundreds': '🎯 Присоединяйтесь к сотням медицинских специалистов, которые уже готовятся с Mentora!'
+            }
+        };
+        
+        return translations[this.currentLang] || translations['en'];
+    }
+    
+    // ========================================
     // ПРЕДУСТАНОВЛЕННЫЕ УВЕДОМЛЕНИЯ
     // ========================================
+    
+    showPreRegistration() {
+        const t = this.getTranslations();
+        this.show({
+            type: 'pre-registration',
+            icon: 'bi bi-rocket-takeoff',
+            title: t.pre_registration_title,
+            subtitle: t.pre_registration_subtitle,
+            content: t.pre_registration_content,
+            features: t.pre_registration_features,
+            primaryAction: {
+                text: t.register_now,
+                url: '/auth/register',
+                icon: 'bi bi-person-plus'
+            },
+            secondaryAction: {
+                text: t.remind_later,
+                icon: 'bi bi-clock'
+            },
+            footer: t.limited_offer
+        });
+    }
     
     showEarlyAccess() {
         this.show({
@@ -268,7 +369,6 @@ class NotificationSystem {
     // ========================================
     
     checkAutoShow() {
-        // АВТОМАТИЧЕСКИЙ ПОКАЗ ОТКЛЮЧЕН ДЛЯ ИСПРАВЛЕНИЯ ПРОБЛЕМЫ С ПРОКРУТКОЙ
         // Проверяем, показывать ли уведомление автоматически
         const lastShown = localStorage.getItem('mentora_notification_last_shown');
         const notificationDismissed = localStorage.getItem('mentora_notification_dismissed');
@@ -279,13 +379,12 @@ class NotificationSystem {
             // Если уведомление не было отклонено и не показывалось сегодня
             const today = new Date().toDateString();
             
-            // ВРЕМЕННО ОТКЛЮЧЕНО: автоматический показ блокирует прокрутку
-            // if (!notificationDismissed && lastShown !== today) {
-            //     setTimeout(() => {
-            //         this.showLaunchAnnouncement();
-            //         localStorage.setItem('mentora_notification_last_shown', today);
-            //     }, this.autoShowDelay);
-            // }
+            if (!notificationDismissed && lastShown !== today) {
+                setTimeout(() => {
+                    this.showPreRegistration();
+                    localStorage.setItem('mentora_notification_last_shown', today);
+                }, this.autoShowDelay);
+            }
         }
     }
     
@@ -294,7 +393,12 @@ class NotificationSystem {
     // ========================================
     
     handleSecondaryAction(type) {
-        if (type === 'early-access') {
+        if (type === 'pre-registration') {
+            // Напомнить позже - устанавливаем отложенный показ
+            const remindDate = new Date();
+            remindDate.setDate(remindDate.getDate() + 1); // Через день
+            localStorage.setItem('mentora_notification_remind_date', remindDate.toISOString());
+        } else if (type === 'early-access') {
             // Напомнить позже - устанавливаем отложенный показ
             const remindDate = new Date();
             remindDate.setDate(remindDate.getDate() + 1); // Через день
@@ -381,12 +485,14 @@ class NotificationSystem {
     // Для тестирования в консоли
     test() {
         console.log('🎯 Testing Mentora Notifications:');
+        console.log('mentorNotifications.showPreRegistration() - показать предварительную регистрацию');
         console.log('mentorNotifications.showEarlyAccess() - показать ранний доступ');
         console.log('mentorNotifications.showLaunchAnnouncement() - показать запуск');
         console.log('mentorNotifications.showBigExamInfo() - показать info о BI-toets');
         console.log('mentorNotifications.showMaintenanceWarning() - показать предупреждение');
         console.log('mentorNotifications.getAnalytics() - получить аналитику');
         console.log('mentorNotifications.resetAnalytics() - сбросить аналитику');
+        console.log('mentorNotifications.currentLang - текущий язык:', this.currentLang);
     }
 }
 
