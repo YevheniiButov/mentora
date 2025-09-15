@@ -2143,9 +2143,24 @@ def user_detail_extended(user_id):
     try:
         user = User.query.get_or_404(user_id)
         
-        # Check if user is currently online
-        online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
-        is_online = user.last_login and user.last_login >= online_threshold
+        # Check if user is currently online (fix timezone issue)
+        is_online = False
+        try:
+            if user.last_login:
+                # Make both datetimes timezone-aware for comparison
+                now_utc = datetime.now(timezone.utc)
+                
+                # If last_login is naive, assume it's UTC
+                if user.last_login.tzinfo is None:
+                    last_login_utc = user.last_login.replace(tzinfo=timezone.utc)
+                else:
+                    last_login_utc = user.last_login
+                
+                online_threshold = now_utc - timedelta(minutes=5)
+                is_online = last_login_utc >= online_threshold
+        except Exception as tz_error:
+            current_app.logger.warning(f"Error checking online status for user {user_id}: {str(tz_error)}")
+            is_online = False
         
         return render_template('admin/user_detail_extended.html',
                              user=user,

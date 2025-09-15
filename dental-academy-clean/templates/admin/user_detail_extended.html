@@ -101,7 +101,13 @@
                             </tr>
                             <tr>
                                 <td><strong>Дата рождения:</strong></td>
-                                <td>{{ user.birth_date.strftime('%d.%m.%Y') if user.birth_date else 'Не указана' }}</td>
+                                <td>
+                                    {% if user.birth_date %}
+                                        {{ user.birth_date.strftime('%d.%m.%Y') }}
+                                    {% else %}
+                                        Не указана
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Гражданство:</strong></td>
@@ -146,11 +152,23 @@
                             </tr>
                             <tr>
                                 <td><strong>Регистрация:</strong></td>
-                                <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') if user.created_at else 'Неизвестно' }}</td>
+                                <td>
+                                    {% if user.created_at %}
+                                        {{ user.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                    {% else %}
+                                        Неизвестно
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Последний вход:</strong></td>
-                                <td>{{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Никогда' }}</td>
+                                <td>
+                                    {% if user.last_login %}
+                                        {{ user.last_login.strftime('%d.%m.%Y %H:%M') }}
+                                    {% else %}
+                                        Никогда
+                                    {% endif %}
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -251,7 +269,13 @@
                             </tr>
                             <tr>
                                 <td><strong>Дата рождения:</strong></td>
-                                <td>{{ user.birth_date.strftime('%d.%m.%Y') if user.birth_date else 'Не указана' }}</td>
+                                <td>
+                                    {% if user.birth_date %}
+                                        {{ user.birth_date.strftime('%d.%m.%Y') }}
+                                    {% else %}
+                                        Не указана
+                                    {% endif %}
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -379,7 +403,13 @@
                             </tr>
                             <tr>
                                 <td><strong>Планируемая дата экзамена:</strong></td>
-                                <td>{{ user.exam_date.strftime('%d.%m.%Y') if user.exam_date else 'Не указана' }}</td>
+                                <td>
+                                    {% if user.exam_date %}
+                                        {{ user.exam_date.strftime('%d.%m.%Y') }}
+                                    {% else %}
+                                        Не указана
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Время подготовки:</strong></td>
@@ -520,6 +550,17 @@
 
 {% block extra_js %}
 <script>
+// Функция для безопасного форматирования дат
+function formatDateSafe(dateString) {
+    if (!dateString) return 'Не указана';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU');
+    } catch (e) {
+        return dateString;
+    }
+}
+
 // Инициализация Bootstrap табов
 document.addEventListener('DOMContentLoaded', function() {
     var triggerTabList = [].slice.call(document.querySelectorAll('#userTabs button'))
