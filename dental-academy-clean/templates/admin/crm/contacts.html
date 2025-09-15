@@ -1,0 +1,601 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление контактами - CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+.contacts-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-left: 5px solid #667eea;
+}
+
+.contact-row {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #28a745;
+    transition: transform 0.3s ease;
+}
+
+.contact-row:hover {
+    transform: translateY(-2px);
+}
+
+.contact-row.lead {
+    border-left-color: #ffc107;
+}
+
+.contact-row.prospect {
+    border-left-color: #17a2b8;
+}
+
+.contact-row.active {
+    border-left-color: #28a745;
+}
+
+.contact-row.converted {
+    border-left-color: #6f42c1;
+}
+
+.contact-header {
+    display: flex;
+    justify-content-between;
+    align-items-center;
+    margin-bottom: 15px;
+}
+
+.contact-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.contact-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.contact-status.lead {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.contact-status.prospect {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.contact-status.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.contact-status.converted {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.contact-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.contact-detail {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.contact-detail-label {
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.contact-detail-value {
+    color: #333;
+    word-break: break-word;
+}
+
+.filter-controls {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.filter-group {
+    margin-bottom: 15px;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.filter-select, .filter-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    background: white;
+    color: #495057;
+    transition: border-color 0.3s ease;
+}
+
+.filter-select:focus, .filter-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.filter-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-right: 10px;
+}
+
+.filter-btn:hover {
+    background: #5a6fd8;
+}
+
+.clear-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.clear-btn:hover {
+    background: #5a6268;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.action-btn.primary {
+    background: #667eea;
+    color: white;
+}
+
+.action-btn.primary:hover {
+    background: #5a6fd8;
+    color: white;
+}
+
+.action-btn.success {
+    background: #28a745;
+    color: white;
+}
+
+.action-btn.success:hover {
+    background: #218838;
+    color: white;
+}
+
+.action-btn.warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.action-btn.warning:hover {
+    background: #e0a800;
+    color: #333;
+}
+
+.action-btn.danger {
+    background: #dc3545;
+    color: white;
+}
+
+.action-btn.danger:hover {
+    background: #c82333;
+    color: white;
+}
+
+.stats-summary {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">👥 Управление контактами</h1>
+            <p class="text-muted">Поиск, фильтрация и управление контактами CRM</p>
+        </div>
+        <div>
+            <button class="btn btn-success" onclick="exportContacts()">
+                📤 Экспорт
+            </button>
+            <a href="{{ url_for('crm.contact_create') }}" class="btn btn-primary">
+                ➕ Новый контакт
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Summary -->
+    {% if contacts and contacts.items %}
+    <div class="stats-summary">
+        <h5 class="mb-3">📊 Статистика контактов</h5>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value">{{ contacts.total }}</div>
+                <div class="stat-label">Всего контактов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ contacts.items|length }}</div>
+                <div class="stat-label">На странице</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ contacts.page }}</div>
+                <div class="stat-label">Страница</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ contacts.pages }}</div>
+                <div class="stat-label">Всего страниц</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filter Controls -->
+    <div class="filter-controls">
+        <form method="GET" action="{{ url_for('crm.contacts') }}">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <label class="filter-label">📊 Статус</label>
+                        <select name="status" class="filter-select">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все статусы</option>
+                            <option value="lead" {% if status_filter == 'lead' %}selected{% endif %}>Лиды</option>
+                            <option value="prospect" {% if status_filter == 'prospect' %}selected{% endif %}>Потенциальные</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Активные</option>
+                            <option value="converted" {% if status_filter == 'converted' %}selected{% endif %}>Конвертированные</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <label class="filter-label">👨‍⚕️ Профессия</label>
+                        <select name="profession" class="filter-select">
+                            <option value="all" {% if profession_filter == 'all' %}selected{% endif %}>Все профессии</option>
+                            {% for profession in professions %}
+                            <option value="{{ profession.id }}" {% if profession_filter == profession.id|string %}selected{% endif %}>{{ profession.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <label class="filter-label">🌍 Страна</label>
+                        <select name="country" class="filter-select">
+                            <option value="all" {% if country_filter == 'all' %}selected{% endif %}>Все страны</option>
+                            {% for country in countries %}
+                            <option value="{{ country }}" {% if country_filter == country %}selected{% endif %}>{{ country }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <label class="filter-label">🔍 Поиск</label>
+                        <input type="text" name="search" class="filter-input" value="{{ search_query }}" placeholder="Имя, email, телефон...">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="filter-group">
+                        <label class="filter-label">📊 Сортировка</label>
+                        <select name="sort" class="filter-select">
+                            <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Дата создания</option>
+                            <option value="full_name" {% if sort_by == 'full_name' %}selected{% endif %}>Имя</option>
+                            <option value="email" {% if sort_by == 'email' %}selected{% endif %}>Email</option>
+                            <option value="country" {% if sort_by == 'country' %}selected{% endif %}>Страна</option>
+                            <option value="lead_score" {% if sort_by == 'lead_score' %}selected{% endif %}>Оценка лида</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="filter-group">
+                        <label class="filter-label">📈 Порядок</label>
+                        <select name="order" class="filter-select">
+                            <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>По убыванию</option>
+                            <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>По возрастанию</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="filter-group">
+                        <label class="filter-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="filter-btn">🔍 Фильтр</button>
+                            <a href="{{ url_for('crm.contacts') }}" class="clear-btn">🗑️ Очистить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Contacts List -->
+    {% if contacts and contacts.items %}
+        {% for contact in contacts.items %}
+        <div class="contact-row {{ contact.contact_status }}">
+            <div class="contact-header">
+                <div class="contact-name">{{ contact.full_name }}</div>
+                <div class="contact-status {{ contact.contact_status }}">
+                    {{ contact.status_display }}
+                </div>
+            </div>
+            
+            <div class="contact-details">
+                <div class="contact-detail">
+                    <div class="contact-detail-label">📧 Email</div>
+                    <div class="contact-detail-value">{{ contact.email }}</div>
+                </div>
+                
+                {% if contact.phone %}
+                <div class="contact-detail">
+                    <div class="contact-detail-label">📞 Телефон</div>
+                    <div class="contact-detail-value">{{ contact.phone }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="contact-detail">
+                    <div class="contact-detail-label">🌍 Страна</div>
+                    <div class="contact-detail-value">{{ contact.country }}</div>
+                </div>
+                
+                {% if contact.city %}
+                <div class="contact-detail">
+                    <div class="contact-detail-label">🏙️ Город</div>
+                    <div class="contact-detail-value">{{ contact.city }}</div>
+                </div>
+                {% endif %}
+                
+                {% if contact.profession %}
+                <div class="contact-detail">
+                    <div class="contact-detail-label">👨‍⚕️ Профессия</div>
+                    <div class="contact-detail-value">{{ contact.profession.name }}</div>
+                </div>
+                {% endif %}
+                
+                {% if contact.lead_source %}
+                <div class="contact-detail">
+                    <div class="contact-detail-label">📈 Источник</div>
+                    <div class="contact-detail-value">{{ contact.lead_source }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="contact-detail">
+                    <div class="contact-detail-label">📅 Создан</div>
+                    <div class="contact-detail-value">{{ contact.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                </div>
+                
+                {% if contact.lead_score %}
+                <div class="contact-detail">
+                    <div class="contact-detail-label">⭐ Оценка</div>
+                    <div class="contact-detail-value">{{ contact.lead_score }}/100</div>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if contact.notes %}
+            <div class="contact-detail mt-2">
+                <div class="contact-detail-label">📝 Заметки</div>
+                <div class="contact-detail-value">{{ contact.notes[:100] }}{% if contact.notes|length > 100 %}...{% endif %}</div>
+            </div>
+            {% endif %}
+            
+            <div class="action-buttons mt-3">
+                <a href="{{ url_for('crm.contact_detail', contact_id=contact.id) }}" class="action-btn primary">
+                    👁️ Подробнее
+                </a>
+                <a href="{{ url_for('crm.contact_edit', contact_id=contact.id) }}" class="action-btn success">
+                    ✏️ Редактировать
+                </a>
+                <button class="action-btn warning" onclick="updateStatus({{ contact.id }}, '{{ contact.contact_status }}')">
+                    📊 Изменить статус
+                </button>
+                {% if contact.next_followup_date %}
+                <span class="action-btn" style="background: #17a2b8; color: white;">
+                    📅 Следующий контакт: {{ contact.next_followup_date.strftime('%d.%m.%Y') }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if contacts.pages > 1 %}
+        <nav aria-label="Contacts pagination">
+            <ul class="pagination justify-content-center">
+                {% if contacts.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('crm.contacts', page=contacts.prev_num, status=status_filter, profession=profession_filter, country=country_filter, search=search_query, sort=sort_by, order=sort_order) }}">Предыдущая</a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in contacts.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != contacts.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('crm.contacts', page=page_num, status=status_filter, profession=profession_filter, country=country_filter, search=search_query, sort=sort_by, order=sort_order) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if contacts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('crm.contacts', page=contacts.next_num, status=status_filter, profession=profession_filter, country=country_filter, search=search_query, sort=sort_by, order=sort_order) }}">Следующая</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Нет контактов</h3>
+            <p class="text-muted">Создайте первый контакт для начала работы с CRM</p>
+            <a href="{{ url_for('crm.contact_create') }}" class="btn btn-primary">
+                ➕ Создать контакт
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportContacts() {
+    const format = prompt('Выберите формат экспорта:\n1. JSON\n2. CSV', '1');
+    if (format === '1') {
+        window.open('{{ url_for("crm.api_contacts_export") }}?format=json', '_blank');
+    } else if (format === '2') {
+        window.open('{{ url_for("crm.api_contacts_export") }}?format=csv', '_blank');
+    }
+}
+
+function updateStatus(contactId, currentStatus) {
+    const statuses = {
+        'lead': 'Потенциальный клиент',
+        'prospect': 'Активный',
+        'active': 'Конвертированный',
+        'converted': 'Лид'
+    };
+    
+    const newStatus = prompt(`Текущий статус: ${statuses[currentStatus]}\n\nВыберите новый статус:\n1. Лид\n2. Потенциальный клиент\n3. Активный\n4. Конвертированный`, '1');
+    
+    if (newStatus) {
+        const statusMap = {
+            '1': 'lead',
+            '2': 'prospect',
+            '3': 'active',
+            '4': 'converted'
+        };
+        
+        const selectedStatus = statusMap[newStatus];
+        if (selectedStatus) {
+            fetch(`{{ url_for('crm.api_contact_update_status', contact_id=0) }}`.replace('0', contactId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: selectedStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Статус контакта обновлен!');
+                    location.reload();
+                } else {
+                    alert('Ошибка обновления статуса: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка обновления статуса');
+            });
+        }
+    }
+}
+
+// Add hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.contact-row').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+        });
+    });
+});
+</script>
+{% endblock %}

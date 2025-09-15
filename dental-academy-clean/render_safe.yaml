@@ -4,12 +4,13 @@ services:
     env: python
     plan: free
     buildCommand: |
-  echo "🚀 SAFE DEPLOY: Production deployment - $(date)" &&
-  pip install --no-cache-dir -r requirements.txt &&
-  echo "Installing dependencies completed" &&
-  python scripts/safe_deploy.py &&
-  echo "Safe production deploy completed" &&
-  echo "✅ SAFE DEPLOY: Production updated - $(date)"
+      echo "🔒 БЕЗОПАСНЫЙ ДЕПЛОЙ - СОХРАНЯЕМ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ - $(date)" &&
+      pip install --no-cache-dir -r requirements.txt &&
+      echo "📦 Dependencies installed" &&
+      flask db upgrade &&
+      echo "🗄️ Database migrated safely" &&
+      python scripts/ultra_safe_deploy.py &&
+      echo "✅ БЕЗОПАСНЫЙ ДЕПЛОЙ ЗАВЕРШЕН - $(date)"
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
@@ -22,6 +23,10 @@ services:
         fromDatabase:
           name: mentora-db
           property: connectionString
+      - key: ADMIN_EMAIL
+        value: "admin@mentora.com"
+      - key: ADMIN_PASSWORD
+        value: "SuperSecure123!"
       - key: DIGID_MOCK_MODE
         value: "true"
       - key: DIGID_ENABLED
@@ -45,4 +50,9 @@ services:
       - key: MAIL_DEFAULT_SENDER
         value: "Mentora <noreply@mentora.com>"
       - key: EMAIL_CONFIRMATION_SALT
-        value: "mentora-production-salt-2025" 
+        value: "mentora-production-salt-2025"
+
+databases:
+  - name: mentora-db
+    databaseName: mentora_production
+    user: mentora_user

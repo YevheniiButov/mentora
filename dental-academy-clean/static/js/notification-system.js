@@ -1,416 +1,403 @@
 /**
- * Browser Notification System for Learning Planner
- * Handles browser notifications for study sessions and reminders
+ * 🎯 NOTIFICATION SYSTEM
+ * Система всплывающих уведомлений для Mentora
  */
 
-class BrowserNotificationSystem {
+class NotificationSystem {
     constructor() {
-        this.permission = 'default';
-        this.isSupported = 'Notification' in window;
+        this.overlay = null;
+        this.popup = null;
+        this.currentNotification = null;
+        this.autoShowDelay = 3000; // 3 секунды после загрузки страницы
+        
         this.init();
     }
     
-    async init() {
-        if (!this.isSupported) {
-            console.log('Browser notifications not supported');
-            return;
-        }
+    init() {
+        // Создаем HTML структуру если её нет
+        this.createNotificationHTML();
         
-        // Проверяем разрешение
-        this.permission = Notification.permission;
+        // Проверяем localStorage для автопоказа
+        this.checkAutoShow();
         
-        // Если разрешение не запрошено, запрашиваем
-        if (this.permission === 'default') {
-            await this.requestPermission();
-        }
-        
-        // Инициализируем уведомления
-        this.setupNotifications();
-    }
-    
-    async requestPermission() {
-        try {
-            this.permission = await Notification.requestPermission();
-            console.log('Notification permission:', this.permission);
-            
-            if (this.permission === 'granted') {
-                this.showWelcomeNotification();
+        // Обработчик клика по overlay
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) {
+                this.hide();
             }
-            
-            return this.permission;
-        } catch (error) {
-            console.error('Error requesting notification permission:', error);
-            return 'denied';
-        }
-    }
-    
-    setupNotifications() {
-        if (this.permission !== 'granted') {
-            return;
-        }
+        });
         
-        // Настраиваем уведомления для разных событий
-        this.setupSessionReminders();
-        this.setupProgressNotifications();
-        this.setupExamReminders();
-    }
-    
-    setupSessionReminders() {
-        // Уведомления о предстоящих занятиях
-        const sessionElements = document.querySelectorAll('[data-session-time]');
-        
-        sessionElements.forEach(element => {
-            const sessionTime = element.dataset.sessionTime;
-            const sessionTitle = element.dataset.sessionTitle;
-            
-            if (sessionTime) {
-                this.scheduleSessionReminder(sessionTime, sessionTitle);
+        // Обработчик ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.overlay.classList.contains('show')) {
+                this.hide();
             }
         });
     }
     
-    setupProgressNotifications() {
-        // Уведомления о прогрессе
-        const progressThresholds = [25, 50, 75, 90];
+    createNotificationHTML() {
+        // Создаем overlay если его нет
+        this.overlay = document.getElementById('notificationOverlay');
+        if (!this.overlay) {
+            this.overlay = document.createElement('div');
+            this.overlay.id = 'notificationOverlay';
+            this.overlay.className = 'notification-overlay';
+            document.body.appendChild(this.overlay);
+        }
         
-        progressThresholds.forEach(threshold => {
-            this.checkProgressThreshold(threshold);
+        // Создаем popup если его нет
+        this.popup = document.getElementById('notificationPopup');
+        if (!this.popup) {
+            this.popup = document.createElement('div');
+            this.popup.id = 'notificationPopup';
+            this.popup.className = 'notification-popup';
+            this.overlay.appendChild(this.popup);
+        }
+    }
+    
+    show(config) {
+        this.currentNotification = config;
+        this.render(config);
+        
+        // Показываем с анимацией
+        requestAnimationFrame(() => {
+            this.overlay.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Блокируем скролл
         });
+        
+        // Отслеживаем показ
+        this.trackNotificationShow(config.type);
     }
     
-    setupExamReminders() {
-        // Уведомления о экзамене
-        const examDateElement = document.getElementById('exam-date');
-        if (examDateElement && examDateElement.value) {
-            const examDate = new Date(examDateElement.value);
-            this.scheduleExamReminders(examDate);
+    hide() {
+        this.overlay.classList.remove('show');
+        document.body.style.overflow = ''; // Разблокируем скролл
+        
+        // Очищаем после анимации
+        setTimeout(() => {
+            this.popup.innerHTML = '';
+            this.currentNotification = null;
+        }, 300);
+        
+        // Отслеживаем закрытие
+        if (this.currentNotification) {
+            this.trackNotificationHide(this.currentNotification.type);
         }
     }
     
-    scheduleSessionReminder(sessionTime, sessionTitle) {
-        const sessionDateTime = new Date(sessionTime);
-        const now = new Date();
+    render(config) {
+        const sparkles = `
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+        `;
         
-        // Уведомление за час до занятия
-        const oneHourBefore = new Date(sessionDateTime.getTime() - 60 * 60 * 1000);
-        
-        if (oneHourBefore > now) {
-            setTimeout(() => {
-                this.showSessionReminder(sessionTitle, '1 час');
-            }, oneHourBefore.getTime() - now.getTime());
-        }
-        
-        // Уведомление за 15 минут до занятия
-        const fifteenMinutesBefore = new Date(sessionDateTime.getTime() - 15 * 60 * 1000);
-        
-        if (fifteenMinutesBefore > now) {
-            setTimeout(() => {
-                this.showSessionReminder(sessionTitle, '15 минут');
-            }, fifteenMinutesBefore.getTime() - now.getTime());
-        }
-    }
-    
-    scheduleExamReminders(examDate) {
-        const now = new Date();
-        const daysToExam = Math.ceil((examDate - now) / (1000 * 60 * 60 * 24));
-        
-        // Уведомления за 7, 3, 1 день до экзамена
-        const reminderDays = [7, 3, 1];
-        
-        reminderDays.forEach(days => {
-            if (daysToExam >= days) {
-                const reminderTime = new Date(examDate.getTime() - days * 24 * 60 * 60 * 1000);
+        this.popup.innerHTML = `
+            <div class="notification-header ${config.type}">
+                ${sparkles}
+                <button class="close-btn" onclick="mentorNotifications.hide()">
+                    <i class="bi bi-x"></i>
+                </button>
+                <div class="notification-icon">
+                    <i class="${config.icon}"></i>
+                </div>
+                <h2 class="notification-title">${config.title}</h2>
+                <p class="notification-subtitle">${config.subtitle}</p>
+            </div>
+            
+            <div class="notification-body">
+                <div class="notification-content">
+                    ${config.content}
+                </div>
                 
-                setTimeout(() => {
-                    this.showExamReminder(days);
-                }, reminderTime.getTime() - now.getTime());
-            }
+                ${config.features ? `
+                    <ul class="notification-features">
+                        ${config.features.map(feature => `
+                            <li><i class="bi bi-check-circle-fill"></i> ${feature}</li>
+                        `).join('')}
+                    </ul>
+                ` : ''}
+                
+                <div class="notification-actions">
+                    <a href="${config.primaryAction.url}" class="btn-primary-custom" onclick="mentorNotifications.trackClick('${config.type}', 'primary')">
+                        <i class="${config.primaryAction.icon}"></i>
+                        ${config.primaryAction.text}
+                    </a>
+                    ${config.secondaryAction ? `
+                        <button class="btn-secondary-custom" onclick="mentorNotifications.handleSecondaryAction('${config.type}')">
+                            <i class="${config.secondaryAction.icon}"></i>
+                            ${config.secondaryAction.text}
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+            
+            ${config.footer ? `
+                <div class="notification-footer">
+                    ${config.footer}
+                </div>
+            ` : ''}
+        `;
+    }
+    
+    // ========================================
+    // ПРЕДУСТАНОВЛЕННЫЕ УВЕДОМЛЕНИЯ
+    // ========================================
+    
+    showEarlyAccess() {
+        this.show({
+            type: 'early-access',
+            icon: 'bi bi-rocket-takeoff',
+            title: 'Ранний доступ к Mentora!',
+            subtitle: 'Получите эксклюзивный доступ к нашей платформе',
+            content: `
+                🎉 Мы рады сообщить о запуске программы раннего доступа к платформе Mentora! 
+                Зарегистрируйтесь сейчас и получите все преимущества первопроходца.
+            `,
+            features: [
+                'Бесплатный доступ ко всем курсам',
+                'Персональное сопровождение специалиста',
+                'Приоритетная техническая поддержка',
+                'Эксклюзивные материалы для подготовки к BI-toets'
+            ],
+            primaryAction: {
+                text: 'Зарегистрироваться бесплатно',
+                url: '/auth/register',
+                icon: 'bi bi-person-plus'
+            },
+            secondaryAction: {
+                text: 'Напомнить позже',
+                icon: 'bi bi-clock'
+            },
+            footer: '⏰ Предложение ограничено. Количество мест в программе раннего доступа ограничено!'
         });
     }
     
-    checkProgressThreshold(threshold) {
-        const progressElement = document.querySelector('.overall-progress');
-        if (!progressElement) return;
+    showLaunchAnnouncement() {
+        this.show({
+            type: 'mentora-launch',
+            icon: 'bi bi-star-fill',
+            title: 'Mentora уже запущена!',
+            subtitle: 'Платформа для подготовки медицинских специалистов',
+            content: `
+                Добро пожаловать в Mentora - вашу персональную платформу для подготовки 
+                к BI-toets экзамену в Нидерландах. Начните обучение уже сегодня!
+            `,
+            features: [
+                'Адаптивное тестирование на основе IRT',
+                'Виртуальные пациенты для практики',
+                'AI-помощник для персонального обучения',
+                'Подготовка специально для работы в Нидерландах'
+            ],
+            primaryAction: {
+                text: 'Начать обучение',
+                url: '/auth/register',
+                icon: 'bi bi-play-circle'
+            },
+            secondaryAction: {
+                text: 'Узнать больше',
+                icon: 'bi bi-info-circle'
+            },
+            footer: '🎯 Присоединяйтесь к сотням медицинских специалистов, которые уже готовятся с Mentora!'
+        });
+    }
+    
+    showBigExamInfo() {
+        this.show({
+            type: 'big-exam',
+            icon: 'bi bi-award',
+            title: 'Подготовка к BI-toets',
+            subtitle: 'Все что нужно знать о BIG экзамене',
+            content: `
+                BI-toets - это обязательный экзамен для медицинских специалистов из стран 
+                вне ЕС, желающих работать в Нидерландах. Мы поможем вам подготовиться!
+            `,
+            features: [
+                'Полная программа подготовки к экзамену',
+                'Симуляция реальных условий тестирования',
+                'Материалы на нидерландском языке',
+                'Статистика и отслеживание прогресса'
+            ],
+            primaryAction: {
+                text: 'Начать подготовку',
+                url: '/learning',
+                icon: 'bi bi-book'
+            },
+            secondaryAction: {
+                text: 'Подробнее о BI-toets',
+                icon: 'bi bi-question-circle'
+            },
+            footer: '📚 Более 1000+ вопросов и кейсов для полноценной подготовки'
+        });
+    }
+    
+    showMaintenanceWarning() {
+        this.show({
+            type: 'warning',
+            icon: 'bi bi-exclamation-triangle',
+            title: 'Плановое обслуживание',
+            subtitle: 'Временные ограничения в работе системы',
+            content: `
+                Уважаемые пользователи! В ближайшее время планируется техническое 
+                обслуживание системы. Возможны кратковременные перебои в работе.
+            `,
+            features: [
+                'Обслуживание продлится не более 2 часов',
+                'Ваш прогресс будет сохранен',
+                'Улучшения производительности',
+                'Исправление выявленных ошибок'
+            ],
+            primaryAction: {
+                text: 'Понятно',
+                url: '#',
+                icon: 'bi bi-check'
+            },
+            secondaryAction: {
+                text: 'Подписаться на уведомления',
+                icon: 'bi bi-bell'
+            },
+            footer: 'Мы стараемся свести неудобства к минимуму. Спасибо за понимание!'
+        });
+    }
+    
+    // ========================================
+    // АВТОМАТИЧЕСКИЙ ПОКАЗ
+    // ========================================
+    
+    checkAutoShow() {
+        // Проверяем, показывать ли уведомление автоматически
+        const lastShown = localStorage.getItem('mentora_notification_last_shown');
+        const notificationDismissed = localStorage.getItem('mentora_notification_dismissed');
+        const currentPage = window.location.pathname;
         
-        const currentProgress = parseFloat(progressElement.textContent);
-        
-        if (currentProgress >= threshold) {
-            this.showProgressNotification(threshold);
+        // Показываем только на главной странице
+        if (currentPage === '/' || currentPage === '/index' || currentPage === '') {
+            // Если уведомление не было отклонено и не показывалось сегодня
+            const today = new Date().toDateString();
+            
+            if (!notificationDismissed && lastShown !== today) {
+                setTimeout(() => {
+                    this.showLaunchAnnouncement();
+                    localStorage.setItem('mentora_notification_last_shown', today);
+                }, this.autoShowDelay);
+            }
         }
     }
     
-    showSessionReminder(sessionTitle, timeLeft) {
-        const notification = new Notification('🦷 Напоминание о занятии', {
-            body: `Через ${timeLeft} начинается: ${sessionTitle}`,
-            icon: '/static/images/logo.png',
-            badge: '/static/images/logo.png',
-            tag: 'session-reminder',
-            requireInteraction: false,
-            actions: [
-                {
-                    action: 'start',
-                    title: 'Начать сейчас'
-                },
-                {
-                    action: 'snooze',
-                    title: 'Напомнить через 5 мин'
-                }
-            ]
-        });
-        
-        notification.onclick = () => {
-            window.focus();
-            notification.close();
-            // Переходим к занятию
-            this.navigateToSession();
-        };
-        
-        notification.onaction = (event) => {
-            if (event.action === 'start') {
-                this.navigateToSession();
-            } else if (event.action === 'snooze') {
-                setTimeout(() => {
-                    this.showSessionReminder(sessionTitle, '5 минут');
-                }, 5 * 60 * 1000);
-            }
-            notification.close();
-        };
-        
-        // Автоматически закрываем через 10 секунд
-        setTimeout(() => {
-            notification.close();
-        }, 10000);
-    }
+    // ========================================
+    // ОБРАБОТЧИКИ ДЕЙСТВИЙ
+    // ========================================
     
-    showProgressNotification(threshold) {
-        const notification = new Notification('🎉 Достижение!', {
-            body: `Вы достигли ${threshold}% прогресса в обучении!`,
-            icon: '/static/images/medal.svg',
-            badge: '/static/images/logo.png',
-            tag: 'progress-achievement',
-            requireInteraction: false
-        });
-        
-        notification.onclick = () => {
-            window.focus();
-            notification.close();
-            // Переходим к дашборду
-            window.location.href = '/dashboard';
-        };
-        
-        setTimeout(() => {
-            notification.close();
-        }, 8000);
-    }
-    
-    showExamReminder(daysLeft) {
-        const notification = new Notification('⚠️ Напоминание о экзамене', {
-            body: `До BIG экзамена осталось ${daysLeft} ${this.pluralize(daysLeft, 'день', 'дня', 'дней')}`,
-            icon: '/static/images/logo.png',
-            badge: '/static/images/logo.png',
-            tag: 'exam-reminder',
-            requireInteraction: true,
-            actions: [
-                {
-                    action: 'study',
-                    title: 'Продолжить подготовку'
-                },
-                {
-                    action: 'dismiss',
-                    title: 'Закрыть'
-                }
-            ]
-        });
-        
-        notification.onclick = () => {
-            window.focus();
-            notification.close();
-        };
-        
-        notification.onaction = (event) => {
-            if (event.action === 'study') {
-                window.location.href = '/dashboard/create-learning-plan';
-            }
-            notification.close();
-        };
-    }
-    
-    showWelcomeNotification() {
-        const notification = new Notification('🦷 Добро пожаловать в Mentora Academy!', {
-            body: 'Уведомления включены. Вы будете получать напоминания о занятиях и прогрессе.',
-            icon: '/static/images/logo.png',
-            badge: '/static/images/logo.png',
-            tag: 'welcome',
-            requireInteraction: false
-        });
-        
-        setTimeout(() => {
-            notification.close();
-        }, 5000);
-    }
-    
-    showCustomNotification(title, body, options = {}) {
-        if (this.permission !== 'granted') {
+    handleSecondaryAction(type) {
+        if (type === 'early-access') {
+            // Напомнить позже - устанавливаем отложенный показ
+            const remindDate = new Date();
+            remindDate.setDate(remindDate.getDate() + 1); // Через день
+            localStorage.setItem('mentora_notification_remind_date', remindDate.toISOString());
+        } else if (type === 'mentora-launch') {
+            // Узнать больше - переход на страницу с информацией
+            window.location.href = '/about';
             return;
         }
         
-        const defaultOptions = {
-            icon: '/static/images/logo.png',
-            badge: '/static/images/logo.png',
-            requireInteraction: false
+        this.hide();
+    }
+    
+    dismiss() {
+        // Полностью отклонить уведомления
+        localStorage.setItem('mentora_notification_dismissed', 'true');
+        this.hide();
+    }
+    
+    // ========================================
+    // АНАЛИТИКА
+    // ========================================
+    
+    trackNotificationShow(type) {
+        // Отправляем событие в аналитику
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'notification_show', {
+                'notification_type': type,
+                'page_location': window.location.href
+            });
+        }
+        
+        // Локальная аналитика
+        const shows = JSON.parse(localStorage.getItem('mentora_notification_shows') || '{}');
+        shows[type] = (shows[type] || 0) + 1;
+        localStorage.setItem('mentora_notification_shows', JSON.stringify(shows));
+    }
+    
+    trackNotificationHide(type) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'notification_hide', {
+                'notification_type': type
+            });
+        }
+    }
+    
+    trackClick(type, action) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'notification_click', {
+                'notification_type': type,
+                'action_type': action
+            });
+        }
+        
+        // Локальная аналитика
+        const clicks = JSON.parse(localStorage.getItem('mentora_notification_clicks') || '{}');
+        const key = `${type}_${action}`;
+        clicks[key] = (clicks[key] || 0) + 1;
+        localStorage.setItem('mentora_notification_clicks', JSON.stringify(clicks));
+    }
+    
+    // ========================================
+    // АДМИНИСТРАТИВНЫЕ ФУНКЦИИ
+    // ========================================
+    
+    getAnalytics() {
+        return {
+            shows: JSON.parse(localStorage.getItem('mentora_notification_shows') || '{}'),
+            clicks: JSON.parse(localStorage.getItem('mentora_notification_clicks') || '{}'),
+            lastShown: localStorage.getItem('mentora_notification_last_shown'),
+            dismissed: localStorage.getItem('mentora_notification_dismissed'),
+            remindDate: localStorage.getItem('mentora_notification_remind_date')
         };
-        
-        const notification = new Notification(title, { ...defaultOptions, ...options });
-        
-        notification.onclick = () => {
-            window.focus();
-            notification.close();
-        };
-        
-        if (!options.requireInteraction) {
-            setTimeout(() => {
-                notification.close();
-            }, options.duration || 5000);
-        }
-        
-        return notification;
     }
     
-    navigateToSession() {
-        // Находим активную сессию и переходим к ней
-        const activeSession = document.querySelector('.session-item.active');
-        if (activeSession) {
-            const sessionUrl = activeSession.dataset.sessionUrl;
-            if (sessionUrl) {
-                window.location.href = sessionUrl;
-            }
-        } else {
-            // Переходим к планировщику
-            window.location.href = '/dashboard/create-learning-plan';
-        }
+    resetAnalytics() {
+        localStorage.removeItem('mentora_notification_shows');
+        localStorage.removeItem('mentora_notification_clicks');
+        localStorage.removeItem('mentora_notification_last_shown');
+        localStorage.removeItem('mentora_notification_dismissed');
+        localStorage.removeItem('mentora_notification_remind_date');
     }
     
-    pluralize(number, one, two, five) {
-        const n = Math.abs(number);
-        const n10 = n % 10;
-        const n100 = n % 100;
-        
-        if (n100 >= 11 && n100 <= 19) {
-            return five;
-        }
-        
-        if (n10 === 1) {
-            return one;
-        }
-        
-        if (n10 >= 2 && n10 <= 4) {
-            return two;
-        }
-        
-        return five;
-    }
-    
-    // Методы для интеграции с планировщиком
-    notifySessionCreated(sessionData) {
-        this.showCustomNotification(
-            '📚 Новое занятие запланировано',
-            `${sessionData.title} на ${sessionData.date}`,
-            {
-                tag: 'session-created',
-                actions: [
-                    {
-                        action: 'view',
-                        title: 'Посмотреть'
-                    }
-                ]
-            }
-        );
-    }
-    
-    notifyPlanUpdated(planData) {
-        this.showCustomNotification(
-            '📊 План обновлен',
-            `Ваш план обучения был адаптирован. Новый прогресс: ${planData.progress}%`,
-            {
-                tag: 'plan-updated'
-            }
-        );
-    }
-    
-    notifyAchievementUnlocked(achievement) {
-        this.showCustomNotification(
-            '🏆 Достижение разблокировано!',
-            achievement.title,
-            {
-                icon: '/static/images/medal.svg',
-                tag: 'achievement',
-                requireInteraction: true
-            }
-        );
-    }
-    
-    // Методы для тестирования
-    testNotification() {
-        this.showCustomNotification(
-            '🧪 Тестовое уведомление',
-            'Система уведомлений работает корректно!',
-            {
-                tag: 'test',
-                requireInteraction: true
-            }
-        );
-    }
-    
-    testSessionReminder() {
-        this.showSessionReminder('Тестовое занятие по эндодонтии', '5 минут');
-    }
-    
-    testProgressNotification() {
-        this.showProgressNotification(50);
-    }
-    
-    testExamReminder() {
-        this.showExamReminder(7);
+    // Для тестирования в консоли
+    test() {
+        console.log('🎯 Testing Mentora Notifications:');
+        console.log('mentorNotifications.showEarlyAccess() - показать ранний доступ');
+        console.log('mentorNotifications.showLaunchAnnouncement() - показать запуск');
+        console.log('mentorNotifications.showBigExamInfo() - показать info о BI-toets');
+        console.log('mentorNotifications.showMaintenanceWarning() - показать предупреждение');
+        console.log('mentorNotifications.getAnalytics() - получить аналитику');
+        console.log('mentorNotifications.resetAnalytics() - сбросить аналитику');
     }
 }
 
-// Глобальный экземпляр системы уведомлений
-let notificationSystem;
-
-// Инициализация при загрузке страницы
+// Инициализация системы уведомлений
 document.addEventListener('DOMContentLoaded', function() {
-    notificationSystem = new BrowserNotificationSystem();
+    // Создаем глобальный экземпляр
+    window.mentorNotifications = new NotificationSystem();
     
-    // Добавляем кнопку тестирования в режиме разработки
+    // Для отладки в консоли
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        addTestButtons();
+        console.log('🎯 Mentora Notifications loaded! Type mentorNotifications.test() for help');
     }
 });
 
-function addTestButtons() {
-    const testContainer = document.createElement('div');
-    testContainer.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.8);
-        padding: 10px;
-        border-radius: 8px;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    `;
-    
-    testContainer.innerHTML = `
-        <button onclick="notificationSystem.testNotification()" style="padding: 5px 10px; font-size: 12px;">Тест уведомления</button>
-        <button onclick="notificationSystem.testSessionReminder()" style="padding: 5px 10px; font-size: 12px;">Тест занятия</button>
-        <button onclick="notificationSystem.testProgressNotification()" style="padding: 5px 10px; font-size: 12px;">Тест прогресса</button>
-        <button onclick="notificationSystem.testExamReminder()" style="padding: 5px 10px; font-size: 12px;">Тест экзамена</button>
-    `;
-    
-    document.body.appendChild(testContainer);
+// Экспорт для использования в других файлах
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = NotificationSystem;
 }
-
-// Экспорт для использования в других модулях
-window.NotificationSystem = BrowserNotificationSystem; 
