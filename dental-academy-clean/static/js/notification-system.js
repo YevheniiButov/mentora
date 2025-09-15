@@ -374,12 +374,16 @@ class NotificationSystem {
 
 // Инициализация системы уведомлений
 document.addEventListener('DOMContentLoaded', function() {
-    // Создаем глобальный экземпляр
-    window.mentorNotifications = new NotificationSystem();
-    
-    // Для отладки в консоли
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    try {
+        // Создаем глобальный экземпляр
+        window.mentorNotifications = new NotificationSystem();
+        
+        // Всегда показываем в консоли что система загружена
         console.log('🎯 Mentora Notifications loaded! Type mentorNotifications.test() for help');
+        console.log('🔧 Available functions:', Object.getOwnPropertyNames(window.mentorNotifications));
+        
+    } catch (error) {
+        console.error('❌ Error loading Mentora Notifications:', error);
     }
 });
 
