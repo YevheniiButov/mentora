@@ -295,7 +295,7 @@
                 console.error('❌ User dropdown error:', error);
             }
             
-            // НАДЕЖНОЕ решение мобильного меню
+            // НАДЕЖНОЕ решение мобильного меню с защитой от повторной инициализации
             function initMobileMenu() {
                 console.log('🔧 Initializing reliable mobile menu...');
                 
@@ -306,6 +306,15 @@
                     console.log('❌ Mobile menu elements not found');
                     return;
                 }
+                
+                // ЗАЩИТА ОТ ПОВТОРНОЙ ИНИЦИАЛИЗАЦИИ
+                if (navbarToggler.hasAttribute('data-mobile-menu-initialized')) {
+                    console.log('⚠️ Mobile menu already initialized, skipping...');
+                    return;
+                }
+                
+                // Помечаем как инициализированный
+                navbarToggler.setAttribute('data-mobile-menu-initialized', 'true');
                 
                 console.log('✅ Mobile menu elements found');
                 
@@ -320,8 +329,12 @@
                 // Переменная для отслеживания состояния
                 let isMenuOpen = false;
                 
+                // УДАЛЯЕМ ВСЕ СУЩЕСТВУЮЩИЕ ОБРАБОТЧИКИ
+                const newToggler = navbarToggler.cloneNode(true);
+                navbarToggler.parentNode.replaceChild(newToggler, navbarToggler);
+                
                 // Добавляем обработчик на toggle
-                navbarToggler.addEventListener('click', function(e) {
+                newToggler.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     
@@ -330,13 +343,13 @@
                     if (isMenuOpen) {
                         // Закрываем меню через Bootstrap
                         bsCollapse.hide();
-                        navbarToggler.setAttribute('aria-expanded', 'false');
+                        newToggler.setAttribute('aria-expanded', 'false');
                         isMenuOpen = false;
                         console.log('📱 Menu closed');
                     } else {
                         // Открываем меню через Bootstrap
                         bsCollapse.show();
-                        navbarToggler.setAttribute('aria-expanded', 'true');
+                        newToggler.setAttribute('aria-expanded', 'true');
                         isMenuOpen = true;
                         console.log('📱 Menu opened');
                     }
@@ -362,7 +375,7 @@
                         // Закрываем меню
                         if (isMenuOpen) {
                             bsCollapse.hide();
-                            navbarToggler.setAttribute('aria-expanded', 'false');
+                            newToggler.setAttribute('aria-expanded', 'false');
                             isMenuOpen = false;
                             console.log('📱 Menu closed after link click');
                         }
@@ -375,22 +388,24 @@
                 // Обработчик для кликов вне меню
                 document.addEventListener('click', function(e) {
                     // Если клик вне меню и не по toggle
-                    if (!navbarCollapse.contains(e.target) && !navbarToggler.contains(e.target)) {
+                    if (!navbarCollapse.contains(e.target) && !newToggler.contains(e.target)) {
                         if (isMenuOpen) {
                             bsCollapse.hide();
-                            navbarToggler.setAttribute('aria-expanded', 'false');
+                            newToggler.setAttribute('aria-expanded', 'false');
                             isMenuOpen = false;
                             console.log('📱 Menu closed after outside click');
                         }
                     }
                 });
                 
-                console.log('✅ Reliable mobile menu initialized with Bootstrap');
+                console.log('✅ Reliable mobile menu initialized with Bootstrap and protection');
             }
             
-            // Инициализируем сразу и с задержкой
+            // Инициализируем сразу и с задержкой для защиты от конфликтов
             initMobileMenu();
             setTimeout(initMobileMenu, 500);
+            setTimeout(initMobileMenu, 1000);
+            setTimeout(initMobileMenu, 2000);
             
             var languageDropdown = document.getElementById('languageDropdown');
             if (languageDropdown) {
