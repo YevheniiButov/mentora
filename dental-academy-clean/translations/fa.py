@@ -322,7 +322,7 @@ translations = {
     'quality_assurance': 'تضمین کیفیت',
     'quality_description': 'محتوای توسعه یافته توسط متخصصان حوزه پزشکی',
     'support_247': 'پشتیبانی ۲۴/۷',
-    'support_description': 'پشتیبانی شبانه‌روزی کاربران',
+    'support_description': 'فرصت کارآموزی در مؤسسات پزشکی هلند',
     
     # رویکرد یادگیری
     'learning_approach': 'رویکرد یادگیری',

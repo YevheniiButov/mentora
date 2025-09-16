@@ -869,7 +869,7 @@ translations = {
     'quality_assurance': 'Quality assurance',
     'quality_description': 'Content developed by dental experts',
     'support_247': '24/7 Support',
-    'support_description': 'Continuous user support',
+    'support_description': 'Opportunity for internship in medical institutions of the Netherlands',
     'learning_approach': 'Learning approach',
     'our_methodology': 'Our methodology',
     'evidence_based': 'Evidence-based learning system',

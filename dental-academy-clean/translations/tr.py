@@ -301,7 +301,7 @@ translations = {
     'quality_assurance': 'Kalite garantisi',
     'quality_description': 'Tıp alanında uzmanlar tarafından geliştirilen içerik',
     'support_247': '7/24 destek',
-    'support_description': 'Kullanıcılar için 24 saat destek',
+    'support_description': 'Hollanda\'daki tıbbi kurumlarda staj imkanı',
     
     # Öğrenme yaklaşımı
     'learning_approach': 'Öğrenme yaklaşımı',

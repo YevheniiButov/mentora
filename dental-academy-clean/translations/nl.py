@@ -459,7 +459,7 @@ translations = {
     'quality_assurance': 'Kwaliteitsgarantie',
     'quality_description': 'Content ontwikkeld door medische experts',
     'support_247': '24/7 AI Ondersteuning',
-    'support_description': 'Doorlopende gebruikersondersteuning',
+    'support_description': 'Mogelijkheid voor stage in medische instellingen van Nederland',
     'learning_approach': 'Leeraanpak',
     'our_methodology': 'Onze methodologie',
     'evidence_based': 'Op bewijs gebaseerd leersysteem',

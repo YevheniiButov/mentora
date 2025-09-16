@@ -373,7 +373,7 @@ translations = {
     'quality_assurance': 'Garantía de calidad',
     'quality_description': 'Contenido desarrollado por expertos en el campo médico',
     'support_247': 'Soporte 24/7',
-    'support_description': 'Soporte las 24 horas para usuarios',
+    'support_description': 'Oportunidad de prácticas en instituciones médicas de los Países Bajos',
     
     # Enfoque de aprendizaje
     'learning_approach': 'Enfoque de aprendizaje',
