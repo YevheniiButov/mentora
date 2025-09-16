@@ -52,6 +52,31 @@ def run_migration():
             'error': str(e)
         }), 500
 
+@migration_bp.route('/init', methods=['POST'])
+def init_migration():
+    """Initialize migration table"""
+    try:
+        # Проверяем что это продакшен
+        if not os.environ.get('DATABASE_URL'):
+            return jsonify({
+                'success': False,
+                'error': 'Not in production environment'
+            }), 400
+        
+        # Инициализируем таблицу миграций
+        from flask_migrate import stamp
+        stamp()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Migration table initialized successfully'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @migration_bp.route('/fix-user-fields', methods=['POST'])
 def fix_user_fields():
     """Fix user table field sizes directly"""
