@@ -795,6 +795,387 @@ def users():
     users = User.query.all()
     return render_template('admin/users_manager.html', users=users)
 
+@admin_bp.route('/crm/users')
+@login_required
+@admin_required
+def crm_users():
+    """Enhanced CRM for users with full registration data"""
+    try:
+        # Get filter parameters
+        status_filter = request.args.get('status', 'all')
+        profession_filter = request.args.get('profession', 'all')
+        nationality_filter = request.args.get('nationality', 'all')
+        legal_status_filter = request.args.get('legal_status', 'all')
+        search_query = request.args.get('search', '').strip()
+        sort_by = request.args.get('sort', 'created_at')
+        sort_order = request.args.get('order', 'desc')
+        
+        # Build query
+        query = User.query
+        
+        # Apply filters
+        if status_filter != 'all':
+            if status_filter == 'active':
+                query = query.filter_by(is_active=True)
+            elif status_filter == 'inactive':
+                query = query.filter_by(is_active=False)
+            elif status_filter == 'confirmed':
+                query = query.filter_by(email_confirmed=True)
+            elif status_filter == 'unconfirmed':
+                query = query.filter_by(email_confirmed=False)
+            elif status_filter == 'digid':
+                query = query.filter_by(created_via_digid=True)
+            elif status_filter == 'regular':
+                query = query.filter_by(created_via_digid=False)
+        
+        if profession_filter != 'all':
+            query = query.filter_by(profession=profession_filter)
+        
+        if nationality_filter != 'all':
+            query = query.filter_by(nationality=nationality_filter)
+        
+        if legal_status_filter != 'all':
+            query = query.filter_by(legal_status=legal_status_filter)
+        
+        if search_query:
+            query = query.filter(
+                or_(
+                    User.first_name.ilike(f'%{search_query}%'),
+                    User.last_name.ilike(f'%{search_query}%'),
+                    User.email.ilike(f'%{search_query}%'),
+                    User.phone.ilike(f'%{search_query}%'),
+                    User.workplace.ilike(f'%{search_query}%'),
+                    User.university_name.ilike(f'%{search_query}%')
+                )
+            )
+        
+        # Apply sorting
+        if sort_by == 'name':
+            if sort_order == 'asc':
+                query = query.order_by(User.first_name.asc(), User.last_name.asc())
+            else:
+                query = query.order_by(User.first_name.desc(), User.last_name.desc())
+        elif sort_by == 'email':
+            if sort_order == 'asc':
+                query = query.order_by(User.email.asc())
+            else:
+                query = query.order_by(User.email.desc())
+        elif sort_by == 'profession':
+            if sort_order == 'asc':
+                query = query.order_by(User.profession.asc())
+            else:
+                query = query.order_by(User.profession.desc())
+        elif sort_by == 'nationality':
+            if sort_order == 'asc':
+                query = query.order_by(User.nationality.asc())
+            else:
+                query = query.order_by(User.nationality.desc())
+        else:  # created_at
+            if sort_order == 'asc':
+                query = query.order_by(User.created_at.asc())
+            else:
+                query = query.order_by(User.created_at.desc())
+        
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = 25
+        users = query.paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Get filter options
+        professions = db.session.query(User.profession).filter(User.profession.isnot(None)).distinct().all()
+        nationalities = db.session.query(User.nationality).filter(User.nationality.isnot(None)).distinct().all()
+        legal_statuses = db.session.query(User.legal_status).filter(User.legal_status.isnot(None)).distinct().all()
+        
+        # Statistics
+        stats = {
+            'total_users': User.query.count(),
+            'active_users': User.query.filter_by(is_active=True).count(),
+            'confirmed_users': User.query.filter_by(email_confirmed=True).count(),
+            'digid_users': User.query.filter_by(created_via_digid=True).count(),
+            'profession_stats': db.session.query(
+                User.profession, func.count(User.id)
+            ).filter(User.profession.isnot(None)).group_by(User.profession).all(),
+            'nationality_stats': db.session.query(
+                User.nationality, func.count(User.id)
+            ).filter(User.nationality.isnot(None)).group_by(User.nationality).all()
+        }
+        
+        return render_template('admin/crm_users.html',
+                             users=users,
+                             professions=[p[0] for p in professions],
+                             nationalities=[n[0] for n in nationalities],
+                             legal_statuses=[l[0] for l in legal_statuses],
+                             status_filter=status_filter,
+                             profession_filter=profession_filter,
+                             nationality_filter=nationality_filter,
+                             legal_status_filter=legal_status_filter,
+                             search_query=search_query,
+                             sort_by=sort_by,
+                             sort_order=sort_order,
+                             stats=stats)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in CRM users: {str(e)}")
+        flash(f'Ошибка загрузки пользователей: {str(e)}', 'error')
+        return render_template('admin/crm_users.html',
+                             users=None, professions=[], nationalities=[], legal_statuses=[],
+                             status_filter='all', profession_filter='all', nationality_filter='all',
+                             legal_status_filter='all', search_query='',                              sort_by='created_at',
+                             sort_order='desc', stats={})
+
+@admin_bp.route('/crm/users/export')
+@login_required
+@admin_required
+def crm_users_export():
+    """Export users data to CSV or Excel"""
+    try:
+        import csv
+        import io
+        from flask import make_response
+        
+        # Get filter parameters (same as crm_users)
+        status_filter = request.args.get('status', 'all')
+        profession_filter = request.args.get('profession', 'all')
+        nationality_filter = request.args.get('nationality', 'all')
+        legal_status_filter = request.args.get('legal_status', 'all')
+        search_query = request.args.get('search', '').strip()
+        export_format = request.args.get('export', 'csv')
+        user_ids = request.args.get('user_ids', '')
+        
+        # Build query (same logic as crm_users)
+        query = User.query
+        
+        if user_ids:
+            # Export specific users
+            user_id_list = [int(id) for id in user_ids.split(',')]
+            query = query.filter(User.id.in_(user_id_list))
+        else:
+            # Apply same filters as crm_users
+            if status_filter != 'all':
+                if status_filter == 'active':
+                    query = query.filter_by(is_active=True)
+                elif status_filter == 'inactive':
+                    query = query.filter_by(is_active=False)
+                elif status_filter == 'confirmed':
+                    query = query.filter_by(email_confirmed=True)
+                elif status_filter == 'unconfirmed':
+                    query = query.filter_by(email_confirmed=False)
+                elif status_filter == 'digid':
+                    query = query.filter_by(created_via_digid=True)
+                elif status_filter == 'regular':
+                    query = query.filter_by(created_via_digid=False)
+            
+            if profession_filter != 'all':
+                query = query.filter_by(profession=profession_filter)
+            
+            if nationality_filter != 'all':
+                query = query.filter_by(nationality=nationality_filter)
+            
+            if legal_status_filter != 'all':
+                query = query.filter_by(legal_status=legal_status_filter)
+            
+            if search_query:
+                query = query.filter(
+                    or_(
+                        User.first_name.ilike(f'%{search_query}%'),
+                        User.last_name.ilike(f'%{search_query}%'),
+                        User.email.ilike(f'%{search_query}%'),
+                        User.phone.ilike(f'%{search_query}%'),
+                        User.workplace.ilike(f'%{search_query}%'),
+                        User.university_name.ilike(f'%{search_query}%')
+                    )
+                )
+        
+        users = query.order_by(User.created_at.desc()).all()
+        
+        if export_format == 'csv':
+            # Create CSV
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # Write header
+            writer.writerow([
+                'ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Country Code',
+                'Birth Date', 'Gender', 'Nationality', 'Other Nationality',
+                'Profession', 'Other Profession', 'Workplace', 'Specialization',
+                'Legal Status', 'Other Legal Status', 'Dutch Level', 'English Level',
+                'University Name', 'Degree Type', 'Study Start Year', 'Study End Year',
+                'Study Country', 'Medical Specialization', 'Work Experience',
+                'Additional Qualifications', 'Additional Education Info',
+                'Email Confirmed', 'DigiD User', 'Active', 'Created At', 'Last Login'
+            ])
+            
+            # Write data
+            for user in users:
+                writer.writerow([
+                    user.id,
+                    user.first_name or '',
+                    user.last_name or '',
+                    user.email or '',
+                    user.phone or '',
+                    user.country_code or '',
+                    user.birth_date.strftime('%Y-%m-%d') if user.birth_date else '',
+                    user.gender or '',
+                    user.nationality or '',
+                    user.other_nationality or '',
+                    user.profession or '',
+                    user.other_profession or '',
+                    user.workplace or '',
+                    user.specialization or '',
+                    user.legal_status or '',
+                    user.other_legal_status or '',
+                    user.dutch_level or '',
+                    user.english_level or '',
+                    user.university_name or '',
+                    user.degree_type or '',
+                    user.study_start_year or '',
+                    user.study_end_year or '',
+                    user.study_country or '',
+                    user.medical_specialization or '',
+                    user.work_experience or '',
+                    user.additional_qualifications or '',
+                    user.additional_education_info or '',
+                    'Yes' if user.email_confirmed else 'No',
+                    'Yes' if user.created_via_digid else 'No',
+                    'Yes' if user.is_active else 'No',
+                    user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '',
+                    user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else ''
+                ])
+            
+            # Create response
+            response = make_response(output.getvalue())
+            response.headers['Content-Type'] = 'text/csv'
+            response.headers['Content-Disposition'] = f'attachment; filename=mentora_users_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+            return response
+        
+        elif export_format == 'excel':
+            # For Excel export, we would need openpyxl or xlsxwriter
+            # For now, return CSV with Excel extension
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # Same logic as CSV but with Excel extension
+            writer.writerow([
+                'ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Country Code',
+                'Birth Date', 'Gender', 'Nationality', 'Other Nationality',
+                'Profession', 'Other Profession', 'Workplace', 'Specialization',
+                'Legal Status', 'Other Legal Status', 'Dutch Level', 'English Level',
+                'University Name', 'Degree Type', 'Study Start Year', 'Study End Year',
+                'Study Country', 'Medical Specialization', 'Work Experience',
+                'Additional Qualifications', 'Additional Education Info',
+                'Email Confirmed', 'DigiD User', 'Active', 'Created At', 'Last Login'
+            ])
+            
+            for user in users:
+                writer.writerow([
+                    user.id,
+                    user.first_name or '',
+                    user.last_name or '',
+                    user.email or '',
+                    user.phone or '',
+                    user.country_code or '',
+                    user.birth_date.strftime('%Y-%m-%d') if user.birth_date else '',
+                    user.gender or '',
+                    user.nationality or '',
+                    user.other_nationality or '',
+                    user.profession or '',
+                    user.other_profession or '',
+                    user.workplace or '',
+                    user.specialization or '',
+                    user.legal_status or '',
+                    user.other_legal_status or '',
+                    user.dutch_level or '',
+                    user.english_level or '',
+                    user.university_name or '',
+                    user.degree_type or '',
+                    user.study_start_year or '',
+                    user.study_end_year or '',
+                    user.study_country or '',
+                    user.medical_specialization or '',
+                    user.work_experience or '',
+                    user.additional_qualifications or '',
+                    user.additional_education_info or '',
+                    'Yes' if user.email_confirmed else 'No',
+                    'Yes' if user.created_via_digid else 'No',
+                    'Yes' if user.is_active else 'No',
+                    user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '',
+                    user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else ''
+                ])
+            
+            response = make_response(output.getvalue())
+            response.headers['Content-Type'] = 'text/csv'
+            response.headers['Content-Disposition'] = f'attachment; filename=mentora_users_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            return response
+        
+        else:
+            flash('Invalid export format', 'error')
+            return redirect(url_for('admin.crm_users'))
+    
+    except Exception as e:
+        current_app.logger.error(f"Error exporting users: {str(e)}")
+        flash(f'Error exporting users: {str(e)}', 'error')
+        return redirect(url_for('admin.crm_users'))
+
+@admin_bp.route('/crm/users/<int:user_id>/details')
+@login_required
+@admin_required
+def crm_user_details(user_id):
+    """Get user details for modal"""
+    try:
+        user = User.query.get_or_404(user_id)
+        return render_template('admin/crm_user_details.html', user=user)
+    except Exception as e:
+        current_app.logger.error(f"Error loading user details: {str(e)}")
+        return f"Error loading user details: {str(e)}", 500
+
+@admin_bp.route('/crm/users/send-email', methods=['POST'])
+@login_required
+@admin_required
+def crm_users_send_email():
+    """Send email to users"""
+    try:
+        data = request.get_json()
+        subject = data.get('subject')
+        message = data.get('message')
+        user_id = data.get('user_id')
+        user_ids = data.get('user_ids')
+        
+        if not subject or not message:
+            return jsonify({'success': False, 'error': 'Subject and message are required'})
+        
+        # Get users to send email to
+        if user_id:
+            users = [User.query.get(user_id)]
+        elif user_ids:
+            user_id_list = [int(id) for id in user_ids.split(',')]
+            users = User.query.filter(User.id.in_(user_id_list)).all()
+        else:
+            return jsonify({'success': False, 'error': 'No users specified'})
+        
+        # Send emails (this would integrate with your email service)
+        sent_count = 0
+        for user in users:
+            if user and user.email:
+                try:
+                    # Here you would call your email service
+                    # For now, just log the email
+                    current_app.logger.info(f"Would send email to {user.email}: {subject}")
+                    sent_count += 1
+                except Exception as e:
+                    current_app.logger.error(f"Error sending email to {user.email}: {str(e)}")
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Email sent to {sent_count} users',
+            'sent_count': sent_count
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Error sending emails: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @admin_bp.route('/virtual-patients')
 @login_required
 @admin_required

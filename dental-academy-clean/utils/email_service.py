@@ -27,14 +27,14 @@ def send_email_confirmation(user, token):
         if mail_suppress:
             # Development mode - console output
             print(f"\n{'='*60}")
-            print(f"📧 EMAIL CONFIRMATION для {user.email}")
+            print(f"📧 EMAIL CONFIRMATION for {user.email}")
             print(f"{'='*60}")
-            print(f"👤 Пользователь: {user.first_name} {user.last_name}")
+            print(f"👤 User: {user.first_name} {user.last_name}")
             print(f"📧 Email: {user.email}")
-            print(f"🔗 Ссылка подтверждения: {confirmation_url}")
-            print(f"⏰ Токен действителен: 24 часа")
+            print(f"🔗 Confirmation link: {confirmation_url}")
+            print(f"⏰ Token valid for: 24 hours")
             print(f"{'='*60}")
-            print(f"💡 Скопируйте ссылку выше и откройте в браузере для подтверждения")
+            print(f"💡 Copy the link above and open in browser to confirm")
             print(f"{'='*60}\n")
             
             current_app.logger.info(f"Email confirmation (console mode) for {user.email}")
@@ -44,7 +44,7 @@ def send_email_confirmation(user, token):
         
         # Create message
         msg = Message(
-            subject='🦷 Mentora - Подтверждение регистрации',
+            subject='MENTORA - Email Confirmation',
             recipients=[user.email],
             sender=current_app.config['MAIL_DEFAULT_SENDER']
         )
@@ -86,20 +86,20 @@ def get_confirmation_email_html(user, confirmation_url):
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
             <!-- Header -->
             <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
-                <h1 style="margin: 0; font-size: 32px; font-weight: bold;">🦷 Mentora</h1>
-                <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Система обучения медицинских работников</p>
+                <h1 style="margin: 0; font-size: 32px; font-weight: bold;">MENTORA</h1>
+                <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Medical Education Platform</p>
             </div>
             
             <!-- Content -->
             <div style="padding: 40px 30px;">
-                <h2 style="color: #2d3748; margin-top: 0; font-size: 24px;">Подтверждение регистрации</h2>
+                <h2 style="color: #2d3748; margin-top: 0; font-size: 24px;">Email Confirmation</h2>
                 
                 <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
-                    Здравствуйте, <strong>{user.first_name}</strong>!
+                    Hello, <strong>{user.first_name}</strong>!
                 </p>
                 
                 <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
-                    Благодарим за регистрацию в системе Mentora. Для завершения регистрации и активации вашего аккаунта, пожалуйста, подтвердите ваш email адрес.
+                    Thank you for registering with Mentora. To complete your pre-registration and activate your account, please confirm your email address.
                 </p>
                 
                 <!-- CTA Button -->
@@ -114,14 +114,14 @@ def get_confirmation_email_html(user, confirmation_url):
                               font-size: 16px;
                               display: inline-block;
                               box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);">
-                        ✅ Подтвердить Email
+                        ✅ Confirm Email
                     </a>
                 </div>
                 
                 <!-- Alternative link -->
                 <div style="background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 30px 0;">
                     <p style="color: #4a5568; font-size: 14px; margin: 0 0 10px 0;">
-                        <strong>Если кнопка не работает,</strong> скопируйте и вставьте эту ссылку в адресную строку браузера:
+                        <strong>If the button doesn't work,</strong> copy and paste this link into your browser address bar:
                     </p>
                     <p style="color: #3182ce; font-size: 14px; word-break: break-all; margin: 0; font-family: monospace; background: white; padding: 10px; border-radius: 4px;">
                         {confirmation_url}
@@ -131,7 +131,7 @@ def get_confirmation_email_html(user, confirmation_url):
                 <!-- Important note -->
                 <div style="background-color: #fef5e7; border-left: 4px solid #f6ad55; padding: 15px; margin: 20px 0;">
                     <p style="color: #744210; font-size: 14px; margin: 0;">
-                        <strong>Важно:</strong> Ссылка действительна в течение 24 часов. После этого потребуется запросить новую ссылку для подтверждения.
+                        <strong>Important:</strong> This link is valid for 24 hours. After that, you will need to request a new confirmation link.
                     </p>
                 </div>
             </div>
@@ -139,7 +139,7 @@ def get_confirmation_email_html(user, confirmation_url):
             <!-- Footer -->
             <div style="background-color: #f7fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
                 <p style="color: #718096; font-size: 14px; margin: 0 0 15px 0;">
-                    Если вы не регистрировались в Mentora, просто проигнорируйте это письмо.
+                    If you did not register with Mentora, please ignore this email.
                 </p>
                 
                 <p style="color: #4a5568; font-size: 14px; margin: 0;">
@@ -149,7 +149,7 @@ def get_confirmation_email_html(user, confirmation_url):
                 </p>
                 
                 <p style="color: #a0aec0; font-size: 12px; margin: 20px 0 0 0;">
-                    © 2024 Mentora. Все права защищены.
+                    © 2024 Mentora. All rights reserved.
                 </p>
             </div>
         </div>
@@ -160,27 +160,27 @@ def get_confirmation_email_html(user, confirmation_url):
 def get_confirmation_email_text(user, confirmation_url):
     """Generate text content for confirmation email"""
     return f"""
-MENTORA - Подтверждение регистрации
+MENTORA - Email Confirmation
 
-Здравствуйте, {user.first_name}!
+Hello, {user.first_name}!
 
-Благодарим за регистрацию в системе Mentora. Для завершения регистрации и активации вашего аккаунта, пожалуйста, подтвердите ваш email адрес.
+Thank you for registering with Mentora. To complete your pre-registration and activate your account, please confirm your email address.
 
-Ссылка для подтверждения:
+Confirmation link:
 {confirmation_url}
 
-ВАЖНО: Ссылка действительна в течение 24 часов.
+IMPORTANT: This link is valid for 24 hours.
 
-Если вы не регистрировались в Mentora, просто проигнорируйте это письмо.
+If you did not register with Mentora, please ignore this email.
 
 ---
-С уважением,
-Команда Mentora
+Best regards,
+Mentora Team
 
 Email: support@mentora.com.in
 Website: https://mentora.com.in
 
-© 2024 Mentora. Все права защищены.
+© 2024 Mentora. All rights reserved.
     """
 
 def send_password_reset_email(user, token):
@@ -200,8 +200,8 @@ def send_password_reset_email(user, token):
         
         if mail_suppress:
             print(f"\n{'='*60}")
-            print(f"🔐 PASSWORD RESET для {user.email}")
-            print(f"🔗 Ссылка: {reset_url}")
+            print(f"🔐 PASSWORD RESET for {user.email}")
+            print(f"🔗 Link: {reset_url}")
             print(f"{'='*60}\n")
             return True
         
@@ -209,7 +209,7 @@ def send_password_reset_email(user, token):
         
         # Create message
         msg = Message(
-            subject='🔐 Mentora - Сброс пароля',
+            subject='MENTORA - Password Reset',
             recipients=[user.email],
             sender=current_app.config['MAIL_DEFAULT_SENDER']
         )
@@ -248,20 +248,20 @@ def get_password_reset_html(user, reset_url):
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
             <!-- Header -->
             <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
-                <h1 style="margin: 0; font-size: 32px; font-weight: bold;">🦷 Mentora</h1>
-                <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Сброс пароля</p>
+                <h1 style="margin: 0; font-size: 32px; font-weight: bold;">MENTORA</h1>
+                <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Password Reset</p>
             </div>
             
             <!-- Content -->
             <div style="padding: 40px 30px;">
-                <h2 style="color: #2d3748; margin-top: 0; font-size: 24px;">Сброс пароля</h2>
+                <h2 style="color: #2d3748; margin-top: 0; font-size: 24px;">Password Reset</h2>
                 
                 <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
-                    Здравствуйте, <strong>{user.first_name}</strong>!
+                    Hello, <strong>{user.first_name}</strong>!
                 </p>
                 
                 <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
-                    Вы запросили сброс пароля для вашего аккаунта в Mentora. Нажмите на кнопку ниже, чтобы создать новый пароль.
+                    You have requested a password reset for your Mentora account. Click the button below to create a new password.
                 </p>
                 
                 <!-- CTA Button -->
@@ -276,14 +276,14 @@ def get_password_reset_html(user, reset_url):
                               font-size: 16px;
                               display: inline-block;
                               box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);">
-                        🔐 Сбросить пароль
+                        🔐 Reset Password
                     </a>
                 </div>
                 
                 <!-- Alternative link -->
                 <div style="background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 30px 0;">
                     <p style="color: #4a5568; font-size: 14px; margin: 0 0 10px 0;">
-                        <strong>Если кнопка не работает,</strong> скопируйте эту ссылку:
+                        <strong>If the button doesn't work,</strong> copy this link:
                     </p>
                     <p style="color: #3182ce; font-size: 14px; word-break: break-all; margin: 0; font-family: monospace; background: white; padding: 10px; border-radius: 4px;">
                         {reset_url}
@@ -293,7 +293,7 @@ def get_password_reset_html(user, reset_url):
                 <!-- Important note -->
                 <div style="background-color: #fef5e7; border-left: 4px solid #f6ad55; padding: 15px; margin: 20px 0;">
                     <p style="color: #744210; font-size: 14px; margin: 0;">
-                        <strong>Важно:</strong> Ссылка действительна в течение 1 часа. Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
+                        <strong>Important:</strong> This link is valid for 1 hour. If you did not request a password reset, please ignore this email.
                     </p>
                 </div>
             </div>
@@ -301,7 +301,7 @@ def get_password_reset_html(user, reset_url):
             <!-- Footer -->
             <div style="background-color: #f7fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
                 <p style="color: #718096; font-size: 14px; margin: 0 0 15px 0;">
-                    Если вы не запрашивали сброс пароля, ваш аккаунт остается в безопасности.
+                    If you did not request a password reset, your account remains secure.
                 </p>
                 
                 <p style="color: #4a5568; font-size: 14px; margin: 0;">
@@ -318,22 +318,22 @@ def get_password_reset_html(user, reset_url):
 def get_password_reset_text(user, reset_url):
     """Generate text for password reset email"""
     return f"""
-MENTORA - Сброс пароля
+MENTORA - Password Reset
 
-Здравствуйте, {user.first_name}!
+Hello, {user.first_name}!
 
-Вы запросили сброс пароля для вашего аккаунта в Mentora.
+You have requested a password reset for your Mentora account.
 
-Ссылка для сброса пароля:
+Password reset link:
 {reset_url}
 
-ВАЖНО: Ссылка действительна в течение 1 часа.
+IMPORTANT: This link is valid for 1 hour.
 
-Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
+If you did not request a password reset, please ignore this email.
 
 ---
-С уважением,
-Команда Mentora
+Best regards,
+Mentora Team
 
 Email: support@mentora.com.in
 Website: https://mentora.com.in
@@ -349,7 +349,7 @@ def send_welcome_email(user):
             return True
         
         msg = Message(
-            subject='🎉 Добро пожаловать в Mentora!',
+            subject='🎉 Welcome to Mentora!',
             recipients=[user.email],
             sender=current_app.config['MAIL_DEFAULT_SENDER']
         )
@@ -359,38 +359,38 @@ def send_welcome_email(user):
         <html>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-                <h1 style="margin: 0;">🎉 Добро пожаловать!</h1>
+                <h1 style="margin: 0;">🎉 Welcome!</h1>
             </div>
             
             <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h2>Добро пожаловать, {user.first_name}!</h2>
+                <h2>Welcome, {user.first_name}!</h2>
                 
-                <p>Ваш аккаунт успешно активирован! Теперь вы можете пользоваться всеми возможностями Mentora.</p>
+                <p>Congratulations! You have successfully completed your pre-registration for Mentora. We will notify you when the platform becomes available.</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="https://mentora.com.in/dashboard" 
                        style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                        🚀 Перейти в дашборд
+                        🚀 Go to Dashboard
                     </a>
                 </div>
                 
-                <p style="color: #666;">С уважением,<br>Команда Mentora</p>
+                <p style="color: #666;">Best regards,<br>Mentora Team</p>
             </div>
         </body>
         </html>
         """
         
         msg.body = f"""
-Добро пожаловать в Mentora!
+Welcome to Mentora!
 
-Здравствуйте, {user.first_name}!
+Hello, {user.first_name}!
 
-Ваш аккаунт успешно активирован! Теперь вы можете пользоваться всеми возможностями Mentora.
+Congratulations! You have successfully completed your pre-registration for Mentora. We will notify you when the platform becomes available.
 
-Перейти в дашборд: https://mentora.com.in/dashboard
+Go to Dashboard: https://mentora.com.in/dashboard
 
-С уважением,
-Команда Mentora
+Best regards,
+Mentora Team
         """
         
         mail.send(msg)

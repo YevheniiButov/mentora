@@ -194,7 +194,7 @@ class LearningPlanExporter:
             story = []
             
             # Заголовок
-            story.append(Paragraph("🦷 Mentora Academy", self.title_style))
+            story.append(Paragraph("MENTORA", self.title_style))
             story.append(Paragraph("Персональный план обучения", self.heading_style))
             story.append(Spacer(1, 20))
             
@@ -432,7 +432,7 @@ class LearningPlanExporter:
             elements.append(Paragraph(f"• {rec}", self.normal_style))
         
         elements.append(Spacer(1, 20))
-        elements.append(Paragraph("Удачи в обучении! 🦷", self.highlight_style))
+        elements.append(Paragraph("Удачи в обучении!", self.highlight_style))
         
         return elements
 

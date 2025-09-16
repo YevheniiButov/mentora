@@ -855,7 +855,7 @@ async function submitForm() {
                 We sent a confirmation email to <strong>${userEmail}</strong><br><br>
                 ⚠️ <strong>Important:</strong> Check your "Spam" or "Junk" folder<br>
                 The email might have ended up there. If you find it - mark as "Not Spam"<br><br>
-                🚀 After confirming your email, you will be able to log in and receive notifications about the program launch in Q1 2025
+                🚀 After confirming your email, you will be able to log in and receive notifications about the program launch in 2026
             `;
             showSuccessMessage(successMessage);
         } else {

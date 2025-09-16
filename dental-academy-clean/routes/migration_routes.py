@@ -33,14 +33,14 @@ def migration_status():
 def run_migration():
     """Run database migration"""
     try:
-        # Проверяем что это продакшен
+        # Check that this is production
         if not os.environ.get('DATABASE_URL'):
             return jsonify({
                 'success': False,
                 'error': 'Not in production environment'
             }), 400
         
-        # Применяем миграцию
+        # Apply migration
         upgrade()
         
         return jsonify({
@@ -57,14 +57,14 @@ def run_migration():
 def init_migration():
     """Initialize migration table"""
     try:
-        # Проверяем что это продакшен
+        # Check that this is production
         if not os.environ.get('DATABASE_URL'):
             return jsonify({
                 'success': False,
                 'error': 'Not in production environment'
             }), 400
         
-        # Инициализируем таблицу миграций
+        # Initialize migration table
         from flask_migrate import stamp
         stamp()
         
@@ -82,7 +82,7 @@ def init_migration():
 def fix_user_fields():
     """Fix user table field sizes directly"""
     try:
-        # Проверяем что это продакшен
+        # Check that this is production
         if not os.environ.get('DATABASE_URL'):
             return jsonify({
                 'success': False,

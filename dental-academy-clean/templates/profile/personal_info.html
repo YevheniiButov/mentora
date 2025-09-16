@@ -555,80 +555,80 @@
                     <select id="nationality" name="nationality" required onchange="toggleOtherField('nationality', 'other_nationality')" class="nationality-select">
                         <option value="">{{ t('select_nationality', lang) | default('Select Nationality') }}</option>
                         <!-- All countries sorted alphabetically -->
-                        <option value="AL">{{ t('albanian', lang) | default('Albanian') }}</option>
-                        <option value="DZ">{{ t('algerian', lang) | default('Algerian') }}</option>
-                        <option value="AR">{{ t('argentinian', lang) | default('Argentinian') }}</option>
-                        <option value="AU">{{ t('australian', lang) | default('Australian') }}</option>
-                        <option value="AT">{{ t('austrian', lang) | default('Austrian') }}</option>
-                        <option value="BA">{{ t('bosnian', lang) | default('Bosnian') }}</option>
-                        <option value="BR">{{ t('brazilian', lang) | default('Brazilian') }}</option>
-                        <option value="BG">{{ t('bulgarian', lang) | default('Bulgarian') }}</option>
-                        <option value="BY">{{ t('belarusian', lang) | default('Belarusian') }}</option>
-                        <option value="BE">{{ t('belgian', lang) | default('Belgian') }}</option>
-                        <option value="GB">{{ t('british', lang) | default('British') }}</option>
-                        <option value="CA">{{ t('canadian', lang) | default('Canadian') }}</option>
-                        <option value="CN">{{ t('chinese', lang) | default('Chinese') }}</option>
-                        <option value="HR">{{ t('croatian', lang) | default('Croatian') }}</option>
-                        <option value="CY">{{ t('cypriot', lang) | default('Cypriot') }}</option>
-                        <option value="CZ">{{ t('czech', lang) | default('Czech') }}</option>
-                        <option value="DK">{{ t('danish', lang) | default('Danish') }}</option>
-                        <option value="EG">{{ t('egyptian', lang) | default('Egyptian') }}</option>
-                        <option value="ET">{{ t('ethiopian', lang) | default('Ethiopian') }}</option>
-                        <option value="EE">{{ t('estonian', lang) | default('Estonian') }}</option>
-                        <option value="FI">{{ t('finnish', lang) | default('Finnish') }}</option>
-                        <option value="FR">{{ t('french', lang) | default('French') }}</option>
-                        <option value="DE">{{ t('german', lang) | default('German') }}</option>
-                        <option value="GH">{{ t('ghanaian', lang) | default('Ghanaian') }}</option>
-                        <option value="GR">{{ t('greek', lang) | default('Greek') }}</option>
-                        <option value="HU">{{ t('hungarian', lang) | default('Hungarian') }}</option>
-                        <option value="IS">{{ t('icelandic', lang) | default('Icelandic') }}</option>
-                        <option value="IN">{{ t('indian', lang) | default('Indian') }}</option>
-                        <option value="ID">{{ t('indonesian', lang) | default('Indonesian') }}</option>
-                        <option value="IE">{{ t('irish', lang) | default('Irish') }}</option>
-                        <option value="IT">{{ t('italian', lang) | default('Italian') }}</option>
-                        <option value="JP">{{ t('japanese', lang) | default('Japanese') }}</option>
-                        <option value="KE">{{ t('kenyan', lang) | default('Kenyan') }}</option>
-                        <option value="KR">{{ t('korean', lang) | default('Korean') }}</option>
-                        <option value="LV">{{ t('latvian', lang) | default('Latvian') }}</option>
-                        <option value="LT">{{ t('lithuanian', lang) | default('Lithuanian') }}</option>
-                        <option value="LU">{{ t('luxembourgish', lang) | default('Luxembourgish') }}</option>
-                        <option value="MK">{{ t('macedonian', lang) | default('Macedonian') }}</option>
-                        <option value="MT">{{ t('maltese', lang) | default('Maltese') }}</option>
-                        <option value="MX">{{ t('mexican', lang) | default('Mexican') }}</option>
-                        <option value="MD">{{ t('moldovan', lang) | default('Moldovan') }}</option>
-                        <option value="ME">{{ t('montenegrin', lang) | default('Montenegrin') }}</option>
-                        <option value="MA">{{ t('moroccan', lang) | default('Moroccan') }}</option>
-                        <option value="NL">{{ t('dutch', lang) | default('Dutch') }}</option>
-                        <option value="NZ">{{ t('new_zealand', lang) | default('New Zealand') }}</option>
-                        <option value="NG">{{ t('nigerian', lang) | default('Nigerian') }}</option>
-                        <option value="NO">{{ t('norwegian', lang) | default('Norwegian') }}</option>
-                        <option value="PH">{{ t('filipino', lang) | default('Filipino') }}</option>
-                        <option value="PL">{{ t('polish', lang) | default('Polish') }}</option>
-                        <option value="PT">{{ t('portuguese', lang) | default('Portuguese') }}</option>
-                        <option value="RO">{{ t('romanian', lang) | default('Romanian') }}</option>
-                        <option value="RU">{{ t('russian', lang) | default('Russian') }}</option>
-                        <option value="RS">{{ t('serbian', lang) | default('Serbian') }}</option>
-                        <option value="SG">{{ t('singaporean', lang) | default('Singaporean') }}</option>
-                        <option value="SK">{{ t('slovak', lang) | default('Slovak') }}</option>
-                        <option value="SI">{{ t('slovenian', lang) | default('Slovenian') }}</option>
-                        <option value="ZA">{{ t('south_african', lang) | default('South African') }}</option>
-                        <option value="ES">{{ t('spanish', lang) | default('Spanish') }}</option>
-                        <option value="SE">{{ t('swedish', lang) | default('Swedish') }}</option>
-                        <option value="CH">{{ t('swiss', lang) | default('Swiss') }}</option>
-                        <option value="TH">{{ t('thai', lang) | default('Thai') }}</option>
-                        <option value="TN">{{ t('tunisian', lang) | default('Tunisian') }}</option>
-                        <option value="TR">{{ t('turkish', lang) | default('Turkish') }}</option>
-                        <option value="UA">{{ t('ukrainian', lang) | default('Ukrainian') }}</option>
-                        <option value="US">{{ t('american', lang) | default('American') }}</option>
-                        <option value="VN">{{ t('vietnamese', lang) | default('Vietnamese') }}</option>
-                        <option value="OTHER">{{ t('other', lang) | default('Other') }}</option>
+                        <option value="AL" {% if user.nationality == 'AL' %}selected{% endif %}>{{ t('albanian', lang) | default('Albanian') }}</option>
+                        <option value="DZ" {% if user.nationality == 'DZ' %}selected{% endif %}>{{ t('algerian', lang) | default('Algerian') }}</option>
+                        <option value="AR" {% if user.nationality == 'AR' %}selected{% endif %}>{{ t('argentinian', lang) | default('Argentinian') }}</option>
+                        <option value="AU" {% if user.nationality == 'AU' %}selected{% endif %}>{{ t('australian', lang) | default('Australian') }}</option>
+                        <option value="AT" {% if user.nationality == 'AT' %}selected{% endif %}>{{ t('austrian', lang) | default('Austrian') }}</option>
+                        <option value="BA" {% if user.nationality == 'BA' %}selected{% endif %}>{{ t('bosnian', lang) | default('Bosnian') }}</option>
+                        <option value="BR" {% if user.nationality == 'BR' %}selected{% endif %}>{{ t('brazilian', lang) | default('Brazilian') }}</option>
+                        <option value="BG" {% if user.nationality == 'BG' %}selected{% endif %}>{{ t('bulgarian', lang) | default('Bulgarian') }}</option>
+                        <option value="BY" {% if user.nationality == 'BY' %}selected{% endif %}>{{ t('belarusian', lang) | default('Belarusian') }}</option>
+                        <option value="BE" {% if user.nationality == 'BE' %}selected{% endif %}>{{ t('belgian', lang) | default('Belgian') }}</option>
+                        <option value="GB" {% if user.nationality == 'GB' %}selected{% endif %}>{{ t('british', lang) | default('British') }}</option>
+                        <option value="CA" {% if user.nationality == 'CA' %}selected{% endif %}>{{ t('canadian', lang) | default('Canadian') }}</option>
+                        <option value="CN" {% if user.nationality == 'CN' %}selected{% endif %}>{{ t('chinese', lang) | default('Chinese') }}</option>
+                        <option value="HR" {% if user.nationality == 'HR' %}selected{% endif %}>{{ t('croatian', lang) | default('Croatian') }}</option>
+                        <option value="CY" {% if user.nationality == 'CY' %}selected{% endif %}>{{ t('cypriot', lang) | default('Cypriot') }}</option>
+                        <option value="CZ" {% if user.nationality == 'CZ' %}selected{% endif %}>{{ t('czech', lang) | default('Czech') }}</option>
+                        <option value="DK" {% if user.nationality == 'DK' %}selected{% endif %}>{{ t('danish', lang) | default('Danish') }}</option>
+                        <option value="EG" {% if user.nationality == 'EG' %}selected{% endif %}>{{ t('egyptian', lang) | default('Egyptian') }}</option>
+                        <option value="ET" {% if user.nationality == 'ET' %}selected{% endif %}>{{ t('ethiopian', lang) | default('Ethiopian') }}</option>
+                        <option value="EE" {% if user.nationality == 'EE' %}selected{% endif %}>{{ t('estonian', lang) | default('Estonian') }}</option>
+                        <option value="FI" {% if user.nationality == 'FI' %}selected{% endif %}>{{ t('finnish', lang) | default('Finnish') }}</option>
+                        <option value="FR" {% if user.nationality == 'FR' %}selected{% endif %}>{{ t('french', lang) | default('French') }}</option>
+                        <option value="DE" {% if user.nationality == 'DE' %}selected{% endif %}>{{ t('german', lang) | default('German') }}</option>
+                        <option value="GH" {% if user.nationality == 'GH' %}selected{% endif %}>{{ t('ghanaian', lang) | default('Ghanaian') }}</option>
+                        <option value="GR" {% if user.nationality == 'GR' %}selected{% endif %}>{{ t('greek', lang) | default('Greek') }}</option>
+                        <option value="HU" {% if user.nationality == 'HU' %}selected{% endif %}>{{ t('hungarian', lang) | default('Hungarian') }}</option>
+                        <option value="IS" {% if user.nationality == 'IS' %}selected{% endif %}>{{ t('icelandic', lang) | default('Icelandic') }}</option>
+                        <option value="IN" {% if user.nationality == 'IN' %}selected{% endif %}>{{ t('indian', lang) | default('Indian') }}</option>
+                        <option value="ID" {% if user.nationality == 'ID' %}selected{% endif %}>{{ t('indonesian', lang) | default('Indonesian') }}</option>
+                        <option value="IE" {% if user.nationality == 'IE' %}selected{% endif %}>{{ t('irish', lang) | default('Irish') }}</option>
+                        <option value="IT" {% if user.nationality == 'IT' %}selected{% endif %}>{{ t('italian', lang) | default('Italian') }}</option>
+                        <option value="JP" {% if user.nationality == 'JP' %}selected{% endif %}>{{ t('japanese', lang) | default('Japanese') }}</option>
+                        <option value="KE" {% if user.nationality == 'KE' %}selected{% endif %}>{{ t('kenyan', lang) | default('Kenyan') }}</option>
+                        <option value="KR" {% if user.nationality == 'KR' %}selected{% endif %}>{{ t('korean', lang) | default('Korean') }}</option>
+                        <option value="LV" {% if user.nationality == 'LV' %}selected{% endif %}>{{ t('latvian', lang) | default('Latvian') }}</option>
+                        <option value="LT" {% if user.nationality == 'LT' %}selected{% endif %}>{{ t('lithuanian', lang) | default('Lithuanian') }}</option>
+                        <option value="LU" {% if user.nationality == 'LU' %}selected{% endif %}>{{ t('luxembourgish', lang) | default('Luxembourgish') }}</option>
+                        <option value="MK" {% if user.nationality == 'MK' %}selected{% endif %}>{{ t('macedonian', lang) | default('Macedonian') }}</option>
+                        <option value="MT" {% if user.nationality == 'MT' %}selected{% endif %}>{{ t('maltese', lang) | default('Maltese') }}</option>
+                        <option value="MX" {% if user.nationality == 'MX' %}selected{% endif %}>{{ t('mexican', lang) | default('Mexican') }}</option>
+                        <option value="MD" {% if user.nationality == 'MD' %}selected{% endif %}>{{ t('moldovan', lang) | default('Moldovan') }}</option>
+                        <option value="ME" {% if user.nationality == 'ME' %}selected{% endif %}>{{ t('montenegrin', lang) | default('Montenegrin') }}</option>
+                        <option value="MA" {% if user.nationality == 'MA' %}selected{% endif %}>{{ t('moroccan', lang) | default('Moroccan') }}</option>
+                        <option value="NL" {% if user.nationality == 'NL' %}selected{% endif %}>{{ t('dutch', lang) | default('Dutch') }}</option>
+                        <option value="NZ" {% if user.nationality == 'NZ' %}selected{% endif %}>{{ t('new_zealand', lang) | default('New Zealand') }}</option>
+                        <option value="NG" {% if user.nationality == 'NG' %}selected{% endif %}>{{ t('nigerian', lang) | default('Nigerian') }}</option>
+                        <option value="NO" {% if user.nationality == 'NO' %}selected{% endif %}>{{ t('norwegian', lang) | default('Norwegian') }}</option>
+                        <option value="PH" {% if user.nationality == 'PH' %}selected{% endif %}>{{ t('filipino', lang) | default('Filipino') }}</option>
+                        <option value="PL" {% if user.nationality == 'PL' %}selected{% endif %}>{{ t('polish', lang) | default('Polish') }}</option>
+                        <option value="PT" {% if user.nationality == 'PT' %}selected{% endif %}>{{ t('portuguese', lang) | default('Portuguese') }}</option>
+                        <option value="RO" {% if user.nationality == 'RO' %}selected{% endif %}>{{ t('romanian', lang) | default('Romanian') }}</option>
+                        <option value="RU" {% if user.nationality == 'RU' %}selected{% endif %}>{{ t('russian', lang) | default('Russian') }}</option>
+                        <option value="RS" {% if user.nationality == 'RS' %}selected{% endif %}>{{ t('serbian', lang) | default('Serbian') }}</option>
+                        <option value="SG" {% if user.nationality == 'SG' %}selected{% endif %}>{{ t('singaporean', lang) | default('Singaporean') }}</option>
+                        <option value="SK" {% if user.nationality == 'SK' %}selected{% endif %}>{{ t('slovak', lang) | default('Slovak') }}</option>
+                        <option value="SI" {% if user.nationality == 'SI' %}selected{% endif %}>{{ t('slovenian', lang) | default('Slovenian') }}</option>
+                        <option value="ZA" {% if user.nationality == 'ZA' %}selected{% endif %}>{{ t('south_african', lang) | default('South African') }}</option>
+                        <option value="ES" {% if user.nationality == 'ES' %}selected{% endif %}>{{ t('spanish', lang) | default('Spanish') }}</option>
+                        <option value="SE" {% if user.nationality == 'SE' %}selected{% endif %}>{{ t('swedish', lang) | default('Swedish') }}</option>
+                        <option value="CH" {% if user.nationality == 'CH' %}selected{% endif %}>{{ t('swiss', lang) | default('Swiss') }}</option>
+                        <option value="TH" {% if user.nationality == 'TH' %}selected{% endif %}>{{ t('thai', lang) | default('Thai') }}</option>
+                        <option value="TN" {% if user.nationality == 'TN' %}selected{% endif %}>{{ t('tunisian', lang) | default('Tunisian') }}</option>
+                        <option value="TR" {% if user.nationality == 'TR' %}selected{% endif %}>{{ t('turkish', lang) | default('Turkish') }}</option>
+                        <option value="UA" {% if user.nationality == 'UA' %}selected{% endif %}>{{ t('ukrainian', lang) | default('Ukrainian') }}</option>
+                        <option value="US" {% if user.nationality == 'US' %}selected{% endif %}>{{ t('american', lang) | default('American') }}</option>
+                        <option value="VN" {% if user.nationality == 'VN' %}selected{% endif %}>{{ t('vietnamese', lang) | default('Vietnamese') }}</option>
+                        <option value="OTHER" {% if user.nationality == 'OTHER' %}selected{% endif %}>{{ t('other', lang) | default('Other') }}</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-group" id="other_nationality_group" style="display: none;">
                 <label for="other_nationality">{{ t('specify_nationality', lang) | default('Please specify your nationality') }} <span class="required">*</span></label>
-                <input type="text" id="other_nationality" name="other_nationality" placeholder="{{ t('nationality_placeholder', lang) | default('Enter your nationality') }}">
+                <input type="text" id="other_nationality" name="other_nationality" value="{{ user.other_nationality or '' }}" placeholder="{{ t('nationality_placeholder', lang) | default('Enter your nationality') }}">
             </div>
 
             <div class="form-row">
@@ -636,9 +636,9 @@
                     <label for="gender">{{ t('gender', lang) | default('Gender') }}</label>
                     <select id="gender" name="gender">
                         <option value="">{{ t('select_gender', lang) | default('Select Gender') }}</option>
-                        <option value="male">{{ t('male', lang) | default('Male') }}</option>
-                        <option value="female">{{ t('female', lang) | default('Female') }}</option>
-                        <option value="other">{{ t('other', lang) | default('Other') }}</option>
+                        <option value="male" {% if user.gender == 'male' %}selected{% endif %}>{{ t('male', lang) | default('Male') }}</option>
+                        <option value="female" {% if user.gender == 'female' %}selected{% endif %}>{{ t('female', lang) | default('Female') }}</option>
+                        <option value="other" {% if user.gender == 'other' %}selected{% endif %}>{{ t('other', lang) | default('Other') }}</option>
                     </select>
                 </div>
             </div>
@@ -653,13 +653,13 @@
                 <label for="dutch_level">{{ t('dutch_language_level', lang) | default('Dutch Language Level') }} <span class="required">*</span></label>
                 <select id="dutch_level" name="dutch_level" required>
                     <option value="">{{ t('select_level', lang) | default('Select Level') }}</option>
-                    <option value="A1">{{ t('a1_basic', lang) | default('A1 - Basic') }}</option>
-                    <option value="A2">{{ t('a2_elementary', lang) | default('A2 - Elementary') }}</option>
-                    <option value="B1">{{ t('b1_intermediate', lang) | default('B1 - Intermediate') }}</option>
-                    <option value="B2">{{ t('b2_upper_intermediate', lang) | default('B2 - Upper Intermediate') }}</option>
-                    <option value="C1">{{ t('c1_advanced', lang) | default('C1 - Advanced') }}</option>
-                    <option value="C2">{{ t('c2_proficient', lang) | default('C2 - Proficient') }}</option>
-                    <option value="native">{{ t('native_speaker', lang) | default('Native Speaker') }}</option>
+                    <option value="A1" {% if user.dutch_level == 'A1' %}selected{% endif %}>{{ t('a1_basic', lang) | default('A1 - Basic') }}</option>
+                    <option value="A2" {% if user.dutch_level == 'A2' %}selected{% endif %}>{{ t('a2_elementary', lang) | default('A2 - Elementary') }}</option>
+                    <option value="B1" {% if user.dutch_level == 'B1' %}selected{% endif %}>{{ t('b1_intermediate', lang) | default('B1 - Intermediate') }}</option>
+                    <option value="B2" {% if user.dutch_level == 'B2' %}selected{% endif %}>{{ t('b2_upper_intermediate', lang) | default('B2 - Upper Intermediate') }}</option>
+                    <option value="C1" {% if user.dutch_level == 'C1' %}selected{% endif %}>{{ t('c1_advanced', lang) | default('C1 - Advanced') }}</option>
+                    <option value="C2" {% if user.dutch_level == 'C2' %}selected{% endif %}>{{ t('c2_proficient', lang) | default('C2 - Proficient') }}</option>
+                    <option value="native" {% if user.dutch_level == 'native' %}selected{% endif %}>{{ t('native_speaker', lang) | default('Native Speaker') }}</option>
                 </select>
             </div>
 
@@ -667,13 +667,13 @@
                 <label for="english_level">{{ t('english_language_level', lang) | default('English Language Level') }}</label>
                 <select id="english_level" name="english_level">
                     <option value="">{{ t('select_level', lang) | default('Select Level') }}</option>
-                    <option value="A1">{{ t('a1_basic', lang) | default('A1 - Basic') }}</option>
-                    <option value="A2">{{ t('a2_elementary', lang) | default('A2 - Elementary') }}</option>
-                    <option value="B1">{{ t('b1_intermediate', lang) | default('B1 - Intermediate') }}</option>
-                    <option value="B2">{{ t('b2_upper_intermediate', lang) | default('B2 - Upper Intermediate') }}</option>
-                    <option value="C1">{{ t('c1_advanced', lang) | default('C1 - Advanced') }}</option>
-                    <option value="C2">{{ t('c2_proficient', lang) | default('C2 - Proficient') }}</option>
-                    <option value="native">{{ t('native_speaker', lang) | default('Native Speaker') }}</option>
+                    <option value="A1" {% if user.english_level == 'A1' %}selected{% endif %}>{{ t('a1_basic', lang) | default('A1 - Basic') }}</option>
+                    <option value="A2" {% if user.english_level == 'A2' %}selected{% endif %}>{{ t('a2_elementary', lang) | default('A2 - Elementary') }}</option>
+                    <option value="B1" {% if user.english_level == 'B1' %}selected{% endif %}>{{ t('b1_intermediate', lang) | default('B1 - Intermediate') }}</option>
+                    <option value="B2" {% if user.english_level == 'B2' %}selected{% endif %}>{{ t('b2_upper_intermediate', lang) | default('B2 - Upper Intermediate') }}</option>
+                    <option value="C1" {% if user.english_level == 'C1' %}selected{% endif %}>{{ t('c1_advanced', lang) | default('C1 - Advanced') }}</option>
+                    <option value="C2" {% if user.english_level == 'C2' %}selected{% endif %}>{{ t('c2_proficient', lang) | default('C2 - Proficient') }}</option>
+                    <option value="native" {% if user.english_level == 'native' %}selected{% endif %}>{{ t('native_speaker', lang) | default('Native Speaker') }}</option>
                 </select>
             </div>
 
@@ -725,7 +725,7 @@
                 </div>
                 <div class="form-group">
                     <label for="workplace_specialization">{{ t('specialization', lang) | default('Specialization') }}</label>
-                    <input type="text" id="workplace_specialization" name="workplace_specialization" placeholder="{{ t('specialization_placeholder', lang) | default('Your medical specialization') }}">
+                    <input type="text" id="workplace_specialization" name="workplace_specialization" value="{{ user.specialization or '' }}" placeholder="{{ t('specialization_placeholder', lang) | default('Your medical specialization') }}">
                 </div>
             </div>
 
@@ -733,18 +733,18 @@
                 <label for="legal_status">{{ t('legal_status', lang) | default('Legal Status in Netherlands') }} <span class="required">*</span></label>
                 <select id="legal_status" name="legal_status" required onchange="toggleOtherField('legal_status', 'other_legal_status')">
                     <option value="">{{ t('select_legal_status', lang) | default('Select Legal Status') }}</option>
-                    <option value="eu_citizen">{{ t('eu_citizen', lang) | default('EU Citizen') }}</option>
-                    <option value="non_eu_resident">{{ t('non_eu_resident', lang) | default('Non-EU Resident') }}</option>
-                    <option value="refugee">{{ t('refugee', lang) | default('Refugee') }}</option>
-                    <option value="student_visa">{{ t('student_visa', lang) | default('Student Visa') }}</option>
-                    <option value="work_visa">{{ t('work_visa', lang) | default('Work Visa') }}</option>
-                    <option value="other">{{ t('other_status', lang) | default('Other') }}</option>
+                    <option value="eu_citizen" {% if user.legal_status == 'eu_citizen' %}selected{% endif %}>{{ t('eu_citizen', lang) | default('EU Citizen') }}</option>
+                    <option value="non_eu_resident" {% if user.legal_status == 'non_eu_resident' %}selected{% endif %}>{{ t('non_eu_resident', lang) | default('Non-EU Resident') }}</option>
+                    <option value="refugee" {% if user.legal_status == 'refugee' %}selected{% endif %}>{{ t('refugee', lang) | default('Refugee') }}</option>
+                    <option value="student_visa" {% if user.legal_status == 'student_visa' %}selected{% endif %}>{{ t('student_visa', lang) | default('Student Visa') }}</option>
+                    <option value="work_visa" {% if user.legal_status == 'work_visa' %}selected{% endif %}>{{ t('work_visa', lang) | default('Work Visa') }}</option>
+                    <option value="other" {% if user.legal_status == 'other' %}selected{% endif %}>{{ t('other_status', lang) | default('Other') }}</option>
                 </select>
             </div>
 
             <div class="form-group" id="other_legal_status_group" style="display: none;">
                 <label for="other_legal_status">{{ t('specify_legal_status', lang) | default('Please specify your legal status') }} <span class="required">*</span></label>
-                <input type="text" id="other_legal_status" name="other_legal_status" placeholder="{{ t('legal_status_placeholder', lang) | default('Enter your legal status') }}">
+                <input type="text" id="other_legal_status" name="other_legal_status" value="{{ user.other_legal_status or '' }}" placeholder="{{ t('legal_status_placeholder', lang) | default('Enter your legal status') }}">
             </div>
             
             <div class="form-group">
@@ -753,22 +753,22 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="university_name">{{ t('university_name', lang) | default('University/Institution Name') }} <span class="required">*</span></label>
-                        <input type="text" id="university_name" name="university_name" required placeholder="{{ t('university_placeholder', lang) | default('Enter university or institution name') }}">
+                        <input type="text" id="university_name" name="university_name" value="{{ user.university_name or '' }}" required placeholder="{{ t('university_placeholder', lang) | default('Enter university or institution name') }}">
                     </div>
                     <div class="form-group">
                         <label for="degree_type">{{ t('degree_type', lang) | default('Degree Type') }} <span class="required">*</span></label>
                         <select id="degree_type" name="degree_type" required>
                             <option value="">{{ t('select_degree', lang) | default('Select Degree Type') }}</option>
-                            <option value="bachelor">{{ t('bachelor', lang) | default('Bachelor') }}</option>
-                            <option value="master">{{ t('master', lang) | default('Master') }}</option>
-                            <option value="doctorate">{{ t('doctorate', lang) | default('Doctorate (PhD)') }}</option>
-                            <option value="medical_degree">{{ t('medical_degree', lang) | default('Medical Degree (MD)') }}</option>
-                            <option value="dental_degree">{{ t('dental_degree', lang) | default('Dental Degree (DDS/DMD)') }}</option>
-                            <option value="pharmacy_degree">{{ t('pharmacy_degree', lang) | default('Pharmacy Degree (PharmD)') }}</option>
-                            <option value="nursing_degree">{{ t('nursing_degree', lang) | default('Nursing Degree') }}</option>
-                            <option value="certificate">{{ t('certificate', lang) | default('Professional Certificate') }}</option>
-                            <option value="diploma">{{ t('diploma', lang) | default('Diploma') }}</option>
-                            <option value="other">{{ t('other_degree', lang) | default('Other') }}</option>
+                            <option value="bachelor" {% if user.degree_type == 'bachelor' %}selected{% endif %}>{{ t('bachelor', lang) | default('Bachelor') }}</option>
+                            <option value="master" {% if user.degree_type == 'master' %}selected{% endif %}>{{ t('master', lang) | default('Master') }}</option>
+                            <option value="doctorate" {% if user.degree_type == 'doctorate' %}selected{% endif %}>{{ t('doctorate', lang) | default('Doctorate (PhD)') }}</option>
+                            <option value="medical_degree" {% if user.degree_type == 'medical_degree' %}selected{% endif %}>{{ t('medical_degree', lang) | default('Medical Degree (MD)') }}</option>
+                            <option value="dental_degree" {% if user.degree_type == 'dental_degree' %}selected{% endif %}>{{ t('dental_degree', lang) | default('Dental Degree (DDS/DMD)') }}</option>
+                            <option value="pharmacy_degree" {% if user.degree_type == 'pharmacy_degree' %}selected{% endif %}>{{ t('pharmacy_degree', lang) | default('Pharmacy Degree (PharmD)') }}</option>
+                            <option value="nursing_degree" {% if user.degree_type == 'nursing_degree' %}selected{% endif %}>{{ t('nursing_degree', lang) | default('Nursing Degree') }}</option>
+                            <option value="certificate" {% if user.degree_type == 'certificate' %}selected{% endif %}>{{ t('certificate', lang) | default('Professional Certificate') }}</option>
+                            <option value="diploma" {% if user.degree_type == 'diploma' %}selected{% endif %}>{{ t('diploma', lang) | default('Diploma') }}</option>
+                            <option value="other" {% if user.degree_type == 'other' %}selected{% endif %}>{{ t('other_degree', lang) | default('Other') }}</option>
                         </select>
                     </div>
                 </div>
@@ -777,50 +777,50 @@
                     <div class="form-group">
                         <label for="study_years">{{ t('study_years', lang) | default('Study Period') }} <span class="required">*</span></label>
                         <div class="year-range-container">
-                            <input type="number" id="study_start_year" name="study_start_year" required placeholder="{{ t('start_year', lang) | default('Start Year') }}" min="1950" max="2030" class="year-input">
+                            <input type="number" id="study_start_year" name="study_start_year" value="{{ user.study_start_year or '' }}" required placeholder="{{ t('start_year', lang) | default('Start Year') }}" min="1950" max="2030" class="year-input">
                             <span class="year-separator">-</span>
-                            <input type="number" id="study_end_year" name="study_end_year" required placeholder="{{ t('end_year', lang) | default('End Year') }}" min="1950" max="2030" class="year-input">
+                            <input type="number" id="study_end_year" name="study_end_year" value="{{ user.study_end_year or '' }}" required placeholder="{{ t('end_year', lang) | default('End Year') }}" min="1950" max="2030" class="year-input">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="study_country">{{ t('study_country', lang) | default('Country of Study') }} <span class="required">*</span></label>
                         <select id="study_country" name="study_country" required onchange="toggleOtherField('study_country', 'other_study_country')">
                             <option value="">{{ t('select_country', lang) | default('Select Country') }}</option>
-                            <option value="NL">{{ t('netherlands', lang) | default('Netherlands') }}</option>
-                            <option value="DE">{{ t('germany', lang) | default('Germany') }}</option>
-                            <option value="BE">{{ t('belgium', lang) | default('Belgium') }}</option>
-                            <option value="FR">{{ t('france', lang) | default('France') }}</option>
-                            <option value="ES">{{ t('spain', lang) | default('Spain') }}</option>
-                            <option value="IT">{{ t('italy', lang) | default('Italy') }}</option>
-                            <option value="PT">{{ t('portugal', lang) | default('Portugal') }}</option>
-                            <option value="PL">{{ t('poland', lang) | default('Poland') }}</option>
-                            <option value="RO">{{ t('romania', lang) | default('Romania') }}</option>
-                            <option value="BG">{{ t('bulgaria', lang) | default('Bulgaria') }}</option>
-                            <option value="HU">{{ t('hungary', lang) | default('Hungary') }}</option>
-                            <option value="CZ">{{ t('czech_republic', lang) | default('Czech Republic') }}</option>
-                            <option value="SK">{{ t('slovakia', lang) | default('Slovakia') }}</option>
-                            <option value="HR">{{ t('croatia', lang) | default('Croatia') }}</option>
-                            <option value="SI">{{ t('slovenia', lang) | default('Slovenia') }}</option>
-                            <option value="EE">{{ t('estonia', lang) | default('Estonia') }}</option>
-                            <option value="LV">{{ t('latvia', lang) | default('Latvia') }}</option>
-                            <option value="LT">{{ t('lithuania', lang) | default('Lithuania') }}</option>
-                            <option value="MT">{{ t('malta', lang) | default('Malta') }}</option>
-                            <option value="CY">{{ t('cyprus', lang) | default('Cyprus') }}</option>
-                            <option value="LU">{{ t('luxembourg', lang) | default('Luxembourg') }}</option>
-                            <option value="AT">{{ t('austria', lang) | default('Austria') }}</option>
-                            <option value="IE">{{ t('ireland', lang) | default('Ireland') }}</option>
-                            <option value="CH">{{ t('switzerland', lang) | default('Switzerland') }}</option>
-                            <option value="SE">{{ t('sweden', lang) | default('Sweden') }}</option>
-                            <option value="NO">{{ t('norway', lang) | default('Norway') }}</option>
-                            <option value="DK">{{ t('denmark', lang) | default('Denmark') }}</option>
-                            <option value="FI">{{ t('finland', lang) | default('Finland') }}</option>
-                            <option value="IS">{{ t('iceland', lang) | default('Iceland') }}</option>
-                            <option value="GB">{{ t('united_kingdom', lang) | default('United Kingdom') }}</option>
-                            <option value="US">{{ t('united_states', lang) | default('United States') }}</option>
-                            <option value="CA">{{ t('canada', lang) | default('Canada') }}</option>
-                            <option value="AU">{{ t('australia', lang) | default('Australia') }}</option>
-                            <option value="NZ">{{ t('new_zealand', lang) | default('New Zealand') }}</option>
-                            <option value="OTHER">{{ t('other_country', lang) | default('Other') }}</option>
+                            <option value="NL" {% if user.study_country == 'NL' %}selected{% endif %}>{{ t('netherlands', lang) | default('Netherlands') }}</option>
+                            <option value="DE" {% if user.study_country == 'DE' %}selected{% endif %}>{{ t('germany', lang) | default('Germany') }}</option>
+                            <option value="BE" {% if user.study_country == 'BE' %}selected{% endif %}>{{ t('belgium', lang) | default('Belgium') }}</option>
+                            <option value="FR" {% if user.study_country == 'FR' %}selected{% endif %}>{{ t('france', lang) | default('France') }}</option>
+                            <option value="ES" {% if user.study_country == 'ES' %}selected{% endif %}>{{ t('spain', lang) | default('Spain') }}</option>
+                            <option value="IT" {% if user.study_country == 'IT' %}selected{% endif %}>{{ t('italy', lang) | default('Italy') }}</option>
+                            <option value="PT" {% if user.study_country == 'PT' %}selected{% endif %}>{{ t('portugal', lang) | default('Portugal') }}</option>
+                            <option value="PL" {% if user.study_country == 'PL' %}selected{% endif %}>{{ t('poland', lang) | default('Poland') }}</option>
+                            <option value="RO" {% if user.study_country == 'RO' %}selected{% endif %}>{{ t('romania', lang) | default('Romania') }}</option>
+                            <option value="BG" {% if user.study_country == 'BG' %}selected{% endif %}>{{ t('bulgaria', lang) | default('Bulgaria') }}</option>
+                            <option value="HU" {% if user.study_country == 'HU' %}selected{% endif %}>{{ t('hungary', lang) | default('Hungary') }}</option>
+                            <option value="CZ" {% if user.study_country == 'CZ' %}selected{% endif %}>{{ t('czech_republic', lang) | default('Czech Republic') }}</option>
+                            <option value="SK" {% if user.study_country == 'SK' %}selected{% endif %}>{{ t('slovakia', lang) | default('Slovakia') }}</option>
+                            <option value="HR" {% if user.study_country == 'HR' %}selected{% endif %}>{{ t('croatia', lang) | default('Croatia') }}</option>
+                            <option value="SI" {% if user.study_country == 'SI' %}selected{% endif %}>{{ t('slovenia', lang) | default('Slovenia') }}</option>
+                            <option value="EE" {% if user.study_country == 'EE' %}selected{% endif %}>{{ t('estonia', lang) | default('Estonia') }}</option>
+                            <option value="LV" {% if user.study_country == 'LV' %}selected{% endif %}>{{ t('latvia', lang) | default('Latvia') }}</option>
+                            <option value="LT" {% if user.study_country == 'LT' %}selected{% endif %}>{{ t('lithuania', lang) | default('Lithuania') }}</option>
+                            <option value="MT" {% if user.study_country == 'MT' %}selected{% endif %}>{{ t('malta', lang) | default('Malta') }}</option>
+                            <option value="CY" {% if user.study_country == 'CY' %}selected{% endif %}>{{ t('cyprus', lang) | default('Cyprus') }}</option>
+                            <option value="LU" {% if user.study_country == 'LU' %}selected{% endif %}>{{ t('luxembourg', lang) | default('Luxembourg') }}</option>
+                            <option value="AT" {% if user.study_country == 'AT' %}selected{% endif %}>{{ t('austria', lang) | default('Austria') }}</option>
+                            <option value="IE" {% if user.study_country == 'IT' %}selected{% endif %}>{{ t('ireland', lang) | default('Ireland') }}</option>
+                            <option value="CH" {% if user.study_country == 'CH' %}selected{% endif %}>{{ t('switzerland', lang) | default('Switzerland') }}</option>
+                            <option value="SE" {% if user.study_country == 'SE' %}selected{% endif %}>{{ t('sweden', lang) | default('Sweden') }}</option>
+                            <option value="NO" {% if user.study_country == 'NO' %}selected{% endif %}>{{ t('norway', lang) | default('Norway') }}</option>
+                            <option value="DK" {% if user.study_country == 'DK' %}selected{% endif %}>{{ t('denmark', lang) | default('Denmark') }}</option>
+                            <option value="FI" {% if user.study_country == 'FI' %}selected{% endif %}>{{ t('finland', lang) | default('Finland') }}</option>
+                            <option value="IS" {% if user.study_country == 'IS' %}selected{% endif %}>{{ t('iceland', lang) | default('Iceland') }}</option>
+                            <option value="GB" {% if user.study_country == 'GB' %}selected{% endif %}>{{ t('united_kingdom', lang) | default('United Kingdom') }}</option>
+                            <option value="US" {% if user.study_country == 'US' %}selected{% endif %}>{{ t('united_states', lang) | default('United States') }}</option>
+                            <option value="CA" {% if user.study_country == 'CA' %}selected{% endif %}>{{ t('canada', lang) | default('Canada') }}</option>
+                            <option value="AU" {% if user.study_country == 'AU' %}selected{% endif %}>{{ t('australia', lang) | default('Australia') }}</option>
+                            <option value="NZ" {% if user.study_country == 'NZ' %}selected{% endif %}>{{ t('new_zealand', lang) | default('New Zealand') }}</option>
+                            <option value="OTHER" {% if user.study_country == 'OTHER' %}selected{% endif %}>{{ t('other', lang) | default('Other') }}</option>
                         </select>
                     </div>
                 </div>
@@ -832,25 +832,25 @@
 
                 <div class="form-group">
                     <label for="medical_specialization">{{ t('medical_specialization', lang) | default('Medical Specialization') }}</label>
-                    <input type="text" id="medical_specialization" name="medical_specialization" placeholder="{{ t('specialization_placeholder', lang) | default('e.g., General Medicine, Dentistry, Pharmacy, Nursing, etc.') }}">
+                    <input type="text" id="medical_specialization" name="medical_specialization" value="{{ user.medical_specialization or '' }}" placeholder="{{ t('specialization_placeholder', lang) | default('e.g., General Medicine, Dentistry, Pharmacy, Nursing, etc.') }}">
                 </div>
 
                 <div class="form-group">
                     <label for="additional_education_info">{{ t('additional_education_info', lang) | default('Additional Education Information') }}</label>
-                    <textarea id="additional_education_info" name="additional_education_info" rows="2" placeholder="{{ t('additional_education_placeholder', lang) | default('Any additional information about your education, honors, awards, or special achievements') }}"></textarea>
+                    <textarea id="additional_education_info" name="additional_education_info" rows="2" placeholder="{{ t('additional_education_placeholder', lang) | default('Any additional information about your education, honors, awards, or special achievements') }}">{{ user.additional_education_info or '' }}</textarea>
                     <div class="help-text">{{ t('additional_education_help', lang) | default('Optional: Include any honors, awards, or special achievements') }}</div>
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="work_experience">{{ t('work_experience', lang) | default('Work Experience') }}</label>
-                <textarea id="work_experience" name="work_experience" rows="3" placeholder="{{ t('work_experience_placeholder', lang) | default('Describe your professional work experience in the medical field') }}"></textarea>
+                <textarea id="work_experience" name="work_experience" rows="3" placeholder="{{ t('work_experience_placeholder', lang) | default('Describe your professional work experience in the medical field') }}">{{ user.work_experience or '' }}</textarea>
                 <div class="help-text">{{ t('work_experience_help', lang) | default('Include years of experience, positions held, and areas of expertise') }}</div>
             </div>
 
             <div class="form-group">
                 <label for="additional_qualifications">{{ t('additional_qualifications', lang) | default('Additional Qualifications') }}</label>
-                <textarea id="additional_qualifications" name="additional_qualifications" rows="2" placeholder="{{ t('additional_qualifications_placeholder', lang) | default('Any additional certifications, courses, or specializations') }}"></textarea>
+                <textarea id="additional_qualifications" name="additional_qualifications" rows="2" placeholder="{{ t('additional_qualifications_placeholder', lang) | default('Any additional certifications, courses, or specializations') }}">{{ user.additional_qualifications or '' }}</textarea>
                 <div class="help-text">{{ t('additional_qualifications_help', lang) | default('List any additional professional qualifications or certifications') }}</div>
             </div>
 

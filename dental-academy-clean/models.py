@@ -298,12 +298,12 @@ class User(db.Model, UserMixin):
     def get_profession_display(self):
         """Get the profession display name with emoji"""
         profession_display = {
-            'tandarts': '🦷 Tandarts',
+            'tandarts': 'Tandarts',
             'apotheker': '💊 Apotheker',
             'huisarts': '🩺 Huisarts',
             'verpleegkundige': '👩‍⚕️ Verpleegkundige'
         }
-        return profession_display.get(self.profession, self.profession or 'Не указана')
+        return profession_display.get(self.profession, self.profession or 'Not specified')
     
     def can_use_password_auth(self):
         """Check if user can authenticate with password"""
@@ -814,21 +814,21 @@ class LearningPath(db.Model):
     name_ru = db.Column(db.String(200))
     description = db.Column(db.Text)
     
-    # BI-toets специфика
+    # BI-toets specific
     exam_component = db.Column(db.String(20), nullable=False)  # THEORETICAL, METHODOLOGY, PRACTICAL, CLINICAL
-    exam_weight = db.Column(db.Float, nullable=False)  # Вес в процентах
+    exam_weight = db.Column(db.Float, nullable=False)  # Weight in percentage
     exam_type = db.Column(db.String(20), nullable=False)  # multiple_choice, open_book, practical_theory, interview, case_study
     
-    # Структура обучения
+    # Learning structure
     duration_weeks = db.Column(db.Integer)
     total_estimated_hours = db.Column(db.Integer)
-    prerequisites = db.Column(db.JSON)  # Список ID предварительных путей
+    prerequisites = db.Column(db.JSON)  # List of prerequisite path IDs
     
-    # Модули и связи
-    modules = db.Column(db.JSON)  # Структура модулей
+    # Modules and connections
+    modules = db.Column(db.JSON)  # Module structure
     
-    # Оценка
-    assessment = db.Column(db.JSON)  # Структура оценки
+    # Assessment
+    assessment = db.Column(db.JSON)  # Assessment structure
     
     # IRT адаптивность
     irt_difficulty_range = db.Column(db.JSON)  # Диапазон сложности для IRT (min, max)

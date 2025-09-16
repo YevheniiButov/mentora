@@ -23,11 +23,11 @@ except ImportError:
 from flask import Flask, render_template, request, session, g, redirect, url_for, flash, send_from_directory, abort
 from utils.serializers import safe_jsonify
 from flask_login import current_user, login_user, logout_user, login_required
-# Заменяем импорт на более конкретный
+# Replace import with more specific one
 try:
     from flask_babel import get_locale
 except ImportError:
-    # Fallback функция, если flask_babel не установлен
+    # Fallback function if flask_babel is not installed
     def get_locale():
         return 'en'
 
@@ -162,7 +162,7 @@ def before_request():
                 if current_lang == 'en':
                     flash('Your DigiD session has expired. Please log in again.', 'warning')
                 elif current_lang == 'ru':
-                    flash('Ваша DigiD сессия истекла. Пожалуйста, войдите снова.', 'warning')
+                    flash('Your DigiD session has expired. Please log in again.', 'warning')
                 else:
                     flash('Uw DigiD sessie is verlopen. Log opnieuw in.', 'warning')
                 
@@ -249,6 +249,18 @@ def inject_template_vars():
         'is_digid_user': current_user.is_digid_user() if current_user and current_user.is_authenticated else False,
         'digid_session_active': session.get('digid_session_id') is not None if current_user and current_user.is_authenticated else False
     }
+
+# Template filters
+@app.template_filter('from_json')
+def from_json_filter(value):
+    """Convert JSON string to Python object"""
+    if not value:
+        return None
+    try:
+        import json
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return None
 
 # ========================================
 # MAIN ROUTES (always available)
@@ -590,7 +602,7 @@ if app.config.get('ENV') == 'development':
         }
         return f"<pre>{str(info)}</pre>"
 
-logger.info("🦷 Mentora Clean application created successfully!")
+logger.info("Mentora Clean application created successfully!")
 
 # Import questions command
 try:
@@ -620,7 +632,7 @@ def seed_database():
     script_path = Path(__file__).parent / 'scripts' / 'seed_production_data_runner.py'
     
     if not script_path.exists():
-        print(f"❌ Скрипт не найден: {script_path}")
+        print(f"❌ Script not found: {script_path}")
         sys.exit(1)
     
     try:
@@ -650,7 +662,7 @@ def check_production_data():
     script_path = Path(__file__).parent / 'scripts' / 'check_production_data.py'
 
     if not script_path.exists():
-        print(f"❌ Скрипт не найден: {script_path}")
+        print(f"❌ Script not found: {script_path}")
         sys.exit(1)
 
     try:
@@ -677,7 +689,7 @@ def force_load_data():
     script_path = Path(__file__).parent / 'scripts' / 'force_load_production_data.py'
 
     if not script_path.exists():
-        print(f"❌ Скрипт не найден: {script_path}")
+        print(f"❌ Script not found: {script_path}")
         sys.exit(1)
 
     try:

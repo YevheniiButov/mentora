@@ -13,7 +13,7 @@ PROFESSION_CONTENT = {
             op de BIG-toets en Nederlandse tandheelkundige praktijk. Onze adaptieve leerroute helpt u 
             systematisch alle benodigde competenties te ontwikkelen.
             ''',
-            'icon': '🦷',
+            'icon': '',
             'color_primary': '#3498db',
             'color_secondary': '#2980b9'
         },

@@ -60,7 +60,7 @@ PROFESSION_MAPPINGS = {
 }
 
 PROFESSION_NAMES = {
-    'tandheelkunde': '🦷 Tandheelkunde',
+    'tandheelkunde': 'Tandheelkunde',
     'farmacie': '💊 Farmacie',
     'huisartsgeneeskunde': '🩺 Huisartsgeneeskunde', 
     'verpleegkunde': '👩‍⚕️ Verpleegkunde'

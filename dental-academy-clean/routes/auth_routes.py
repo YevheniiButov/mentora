@@ -19,10 +19,10 @@ auth_bp = Blueprint('auth', __name__)
 
 # reCAPTCHA validation
 def verify_recaptcha(response_token):
-    """Verify reCAPTCHA token with Google - с экстренным обходом"""
+    """Verify reCAPTCHA token with Google - with emergency bypass"""
     
-    # === ЭКСТРЕННОЕ ИСПРАВЛЕНИЕ ===
-    # Проверяем включена ли reCAPTCHA в продакшене
+    # === EMERGENCY FIX ===
+    # Check if reCAPTCHA is enabled in production
     recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
     if not recaptcha_enabled:
         print("=== reCAPTCHA DISABLED - BYPASSING ===")
@@ -30,12 +30,12 @@ def verify_recaptcha(response_token):
     
     secret_key = current_app.config.get('RECAPTCHA_PRIVATE_KEY', '6LdnzsYrAAAAABe7nFDNs9L7PfSNujJZLQOywdKd')
     
-    # Если нет ключа - пропускаем
+    # If no key - skip
     if not secret_key or secret_key.strip() == '':
         print("=== NO RECAPTCHA KEY - BYPASSING ===")
         return True
     
-    # Если нет токена - пропускаем только в development
+    # If no token - skip only in development
     if not response_token:
         if current_app.config.get('FLASK_ENV') == 'development':
             print("=== DEVELOPMENT MODE - BYPASSING RECAPTCHA ===")
@@ -60,7 +60,7 @@ def verify_recaptcha(response_token):
     except Exception as e:
         print(f"=== reCAPTCHA ERROR: {str(e)} ===")
         
-        # В случае ошибки API - пропускаем в development
+        # In case of API error - skip in development
         if current_app.config.get('FLASK_ENV') == 'development':
             print("=== reCAPTCHA API ERROR - BYPASSING IN DEV ===")
             return True
@@ -113,7 +113,7 @@ def get_file_size(file):
     file.seek(0)  # Reset to beginning
     return size
 
-# Активирую маршруты аутентификации:
+# Activating authentication routes:
 @auth_bp.route('/logout')
 @login_required
 def logout():
@@ -121,11 +121,11 @@ def logout():
     logout_user()
     return redirect(url_for('main.index', lang=g.get('lang', 'en')))
 
-# Оставляю только DigiD:
+# Keeping only DigiD:
 @auth_bp.route('/digid/login')
 def digid_login():
     from flask import render_template, request, g
-    # Используем g.lang, который устанавливается в before_request
+    # Use g.lang, which is set in before_request
     lang = g.get('lang', 'nl')
     return render_template('digid/login.html', lang=lang)
 
@@ -138,7 +138,7 @@ def digid_callback():
 def digid_logout():
     from flask_login import logout_user
     logout_user()
-    # Можно добавить очистку сессии, если нужно: session.clear()
+    # Can add session cleanup if needed: session.clear()
     return redirect(url_for('main.index', lang=g.get('lang', 'en')))
 
 
@@ -968,7 +968,7 @@ def forgot_password():
         if user:
             print(f"=== USER DETAILS: {user.email} ({user.first_name} {user.last_name}) ===")
         else:
-            # Попробуем найти по части email для отладки
+            # Try to find by partial email for debugging
             similar_users = User.query.filter(User.email.like(f'%{email.split("@")[0]}%')).all()
             print(f"=== SIMILAR USERS FOUND: {len(similar_users)} ===")
             for u in similar_users:
@@ -1037,12 +1037,12 @@ def reset_password(token):
             user = User.query.filter_by(password_reset_token=token_hash).first()
         
         if not user:
-            flash('Неверная или истекшая ссылка сброса пароля', 'error')
+            flash('Invalid or expired password reset link', 'error')
             return redirect(url_for('auth.forgot_password'))
         
         # Verify token
         if not user.verify_password_reset_token(token):
-            flash('Ссылка сброса пароля истекла. Пожалуйста, запросите новую.', 'error')
+            flash('Password reset link has expired. Please request a new one.', 'error')
             return redirect(url_for('auth.forgot_password'))
         
         if request.method == 'GET':

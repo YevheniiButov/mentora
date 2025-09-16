@@ -1,5 +1,5 @@
-# config.py - Конфигурация приложения Mentora Clean
-# Включает настройки для DigiD интеграции и Email
+# config.py - Mentora Clean Application Configuration
+# Includes settings for DigiD integration and Email
 
 import os
 from datetime import timedelta
@@ -72,6 +72,7 @@ class Config:
     RECAPTCHA_ENABLED = os.environ.get('RECAPTCHA_ENABLED', 'false').lower() == 'true'
     RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', None)
     RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', None)
+    RECAPTCHA_DOMAINS = os.environ.get('RECAPTCHA_DOMAINS', 'mentora.com.in,www.mentora.com.in,mentora-nl.onrender.com,bigmentor.nl,www.bigmentor.nl').split(',')
     
     # Development mode - suppress email sending
     MAIL_SUPPRESS_SEND = os.environ.get('MAIL_SUPPRESS_SEND', 'false').lower() in ['true', 'on', '1']

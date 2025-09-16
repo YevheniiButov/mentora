@@ -36,7 +36,7 @@ def main():
             sys.exit(1)
     
     # Display startup information
-    logger.info(f"🦷 Starting Mentora Clean")
+    logger.info(f"Starting Mentora Clean")
     logger.info(f"🌐 Server: http://{host}:{port}")
     logger.info(f"🔧 Debug mode: {debug}")
     logger.info(f"🗄️ Database: {app.config.get('SQLALCHEMY_DATABASE_URI', 'Not configured')}")

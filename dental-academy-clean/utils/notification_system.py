@@ -22,7 +22,7 @@ class LearningNotificationSystem:
                 'template': '''
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <div style="background: linear-gradient(135deg, #3ECDC1, #6C5CE7); color: white; padding: 20px; text-align: center;">
-                        <h1>🦷 Mentora Academy</h1>
+                        <h1>MENTORA</h1>
                         <h2>Напоминание о занятии</h2>
                     </div>
                     
@@ -227,7 +227,7 @@ class LearningNotificationSystem:
                 'template': '''
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <div style="background: linear-gradient(135deg, #ef4444, #f59e0b); color: white; padding: 20px; text-align: center;">
-                        <h1>⚠️ Напоминание о экзамене</h1>
+                        <h1>⚠️ Exam Reminder</h1>
                         <h2>Осталось {{days_left}} дней до BIG экзамена</h2>
                     </div>
                     
