@@ -806,6 +806,8 @@ def crm_users():
         profession_filter = request.args.get('profession', 'all')
         nationality_filter = request.args.get('nationality', 'all')
         legal_status_filter = request.args.get('legal_status', 'all')
+        dutch_level_filter = request.args.get('dutch_level', 'all')
+        english_level_filter = request.args.get('english_level', 'all')
         search_query = request.args.get('search', '').strip()
         sort_by = request.args.get('sort', 'created_at')
         sort_order = request.args.get('order', 'desc')
@@ -836,6 +838,12 @@ def crm_users():
         
         if legal_status_filter != 'all':
             query = query.filter_by(legal_status=legal_status_filter)
+        
+        if dutch_level_filter != 'all':
+            query = query.filter_by(dutch_level=dutch_level_filter)
+        
+        if english_level_filter != 'all':
+            query = query.filter_by(english_level=english_level_filter)
         
         if search_query:
             query = query.filter(
@@ -887,6 +895,8 @@ def crm_users():
         professions = db.session.query(User.profession).filter(User.profession.isnot(None)).distinct().all()
         nationalities = db.session.query(User.nationality).filter(User.nationality.isnot(None)).distinct().all()
         legal_statuses = db.session.query(User.legal_status).filter(User.legal_status.isnot(None)).distinct().all()
+        dutch_levels = db.session.query(User.dutch_level).filter(User.dutch_level.isnot(None)).distinct().all()
+        english_levels = db.session.query(User.english_level).filter(User.english_level.isnot(None)).distinct().all()
         
         # Statistics
         stats = {
@@ -907,10 +917,14 @@ def crm_users():
                              professions=[p[0] for p in professions],
                              nationalities=[n[0] for n in nationalities],
                              legal_statuses=[l[0] for l in legal_statuses],
+                             dutch_levels=[d[0] for d in dutch_levels],
+                             english_levels=[e[0] for e in english_levels],
                              status_filter=status_filter,
                              profession_filter=profession_filter,
                              nationality_filter=nationality_filter,
                              legal_status_filter=legal_status_filter,
+                             dutch_level_filter=dutch_level_filter,
+                             english_level_filter=english_level_filter,
                              search_query=search_query,
                              sort_by=sort_by,
                              sort_order=sort_order,
@@ -940,6 +954,8 @@ def crm_users_export():
         profession_filter = request.args.get('profession', 'all')
         nationality_filter = request.args.get('nationality', 'all')
         legal_status_filter = request.args.get('legal_status', 'all')
+        dutch_level_filter = request.args.get('dutch_level', 'all')
+        english_level_filter = request.args.get('english_level', 'all')
         search_query = request.args.get('search', '').strip()
         export_format = request.args.get('export', 'csv')
         user_ids = request.args.get('user_ids', '')
@@ -976,6 +992,12 @@ def crm_users_export():
             if legal_status_filter != 'all':
                 query = query.filter_by(legal_status=legal_status_filter)
             
+            if dutch_level_filter != 'all':
+                query = query.filter_by(dutch_level=dutch_level_filter)
+            
+            if english_level_filter != 'all':
+                query = query.filter_by(english_level=english_level_filter)
+            
             if search_query:
                 query = query.filter(
                     or_(
@@ -1001,6 +1023,8 @@ def crm_users_export():
                 'Birth Date', 'Gender', 'Nationality', 'Other Nationality',
                 'Profession', 'Other Profession', 'Workplace', 'Specialization',
                 'Legal Status', 'Other Legal Status', 'Dutch Level', 'English Level',
+                'Program Interests', 'Required Consents', 'Optional Consents', 'Program Notifications',
+                'Motivation', 'IDW Assessment', 'Big Exam Registered', 'Exam Date',
                 'University Name', 'Degree Type', 'Study Start Year', 'Study End Year',
                 'Study Country', 'Medical Specialization', 'Work Experience',
                 'Additional Qualifications', 'Additional Education Info',
@@ -1009,6 +1033,16 @@ def crm_users_export():
             
             # Write data
             for user in users:
+                # Parse program interests
+                program_interests = ''
+                if user.program_interests:
+                    try:
+                        import json
+                        interests = json.loads(user.program_interests)
+                        program_interests = ', '.join(interests) if interests else ''
+                    except:
+                        program_interests = user.program_interests
+                
                 writer.writerow([
                     user.id,
                     user.first_name or '',
@@ -1028,6 +1062,14 @@ def crm_users_export():
                     user.other_legal_status or '',
                     user.dutch_level or '',
                     user.english_level or '',
+                    program_interests,
+                    'Yes' if user.required_consents else 'No',
+                    'Yes' if user.optional_consents else 'No',
+                    'Yes' if user.program_notifications else 'No',
+                    user.motivation or '',
+                    user.idw_assessment or '',
+                    user.big_exam_registered or '',
+                    user.exam_date.strftime('%Y-%m-%d') if user.exam_date else '',
                     user.university_name or '',
                     user.degree_type or '',
                     user.study_start_year or '',

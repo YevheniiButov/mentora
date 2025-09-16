@@ -97,6 +97,111 @@
         </div>
     </div>
 
+    <!-- Program Interests & Consents -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-heart"></i> Program Interests</h6>
+                </div>
+                <div class="card-body">
+                    {% if user.program_interests %}
+                    {% set interests = user.program_interests | from_json %}
+                    {% if interests %}
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for interest in interests %}
+                        <span class="badge bg-primary">{{ interest }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No interests specified</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted">No interests specified</p>
+                    {% endif %}
+                    
+                    {% if user.motivation %}
+                    <div class="mt-3">
+                        <strong>Motivation:</strong>
+                        <p class="mt-1">{{ user.motivation }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-check-circle"></i> Consents & Notifications</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Required Consents:</span>
+                            <span class="badge bg-{{ 'success' if user.required_consents else 'danger' }}">
+                                {{ 'Yes' if user.required_consents else 'No' }}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Optional Consents:</span>
+                            <span class="badge bg-{{ 'success' if user.optional_consents else 'danger' }}">
+                                {{ 'Yes' if user.optional_consents else 'No' }}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Program Notifications:</span>
+                            <span class="badge bg-{{ 'success' if user.program_notifications else 'danger' }}">
+                                {{ 'Yes' if user.program_notifications else 'No' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Information -->
+    {% if user.idw_assessment or user.big_exam_registered or user.exam_date %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-clipboard-check"></i> Exam Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if user.idw_assessment %}
+                        <div class="col-md-4">
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>IDW Assessment:</strong></div>
+                                <div class="col-6">{{ user.idw_assessment.replace('_', ' ').title() }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.big_exam_registered %}
+                        <div class="col-md-4">
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>Big Exam:</strong></div>
+                                <div class="col-6">{{ user.big_exam_registered.replace('_', ' ').title() }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.exam_date %}
+                        <div class="col-md-4">
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>Exam Date:</strong></div>
+                                <div class="col-6">{{ user.exam_date.strftime('%d.%m.%Y') }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Education Information -->
     {% if user.university_name or user.degree_type or user.study_country %}
     <div class="row">

@@ -281,6 +281,32 @@
                 </select>
             </div>
             <div class="col-md-2">
+                <label for="dutch_level" class="form-label">Dutch Level</label>
+                <select class="form-select" id="dutch_level" name="dutch_level">
+                    <option value="all" {% if dutch_level_filter == 'all' %}selected{% endif %}>All Levels</option>
+                    <option value="A1" {% if dutch_level_filter == 'A1' %}selected{% endif %}>A1</option>
+                    <option value="A2" {% if dutch_level_filter == 'A2' %}selected{% endif %}>A2</option>
+                    <option value="B1" {% if dutch_level_filter == 'B1' %}selected{% endif %}>B1</option>
+                    <option value="B2" {% if dutch_level_filter == 'B2' %}selected{% endif %}>B2</option>
+                    <option value="C1" {% if dutch_level_filter == 'C1' %}selected{% endif %}>C1</option>
+                    <option value="C2" {% if dutch_level_filter == 'C2' %}selected{% endif %}>C2</option>
+                    <option value="native" {% if dutch_level_filter == 'native' %}selected{% endif %}>Native</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="english_level" class="form-label">English Level</label>
+                <select class="form-select" id="english_level" name="english_level">
+                    <option value="all" {% if english_level_filter == 'all' %}selected{% endif %}>All Levels</option>
+                    <option value="A1" {% if english_level_filter == 'A1' %}selected{% endif %}>A1</option>
+                    <option value="A2" {% if english_level_filter == 'A2' %}selected{% endif %}>A2</option>
+                    <option value="B1" {% if english_level_filter == 'B1' %}selected{% endif %}>B1</option>
+                    <option value="B2" {% if english_level_filter == 'B2' %}selected{% endif %}>B2</option>
+                    <option value="C1" {% if english_level_filter == 'C1' %}selected{% endif %}>C1</option>
+                    <option value="C2" {% if english_level_filter == 'C2' %}selected{% endif %}>C2</option>
+                    <option value="native" {% if english_level_filter == 'native' %}selected{% endif %}>Native</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label class="form-label">&nbsp;</label>
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary">
@@ -329,6 +355,14 @@
                         </th>
                         <th>Nationality</th>
                         <th>Legal Status</th>
+                        <th class="sortable-header" onclick="sortTable('dutch_level')">
+                            Dutch Level <i class="bi bi-arrow-down-up"></i>
+                        </th>
+                        <th class="sortable-header" onclick="sortTable('english_level')">
+                            English Level <i class="bi bi-arrow-down-up"></i>
+                        </th>
+                        <th>Program Interests</th>
+                        <th>Consents</th>
                         <th>Education</th>
                         <th>Status</th>
                         <th class="sortable-header" onclick="sortTable('created_at')">
@@ -389,6 +423,55 @@
                             {% else %}
                             <span class="text-muted">Not specified</span>
                             {% endif %}
+                        </td>
+                        <td>
+                            {% if user.dutch_level %}
+                            <span class="badge bg-info">{{ user.dutch_level.upper() }}</span>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.english_level %}
+                            <span class="badge bg-success">{{ user.english_level.upper() }}</span>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.program_interests %}
+                            {% set interests = user.program_interests | from_json %}
+                            {% if interests %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for interest in interests[:3] %}
+                                <span class="badge bg-primary">{{ interest }}</span>
+                                {% endfor %}
+                                {% if interests|length > 3 %}
+                                <span class="badge bg-secondary">+{{ interests|length - 3 }}</span>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                {% if user.required_consents %}
+                                <span class="badge bg-success" title="Required Consents">✓ Required</span>
+                                {% endif %}
+                                {% if user.optional_consents %}
+                                <span class="badge bg-info" title="Optional Consents">✓ Optional</span>
+                                {% endif %}
+                                {% if user.program_notifications %}
+                                <span class="badge bg-warning" title="Program Notifications">✓ Program</span>
+                                {% endif %}
+                                {% if not user.required_consents and not user.optional_consents and not user.program_notifications %}
+                                <span class="text-muted">No consents</span>
+                                {% endif %}
+                            </div>
                         </td>
                         <td>
                             {% if user.university_name %}
