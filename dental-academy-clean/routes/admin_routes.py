@@ -3362,12 +3362,38 @@ def crm_dashboard():
                              overdue_followups=0, lead_sources=[],
                              profession_stats=[])
 
-@admin_bp.route('/crm/contacts')
+@admin_bp.route('/crm/contacts', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def crm_contacts():
     """Contact management page"""
     try:
+        # Handle POST request for adding new contact
+        if request.method == 'POST':
+            try:
+                # Create new contact
+                contact = Contact(
+                    full_name=request.form.get('full_name'),
+                    email=request.form.get('email'),
+                    phone=request.form.get('phone'),
+                    profession_id=request.form.get('profession_id', type=int) or None,
+                    workplace=request.form.get('workplace'),
+                    contact_status=request.form.get('contact_status', 'lead'),
+                    lead_source=request.form.get('lead_source'),
+                    notes=request.form.get('notes')
+                )
+                
+                db.session.add(contact)
+                db.session.commit()
+                
+                flash('Контакт успешно добавлен!', 'success')
+                return redirect(url_for('admin.crm_contacts'))
+                
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.error(f"Error creating contact: {str(e)}")
+                flash(f'Ошибка создания контакта: {str(e)}', 'error')
+        
         # Get filter parameters
         status_filter = request.args.get('status', 'all')
         profession_filter = request.args.get('profession', 'all')
