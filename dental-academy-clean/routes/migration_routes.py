@@ -64,15 +64,17 @@ def fix_user_fields():
             }), 400
         
         # Выполняем SQL команды напрямую
+        from sqlalchemy import text
+        
         with db.engine.connect() as conn:
             # Увеличиваем размер password_hash
-            conn.execute("ALTER TABLE \"user\" ALTER COLUMN password_hash TYPE VARCHAR(255)")
+            conn.execute(text("ALTER TABLE \"user\" ALTER COLUMN password_hash TYPE VARCHAR(255)"))
             
             # Увеличиваем размер email_confirmation_token
-            conn.execute("ALTER TABLE \"user\" ALTER COLUMN email_confirmation_token TYPE VARCHAR(255)")
+            conn.execute(text("ALTER TABLE \"user\" ALTER COLUMN email_confirmation_token TYPE VARCHAR(255)"))
             
             # Увеличиваем размер password_reset_token
-            conn.execute("ALTER TABLE \"user\" ALTER COLUMN password_reset_token TYPE VARCHAR(255)")
+            conn.execute(text("ALTER TABLE \"user\" ALTER COLUMN password_reset_token TYPE VARCHAR(255)"))
             
             conn.commit()
         
