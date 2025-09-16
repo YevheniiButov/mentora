@@ -339,6 +339,12 @@
                     e.stopPropagation();
                     
                     console.log('🔘 Toggle clicked! Current state:', isMenuOpen);
+                    console.log('🔘 Event details:', {
+                        target: e.target,
+                        currentTarget: e.currentTarget,
+                        bubbles: e.bubbles,
+                        cancelable: e.cancelable
+                    });
                     
                     if (isMenuOpen) {
                         // Закрываем меню через Bootstrap
@@ -406,6 +412,17 @@
             setTimeout(initMobileMenu, 500);
             setTimeout(initMobileMenu, 1000);
             setTimeout(initMobileMenu, 2000);
+            setTimeout(initMobileMenu, 5000);
+            setTimeout(initMobileMenu, 10000);
+            
+            // Принудительная реинициализация каждые 30 секунд для защиты от поздних скриптов
+            setInterval(() => {
+                const navbarToggler = document.querySelector('.navbar-toggler');
+                if (navbarToggler && !navbarToggler.hasAttribute('data-mobile-menu-initialized')) {
+                    console.log('🔄 Forcing mobile menu re-initialization after 30s');
+                    initMobileMenu();
+                }
+            }, 30000);
             
             var languageDropdown = document.getElementById('languageDropdown');
             if (languageDropdown) {

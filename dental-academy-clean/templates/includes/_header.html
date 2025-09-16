@@ -2099,20 +2099,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { passive: true });
   }
 
-  // Close mobile menu when clicking outside
-  document.addEventListener('click', function(e) {
-    const navbar = document.querySelector('.navbar-collapse');
-    const toggle = document.querySelector('.navbar-toggler');
-    
-    if (navbar && navbar.classList.contains('show') && 
-        !navbar.contains(e.target) && 
-        !toggle.contains(e.target)) {
-      const bsCollapse = bootstrap.Collapse.getInstance(navbar);
-      if (bsCollapse) {
-        bsCollapse.hide();
-      }
-    }
-  });
+  // Close mobile menu when clicking outside - ОТКЛЮЧЕНО (конфликт с base.html)
+  // document.addEventListener('click', function(e) {
+  //   const navbar = document.querySelector('.navbar-collapse');
+  //   const toggle = document.querySelector('.navbar-toggler');
+  //   
+  //   if (navbar && navbar.classList.contains('show') && 
+  //       !navbar.contains(e.target) && 
+  //       !toggle.contains(e.target)) {
+  //     const bsCollapse = bootstrap.Collapse.getInstance(navbar);
+  //     if (bsCollapse) {
+  //       bsCollapse.hide();
+  //     }
+  //   }
+  // });
 
   // Auto-close mobile menu when clicking nav links - ОТКЛЮЧЕНО (конфликт с base.html)
   // document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
