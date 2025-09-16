@@ -352,7 +352,7 @@ translations = {
     # Додаткові заголовки та описи
     'case_studies': 'Клінічні випадки',
     'communication': 'Комунікація',
-    'medical_dutch': 'Медичний голландський',
+    'medical_dutch': 'Медична голландська мова',
     'exam_title': 'Іспит',
     'exam_description': 'Підготовка до реальних іспитів з аналізом результатів',
     'mock_exams': 'Пробні іспити',
@@ -366,7 +366,7 @@ translations = {
     'oral_hygiene': 'Гігієна ротової порожнини',
     
     # Додаткові описи
-    'medical_dutch_desc': 'Спеціалізований курс медичного голландського для роботи в Нідерландах',
+    'medical_dutch_desc': 'Спеціалізований курс медичної голландської мови для роботи в Нідерландах',
     'realistic_simulations': 'Реалістичні симуляції',
     'realistic_simulations_desc': 'Віртуальні пацієнти та клінічні сценарії, що наближені до реальності',
     'detailed_analytics': 'Детальна аналітика',
@@ -1737,7 +1737,7 @@ translations = {
     'check_education_standards': 'Перевірте, чи відповідає освіта голландським стандартам',
     'dutch_language_test_step': 'Голландський мовний тест',
     'achieve_b2_dutch': 'Досягніть рівня B2+ голландської',
-    'medical_dutch_component': 'Компонент медичного голландського',
+    'medical_dutch_component': 'Компонент медичної голландської мови',
     'bi_exam_preparation_step': 'Підготовка до BI-іспиту',
     'study_dutch_dentistry': 'Вивчення голландської стоматології',
     'knowledge_dutch_legislation': 'Знання голландського законодавства',
@@ -1752,7 +1752,7 @@ translations = {
     'certified_dutch_translation_detailed': 'Завірений голландський переклад диплому',
     'official_transcripts_detailed': 'Офіційні транскрипти/оцінки',
     'cnavt_certificate': 'Сертифікат CNaVT (голландський B2+)',
-    'medical_dutch_proof': 'Доказ медичного голландського',
+    'medical_dutch_proof': 'Доказ медичної голландської мови',
     
     # Мовні вимоги
     'dutch_language_level': 'Рівень голландської мови',
@@ -1871,7 +1871,7 @@ translations = {
     'check_education_standards': 'Перевірте відповідність освітнім стандартам',
     'dutch_language_test_step': 'Голландський мовний тест',
     'achieve_b2_dutch': 'Досягніть рівня B2+ голландської',
-    'medical_dutch_component': 'Компонент медичного голландського',
+    'medical_dutch_component': 'Компонент медичної голландської мови',
     'study_dutch_dentistry': 'Вивчення голландської стоматології',
     'knowledge_dutch_legislation': 'Знання голландського законодавства',
     'take_bi_test': 'Складання BI-тесту',
@@ -1883,7 +1883,7 @@ translations = {
     'certified_dutch_translation': 'Завірений голландський переклад',
     'official_transcripts': 'Офіційні транскрипти',
     'cnavt_certificate': 'Сертифікат CNaVT',
-    'medical_dutch_proof': 'Доказ медичного голландського',
+    'medical_dutch_proof': 'Доказ медичної голландської мови',
     'dutch_language_level': 'Рівень голландської мови',
     'nt2_program_ii': 'NT2-II програма',
     'cnavt_medical_profile': 'CNaVT медичний профіль',
@@ -2707,7 +2707,7 @@ translations = {
     'most_interested_in': 'Що вас найбільше цікавить?',
     'big_exam_preparation': 'Підготовка до BIG іспиту',
     'clinical_internships': 'Клінічні стажування',
-    'medical_dutch': 'Медичний нідерландський мову',
+    'medical_dutch': 'Медична нідерландська мова',
     'professional_networking': 'Професійні зв\'язки',
     'mentorship_program': 'Програма менторства',
     'motivation': 'Розкажіть про свою мотивацію',
