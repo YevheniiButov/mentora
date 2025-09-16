@@ -718,6 +718,10 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error(f"❌ Database initialization failed: {e}")
     
+    # Create admin user if it doesn't exist (production only)
+    with app.app_context():
+        create_admin_if_not_exists()
+    
     # Run the application
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
@@ -729,4 +733,49 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=port,
         debug=debug
-    ) 
+    )
+
+def create_admin_if_not_exists():
+    """Create admin user if it doesn't exist (for production)"""
+    try:
+        from models import User, db
+        
+        admin_email = "admin@mentora.com.in"
+        admin_password = "MentoraAdmin2025!"
+        
+        # Check if admin already exists
+        existing_admin = User.query.filter_by(email=admin_email).first()
+        
+        if existing_admin:
+            # Make sure existing user is admin
+            if existing_admin.role != 'admin':
+                existing_admin.role = 'admin'
+                existing_admin.is_active = True
+                existing_admin.email_confirmed = True
+                existing_admin.set_password(admin_password)
+                db.session.commit()
+                logger.info(f"✅ User {admin_email} is now admin!")
+        else:
+            # Create new admin user
+            admin_user = User(
+                email=admin_email,
+                first_name='Admin',
+                last_name='User',
+                role='admin',
+                is_active=True,
+                email_confirmed=True,
+                registration_completed=True
+            )
+            admin_user.set_password(admin_password)
+            
+            db.session.add(admin_user)
+            db.session.commit()
+            logger.info(f"✅ Production admin {admin_email} created!")
+        
+        logger.info(f"🌐 Admin access: https://www.mentora.com.in/admin/")
+        logger.info(f"📧 Email: {admin_email}")
+        logger.info(f"🔑 Password: {admin_password}")
+        logger.info("⚠️  IMPORTANT: Change password after first login!")
+        
+    except Exception as e:
+        logger.error(f"❌ Error creating admin: {str(e)}") 
