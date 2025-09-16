@@ -2701,7 +2701,7 @@ translations = {
     'hospital_internships': 'Стажування в лікарнях',
     'mentorship': 'Менторське супроводження',
     'priority_access': 'Пріоритетний доступ',
-    'launch_date': 'Запуск: Q1 2026',
+    'launch_date': 'Запуск: 2026',
     'early_notification': 'Ви отримаєте повідомлення про початок програми',
     'program_interests': 'Інтереси до програми',
     'most_interested_in': 'Що вас найбільше цікавить?',

@@ -288,7 +288,7 @@ translations = {
     'hospital_internships': 'کارآموزی در بیمارستان‌ها',
     'mentorship': 'پشتیبانی مربیگری',
     'priority_access': 'دسترسی اولویت‌دار',
-    'launch_date': 'راه‌اندازی: Q1 2026',
+    'launch_date': 'راه‌اندازی: 2026',
     'early_notification': 'در مورد شروع برنامه اطلاع‌رسانی دریافت خواهید کرد',
     'program_interests': 'علایق برنامه',
     'most_interested_in': 'بیشتر به چه چیزی علاقه دارید؟',

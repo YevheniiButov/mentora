@@ -267,7 +267,7 @@ translations = {
     'hospital_internships': 'Hastane stajları',
     'mentorship': 'Mentorluk desteği',
     'priority_access': 'Öncelikli erişim',
-    'launch_date': 'Lansman: Q1 2026',
+    'launch_date': 'Lansman: 2026',
     'early_notification': 'Program başlangıcı hakkında bildirim alacaksınız',
     'program_interests': 'Program ilgi alanları',
     'most_interested_in': 'En çok ne ilginizi çekiyor?',

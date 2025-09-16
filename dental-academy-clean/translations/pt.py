@@ -339,7 +339,7 @@ translations = {
     'hospital_internships': 'Estágios em hospitais',
     'mentorship': 'Suporte de mentoria',
     'priority_access': 'Acesso prioritário',
-    'launch_date': 'Lançamento: Q1 2026',
+    'launch_date': 'Lançamento: 2026',
     'early_notification': 'Você receberá notificação sobre o início do programa',
     'program_interests': 'Interesses do programa',
     'most_interested_in': 'O que mais te interessa?',
