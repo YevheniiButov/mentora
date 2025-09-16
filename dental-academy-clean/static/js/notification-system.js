@@ -183,6 +183,41 @@ class NotificationSystem {
                 'pre_registration_content_short': '🎉 Предварительная регистрация в Mentora открыта! Закрепите свое место в программе раннего доступа.',
                 'register_now': 'Зарегистрироваться',
                 'remind_later': 'Напомнить позже'
+            },
+            'uk': {
+                'pre_registration_title': 'Попередня реєстрація відкрита!',
+                'pre_registration_subtitle': 'Станьте одним з перших учасників Mentora',
+                'pre_registration_content_short': '🎉 Попередня реєстрація в Mentora відкрита! Закріпіть своє місце в програмі раннього доступу.',
+                'register_now': 'Зареєструватися',
+                'remind_later': 'Нагадати пізніше'
+            },
+            'fa': {
+                'pre_registration_title': 'ثبت نام اولیه اکنون باز است!',
+                'pre_registration_subtitle': 'یکی از اولین کسانی باشید که به Mentora می پیوندد',
+                'pre_registration_content_short': '🎉 ثبت نام اولیه برای Mentora اکنون باز است! جای خود را در برنامه دسترسی زودهنگام انحصاری ما تضمین کنید.',
+                'register_now': 'الان ثبت نام کنید',
+                'remind_later': 'بعداً یادآوری کن'
+            },
+            'pt': {
+                'pre_registration_title': 'Pré-registro está aberto!',
+                'pre_registration_subtitle': 'Seja um dos primeiros a se juntar ao Mentora',
+                'pre_registration_content_short': '🎉 O pré-registro para o Mentora está aberto! Garanta seu lugar em nosso programa exclusivo de acesso antecipado.',
+                'register_now': 'Registrar Agora',
+                'remind_later': 'Lembrar Mais Tarde'
+            },
+            'es': {
+                'pre_registration_title': '¡La preinscripción está abierta!',
+                'pre_registration_subtitle': 'Sé uno de los primeros en unirse a Mentora',
+                'pre_registration_content_short': '🎉 ¡La preinscripción para Mentora está abierta! Asegura tu lugar en nuestro programa exclusivo de acceso temprano.',
+                'register_now': 'Registrarse Ahora',
+                'remind_later': 'Recordar Más Tarde'
+            },
+            'tr': {
+                'pre_registration_title': 'Ön kayıt şimdi açık!',
+                'pre_registration_subtitle': 'Mentora\'ya katılan ilk kişilerden biri olun',
+                'pre_registration_content_short': '🎉 Mentora için ön kayıt şimdi açık! Özel erken erişim programımızda yerinizi güvence altına alın.',
+                'register_now': 'Şimdi Kayıt Ol',
+                'remind_later': 'Daha Sonra Hatırlat'
             }
         };
         
