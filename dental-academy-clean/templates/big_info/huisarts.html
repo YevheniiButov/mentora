@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="nl" data-theme="light" class="big-info-standalone">
 <head>
-    <!-- Preload critical CSS for standalone page -->
-    <link rel="preload" href="{{ url_for('static', filename='css/pages/big-info-standalone.css') }}" as="style">
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="{{ url_for('static', filename='css/main.min.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/universal-styles.min.css') }}" as="style">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -170,6 +171,183 @@
         .hidden {
             display: none;
         }
+
+        /* Warning Section Styles */
+        .warning-section {
+            padding: 2rem 0;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-bottom: 1px solid #f59e0b;
+        }
+
+        .warning-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 40px rgba(245, 158, 11, 0.2);
+            border: 2px solid #f59e0b;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+
+        .warning-icon {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .warning-content h3 {
+            color: #92400e;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .warning-content p {
+            color: #78350f;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .warning-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .warning-details li {
+            color: #78350f;
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .warning-details li:before {
+            content: "⚠️";
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        /* Costs and Timeline Styles */
+        .costs-timeline-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .costs-section, .timeline-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .costs-section h3, .timeline-section h3 {
+            color: #1f2937;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .cost-item:last-child {
+            border-bottom: none;
+        }
+
+        .cost-item.total {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            border: none;
+        }
+
+        .cost-label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .cost-item.total .cost-label {
+            color: white;
+        }
+
+        .cost-amount {
+            font-weight: 700;
+            color: #059669;
+            font-size: 1.1rem;
+        }
+
+        .cost-item.total .cost-amount {
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .timeline-item-simple {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+
+        .timeline-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .timeline-content h4 {
+            color: #1f2937;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content p {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .costs-timeline-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .warning-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -257,11 +435,35 @@
                 <div class="hero-content">
                     <div class="hero-text">
                         <h1 class="hero-title">
-                            BIG Registratie Huisarts
+                            {{ t('actual_requirements_gp_registration_2025', lang) | default('Актуальные требования для регистрации семейных врачей (huisarts) в Нидерландах') }}
                         </h1>
                         <p class="hero-subtitle">
-                            {{ t('complete_guide_gp_registration', lang) | default('Complete gids voor huisartsen die zich willen registreren in het BIG-register') }}
+                            {{ t('complete_guide_non_eu_doctors', lang) | default('Полное руководство для не-ЕС врачей по процедуре BIG регистрации семейных врачей') }}
                         </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Warning Section -->
+        <section class="warning-section">
+            <div class="container">
+                <div class="warning-card">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="warning-content">
+                        <h3>{{ t('important_warning', lang) | default('⚠️ Важное предупреждение') }}</h3>
+                        <p>{{ t('process_complexity_warning', lang) | default('Процесс сложнее чем кажется. Реальные сроки: 4-5 лет. Требует серьезной подготовки и финансовых вложений.') }}</p>
+                        <div class="warning-details">
+                            <ul>
+                                <li>{{ t('realistic_timeline_4_5_years', lang) | default('Реальные сроки: 4-5 лет (не 2-3 года)') }}</li>
+                                <li>{{ t('significant_financial_investment', lang) | default('Значительные финансовые вложения: €5000-6000') }}</li>
+                                <li>{{ t('language_learning_required', lang) | default('Обязательное изучение голландского языка до B2+ уровня') }}</li>
+                                <li>{{ t('professional_competence_assessment', lang) | default('Оценка профессиональной компетентности через BI тест') }}</li>
+                                <li>{{ t('specialization_recognition_uncertain', lang) | default('Признание специализации не гарантировано') }}</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -282,6 +484,10 @@
                     <button class="tab-btn" data-tab="documents">
                         <i class="fas fa-file-alt"></i>
                         {{ t('documents', lang) | default('Documents') }}
+                    </button>
+                    <button class="tab-btn" data-tab="costs">
+                        <i class="fas fa-euro-sign"></i>
+                        {{ t('costs', lang) | default('Стоимость') }}
                     </button>
                     <button class="tab-btn" data-tab="specialization">
                         <i class="fas fa-graduation-cap"></i>
@@ -305,8 +511,8 @@
             <section id="requirements" class="content-section active">
                 <div class="container">
                     <div class="section-header">
-                        <h2>{{ t('huisarts_registration_requirements', lang) | default('Vereisten voor huisarts registratie') }}</h2>
-                        <p class="section-description">{{ t('huisarts_registration_requirements_description', lang) | default('Alle eisen die je moet vervullen om als huisarts geregistreerd te worden') }}</p>
+                        <h2>{{ t('non_eu_gp_registration_requirements', lang) | default('Требования для регистрации не-ЕС семейных врачей') }}</h2>
+                        <p class="section-description">{{ t('actual_requirements_2025_description', lang) | default('Актуальные требования 2025 года для врачей из стран вне ЕС') }}</p>
                     </div>
                     
                     <div class="info-grid">
@@ -320,31 +526,31 @@
                             <div class="info-icon">
                                 <i class="fas fa-user-md"></i>
                             </div>
-                            <p class="info-text">{{ t('gp_specialization_3_years', lang) | default('Specialisatie Huisartsgeneeskunde (3 jaar)') }}</p>
+                            <p class="info-text">{{ t('gp_specialization_depends_recognition', lang) | default('Специализация huisarts (зависит от признания вашей специализации)') }}</p>
                         </div>
                         <div class="info-card">
                             <div class="info-icon">
                                 <i class="fas fa-clock"></i>
                             </div>
-                            <p class="info-text">{{ t('minimum_3_years_specialization', lang) | default('Minimaal 3 jaar specialisatie') }}</p>
+                            <p class="info-text">{{ t('total_process_3_6_years', lang) | default('3-6 лет весь процесс (включая язык)') }}</p>
                         </div>
                         <div class="info-card">
                             <div class="info-icon">
                                 <i class="fas fa-language"></i>
                             </div>
-                            <p class="info-text">{{ t('dutch_c1_level_required', lang) | default('Nederlands C1 niveau vereist') }}</p>
+                            <p class="info-text">{{ t('dutch_b2_plus_institute_certificate', lang) | default('Nederlands B2+ niveau vereist (сертификат от института в NL)') }}</p>
                         </div>
                         <div class="info-card">
                             <div class="info-icon">
-                                <i class="fas fa-briefcase"></i>
+                                <i class="fas fa-ban"></i>
                             </div>
-                            <p class="info-text">{{ t('practical_experience_during_specialization', lang) | default('Praktijkervaring tijdens specialisatie') }}</p>
+                            <p class="info-text">{{ t('akv_test_cancelled_2024', lang) | default('❌ AKV тест отменен с 1 января 2024') }}</p>
                         </div>
                         <div class="info-card">
                             <div class="info-icon">
-                                <i class="fas fa-certificate"></i>
+                                <i class="fas fa-file-medical"></i>
                             </div>
-                            <p class="info-text">{{ t('big_registration_after_completion', lang) | default('BIG registratie na voltooiing') }}</p>
+                            <p class="info-text">{{ t('vakbekwaamheid_procedure_cibg', lang) | default('Процедура Verklaring van Vakbekwaamheid через CIBG') }}</p>
                         </div>
                     </div>
                 </div>
@@ -354,8 +560,8 @@
             <section id="process" class="content-section">
                 <div class="container">
                     <div class="section-header">
-                        <h2>{{ t('registration_process_gp', lang) | default('Registratieproces voor huisartsen') }}</h2>
-                        <p class="section-description">{{ t('step_by_step_process_gp', lang) | default('Stap-voor-stap proces specifiek voor huisartsen') }}</p>
+                        <h2>{{ t('non_eu_gp_registration_process', lang) | default('Процедура регистрации не-ЕС семейных врачей') }}</h2>
+                        <p class="section-description">{{ t('step_by_step_non_eu_process', lang) | default('Пошаговая процедура для врачей из стран вне ЕС') }}</p>
                     </div>
                     
                     <div class="process-timeline">
@@ -366,18 +572,18 @@
                             <div class="timeline-content">
                                 <div class="step-header">
                                     <div class="step-icon">
-                                        <i class="fas fa-graduation-cap"></i>
+                                        <i class="fas fa-file-medical"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">{{ t('medicine_education', lang) | default('Geneeskunde opleiding') }}</h3>
-                                        <p class="step-description">{{ t('complete_6_year_university_education', lang) | default('Voltooi 6-jarige universitaire opleiding') }}</p>
+                                        <h3 class="step-title">{{ t('diploma_recognition_procedure', lang) | default('Процедура признания диплома') }}</h3>
+                                        <p class="step-description">{{ t('vakbekwaamheid_procedure_cibg', lang) | default('Процедура "Verklaring van Vakbekwaamheid" для не-ЕС дипломов') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('obtain_master_medicine', lang) | default('Master in de Geneeskunde behalen') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('obtain_basic_doctor_registration', lang) | default('Basisarts registratie verkrijgen') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('ready_for_specialization', lang) | default('Klaar voor specialisatie') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('submit_through_cibg', lang) | default('Подача через CIBG (Центральный информационный пункт медицинских профессий)') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('collect_all_documents', lang) | default('Сбор всех необходимых документов') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('wait_for_assessment', lang) | default('Ожидание оценки диплома') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -390,18 +596,20 @@
                             <div class="timeline-content">
                                 <div class="step-header">
                                     <div class="step-icon">
-                                        <i class="fas fa-user-md"></i>
+                                        <i class="fas fa-language"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">{{ t('gp_training', lang) | default('Huisartsopleiding') }}</h3>
-                                        <p class="step-description">{{ t('follow_3_year_specialization', lang) | default('3-jarige specialisatie volgen') }}</p>
+                                        <h3 class="step-title">{{ t('language_requirements_updated_2024', lang) | default('Языковые требования (обновлено 2024)') }}</h3>
+                                        <p class="step-description">{{ t('dutch_b2_plus_english_reading', lang) | default('Голландский B2+ уровень, английский только чтение') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('apply_gp_training', lang) | default('Solliciteren bij huisartsopleiding') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('gain_practical_experience', lang) | default('Praktijkervaring opdoen') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('develop_clinical_skills', lang) | default('Klinische vaardigheden ontwikkelen') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('dutch_b2_plus_all_skills', lang) | default('Голландский язык: B2+ уровень (чтение, письмо, аудирование, говорение)') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('english_reading_only', lang) | default('Английский язык: только чтение') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('certificate_from_nl_institute', lang) | default('Сертификат от языкового института в Нидерландах (исключение: CNaVT)') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('certificate_not_older_2_years', lang) | default('Сертификат не старше 2 лет') }}</li>
+                                        <li><i class="fas fa-ban"></i>{{ t('akv_test_cancelled_jan_2024', lang) | default('❌ AKV тест отменен с 1 января 2024 года') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -414,18 +622,19 @@
                             <div class="timeline-content">
                                 <div class="step-header">
                                     <div class="step-icon">
-                                        <i class="fas fa-language"></i>
+                                        <i class="fas fa-edit"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">Taalvereisten</h3>
-                                        <p class="step-description">{{ t('achieve_dutch_c1_level', lang) | default('Nederlands C1 niveau behalen') }}</p>
+                                        <h3 class="step-title">{{ t('professional_bi_test', lang) | default('Профессиональный тест (BI Test)') }}</h3>
+                                        <p class="step-description">{{ t('mandatory_for_doctors_cost_1700', lang) | default('Обязательный для врачей, стоимость: €1700') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('obtain_cnavt_certificate', lang) | default('CNaVT certificaat behalen') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('master_medical_dutch', lang) | default('Medisch Nederlands beheersen') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('patient_communication', lang) | default('Communicatie met patiënten') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('mandatory_for_doctors', lang) | default('Обязательный для врачей') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('cost_1700_euros', lang) | default('Стоимость: €1700') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('written_test_practical_skills', lang) | default('Включает письменный тест + практические навыки') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('professional_competence_assessment', lang) | default('Оценка профессиональной компетентности') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -438,18 +647,19 @@
                             <div class="timeline-content">
                                 <div class="step-header">
                                     <div class="step-icon">
-                                        <i class="fas fa-edit"></i>
+                                        <i class="fas fa-user-md"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">Aanvraag indienen</h3>
-                                        <p class="step-description">{{ t('apply_big_registration', lang) | default('BIG registratie aanvragen') }}</p>
+                                        <h3 class="step-title">{{ t('huisarts_specialization', lang) | default('Специализация huisarts') }}</h3>
+                                        <p class="step-description">{{ t('separate_procedure_through_src', lang) | default('Отдельная процедура через Specialist Registration Commission (SRC)') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('collect_all_documents', lang) | default('Alle documenten verzamelen') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('online_application_cibg', lang) | default('Online aanvraag bij CIBG') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('pay_registration_costs', lang) | default('Betalen van registratiekosten') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('if_specialization_recognized', lang) | default('Если ваша специализация признается → адаптационная стажировка') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('if_not_recognized', lang) | default('Если не признается → полная 3-летняя специализация') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('src_assessment_required', lang) | default('Оценка через SRC обязательна') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('additional_training_possible', lang) | default('Возможна дополнительная подготовка') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -465,16 +675,84 @@
                                         <i class="fas fa-check-circle"></i>
                                     </div>
                                     <div class="step-info">
-                                        <h3 class="step-title">BIG registratie</h3>
-                                        <p class="step-description">{{ t('receive_big_number', lang) | default('Ontvang je BIG-nummer') }}</p>
+                                        <h3 class="step-title">{{ t('big_registration_final', lang) | default('BIG регистрация') }}</h3>
+                                        <p class="step-description">{{ t('cost_85_euros_valid_5_years', lang) | default('Стоимость: €85 (действует 5 лет)') }}</p>
                                     </div>
                                 </div>
                                 <div class="step-details">
                                     <ul class="details-list">
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('big_number_assigned', lang) | default('BIG-nummer wordt toegekend') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('registration_valid_5_years', lang) | default('Registratie is 5 jaar geldig') }}</li>
-                                        <li><i class="fas fa-arrow-right"></i>{{ t('start_working_as_gp', lang) | default('Start met werken als huisarts') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('cost_85_euros', lang) | default('Стоимость: €85') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('valid_5_years', lang) | default('Действует 5 лет') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('mandatory_for_independent_practice', lang) | default('Обязательна для независимой практики') }}</li>
+                                        <li><i class="fas fa-arrow-right"></i>{{ t('receive_big_number', lang) | default('Получение BIG номера') }}</li>
                                     </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Costs and Timeline Section -->
+            <section id="costs" class="content-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>{{ t('costs_and_timeline', lang) | default('Стоимость и временные рамки') }}</h2>
+                        <p class="section-description">{{ t('realistic_costs_timeline_2025', lang) | default('Реальные затраты и сроки для не-ЕС врачей в 2025 году') }}</p>
+                    </div>
+                    
+                    <div class="costs-timeline-grid">
+                        <div class="costs-section">
+                            <h3>{{ t('total_costs', lang) | default('Общая стоимость') }}</h3>
+                            <div class="cost-item">
+                                <span class="cost-label">{{ t('language_certificates', lang) | default('Языковые сертификаты') }}</span>
+                                <span class="cost-amount">€200-500</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">{{ t('bi_test', lang) | default('BI тест') }}</span>
+                                <span class="cost-amount">€1700</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">{{ t('big_registration', lang) | default('BIG регистрация') }}</span>
+                                <span class="cost-amount">€85</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">{{ t('specialization_recognition', lang) | default('Признание специализации') }}</span>
+                                <span class="cost-amount">≈€2285 + €750 за стажировку</span>
+                            </div>
+                            <div class="cost-item total">
+                                <span class="cost-label">{{ t('total_cost', lang) | default('Общая стоимость') }}</span>
+                                <span class="cost-amount">≈€5000-6000</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-section">
+                            <h3>{{ t('realistic_timeline', lang) | default('Реальные временные рамки') }}</h3>
+                            <div class="timeline-item-simple">
+                                <div class="timeline-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>{{ t('realistic_duration', lang) | default('Реальный срок') }}</h4>
+                                    <p>{{ t('3_6_years_median_4_5', lang) | default('3-6 лет (медиана 4-5 лет)') }}</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item-simple">
+                                <div class="timeline-icon">
+                                    <i class="fas fa-language"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>{{ t('including_language_study', lang) | default('Включая изучение языка') }}</h4>
+                                    <p>{{ t('language_learning_time', lang) | default('Время на изучение голландского языка до B2+ уровня') }}</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item-simple">
+                                <div class="timeline-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>{{ t('important_note', lang) | default('Важное примечание') }}</h4>
+                                    <p>{{ t('process_more_complex_than_seems', lang) | default('Процесс сложнее чем кажется. Требует серьезной подготовки и финансовых вложений.') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -630,41 +908,41 @@
                     <div class="faq-list">
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>{{ t('how_long_gp_training', lang) | default('Hoe lang duurt de huisartsopleiding?') }}</span>
+                                <span>{{ t('how_long_total_process', lang) | default('Сколько времени занимает весь процесс регистрации?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                {{ t('gp_training_duration_3_years', lang) | default('De huisartsopleiding duurt 3 jaar en kan alleen gevolgd worden na het behalen van je Master in de Geneeskunde en BIG registratie als basisarts.') }}
+                                {{ t('total_process_3_6_years_realistic', lang) | default('Реальный срок: 3-6 лет (медиана 4-5 лет). Включает изучение голландского языка до B2+ уровня, процедуру признания диплома, BI тест и специализацию.') }}
                             </div>
                         </div>
 
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>{{ t('difference_basic_doctor_gp', lang) | default('Wat is het verschil tussen basisarts en huisarts?') }}</span>
+                                <span>{{ t('what_is_bi_test', lang) | default('Что такое BI тест?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                {{ t('basisarts_university_medicine_completed_huisarts_3_years_specialization_first_line_care', lang) | default('Een basisarts heeft de universitaire opleiding Geneeskunde afgerond. Een huisarts heeft daarna nog 3 jaar specialisatie gevolgd en is gespecialiseerd in eerstelijnszorg.') }}
+                                {{ t('bi_test_explanation', lang) | default('BI тест - это обязательный профессиональный тест для врачей из стран вне ЕС. Стоимость: €1700. Включает письменный тест и оценку практических навыков.') }}
                             </div>
                         </div>
 
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>{{ t('can_work_gp_abroad', lang) | default('Kan ik als huisarts in het buitenland werken?') }}</span>
+                                <span>{{ t('akv_test_cancelled', lang) | default('Правда ли, что AKV тест отменен?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                {{ t('dutch_big_registration_huisarts_can_work_entire_eu_eea_other_countries_specific_requirements', lang) | default('Met een Nederlandse BIG registratie als huisarts kun je in de hele EU/EEA werken. Voor andere landen gelden specifieke vereisten per land.') }}
+                                {{ t('akv_test_cancelled_jan_2024_confirmed', lang) | default('Да, AKV тест отменен с 1 января 2024 года. Теперь требуется сертификат от языкового института в Нидерландах (исключение: CNaVT).') }}
                             </div>
                         </div>
 
                         <div class="faq-item">
                             <div class="faq-question">
-                                <span>{{ t('can_start_own_practice', lang) | default('Kan ik een eigen praktijk beginnen?') }}</span>
+                                <span>{{ t('total_cost_registration', lang) | default('Сколько стоит весь процесс регистрации?') }}</span>
                                 <i class="fas fa-chevron-down faq-toggle"></i>
                             </div>
                             <div class="faq-answer">
-                                {{ t('yes_after_big_registration_can_start_own_huisarts_practice_must_comply_dutch_legislation', lang) | default('Ja, na BIG registratie kun je een eigen huisartsenpraktijk beginnen. Wel moet je voldoen aan de Nederlandse wetgeving voor huisartsenpraktijken en mogelijk aanvullende certificeringen behalen.') }}
+                                {{ t('total_cost_5000_6000_euros', lang) | default('Общая стоимость: ≈€5000-6000. Включает: языковые сертификаты (€200-500), BI тест (€1700), BIG регистрация (€85), признание специализации (≈€2285 + €750 за стажировку).') }}
                             </div>
                         </div>
                     </div>
@@ -746,7 +1024,7 @@
     
     <!-- Основные скрипты платформы -->
     <script src="{{ url_for('static', filename='js/theme-controller.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/modern_flash_messages.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flash-messages.js') }}"></script>
     
     <!-- Скрипт для простой шапки -->
     <script>
