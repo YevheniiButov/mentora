@@ -2670,5 +2670,26 @@ translations = {
     'akv_test_cancelled_pharmacists': 'آیا درست است که آزمون AKV لغو شده؟',
     'akv_test_cancelled_jan_2024_confirmed_pharmacists': 'بله، آزمون AKV از 1 ژانویه 2024 لغو شد. حالا گواهی از موسسه زبان در هلند مورد نیاز است (استثنا: CNaVT).',
     'total_cost_registration_pharmacists': 'کل فرآیند ثبت‌نام چقدر هزینه دارد؟',
-    'total_cost_8000_12000_euros_pharmacists': 'کل هزینه: ≈€8000-12000. شامل: گواهی‌های زبان (€200-300)، ارزیابی CBGV (€2500)، کارشناسی ارشد داروسازی (€6000-9000)، ثبت‌نام BIG (€85)، دوره نظارت.'
+    'total_cost_8000_12000_euros_pharmacists': 'کل هزینه: ≈€8000-12000. شامل: گواهی‌های زبان (€200-300)، ارزیابی CBGV (€2500)، کارشناسی ارشد داروسازی (€6000-9000)، ثبت‌نام BIG (€85)، دوره نظارت.',
+    
+    # ترجمه‌های جدید برای لیست به‌روزرسانی شده اسناد پزشکان
+    '7_documents': '7 سند',
+    'staatsexamen_nt2_b2_plus_dutch': 'Staatsexamen NT2 B2+ (هلندی برای non-EU)',
+    'english_language_certificate_b2': 'گواهی زبان انگلیسی B2 (اجباری برای non-EU)',
+    'transcript_grades': 'رونوشت نمرات (ارزیابی‌های تفصیلی)',
+    'medical_education_curriculum': 'برنامه آموزش پزشکی (curriculum)',
+    'beroepsspecifieke_bijlage_artsen': 'Beroepsspecifieke bijlage برای پزشکان (پرسشنامه ویژه)',
+    'continuous_education_proof': 'اثبات آموزش مداوم (در صورت وجود)',
+    'detailed_cv': 'رزومه تفصیلی',
+    'cv_must_include_all_education_work_experience_dates_countries': 'باید شامل تمام تحصیلات، تجربه کاری، تاریخ‌ها و کشورها باشد',
+    'international_legal_documents': 'اسناد حقوقی بین‌المللی',
+    '6_documents': '6 سند',
+    'ccps_certificate_diploma_country': 'گواهی CCPS از کشور مدرک',
+    'ccps_certificate_current_professional_status': 'Certificate of Current Professional Status',
+    'ccps_all_countries_lived_3_months': 'CCPS از تمام کشورهایی که بیش از 3 ماه زندگی/کار کرده‌اید',
+    'not_older_3_months': 'نه بیشتر از 3 ماه',
+    'cgc_certificate_diploma_country': 'گواهی CGC از کشور مدرک',
+    'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
+    'cgc_all_countries_lived_3_months': 'CGC از تمام کشورهایی که بیش از 3 ماه زندگی/کار کرده‌اید',
+    'ccps_cgc_certificates_not_older_3_months': 'گواهی‌های CCPS و CGC نباید بیشتر از 3 ماه قدمت داشته باشند. درخواست خود را با دقت برنامه‌ریزی کنید تا از تاخیر جلوگیری کنید.'
 }

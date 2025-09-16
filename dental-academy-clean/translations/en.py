@@ -3060,5 +3060,26 @@ translations = {
     'akv_test_cancelled_pharmacists': 'Is it true that AKV test was cancelled?',
     'akv_test_cancelled_jan_2024_confirmed_pharmacists': 'Yes, AKV test was cancelled from January 1, 2024. Now a certificate from a language institute in the Netherlands is required (exception: CNaVT).',
     'total_cost_registration_pharmacists': 'How much does the entire registration process cost?',
-    'total_cost_8000_12000_euros_pharmacists': 'Total cost: ≈€8000-12000. Includes: language certificates (€200-300), CBGV assessment (€2500), Master Pharmacy (€6000-9000), BIG registration (€85), supervision period.'
+    'total_cost_8000_12000_euros_pharmacists': 'Total cost: ≈€8000-12000. Includes: language certificates (€200-300), CBGV assessment (€2500), Master Pharmacy (€6000-9000), BIG registration (€85), supervision period.',
+    
+    # New translations for updated doctor documents list
+    '7_documents': '7 documents',
+    'staatsexamen_nt2_b2_plus_dutch': 'Staatsexamen NT2 B2+ (Dutch for non-EU)',
+    'english_language_certificate_b2': 'English language certificate B2 (mandatory for non-EU)',
+    'transcript_grades': 'Transcript of grades (detailed assessments)',
+    'medical_education_curriculum': 'Medical education program (curriculum)',
+    'beroepsspecifieke_bijlage_artsen': 'Beroepsspecifieke bijlage for doctors (special questionnaire)',
+    'continuous_education_proof': 'Proof of continuous education (if applicable)',
+    'detailed_cv': 'Detailed CV',
+    'cv_must_include_all_education_work_experience_dates_countries': 'Must include all education, work experience, dates and countries',
+    'international_legal_documents': 'International legal documents',
+    '6_documents': '6 documents',
+    'ccps_certificate_diploma_country': 'CCPS certificate from diploma country',
+    'ccps_certificate_current_professional_status': 'Certificate of Current Professional Status',
+    'ccps_all_countries_lived_3_months': 'CCPS from all countries where you lived/worked >3 months',
+    'not_older_3_months': 'Not older than 3 months',
+    'cgc_certificate_diploma_country': 'CGC certificate from diploma country',
+    'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
+    'cgc_all_countries_lived_3_months': 'CGC from all countries where you lived/worked >3 months',
+    'ccps_cgc_certificates_not_older_3_months': 'CCPS and CGC certificates must not be older than 3 months. Plan your application carefully to avoid delays.'
 }

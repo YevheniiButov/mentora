@@ -2883,5 +2883,26 @@ translations = {
     'akv_test_cancelled_pharmacists': 'Правда ли, что тест AKV отменен?',
     'akv_test_cancelled_jan_2024_confirmed_pharmacists': 'Да, тест AKV отменен с 1 января 2024 года. Теперь требуется сертификат от языкового института в Нидерландах (исключение: CNaVT).',
     'total_cost_registration_pharmacists': 'Сколько стоит весь процесс регистрации?',
-    'total_cost_8000_12000_euros_pharmacists': 'Общая стоимость: ≈€8000-12000. Включает: языковые сертификаты (€200-300), оценку CBGV (€2500), магистратуру по фармации (€6000-9000), регистрацию BIG (€85), период надзора.'
+    'total_cost_8000_12000_euros_pharmacists': 'Общая стоимость: ≈€8000-12000. Включает: языковые сертификаты (€200-300), оценку CBGV (€2500), магистратуру по фармации (€6000-9000), регистрацию BIG (€85), период надзора.',
+    
+    # Новые переводы для обновленного списка документов врачей
+    '7_documents': '7 документов',
+    'staatsexamen_nt2_b2_plus_dutch': 'Staatsexamen NT2 B2+ (голландский для non-EU)',
+    'english_language_certificate_b2': 'Сертификат английского языка B2 (обязательно для non-EU)',
+    'transcript_grades': 'Транскрипт оценок (подробные оценки)',
+    'medical_education_curriculum': 'Программа медицинского обучения (curriculum)',
+    'beroepsspecifieke_bijlage_artsen': 'Beroepsspecifieke bijlage для врачей (специальная анкета)',
+    'continuous_education_proof': 'Доказательства непрерывного образования (если применимо)',
+    'detailed_cv': 'Подробное CV',
+    'cv_must_include_all_education_work_experience_dates_countries': 'Должно включать все образования, опыт работы, даты и страны',
+    'international_legal_documents': 'Международные юридические документы',
+    '6_documents': '6 документов',
+    'ccps_certificate_diploma_country': 'CCPS сертификат из страны получения диплома',
+    'ccps_certificate_current_professional_status': 'Certificate of Current Professional Status',
+    'ccps_all_countries_lived_3_months': 'CCPS из всех стран где жили/работали >3 месяцев',
+    'not_older_3_months': 'Не старше 3 месяцев',
+    'cgc_certificate_diploma_country': 'CGC сертификат из страны получения диплома',
+    'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
+    'cgc_all_countries_lived_3_months': 'CGC из всех стран где жили/работали >3 месяцев',
+    'ccps_cgc_certificates_not_older_3_months': 'CCPS и CGC сертификаты не должны быть старше 3 месяцев. Тщательно планируйте подачу заявки, чтобы избежать задержек.'
 }

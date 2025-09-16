@@ -2582,5 +2582,26 @@ translations = {
     'akv_test_cancelled_pharmacists': 'É verdade que o teste AKV foi cancelado?',
     'akv_test_cancelled_jan_2024_confirmed_pharmacists': 'Sim, o teste AKV foi cancelado a partir de 1º de janeiro de 2024. Agora é necessário um certificado de instituto de idioma na Holanda (exceção: CNaVT).',
     'total_cost_registration_pharmacists': 'Quanto custa todo o processo de registro?',
-    'total_cost_8000_12000_euros_pharmacists': 'Custo total: ≈€8000-12000. Inclui: certificados de idioma (€200-300), avaliação CBGV (€2500), Mestrado em Farmácia (€6000-9000), registro BIG (€85), período de supervisão.'
+    'total_cost_8000_12000_euros_pharmacists': 'Custo total: ≈€8000-12000. Inclui: certificados de idioma (€200-300), avaliação CBGV (€2500), Mestrado em Farmácia (€6000-9000), registro BIG (€85), período de supervisão.',
+    
+    # Novas traduções para lista atualizada de documentos de médicos
+    '7_documents': '7 documentos',
+    'staatsexamen_nt2_b2_plus_dutch': 'Staatsexamen NT2 B2+ (holandês para non-EU)',
+    'english_language_certificate_b2': 'Certificado de inglês B2 (obrigatório para non-EU)',
+    'transcript_grades': 'Histórico de notas (avaliações detalhadas)',
+    'medical_education_curriculum': 'Programa de educação médica (curriculum)',
+    'beroepsspecifieke_bijlage_artsen': 'Beroepsspecifieke bijlage para médicos (questionário especial)',
+    'continuous_education_proof': 'Comprovante de educação contínua (se aplicável)',
+    'detailed_cv': 'CV detalhado',
+    'cv_must_include_all_education_work_experience_dates_countries': 'Deve incluir toda educação, experiência de trabalho, datas e países',
+    'international_legal_documents': 'Documentos legais internacionais',
+    '6_documents': '6 documentos',
+    'ccps_certificate_diploma_country': 'Certificado CCPS do país do diploma',
+    'ccps_certificate_current_professional_status': 'Certificate of Current Professional Status',
+    'ccps_all_countries_lived_3_months': 'CCPS de todos os países onde viveu/trabalhou >3 meses',
+    'not_older_3_months': 'Não mais antigo que 3 meses',
+    'cgc_certificate_diploma_country': 'Certificado CGC do país do diploma',
+    'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
+    'cgc_all_countries_lived_3_months': 'CGC de todos os países onde viveu/trabalhou >3 meses',
+    'ccps_cgc_certificates_not_older_3_months': 'Certificados CCPS e CGC não devem ser mais antigos que 3 meses. Planeje sua aplicação cuidadosamente para evitar atrasos.'
 }

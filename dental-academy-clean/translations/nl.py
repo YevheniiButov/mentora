@@ -2857,5 +2857,26 @@ translations = {
     'akv_test_cancelled_pharmacists': 'Klopt het dat de AKV toets is afgeschaft?',
     'akv_test_cancelled_jan_2024_confirmed_pharmacists': 'Ja, de AKV toets is afgeschaft per 1 januari 2024. Nu is een certificaat van een taalinstituut in Nederland vereist (uitzondering: CNaVT).',
     'total_cost_registration_pharmacists': 'Hoeveel kost het hele registratieproces?',
-    'total_cost_8000_12000_euros_pharmacists': 'Totale kosten: ≈€8000-12000. Inclusief: taalcertificaten (€200-300), CBGV beoordeling (€2500), Master Farmacie (€6000-9000), BIG registratie (€85), supervisie periode.'
+    'total_cost_8000_12000_euros_pharmacists': 'Totale kosten: ≈€8000-12000. Inclusief: taalcertificaten (€200-300), CBGV beoordeling (€2500), Master Farmacie (€6000-9000), BIG registratie (€85), supervisie periode.',
+    
+    # Nieuwe vertalingen voor bijgewerkte artsen documentenlijst
+    '7_documents': '7 documenten',
+    'staatsexamen_nt2_b2_plus_dutch': 'Staatsexamen NT2 B2+ (Nederlands voor non-EU)',
+    'english_language_certificate_b2': 'Engels taalcertificaat B2 (verplicht voor non-EU)',
+    'transcript_grades': 'Transcript cijfers (gedetailleerde beoordelingen)',
+    'medical_education_curriculum': 'Programma medische opleiding (curriculum)',
+    'beroepsspecifieke_bijlage_artsen': 'Beroepsspecifieke bijlage voor artsen (speciale vragenlijst)',
+    'continuous_education_proof': 'Bewijzen van permanente educatie (indien van toepassing)',
+    'detailed_cv': 'Gedetailleerd CV',
+    'cv_must_include_all_education_work_experience_dates_countries': 'Moet alle opleidingen, werkervaring, datums en landen bevatten',
+    'international_legal_documents': 'Internationale juridische documenten',
+    '6_documents': '6 documenten',
+    'ccps_certificate_diploma_country': 'CCPS certificaat uit land van diploma',
+    'ccps_certificate_current_professional_status': 'Certificate of Current Professional Status',
+    'ccps_all_countries_lived_3_months': 'CCPS uit alle landen waar je >3 maanden woonde/werkte',
+    'not_older_3_months': 'Niet ouder dan 3 maanden',
+    'cgc_certificate_diploma_country': 'CGC certificaat uit land van diploma',
+    'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
+    'cgc_all_countries_lived_3_months': 'CGC uit alle landen waar je >3 maanden woonde/werkte',
+    'ccps_cgc_certificates_not_older_3_months': 'CCPS en CGC certificaten mogen niet ouder zijn dan 3 maanden. Plan je aanvraag zorgvuldig om vertragingen te voorkomen.'
 }

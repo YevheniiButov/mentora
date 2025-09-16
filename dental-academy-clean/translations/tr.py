@@ -2543,5 +2543,26 @@ translations = {
     'akv_test_cancelled_pharmacists': 'AKV testinin iptal edildiği doğru mu?',
     'akv_test_cancelled_jan_2024_confirmed_pharmacists': 'Evet, AKV testi 1 Ocak 2024\'ten itibaren iptal edildi. Artık Hollanda\'daki dil enstitüsünden sertifika gerekli (istisna: CNaVT).',
     'total_cost_registration_pharmacists': 'Tüm kayıt süreci ne kadar maliyetli?',
-    'total_cost_8000_12000_euros_pharmacists': 'Toplam maliyet: ≈€8000-12000. İçerir: dil sertifikaları (€200-300), CBGV değerlendirmesi (€2500), Eczacılık Yüksek Lisansı (€6000-9000), BIG kaydı (€85), denetim dönemi.'
+    'total_cost_8000_12000_euros_pharmacists': 'Toplam maliyet: ≈€8000-12000. İçerir: dil sertifikaları (€200-300), CBGV değerlendirmesi (€2500), Eczacılık Yüksek Lisansı (€6000-9000), BIG kaydı (€85), denetim dönemi.',
+    
+    # Güncellenmiş doktor belgeleri listesi için yeni çeviriler
+    '7_documents': '7 belge',
+    'staatsexamen_nt2_b2_plus_dutch': 'Staatsexamen NT2 B2+ (AB dışı için Hollandaca)',
+    'english_language_certificate_b2': 'İngilizce dil sertifikası B2 (AB dışı için zorunlu)',
+    'transcript_grades': 'Not transkripti (detaylı değerlendirmeler)',
+    'medical_education_curriculum': 'Tıp eğitimi programı (curriculum)',
+    'beroepsspecifieke_bijlage_artsen': 'Doktorlar için Beroepsspecifieke bijlage (özel anket)',
+    'continuous_education_proof': 'Sürekli eğitim kanıtı (uygulanabilirse)',
+    'detailed_cv': 'Detaylı CV',
+    'cv_must_include_all_education_work_experience_dates_countries': 'Tüm eğitim, iş deneyimi, tarihler ve ülkeleri içermelidir',
+    'international_legal_documents': 'Uluslararası yasal belgeler',
+    '6_documents': '6 belge',
+    'ccps_certificate_diploma_country': 'Diploma ülkesinden CCPS sertifikası',
+    'ccps_certificate_current_professional_status': 'Certificate of Current Professional Status',
+    'ccps_all_countries_lived_3_months': '3 aydan fazla yaşadığınız/çalıştığınız tüm ülkelerden CCPS',
+    'not_older_3_months': '3 aydan eski olmamalı',
+    'cgc_certificate_diploma_country': 'Diploma ülkesinden CGC sertifikası',
+    'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
+    'cgc_all_countries_lived_3_months': '3 aydan fazla yaşadığınız/çalıştığınız tüm ülkelerden CGC',
+    'ccps_cgc_certificates_not_older_3_months': 'CCPS ve CGC sertifikaları 3 aydan eski olmamalıdır. Gecikmeleri önlemek için başvurunuzu dikkatli planlayın.'
 }
