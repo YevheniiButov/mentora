@@ -404,6 +404,32 @@
                     }
                 });
                 
+                // ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА И ПРИНУДИТЕЛЬНАЯ НАВИГАЦИЯ
+                const allNavLinks = navbarCollapse.querySelectorAll('a, .nav-link, [href]');
+                allNavLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        console.log('🔗 Link clicked in menu:', {
+                            href: this.href,
+                            text: this.textContent.trim(),
+                            target: e.target,
+                            currentTarget: e.currentTarget
+                        });
+                        
+                        // Проверяем, что это действительно ссылка
+                        if (this.href && this.href !== '#' && !this.href.includes('javascript:')) {
+                            console.log('✅ Valid link, allowing navigation to:', this.href);
+                            
+                            // ПРИНУДИТЕЛЬНАЯ НАВИГАЦИЯ: Если обычная навигация не работает
+                            setTimeout(() => {
+                                console.log('🚀 Forcing navigation to:', this.href);
+                                window.location.href = this.href;
+                            }, 100);
+                        } else {
+                            console.log('⚠️ Invalid or empty link:', this.href);
+                        }
+                    });
+                });
+                
                 console.log('✅ Reliable mobile menu initialized with Bootstrap and protection');
             }
             
