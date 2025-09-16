@@ -372,7 +372,7 @@ translations = {
     'flexible_description': 'Aprende en tu tiempo libre y a tu propio ritmo',
     'quality_assurance': 'Garantía de calidad',
     'quality_description': 'Contenido desarrollado por expertos en el campo médico',
-    'support_247': 'Soporte 24/7',
+    'support_247': 'Prácticas en Holanda',
     'support_description': 'Oportunidad de prácticas en instituciones médicas de los Países Bajos',
     
     # Enfoque de aprendizaje

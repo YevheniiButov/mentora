@@ -458,7 +458,7 @@ translations = {
     'flexible_description': 'Leer op uw eigen tempo wanneer het u uitkomt',
     'quality_assurance': 'Kwaliteitsgarantie',
     'quality_description': 'Content ontwikkeld door medische experts',
-    'support_247': '24/7 AI Ondersteuning',
+    'support_247': 'Stage in Nederland',
     'support_description': 'Mogelijkheid voor stage in medische instellingen van Nederland',
     'learning_approach': 'Leeraanpak',
     'our_methodology': 'Onze methodologie',

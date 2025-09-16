@@ -300,7 +300,7 @@ translations = {
     'flexible_description': 'Kendi zamanınızda ve kendi hızınızda öğrenin',
     'quality_assurance': 'Kalite garantisi',
     'quality_description': 'Tıp alanında uzmanlar tarafından geliştirilen içerik',
-    'support_247': '7/24 destek',
+    'support_247': 'Hollanda\'da Staj',
     'support_description': 'Hollanda\'daki tıbbi kurumlarda staj imkanı',
     
     # Öğrenme yaklaşımı

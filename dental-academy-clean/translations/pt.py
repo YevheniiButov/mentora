@@ -372,7 +372,7 @@ translations = {
     'flexible_description': 'Aprenda no seu tempo livre e no seu próprio ritmo',
     'quality_assurance': 'Garantia de qualidade',
     'quality_description': 'Conteúdo desenvolvido por especialistas na área médica',
-    'support_247': 'Suporte 24/7',
+    'support_247': 'Estágio na Holanda',
     'support_description': 'Oportunidade de estágio em instituições médicas dos Países Baixos',
     
     # Abordagem de aprendizado

@@ -321,7 +321,7 @@ translations = {
     'flexible_description': 'در زمان مناسب و با سرعت خودتان یاد بگیرید',
     'quality_assurance': 'تضمین کیفیت',
     'quality_description': 'محتوای توسعه یافته توسط متخصصان حوزه پزشکی',
-    'support_247': 'پشتیبانی ۲۴/۷',
+    'support_247': 'کارآموزی در هلند',
     'support_description': 'فرصت کارآموزی در مؤسسات پزشکی هلند',
     
     # رویکرد یادگیری

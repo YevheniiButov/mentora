@@ -868,7 +868,7 @@ translations = {
     'flexible_description': 'Learn at your own pace when it suits you',
     'quality_assurance': 'Quality assurance',
     'quality_description': 'Content developed by dental experts',
-    'support_247': '24/7 Support',
+    'support_247': 'Internship in Netherlands',
     'support_description': 'Opportunity for internship in medical institutions of the Netherlands',
     'learning_approach': 'Learning approach',
     'our_methodology': 'Our methodology',
