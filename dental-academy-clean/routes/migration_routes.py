@@ -63,24 +63,13 @@ def fix_user_fields():
                 'error': 'Not in production environment'
             }), 400
         
-        # Выполняем SQL команды напрямую
-        from sqlalchemy import text
-        
-        with db.engine.connect() as conn:
-            # Увеличиваем размер password_hash
-            conn.execute(text("ALTER TABLE \"user\" ALTER COLUMN password_hash TYPE VARCHAR(255)"))
-            
-            # Увеличиваем размер email_confirmation_token
-            conn.execute(text("ALTER TABLE \"user\" ALTER COLUMN email_confirmation_token TYPE VARCHAR(255)"))
-            
-            # Увеличиваем размер password_reset_token
-            conn.execute(text("ALTER TABLE \"user\" ALTER COLUMN password_reset_token TYPE VARCHAR(255)"))
-            
-            conn.commit()
+        # Применяем миграцию через Flask-Migrate
+        from flask_migrate import upgrade
+        upgrade()
         
         return jsonify({
             'success': True,
-            'message': 'User table fields updated successfully'
+            'message': 'Migration applied successfully'
         })
     except Exception as e:
         return jsonify({
