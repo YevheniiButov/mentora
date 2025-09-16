@@ -20,8 +20,15 @@ class MobileEnhancements {
 
     /**
      * Улучшенное мобильное меню
+     * ОТКЛЮЧЕНО: Конфликтует с инициализацией в base.html
      */
     setupMobileMenu() {
+        // Мобильное меню теперь инициализируется в base.html
+        // Этот код отключен чтобы избежать конфликтов
+        console.log('📱 Mobile menu setup skipped - handled in base.html');
+        return;
+        
+        /* ОТКЛЮЧЕННЫЙ КОД - КОНФЛИКТУЕТ С BASE.HTML
         const navbarToggler = document.querySelector('.navbar-toggler');
         const navbarCollapse = document.querySelector('.navbar-collapse');
         
@@ -61,6 +68,7 @@ class MobileEnhancements {
                 navbarCollapse.classList.remove('show');
             });
         });
+        */
     }
 
     /**
