@@ -108,8 +108,12 @@ class MobileEnhancements {
                 element.style.transform = '';
             });
 
-            // Предотвращаем двойной тап для зума
+            // Предотвращаем двойной тап для зума (кроме ссылок навигации)
             element.addEventListener('touchend', (e) => {
+                // НЕ блокируем события для ссылок навигации
+                if (element.tagName === 'A' || element.classList.contains('nav-link') || element.closest('.navbar-collapse')) {
+                    return;
+                }
                 e.preventDefault();
             });
         });
@@ -395,6 +399,12 @@ class BigInfoMobileEnhancements {
             });
 
             button.addEventListener('touchend', (e) => {
+                // НЕ блокируем события для ссылок навигации
+                if (button.tagName === 'A' || button.classList.contains('nav-link') || button.closest('.navbar-collapse')) {
+                    button.style.transform = '';
+                    return;
+                }
+                
                 e.preventDefault();
                 button.style.transform = '';
                 
