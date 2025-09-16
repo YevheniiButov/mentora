@@ -20,7 +20,8 @@ def migration_status():
             'success': True,
             'current_revision': str(current_rev) if current_rev else None,
             'history': [str(rev) for rev in history_rev] if history_rev else [],
-            'database_url': os.environ.get('DATABASE_URL', 'Not set')[:20] + '...' if os.environ.get('DATABASE_URL') else 'Not set'
+            'database_url': os.environ.get('DATABASE_URL', 'Not set')[:20] + '...' if os.environ.get('DATABASE_URL') else 'Not set',
+            'timestamp': '2025-09-16-09-00'
         })
     except Exception as e:
         return jsonify({
