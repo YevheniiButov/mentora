@@ -249,7 +249,7 @@
                 <div class="sidebar-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" 
+                            <a class="nav-link {% if request and request and request.endpoint == 'admin.dashboard' %}active{% endif %}" 
                                href="{{ url_for('admin.dashboard') }}">
                                 <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
@@ -259,31 +259,31 @@
                             <span>Пользователи</span>
                         </h6>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'users_list' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'users_list' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.users_list') }}">
                                 <i class="bi bi-people"></i> Все пользователи
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'crm_users' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'crm_users' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.crm_users') }}">
                                 <i class="bi bi-person-lines-fill"></i> CRM Users
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'crm_contacts' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'crm_contacts' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.crm_contacts') }}">
                                 <i class="bi bi-people"></i> CRM Contacts
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'online_users' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'online_users' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.online_users') }}">
                                 <i class="bi bi-circle-fill text-success"></i> Онлайн
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'support' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'support' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.support_dashboard') }}">
                                 <i class="bi bi-headset"></i> Поддержка
                             </a>
@@ -293,37 +293,37 @@
                             <span>Аналитика</span>
                         </h6>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'advanced_analytics' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'advanced_analytics' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.advanced_analytics') }}">
                                 <i class="bi bi-graph-up-arrow"></i> Расширенная
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'visitors_analytics' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'visitors_analytics' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.visitors_analytics') }}">
                                 <i class="bi bi-graph-up"></i> Посетители
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'analytics_countries' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'analytics_countries' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.analytics_countries') }}">
                                 <i class="bi bi-globe"></i> Страны
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'analytics_devices' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'analytics_devices' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.analytics_devices') }}">
                                 <i class="bi bi-phone"></i> Устройства
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'analytics_professions' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'analytics_professions' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.analytics_professions') }}">
                                 <i class="bi bi-person-badge"></i> Профессии
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'analytics_events' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'analytics_events' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.analytics_events') }}">
                                 <i class="bi bi-activity"></i> События
                             </a>
@@ -333,13 +333,13 @@
                             <span>Диагностика</span>
                         </h6>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'diagnostic_analytics' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'diagnostic_analytics' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.diagnostic_analytics') }}">
                                 <i class="bi bi-graph-up"></i> Аналитика
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'sessions' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'sessions' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.diagnostic_sessions_list') }}">
                                 <i class="bi bi-clipboard-data"></i> Сессии
                             </a>
@@ -349,19 +349,19 @@
                             <span>Контент</span>
                         </h6>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'content_management' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'content_management' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.content_management') }}">
                                 <i class="bi bi-collection"></i> Обзор
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'questions' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'questions' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.questions_management') }}">
                                 <i class="bi bi-question-circle"></i> Вопросы
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'virtual_patients' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'virtual_patients' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.virtual_patients') }}">
                                 <i class="bi bi-person-video3"></i> Виртуальные пациенты
                             </a>
@@ -371,31 +371,31 @@
                             <span>Административные инструменты</span>
                         </h6>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'database' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'database' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.database_management') }}">
                                 <i class="bi bi-database"></i> Управление БД
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'system_health' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'system_health' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.system_health') }}">
                                 <i class="bi bi-heart-pulse"></i> Мониторинг системы
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'communication' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'communication' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.communication_hub') }}">
                                 <i class="bi bi-chat-dots"></i> Коммуникации
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'audit' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'audit' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.audit_logs') }}">
                                 <i class="bi bi-shield-check"></i> Логи аудита
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'notifications' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'notifications' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.system_notifications') }}">
                                 <i class="bi bi-bell"></i> Уведомления
                             </a>
@@ -405,13 +405,13 @@
                             <span>Система</span>
                         </h6>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'scheduler' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'scheduler' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.scheduler_dashboard') }}">
                                 <i class="bi bi-clock-history"></i> Планировщик
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if 'settings' in request.endpoint %}active{% endif %}" 
+                            <a class="nav-link {% if request and 'settings' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.system_settings') }}">
                                 <i class="bi bi-gear"></i> Настройки
                             </a>
@@ -431,7 +431,7 @@
                 </nav>
 
                 <!-- Flash Messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% with messages = get_flashed_messages(with_categories=true) if request else [] %}
                     {% if messages %}
                         {% for category, message in messages %}
                         <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
