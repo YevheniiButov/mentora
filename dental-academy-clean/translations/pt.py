@@ -2603,5 +2603,10 @@ translations = {
     'cgc_certificate_diploma_country': 'Certificado CGC do país do diploma',
     'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
     'cgc_all_countries_lived_3_months': 'CGC de todos os países onde viveu/trabalhou >3 meses',
-    'ccps_cgc_certificates_not_older_3_months': 'Certificados CCPS e CGC não devem ser mais antigos que 3 meses. Planeje sua aplicação cuidadosamente para evitar atrasos.'
+    'ccps_cgc_certificates_not_older_3_months': 'Certificados CCPS e CGC não devem ser mais antigos que 3 meses. Planeje sua aplicação cuidadosamente para evitar atrasos.',
+    
+    # Traduções em falta para página de farmacêuticos
+    'official_websites_resources_non_eu_pharmacists': 'Sites oficiais e recursos para farmacêuticos não-UE',
+    'online_application_recognition_non_eu_diplomas': 'Aplicação online para reconhecimento de diplomas não-UE',
+    'cibg_application_declaration_professional_competence': 'CIBG - Aplicação Declaração de competência profissional'
 }

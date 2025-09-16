@@ -2564,5 +2564,10 @@ translations = {
     'cgc_certificate_diploma_country': 'Diploma ülkesinden CGC sertifikası',
     'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
     'cgc_all_countries_lived_3_months': '3 aydan fazla yaşadığınız/çalıştığınız tüm ülkelerden CGC',
-    'ccps_cgc_certificates_not_older_3_months': 'CCPS ve CGC sertifikaları 3 aydan eski olmamalıdır. Gecikmeleri önlemek için başvurunuzu dikkatli planlayın.'
+    'ccps_cgc_certificates_not_older_3_months': 'CCPS ve CGC sertifikaları 3 aydan eski olmamalıdır. Gecikmeleri önlemek için başvurunuzu dikkatli planlayın.',
+    
+    # Eczacılar sayfası için eksik çeviriler
+    'official_websites_resources_non_eu_pharmacists': 'AB dışı eczacılar için resmi web siteleri ve kaynaklar',
+    'online_application_recognition_non_eu_diplomas': 'AB dışı diplomaların tanınması için çevrimiçi başvuru',
+    'cibg_application_declaration_professional_competence': 'CIBG - Mesleki yeterlilik beyanı başvurusu'
 }

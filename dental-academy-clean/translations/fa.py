@@ -2691,5 +2691,10 @@ translations = {
     'cgc_certificate_diploma_country': 'گواهی CGC از کشور مدرک',
     'cgc_certificate_good_conduct': 'Certificate of Good Conduct',
     'cgc_all_countries_lived_3_months': 'CGC از تمام کشورهایی که بیش از 3 ماه زندگی/کار کرده‌اید',
-    'ccps_cgc_certificates_not_older_3_months': 'گواهی‌های CCPS و CGC نباید بیشتر از 3 ماه قدمت داشته باشند. درخواست خود را با دقت برنامه‌ریزی کنید تا از تاخیر جلوگیری کنید.'
+    'ccps_cgc_certificates_not_older_3_months': 'گواهی‌های CCPS و CGC نباید بیشتر از 3 ماه قدمت داشته باشند. درخواست خود را با دقت برنامه‌ریزی کنید تا از تاخیر جلوگیری کنید.',
+    
+    # ترجمه‌های مفقود برای صفحه داروسازان
+    'official_websites_resources_non_eu_pharmacists': 'وب‌سایت‌ها و منابع رسمی برای داروسازان غیر اتحادیه اروپا',
+    'online_application_recognition_non_eu_diplomas': 'درخواست آنلاین برای به رسمیت شناختن دیپلم‌های غیر اتحادیه اروپا',
+    'cibg_application_declaration_professional_competence': 'CIBG - درخواست اعلامیه صلاحیت حرفه‌ای'
 }
