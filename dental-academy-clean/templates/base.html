@@ -271,7 +271,7 @@
             // Отладка выпадающих меню
             // Инициализировано выпадающих меню
             
-            // Добавляем обработчик для закрытия меню по клику вне
+            // Добавляем обработчик для закрытия dropdown меню по клику вне
             document.addEventListener('click', function(event) {
                 if (!event.target.closest('.dropdown')) {
                     dropdownList.forEach(function(dropdown) {
@@ -309,37 +309,48 @@
                 
                 console.log('✅ Mobile menu elements found');
                 
-                // Удаляем все старые обработчики
-                const newToggler = navbarToggler.cloneNode(true);
-                navbarToggler.parentNode.replaceChild(newToggler, navbarToggler);
+                // Проверяем, не инициализирован ли уже Bootstrap
+                let bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                if (!bsCollapse) {
+                    bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+                        toggle: false
+                    });
+                }
                 
                 // Переменная для отслеживания состояния
                 let isMenuOpen = false;
                 
-                // Добавляем обработчик на новый элемент
-                newToggler.addEventListener('click', function(e) {
+                // Добавляем обработчик на toggle
+                navbarToggler.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     
                     console.log('🔘 Toggle clicked! Current state:', isMenuOpen);
                     
                     if (isMenuOpen) {
-                        // Закрываем меню
-                        navbarCollapse.classList.remove('show');
-                        newToggler.setAttribute('aria-expanded', 'false');
-                        navbarCollapse.style.display = 'none';
-                        navbarCollapse.style.visibility = 'hidden';
+                        // Закрываем меню через Bootstrap
+                        bsCollapse.hide();
+                        navbarToggler.setAttribute('aria-expanded', 'false');
                         isMenuOpen = false;
                         console.log('📱 Menu closed');
                     } else {
-                        // Открываем меню
-                        navbarCollapse.classList.add('show');
-                        newToggler.setAttribute('aria-expanded', 'true');
-                        navbarCollapse.style.display = 'block';
-                        navbarCollapse.style.visibility = 'visible';
+                        // Открываем меню через Bootstrap
+                        bsCollapse.show();
+                        navbarToggler.setAttribute('aria-expanded', 'true');
                         isMenuOpen = true;
                         console.log('📱 Menu opened');
                     }
+                });
+                
+                // Слушаем события Bootstrap
+                navbarCollapse.addEventListener('shown.bs.collapse', function() {
+                    isMenuOpen = true;
+                    console.log('📱 Menu shown via Bootstrap');
+                });
+                
+                navbarCollapse.addEventListener('hidden.bs.collapse', function() {
+                    isMenuOpen = false;
+                    console.log('📱 Menu hidden via Bootstrap');
                 });
                 
                 // Обработчик для ссылок навигации
@@ -350,10 +361,8 @@
                         
                         // Закрываем меню
                         if (isMenuOpen) {
-                            navbarCollapse.classList.remove('show');
-                            newToggler.setAttribute('aria-expanded', 'false');
-                            navbarCollapse.style.display = 'none';
-                            navbarCollapse.style.visibility = 'hidden';
+                            bsCollapse.hide();
+                            navbarToggler.setAttribute('aria-expanded', 'false');
                             isMenuOpen = false;
                             console.log('📱 Menu closed after link click');
                         }
@@ -366,19 +375,17 @@
                 // Обработчик для кликов вне меню
                 document.addEventListener('click', function(e) {
                     // Если клик вне меню и не по toggle
-                    if (!navbarCollapse.contains(e.target) && !newToggler.contains(e.target)) {
+                    if (!navbarCollapse.contains(e.target) && !navbarToggler.contains(e.target)) {
                         if (isMenuOpen) {
-                            navbarCollapse.classList.remove('show');
-                            newToggler.setAttribute('aria-expanded', 'false');
-                            navbarCollapse.style.display = 'none';
-                            navbarCollapse.style.visibility = 'hidden';
+                            bsCollapse.hide();
+                            navbarToggler.setAttribute('aria-expanded', 'false');
                             isMenuOpen = false;
                             console.log('📱 Menu closed after outside click');
                         }
                     }
                 });
                 
-                console.log('✅ Reliable mobile menu initialized');
+                console.log('✅ Reliable mobile menu initialized with Bootstrap');
             }
             
             // Инициализируем сразу и с задержкой
