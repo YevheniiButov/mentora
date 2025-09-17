@@ -303,13 +303,22 @@ function setupFormValidation() {
     const form = document.getElementById('registrationForm');
     const submitBtn = document.getElementById('submitBtn');
     
-    if (!form || !submitBtn) return;
+    if (!form || !submitBtn) {
+        console.error('Form or submit button not found!');
+        return;
+    }
+    
+    console.log('Setting up form validation...');
     
     form.addEventListener('submit', function(e) {
+        console.log('Form submit event triggered!');
         e.preventDefault();
         
         if (validateForm()) {
+            console.log('Form validation passed, submitting...');
             submitForm();
+        } else {
+            console.log('Form validation failed!');
         }
     });
     
@@ -318,6 +327,19 @@ function setupFormValidation() {
     requiredFields.forEach(field => {
         field.addEventListener('blur', validateField);
         field.addEventListener('input', clearFieldError);
+    });
+    
+    // Alternative: Direct button click handler
+    submitBtn.addEventListener('click', function(e) {
+        console.log('Submit button clicked!');
+        e.preventDefault();
+        
+        if (validateForm()) {
+            console.log('Form validation passed, submitting...');
+            submitForm();
+        } else {
+            console.log('Form validation failed!');
+        }
     });
 }
 
@@ -789,63 +811,41 @@ function showErrorMessage(message) {
     }, 8000);
 }
 
-// Improved submitForm function with better UX
+// Simplified submitForm function for debugging
 async function submitForm() {
+    console.log('submitForm() called!');
+    
     const form = document.getElementById('registrationForm');
     const submitBtn = document.getElementById('submitBtn');
-    const formData = new FormData(form);
     
-    // Validate reCAPTCHA
-    if (!validateRecaptcha()) {
+    if (!form) {
+        console.error('Form not found!');
         return;
     }
+    
+    const formData = new FormData(form);
+    console.log('Form data collected:', Array.from(formData.entries()));
     
     // Show loading indicator
     submitBtn.disabled = true;
     const originalContent = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing data...';
-    
-    // Add progress indicator
-    const progressBar = document.createElement('div');
-    progressBar.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #3ECDC1, #44A08D);
-        z-index: 9999;
-        transition: width 0.3s ease;
-    `;
-    document.body.appendChild(progressBar);
-    
-    // Progress animation
-    progressBar.style.width = '30%';
+    submitBtn.innerHTML = 'Processing...';
     
     try {
-        // Use relative URL for the fetch request
+        console.log('Sending POST request to /auth/register...');
+        
         const response = await fetch('/auth/register', {
             method: 'POST',
             body: formData
         });
         
-        progressBar.style.width = '70%';
+        console.log('Response received:', response.status);
         
         const result = await response.json();
-        
-        progressBar.style.width = '100%';
-        
-        setTimeout(() => {
-            progressBar.remove();
-        }, 500);
+        console.log('Response data:', result);
         
         if (result.success) {
-            // Block form from resubmission
-            form.style.pointerEvents = 'none';
-            form.style.opacity = '0.7';
-            
-            // Clear saved data
-            localStorage.removeItem('mentora_registration_draft');
+            console.log('Registration successful!');
             
             // Show simple success message
             const userEmail = formData.get('email') || 'your email';
@@ -856,28 +856,17 @@ async function submitForm() {
                 window.location.href = '/auth/login';
             }, 2000);
         } else {
-            // Show simple error
+            console.log('Registration failed:', result.error);
             const errorMessage = result.error || 'Registration failed. Please try again.';
             alert(`❌ Registration Error:\n\n${errorMessage}\n\n💡 Try:\n• Check all fields are filled\n• Email not already registered\n• Refresh page and try again`);
         }
     } catch (error) {
-        progressBar.remove();
         console.error('Registration error:', error);
-        showErrorMessage(`
-            <strong>Network Error:</strong><br><br>
-            Could not connect to the server. Please check:<br>
-            • Internet connection<br>
-            • Try refreshing the page<br>
-            • If the problem persists, contact support
-        `);
+        alert(`❌ Network Error:\n\nCould not connect to the server.\n\nPlease check your internet connection and try again.`);
     } finally {
-        // Restore button only in case of error
-        setTimeout(() => {
-            if (submitBtn.disabled && !form.style.pointerEvents) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalContent;
-            }
-        }, 1000);
+        // Restore button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalContent;
     }
 }
 
