@@ -1937,6 +1937,7 @@ translations = {
     
     # Forum page elements
     'dental_community_forum': 'Форум стоматологического сообщества',
+    'mentora_community_forum': 'Сообщество Mentora',
     'recent_discussions': 'Недавние обсуждения',
     'categories': 'Категории',
     'recent_activity': 'Недавняя активность',

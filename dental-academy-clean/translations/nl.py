@@ -1868,6 +1868,7 @@ translations = {
     
     # Forum page elements
     'dental_community_forum': 'Tandheelkundige Gemeenschap Forum',
+    'mentora_community_forum': 'Mentora Gemeenschap',
     'recent_discussions': 'Recente Discussies',
     'categories': 'Categorieën',
     'recent_activity': 'Recente Activiteit',

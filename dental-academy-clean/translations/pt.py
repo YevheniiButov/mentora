@@ -1664,6 +1664,7 @@ translations = {
     
     # Forum page elements
     'dental_community_forum': 'Fórum da Comunidade Odontológica',
+    'mentora_community_forum': 'Comunidade Mentora',
     'recent_discussions': 'Discussões Recentes',
     'categories': 'Categorias',
     'recent_activity': 'Atividade Recente',

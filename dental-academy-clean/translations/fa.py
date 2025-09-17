@@ -1754,6 +1754,7 @@ translations = {
     
     # Forum page elements
     'dental_community_forum': 'انجمن جامعه دندانپزشکی',
+    'mentora_community_forum': 'انجمن منتورا',
     'recent_discussions': 'بحث‌های اخیر',
     'categories': 'دسته‌بندی‌ها',
     'recent_activity': 'فعالیت اخیر',

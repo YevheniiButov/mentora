@@ -2035,6 +2035,7 @@ translations = {
     
     # Forum page elements
     'dental_community_forum': 'Dental Community Forum',
+    'mentora_community_forum': 'Mentora Community Forum',
     'recent_discussions': 'Recent Discussions',
     'categories': 'Categories',
     'recent_activity': 'Recent Activity',

@@ -1629,6 +1629,7 @@ translations = {
     
     # Forum page elements
     'dental_community_forum': 'Форум стоматологічної спільноти',
+    'mentora_community_forum': 'Спільнота Mentora',
     'recent_discussions': 'Останні обговорення',
     'categories': 'Категорії',
     'recent_activity': 'Остання активність',

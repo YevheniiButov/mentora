@@ -1625,6 +1625,7 @@ translations = {
     
     # Forum page elements
     'dental_community_forum': 'Diş Hekimliği Topluluğu Forumu',
+    'mentora_community_forum': 'Mentora Topluluğu',
     'recent_discussions': 'Son Tartışmalar',
     'categories': 'Kategoriler',
     'recent_activity': 'Son Aktivite',
