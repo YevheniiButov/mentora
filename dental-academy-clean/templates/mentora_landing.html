@@ -357,8 +357,6 @@
             </div>
             
             <button type="submit" class="login-btn">Come In</button>
-            
-            <a href="#" class="forgot-link">Forgot your password?</a>
         </form>
     </div>
 
@@ -396,6 +394,48 @@
         // Initialize cosmic effects
         createStars();
         createParticles();
+
+        // Handle form submission
+        document.querySelector('.login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show wrong password message
+            const container = document.querySelector('.container');
+            
+            // Remove existing message if any
+            const existingMessage = document.querySelector('.error-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // Create error message
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'error-message';
+            errorMessage.innerHTML = `
+                <div style="
+                    background: rgba(255, 0, 0, 0.1);
+                    border: 1px solid rgba(255, 0, 0, 0.3);
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-top: 20px;
+                    color: #ff6b6b;
+                    text-align: center;
+                    font-weight: 500;
+                    animation: fadeInUp 0.5s ease-out;
+                ">
+                    <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                    Wrong password
+                </div>
+            `;
+            
+            // Insert after form
+            const form = document.querySelector('.login-form');
+            form.parentNode.insertBefore(errorMessage, form.nextSibling);
+            
+            // Clear form
+            document.querySelector('input[type="text"]').value = '';
+            document.querySelector('input[type="password"]').value = '';
+        });
     </script>
 </body>
 </html>
