@@ -8,6 +8,21 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="{{ url_for('main.index', lang=lang) }}" class="logo">MENTORA</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('main.index', lang=lang) }}">Home</a></li>
+                    <li><a href="{{ url_for('main.community', lang=lang) }}">Community</a></li>
+                    <li><a href="{{ url_for('main.big_info', lang=lang) }}">BIG Info</a></li>
+                    <li><a href="{{ url_for('main.about', lang=lang) }}">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
     <div class="coming-soon-container">
         <div class="coming-soon-content">
             <div class="icon-container">
@@ -33,12 +48,67 @@
     </div>
 
     <style>
+    /* Header Styles */
+    .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(62, 205, 193, 0.2);
+        z-index: 1000;
+        padding: 1rem 0;
+    }
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
+    }
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #3ECDC1;
+        text-decoration: none;
+    }
+    .nav-links {
+        display: flex;
+        gap: 2rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .nav-links a {
+        color: #2c3e50;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    .nav-links a:hover {
+        color: #3ECDC1;
+    }
+    @media (max-width: 768px) {
+        .header-content {
+            padding: 0 1rem;
+        }
+        .nav-links {
+            gap: 1rem;
+        }
+        .nav-links a {
+            font-size: 0.9rem;
+        }
+    }
+
     .coming-soon-container {
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding-top: 80px; /* Отступ для фиксированного хидера */
+        background: linear-gradient(135deg, #f0f8f5 0%, #e8f5f0 50%, #d4f1e8 100%);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     .coming-soon-content {
@@ -52,7 +122,7 @@
     }
     .icon-container {
         font-size: 4rem;
-        color: #667eea;
+        color: #3ECDC1;
         margin-bottom: 1.5rem;
     }
     h2 {
@@ -79,7 +149,7 @@
     .progress-fill {
         height: 100%;
         width: 75%;
-        background: linear-gradient(90deg, #667eea, #764ba2);
+        background: linear-gradient(90deg, #3ECDC1, #4DD0E1);
         animation: pulse 2s ease-in-out infinite;
     }
     .progress-text {
@@ -104,11 +174,11 @@
         gap: 0.5rem;
     }
     .btn-back {
-        background: #667eea;
+        background: #3ECDC1;
         color: white;
     }
     .btn-back:hover {
-        background: #5a67d8;
+        background: #2BA69A;
         transform: translateY(-2px);
         color: white;
     }
