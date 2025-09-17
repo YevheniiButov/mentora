@@ -31,7 +31,7 @@ class ExternalCSSLoader {
                     full_name: file.full_name,
                     category: file.category
                 }));
-                console.log('📁 Project CSS files loaded:', this.projectCSSFiles.length);
+
             } else {
                 console.warn('⚠️ Could not load project CSS files, using defaults');
                 this.setDefaultProjectCSS();
@@ -78,8 +78,7 @@ class ExternalCSSLoader {
      * ИСПРАВЛЕНО: Преобразование URL с улучшенной обработкой
      */
     resolveURL(href, originalHTML = '') {
-        console.log('🔍 Resolving URL:', href);
-        
+
         // Проверяем, что это не закодированный URL с ошибками
         if (href.includes('%7D') || href.includes('%7B')) {
             console.warn('⚠️ Detected encoded Jinja2 syntax, trying to fix:', href);
@@ -115,7 +114,7 @@ class ExternalCSSLoader {
         if (href.endsWith('.css')) {
             const projectFile = this.findProjectCSSFile(href);
             if (projectFile) {
-                console.log('📁 Found in project files:', projectFile.url);
+
                 return `${this.baseURL}${projectFile.url}`;
             }
             // Fallback - пробуем static
@@ -141,7 +140,7 @@ class ExternalCSSLoader {
         );
         
         if (found) {
-            console.log('🎯 Exact match found:', found);
+
             return found;
         }
         
@@ -152,11 +151,10 @@ class ExternalCSSLoader {
         );
         
         if (found) {
-            console.log('📍 Partial match found:', found);
+
             return found;
         }
-        
-        console.log('❌ No match found for:', filename);
+
         return null;
     }
 
@@ -164,15 +162,14 @@ class ExternalCSSLoader {
      * ИСПРАВЛЕНО: Загрузка одного CSS файла с улучшенной обработкой ошибок
      */
     async loadSingleCSS(url, linkElement = null) {
-        console.log('📥 Loading CSS:', url);
-        
+
         try {
             // Проверяем кэш
             if (this.cssCache.has(url)) {
                 const cached = this.cssCache.get(url);
                 await this.injectCSSIntoCanvas(cached.content, url);
                 this.loadedCSS.add(url);
-                console.log('💾 CSS loaded from cache:', url);
+
                 return { url, success: true, source: 'cache' };
             }
 
@@ -203,8 +200,7 @@ class ExternalCSSLoader {
             // Инжектируем в canvas
             await this.injectCSSIntoCanvas(processedCSS, url);
             this.loadedCSS.add(url);
-            
-            console.log('✅ CSS loaded successfully:', url, `(${cssContent.length} bytes)`);
+
             return { url, success: true, source: 'network', size: cssContent.length };
             
         } catch (error) {
@@ -214,7 +210,7 @@ class ExternalCSSLoader {
             const alternatives = this.getAlternativeURLs(url);
             for (const altURL of alternatives) {
                 try {
-                    console.log('🔄 Trying alternative:', altURL);
+
                     const altResponse = await fetch(altURL);
                     if (altResponse.ok) {
                         const altCSS = await altResponse.text();
@@ -223,7 +219,7 @@ class ExternalCSSLoader {
                             await this.injectCSSIntoCanvas(processedCSS, altURL);
                             this.loadedCSS.add(url); // Оригинальный URL
                             this.loadedCSS.add(altURL); // Альтернативный URL
-                            console.log('✅ Alternative CSS loaded:', altURL);
+
                             return { url: altURL, success: true, source: 'alternative' };
                         }
                     }
@@ -271,8 +267,7 @@ class ExternalCSSLoader {
                 alternatives.push(projectURL);
             }
         }
-        
-        console.log('🔄 Alternative URLs for', fileName, ':', alternatives);
+
         return alternatives;
     }
 
@@ -300,7 +295,7 @@ class ExternalCSSLoader {
         // Проверяем, не добавлен ли уже этот CSS
         const existingStyle = canvasDoc.querySelector(`style[data-source="${sourceURL}"]`);
         if (existingStyle) {
-            console.log('🔄 Updating existing CSS:', sourceURL);
+
             existingStyle.textContent = cssContent;
             return;
         }
@@ -316,7 +311,7 @@ class ExternalCSSLoader {
         const head = canvasDoc.head || canvasDoc.getElementsByTagName('head')[0];
         if (head) {
             head.appendChild(styleElement);
-            console.log('🎨 CSS injected into canvas:', sourceURL);
+
         } else {
             // Если нет head - создаем
             const newHead = canvasDoc.createElement('head');
@@ -324,7 +319,7 @@ class ExternalCSSLoader {
             const htmlElement = canvasDoc.documentElement || canvasDoc.getElementsByTagName('html')[0];
             if (htmlElement) {
                 htmlElement.insertBefore(newHead, htmlElement.firstChild);
-                console.log('🎨 CSS injected into new head:', sourceURL);
+
             } else {
                 console.warn('⚠️ Could not inject CSS - no HTML structure');
             }
@@ -372,8 +367,7 @@ class ExternalCSSLoader {
      * ИСПРАВЛЕНО: Извлечение и загрузка всех внешних CSS файлов из HTML
      */
     async loadExternalCSSFromHTML(htmlContent) {
-        console.log('🔧 Loading external CSS from HTML...');
-        
+
         // ИСПРАВЛЕНИЕ: Сначала очищаем Jinja2 синтаксис из HTML
         const cleanedHTML = this.cleanJinjaFromHTML(htmlContent);
         
@@ -383,18 +377,15 @@ class ExternalCSSLoader {
         // Находим все link теги с CSS
         const linkTags = doc.querySelectorAll('link[rel="stylesheet"], link[href*=".css"]');
         const cssPromises = [];
-        
-        console.log(`🔍 Found ${linkTags.length} CSS link tags`);
-        
+
         for (const link of linkTags) {
             const href = link.getAttribute('href');
             if (href) {
-                console.log('🔗 Processing CSS link:', href);
-                
+
                 // ИСПРАВЛЕНО: Улучшенный парсинг URL
                 const resolvedURL = this.resolveURL(href, htmlContent);
                 if (resolvedURL && !this.loadedCSS.has(resolvedURL)) {
-                    console.log('✅ Resolved URL:', resolvedURL);
+
                     cssPromises.push(this.loadSingleCSS(resolvedURL, link));
                 } else {
                     console.warn('⚠️ Could not resolve URL:', href);
@@ -419,9 +410,7 @@ class ExternalCSSLoader {
         
         const successful = results.filter(r => r.status === 'fulfilled').length;
         const failed = results.filter(r => r.status === 'rejected').length;
-        
-        console.log(`📊 CSS loading results: ${successful} успешно, ${failed} ошибок`);
-        
+
         return results;
     }
 
@@ -437,18 +426,16 @@ class ExternalCSSLoader {
         if (canvasDoc) {
             const injectedStyles = canvasDoc.querySelectorAll('style[data-loaded-by="ExternalCSSLoader"]');
             injectedStyles.forEach(style => style.remove());
-            console.log('🧹 Cleared', injectedStyles.length, 'injected CSS styles');
+
         }
-        
-        console.log('🧹 Cleared all loaded CSS cache');
+
     }
 
     /**
      * Публичный метод для загрузки CSS из HTML
      */
     async loadCSSFromTemplate(htmlContent) {
-        console.log('🎨 Starting external CSS loading...');
-        
+
         try {
             // Очищаем предыдущие CSS
             this.clearLoadedCSS();
@@ -458,8 +445,7 @@ class ExternalCSSLoader {
             
             // Также загружаем базовые CSS файлы проекта
             await this.loadBaseCSSFiles();
-            
-            console.log('✅ External CSS loading completed');
+
             return results;
             
         } catch (error) {
@@ -472,8 +458,7 @@ class ExternalCSSLoader {
      * Загрузка базовых CSS файлов проекта
      */
     async loadBaseCSSFiles() {
-        console.log('📦 Loading base project CSS files...');
-        
+
         const baseCSSFiles = [
             '/static/css/themes/themes.css',
             '/static/css/universal-styles.css',
@@ -492,9 +477,7 @@ class ExternalCSSLoader {
         
         const results = await Promise.allSettled(promises);
         const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
-        
-        console.log('📦 Base CSS files loading completed:', successful, 'loaded');
-        
+
         return results;
     }
 
@@ -520,5 +503,3 @@ class ExternalCSSLoader {
 if (typeof window !== 'undefined') {
     window.ExternalCSSLoader = ExternalCSSLoader;
 }
-
-console.log('✅ ExternalCSSLoader v2.0 loaded (Fixed URL parsing)'); 

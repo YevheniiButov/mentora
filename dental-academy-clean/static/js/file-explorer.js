@@ -3,11 +3,9 @@
  * Для Content Editor
  */
 
-console.log('🔧 file-explorer.js loading...');
-
 class FileExplorer {
     constructor(options = {}) {
-        console.log('🔧 FileExplorer constructor called');
+
         this.options = {
             apiBase: '/api/content-editor',
             modalId: 'fileExplorerModal',
@@ -21,32 +19,26 @@ class FileExplorer {
         
         // Инициализация Enhanced File Loader
         this.fileLoader = null;
-        
-        console.log('🔧 FileExplorer constructor - window.currentLang:', window.currentLang);
-        console.log('🔧 FileExplorer constructor - apiBase:', this.apiBase);
-        
+
         this.init();
         this.initializeFileLoader();
     }
     
     init() {
-        console.log('🔧 File Explorer initializing...');
-        
+
         this.createModal();
         this.setupEventListeners();
-        
-        console.log('✅ File Explorer initialized');
+
     }
     
     // Инициализация Enhanced File Loader
     initializeFileLoader() {
-        console.log('🔧 Initializing Enhanced File Loader...');
-        
+
         const initLoader = () => {
             if (window.editor && window.editor.Canvas && window.EnhancedFileLoader) {
                 try {
                     this.fileLoader = new window.EnhancedFileLoader(window.editor);
-                    console.log('✅ Enhanced File Loader initialized in FileExplorer');
+
                     return true;
                 } catch (error) {
                     console.error('❌ Error creating EnhancedFileLoader:', error);
@@ -74,7 +66,7 @@ class FileExplorer {
     }
     
     createModal() {
-        console.log('🔧 Creating modal...');
+
         // Удаляем существующий модал если есть
         const existingModal = document.getElementById(this.options.modalId);
         if (existingModal) {
@@ -127,12 +119,11 @@ class FileExplorer {
         
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         this.modal = document.getElementById(this.options.modalId);
-        console.log('🔧 Modal created:', this.modal);
+
     }
     
     setupEventListeners() {
-        console.log('🔧 Setting up event listeners...');
-        
+
         // Обработчик клика по breadcrumbs
         this.modal.addEventListener('click', (e) => {
             if (e.target.matches('.breadcrumb-item a')) {
@@ -171,8 +162,7 @@ class FileExplorer {
     }
     
     open() {
-        console.log('🔧 Opening File Explorer...');
-        
+
         if (typeof bootstrap === 'undefined') {
             console.error('❌ Bootstrap not loaded');
             alert('Bootstrap не загружен. Проверьте подключение скриптов.');
@@ -194,7 +184,7 @@ class FileExplorer {
     }
     
     async navigateTo(path) {
-        console.log('🔧 Navigating to:', path);
+
         this.currentPath = path;
         
         try {
@@ -218,8 +208,7 @@ class FileExplorer {
         `;
         
         try {
-            console.log('🔧 FileExplorer - Making request to:', `${this.apiBase}/file-explorer?path=${this.currentPath}`);
-            
+
             const response = await fetch(`${this.apiBase}/file-explorer?path=${this.currentPath}`, {
                 headers: {
                     'X-CSRFToken': this.getCSRFToken()
@@ -381,8 +370,7 @@ class FileExplorer {
     }
     
     async previewFile(path) {
-        console.log('🔧 Previewing file:', path);
-        
+
         try {
             const response = await fetch(`${this.apiBase}/template-content/${encodeURIComponent(path)}`, {
                 headers: {
@@ -411,8 +399,7 @@ class FileExplorer {
     }
     
     async loadFile(path) {
-        console.log('🔧 Loading file:', path);
-        
+
         try {
             const response = await fetch(`${this.apiBase}/template-content/${encodeURIComponent(path)}`, {
                 headers: {
@@ -458,8 +445,7 @@ class FileExplorer {
     
     // Загрузить файл в существующий редактор enhanced-editor
     async loadFileInEditor(path) {
-        console.log('🔧 Loading file with enhanced loader:', path);
-        
+
         try {
             // Проверяем доступность Enhanced File Loader
             if (!this.fileLoader) {
@@ -482,9 +468,7 @@ class FileExplorer {
                 
                 // Включаем кнопки управления редактором
                 this.enableEditorControls();
-                
-                console.log('✅ File loaded successfully via Enhanced File Loader');
-                
+
             } else {
                 throw new Error(result.error || 'Failed to load file');
             }
@@ -494,7 +478,7 @@ class FileExplorer {
             this.showNotification(`Ошибка загрузки: ${error.message}`, 'error');
             
             // Fallback к базовой загрузке
-            console.log('🔄 Falling back to basic file loading...');
+
             try {
                 await this.loadFileInEditorBasic(path);
             } catch (fallbackError) {
@@ -506,8 +490,7 @@ class FileExplorer {
     
     // Fallback метод для базовой загрузки файлов
     async loadFileInEditorBasic(path) {
-        console.log('🔧 Basic file loading for:', path);
-        
+
         try {
             const response = await fetch(`${this.apiBase}/template-content/${encodeURIComponent(path)}`, {
                 headers: {
@@ -648,8 +631,7 @@ class FileExplorer {
     // Открыть визуальный редактор (GrapesJS)
     async openVisualEditor(filePath) {
         try {
-            console.log('🎨 Opening visual editor for:', filePath);
-            
+
             // Загружаем содержимое файла
             const response = await fetch(`${this.apiBase}/template-content/${encodeURIComponent(filePath)}`);
             const data = await response.json();
@@ -955,7 +937,7 @@ class FileExplorer {
         
         // ИСПРАВЛЕНО: Загружаем внешние ресурсы через ExternalCSSLoader
         if (externalStyles.length > 0 || externalScripts.length > 0) {
-            console.log('🔧 Loading external resources:', { styles: externalStyles.length, scripts: externalScripts.length });
+
             await this.loadExternalResources(this.visualEditor, externalStyles, externalScripts);
         }
         
@@ -964,8 +946,7 @@ class FileExplorer {
         
         // Настраиваем события сохранения
         this.setupSaveEvents(filePath, fileInfo);
-        
-        console.log('✅ GrapesJS Visual Editor initialized');
+
     }
     
     // Парсинг HTML контента
@@ -1077,8 +1058,7 @@ class FileExplorer {
     async loadExternalResources(editor, externalStyles, externalScripts) {
         // ИСПРАВЛЕНО: Используем ExternalCSSLoader для правильной обработки URL
         if (externalStyles.length > 0) {
-            console.log('🎨 Loading external styles through ExternalCSSLoader...');
-            
+
             try {
                 // Создаем экземпляр ExternalCSSLoader если не существует
                 if (!window.ExternalCSSLoader) {
@@ -1094,9 +1074,7 @@ class FileExplorer {
                 
                 // Загружаем CSS через ExternalCSSLoader
                 await cssLoader.loadExternalCSSFromHTML(cssHTML);
-                
-                console.log('✅ External CSS loaded through ExternalCSSLoader');
-                
+
             } catch (error) {
                 console.warn('⚠️ ExternalCSSLoader failed, falling back to basic loading:', error);
                 this.loadExternalResourcesBasic(editor, externalStyles, externalScripts);
@@ -1130,8 +1108,7 @@ class FileExplorer {
                             const link = canvasDoc.createElement('link');
                             link.rel = 'stylesheet';
                             link.href = styleUrl;
-                            link.onload = () => console.log('✅ External CSS loaded in canvas:', styleUrl);
-                            link.onerror = () => console.warn('❌ Failed to load external CSS in canvas:', styleUrl);
+                            link.onload = () => link.onerror = () => console.warn('❌ Failed to load external CSS in canvas:', styleUrl);
                             head.appendChild(link);
                         } else {
                             console.warn('⚠️ Skipping invalid style URL in editor:', styleUrl);
@@ -1169,8 +1146,7 @@ class FileExplorer {
                             // ИСПРАВЛЕНО: Безопасная загрузка скриптов БЕЗ document.write
                             const script = canvasDoc.createElement('script');
                             script.src = scriptUrl;
-                            script.onload = () => console.log('✅ External script loaded in canvas:', scriptUrl);
-                            script.onerror = () => console.warn('❌ Failed to load external script in canvas:', scriptUrl);
+                            script.onload = () => script.onerror = () => console.warn('❌ Failed to load external script in canvas:', scriptUrl);
                             body.appendChild(script);
                         } else {
                             console.warn('⚠️ Skipping invalid script URL in editor:', scriptUrl);
@@ -1200,8 +1176,7 @@ class FileExplorer {
                 canvasScript.textContent = jsContent;
                 canvasDoc.body.appendChild(canvasScript);
             }
-            
-            console.log('✅ JavaScript loaded in editor');
+
         } catch (error) {
             console.warn('⚠️ Warning: Could not load JavaScript in editor:', error);
         }
@@ -1273,9 +1248,7 @@ class FileExplorer {
             
             // Показываем успешное сообщение
             this.showNotification('Изменения сохранены успешно!', 'success');
-            
-            console.log('✅ Visual changes saved successfully');
-            
+
         } catch (error) {
             console.error('❌ Error saving visual changes:', error);
             this.showNotification(`Ошибка сохранения: ${error.message}`, 'error');
@@ -1376,7 +1349,7 @@ ${htmlComponents}
     async editTextFile(filePath) {
         // Можно интегрировать с существующим текстовым редактором
         // или открыть в модальном окне с CodeMirror/Monaco Editor
-        console.log('📝 Opening text editor for:', filePath);
+
         alert('Текстовый редактор будет добавлен в следующем обновлении');
     }
     
@@ -1442,7 +1415,7 @@ ${htmlComponents}
             // Метод 1: Использование data URL (самый безопасный)
             const dataURL = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
             previewWindow.location.href = dataURL;
-            console.log('✅ Preview window updated using data URL (no document.write)');
+
             return;
         } catch (error) {
             console.warn('⚠️ Data URL method failed, trying innerHTML:', error);
@@ -1463,8 +1436,7 @@ ${htmlComponents}
                     previewWindow.document.importNode(newDoc.documentElement, true),
                     previewWindow.document.documentElement
                 );
-                
-                console.log('✅ Preview window updated safely with innerHTML');
+
                 return;
             }
         } catch (error) {
@@ -1515,16 +1487,13 @@ ${htmlComponents}
             }
             
             this.showNotification('Изменения сохранены успешно!', 'success');
-            console.log('✅ Enhanced editor changes saved successfully');
-            
+
         } catch (error) {
             console.error('❌ Error saving enhanced editor changes:', error);
             this.showNotification(`Ошибка сохранения: ${error.message}`, 'error');
         }
     }
 }
-
-console.log('🔧 FileExplorer class defined');
 
 // Создаем глобальный экземпляр FileExplorer
 window.fileExplorer = new FileExplorer();
@@ -1537,5 +1506,3 @@ window.saveCurrentFile = () => {
         console.warn('⚠️ No file is currently loaded for saving');
     }
 };
-
-console.log('✅ FileExplorer class loaded and global instance created');

@@ -10,8 +10,7 @@ let toastContainer = null;
 
 // Инициализация страницы
 function initSubjectDetail() {
-    console.log('🚀 Инициализация детального вида предмета...');
-    
+
     // Создаем контейнер для toast уведомлений
     createToastContainer();
     
@@ -23,8 +22,7 @@ function initSubjectDetail() {
     
     // Показываем welcome анимацию
     animatePageLoad();
-    
-    console.log('✅ Детальный вид предмета инициализирован');
+
 }
 
 // Инициализация круговых индикаторов прогресса
@@ -575,7 +573,7 @@ function restoreUserPreferences() {
     // Восстанавливаем другие настройки
     loadStudySettings().then(settings => {
         if (settings) {
-            console.log('👤 Настройки пользователя загружены:', settings);
+
         }
     });
 }
@@ -622,8 +620,6 @@ window.SubjectDetail = {
     initProgressCircles,
     animateNumber
 };
-
-console.log('📚 Subject Detail JavaScript loaded successfully');
 
 // CSS стили для анимаций (инжектируем в head)
 const animationStyles = `

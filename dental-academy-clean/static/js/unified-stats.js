@@ -15,8 +15,7 @@ class UnifiedStatsManager {
         // Инициализируем обновление статистики
         this.setupEventListeners();
         this.setupAutoRefresh();
-        
-        console.log('✅ UnifiedStatsManager инициализирован');
+
     }
 
     setupEventListeners() {
@@ -75,7 +74,7 @@ class UnifiedStatsManager {
 
     async updateStats(silent = false) {
         if (this.isUpdating) {
-            console.log('🔄 Обновление статистики уже выполняется...');
+
             return;
         }
 
@@ -83,7 +82,7 @@ class UnifiedStatsManager {
 
         try {
             if (!silent) {
-                console.log('🔄 Обновление статистики...');
+
             }
 
             const response = await fetch(`/${this.currentLang}/api/update-stats`, {
@@ -105,7 +104,7 @@ class UnifiedStatsManager {
                 this.updateUIWithStats(data.stats);
                 
                 if (!silent) {
-                    console.log('✅ Статистика обновлена:', data.stats);
+
                     this.showSuccessMessage('Статистика обновлена');
                 }
             } else {

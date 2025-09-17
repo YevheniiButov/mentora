@@ -62,9 +62,7 @@ class UniversalContentUploader {
         this.setupEventListeners();
         this.setupDragAndDrop();
         this.setupKeyboardNavigation();
-        
-        console.log('🚀 Universal Content Uploader initialized');
-        console.log('📡 API Base URL:', this.config.apiBaseUrl);
+
     }
     
     setupEventListeners() {

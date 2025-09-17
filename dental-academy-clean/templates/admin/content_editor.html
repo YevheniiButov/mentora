@@ -343,11 +343,7 @@
                 pluginsOpts: {}
             });
             
-            // Логируем успешную инициализацию
-            console.log('🔧 Editor initialized:', window.editor);
-            console.log('🔧 Editor Canvas:', window.editor.Canvas);
-            
-            // Добавляем базовые блоки для компенсации отсутствующих плагинов
+            // Логируем успешную инициализацию// Добавляем базовые блоки для компенсации отсутствующих плагинов
             addBasicBlocks();
             
             // Загружаем базовый шаблон по умолчанию
@@ -396,10 +392,7 @@
                 category: 'Макет',
                 content: '<div class="container"><div class="row"><div class="col-12">Контент</div></div></div>',
                 attributes: { class: 'fa fa-square' }
-            });
-            
-            console.log('✅ Basic blocks added to editor');
-        }
+            });}
         
         // Функции управления
         function showTemplates() {
@@ -549,11 +542,7 @@
                 const html = window.editor.getHtml();
                 const css = window.editor.getCss();
                 
-                // Здесь можно добавить AJAX запрос для сохранения
-                console.log('HTML:', html);
-                console.log('CSS:', css);
-                
-                // Показываем уведомление
+                // Здесь можно добавить AJAX запрос для сохранения// Показываем уведомление
                 alert('Контент сохранен! (проверьте консоль для просмотра)');
             }
         }
@@ -565,13 +554,8 @@
                     clearInterval(waitForEditor);
                     
                     // Инициализируем Enhanced File Loader
-                    window.fileLoader = new EnhancedFileLoader(window.editor);
-                    console.log('✅ Enhanced File Loader initialized');
-                    
-                    // Проверяем, что FileExplorer уже инициализирован
-                    if (window.fileExplorer) {
-                        console.log('✅ FileExplorer already initialized');
-                    } else {
+                    window.fileLoader = new EnhancedFileLoader(window.editor);// Проверяем, что FileExplorer уже инициализирован
+                    if (window.fileExplorer) {} else {
                         console.error('❌ FileExplorer instance not found');
                     }
                 }

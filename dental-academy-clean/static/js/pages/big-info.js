@@ -1,6 +1,5 @@
 // BIG Info Pages JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 BIG Info JavaScript initialized');
 
     // Tab Navigation
     initializeTabs();
@@ -21,9 +20,7 @@ function initializeTabs() {
     const contentSections = document.querySelectorAll('.content-section');
     
     if (tabButtons.length === 0) return;
-    
-    console.log('📑 Initializing tab navigation...');
-    
+
     tabButtons.forEach(button => {
         button.addEventListener('click', function() {
             const targetSection = this.getAttribute('data-section');
@@ -38,8 +35,7 @@ function initializeTabs() {
             if (targetElement) {
                 targetElement.classList.add('active');
             }
-            
-            console.log(`📑 Switched to section: ${targetSection}`);
+
         });
     });
     
@@ -54,9 +50,7 @@ function initializeFAQ() {
     const faqQuestions = document.querySelectorAll('.faq-question');
     
     if (faqQuestions.length === 0) return;
-    
-    console.log('❓ Initializing FAQ accordion...');
-    
+
     faqQuestions.forEach(question => {
         question.addEventListener('click', function() {
             const answer = this.nextElementSibling;
@@ -70,8 +64,7 @@ function initializeFAQ() {
                 answer.style.maxHeight = answer.scrollHeight + 'px';
                 icon.style.transform = 'rotate(180deg)';
             }
-            
-            console.log('❓ FAQ item toggled');
+
         });
     });
 }
@@ -81,16 +74,12 @@ function initializeChecklist() {
     const checkboxes = document.querySelectorAll('.document-checkbox');
     
     if (checkboxes.length === 0) return;
-    
-    console.log('📋 Initializing document checklist...');
-    
+
     checkboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const checkedCount = document.querySelectorAll('.document-checkbox:checked').length;
             const totalCount = checkboxes.length;
-            
-            console.log(`📋 Progress: ${checkedCount}/${totalCount} documents`);
-            
+
             // Update progress indicators if they exist
             updateProgressIndicators(checkedCount, totalCount);
         });
@@ -129,8 +118,7 @@ function initializeSmoothScrolling() {
                     behavior: 'smooth',
                     block: 'start'
                 });
-                
-                console.log(`📜 Smooth scroll to: ${targetId}`);
+
             }
         });
     });
@@ -138,8 +126,7 @@ function initializeSmoothScrolling() {
 
 // Print Checklist Function
 function printChecklist() {
-    console.log('🖨️ Printing checklist...');
-    
+
     const checkedItems = document.querySelectorAll('.document-checkbox:checked');
     const uncheckedItems = document.querySelectorAll('.document-checkbox:not(:checked)');
     
@@ -197,8 +184,7 @@ function printChecklist() {
 
 // Save Progress Function
 function saveProgress() {
-    console.log('💾 Saving progress...');
-    
+
     const checkboxes = document.querySelectorAll('.document-checkbox');
     const progress = {};
     
@@ -228,8 +214,7 @@ function loadProgress() {
                 checkbox.checked = true;
             }
         });
-        
-        console.log('📋 Progress loaded from localStorage');
+
     }
 }
 
@@ -394,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize daily plan if it exists
     const dailyPlanSection = document.querySelector('.daily-plan-section');
     if (dailyPlanSection) {
-        console.log('📅 Daily Plan section found, initializing...');
+
         updateDailyProgress();
     }
 }); 

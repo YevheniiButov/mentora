@@ -9,12 +9,7 @@ class ThemeController {
         this.init();
         
         // Отладочная информация
-        // console.log('ThemeController initialized:', {
-        //     theme: this.theme,
-        //     systemTheme: this.systemTheme,
-        //     isDark: this.isDark
-        // });
-    }
+        // }
 
     calculateIsDark() {
         if (this.theme === 'system') {
@@ -46,12 +41,7 @@ class ThemeController {
         // Отправляем событие
         this.notifyThemeChange();
         
-        // console.log('Theme applied:', {
-        //     theme: this.theme,
-        //     isDark: this.isDark,
-        //     appliedTheme: this.isDark ? 'dark' : 'light'
-        // });
-    }
+        // }
 
     toggleTheme() {
         if (this.theme !== 'toggle') {
@@ -70,11 +60,7 @@ class ThemeController {
         // Применяем изменения
         this.applyTheme();
         
-        // console.log('Theme toggled:', {
-        //     theme: this.theme,
-        //     isDark: this.isDark
-        // });
-    }
+        // }
 
     notifyThemeChange() {
         const event = new CustomEvent('themechange', {

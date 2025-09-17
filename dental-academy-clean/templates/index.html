@@ -923,19 +923,13 @@ body .hero-section {
 
 <!-- Временно включаем логи для отладки мобильного меню -->
 <script>
-// Временно включаем логи для отладки мобильного меню
-console.log('🔧 Главная страница: логи включены для отладки');
-</script>
+// Временно включаем логи для отладки мобильного меню</script>
 
 <!-- 🚀 Встроенная анимация телефона (работает всегда) -->
 <script>
 // 🚀 Встроенная анимация телефона (работает всегда)
 (function() {
-    'use strict';
-    
-    console.log('🔧 Инициализация встроенной анимации телефона');
-    
-    let currentScreen = 0;
+    'use strict';let currentScreen = 0;
     const totalScreens = 4;
     let autoInterval = null;
     
@@ -949,14 +943,10 @@ console.log('🔧 Главная страница: логи включены д�
             // Добавляем в hero-section
             const heroSection = document.querySelector('.hero-section');
             if (heroSection) {
-                heroSection.appendChild(particlesContainer);
-                console.log('✨ Created particles container');
-            }
+                heroSection.appendChild(particlesContainer);}
         }
         if (particlesContainer) {
-            startParticleSystem(particlesContainer);
-            console.log('🎪 Particles system started');
-        }
+            startParticleSystem(particlesContainer);}
     }
     function createParticle(particlesContainer) {
         if (!particlesContainer) return;
@@ -988,9 +978,7 @@ console.log('🔧 Главная страница: логи включены д�
             setTimeout(createParticles, Math.random() * 1000 + 500);
         };
         createParticle(particlesContainer);
-        setTimeout(createParticles, 1000);
-        console.log('🎆 Particle creation started');
-    }
+        setTimeout(createParticles, 1000);}
     // === КОНЕЦ ДОБАВЛЕНИЯ ===
 
     function initPhoneAnimation() {
@@ -1002,10 +990,7 @@ console.log('🔧 Главная страница: логи включены д�
         }
     }
     
-    function setupAnimation() {
-        console.log('📱 Настройка анимации телефона');
-        
-        // === ДОБАВЛЕНО: инициализация частиц ===
+    function setupAnimation() {// === ДОБАВЛЕНО: инициализация частиц ===
         setupParticles();
         // === КОНЕЦ ДОБАВЛЕНИЯ ===
         
@@ -1021,11 +1006,7 @@ console.log('🔧 Главная страница: логи включены д�
         if (!indicators || indicators.length === 0) {
             console.warn('❌ .indicator элементы не найдены');
     return;
-  }
-  
-        console.log('✅ Все элементы найдены, запускаем анимацию');
-        
-        // Функция обновления экрана
+  }// Функция обновления экрана
         function updateScreen() {
             const translateX = -currentScreen * 25; // 25% на экран
             screenSlides.style.transform = `translateX(${translateX}%)`;
@@ -1033,10 +1014,7 @@ console.log('🔧 Главная страница: логи включены д�
             // Обновляем индикаторы
             indicators.forEach((indicator, index) => {
                 indicator.classList.toggle('active', index === currentScreen);
-            });
-            
-            console.log(`📱 Экран ${currentScreen + 1}: translateX(${translateX}%)`);
-        }
+            });}
         
         // Переход к следующему экрану
         function nextScreen() {
@@ -1054,16 +1032,12 @@ console.log('🔧 Главная страница: логи включены д�
         // Автопрокрутка
         function startAutoAdvance() {
             stopAutoAdvance();
-            autoInterval = setInterval(nextScreen, 4000);
-            console.log('▶️ Автопрокрутка запущена');
-        }
+            autoInterval = setInterval(nextScreen, 4000);}
         
         function stopAutoAdvance() {
             if (autoInterval) {
                 clearInterval(autoInterval);
-                autoInterval = null;
-                console.log('⏸️ Автопрокрутка остановлена');
-            }
+                autoInterval = null;}
         }
         
         function restartAutoAdvance() {
@@ -1075,9 +1049,7 @@ console.log('🔧 Главная страница: логи включены д�
         indicators.forEach((indicator, index) => {
             indicator.addEventListener('click', (e) => {
                 e.preventDefault();
-                goToScreen(index);
-                console.log(`🖱️ Клик по индикатору ${index + 1}`);
-            });
+                goToScreen(index);});
         });
         
         // Пауза при наведении на телефон
@@ -1098,9 +1070,7 @@ console.log('🔧 Главная страница: логи включены д�
             if (!e.target.closest('.device-mockup, .screen-slides, .screen-content')) {
                 return;
             }
-            startX = e.touches[0].clientX;
-            console.log('📱 Touch start on phone animation');
-        }, { passive: true });
+            startX = e.touches[0].clientX;}, { passive: true });
         
         screenSlides.addEventListener('touchend', (e) => {
             // Проверяем, что touch происходит именно на элементе анимации телефона
@@ -1112,9 +1082,7 @@ console.log('🔧 Главная страница: логи включены д�
             const endX = e.changedTouches[0].clientX;
             const diffX = startX - endX;
             
-            if (Math.abs(diffX) > 50) { // Минимальное расстояние свайпа
-                console.log('📱 Phone animation swipe detected');
-                if (diffX > 0) {
+            if (Math.abs(diffX) > 50) { // Минимальное расстояние свайпаif (diffX > 0) {
                     nextScreen(); // Свайп влево
                 } else {
                     currentScreen = (currentScreen - 1 + totalScreens) % totalScreens;
@@ -1135,10 +1103,7 @@ console.log('🔧 Главная страница: логи включены д�
             goTo: goToScreen,
             stop: stopAutoAdvance,
             start: startAutoAdvance
-        };
-        
-        console.log('🚀 Анимация телефона полностью инициализирована!');
-    }
+        };}
     
     // Запуск
     initPhoneAnimation();

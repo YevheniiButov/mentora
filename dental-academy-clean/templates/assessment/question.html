@@ -97,9 +97,7 @@ let confidenceLevel = 3;
 
 // Page initialization
 document.addEventListener('DOMContentLoaded', function() {
-    try {
-        console.log('🚀 {{ t("initializing_question_page", lang) | default("Initializing question page") }}...');
-        initializeQuestionPage();
+    try {initializeQuestionPage();
         
         // Restore saved answer if exists
     {% if existing_answer %}
@@ -107,10 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (savedAnswer !== null) {
             selectOption(document.querySelectorAll('.option-compact')[savedAnswer], savedAnswer);
     }
-    {% endif %}
-        
-        console.log('✅ {{ t("question_page_initialized", lang) | default("Question page initialized successfully") }}');
-    } catch (error) {
+    {% endif %}} catch (error) {
         console.error('❌ {{ t("initialization_error", lang) | default("Error during initialization") }}:', error);
     }
 });
@@ -409,9 +404,7 @@ async function submitAnswer() {
     
     // Защита от двойной отправки
     const submitBtn = document.getElementById('submit-answer-btn');
-    if (submitBtn && submitBtn.disabled) {
-        console.log('Answer submission already in progress');
-        return;
+    if (submitBtn && submitBtn.disabled) {return;
     }
     
     if (submitBtn) {
@@ -451,9 +444,7 @@ async function submitAnswer() {
         
         // If this is a regular successful response, DON'T redirect automatically
         // User will press "Next" or "Finish" themselves
-        if (response.ok) {
-            console.log('{{ t("answer_sent_successfully", lang) | default("Answer sent successfully") }}');
-            return { success: true };
+        if (response.ok) {return { success: true };
         } else {
             throw new Error(`HTTP error! status: ${response.status}`);
         }

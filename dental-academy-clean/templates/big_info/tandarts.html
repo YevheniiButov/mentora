@@ -1536,10 +1536,7 @@
         }
 
         // Основная инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Инициализация страницы tandarts...');
-            
-            // ===== ПРОСТАЯ ШАПКА =====
+        document.addEventListener('DOMContentLoaded', function() {// ===== ПРОСТАЯ ШАПКА =====
             // Dropdown для языка
             const langBtn = document.getElementById('langBtn');
             const langDropdown = document.getElementById('langDropdown');
@@ -1581,12 +1578,7 @@
             
             // ===== ТАБЫ =====
             const tabButtons = document.querySelectorAll('.tab-btn');
-            const contentSections = document.querySelectorAll('.content-section');
-            
-            console.log('📋 Найдено табов:', tabButtons.length);
-            console.log('📄 Найдено секций:', contentSections.length);
-
-            // Показываем первую секцию по умолчанию
+            const contentSections = document.querySelectorAll('.content-section');// Показываем первую секцию по умолчанию
             if (contentSections.length > 0) {
                 contentSections.forEach(section => {
                     section.style.display = 'none';
@@ -1600,10 +1592,7 @@
             tabButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const targetTab = this.dataset.tab;
-                    console.log('🖱️ Клик по табу:', targetTab);
-
-                    // Убираем активный класс со всех табов и секций
+                    const targetTab = this.dataset.tab;// Убираем активный класс со всех табов и секций
                     tabButtons.forEach(btn => btn.classList.remove('active'));
                     contentSections.forEach(section => {
                         section.classList.remove('active');
@@ -1615,9 +1604,7 @@
                     const targetSection = document.getElementById(targetTab);
                     if (targetSection) {
                         targetSection.classList.add('active');
-                        targetSection.style.display = 'block';
-                        console.log('✅ Секция активирована:', targetTab);
-                    } else {
+                        targetSection.style.display = 'block';} else {
                         console.error('❌ Секция не найдена:', targetTab);
                     }
                 });
@@ -1660,17 +1647,12 @@
             // ===== ЧЕКБОКСЫ =====
             const checkboxes = document.querySelectorAll('.document-checkbox');
             checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    console.log('📋 Документ отмечен:', this.nextElementSibling?.nextElementSibling?.textContent);
-                });
+                checkbox.addEventListener('change', function() {});
             });
             
             // ===== ИНИЦИАЛИЗАЦИЯ ТЕМЫ =====
             const savedTheme = localStorage.getItem('theme') || 'light';
-            setTheme(savedTheme);
-            
-            console.log('✅ Страница tandarts инициализирована');
-        });
+            setTheme(savedTheme);});
     </script>
 
     <!-- Disclaimer -->

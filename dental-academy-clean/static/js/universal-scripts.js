@@ -5,8 +5,7 @@
 function getCSRFToken() {
   const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
   if (token) {
-    // console.log('CSRF Token: Found');
-    return token;
+    // return token;
   }
   // console.warn('CSRF Token: Not found');
   return null;
@@ -34,13 +33,11 @@ const aiWidgetController = {
       ...options
     };
 
-    // console.log(`Making request to: ${url}`);
-    const response = await fetch(url, defaultOptions);
+    // const response = await fetch(url, defaultOptions);
     
     if (!response.ok) {
       console.error(`
-            
-            
+
            ${defaultOptions.method} ${url} ${response.status} (${response.statusText})`);
       throw new Error(`HTTP ${response.status}`);
     }
@@ -152,9 +149,7 @@ async function loadExamReadiness() {
       }
     }
     
-    // console.log('Exam readiness data:', data);
-    
-    if (data.success && data.prediction) {
+    // if (data.success && data.prediction) {
       renderExamReadiness(data.prediction);
     } else {
       throw new Error(data.error || 'No prediction data');
@@ -204,9 +199,7 @@ async function loadRecommendations() {
       }
     }
     
-    // console.log('Recommendations data:', data);
-    
-    if (data.success && data.recommendations) {
+    // if (data.success && data.recommendations) {
       renderRecommendations(data.recommendations);
     } else {
       throw new Error(data.error || 'No recommendations data');
@@ -392,8 +385,7 @@ function renderRecommendations(recommendations) {
     // Проверяем что recommendations существует и является массивом
     if (Array.isArray(recommendations)) {
       safeRecommendations = recommendations;
-      // console.log(`✅ Generated ${safeRecommendations.length} recommendations for user`);
-    } else if (recommendations && typeof recommendations === 'object') {
+      // } else if (recommendations && typeof recommendations === 'object') {
       // Если это объект, пытаемся извлечь массив
       if (Array.isArray(recommendations.recommendations)) {
         safeRecommendations = recommendations.recommendations;
@@ -608,9 +600,7 @@ function renderProgressAnalytics(analytics) {
 
 // ===== AI WIDGETS INITIALIZATION WITH STAGGERED LOADING =====
 function initializeAIWidgets() {
-  // console.log('DOM loaded - starting AI widgets');
-  
-  // Загружаем виджеты с задержкой для лучшей производительности
+  // // Загружаем виджеты с задержкой для лучшей производительности
   setTimeout(() => {
     // Load exam readiness if widget exists
     if (document.getElementById('examReadinessContent')) {

@@ -230,7 +230,7 @@ const CONFIG = {
   
       // Navigate (placeholder)
       setTimeout(() => {
-        console.log(`Navigate to category: ${this.categoryId}`);
+
         // window.location.href = `/community/category/${this.categoryId}`;
       }, 500);
     }
@@ -284,8 +284,7 @@ const CONFIG = {
   
     async checkForUpdates() {
       try {
-        console.log('🔄 Checking for new activity...');
-        
+
         // In a real app, this would be an API call
         // const response = await fetch('/api/community/activity/recent');
         // const newActivities = await response.json();
@@ -309,7 +308,7 @@ const CONFIG = {
       };
   
       App.toast.show('New activity in the forum!', 'info');
-      console.log('📢 New activity:', mockActivity);
+
     }
   
     addActivity(activityData) {
@@ -465,8 +464,7 @@ const CONFIG = {
     }
   
     initializeComponents() {
-      console.log('🚀 Initializing Community App...');
-  
+
       try {
         // Initialize stats counters
         this.initStatsCounters();
@@ -484,8 +482,7 @@ const CONFIG = {
         setTimeout(() => {
           this.toast.show('Welcome to the Community! 👋', 'success');
         }, 1000);
-  
-        console.log('✅ Community App initialized successfully');
+
       } catch (error) {
         console.error('❌ Error initializing Community App:', error);
         this.toast.show('There was an error loading the page. Please refresh.', 'error');
@@ -541,8 +538,7 @@ const CONFIG = {
   if (process.env.NODE_ENV === 'development') {
     window.CommunityApp = App;
     window.Utils = Utils;
-    
-    console.log('🛠️ Development mode: Community App available as window.CommunityApp');
+
   }
   
   // 📦 Export for module systems

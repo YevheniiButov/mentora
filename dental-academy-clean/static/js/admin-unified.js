@@ -350,7 +350,7 @@ class AdminUnified {
 
     executeAction(action, element) {
         // Здесь можно добавить различные действия
-        console.log('Executing action:', action, element);
+
     }
 
     // ============================================

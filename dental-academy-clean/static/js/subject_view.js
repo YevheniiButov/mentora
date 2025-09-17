@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (interactiesBlock) {
       if (isInteractiesCategory) {
         interactiesBlock.style.display = 'block';
-        console.log('✅ Показан интерактивный блок для категории:', categoryName);
+
       } else {
         interactiesBlock.style.display = 'none';
       }

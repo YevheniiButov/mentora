@@ -42,7 +42,7 @@ class UniversalCategorySystem {
     
     log(message, ...args) {
         if (this.config.debugMode) {
-            console.log(`[CategorySystem] ${message}`, ...args);
+
         }
     }
     
@@ -473,7 +473,7 @@ class UniversalCategorySystem {
     logStats() {
         // Статистика в продакшене недоступна
         if (this.config.debugMode) {
-            console.log('Статистика:', this.stats);
+
         }
     }
     
@@ -501,7 +501,7 @@ class UniversalCategorySystem {
     debug() {
         // Отладочная информация в продакшене недоступна
         if (this.config.debugMode) {
-            console.log('UniversalCategorySystem работает');
+
             return {
                 categories: this.categories.size,
                 active: this.activeCategory

@@ -12,26 +12,18 @@ class EnhancedFileLoader {
         
         // Инициализируем External CSS Loader
         this.cssLoader = new ExternalCSSLoader(editor);
-        
-        console.log('🚀 EnhancedFileLoader v2.1 initialized (Fixed document.write issues)');
+
     }
 
     /**
      * Основной метод загрузки файла в редактор
      */
     async loadFileInEditor(path, fileContent) {
-        console.log('🔧 Loading file into GrapesJS v2.1:', path);
-        
+
         try {
             // 1. Парсим содержимое файла
             const parsed = await this.parseFullHTMLContent(fileContent);
-            console.log('🔧 Parsed content:', {
-                hasBodyHTML: !!parsed.bodyHtml,
-                hasCSSContent: !!parsed.cssContent,
-                externalStylesCount: parsed.externalStyles.length,
-                externalScriptsCount: parsed.externalScripts.length
-            });
-            
+
             // 2. Очищаем редактор
             this.clearEditor();
             
@@ -39,7 +31,7 @@ class EnhancedFileLoader {
             await this.loadBaseResourcesSafely();
             
             // 4. Загружаем внешние CSS файлы из HTML
-            console.log('🎨 Loading external CSS files...');
+
             await this.cssLoader.loadCSSFromTemplate(fileContent);
             
             // 5. Применяем внутренние стили
@@ -62,14 +54,12 @@ class EnhancedFileLoader {
             
             // 9. Показываем статистику загрузки
             this.showLoadingStats();
-            
-            console.log('✅ File loaded successfully in GrapesJS v2.1');
-            
+
         } catch (error) {
             console.error('❌ Error loading file v2.1:', error);
             
             // Fallback к базовой загрузке
-            console.log('🔄 Falling back to basic loading...');
+
             await this.basicFallbackLoading(fileContent);
             
             throw error;
@@ -81,8 +71,7 @@ class EnhancedFileLoader {
      * Решает проблему: в редакторе отображается только часть контента
      */
     parseFullHTMLContent(htmlContent) {
-        console.log('🔧 Parsing HTML content (full version)...');
-        
+
         const result = {
             bodyHtml: '',
             cssContent: '',
@@ -164,16 +153,10 @@ class EnhancedFileLoader {
             if (doc.body) {
                 // Получаем полный innerHTML body
                 let fullBodyContent = doc.body.innerHTML;
-                
-                console.log('🔍 Original body content length:', fullBodyContent.length);
-                console.log('🔍 First 200 chars:', fullBodyContent.substring(0, 200));
-                
+
                 // Применяем более мягкую очистку к контенту body
                 const cleanBodyContent = this.gentleCleanJinja(fullBodyContent);
-                
-                console.log('🔍 Cleaned body content length:', cleanBodyContent.length);
-                console.log('🔍 Cleaned first 200 chars:', cleanBodyContent.substring(0, 200));
-                
+
                 result.bodyHtml = cleanBodyContent;
             } else {
                 console.warn('⚠️ No body element found in HTML');
@@ -181,29 +164,22 @@ class EnhancedFileLoader {
                 // Fallback: извлекаем всё между <body> тегами вручную
                 const bodyMatch = lightlyCleanedHTML.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
                 if (bodyMatch) {
-                    console.log('🔄 Using fallback body extraction');
+
                     result.bodyHtml = this.gentleCleanJinja(bodyMatch[1]);
                 } else {
                     // Последний fallback: используем весь контент
-                    console.log('🔄 Using entire content as fallback');
+
                     result.bodyHtml = this.gentleCleanJinja(lightlyCleanedHTML);
                 }
             }
-            
-            console.log('✅ HTML parsing completed:', {
-                bodyLength: result.bodyHtml.length,
-                cssLength: result.cssContent.length,
-                externalStyles: result.externalStyles.length,
-                externalScripts: result.externalScripts.length
-            });
-            
+
             return result;
             
         } catch (error) {
             console.error('❌ Error parsing HTML:', error);
             
             // Emergency fallback
-            console.log('🆘 Using emergency fallback parsing');
+
             result.bodyHtml = this.gentleCleanJinja(htmlContent);
             return result;
         }
@@ -276,8 +252,7 @@ class EnhancedFileLoader {
      * ОБНОВЛЕНО: Улучшенная очистка редактора
      */
     clearEditor() {
-        console.log('🧹 Clearing editor (enhanced)...');
-        
+
         try {
             // Очищаем компоненты и стили
             this.editor.setComponents('');
@@ -304,9 +279,7 @@ class EnhancedFileLoader {
                     userStyles.forEach(style => style.remove());
                 }
             }
-            
-            console.log('✅ Editor cleared completely');
-            
+
         } catch (error) {
             console.warn('⚠️ Error during editor clearing:', error);
         }
@@ -316,8 +289,7 @@ class EnhancedFileLoader {
      * ИСПРАВЛЕНО: Загрузка базовых ресурсов БЕЗ document.write
      */
     async loadBaseResourcesSafely() {
-        console.log('📦 Loading base resources safely...');
-        
+
         const baseStyles = [
             'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css',
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
@@ -332,12 +304,10 @@ class EnhancedFileLoader {
         });
         
         const cssResults = await Promise.allSettled(cssPromises);
-        console.log('📦 Base CSS loaded:', cssResults.filter(r => r.status === 'fulfilled').length);
-        
+
         // Загружаем Bootstrap JS БЕЗ document.write
         await this.loadBootstrapSafely();
-        
-        console.log('✅ Base resources loaded safely');
+
     }
 
     /**
@@ -347,14 +317,14 @@ class EnhancedFileLoader {
         const bootstrapJS = 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js';
         
         if (this.loadedResources.has(bootstrapJS)) {
-            console.log('📦 Bootstrap JS already loaded');
+
             return;
         }
         
         try {
             await this.addScriptToCanvasSafely(bootstrapJS);
             this.loadedResources.add(bootstrapJS);
-            console.log('✅ Bootstrap JS loaded safely');
+
         } catch (error) {
             console.warn('⚠️ Could not load Bootstrap JS:', error.message);
             // Не критическая ошибка - продолжаем без Bootstrap JS
@@ -385,7 +355,7 @@ class EnhancedFileLoader {
             // Проверяем, не загружен ли уже этот стиль
             const existingLink = canvasDoc.querySelector(`link[href="${href}"]`);
             if (existingLink) {
-                console.log('📦 CSS already exists in canvas:', href);
+
                 resolve({ url: href, success: true, source: 'existing' });
                 return;
             }
@@ -399,7 +369,7 @@ class EnhancedFileLoader {
             link.setAttribute('data-loaded-by', 'EnhancedFileLoader');
             
             link.onload = () => {
-                console.log('✅ CSS loaded safely:', href);
+
                 this.loadedResources.add(href);
                 resolve({ url: href, success: true, source: 'network' });
             };
@@ -431,7 +401,7 @@ class EnhancedFileLoader {
             // Проверяем, не загружен ли уже этот скрипт
             const existingScript = canvasDoc.querySelector(`script[src="${src}"]`);
             if (existingScript) {
-                console.log('📦 Script already exists in canvas:', src);
+
                 resolve({ url: src, success: true, source: 'existing' });
                 return;
             }
@@ -442,7 +412,7 @@ class EnhancedFileLoader {
             script.setAttribute('data-loaded-by', 'EnhancedFileLoader');
             
             script.onload = () => {
-                console.log('✅ Script loaded safely:', src);
+
                 resolve({ url: src, success: true, source: 'network' });
             };
             
@@ -470,8 +440,7 @@ class EnhancedFileLoader {
      * НОВОЕ: Безопасная загрузка внешних скриптов
      */
     async loadExternalScriptsSafely(externalScripts) {
-        console.log('📜 Loading external scripts safely:', externalScripts.length);
-        
+
         const scriptPromises = externalScripts.map(script => {
             if (script.src && !this.loadedResources.has(script.src)) {
                 return this.addScriptToCanvasSafely(script.src);
@@ -481,16 +450,14 @@ class EnhancedFileLoader {
         
         const results = await Promise.allSettled(scriptPromises);
         const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
-        
-        console.log('📜 External scripts loaded:', successful, 'of', externalScripts.length);
+
     }
 
     /**
      * Загрузка внешних ресурсов
      */
     async loadExternalResources(externalStyles = [], externalScripts = []) {
-        console.log('🔧 Loading external resources...');
-        
+
         // Загружаем CSS файлы
         for (const style of externalStyles) {
             if (!this.loadedResources.has(style.href)) {
@@ -543,7 +510,7 @@ class EnhancedFileLoader {
             link.setAttribute('data-loaded-by', 'EnhancedFileLoader');
             
             link.onload = () => {
-                console.log('✅ CSS loaded:', href);
+
                 this.loadedResources.add(href);
                 resolve();
             };
@@ -577,7 +544,7 @@ class EnhancedFileLoader {
             script.src = src;
             
             script.onload = () => {
-                console.log('✅ Script loaded:', src);
+
                 resolve();
             };
             
@@ -594,8 +561,7 @@ class EnhancedFileLoader {
      * Применение внутренних CSS к canvas
      */
     async applyCSSToCanvas(cssContent) {
-        console.log('🎨 Applying internal CSS to canvas...');
-        
+
         const canvas = this.editor.Canvas;
         const canvasDoc = canvas.getDocument();
         
@@ -612,8 +578,7 @@ class EnhancedFileLoader {
             styleElement.setAttribute('data-type', 'internal');
             styleElement.textContent = cssContent;
             canvasHead.appendChild(styleElement);
-            
-            console.log('✅ Internal CSS applied to canvas');
+
         }
         
         // Также добавляем в StyleManager редактора
@@ -631,14 +596,7 @@ class EnhancedFileLoader {
      * Загрузка HTML компонентов с задержкой
      */
     async loadHTMLComponents(htmlContent) {
-        console.log('🔧 Loading HTML components (enhanced)...');
-        console.log('📊 Content to load:', {
-            length: htmlContent.length,
-            preview: htmlContent.substring(0, 300) + (htmlContent.length > 300 ? '...' : ''),
-            containsMainContent: htmlContent.includes('succesvolle') || htmlContent.includes('tandartslicentie'),
-            containsMobileWidget: htmlContent.includes('Become') || htmlContent.includes('Tandarts')
-        });
-        
+
         // Ждем полной загрузки CSS
         await new Promise(resolve => setTimeout(resolve, 1500));
         
@@ -651,23 +609,20 @@ class EnhancedFileLoader {
             
             // Загружаем компоненты
             this.editor.setComponents(htmlContent);
-            console.log('✅ HTML components loaded successfully');
-            
+
             // Принудительно обновляем canvas
             const canvas = this.editor.Canvas;
             canvas.refresh();
             
             // Проверяем что загрузилось
             const components = this.editor.getComponents();
-            console.log('📊 Loaded components count:', components.length);
-            
+
             // Дополнительная задержка для рендеринга
             await new Promise(resolve => setTimeout(resolve, 500));
             
         } catch (error) {
             console.error('❌ Error loading HTML components:', error);
-            console.log('🔄 Attempting fallback loading...');
-            
+
             // Fallback: пробуем загрузить в несколько этапов
             try {
                 // Сначала очищаем и пробуем загрузить снова
@@ -677,9 +632,7 @@ class EnhancedFileLoader {
                 // Загружаем только текстовое содержимое
                 const textOnlyContent = htmlContent.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
                 this.editor.setComponents(textOnlyContent);
-                
-                console.log('✅ Fallback loading completed');
-                
+
             } catch (fallbackError) {
                 console.error('❌ Fallback loading also failed:', fallbackError);
                 throw fallbackError;
@@ -691,8 +644,7 @@ class EnhancedFileLoader {
      * Принудительное обновление canvas с задержкой
      */
     async forceCanvasRefreshWithDelay() {
-        console.log('🔄 Force refreshing canvas with delay...');
-        
+
         // Первое обновление
         this.refreshCanvas();
         
@@ -705,7 +657,7 @@ class EnhancedFileLoader {
         // Третье обновление для уверенности
         setTimeout(() => {
             this.refreshCanvas();
-            console.log('✅ Canvas refresh completed');
+
         }, 2000);
     }
 
@@ -746,9 +698,7 @@ class EnhancedFileLoader {
      */
     reapplyPendingStyles() {
         if (this.pendingStyles.length === 0) return;
-        
-        console.log('🔄 Reapplying pending styles...');
-        
+
         const canvas = this.editor.Canvas;
         const canvasDoc = canvas.getDocument();
         
@@ -780,11 +730,7 @@ class EnhancedFileLoader {
     showLoadingStats() {
         if (this.cssLoader) {
             const stats = this.cssLoader.getLoadingStats();
-            console.log('📊 Loading Statistics:', {
-                externalCSS: stats,
-                internalCSS: this.pendingStyles.length,
-                baseResources: this.loadedResources.size
-            });
+
         }
     }
 
@@ -792,8 +738,7 @@ class EnhancedFileLoader {
      * УЛУЧШЕНО: Базовый fallback
      */
     async basicFallbackLoading(fileContent) {
-        console.log('🛟 Basic fallback loading...');
-        
+
         try {
             // Простое извлечение CSS и HTML
             const parser = new DOMParser();
@@ -825,9 +770,7 @@ class EnhancedFileLoader {
             setTimeout(() => {
                 this.refreshCanvas();
             }, 1000);
-            
-            console.log('✅ Fallback loading completed');
-            
+
         } catch (error) {
             console.error('❌ Even fallback loading failed:', error);
         }
@@ -838,8 +781,7 @@ class EnhancedFileLoader {
      */
     async loadFile(path) {
         try {
-            console.log('📁 Loading file via Enhanced File Loader v2.1:', path);
-            
+
             // Загружаем содержимое файла
             const response = await fetch(`/api/content-editor/template-content/${encodeURIComponent(path)}`);
             const data = await response.json();
@@ -878,30 +820,21 @@ class EnhancedFileLoader {
      * НОВОЕ: Отладка извлечения контента
      */
     debugContentExtraction(originalHTML, extractedContent) {
-        console.log('🐛 Content Extraction Debug:');
-        console.log('Original HTML length:', originalHTML.length);
-        console.log('Extracted content length:', extractedContent.length);
-        
+
         // Проверяем ключевые элементы
         const originalHasMainTitle = originalHTML.includes('succesvolle');
         const extractedHasMainTitle = extractedContent.includes('succesvolle');
         
         const originalHasMobile = originalHTML.includes('Become');
         const extractedHasMobile = extractedContent.includes('Become');
-        
-        console.log('Main title in original:', originalHasMainTitle);
-        console.log('Main title in extracted:', extractedHasMainTitle);
-        console.log('Mobile widget in original:', originalHasMobile);
-        console.log('Mobile widget in extracted:', extractedHasMobile);
-        
+
         if (originalHasMainTitle && !extractedHasMainTitle) {
             console.error('❌ CRITICAL: Main content lost during extraction!');
             
             // Ищем где потерялся контент
             const bodyMatch = originalHTML.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
             if (bodyMatch) {
-                console.log('🔍 Body content found, length:', bodyMatch[1].length);
-                console.log('🔍 Body starts with:', bodyMatch[1].substring(0, 200));
+
             }
         }
         
@@ -919,15 +852,13 @@ class EnhancedFileLoader {
 if (typeof window !== 'undefined') {
     // Экспортируем класс в глобальную область
     window.EnhancedFileLoader = EnhancedFileLoader;
-    
-    console.log('✅ EnhancedFileLoader v2.1 loaded (Fixed document.write and URL parsing)');
-    
+
     // Автоматическая инициализация при загрузке редактора
     const initFileLoader = () => {
         if (window.editor && window.editor.Canvas) {
             try {
                 window.fileLoader = new EnhancedFileLoader(window.editor);
-                console.log('✅ EnhancedFileLoader instance created');
+
                 return true;
             } catch (error) {
                 console.error('❌ Error creating EnhancedFileLoader:', error);
@@ -953,5 +884,3 @@ if (typeof window !== 'undefined') {
         }, 10000);
     }
 }
-
-console.log('✅ EnhancedFileLoader loaded'); 

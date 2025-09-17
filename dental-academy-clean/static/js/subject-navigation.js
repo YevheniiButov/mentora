@@ -342,7 +342,7 @@ function setupLegacyCompatibility() {
             window.showFlashMessage(type, message, duration);
         } else {
             // Fallback уведомление
-            console.log(`${type.toUpperCase()}: ${message}`);
+
         }
     };
     
@@ -571,7 +571,7 @@ function initializePageSpecific() {
  */
 function initializeSubjectView() {
     // Дополнительная логика для страницы предметов
-    console.log('Subject view initialized');
+
 }
 
 /**
@@ -579,7 +579,7 @@ function initializeSubjectView() {
  */
 function initializeModuleView() {
     // Дополнительная логика для страницы модуля
-    console.log('Module view initialized');
+
 }
 
 /**
@@ -587,7 +587,7 @@ function initializeModuleView() {
  */
 function initializeLessonView() {
     // Дополнительная логика для страницы урока
-    console.log('Lesson view initialized');
+
 }
 
 // Запускаем инициализацию для конкретных страниц
@@ -621,18 +621,16 @@ if (window.location.hostname === 'localhost' || window.location.search.includes(
                     untranslated.push(key);
                 }
             });
-            console.log('Untranslated keys:', untranslated);
+
         },
         
         // Информация о производительности
         showPerformance: function() {
             if (window.performance) {
                 const navigation = performance.getEntriesByType('navigation')[0];
-                console.log('Page Load Time:', navigation.loadEventEnd - navigation.loadEventStart, 'ms');
-                console.log('DOM Content Loaded:', navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart, 'ms');
+
             }
         }
     };
-    
-    console.log('Debug mode enabled. Use window.TandartsDebug for debugging tools.');
+
 }

@@ -50,12 +50,11 @@ const CACHE_STRATEGIES = {
 
 // ===== INSTALL EVENT =====
 self.addEventListener('install', event => {
-  console.log('📦 Service Worker installing...');
-  
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('📁 Caching static assets...');
+
         // ✅ ИСПРАВЛЕНО: Кэшируем только существующие файлы
         return Promise.allSettled(
           STATIC_CACHE_URLS.map(url => 
@@ -67,7 +66,7 @@ self.addEventListener('install', event => {
         );
       })
       .then(() => {
-        console.log('✅ Static assets cached successfully');
+
         return self.skipWaiting();
       })
       .catch(error => {
@@ -78,8 +77,7 @@ self.addEventListener('install', event => {
 
 // ===== ACTIVATE EVENT =====
 self.addEventListener('activate', event => {
-  console.log('🚀 Service Worker activating...');
-  
+
   event.waitUntil(
     Promise.all([
       // Clean up old caches
@@ -87,7 +85,7 @@ self.addEventListener('activate', event => {
         return Promise.all(
           cacheNames.map(cacheName => {
             if (cacheName !== CACHE_NAME) {
-              console.log('🗑️ Deleting old cache:', cacheName);
+
               return caches.delete(cacheName);
             }
           })
@@ -97,7 +95,7 @@ self.addEventListener('activate', event => {
       // Take control of all clients
       self.clients.claim()
     ]).then(() => {
-      console.log('✅ Service Worker activated and ready');
+
     })
   );
 });
@@ -442,8 +440,7 @@ async function handleFetchError(request, error) {
 
 // ===== MESSAGE HANDLING ===== ✅ ДОБАВЛЕНО
 self.addEventListener('message', event => {
-  console.log('💬 Message received:', event.data);
-  
+
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
@@ -465,8 +462,7 @@ self.addEventListener('message', event => {
 // ===== PUSH NOTIFICATIONS =====
 
 self.addEventListener('push', event => {
-  console.log('📩 Push notification received');
-  
+
   let data = {};
   if (event.data) {
     try {
@@ -505,8 +501,7 @@ self.addEventListener('push', event => {
 });
 
 self.addEventListener('notificationclick', event => {
-  console.log('🔔 Notification clicked');
-  
+
   event.notification.close();
   
   if (event.action === 'close') {
@@ -535,8 +530,7 @@ self.addEventListener('notificationclick', event => {
 // ===== BACKGROUND SYNC =====
 
 self.addEventListener('sync', event => {
-  console.log('🔄 Background sync triggered:', event.tag);
-  
+
   if (event.tag === 'lesson-progress-sync') {
     event.waitUntil(syncLessonProgress());
   }
@@ -572,8 +566,7 @@ async function syncLessonProgress() {
     
     // Clear synced data
     localStorage.removeItem('offline-lesson-progress');
-    console.log('✅ Lesson progress synced successfully');
-    
+
   } catch (error) {
     console.error('❌ Failed to sync lesson progress:', error);
   }
@@ -600,8 +593,7 @@ async function syncOfflineActions() {
     }
     
     localStorage.removeItem('offline-actions');
-    console.log('✅ Offline actions synced successfully');
-    
+
   } catch (error) {
     console.error('❌ Failed to sync offline actions:', error);
   }
@@ -610,8 +602,7 @@ async function syncOfflineActions() {
 // ===== PERIODIC BACKGROUND SYNC =====
 
 self.addEventListener('periodicsync', event => {
-  console.log('⏰ Periodic sync triggered:', event.tag);
-  
+
   if (event.tag === 'content-sync') {
     event.waitUntil(syncContent());
   }
@@ -637,8 +628,7 @@ async function syncContent() {
           console.error('Failed to cache content:', url, error);
         }
       }
-      
-      console.log('✅ Content synced successfully');
+
     }
     
   } catch (error) {
@@ -673,9 +663,7 @@ async function logCacheStats() {
   try {
     const cache = await caches.open(CACHE_NAME);
     const requests = await cache.keys();
-    
-    console.log(`📊 Cache stats: ${requests.length} items cached`);
-    
+
     // Group by type
     const stats = {
       html: 0,
@@ -695,8 +683,7 @@ async function logCacheStats() {
       else if (CACHE_PATTERNS.api.test(url)) stats.api++;
       else stats.other++;
     });
-    
-    console.log('📈 Cache breakdown:', stats);
+
   } catch (error) {
     console.error('❌ Failed to get cache stats:', error);
   }
@@ -708,6 +695,3 @@ setInterval(() => {
   logCacheStats();
 }, 60 * 60 * 1000);
 
-console.log('🎯 Service Worker loaded successfully');
-console.log(`📦 Cache version: ${CACHE_NAME}`);
-console.log('🔄 Ready for offline functionality');

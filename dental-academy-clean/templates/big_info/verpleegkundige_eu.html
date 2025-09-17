@@ -1730,10 +1730,7 @@
         }
 
         // Main initialization
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Initializing EU verpleegkundige page (2025)...');
-            
-            // ===== HEADER =====
+        document.addEventListener('DOMContentLoaded', function() {// ===== HEADER =====
             // Language dropdown
             const langBtn = document.getElementById('langBtn');
             const langDropdown = document.getElementById('langDropdown');
@@ -1775,12 +1772,7 @@
             
             // ===== TABS =====
             const tabButtons = document.querySelectorAll('.tab-btn');
-            const contentSections = document.querySelectorAll('.content-section');
-            
-            console.log('📋 Found tabs:', tabButtons.length);
-            console.log('📄 Found sections:', contentSections.length);
-
-            // Show first section by default
+            const contentSections = document.querySelectorAll('.content-section');// Show first section by default
             if (contentSections.length > 0) {
                 contentSections.forEach(section => {
                     section.style.display = 'none';
@@ -1794,10 +1786,7 @@
             tabButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const targetTab = this.dataset.tab;
-                    console.log('🖱️ Tab clicked:', targetTab);
-
-                    // Remove active class from all tabs and sections
+                    const targetTab = this.dataset.tab;// Remove active class from all tabs and sections
                     tabButtons.forEach(btn => btn.classList.remove('active'));
                     contentSections.forEach(section => {
                         section.classList.remove('active');
@@ -1809,9 +1798,7 @@
                     const targetSection = document.getElementById(targetTab);
                     if (targetSection) {
                         targetSection.classList.add('active');
-                        targetSection.style.display = 'block';
-                        console.log('✅ Section activated:', targetTab);
-                    } else {
+                        targetSection.style.display = 'block';} else {
                         console.error('❌ Section not found:', targetTab);
                     }
                 });
@@ -1831,17 +1818,12 @@
             // ===== CHECKBOXES =====
             const checkboxes = document.querySelectorAll('.document-checkbox');
             checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    console.log('📋 Document checked:', this.nextElementSibling?.textContent);
-                });
+                checkbox.addEventListener('change', function() {});
             });
             
             // ===== THEME INITIALIZATION =====
             const savedTheme = localStorage.getItem('theme') || 'light';
-            setTheme(savedTheme);
-            
-            console.log('✅ EU Verpleegkundige page (2025) initialized');
-        });
+            setTheme(savedTheme);});
     </script>
 
     <!-- Image Optimization -->

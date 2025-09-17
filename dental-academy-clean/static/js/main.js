@@ -150,7 +150,7 @@ Mentora.navigationManager = {
     
     bindMobileToggle() {
         // Отключено - используем простую реализацию в base.html
-        console.log('Mobile toggle binding disabled - using simple implementation');
+
     },
     
     // Оставляем функцию, но не используем ее

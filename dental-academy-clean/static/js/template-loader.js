@@ -23,28 +23,22 @@ class TemplateLoader {
     }
     
     init() {
-        console.log('🔧 Template Loader initializing...');
-        console.log('🔧 Current language:', window.currentLang);
-        
+
         // Создаем улучшенный UI
         this.createEnhancedUI();
         
         // Настраиваем обработчики событий
         this.setupEventListeners();
-        
-        console.log('✅ Template Loader initialized');
-        console.log('🔧 Template selector after init:', document.querySelector('.template-selector'));
-        console.log('🔧 Template dropdown after init:', document.getElementById('template-dropdown'));
+
     }
     
     createEnhancedUI() {
         // Ищем уже существующую кнопку "Открыть проводник"
         const openFileExplorerBtn = document.getElementById('open-file-explorer');
-        console.log('🔧 Existing open file explorer button found:', openFileExplorerBtn);
-        
+
         // Если кнопка не найдена, создаем её
         if (!openFileExplorerBtn) {
-            console.log('🔧 Creating new file explorer button...');
+
             // Ищем место для вставки кнопки
             const buttonContainer = document.querySelector('.d-flex.gap-2.align-items-center');
             if (buttonContainer) {
@@ -54,18 +48,17 @@ class TemplateLoader {
                 newButton.title = 'Открыть проводник';
                 newButton.innerHTML = '<i class="bi bi-folder2"></i> Открыть проводник';
                 buttonContainer.appendChild(newButton);
-                console.log('✅ File explorer button created');
+
             }
         }
     }
     
     setupEventListeners() {
-        console.log('🔧 Setting up event listeners...');
-        
+
         // Используем делегирование событий для кнопки открытия файлового проводника
         document.addEventListener('click', (e) => {
             if (e.target.id === 'open-file-explorer' || e.target.closest('#open-file-explorer')) {
-                console.log('🔧 Opening File Explorer...');
+
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -78,8 +71,7 @@ class TemplateLoader {
                 }
             }
         });
-        
-        console.log('✅ Event listeners set up with delegation');
+
     }
     
     enableButtons() {
@@ -147,7 +139,7 @@ class TemplateLoader {
     }
     
     destroy() {
-        console.log('🔧 Template Loader destroyed');
+
         // Уничтожаем FileExplorer если он существует
         if (window.fileExplorer) {
             window.fileExplorer.destroy();
@@ -161,8 +153,7 @@ window.TemplateLoader = TemplateLoader;
 
 // Auto-initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🔧 DOM loaded, waiting for editor and FileExplorer...');
-    
+
     let attempts = 0;
     const maxAttempts = 20; // Максимум 10 секунд (20 * 500ms)
     
@@ -173,8 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Проверяем только window.editor
         const editor = window.editor;
         const fileExplorer = typeof FileExplorer !== 'undefined';
-        console.log(`🔧 Checking for editor and FileExplorer... (attempt ${attempts}/${maxAttempts})`, { editor: !!editor, fileExplorer });
-        
+
         if (editor && editor.getComponents && fileExplorer) {
             clearInterval(checkEditor);
             
@@ -185,8 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showPreview: true,
                 autoSave: true
             });
-            
-            console.log('🔧 Template Loader auto-initialized');
+
         } else if (attempts >= maxAttempts) {
             clearInterval(checkEditor);
             console.error('❌ Template Loader failed to initialize: editor or FileExplorer not found after maximum attempts');

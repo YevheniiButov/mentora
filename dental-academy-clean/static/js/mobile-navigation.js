@@ -17,8 +17,7 @@ class MobileNavigation {
         this.setupEventListeners();
         this.setupTouchGestures();
         this.isInitialized = true;
-        
-        console.log('📱 Мобильная навигация инициализирована');
+
     }
 
     setupElements() {
@@ -153,8 +152,7 @@ class MobileNavigation {
 
         // Анимация появления
         this.drawer.style.transform = 'translateX(0)';
-        
-        console.log('📱 Drawer открыт');
+
     }
 
     closeDrawer() {
@@ -168,8 +166,7 @@ class MobileNavigation {
 
         // Анимация скрытия
         this.drawer.style.transform = 'translateX(-100%)';
-        
-        console.log('📱 Drawer закрыт');
+
     }
 
     togglePathExpansion(button) {
@@ -200,8 +197,7 @@ class MobileNavigation {
     navigateToSubject(subjectId) {
         const currentLang = document.documentElement.lang || 'nl';
         const url = `/${currentLang}/learning-map/subject/${subjectId}`;
-        
-        console.log(`📱 Переход к предмету ${subjectId}: ${url}`);
+
         window.location.href = url;
     }
 

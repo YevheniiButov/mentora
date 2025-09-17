@@ -48,7 +48,7 @@ class ImageOptimizer {
             
             webpImg.onerror = () => {
                 // WebP не найден, оставляем оригинал
-                console.log(`WebP версия не найдена для ${currentSrc}`);
+
             };
             
             webpImg.src = webpSrc;

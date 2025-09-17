@@ -32,7 +32,7 @@ class VirtualPatientPlayer {
             if (response.ok) {
                 const data = await response.json();
                 this.attempt = data.attempt;
-                console.log('Попытка началась:', this.attempt);
+
             }
         } catch (error) {
             console.error('Ошибка при запуске попытки:', error);

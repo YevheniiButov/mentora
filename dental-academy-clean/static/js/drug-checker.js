@@ -8,8 +8,7 @@ function showDrugInteractionChecker(event) {
   
   // Если блок не найден, создаем его
   if (!interactiesBlock) {
-    console.log('⚠️ Блок interacties-checker-block не найден, создаем его...');
-    
+
     // Создаем блок
     interactiesBlock = document.createElement('div');
     interactiesBlock.id = 'interacties-checker-block';
@@ -55,7 +54,7 @@ function showDrugInteractionChecker(event) {
     const middleColumn = document.querySelector('.middle-column');
     if (middleColumn) {
       middleColumn.appendChild(interactiesBlock);
-      console.log('✅ Блок interacties-checker-block успешно создан и добавлен!');
+
     } else {
       console.error('❌ Не найден элемент .middle-column для добавления блока!');
       return;
@@ -63,8 +62,7 @@ function showDrugInteractionChecker(event) {
   }
   
   interactiesBlock.style.display = 'block';
-  console.log('✅ Показан Drug Interaction Checker');
-  
+
   // Плавная прокрутка к блоку
   interactiesBlock.scrollIntoView({ 
     behavior: 'smooth', 

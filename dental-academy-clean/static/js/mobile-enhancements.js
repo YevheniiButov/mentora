@@ -25,7 +25,7 @@ class MobileEnhancements {
     setupMobileMenu() {
         // Мобильное меню теперь инициализируется в base.html
         // Этот код отключен чтобы избежать конфликтов
-        console.log('📱 Mobile menu setup skipped - handled in base.html');
+
         return;
         
         /* ОТКЛЮЧЕННЫЙ КОД - КОНФЛИКТУЕТ С BASE.HTML
@@ -383,8 +383,6 @@ class BigInfoMobileEnhancements {
         const navButtons = document.querySelectorAll('.nav-button');
         
         if (navButtons.length === 0) return;
-
-        console.log('📱 Setting up BIG Info mobile navigation...');
 
         navButtons.forEach(button => {
             // Улучшенные touch interactions для мобильных устройств

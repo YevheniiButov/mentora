@@ -7,7 +7,7 @@ class DiagnosticTypeSelector {
     constructor() {
         this.selectedType = null;
         this.isLoading = false;
-        console.log('Debug - DiagnosticTypeSelector constructor called');
+
         this.init();
     }
 
@@ -50,8 +50,6 @@ class DiagnosticTypeSelector {
     handleTypeSelection(event) {
         const card = event.currentTarget;
         const type = card.dataset.type;
-        
-        console.log('Debug - handleTypeSelection called with type:', type);
 
         // Убираем выделение со всех карточек
         document.querySelectorAll('.diagnostic-type-card').forEach(c => {
@@ -61,8 +59,6 @@ class DiagnosticTypeSelector {
         // Выделяем выбранную карточку
         card.classList.add('selected');
         this.selectedType = type;
-        
-        console.log('Debug - selectedType set to:', this.selectedType);
 
         // Активируем кнопку
         this.updateStartButton();
@@ -116,8 +112,7 @@ class DiagnosticTypeSelector {
     }
 
     async sendStartRequest() {
-        console.log('Debug - sendStartRequest called');
-        
+
         // Получаем CSRF токен из мета-тега
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         
@@ -155,10 +150,7 @@ class DiagnosticTypeSelector {
 
     showActiveSessionModal(sessionInfo) {
         const isSameType = this.selectedType === sessionInfo.diagnostic_type;
-        console.log('Debug - selectedType:', this.selectedType);
-        console.log('Debug - sessionInfo.diagnostic_type:', sessionInfo.diagnostic_type);
-        console.log('Debug - isSameType:', isSameType);
-        
+
         const content = this.createActiveSessionContent(sessionInfo);
         const actions = [
             {
@@ -186,7 +178,7 @@ class DiagnosticTypeSelector {
         
         // Проверяем, есть ли выбранный тип и отличается ли он от текущей сессии
         if (!isSameType && this.selectedType) {
-            console.log('Debug - Adding "Начать выбранную диагностику" button');
+
             actions.unshift({
                 text: 'Начать выбранную диагностику',
                 className: 'modal-btn modal-btn-primary',
@@ -196,8 +188,7 @@ class DiagnosticTypeSelector {
                 }
             });
         } else {
-            console.log('Debug - NOT adding "Начать выбранную диагностику" button');
-            console.log('Debug - Reason: isSameType =', isSameType, 'selectedType =', this.selectedType);
+
         }
         
         showModal('Активная сессия', content, actions);

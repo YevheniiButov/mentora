@@ -986,10 +986,7 @@
                     const contentType = this.getAttribute('data-content-type');
                     const contentId = this.getAttribute('data-content-id');
                     
-                    if (contentType && contentId) {
-                        console.log('Button clicked:', contentType, contentId);
-                        
-                        // Сначала отмечаем как выполненное
+                    if (contentType && contentId) {// Сначала отмечаем как выполненное
                         markItemCompleted(contentId, contentType);
                         
                         // Затем переходим к контенту
@@ -1038,9 +1035,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    console.log('Item marked as completed');
-                } else {
+                if (data.success) {} else {
                     console.warn('Failed to mark item as completed:', data.message);
                 }
             })
@@ -1069,10 +1064,7 @@
                 default:
                     console.error('Unknown content type:', contentType);
                     return;
-            }
-            
-            console.log('Navigating to:', url);
-            window.location.href = url;
+            }window.location.href = url;
         }
     </script>
 

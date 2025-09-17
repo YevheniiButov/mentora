@@ -240,11 +240,7 @@
 
     <!-- Инициализация Bootstrap компонентов -->
     <script>
-        // Принудительное обновление кэша
-            console.log('Page loaded at:', new Date().toISOString());
-            console.log('🚀 Starting mobile menu initialization...');
-            
-        // Добавляем обработчик ошибок
+        // Принудительное обновление кэша// Добавляем обработчик ошибок
         window.addEventListener('error', function(e) {
             console.error('❌ JavaScript Error:', e.error);
             console.error('❌ Error message:', e.message);
@@ -252,19 +248,11 @@
             console.error('❌ Error line:', e.lineno);
         });
             
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM Content Loaded event fired');
-            console.log('🔧 Starting Bootstrap initialization...');
-            
-            // Инициализация всех выпадающих меню Bootstrap
+        document.addEventListener('DOMContentLoaded', function() {// Инициализация всех выпадающих меню Bootstrap
             try {
-                var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
-                console.log('📋 Found dropdown elements:', dropdownElementList.length);
-                var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
                     return new bootstrap.Dropdown(dropdownToggleEl);
-                });
-                console.log('✅ Bootstrap dropdowns initialized');
-            } catch (error) {
+                });} catch (error) {
                 console.error('❌ Bootstrap dropdown error:', error);
             }
             
@@ -278,47 +266,28 @@
                         dropdown.hide();
                     });
                 }
-            });
-            
-            console.log('🔧 Initializing user dropdown...');
-            
-            // Прямая инициализация меню профиля и языка
+            });// Прямая инициализация меню профиля и языка
             try {
                 var userDropdown = document.getElementById('userDropdown');
                 if (userDropdown) {
-                    var userDropdownInstance = new bootstrap.Dropdown(userDropdown);
-                    console.log('✅ User dropdown initialized');
-                } else {
-                    console.log('⚠️ User dropdown not found');
-                }
+                    var userDropdownInstance = new bootstrap.Dropdown(userDropdown);} else {}
             } catch (error) {
                 console.error('❌ User dropdown error:', error);
             }
             
             // НАДЕЖНОЕ решение мобильного меню с защитой от повторной инициализации
-            function initMobileMenu() {
-                console.log('🔧 Initializing reliable mobile menu...');
-                
-                const navbarToggler = document.querySelector('.navbar-toggler');
+            function initMobileMenu() {const navbarToggler = document.querySelector('.navbar-toggler');
                 const navbarCollapse = document.querySelector('.navbar-collapse');
                 
-                if (!navbarToggler || !navbarCollapse) {
-                    console.log('❌ Mobile menu elements not found');
-                    return;
+                if (!navbarToggler || !navbarCollapse) {return;
                 }
                 
                 // ЗАЩИТА ОТ ПОВТОРНОЙ ИНИЦИАЛИЗАЦИИ
-                if (navbarToggler.hasAttribute('data-mobile-menu-initialized')) {
-                    console.log('⚠️ Mobile menu already initialized, skipping...');
-                    return;
+                if (navbarToggler.hasAttribute('data-mobile-menu-initialized')) {return;
                 }
                 
                 // Помечаем как инициализированный
-                navbarToggler.setAttribute('data-mobile-menu-initialized', 'true');
-                
-                console.log('✅ Mobile menu elements found');
-                
-                // Проверяем, не инициализирован ли уже Bootstrap
+                navbarToggler.setAttribute('data-mobile-menu-initialized', 'true');// Проверяем, не инициализирован ли уже Bootstrap
                 let bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
                 if (!bsCollapse) {
                     bsCollapse = new bootstrap.Collapse(navbarCollapse, {
@@ -336,55 +305,32 @@
                 // Добавляем обработчик на toggle
                 newToggler.addEventListener('click', function(e) {
                     e.preventDefault();
-                    e.stopPropagation();
-                    
-                    console.log('🔘 Toggle clicked! Current state:', isMenuOpen);
-                    console.log('🔘 Event details:', {
-                        target: e.target,
-                        currentTarget: e.currentTarget,
-                        bubbles: e.bubbles,
-                        cancelable: e.cancelable
-                    });
-                    
-                    if (isMenuOpen) {
+                    e.stopPropagation();if (isMenuOpen) {
                         // Закрываем меню через Bootstrap
                         bsCollapse.hide();
                         newToggler.setAttribute('aria-expanded', 'false');
-                        isMenuOpen = false;
-                        console.log('📱 Menu closed');
-                    } else {
+                        isMenuOpen = false;} else {
                         // Открываем меню через Bootstrap
                         bsCollapse.show();
                         newToggler.setAttribute('aria-expanded', 'true');
-                        isMenuOpen = true;
-                        console.log('📱 Menu opened');
-                    }
+                        isMenuOpen = true;}
                 });
                 
                 // Слушаем события Bootstrap
                 navbarCollapse.addEventListener('shown.bs.collapse', function() {
-                    isMenuOpen = true;
-                    console.log('📱 Menu shown via Bootstrap');
-                });
+                    isMenuOpen = true;});
                 
                 navbarCollapse.addEventListener('hidden.bs.collapse', function() {
-                    isMenuOpen = false;
-                    console.log('📱 Menu hidden via Bootstrap');
-                });
+                    isMenuOpen = false;});
                 
                 // Обработчик для ссылок навигации
                 const navLinks = navbarCollapse.querySelectorAll('.nav-link');
                 navLinks.forEach(link => {
-                    link.addEventListener('click', function(e) {
-                        console.log('🔗 Nav link clicked:', this.href);
-                        
-                        // Закрываем меню
+                    link.addEventListener('click', function(e) {// Закрываем меню
                         if (isMenuOpen) {
                             bsCollapse.hide();
                             newToggler.setAttribute('aria-expanded', 'false');
-                            isMenuOpen = false;
-                            console.log('📱 Menu closed after link click');
-                        }
+                            isMenuOpen = false;}
                         
                         // НЕ блокируем переход
                         // e.preventDefault() убран!
@@ -398,40 +344,20 @@
                         if (isMenuOpen) {
                             bsCollapse.hide();
                             newToggler.setAttribute('aria-expanded', 'false');
-                            isMenuOpen = false;
-                            console.log('📱 Menu closed after outside click');
-                        }
+                            isMenuOpen = false;}
                     }
                 });
                 
                 // ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА И ПРИНУДИТЕЛЬНАЯ НАВИГАЦИЯ
                 const allNavLinks = navbarCollapse.querySelectorAll('a, .nav-link, [href]');
                 allNavLinks.forEach(link => {
-                    link.addEventListener('click', function(e) {
-                        console.log('🔗 Link clicked in menu:', {
-                            href: this.href,
-                            text: this.textContent.trim(),
-                            target: e.target,
-                            currentTarget: e.currentTarget
-                        });
-                        
-                        // Проверяем, что это действительно ссылка
-                        if (this.href && this.href !== '#' && !this.href.includes('javascript:')) {
-                            console.log('✅ Valid link, allowing navigation to:', this.href);
-                            
-                            // ПРИНУДИТЕЛЬНАЯ НАВИГАЦИЯ: Если обычная навигация не работает
-                            setTimeout(() => {
-                                console.log('🚀 Forcing navigation to:', this.href);
-                                window.location.href = this.href;
+                    link.addEventListener('click', function(e) {// Проверяем, что это действительно ссылка
+                        if (this.href && this.href !== '#' && !this.href.includes('javascript:')) {// ПРИНУДИТЕЛЬНАЯ НАВИГАЦИЯ: Если обычная навигация не работает
+                            setTimeout(() => {window.location.href = this.href;
                             }, 100);
-                        } else {
-                            console.log('⚠️ Invalid or empty link:', this.href);
-                        }
+                        } else {}
                     });
-                });
-                
-                console.log('✅ Reliable mobile menu initialized with Bootstrap and protection');
-            }
+                });}
             
             // Инициализируем сразу и с задержкой для защиты от конфликтов
             initMobileMenu();
@@ -444,9 +370,7 @@
             // Принудительная реинициализация каждые 30 секунд для защиты от поздних скриптов
             setInterval(() => {
                 const navbarToggler = document.querySelector('.navbar-toggler');
-                if (navbarToggler && !navbarToggler.hasAttribute('data-mobile-menu-initialized')) {
-                    console.log('🔄 Forcing mobile menu re-initialization after 30s');
-                    initMobileMenu();
+                if (navbarToggler && !navbarToggler.hasAttribute('data-mobile-menu-initialized')) {initMobileMenu();
                 }
             }, 30000);
             
@@ -458,9 +382,7 @@
             
             var guestDropdown = document.getElementById('guestDropdown');
             if (guestDropdown) {
-                var guestDropdownInstance = new bootstrap.Dropdown(guestDropdown);
-                console.log('Меню гостя инициализировано напрямую');
-            }
+                var guestDropdownInstance = new bootstrap.Dropdown(guestDropdown);}
         });
     </script>
 

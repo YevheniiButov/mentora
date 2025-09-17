@@ -294,17 +294,17 @@ class DiagnosticCore {
 
     saveProgress() {
         // Сохранение прогресса (реализация зависит от конкретной страницы)
-        console.log('Saving progress...');
+
     }
 
     nextQuestion() {
         // Переход к следующему вопросу (реализация зависит от конкретной страницы)
-        console.log('Next question...');
+
     }
 
     previousQuestion() {
         // Переход к предыдущему вопросу (реализация зависит от конкретной страницы)
-        console.log('Previous question...');
+
     }
 
     // ===== ANALYTICS FUNCTIONS =====
@@ -316,7 +316,7 @@ class DiagnosticCore {
         }
         
         // Локальное логирование
-        console.log('Analytics event:', eventName, data);
+
     }
 
     trackPageView(pageName) {
@@ -402,10 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Отслеживаем просмотр страницы
     const pageName = document.title || window.location.pathname;
     window.diagnosticCore.trackPageView(pageName);
-    
-    console.log('Diagnostic Core initialized');
-    console.log('Browser support:', checkBrowserSupport());
-    console.log('Device type:', getDeviceType());
+
 });
 
 // Экспорт для использования в других модулях

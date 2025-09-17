@@ -191,54 +191,32 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DigiD page loaded');
-    
-    // Основная кнопка логина
+document.addEventListener('DOMContentLoaded', function() {// Основная кнопка логина
     const loginButton = document.getElementById('digid-login-button');
     const demoLink = document.getElementById('digid-demo-link');
     
-    if (loginButton) {
-        console.log('✅ Login button found:', loginButton.href);
-        
-        loginButton.addEventListener('click', function(e) {
-            console.log('🔗 Login button clicked:', this.href);
-            
-            // Проверяем URL
+    if (loginButton) {loginButton.addEventListener('click', function(e) {// Проверяем URL
             if (this.href === window.location.href + '#' || this.href.endsWith('#')) {
                 e.preventDefault();
                 alert('⚠️ URL ERROR: DigiD route not found!\nCheck if digid.mock_login route exists.');
                 return false;
             }
             
-            // Если URL правильный, переходим
-            console.log('➡️ Navigating to:', this.href);
-            window.location.href = this.href;
+            // Если URL правильный, переходимwindow.location.href = this.href;
         });
         
         // Тест hover эффекта
-        loginButton.addEventListener('mouseenter', function() {
-            console.log('🖱️ Hover effect working');
-        });
+        loginButton.addEventListener('mouseenter', function() {});
     } else {
         console.error('❌ Login button not found!');
     }
     
-    if (demoLink) {
-        console.log('✅ Demo link found:', demoLink.href);
-        
-        demoLink.addEventListener('click', function(e) {
-            console.log('🔗 Demo link clicked:', this.href);
-            
-            // Проверяем URL
+    if (demoLink) {demoLink.addEventListener('click', function(e) {// Проверяем URL
             if (this.href === window.location.href + '#' || this.href.endsWith('#')) {
                 e.preventDefault();
                 alert('⚠️ URL ERROR: DigiD demo route not found!\nCheck if digid.demo route exists.');
                 return false;
-            }
-            
-            console.log('➡️ Opening demo in new tab:', this.href);
-        });
+            }});
     } else {
         console.error('❌ Demo link not found!');
     }
@@ -256,9 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.shiftKey && e.key === 'D') {
             debugMode = !debugMode;
-            document.body.classList.toggle('debug', debugMode);
-            console.log('🐛 Debug mode:', debugMode ? 'ON' : 'OFF');
-        }
+            document.body.classList.toggle('debug', debugMode);}
     });
 });
 </script>

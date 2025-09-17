@@ -774,14 +774,8 @@
 
 {% block scripts %}
 <script>
-// Диагностика JavaScript
-console.log('🔧 Learning Plan Script: Загружен');
-
-// Показываем отладочную информацию
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Learning Plan Script: DOM загружен');
-    
-    // Показываем отладочную панель
+// Диагностика JavaScript// Показываем отладочную информацию
+document.addEventListener('DOMContentLoaded', function() {// Показываем отладочную панель
     const debugInfo = document.getElementById('debug-info');
     if (debugInfo) {
         debugInfo.classList.add('show');
@@ -795,47 +789,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Проверяем наличие элементов
-    const cards = document.querySelectorAll('.stat-card, .plan-section');
-    console.log('🔧 Найдено карточек:', cards.length);
-    
-    // Анимация появления карточек
-    cards.forEach((card, index) => {
-        console.log(`🔧 Анимируем карточку ${index + 1}:`, card);
-        card.style.opacity = '0';
+    const cards = document.querySelectorAll('.stat-card, .plan-section');// Анимация появления карточек
+    cards.forEach((card, index) => {card.style.opacity = '0';
         card.style.transform = 'translateY(20px)';
         setTimeout(() => {
             card.style.transition = 'all 0.5s ease';
             card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-            console.log(`🔧 Карточка ${index + 1} анимирована`);
-        }, index * 100);
+            card.style.transform = 'translateY(0)';}, index * 100);
     });
     
     // Проверяем кнопки
-    const buttons = document.querySelectorAll('.btn-plan');
-    console.log('🔧 Найдено кнопок:', buttons.length);
-    
-    // Обновляем статус кнопок
+    const buttons = document.querySelectorAll('.btn-plan');// Обновляем статус кнопок
     const buttonsStatus = document.getElementById('buttons-status');
     if (buttonsStatus) {
         buttonsStatus.textContent = `Найдено: ${buttons.length}`;
         buttonsStatus.style.color = buttons.length > 0 ? '#28a745' : '#dc3545';
     }
     
-    buttons.forEach((button, index) => {
-        console.log(`🔧 Кнопка ${index + 1}:`, button.href, button.textContent.trim());
-        
-        // Принудительно устанавливаем стили
+    buttons.forEach((button, index) => {// Принудительно устанавливаем стили
         button.style.pointerEvents = 'auto';
         button.style.cursor = 'pointer';
         button.style.position = 'relative';
         button.style.zIndex = '10';
         
         // Добавляем обработчик клика для отладки
-        button.addEventListener('click', function(e) {
-            console.log(`🔧 Клик по кнопке ${index + 1}:`, this.href);
-            
-            // Показываем уведомление о клике
+        button.addEventListener('click', function(e) {// Показываем уведомление о клике
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
@@ -873,56 +851,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Проверяем, что все скрипты загружены
-    console.log('🔧 Bootstrap доступен:', typeof bootstrap !== 'undefined');
-    console.log('🔧 jQuery доступен:', typeof $ !== 'undefined');
-    console.log('🔧 AppConfig доступен:', typeof window.AppConfig !== 'undefined');
-});
+    // Проверяем, что все скрипты загружены});
 
 // Дополнительная проверка после полной загрузки страницы
-window.addEventListener('load', function() {
-    console.log('🔧 Learning Plan Script: Страница полностью загружена');
-    
-    // Проверяем стили
+window.addEventListener('load', function() {// Проверяем стили
     const testElement = document.querySelector('.stat-card');
     if (testElement) {
-        const computedStyle = window.getComputedStyle(testElement);
-        console.log('🔧 Стили карточки:', {
-            opacity: computedStyle.opacity,
-            transform: computedStyle.transform,
-            transition: computedStyle.transition
-        });
-    }
+        const computedStyle = window.getComputedStyle(testElement);}
 });
 
 // Глобальная функция для тестирования
-window.testLearningPlan = function() {
-    console.log('🔧 Тестирование Learning Plan...');
-    
-    // Проверяем все кнопки
+window.testLearningPlan = function() {// Проверяем все кнопки
     const buttons = document.querySelectorAll('.btn-plan');
-    buttons.forEach((button, index) => {
-        console.log(`Кнопка ${index + 1}:`, {
-            href: button.href,
-            text: button.textContent.trim(),
-            pointerEvents: window.getComputedStyle(button).pointerEvents,
-            cursor: window.getComputedStyle(button).cursor,
-            zIndex: window.getComputedStyle(button).zIndex
-        });
-    });
+    buttons.forEach((button, index) => {});
     
     // Симулируем клик по первой кнопке
-    if (buttons.length > 0) {
-        console.log('🔧 Симулируем клик по первой кнопке...');
-        buttons[0].click();
+    if (buttons.length > 0) {buttons[0].click();
     }
 };
 
 // Функция для переключения accordion недель
-function toggleWeek(weekNumber) {
-    console.log(`🔧 Переключаем неделю ${weekNumber}`);
-    
-    const content = document.getElementById(`week-content-${weekNumber}`);
+function toggleWeek(weekNumber) {const content = document.getElementById(`week-content-${weekNumber}`);
     const chevron = document.getElementById(`chevron-${weekNumber}`);
     
     if (!content || !chevron) {
@@ -936,42 +885,20 @@ function toggleWeek(weekNumber) {
     if (isExpanded) {
         // Сворачиваем
         content.classList.remove('expanded');
-        chevron.style.transform = 'rotate(0deg)';
-        console.log(`🔧 Неделя ${weekNumber} свернута`);
-    } else {
+        chevron.style.transform = 'rotate(0deg)';} else {
         // Разворачиваем
         content.classList.add('expanded');
-        chevron.style.transform = 'rotate(180deg)';
-        console.log(`🔧 Неделя ${weekNumber} развернута`);
-    }
+        chevron.style.transform = 'rotate(180deg)';}
 }
 
 // Инициализация accordion при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Инициализация accordion...');
-    
-    // Проверяем наличие элементов
-    const accordionContainer = document.querySelector('.schedule-accordion');
-    console.log('🔧 Accordion контейнер:', accordionContainer);
-    
-    const accordionHeaders = document.querySelectorAll('.schedule-accordion-header');
-    console.log(`🔧 Найдено accordion заголовков: ${accordionHeaders.length}`);
-    
-    // Проверяем каждый заголовок
+document.addEventListener('DOMContentLoaded', function() {// Проверяем наличие элементов
+    const accordionContainer = document.querySelector('.schedule-accordion');const accordionHeaders = document.querySelectorAll('.schedule-accordion-header');// Проверяем каждый заголовок
     accordionHeaders.forEach((header, index) => {
-        const weekNumber = header.getAttribute('data-week');
-        console.log(`🔧 Заголовок ${index + 1}: неделя ${weekNumber}`);
-        
-        // Проверяем наличие контента и chevron
+        const weekNumber = header.getAttribute('data-week');// Проверяем наличие контента и chevron
         const content = document.getElementById(`week-content-${weekNumber}`);
-        const chevron = document.getElementById(`chevron-${weekNumber}`);
-        console.log(`🔧   Content:`, content);
-        console.log(`🔧   Chevron:`, chevron);
-        
-        // Добавляем обработчик клика
-        header.addEventListener('click', function(e) {
-            console.log(`🔧 Клик по заголовку недели ${weekNumber}`);
-            e.preventDefault();
+        const chevron = document.getElementById(`chevron-${weekNumber}`);// Добавляем обработчик клика
+        header.addEventListener('click', function(e) {e.preventDefault();
             e.stopPropagation();
             
             if (weekNumber) {
@@ -986,9 +913,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // По умолчанию разворачиваем первую неделю
     if (accordionHeaders.length > 0) {
-        const firstWeekNumber = accordionHeaders[0].getAttribute('data-week');
-        console.log(`🔧 Разворачиваем первую неделю: ${firstWeekNumber}`);
-        if (firstWeekNumber) {
+        const firstWeekNumber = accordionHeaders[0].getAttribute('data-week');if (firstWeekNumber) {
             setTimeout(() => {
                 toggleWeek(parseInt(firstWeekNumber));
             }, 100);
@@ -996,9 +921,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Добавляем глобальную функцию для тестирования
-    window.testAccordion = function() {
-        console.log('🔧 Тестирование accordion...');
-        if (accordionHeaders.length > 0) {
+    window.testAccordion = function() {if (accordionHeaders.length > 0) {
             const firstWeekNumber = accordionHeaders[0].getAttribute('data-week');
             toggleWeek(parseInt(firstWeekNumber));
         }

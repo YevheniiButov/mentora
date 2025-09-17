@@ -247,8 +247,7 @@ class NotificationSystem {
             }
         });
     }
-    
-    
+
     // ========================================
     // АВТОМАТИЧЕСКИЙ ПОКАЗ
     // ========================================
@@ -260,30 +259,20 @@ class NotificationSystem {
         const currentPage = window.location.pathname;
         const today = new Date().toDateString();
         
-        console.log('🔍 checkAutoShow:', {
-            currentPage,
-            lastShown,
-            notificationDismissed,
-            today,
-            shouldShow: !notificationDismissed && lastShown !== today
-        });
-        
-        // Показываем только на главной странице
+        // // Показываем только на главной странице
         if (currentPage === '/' || currentPage === '/index' || currentPage === '') {
             // Если уведомление не было отклонено и не показывалось сегодня
             if (!notificationDismissed && lastShown !== today) {
-                console.log('✅ Показываем уведомление через', this.autoShowDelay + 'ms');
+
                 setTimeout(() => {
                     this.showPreRegistration();
                     localStorage.setItem('mentora_notification_last_shown', today);
                 }, this.autoShowDelay);
             } else {
-                console.log('❌ Уведомление не показываем:', {
-                    reason: notificationDismissed ? 'отклонено' : 'уже показано сегодня'
-                });
+
             }
         } else {
-            console.log('❌ Не главная страница:', currentPage);
+
         }
     }
     
@@ -374,18 +363,12 @@ class NotificationSystem {
     
     // Для тестирования в консоли
     test() {
-        console.log('🎯 Testing Mentora Notifications:');
-        console.log('mentorNotifications.showPreRegistration() - показать предварительную регистрацию');
-        console.log('mentorNotifications.forceShow() - принудительно показать уведомление');
-        console.log('mentorNotifications.getAnalytics() - получить аналитику');
-        console.log('mentorNotifications.resetAnalytics() - сбросить аналитику');
-        console.log('mentorNotifications.currentLang - текущий язык:', this.currentLang);
-        console.log('mentorNotifications.debug() - отладочная информация');
+
     }
     
     // Принудительно показать уведомление (для тестирования)
     forceShow() {
-        console.log('🔧 Принудительный показ уведомления...');
+
         this.showPreRegistration();
     }
     
@@ -395,15 +378,7 @@ class NotificationSystem {
         const notificationDismissed = localStorage.getItem('mentora_notification_dismissed');
         const currentPage = window.location.pathname;
         const today = new Date().toDateString();
-        
-        console.log('🔍 Отладочная информация:');
-        console.log('- Текущая страница:', currentPage);
-        console.log('- Последний показ:', lastShown);
-        console.log('- Отклонено:', notificationDismissed);
-        console.log('- Сегодня:', today);
-        console.log('- Показывать?', !notificationDismissed && lastShown !== today);
-        console.log('- Язык:', this.currentLang);
-        console.log('- Задержка:', this.autoShowDelay + 'ms');
+
     }
 }
 
@@ -414,9 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.mentorNotifications = new NotificationSystem();
         
         // Всегда показываем в консоли что система загружена
-        console.log('🎯 Mentora Notifications loaded! Type mentorNotifications.test() for help');
-        console.log('🔧 Available functions:', Object.getOwnPropertyNames(window.mentorNotifications));
-        
+
     } catch (error) {
         console.error('❌ Error loading Mentora Notifications:', error);
     }

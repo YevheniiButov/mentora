@@ -28,8 +28,7 @@ class GlassEffects {
         this.initGlassInteractions();
         this.initThemeWatcher();
         
-        // console.log('🌈 Glass Effects инициализированы');
-    }
+        // }
 
     initThemeWatcher() {
         // Слушаем изменения темы
@@ -199,15 +198,13 @@ class GlassEffects {
     }
 
     activateGlassEffects() {
-        // console.log('🌈 Активированы эффекты стекла');
-        if (this.header) {
+        // if (this.header) {
             this.header.classList.add('glass-active');
         }
     }
 
     deactivateGlassEffects() {
-        // console.log('🌈 Деактивированы эффекты стекла');
-        if (this.header) {
+        // if (this.header) {
             this.header.classList.remove('glass-active', 'scrolled');
             // Сбрасываем CSS переменные
             this.header.style.removeProperty('--dynamic-blur');

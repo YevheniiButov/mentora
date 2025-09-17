@@ -88,15 +88,11 @@
             modalTitle.textContent = title;
             modalBody.innerHTML = content;
             
-            modalFooter.innerHTML = '';
-            console.log('Debug - showModal buttons:', buttons);
-            buttons.forEach((button, index) => {
+            modalFooter.innerHTML = '';buttons.forEach((button, index) => {
                 const btn = document.createElement('button');
                 btn.className = button.className || button.class || 'btn-secondary';
                 btn.textContent = button.text;
-                btn.onclick = button.onclick;
-                console.log(`Debug - Creating button ${index}:`, button.text, 'with class:', btn.className);
-                modalFooter.appendChild(btn);
+                btn.onclick = button.onclick;modalFooter.appendChild(btn);
             });
 
             modal.style.display = 'flex';

@@ -424,27 +424,7 @@ function toggleDebugData() {
     debugData.style.display = debugData.style.display === 'none' ? 'block' : 'none';
 }
 // Функция для диагностики состояния редактора
-function diagnosticCheck() {
-    console.log("=== ДИАГНОСТИКА РЕДАКТОРА ===");
-    console.log("scenarioData доступен:", typeof scenarioData !== 'undefined');
-    if (typeof scenarioData !== 'undefined') {
-        console.log("Текущий язык:", scenarioData.current_language);
-        console.log("Доступные языки:", scenarioData.available_languages);
-        console.log("Узлы диалога:", scenarioData.dialogue_nodes?.length || 0);
-        console.log("Информация о пациенте:", scenarioData.patient_info);
-        console.log("Начальное состояние:", scenarioData.initial_state);
-        // Дополнительная диагностика для новых полей, если они уже в scenarioData
-        console.log("Клиническая фаза (пример первого узла):", scenarioData.dialogue_nodes?.[0]?.clinical_phase);
-        console.log("Доступные инструменты (пример первого узла):", scenarioData.dialogue_nodes?.[0]?.available_tools);
-    }
-    
-    console.log("Обработчики событий:");
-    console.log("- Кнопка добавления узла:", document.getElementById('add-node-btn'));
-    console.log("- Кнопка сохранения:", document.getElementById('save-scenario-btn'));
-    console.log("- Выбор узла:", document.querySelectorAll('.node-item').length);
-    
-    console.log("=== КОНЕЦ ДИАГНОСТИКИ ===");
-}
+function diagnosticCheck() {if (typeof scenarioData !== 'undefined') {// Дополнительная диагностика для новых полей, если они уже в scenarioData}}
 
 // Выполняем диагностику после загрузки страницы
 window.addEventListener('load', function() {
@@ -1009,18 +989,14 @@ function initializeEditor() {
     try {
         initializeScenarioData();
         setupEventHandlers();
-        loadNodeData(currentNodeId); // Загрузка начального ('initial') или первого узла
-        console.log('Редактор успешно инициализирован');
-    } catch (e) {
+        loadNodeData(currentNodeId); // Загрузка начального ('initial') или первого узла} catch (e) {
         console.error('Ошибка при инициализации редактора:', e);
         alert('Ошибка при инициализации редактора. Проверьте консоль для деталей.');
     }
 }
 
 // Инициализация данных сценария
-function initializeScenarioData() {
-    console.log('Инициализация данных сценария');
-    scenarioData = {
+function initializeScenarioData() {scenarioData = {
         patient_info: {}, // Общая информация о пациенте (возраст, пол, изображение)
         initial_state: {}, // Начальное состояние (заявление пациента, эмоция, заметки)
         dialogue_nodes: [], // Массив узлов диалога
@@ -1099,16 +1075,7 @@ function initializeScenarioData() {
     
     // Обновление UI на основе загруженных данных (если они есть)
     // Например, document.getElementById('patient-name').value = scenarioData.patient_info.name || '';
-    // ... и так далее для всех полей ...
-
-    console.log('Данные сценария загружены/инициализированы:', { 
-        'Узлов диалога': scenarioData.dialogue_nodes.length,
-        'Информация о пациенте': scenarioData.patient_info,
-        'Начальное состояние': scenarioData.initial_state,
-        'Переводы': Object.keys(scenarioData.translations).length > 0,
-        'Язык по умолчанию': scenarioData.default_language
-    });
-    // Обновление UI элементов, которые зависят от scenarioData
+    // ... и так далее для всех полей ...// Обновление UI элементов, которые зависят от scenarioData
     updatePatientInfoUI();
     updateInitialStateUI();
     renderNodeList();
@@ -1161,10 +1128,7 @@ function renderNodeList() {
 
 
 // Настройка обработчиков событий
-function setupEventHandlers() {
-    console.log('Настройка обработчиков событий');
-    
-    document.querySelectorAll('#editorTabs .nav-link').forEach(tab => {
+function setupEventHandlers() {document.querySelectorAll('#editorTabs .nav-link').forEach(tab => {
         tab.addEventListener('click', function() {
             // Возможно, сохранять данные текущей активной вкладки перед переключением
             // saveCurrentNodeData(); // Если активна вкладка узла
@@ -1269,10 +1233,7 @@ function updatePatientDataFromUI() {
 
 
 // Выбор узла
-function selectNode(nodeId) {
-    console.log('Выбор узла:', nodeId);
-    
-    if (currentNodeId !== nodeId) { // Только если узел действительно меняется
+function selectNode(nodeId) {if (currentNodeId !== nodeId) { // Только если узел действительно меняется
       saveCurrentNodeData(); // Сохраняем данные предыдущего узла
     }
     
@@ -1302,9 +1263,7 @@ function selectNode(nodeId) {
 }
 
 // Загрузка данных узла
-function loadNodeData(nodeId) {
-    console.log('Загрузка данных узла:', nodeId);
-    let nodeData;
+function loadNodeData(nodeId) {let nodeData;
     const enhancedNodeEditorDiv = document.querySelector('.enhanced-node-editor');
 
     if (nodeId === 'initial') {
@@ -1671,9 +1630,7 @@ function updatePreview(nodeData) {
 }
 
 // Сохранение данных текущего узла (обновлено для новых полей)
-function saveCurrentNodeData() {
-    console.log('Сохранение данных узла:', currentNodeId);
-    if (!currentNodeId) return; // Ничего не сохранять, если узел не выбран
+function saveCurrentNodeData() {if (!currentNodeId) return; // Ничего не сохранять, если узел не выбран
 
     const statement = document.getElementById('node-statement').value;
     const emotion = document.getElementById('node-emotion').value;
@@ -1770,9 +1727,7 @@ function savePatientInfo() {
         scenarioData.initial_state.patient_statement = document.getElementById('initial-statement').value;
         scenarioData.initial_state.patient_emotion = document.getElementById('initial-emotion').value;
         scenarioData.initial_state.notes = document.getElementById('initial-notes').value;
-    }
-    console.log("Patient info saved for lang", currentEditLang, scenarioData.translations[currentEditLang]);
-}
+    }}
 
 // Сохранение результатов (из вкладки "Результаты")
 function saveOutcomes() {
@@ -1792,9 +1747,7 @@ function saveOutcomes() {
     // Обновляем scenarioData.outcomes для текущего отображения, если язык совпадает
      if (currentEditLang === ({{ scenario_data.current_language|tojson|safe }} || scenarioData.default_language)) {
         scenarioData.outcomes = JSON.parse(JSON.stringify(outcomesForLang)); // Глубокое копирование
-    }
-    console.log("Outcomes saved for lang", currentEditLang, outcomesForLang);
-}
+    }}
 
 // Валидация сценария (из фрагмента 2)
 function validateScenario() {
@@ -1855,9 +1808,7 @@ function validateScenario() {
 }
 
 // Сохранение сценария (обновлено для включения новых данных и валидации)
-const originalSaveFunction = function() { // Замыкаем оригинальную логику сохранения
-    console.log('Оригинальная логика сохранения запущена');
-    saveCurrentNodeData(); // Убедимся, что данные текущего узла сохранены в scenarioData
+const originalSaveFunction = function() { // Замыкаем оригинальную логику сохраненияsaveCurrentNodeData(); // Убедимся, что данные текущего узла сохранены в scenarioData
     savePatientInfo();     // Убедимся, что данные пациента сохранены в scenarioData.translations и scenarioData.patient_info
     saveOutcomes();        // Убедимся, что результаты сохранены в scenarioData.translations и scenarioData.outcomes
 
@@ -1928,11 +1879,7 @@ const originalSaveFunction = function() { // Замыкаем оригиналь
             default: defaultLanguage,
             translations: scenarioData.translations // Включает все языковые версии patient_info (имя, история), initial_state, dialogue_nodes, outcomes
         })
-    };
-    
-    console.log('Отправляемые данные на сервер:', dataToSave);
-
-    fetch('/{{ lang }}/admin/api/update-scenario/{{ scenario.id }}', {
+    };fetch('/{{ lang }}/admin/api/update-scenario/{{ scenario.id }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1955,9 +1902,7 @@ const originalSaveFunction = function() { // Замыкаем оригиналь
 };
 
 // Переопределяем saveScenario для добавления валидации
-saveScenario = function() {
-    console.log('Запуск saveScenario с валидацией');
-    if (validateScenario()) {
+saveScenario = function() {if (validateScenario()) {
         originalSaveFunction();
         } else {
             if (confirm('Обнаружены проблемы в сценарии. Все равно продолжить сохранение? Некоторые данные могут быть некорректны или отсутствовать.')) {

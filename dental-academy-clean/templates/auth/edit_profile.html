@@ -667,18 +667,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Tab navigation
     const tabButtons = document.querySelectorAll('.profile-tabs .tab-btn');
-    const sections = document.querySelectorAll('.profile-content .profile-section');
-    
-    console.log('Found tab buttons:', tabButtons.length);
-    console.log('Found sections:', sections.length);
-    
-    tabButtons.forEach(button => {
+    const sections = document.querySelectorAll('.profile-content .profile-section');tabButtons.forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
-            const targetTab = this.dataset.tab;
-            console.log('Tab clicked:', targetTab);
-            
-            // Update active tab
+            const targetTab = this.dataset.tab;// Update active tab
             tabButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             
@@ -686,9 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sections.forEach(section => {
                 section.classList.remove('active');
                 if (section.id === targetTab) {
-                    section.classList.add('active');
-                    console.log('Activated section:', section.id);
-                }
+                    section.classList.add('active');}
             });
         });
     });

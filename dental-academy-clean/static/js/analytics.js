@@ -177,7 +177,7 @@ class AnalyticsTracker {
         // Check if we're in development mode or if analytics endpoint is available
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             // Skip analytics in development mode
-            console.log('Analytics skipped in development mode');
+
             return;
         }
         
@@ -271,8 +271,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Export for use in other scripts
 window.AnalyticsTracker = AnalyticsTracker;
-
-
-
-
 
