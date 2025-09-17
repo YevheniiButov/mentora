@@ -523,7 +523,7 @@ def register():
         files = request.files
         
         # Validate reCAPTCHA (only if enabled and configured)
-        recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
+        recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', False)  # Временно отключено
         recaptcha_secret = current_app.config.get('RECAPTCHA_PRIVATE_KEY')
 
         if recaptcha_enabled and recaptcha_secret and recaptcha_secret.strip():
