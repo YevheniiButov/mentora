@@ -1,61 +1,13 @@
 services:
   - type: web
-    name: mentora
+    name: mentora-web
     env: python
-    plan: free
-    runtime: python-3.12.7
-    buildCommand: |
-  echo "🚀 SAFE DEPLOY: Production deployment - $(date)" &&
-  echo "🐍 Python version: $(python --version)" &&
-  echo "📦 Installing dependencies..." &&
-  pip install --no-cache-dir -r requirements.txt &&
-  echo "✅ Dependencies installed successfully" &&
-  echo "🔍 Checking database before deploy..." &&
-  python check_production_database.py &&
-  python scripts/safe_deploy.py &&
-  echo "🔍 Checking database after deploy..." &&
-  python check_production_database.py &&
-  echo "Safe production deploy completed" &&
-  echo "✅ SAFE DEPLOY: Production updated - $(date)"
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.7
+        value: 3.11.0
       - key: FLASK_ENV
         value: production
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: mentora-db
-          property: connectionString
-      - key: DIGID_MOCK_MODE
-        value: "true"
-      - key: DIGID_ENABLED
-        value: "true"
       - key: FLASK_DEBUG
-        value: "false"
-      - key: MAIL_SUPPRESS_SEND
-        value: "false"
-      - key: MAIL_SERVER
-        value: "smtp-relay.brevo.com"
-      - key: MAIL_PORT
-        value: "587"
-      - key: MAIL_USE_TLS
-        value: "true"
-      - key: MAIL_USE_SSL
-        value: "false"
-      - key: MAIL_USERNAME
-        value: "96d92f002@smtp-brevo.com"
-      - key: MAIL_PASSWORD
-        value: "AdHL3pP0rkRt1S8N"
-      - key: MAIL_DEFAULT_SENDER
-        value: "Mentora <noreply@mentora.com.in>"
-      - key: EMAIL_CONFIRMATION_SALT
-        value: "mentora-production-salt-2025"
-
-databases:
-  - name: mentora-db
-    databaseName: mentora
-    user: mentora_user
-    plan: free
+        value: false
