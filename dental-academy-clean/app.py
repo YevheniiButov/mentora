@@ -733,6 +733,32 @@ def create_topics():
 
 logger.info("✅ Create topics command registered")
 
+# Force recreate topics command
+@app.cli.command()
+def recreate_topics():
+    """Принудительно пересоздать темы сообщества"""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    script_path = Path(__file__).parent / 'scripts' / 'recreate_production_topics.py'
+
+    if not script_path.exists():
+        print(f"❌ Script not found: {script_path}")
+        return
+
+    try:
+        result = subprocess.run([sys.executable, str(script_path)], 
+                              capture_output=True, text=True, check=True)
+        print(result.stdout)
+        print("✅ Пересоздание тем завершено успешно!")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Ошибка при пересоздании тем: {e}")
+        print(f"STDOUT: {e.stdout}")
+        print(f"STDERR: {e.stderr}")
+
+logger.info("✅ Recreate topics command registered")
+
 # Force load production data command
 @app.cli.command()
 def force_load_data():
