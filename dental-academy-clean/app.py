@@ -41,7 +41,8 @@ from utils.serializers import setup_json_serialization
 
 import os
 template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-app = Flask(__name__, template_folder=template_dir)
+static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 setup_json_serialization(app)
 
 # Configure logging
