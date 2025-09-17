@@ -263,12 +263,33 @@ def from_json_filter(value):
         return None
 
 # ========================================
+# DOMAIN ROUTING
+# ========================================
+
+@app.before_request
+def route_by_domain():
+    host = request.host.lower()
+    
+    # Для mentora.com.in - показываем только главную страницу
+    if 'mentora.com.in' in host:
+        if request.path != '/':
+            # Все остальные пути редиректим на главную
+            return redirect('/')
+
+# ========================================
 # MAIN ROUTES (always available)
 # ========================================
 
 @app.route('/')
 @app.route('/<string:lang>/')
 def index(lang='nl'):
+    host = request.host.lower()
+    
+    # Для mentora.com.in показываем космический дизайн
+    if 'mentora.com.in' in host:
+        return render_template('mentora_landing.html')
+    
+    # Для bigmentor.nl показываем обычную главную
     # Validate language
     if lang not in SUPPORTED_LANGUAGES:
         lang = DEFAULT_LANGUAGE
