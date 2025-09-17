@@ -759,6 +759,34 @@ def recreate_topics():
 
 logger.info("✅ Recreate topics command registered")
 
+# Web endpoint for recreating topics (for production use)
+@app.route('/admin/recreate-topics', methods=['GET', 'POST'])
+def web_recreate_topics():
+    """Веб-эндпоинт для пересоздания тем (для продакшена)"""
+    if request.method == 'GET':
+        return render_template('admin/recreate_topics.html')
+    
+    try:
+        # Проверяем, что пользователь админ (если нужно)
+        # if not current_user.is_authenticated or not current_user.is_admin:
+        #     return jsonify({'error': 'Unauthorized'}), 403
+        
+        from scripts.recreate_production_topics import recreate_production_topics
+        recreate_production_topics()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Topics recreated successfully!'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+logger.info("✅ Web recreate topics endpoint registered")
+
 # Force load production data command
 @app.cli.command()
 def force_load_data():
