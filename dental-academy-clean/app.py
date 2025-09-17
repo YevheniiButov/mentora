@@ -640,8 +640,12 @@ except ImportError as e:
 @app.cli.command()
 def calibrate_irt():
     """Калибровать IRT параметры для всех вопросов"""
-    from scripts.calibrate_irt_parameters import calibrate_all_questions
-    calibrate_all_questions()
+    try:
+        from scripts.calibrate_irt_parameters import calibrate_all_questions
+        calibrate_all_questions()
+        logger.info("✅ IRT calibration completed")
+    except ImportError:
+        logger.warning("⚠️ IRT calibration script not found, skipping...")
 
 logger.info("✅ IRT calibration command registered")
 
