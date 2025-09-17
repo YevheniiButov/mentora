@@ -525,12 +525,14 @@ def register():
         # Validate reCAPTCHA (only if enabled and configured)
         recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
         recaptcha_secret = current_app.config.get('RECAPTCHA_PRIVATE_KEY')
-        
+
         if recaptcha_enabled and recaptcha_secret and recaptcha_secret.strip():
             recaptcha_response = data.get('g-recaptcha-response')
             if not recaptcha_response or not verify_recaptcha(recaptcha_response):
                 print("=== reCAPTCHA VALIDATION FAILED ===")
                 return jsonify({'success': False, 'error': 'Please complete the reCAPTCHA verification'}), 400
+            else:
+                print("=== reCAPTCHA VALIDATION PASSED ===")
         else:
             print("=== reCAPTCHA DISABLED OR NOT CONFIGURED - SKIPPING VALIDATION ===")
         

@@ -995,8 +995,12 @@ function initializeNationalitySearch() {
     }
 }
 
-// reCAPTCHA validation - DISABLED
+// reCAPTCHA validation
 function validateRecaptcha() {
-    // reCAPTCHA полностью отключена
+    const recaptchaResponse = grecaptcha.getResponse();
+    if (!recaptchaResponse) {
+        showFieldError('g-recaptcha-response', 'Please complete the reCAPTCHA verification');
+        return false;
+    }
     return true;
 }
