@@ -179,6 +179,23 @@
             transform: scale(1.05);
         }
 
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .logo-accent {
+            background: linear-gradient(45deg, #00d4ff, #66ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.7));
+        }
+
         .divider {
             height: 3px;
             background: linear-gradient(90deg, transparent, #00d4ff, #66ccff, #00d4ff, transparent);
@@ -339,7 +356,8 @@
     
     <div class="container">
         <div class="logo-container">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Logo" class="logo-image">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Logo" class="logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <h1 class="logo" style="display: none;">MENT<span class="logo-accent">O</span>RA</h1>
         </div>
         
         <div class="divider"></div>
