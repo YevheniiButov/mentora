@@ -997,7 +997,15 @@ function initializeNationalitySearch() {
 
 // reCAPTCHA validation
 function validateRecaptcha() {
+    // Проверяем есть ли grecaptcha объект
+    if (typeof grecaptcha === 'undefined') {
+        console.log('reCAPTCHA not loaded, skipping validation');
+        return true;
+    }
+    
     const recaptchaResponse = grecaptcha.getResponse();
+    console.log('reCAPTCHA response:', recaptchaResponse ? 'present' : 'missing');
+    
     if (!recaptchaResponse) {
         showFieldError('g-recaptcha-response', 'Please complete the reCAPTCHA verification');
         return false;

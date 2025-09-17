@@ -523,14 +523,19 @@ def register():
         files = request.files
         
         # Validate reCAPTCHA (only if enabled and configured)
-        recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', False)  # Временно отключено
+        recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
         recaptcha_secret = current_app.config.get('RECAPTCHA_PRIVATE_KEY')
 
         if recaptcha_enabled and recaptcha_secret and recaptcha_secret.strip():
             recaptcha_response = data.get('g-recaptcha-response')
-            if not recaptcha_response or not verify_recaptcha(recaptcha_response):
-                print("=== reCAPTCHA VALIDATION FAILED ===")
+            print(f"=== reCAPTCHA RESPONSE: {recaptcha_response[:20] if recaptcha_response else 'None'}... ===")
+            
+            if not recaptcha_response:
+                print("=== reCAPTCHA VALIDATION FAILED - NO RESPONSE ===")
                 return jsonify({'success': False, 'error': 'Please complete the reCAPTCHA verification'}), 400
+            elif not verify_recaptcha(recaptcha_response):
+                print("=== reCAPTCHA VALIDATION FAILED - INVALID RESPONSE ===")
+                return jsonify({'success': False, 'error': 'reCAPTCHA verification failed. Please try again.'}), 400
             else:
                 print("=== reCAPTCHA VALIDATION PASSED ===")
         else:
