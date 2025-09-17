@@ -15,7 +15,7 @@ def send_email_confirmation(user, token):
         print(f"=== EMAIL CONFIRMATION START for {user.email} ===")
         
         # Generate confirmation URL
-        base_url = current_app.config.get('BASE_URL', 'https://mentora.com.in')
+        base_url = current_app.config.get('BASE_URL', 'https://bigmentor.nl')
         confirmation_url = f"{base_url}/auth/confirm-email/{token}"
         
         print(f"=== CONFIRMATION_URL: {confirmation_url} ===")
@@ -144,8 +144,8 @@ def get_confirmation_email_html(user, confirmation_url):
                 
                 <p style="color: #4a5568; font-size: 14px; margin: 0;">
                     <strong>Mentora</strong><br>
-                    Email: <a href="mailto:support@mentora.com.in" style="color: #3182ce;">support@mentora.com.in</a><br>
-                    Website: <a href="https://mentora.com.in" style="color: #3182ce;">mentora.com.in</a>
+                    Email: <a href="mailto:info@bigmentor.nl" style="color: #3182ce;">info@bigmentor.nl</a><br>
+                    Website: <a href="https://bigmentor.nl" style="color: #3182ce;">bigmentor.nl</a>
                 </p>
                 
                 <p style="color: #a0aec0; font-size: 12px; margin: 20px 0 0 0;">
@@ -177,8 +177,8 @@ If you did not register with Mentora, please ignore this email.
 Best regards,
 Mentora Team
 
-Email: support@mentora.com.in
-Website: https://mentora.com.in
+Email: info@bigmentor.nl
+Website: https://bigmentor.nl
 
 © 2024 Mentora. All rights reserved.
     """
@@ -189,7 +189,7 @@ def send_password_reset_email(user, token):
         print(f"=== PASSWORD RESET START for {user.email} ===")
         
         # Generate reset URL
-        base_url = current_app.config.get('BASE_URL', 'https://mentora.com.in')
+        base_url = current_app.config.get('BASE_URL', 'https://bigmentor.nl')
         reset_url = f"{base_url}/auth/reset-password/{token}"
         
         print(f"=== RESET_URL: {reset_url} ===")
@@ -306,8 +306,8 @@ def get_password_reset_html(user, reset_url):
                 
                 <p style="color: #4a5568; font-size: 14px; margin: 0;">
                     <strong>Mentora</strong><br>
-                    Email: <a href="mailto:support@mentora.com.in" style="color: #3182ce;">support@mentora.com.in</a><br>
-                    Website: <a href="https://mentora.com.in" style="color: #3182ce;">mentora.com.in</a>
+                    Email: <a href="mailto:info@bigmentor.nl" style="color: #3182ce;">info@bigmentor.nl</a><br>
+                    Website: <a href="https://bigmentor.nl" style="color: #3182ce;">bigmentor.nl</a>
                 </p>
             </div>
         </div>
@@ -335,8 +335,8 @@ If you did not request a password reset, please ignore this email.
 Best regards,
 Mentora Team
 
-Email: support@mentora.com.in
-Website: https://mentora.com.in
+Email: info@bigmentor.nl
+Website: https://bigmentor.nl
     """
 
 def send_welcome_email(user):
@@ -368,7 +368,7 @@ def send_welcome_email(user):
                 <p>Congratulations! You have successfully completed your pre-registration for Mentora. We will notify you when the platform becomes available.</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="https://mentora.com.in/dashboard" 
+                    <a href="https://bigmentor.nl/dashboard" 
                        style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
                         🚀 Go to Dashboard
                     </a>
@@ -387,7 +387,7 @@ Hello, {user.first_name}!
 
 Congratulations! You have successfully completed your pre-registration for Mentora. We will notify you when the platform becomes available.
 
-Go to Dashboard: https://mentora.com.in/dashboard
+Go to Dashboard: https://bigmentor.nl/dashboard
 
 Best regards,
 Mentora Team

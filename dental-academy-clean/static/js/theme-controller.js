@@ -9,7 +9,7 @@ class ThemeController {
         this.init();
         
         // Отладочная информация
-        // }
+    }
 
     calculateIsDark() {
         if (this.theme === 'system') {

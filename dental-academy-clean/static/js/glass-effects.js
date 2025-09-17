@@ -28,7 +28,7 @@ class GlassEffects {
         this.initGlassInteractions();
         this.initThemeWatcher();
         
-        // }
+    }
 
     initThemeWatcher() {
         // Слушаем изменения темы

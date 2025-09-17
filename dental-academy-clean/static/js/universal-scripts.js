@@ -149,7 +149,7 @@ async function loadExamReadiness() {
       }
     }
     
-    // if (data.success && data.prediction) {
+    if (data.success && data.prediction) {
       renderExamReadiness(data.prediction);
     } else {
       throw new Error(data.error || 'No prediction data');
