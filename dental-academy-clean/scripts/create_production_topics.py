@@ -17,16 +17,16 @@ from models import db, ForumCategory, ForumTopic, ForumPost, User
 def create_fake_users():
     """Создает фейковых пользователей для сообщений"""
     fake_users = [
-        {'name': 'Gabriella', 'email': 'gabriella@example.com'},
-        {'name': 'Sina', 'email': 'sina@example.com'},
-        {'name': 'Rinsy', 'email': 'rinsy@example.com'},
-        {'name': 'S. Donmez', 'email': 'sdonmez@example.com'},
-        {'name': 'Olga', 'email': 'olga@example.com'},
-        {'name': 'Liliam', 'email': 'liliam@example.com'},
-        {'name': 'Markell', 'email': 'markell@example.com'},
-        {'name': 'Dr. Liza', 'email': 'drliza@example.com'},
-        {'name': 'Vladimir', 'email': 'vladimir@example.com'},
-        {'name': 'Denis', 'email': 'denis@example.com'}
+        {'name': 'Maria', 'email': 'maria@example.com'},
+        {'name': 'Ahmed', 'email': 'ahmed@example.com'},
+        {'name': 'Priya', 'email': 'priya@example.com'},
+        {'name': 'Carlos', 'email': 'carlos@example.com'},
+        {'name': 'Anna', 'email': 'anna@example.com'},
+        {'name': 'Lucas', 'email': 'lucas@example.com'},
+        {'name': 'Emma', 'email': 'emma@example.com'},
+        {'name': 'Dr. Sarah', 'email': 'drsarah@example.com'},
+        {'name': 'Alex', 'email': 'alex@example.com'},
+        {'name': 'David', 'email': 'david@example.com'}
     ]
     
     created_users = []
@@ -86,7 +86,10 @@ def create_topic_with_messages(topic_data, fake_users, base_date):
             if not author:
                 author = fake_users[0]  # Fallback
             
-            message_date = base_date + timedelta(days=message_data['day_offset'], hours=message_data.get('hour', 10))
+            # Создаем реалистичное время с минутами
+            hour = message_data.get('hour', 10)
+            minute = message_data.get('minute', random.randint(0, 59))
+            message_date = base_date + timedelta(days=message_data['day_offset'], hours=hour, minutes=minute)
             
             post = ForumPost(
                 topic_id=topic.id,
@@ -185,64 +188,74 @@ def create_production_topics():
                     'author': admin_user,
                     'messages': [
                         {
-                            'author': 'Gabriella',
+                            'author': 'Maria',
                             'content': 'Goedemorgen collega\'s, Ik heb een vraag, moeten we alle documenten bij BiG inleveren voordat we de AKV-toetsen afleggen, of moeten we eerst de tests afleggen?',
                             'day_offset': 0,
-                            'hour': 10
+                            'hour': 9,
+                            'minute': 23
                         },
                         {
-                            'author': 'Rinsy',
+                            'author': 'Priya',
                             'content': 'Volgens mij kun je het beste eerst de taaltoets doen en daarna de documenten samen met het taalcertificaat opsturen.',
                             'day_offset': 0,
-                            'hour': 10
+                            'hour': 9,
+                            'minute': 45
                         },
                         {
-                            'author': 'Gabriella',
+                            'author': 'Maria',
                             'content': 'Bedankt!',
                             'day_offset': 0,
-                            'hour': 14
+                            'hour': 14,
+                            'minute': 12
                         },
                         {
-                            'author': 'Sina',
+                            'author': 'Ahmed',
                             'content': 'Hallo er bestaat geen akv test meer 👍',
                             'day_offset': 0,
-                            'hour': 14
+                            'hour': 14,
+                            'minute': 28
                         },
                         {
-                            'author': 'Gabriella',
+                            'author': 'Maria',
                             'content': 'Hoe bedoel je?',
                             'day_offset': 0,
-                            'hour': 14
+                            'hour': 14,
+                            'minute': 31
                         },
                         {
-                            'author': 'S. Donmez',
+                            'author': 'Carlos',
                             'content': 'In plaats van AKV toets, moeten we nu B2+ taal certificaat halen en alle documenten naar CIBG sturen. Daarna krijgen we een datum voor BI-toets',
                             'day_offset': 0,
-                            'hour': 14
+                            'hour': 14,
+                            'minute': 47
                         },
                         {
-                            'author': 'Gabriella',
+                            'author': 'Maria',
                             'content': 'Maar als we slagen voor de BGB en of Babel examens, dan wordt dat beschouwd als een B2+ certificaat? Krijgen we een certificaat van hun?',
                             'day_offset': 0,
-                            'hour': 16
+                            'hour': 16,
+                            'minute': 19
                         },
                         {
-                            'author': 'Olga',
+                            'author': 'Anna',
                             'content': 'Maar als we slagen voor de BGB en of Babel examens, dan wordt dat beschouwd als een B2+ certificaat? Krijgen we een certificaat van hun?',
                             'day_offset': 0,
-                            'hour': 16
+                            'hour': 16,
+                            'minute': 30
                         },
                         {
-                            'author': 'Olga',
+                            'author': 'Anna',
                             'content': 'Inderdaad',
                             'day_offset': 0,
-                            'hour': 16
+                            'hour': 16,
+                            'minute': 32
                         },
                         {
-                            'author': 'Gabriella',
+                            'author': 'Maria',
                             'content': 'Bedankt!',
                             'day_offset': 0,
-                            'hour': 18
+                            'hour': 18,
+                            'minute': 15
                         }
                     ]
                 },
@@ -259,28 +272,32 @@ def create_production_topics():
                     'author': admin_user,
                     'messages': [
                         {
-                            'author': 'Liliam',
+                            'author': 'Emma',
                             'content': 'Dankjewel!',
                             'day_offset': 1,
-                            'hour': 9
+                            'hour': 9,
+                            'minute': 17
                         },
                         {
-                            'author': 'Markell',
+                            'author': 'Lucas',
                             'content': 'Deze krijg ik net binnen...',
                             'day_offset': 1,
-                            'hour': 9
+                            'hour': 9,
+                            'minute': 34
                         },
                         {
-                            'author': 'Vladimir',
+                            'author': 'Alex',
                             'content': 'не за что',
                             'day_offset': 1,
-                            'hour': 15
+                            'hour': 15,
+                            'minute': 22
                         },
                         {
-                            'author': 'Denis',
+                            'author': 'David',
                             'content': 'Missed voice call',
                             'day_offset': 2,
-                            'hour': 11
+                            'hour': 11,
+                            'minute': 8
                         }
                     ]
                 },
