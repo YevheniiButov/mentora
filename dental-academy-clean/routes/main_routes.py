@@ -614,6 +614,403 @@ def reply_to_topic(lang, topic_id):
             'error': 'Ошибка при отправке ответа'
         }), 500
 
+@main_bp.route('/community/topic/<int:topic_id>/edit')
+@login_required
+def edit_topic(lang, topic_id):
+    """Edit topic page"""
+    from models import ForumTopic, ForumCategory
+    
+    topic = ForumTopic.query.get_or_404(topic_id)
+    
+    # Проверяем права на редактирование
+    if topic.author_id != current_user.id and not current_user.is_admin:
+        flash('У вас нет прав для редактирования этой темы', 'error')
+        return redirect(url_for('main.community_topic', lang=lang, topic_id=topic_id))
+    
+    categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
+    
+    return render_template('community/edit_topic.html',
+                         topic=topic,
+                         categories=categories,
+                         lang=lang)
+
+@main_bp.route('/community/topic/<int:topic_id>/update', methods=['POST'])
+@login_required
+def update_topic(lang, topic_id):
+    """Update topic"""
+    from models import ForumTopic, ForumCategory
+    from flask import jsonify
+    
+    try:
+        topic = ForumTopic.query.get_or_404(topic_id)
+        
+        # Проверяем права на редактирование
+        if topic.author_id != current_user.id and not current_user.is_admin:
+            return jsonify({
+                'success': False,
+                'error': 'У вас нет прав для редактирования этой темы'
+            }), 403
+        
+        data = request.get_json()
+        
+        title = data.get('title', '').strip()
+        content = data.get('content', '').strip()
+        category_id = data.get('category_id')
+        
+        # Валидация
+        if not title or not content or not category_id:
+            return jsonify({
+                'success': False,
+                'error': 'Все поля обязательны для заполнения'
+            }), 400
+        
+        if len(title) < 5:
+            return jsonify({
+                'success': False,
+                'error': 'Заголовок должен содержать минимум 5 символов'
+            }), 400
+        
+        if len(content) < 10:
+            return jsonify({
+                'success': False,
+                'error': 'Содержимое должно содержать минимум 10 символов'
+            }), 400
+        
+        # Проверяем существование категории
+        category = ForumCategory.query.get(category_id)
+        if not category:
+            return jsonify({
+                'success': False,
+                'error': 'Категория не найдена'
+            }), 400
+        
+        # Обновляем тему
+        topic.title = title
+        topic.content = content
+        topic.category_id = category_id
+        topic.updated_at = db.func.now()
+        
+        # Обновляем первый пост (содержимое темы)
+        first_post = topic.posts.filter_by(author_id=topic.author_id).first()
+        if first_post:
+            first_post.content = content
+            first_post.mark_as_edited()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Тема успешно обновлена',
+            'redirect_url': url_for('main.community_topic', lang=lang, topic_id=topic.id)
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error updating topic: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при обновлении темы'
+        }), 500
+
+@main_bp.route('/community/post/<int:post_id>/edit')
+@login_required
+def edit_post(lang, post_id):
+    """Edit post page"""
+    from models import ForumPost
+    
+    post = ForumPost.query.get_or_404(post_id)
+    
+    # Проверяем права на редактирование
+    if post.author_id != current_user.id and not current_user.is_admin:
+        flash('У вас нет прав для редактирования этого поста', 'error')
+        return redirect(url_for('main.community_topic', lang=lang, topic_id=post.topic_id))
+    
+    return render_template('community/edit_post.html',
+                         post=post,
+                         lang=lang)
+
+@main_bp.route('/community/post/<int:post_id>/update', methods=['POST'])
+@login_required
+def update_post(lang, post_id):
+    """Update post"""
+    from models import ForumPost
+    from flask import jsonify
+    
+    try:
+        post = ForumPost.query.get_or_404(post_id)
+        
+        # Проверяем права на редактирование
+        if post.author_id != current_user.id and not current_user.is_admin:
+            return jsonify({
+                'success': False,
+                'error': 'У вас нет прав для редактирования этого поста'
+            }), 403
+        
+        data = request.get_json()
+        content = data.get('content', '').strip()
+        
+        # Валидация
+        if not content:
+            return jsonify({
+                'success': False,
+                'error': 'Сообщение не может быть пустым'
+            }), 400
+        
+        if len(content) < 1:
+            return jsonify({
+                'success': False,
+                'error': 'Сообщение должно содержать минимум 1 символ'
+            }), 400
+        
+        # Обновляем пост
+        post.content = content
+        post.mark_as_edited()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Пост успешно обновлен',
+            'redirect_url': url_for('main.community_topic', lang=lang, topic_id=post.topic_id)
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error updating post: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при обновлении поста'
+        }), 500
+
+@main_bp.route('/community/topic/<int:topic_id>/delete', methods=['POST'])
+@login_required
+def delete_topic(lang, topic_id):
+    """Delete topic (admin only)"""
+    from models import ForumTopic
+    from flask import jsonify
+    
+    try:
+        topic = ForumTopic.query.get_or_404(topic_id)
+        
+        # Проверяем права администратора
+        if not current_user.is_admin:
+            return jsonify({
+                'success': False,
+                'error': 'У вас нет прав для удаления тем'
+            }), 403
+        
+        # Удаляем тему и все связанные посты
+        db.session.delete(topic)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Тема успешно удалена',
+            'redirect_url': url_for('main.community', lang=lang)
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting topic: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при удалении темы'
+        }), 500
+
+@main_bp.route('/community/post/<int:post_id>/delete', methods=['POST'])
+@login_required
+def delete_post(lang, post_id):
+    """Delete post (admin only)"""
+    from models import ForumPost
+    from flask import jsonify
+    
+    try:
+        post = ForumPost.query.get_or_404(post_id)
+        
+        # Проверяем права администратора
+        if not current_user.is_admin:
+            return jsonify({
+                'success': False,
+                'error': 'У вас нет прав для удаления постов'
+            }), 403
+        
+        # Мягкое удаление поста
+        post.soft_delete(current_user.id)
+        
+        # Обновляем статистику темы
+        post.topic.update_reply_stats()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Пост успешно удален'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting post: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при удалении поста'
+        }), 500
+
+@main_bp.route('/community/topic/<int:topic_id>/toggle-sticky', methods=['POST'])
+@login_required
+def toggle_topic_sticky(lang, topic_id):
+    """Toggle topic sticky status (admin only)"""
+    from models import ForumTopic
+    from flask import jsonify
+    
+    try:
+        topic = ForumTopic.query.get_or_404(topic_id)
+        
+        # Проверяем права администратора
+        if not current_user.is_admin:
+            return jsonify({
+                'success': False,
+                'error': 'У вас нет прав для изменения статуса темы'
+            }), 403
+        
+        # Переключаем статус закрепления
+        topic.is_sticky = not topic.is_sticky
+        topic.status = 'pinned' if topic.is_sticky else 'normal'
+        
+        db.session.commit()
+        
+        status_text = 'закреплена' if topic.is_sticky else 'откреплена'
+        
+        return jsonify({
+            'success': True,
+            'message': f'Тема {status_text}',
+            'is_sticky': topic.is_sticky
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error toggling topic sticky: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при изменении статуса темы'
+        }), 500
+
+@main_bp.route('/community/topic/<int:topic_id>/toggle-lock', methods=['POST'])
+@login_required
+def toggle_topic_lock(lang, topic_id):
+    """Toggle topic lock status (admin only)"""
+    from models import ForumTopic
+    from flask import jsonify
+    
+    try:
+        topic = ForumTopic.query.get_or_404(topic_id)
+        
+        # Проверяем права администратора
+        if not current_user.is_admin:
+            return jsonify({
+                'success': False,
+                'error': 'У вас нет прав для блокировки тем'
+            }), 403
+        
+        # Переключаем статус блокировки
+        topic.is_locked = not topic.is_locked
+        topic.status = 'locked' if topic.is_locked else 'normal'
+        
+        db.session.commit()
+        
+        status_text = 'заблокирована' if topic.is_locked else 'разблокирована'
+        
+        return jsonify({
+            'success': True,
+            'message': f'Тема {status_text}',
+            'is_locked': topic.is_locked
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error toggling topic lock: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при изменении статуса темы'
+        }), 500
+
+@main_bp.route('/community/topic/<int:topic_id>/content')
+@login_required
+def get_topic_content(lang, topic_id):
+    """Get topic content for AJAX loading"""
+    from models import ForumTopic, ForumPost
+    from flask import jsonify
+    
+    try:
+        topic = ForumTopic.query.get_or_404(topic_id)
+        
+        # Увеличиваем счетчик просмотров
+        topic.increment_views()
+        
+        # Получаем посты в теме
+        posts = ForumPost.query.filter_by(
+            topic_id=topic_id, 
+            is_deleted=False
+        ).order_by(ForumPost.created_at.asc()).all()
+        
+        # Формируем данные для JSON
+        topic_data = {
+            'id': topic.id,
+            'title': topic.title,
+            'content': topic.content,
+            'author': {
+                'id': topic.author.id,
+                'name': f"{topic.author.first_name} {topic.author.last_name}",
+                'email': topic.author.email
+            },
+            'category': {
+                'id': topic.category.id,
+                'name': topic.category.name,
+                'slug': topic.category.slug
+            },
+            'created_at': topic.created_at.strftime('%d.%m.%Y %H:%M'),
+            'updated_at': topic.updated_at.strftime('%d.%m.%Y %H:%M') if topic.updated_at else None,
+            'last_reply_at': topic.last_reply_at.strftime('%d.%m.%Y %H:%M') if topic.last_reply_at else None,
+            'views_count': topic.views_count,
+            'replies_count': topic.replies_count,
+            'is_sticky': topic.is_sticky,
+            'is_locked': topic.is_locked,
+            'status': topic.status,
+            'can_edit': topic.author_id == current_user.id or current_user.is_admin,
+            'can_delete': current_user.is_admin,
+            'can_moderate': current_user.is_admin
+        }
+        
+        # Формируем данные постов
+        posts_data = []
+        for post in posts:
+            post_data = {
+                'id': post.id,
+                'content': post.content,
+                'author': {
+                    'id': post.author.id,
+                    'name': f"{post.author.first_name} {post.author.last_name}",
+                    'email': post.author.email
+                },
+                'created_at': post.created_at.strftime('%d.%m.%Y %H:%M'),
+                'updated_at': post.updated_at.strftime('%d.%m.%Y %H:%M') if post.updated_at else None,
+                'is_edited': post.is_edited,
+                'is_deleted': post.is_deleted,
+                'can_edit': post.author_id == current_user.id or current_user.is_admin,
+                'can_delete': current_user.is_admin
+            }
+            posts_data.append(post_data)
+        
+        return jsonify({
+            'success': True,
+            'topic': topic_data,
+            'posts': posts_data
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting topic content: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка при загрузке темы'
+        }), 500
+
 @main_bp.route('/test')
 def test_page():
     """Тестовая страница для отладки"""
