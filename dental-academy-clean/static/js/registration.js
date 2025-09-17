@@ -847,28 +847,18 @@ async function submitForm() {
             // Clear saved data
             localStorage.removeItem('mentora_registration_draft');
             
-            // Show beautiful success message
+            // Show simple success message
             const userEmail = formData.get('email') || 'your email';
-            const successMessage = `
-                <strong>🎉 Excellent! You are registered in the Mentora program</strong><br><br>
-                📧 <strong>Check your email</strong><br>
-                We sent a confirmation email to <strong>${userEmail}</strong><br><br>
-                ⚠️ <strong>Important:</strong> Check your "Spam" or "Junk" folder<br>
-                The email might have ended up there. If you find it - mark as "Not Spam"<br><br>
-                🚀 After confirming your email, you will be able to log in and receive notifications about the program launch in 2026
-            `;
-            showSuccessMessage(successMessage);
+            alert(`✅ Registration Successful!\n\n📧 Check your email: ${userEmail}\n\n⚠️ Check your Spam folder!\n\n🚀 After confirming email, you can log in and receive notifications about program launch in 2026`);
+            
+            // Redirect to login
+            setTimeout(() => {
+                window.location.href = '/auth/login';
+            }, 2000);
         } else {
-            // Show detailed error
-            const errorMessage = result.error || 'An error occurred during registration. Please try again.';
-            showErrorMessage(`
-                <strong>Failed to complete registration:</strong><br><br>
-                ${errorMessage}<br><br>
-                💡 <strong>Try:</strong><br>
-                • Check that all required fields are filled correctly<br>
-                • Make sure the email is not already registered<br>
-                • Refresh the page and try again
-            `);
+            // Show simple error
+            const errorMessage = result.error || 'Registration failed. Please try again.';
+            alert(`❌ Registration Error:\n\n${errorMessage}\n\n💡 Try:\n• Check all fields are filled\n• Email not already registered\n• Refresh page and try again`);
         }
     } catch (error) {
         progressBar.remove();
@@ -1016,30 +1006,8 @@ function initializeNationalitySearch() {
     }
 }
 
-// reCAPTCHA validation
+// reCAPTCHA validation - DISABLED
 function validateRecaptcha() {
-    // Check if reCAPTCHA is configured and loaded
-    if (typeof grecaptcha === 'undefined') {
-
-        return true; // Skip validation if reCAPTCHA is not configured
-    }
-    
-    // Check if reCAPTCHA element exists on the page
-    const recaptchaElement = document.querySelector('.g-recaptcha');
-    if (!recaptchaElement) {
-
-        return true; // Skip validation if reCAPTCHA element is not present
-    }
-    
-    try {
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (recaptchaResponse.length === 0) {
-            showErrorMessage('Please complete the reCAPTCHA verification');
-            return false;
-        }
-        return true;
-    } catch (error) {
-        console.warn('reCAPTCHA validation error:', error);
-        return true; // Skip validation if there's an error
-    }
+    // reCAPTCHA полностью отключена
+    return true;
 }
