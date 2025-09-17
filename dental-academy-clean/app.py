@@ -797,8 +797,166 @@ logger.info("✅ Web recreate topics endpoint registered")
 def direct_recreate_topics():
     """Прямое выполнение скрипта пересоздания тем"""
     try:
-        from scripts.recreate_production_topics import recreate_production_topics
-        recreate_production_topics()
+        # Встроенная функция вместо импорта
+        from models import db, ForumCategory, ForumTopic, ForumPost, User
+        from datetime import datetime, timedelta
+        import random
+        
+        with app.app_context():
+            print("🔍 Starting topic recreation...")
+            
+            # Удаляем существующие темы
+            topics_to_delete = ForumTopic.query.filter(
+                ForumTopic.title.in_([
+                    'AKV tandartsen - BIG Registration Discussion 🦷',
+                    'General Chat - Let\'s talk about everything! 💬'
+                ])
+            ).all()
+            
+            deleted_count = 0
+            for topic in topics_to_delete:
+                print(f"🗑️ Deleting topic: {topic.title}")
+                ForumPost.query.filter_by(topic_id=topic.id).delete()
+                db.session.delete(topic)
+                deleted_count += 1
+            
+            db.session.commit()
+            print(f"✅ Deleted {deleted_count} topics")
+            
+            # Создаем фейковых пользователей
+            fake_users_data = [
+                {'name': 'Maria', 'email': 'maria@example.com'},
+                {'name': 'Ahmed', 'email': 'ahmed@example.com'},
+                {'name': 'Priya', 'email': 'priya@example.com'},
+                {'name': 'Carlos', 'email': 'carlos@example.com'},
+                {'name': 'Anna', 'email': 'anna@example.com'},
+                {'name': 'Lucas', 'email': 'lucas@example.com'},
+                {'name': 'Emma', 'email': 'emma@example.com'},
+                {'name': 'Dr. Sarah', 'email': 'drsarah@example.com'},
+                {'name': 'Alex', 'email': 'alex@example.com'},
+                {'name': 'David', 'email': 'david@example.com'}
+            ]
+            
+            fake_users = []
+            for user_data in fake_users_data:
+                existing_user = User.query.filter_by(email=user_data['email']).first()
+                if not existing_user:
+                    user = User(
+                        email=user_data['email'],
+                        first_name=user_data['name'],
+                        last_name='',
+                        role='user',
+                        is_active=True,
+                        created_at=datetime.now() - timedelta(days=random.randint(30, 90))
+                    )
+                    db.session.add(user)
+                    fake_users.append(user)
+                    print(f"✅ Created user: {user_data['name']}")
+                else:
+                    fake_users.append(existing_user)
+                    print(f"⏭️ User exists: {user_data['name']}")
+            
+            db.session.commit()
+            
+            # Находим категорию
+            general_category = ForumCategory.query.filter_by(slug='general').first()
+            if not general_category:
+                general_category = ForumCategory(
+                    name='General Discussion',
+                    slug='general',
+                    description='General discussions about BIG registration and healthcare in the Netherlands',
+                    is_active=True,
+                    order=1
+                )
+                db.session.add(general_category)
+                db.session.commit()
+            
+            # Находим админа
+            admin_user = User.query.filter_by(role='admin').first()
+            if not admin_user:
+                admin_user = User.query.first()
+            
+            # Создаем темы
+            base_date = datetime(2025, 9, 1)
+            
+            # Тема 1: AKV Discussion
+            topic1 = ForumTopic(
+                title='AKV tandartsen - BIG Registration Discussion 🦷',
+                content='Discussion about AKV tests and BIG registration process for dentists.',
+                category_id=general_category.id,
+                author_id=admin_user.id,
+                status='active',
+                views_count=150,
+                replies_count=10,
+                likes_count=15,
+                created_at=base_date,
+                updated_at=base_date + timedelta(days=2)
+            )
+            db.session.add(topic1)
+            db.session.flush()
+            
+            # Сообщения для темы 1
+            messages1 = [
+                {'author': 'Maria', 'content': 'Goedemorgen collega\'s, Ik heb een vraag, moeten we alle documenten bij BiG inleveren voordat we de AKV-toetsen afleggen, of moeten we eerst de tests afleggen?', 'hour': 9, 'minute': 23},
+                {'author': 'Priya', 'content': 'Volgens mij kun je het beste eerst de taaltoets doen en daarna de documenten samen met het taalcertificaat opsturen.', 'hour': 9, 'minute': 45},
+                {'author': 'Maria', 'content': 'Bedankt!', 'hour': 14, 'minute': 12},
+                {'author': 'Ahmed', 'content': 'Hallo er bestaat geen akv test meer 👍', 'hour': 14, 'minute': 28},
+                {'author': 'Maria', 'content': 'Hoe bedoel je?', 'hour': 14, 'minute': 31},
+                {'author': 'Carlos', 'content': 'In plaats van AKV toets, moeten we nu B2+ taal certificaat halen en alle documenten naar CIBG sturen. Daarna krijgen we een datum voor BI-toets', 'hour': 14, 'minute': 47},
+                {'author': 'Maria', 'content': 'Maar als we slagen voor de BGB en of Babel examens, dan wordt dat beschouwd als een B2+ certificaat? Krijgen we een certificaat van hun?', 'hour': 16, 'minute': 19},
+                {'author': 'Anna', 'content': 'Maar als we slagen voor de BGB en of Babel examens, dan wordt dat beschouwd als een B2+ certificaat? Krijgen we een certificaat van hun?', 'hour': 16, 'minute': 30},
+                {'author': 'Anna', 'content': 'Inderdaad', 'hour': 16, 'minute': 32},
+                {'author': 'Maria', 'content': 'Bedankt!', 'hour': 18, 'minute': 15}
+            ]
+            
+            for msg in messages1:
+                author = next((u for u in fake_users if u.first_name == msg['author']), fake_users[0])
+                post = ForumPost(
+                    topic_id=topic1.id,
+                    author_id=author.id,
+                    content=msg['content'],
+                    created_at=base_date + timedelta(hours=msg['hour'], minutes=msg['minute']),
+                    updated_at=base_date + timedelta(hours=msg['hour'], minutes=msg['minute'])
+                )
+                db.session.add(post)
+            
+            # Тема 2: General Chat
+            topic2 = ForumTopic(
+                title='General Chat - Let\'s talk about everything! 💬',
+                content='This is a general discussion thread where you can talk about anything.',
+                category_id=general_category.id,
+                author_id=admin_user.id,
+                status='active',
+                views_count=80,
+                replies_count=4,
+                likes_count=8,
+                created_at=base_date + timedelta(days=2),
+                updated_at=base_date + timedelta(days=4)
+            )
+            db.session.add(topic2)
+            db.session.flush()
+            
+            # Сообщения для темы 2
+            messages2 = [
+                {'author': 'Emma', 'content': 'Dankjewel!', 'hour': 9, 'minute': 17},
+                {'author': 'Lucas', 'content': 'Deze krijg ik net binnen...', 'hour': 9, 'minute': 34},
+                {'author': 'Alex', 'content': 'не за что', 'hour': 15, 'minute': 22},
+                {'author': 'David', 'content': 'Missed voice call', 'hour': 11, 'minute': 8}
+            ]
+            
+            for msg in messages2:
+                author = next((u for u in fake_users if u.first_name == msg['author']), fake_users[0])
+                post = ForumPost(
+                    topic_id=topic2.id,
+                    author_id=author.id,
+                    content=msg['content'],
+                    created_at=base_date + timedelta(days=1, hours=msg['hour'], minutes=msg['minute']),
+                    updated_at=base_date + timedelta(days=1, hours=msg['hour'], minutes=msg['minute'])
+                )
+                db.session.add(post)
+            
+            db.session.commit()
+            print("✅ Topics created successfully!")
         
         return """
         <html>
@@ -806,6 +964,11 @@ def direct_recreate_topics():
         <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px;">
             <h1 style="color: green;">✅ Topics Recreated Successfully!</h1>
             <p>Community topics have been recreated with new names and realistic timestamps.</p>
+            <p><strong>Created:</strong></p>
+            <ul>
+                <li>AKV tandartsen - BIG Registration Discussion 🦷 (10 messages)</li>
+                <li>General Chat - Let's talk about everything! 💬 (4 messages)</li>
+            </ul>
             <p><a href="/community">Go to Community</a></p>
         </body>
         </html>
