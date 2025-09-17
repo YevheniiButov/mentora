@@ -780,12 +780,56 @@ def web_recreate_topics():
         }), 200
         
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error in web_recreate_topics: {error_details}")
+        
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'details': error_details
         }), 500
 
 logger.info("✅ Web recreate topics endpoint registered")
+
+# Simple direct script execution endpoint
+@app.route('/admin/recreate-topics-direct')
+def direct_recreate_topics():
+    """Прямое выполнение скрипта пересоздания тем"""
+    try:
+        from scripts.recreate_production_topics import recreate_production_topics
+        recreate_production_topics()
+        
+        return """
+        <html>
+        <head><title>Topics Recreated</title></head>
+        <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px;">
+            <h1 style="color: green;">✅ Topics Recreated Successfully!</h1>
+            <p>Community topics have been recreated with new names and realistic timestamps.</p>
+            <p><a href="/community">Go to Community</a></p>
+        </body>
+        </html>
+        """, 200
+        
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        
+        return f"""
+        <html>
+        <head><title>Error</title></head>
+        <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px;">
+            <h1 style="color: red;">❌ Error Recreating Topics</h1>
+            <p><strong>Error:</strong> {str(e)}</p>
+            <details>
+                <summary>Technical Details</summary>
+                <pre style="background: #f5f5f5; padding: 10px; overflow: auto;">{error_details}</pre>
+            </details>
+        </body>
+        </html>
+        """, 500
+
+logger.info("✅ Direct recreate topics endpoint registered")
 
 # Force load production data command
 @app.cli.command()

@@ -93,6 +93,13 @@
                     }
                 });
                 
+                // Проверяем, что ответ действительно JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Server returned HTML instead of JSON. Status: ${response.status}. Response: ${text.substring(0, 200)}...`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -107,6 +114,7 @@
                     result.innerHTML = `
                         <h3>❌ Error</h3>
                         <p>${data.error}</p>
+                        ${data.details ? `<details><summary>Technical Details</summary><pre>${data.details}</pre></details>` : ''}
                     `;
                 }
             } catch (error) {
@@ -114,6 +122,7 @@
                 result.innerHTML = `
                     <h3>❌ Error</h3>
                     <p>Failed to recreate topics: ${error.message}</p>
+                    <p>Please check the server logs for more details.</p>
                 `;
             } finally {
                 btn.disabled = false;
