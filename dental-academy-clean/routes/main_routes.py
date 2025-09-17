@@ -416,13 +416,7 @@ def community_category(lang, category):
     # Получаем все категории для навигации
     all_categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
     
-    return render_template('community/category.html', 
-                         category=category,
-                         forum_category=forum_category,
-                         category_data=forum_category,  # Добавляем для совместимости с шаблоном
-                         topics=topics,
-                         all_categories=all_categories,
-                         lang=lang)
+    return redirect(url_for('main.community', lang=lang))
 
 @main_bp.route('/community/topic/<int:topic_id>')
 @login_required
@@ -452,11 +446,7 @@ def community_topic(lang, topic_id):
     # Получаем все категории для навигации
     all_categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
     
-    return render_template('community/topic.html', 
-                         topic=topic,
-                         posts=posts,
-                         all_categories=all_categories,
-                         lang=lang)
+    return redirect(url_for('main.community', lang=lang))
 
 @main_bp.route('/community/new-topic')
 @login_required
@@ -467,9 +457,7 @@ def new_topic(lang):
     # Получаем все категории для выбора
     categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
     
-    return render_template('community/new_topic.html', 
-                         categories=categories,
-                         lang=lang)
+    return redirect(url_for('main.community', lang=lang))
 
 @main_bp.route('/community/create-topic', methods=['POST'])
 @login_required
@@ -489,19 +477,19 @@ def create_topic(lang):
         if not title or not content or not category_id:
             return jsonify({
                 'success': False,
-                'error': 'Все поля обязательны для заполнения'
+                'error': 'All fields are required'
             }), 400
         
         if len(title) < 5:
             return jsonify({
                 'success': False,
-                'error': 'Заголовок должен содержать минимум 5 символов'
+                'error': 'The title must contain at least 5 characters.'
             }), 400
         
         if len(content) < 10:
             return jsonify({
                 'success': False,
-                'error': 'Содержимое должно содержать минимум 10 символов'
+                'error': 'Content must be at least 10 characters long.'
             }), 400
         
         # Проверяем существование категории
@@ -509,7 +497,7 @@ def create_topic(lang):
         if not category:
             return jsonify({
                 'success': False,
-                'error': 'Категория не найдена'
+                'error': 'Category not found'
             }), 400
         
         # Создаем тему
@@ -535,7 +523,7 @@ def create_topic(lang):
         
         return jsonify({
             'success': True,
-            'message': 'Тема успешно создана',
+            'message': 'Topic successfully created',
             'topic_id': topic.id,
             'redirect_url': url_for('main.community_topic', lang=lang, topic_id=topic.id)
         })
@@ -545,7 +533,7 @@ def create_topic(lang):
         current_app.logger.error(f"Error creating topic: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при создании темы'
+            'error': 'Error creating topic'
         }), 500
 
 @main_bp.route('/community/topic/<int:topic_id>/reply', methods=['POST'])
@@ -562,13 +550,13 @@ def reply_to_topic(lang, topic_id):
         if not content:
             return jsonify({
                 'success': False,
-                'error': 'Сообщение не может быть пустым'
+                'error': 'Message cannot be empty'
             }), 400
         
         if len(content) < 1:
             return jsonify({
                 'success': False,
-                'error': 'Сообщение должно содержать минимум 1 символ'
+                'error': 'Message must contain at least 1 character'
             }), 400
         
         # Проверяем существование темы
@@ -576,7 +564,7 @@ def reply_to_topic(lang, topic_id):
         if not topic:
             return jsonify({
                 'success': False,
-                'error': 'Тема не найдена'
+                'error': 'Topic not found'
             }), 404
         
         # Создаем ответ
@@ -596,7 +584,7 @@ def reply_to_topic(lang, topic_id):
         
         return jsonify({
             'success': True,
-            'message': 'Ответ успешно добавлен',
+            'message': 'Answer successfully added',
             'post': {
                 'id': post.id,
                 'content': post.content,
@@ -611,7 +599,7 @@ def reply_to_topic(lang, topic_id):
         current_app.logger.error(f"Error creating reply: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при отправке ответа'
+            'error': 'Error sending reply'
         }), 500
 
 @main_bp.route('/community/topic/<int:topic_id>/edit')
@@ -624,7 +612,7 @@ def edit_topic(lang, topic_id):
     
     # Проверяем права на редактирование
     if topic.author_id != current_user.id and not current_user.is_admin:
-        flash('У вас нет прав для редактирования этой темы', 'error')
+        flash('You do not have permission to edit this topic', 'error')
         return redirect(url_for('main.community_topic', lang=lang, topic_id=topic_id))
     
     categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
@@ -648,7 +636,7 @@ def update_topic(lang, topic_id):
         if topic.author_id != current_user.id and not current_user.is_admin:
             return jsonify({
                 'success': False,
-                'error': 'У вас нет прав для редактирования этой темы'
+                'error': 'You do not have permission to edit this topic'
             }), 403
         
         data = request.get_json()
@@ -661,19 +649,19 @@ def update_topic(lang, topic_id):
         if not title or not content or not category_id:
             return jsonify({
                 'success': False,
-                'error': 'Все поля обязательны для заполнения'
+                'error': 'All fields are required'
             }), 400
         
         if len(title) < 5:
             return jsonify({
                 'success': False,
-                'error': 'Заголовок должен содержать минимум 5 символов'
+                'error': 'The title must contain at least 5 characters.'
             }), 400
         
         if len(content) < 10:
             return jsonify({
                 'success': False,
-                'error': 'Содержимое должно содержать минимум 10 символов'
+                'error': 'Content must be at least 10 characters long.'
             }), 400
         
         # Проверяем существование категории
@@ -681,7 +669,7 @@ def update_topic(lang, topic_id):
         if not category:
             return jsonify({
                 'success': False,
-                'error': 'Категория не найдена'
+                'error': 'Category not found'
             }), 400
         
         # Обновляем тему
@@ -700,7 +688,7 @@ def update_topic(lang, topic_id):
         
         return jsonify({
             'success': True,
-            'message': 'Тема успешно обновлена',
+            'message': 'Topic successfully updated',
             'redirect_url': url_for('main.community_topic', lang=lang, topic_id=topic.id)
         })
         
@@ -709,7 +697,7 @@ def update_topic(lang, topic_id):
         current_app.logger.error(f"Error updating topic: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при обновлении темы'
+            'error': 'Error updating topic'
         }), 500
 
 @main_bp.route('/community/post/<int:post_id>/edit')
@@ -722,7 +710,7 @@ def edit_post(lang, post_id):
     
     # Проверяем права на редактирование
     if post.author_id != current_user.id and not current_user.is_admin:
-        flash('У вас нет прав для редактирования этого поста', 'error')
+        flash('You do not have permission to edit this post', 'error')
         return redirect(url_for('main.community_topic', lang=lang, topic_id=post.topic_id))
     
     return render_template('community/edit_post.html',
@@ -743,7 +731,7 @@ def update_post(lang, post_id):
         if post.author_id != current_user.id and not current_user.is_admin:
             return jsonify({
                 'success': False,
-                'error': 'У вас нет прав для редактирования этого поста'
+                'error': 'You do not have permission to edit this post'
             }), 403
         
         data = request.get_json()
@@ -753,13 +741,13 @@ def update_post(lang, post_id):
         if not content:
             return jsonify({
                 'success': False,
-                'error': 'Сообщение не может быть пустым'
+                'error': 'Message cannot be empty'
             }), 400
         
         if len(content) < 1:
             return jsonify({
                 'success': False,
-                'error': 'Сообщение должно содержать минимум 1 символ'
+                'error': 'Message must contain at least 1 character'
             }), 400
         
         # Обновляем пост
@@ -770,8 +758,8 @@ def update_post(lang, post_id):
         
         return jsonify({
             'success': True,
-            'message': 'Пост успешно обновлен',
-            'redirect_url': url_for('main.community_topic', lang=lang, topic_id=post.topic_id)
+            'message': 'Post successfully updated',
+            'redirect_url': url_for('main.community', lang=lang)
         })
         
     except Exception as e:
@@ -779,7 +767,7 @@ def update_post(lang, post_id):
         current_app.logger.error(f"Error updating post: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при обновлении поста'
+            'error': 'Error updating post'
         }), 500
 
 @main_bp.route('/community/topic/<int:topic_id>/delete', methods=['POST'])
@@ -796,7 +784,7 @@ def delete_topic(lang, topic_id):
         if not current_user.is_admin:
             return jsonify({
                 'success': False,
-                'error': 'У вас нет прав для удаления тем'
+                'error': 'You do not have permission to delete topics'
             }), 403
         
         # Удаляем тему и все связанные посты
@@ -814,7 +802,7 @@ def delete_topic(lang, topic_id):
         current_app.logger.error(f"Error deleting topic: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при удалении темы'
+            'error': 'Error deleting topic'
         }), 500
 
 @main_bp.route('/community/post/<int:post_id>/delete', methods=['POST'])
@@ -831,7 +819,7 @@ def delete_post(lang, post_id):
         if not current_user.is_admin:
             return jsonify({
                 'success': False,
-                'error': 'У вас нет прав для удаления постов'
+                'error': 'You do not have permission to delete posts'
             }), 403
         
         # Мягкое удаление поста
@@ -842,7 +830,7 @@ def delete_post(lang, post_id):
         
         return jsonify({
             'success': True,
-            'message': 'Пост успешно удален'
+            'message': 'Post successfully deleted'
         })
         
     except Exception as e:
@@ -850,7 +838,7 @@ def delete_post(lang, post_id):
         current_app.logger.error(f"Error deleting post: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при удалении поста'
+            'error': 'Error deleting post'
         }), 500
 
 @main_bp.route('/community/topic/<int:topic_id>/toggle-sticky', methods=['POST'])
@@ -867,7 +855,7 @@ def toggle_topic_sticky(lang, topic_id):
         if not current_user.is_admin:
             return jsonify({
                 'success': False,
-                'error': 'У вас нет прав для изменения статуса темы'
+                'error': 'You do not have permission to change topic status'
             }), 403
         
         # Переключаем статус закрепления
@@ -876,7 +864,7 @@ def toggle_topic_sticky(lang, topic_id):
         
         db.session.commit()
         
-        status_text = 'закреплена' if topic.is_sticky else 'откреплена'
+        status_text = 'pinned' if topic.is_sticky else 'normal'
         
         return jsonify({
             'success': True,
@@ -889,7 +877,7 @@ def toggle_topic_sticky(lang, topic_id):
         current_app.logger.error(f"Error toggling topic sticky: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при изменении статуса темы'
+            'error': 'Error changing topic status'
         }), 500
 
 @main_bp.route('/community/topic/<int:topic_id>/toggle-lock', methods=['POST'])
@@ -906,7 +894,7 @@ def toggle_topic_lock(lang, topic_id):
         if not current_user.is_admin:
             return jsonify({
                 'success': False,
-                'error': 'У вас нет прав для блокировки тем'
+                'error': 'You do not have permission to lock topics'
             }), 403
         
         # Переключаем статус блокировки
@@ -915,11 +903,11 @@ def toggle_topic_lock(lang, topic_id):
         
         db.session.commit()
         
-        status_text = 'заблокирована' if topic.is_locked else 'разблокирована'
+        status_text = 'locked' if topic.is_locked else 'normal'
         
         return jsonify({
             'success': True,
-            'message': f'Тема {status_text}',
+            'message': f'Topic {status_text}',
             'is_locked': topic.is_locked
         })
         
@@ -928,7 +916,7 @@ def toggle_topic_lock(lang, topic_id):
         current_app.logger.error(f"Error toggling topic lock: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при изменении статуса темы'
+            'error': 'Error changing topic status'
         }), 500
 
 @main_bp.route('/community/topic/<int:topic_id>/content')
@@ -1008,7 +996,7 @@ def get_topic_content(lang, topic_id):
         current_app.logger.error(f"Error getting topic content: {str(e)}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка при загрузке темы'
+            'error': 'Error loading topic'
         }), 500
 
 @main_bp.route('/test')

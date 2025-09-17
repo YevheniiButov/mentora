@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Community & Forum - Dental Academy{% endblock %}
+{% block title %}Mentora Community Forum{% endblock %}
 
 {% block page_styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
@@ -258,6 +258,50 @@
     word-wrap: break-word;
     position: relative;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    opacity: 0.7;
+    margin-bottom: 0.15rem;
+}
+
+.message-author {
+    font-weight: 600;
+    color: #3ECDC1;
+}
+
+.message-time {
+    opacity: 0.7;
+}
+
+.message-edited {
+    color: #6b7280;
+    font-size: 0.7rem;
+    font-style: italic;
+}
+
+.message-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.message-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.message-bubble:hover .message-actions {
+    opacity: 1;
 }
 
 .message-bubble.sent .message-content {
@@ -300,51 +344,6 @@
     border-left: none;
 }
 
-.chat-header {
-    background: #ffffff;
-    border-bottom: 1px solid #e1e5e9;
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.chat-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0;
-}
-
-.chat-status {
-    color: #6b7280;
-    font-size: 0.75rem;
-    margin: 0.25rem 0 0 0;
-}
-
-.chat-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.action-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background: #f8f9fa;
-    color: #6b7280;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.action-btn:hover {
-    background: #e9ecef;
-    color: #3ECDC1;
-}
 
 /* Welcome Screen */
 .welcome-screen {
@@ -496,7 +495,7 @@
         <div class="sidebar-header">
             <h2 class="sidebar-title">
                 <i class="fas fa-comments"></i>
-                {{ t('dental_community_forum', lang) | default('Community') }}
+                {{ t('mentora_community_forum', lang) | default('Mentora Community') }}
             </h2>
             
             <div class="search-container">
@@ -548,25 +547,10 @@
             </div>
 
         <div id="chat-content" style="display: none;">
-            <div class="chat-header">
-                <div>
-                    <h3 class="chat-title" id="chat-title">Topic Title</h3>
-                    <p class="chat-status" id="chat-status">last activity</p>
-                </div>
-                <div class="chat-actions">
-                    <button class="action-btn" title="Search">
-                        <i class="fas fa-search"></i>
-                    </button>
-                    <button class="action-btn" title="More options">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                </div>
-            </div>
-            
             <div class="chat-messages" id="chat-messages">
                 <!-- Messages will be loaded here -->
-                            </div>
-                        </div>
+            </div>
+        </div>
                     </div>
                     </div>
 
@@ -657,10 +641,6 @@ function loadTopicContent(topicId) {
 }
 
 function displayTopicContent(topic, posts) {
-    // Update chat header
-    document.getElementById('chat-title').textContent = topic.title;
-    document.getElementById('chat-status').textContent = `last activity ${topic.last_reply_at || topic.created_at}`;
-    
     // Update chat messages
     const chatMessages = document.getElementById('chat-messages');
     let messagesHTML = '';
@@ -669,13 +649,15 @@ function displayTopicContent(topic, posts) {
     messagesHTML += `
         <div class="message-bubble received">
             <div class="message-content">
-                <div>${topic.content}</div>
-            </div>
-            <div class="message-meta">
-                <span class="message-author">${topic.author.name}</span>
-                <span class="message-time">${topic.created_at}</span>
-                ${topic.can_edit ? '<button class="edit-btn" onclick="editTopic(' + topic.id + ')">Edit</button>' : ''}
-                ${topic.can_delete ? '<button class="delete-btn" onclick="deleteTopic(' + topic.id + ')">Delete</button>' : ''}
+                <div class="message-header">
+                    <span class="message-author">${topic.author.name}</span>
+                    <span class="message-time">${topic.created_at}</span>
+                </div>
+                <div class="message-text">${topic.content}</div>
+                <div class="message-actions">
+                    ${topic.can_edit ? '<button class="edit-btn" onclick="editTopic(' + topic.id + ')">Edit</button>' : ''}
+                    ${topic.can_delete ? '<button class="delete-btn" onclick="deleteTopic(' + topic.id + ')">Delete</button>' : ''}
+                </div>
             </div>
         </div>
     `;
@@ -685,13 +667,17 @@ function displayTopicContent(topic, posts) {
         if (post.id !== posts[0].id) { // Skip first post if it's the same as topic content
             messagesHTML += `
                 <div class="message-bubble received">
-                    <div class="message-content">${post.content}</div>
-                    <div class="message-meta">
-                        <span class="message-author">${post.author.name}</span>
-                        <span class="message-time">${post.created_at}</span>
-                        ${post.is_edited ? '<span style="color: #6b7280; font-size: 0.7rem;">(edited)</span>' : ''}
-                        ${post.can_edit ? '<button class="edit-btn" onclick="editPost(' + post.id + ')">Edit</button>' : ''}
-                        ${post.can_delete ? '<button class="delete-btn" onclick="deletePost(' + post.id + ')">Delete</button>' : ''}
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author">${post.author.name}</span>
+                            <span class="message-time">${post.created_at}</span>
+                            ${post.is_edited ? '<span class="message-edited">(edited)</span>' : ''}
+                        </div>
+                        <div class="message-text">${post.content}</div>
+                        <div class="message-actions">
+                            ${post.can_edit ? '<button class="edit-btn" onclick="editPost(' + post.id + ')">Edit</button>' : ''}
+                            ${post.can_delete ? '<button class="delete-btn" onclick="deletePost(' + post.id + ')">Delete</button>' : ''}
+                        </div>
                     </div>
                 </div>
             `;
@@ -716,11 +702,9 @@ function addFixedReplyForm(topicId) {
     replyForm.id = 'fixed-reply-form';
     replyForm.className = 'reply-form';
     replyForm.innerHTML = `
-        <form id="reply-form" onsubmit="submitReply(event, ${topicId})">
-            <textarea id="reply-content" placeholder="Write your reply..." style="width: 100%; min-height: 60px; padding: 0.75rem; border: 1px solid #e1e5e9; border-radius: 8px; resize: vertical; font-family: inherit;"></textarea>
-            <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
-                <button type="submit" style="background: #3ECDC1; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Send Reply</button>
-            </div>
+        <form id="reply-form" onsubmit="submitReply(event, ${topicId})" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <textarea id="reply-content" placeholder="Write your reply..." style="flex: 1; min-height: 40px; max-height: 120px; padding: 0.75rem; border: 1px solid #e1e5e9; border-radius: 8px; resize: vertical; font-family: inherit;"></textarea>
+            <button type="submit" style="background: #3ECDC1; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; height: fit-content; white-space: nowrap;">Send</button>
         </form>
     `;
     
