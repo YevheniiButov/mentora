@@ -706,6 +706,32 @@ def check_production_data():
 
 logger.info("✅ Check production data command registered")
 
+# Create production topics command
+@app.cli.command()
+def create_topics():
+    """Создать темы для сообщества в продакшене"""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    script_path = Path(__file__).parent / 'scripts' / 'create_production_topics.py'
+
+    if not script_path.exists():
+        print(f"❌ Script not found: {script_path}")
+        return
+
+    try:
+        result = subprocess.run([sys.executable, str(script_path)], 
+                              capture_output=True, text=True, check=True)
+        print(result.stdout)
+        print("✅ Создание тем завершено успешно!")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Ошибка при создании тем: {e}")
+        print(f"STDOUT: {e.stdout}")
+        print(f"STDERR: {e.stderr}")
+
+logger.info("✅ Create topics command registered")
+
 # Force load production data command
 @app.cli.command()
 def force_load_data():
