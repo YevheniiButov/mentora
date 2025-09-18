@@ -1275,6 +1275,7 @@ translations = {
     'data_usage_consent': 'I consent to the use of my data for educational purposes',
     'privacy_policy_consent': 'I agree to the Privacy Policy',
     'terms_consent': 'I agree to the Terms of Service',
+    'privacy_consent': 'I agree to the Privacy Policy',
     'marketing_consent': 'I consent to receive marketing communications',
     
     # Form validation messages

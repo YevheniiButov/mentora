@@ -1048,6 +1048,7 @@ translations = {
     'data_usage_consent': 'Ik stem in met het gebruik van mijn gegevens voor educatieve doeleinden',
     'privacy_policy_consent': 'Ik ga akkoord met het Privacybeleid',
     'terms_consent': 'Ik ga akkoord met de Gebruiksvoorwaarden',
+    'privacy_consent': 'Ik ga akkoord met het Privacybeleid',
     'marketing_consent': 'Ik stem in met het ontvangen van marketingcommunicatie',
     
     # Formulier validatie berichten
