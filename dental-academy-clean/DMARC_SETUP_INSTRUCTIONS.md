@@ -160,3 +160,4 @@ v=DMARC1; p=reject; rua=mailto:dmarc-reports@bigmentor.nl; ruf=mailto:dmarc-fail
 ---
 
 **Важно:** После настройки DMARC подождите 24-48 часов и проверьте статус в Resend Dashboard. Все рекомендации должны перейти в категорию "DOING GREAT".
+

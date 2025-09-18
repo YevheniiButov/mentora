@@ -677,9 +677,84 @@
             }
         }
 
+        // Create Hawking radiation particles
+        function createHawkingRadiation() {
+            const container = document.querySelector('.hawking-radiation');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'hawking-particle';
+                
+                // Position near event horizon
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 80 + Math.random() * 20;
+                const startX = Math.cos(angle) * radius;
+                const startY = Math.sin(angle) * radius;
+                
+                particle.style.left = `calc(50% + ${startX}px)`;
+                particle.style.top = `calc(50% + ${startY}px)`;
+                
+                // Random escape direction
+                const escapeX = Math.cos(angle) * (200 + Math.random() * 100);
+                const escapeY = Math.sin(angle) * (200 + Math.random() * 100);
+                particle.style.setProperty('--dx', escapeX + 'px');
+                particle.style.setProperty('--dy', escapeY + 'px');
+                
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Create distorted stars
+        function createDistortedStars() {
+            const container = document.querySelector('.distorted-starfield');
+            const starCount = 30;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'distorted-star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 15 + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // Create supernova debris
+        function createSupernovaDebris() {
+            const container = document.querySelector('.supernova');
+            const debrisCount = 15;
+            
+            for (let i = 0; i < debrisCount; i++) {
+                const debris = document.createElement('div');
+                debris.className = 'supernova-debris';
+                
+                // Random position near supernova center
+                debris.style.left = '50%';
+                debris.style.top = '50%';
+                
+                // Random direction and distance
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 100 + Math.random() * 200;
+                const debrisX = Math.cos(angle) * distance;
+                const debrisY = Math.sin(angle) * distance;
+                
+                debris.style.setProperty('--debris-x', debrisX + 'px');
+                debris.style.setProperty('--debris-y', debrisY + 'px');
+                debris.style.animationDelay = Math.random() * 12 + 's';
+                
+                container.appendChild(debris);
+            }
+        }
+
         // Initialize cosmic effects
         createStars();
         createParticles();
+        createHawkingRadiation();
+        createDistortedStars();
+        createSupernovaDebris();
 
         // Handle form submission
         document.querySelector('.login-form').addEventListener('submit', function(e) {
