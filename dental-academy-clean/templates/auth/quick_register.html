@@ -253,7 +253,7 @@
             <input type="checkbox" id="privacyConsent" name="privacyConsent" required>
             <label for="privacyConsent">
                 {{ t('privacy_consent', lang) | default('Я согласен с') }} 
-                <a href="{{ url_for('main.privacy', lang=lang) if lang != 'en' else url_for('main.privacy') }}" target="_blank">
+                <a href="{{ url_for('main.privacy', lang=lang) if lang != 'en' else url_for('main.privacy', lang='en') }}" target="_blank">
                     {{ t('privacy_policy', lang) | default('Политикой конфиденциальности') }}
                 </a>
             </label>
@@ -263,7 +263,7 @@
             <input type="checkbox" id="termsConsent" name="termsConsent" required>
             <label for="termsConsent">
                 {{ t('terms_consent', lang) | default('Я согласен с') }} 
-                <a href="{{ url_for('main.terms', lang=lang) if lang != 'en' else url_for('main.terms') }}" target="_blank">
+                <a href="{{ url_for('main.terms', lang=lang) if lang != 'en' else url_for('main.terms', lang='en') }}" target="_blank">
                     {{ t('terms_of_service', lang) | default('Условиями использования') }}
                 </a>
             </label>
