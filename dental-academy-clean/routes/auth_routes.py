@@ -19,27 +19,32 @@ auth_bp = Blueprint('auth', __name__)
 
 # reCAPTCHA validation
 def verify_recaptcha(response_token):
-    """Verify reCAPTCHA token with Google - improved validation"""
+    """Verify reCAPTCHA token with Google - with emergency bypass"""
     
-    # Check if reCAPTCHA is enabled
+    # === EMERGENCY FIX ===
+    # Check if reCAPTCHA is enabled in production
     recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
     if not recaptcha_enabled:
+        print("=== reCAPTCHA DISABLED - BYPASSING ===")
         return True
     
-    secret_key = current_app.config.get('RECAPTCHA_PRIVATE_KEY')
+    secret_key = current_app.config.get('RECAPTCHA_PRIVATE_KEY', '6LdnzsYrAAAAABe7nFDNs9L7PfSNujJZLQOywdKd')
     
-    # If no key configured - skip validation
+    # If no key - skip
     if not secret_key or secret_key.strip() == '':
+        print("=== NO RECAPTCHA KEY - BYPASSING ===")
         return True
     
-    # If no token provided - fail validation
+    # If no token - skip only in development
     if not response_token:
+        if current_app.config.get('FLASK_ENV') == 'development':
+            print("=== DEVELOPMENT MODE - BYPASSING RECAPTCHA ===")
+            return True
         return False
     
     data = {
         'secret': secret_key,
-        'response': response_token,
-        'remoteip': request.remote_addr
+        'response': response_token
     }
     
     try:
@@ -47,14 +52,19 @@ def verify_recaptcha(response_token):
         result = response.json()
         success = result.get('success', False)
         
-        # Log errors for debugging
+        print(f"=== reCAPTCHA RESULT: {success} ===")
         if not success:
-            error_codes = result.get('error-codes', [])
-            print(f"reCAPTCHA validation failed: {error_codes}")
+            print(f"=== reCAPTCHA ERRORS: {result.get('error-codes', [])} ===")
         
         return success
     except Exception as e:
-        print(f"reCAPTCHA API error: {str(e)}")
+        print(f"=== reCAPTCHA ERROR: {str(e)} ===")
+        
+        # In case of API error - skip in development
+        if current_app.config.get('FLASK_ENV') == 'development':
+            print("=== reCAPTCHA API ERROR - BYPASSING IN DEV ===")
+            return True
+        
         return False
 
 # Email validation
