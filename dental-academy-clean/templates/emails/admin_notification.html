@@ -1,0 +1,37 @@
+{% extends "emails/admin_base.html" %}
+
+{% block content %}
+<div class="admin-badge">Уведомление</div>
+
+<div class="greeting">
+    Здравствуйте, {{ user.first_name or 'Уважаемый пользователь' }}!
+</div>
+
+<div class="message">
+    {{ message|safe }}
+</div>
+
+{% if notification_type == 'system_update' %}
+<div class="info">
+    <strong>🔄 Обновление системы:</strong> Мы постоянно улучшаем платформу Mentora для вашего удобства.
+</div>
+{% elif notification_type == 'maintenance' %}
+<div class="warning">
+    <strong>🔧 Техническое обслуживание:</strong> Планируется техническое обслуживание системы.
+</div>
+{% elif notification_type == 'feature' %}
+<div class="success">
+    <strong>✨ Новая функция:</strong> Мы добавили новую функцию, которая может быть вам полезна.
+</div>
+{% endif %}
+
+{% if action_url %}
+<div class="button-center">
+    <a href="{{ action_url }}" class="button">{{ action_text or 'Подробнее' }}</a>
+</div>
+{% endif %}
+
+<div class="info">
+    <strong>📧 Настройки уведомлений:</strong> Вы можете управлять настройками уведомлений в своем профиле.
+</div>
+{% endblock %}

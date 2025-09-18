@@ -2680,19 +2680,9 @@ def reset_user_password(user_id):
         db.session.commit()
         
         # Отправляем email с новым паролем
-        from utils.admin_email_service import send_admin_email
+        from utils.admin_email_service import send_password_reset_email
         
-        subject = "Mentora - Новый пароль"
-        message = f"""Ваш пароль был сброшен администратором.
-
-Новый временный пароль: {temp_password}
-
-Пожалуйста, войдите в систему и измените пароль на более безопасный.
-
-С уважением,
-Команда Mentora"""
-        
-        email_sent = send_admin_email(user, subject, message, 'password_reset')
+        email_sent = send_password_reset_email(user, temp_password)
         
         if email_sent:
             flash(f'Пароль сброшен и отправлен на {user.email}', 'success')
