@@ -397,8 +397,17 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> {{ t("processing", lang) | default("Обработка...") }}';
         
         try {
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
+            // Собираем данные формы вручную для правильной обработки checkbox'ов
+            const data = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                birthDate: document.getElementById('birthDate').value,
+                email: document.getElementById('email').value.trim(),
+                profession: document.getElementById('profession').value,
+                privacyConsent: document.getElementById('privacyConsent').checked,
+                termsConsent: document.getElementById('termsConsent').checked,
+                marketingConsent: document.getElementById('marketingConsent').checked
+            };
             
             // Добавляем reCAPTCHA response
             {% if config.RECAPTCHA_PUBLIC_KEY %}
@@ -406,6 +415,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 data['g-recaptcha-response'] = grecaptcha.getResponse();
             }
             {% endif %}
+            
+            console.log('Sending data:', data);
             
             const response = await fetch('{{ url_for("auth.quick_register") }}', {
                 method: 'POST',
@@ -415,7 +426,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(data)
             });
             
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
             const result = await response.json();
+            console.log('Response result:', result);
             
             if (result.success) {
                 // Показываем сообщение об успехе
@@ -426,6 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = '{{ url_for("auth.login", lang=lang) if lang != "en" else url_for("auth.login") }}';
                 }, 3000);
             } else {
+                console.error('Registration failed:', result.error);
                 showErrorMessage(result.error || '{{ t("registration_error", lang) | default("Ошибка регистрации") }}');
             }
         } catch (error) {

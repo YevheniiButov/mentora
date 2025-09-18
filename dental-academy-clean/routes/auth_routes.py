@@ -1155,7 +1155,12 @@ def quick_register():
                 }), 400
         
         # Проверка согласий
-        if not data.get('privacyConsent') or not data.get('termsConsent'):
+        privacy_consent = data.get('privacyConsent', False)
+        terms_consent = data.get('termsConsent', False)
+        
+        print(f"=== CONSENT CHECK: privacy={privacy_consent}, terms={terms_consent} ===")
+        
+        if not privacy_consent or not terms_consent:
             return jsonify({
                 'success': False,
                 'error': 'You must agree to the privacy policy and terms of service'
@@ -1170,6 +1175,7 @@ def quick_register():
             }), 400
         
         # Создание нового пользователя
+        print(f"=== CREATING USER: {data['email']} ===")
         user = User(
             first_name=data['firstName'],
             last_name=data['lastName'],
