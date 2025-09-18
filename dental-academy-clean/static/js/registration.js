@@ -997,16 +997,13 @@ function initializeNationalitySearch() {
 
 // reCAPTCHA validation
 function validateRecaptcha() {
-    // Проверяем есть ли grecaptcha объект
+    // Check if reCAPTCHA is configured
     if (typeof grecaptcha === 'undefined') {
-        console.log('reCAPTCHA not loaded, skipping validation');
-        return true;
+        return true; // Skip validation if reCAPTCHA is not configured
     }
     
     const recaptchaResponse = grecaptcha.getResponse();
-    console.log('reCAPTCHA response:', recaptchaResponse ? 'present' : 'missing');
-    
-    if (!recaptchaResponse) {
+    if (recaptchaResponse.length === 0) {
         showFieldError('g-recaptcha-response', 'Please complete the reCAPTCHA verification');
         return false;
     }
