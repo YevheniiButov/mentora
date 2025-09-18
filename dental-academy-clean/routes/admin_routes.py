@@ -1196,17 +1196,14 @@ def crm_users_send_email():
         else:
             return jsonify({'success': False, 'error': 'No users specified'})
         
-        # Send emails (this would integrate with your email service)
-        sent_count = 0
-        for user in users:
-            if user and user.email:
-                try:
-                    # Here you would call your email service
-                    # For now, just log the email
-                    current_app.logger.info(f"Would send email to {user.email}: {subject}")
-                    sent_count += 1
-                except Exception as e:
-                    current_app.logger.error(f"Error sending email to {user.email}: {str(e)}")
+        # Send emails using admin email service
+        from utils.admin_email_service import send_bulk_admin_emails
+        
+        result = send_bulk_admin_emails(users, subject, message, 'custom')
+        sent_count = result['sent']
+        
+        if result['errors']:
+            current_app.logger.warning(f"Some emails failed to send: {result['errors']}")
         
         return jsonify({
             'success': True, 
@@ -2682,9 +2679,25 @@ def reset_user_password(user_id):
         
         db.session.commit()
         
-        # Here you would normally send an email with the new password
-        # For now, just show it to the admin
-        flash(f'Пароль сброшен. Временный пароль: {temp_password}', 'success')
+        # Отправляем email с новым паролем
+        from utils.admin_email_service import send_admin_email
+        
+        subject = "Mentora - Новый пароль"
+        message = f"""Ваш пароль был сброшен администратором.
+
+Новый временный пароль: {temp_password}
+
+Пожалуйста, войдите в систему и измените пароль на более безопасный.
+
+С уважением,
+Команда Mentora"""
+        
+        email_sent = send_admin_email(user, subject, message, 'password_reset')
+        
+        if email_sent:
+            flash(f'Пароль сброшен и отправлен на {user.email}', 'success')
+        else:
+            flash(f'Пароль сброшен: {temp_password} (ошибка отправки email)', 'warning')
         
         return redirect(url_for('admin.user_detail', user_id=user_id))
         
@@ -3150,9 +3163,14 @@ def resend_verification_email(user_id):
         # Generate new token
         token = user.generate_email_confirmation_token()
         
-        # Here you would send the actual email
-        # For now, just log it
-        flash(f'Письмо с подтверждением отправлено на {user.email}', 'success')
+        # Отправляем реальное письмо с подтверждением
+        from utils.email_service import send_email_confirmation
+        email_sent = send_email_confirmation(user, token)
+        
+        if email_sent:
+            flash(f'Письмо с подтверждением отправлено на {user.email}', 'success')
+        else:
+            flash(f'Ошибка отправки письма на {user.email}', 'error')
         
         db.session.commit()
         
