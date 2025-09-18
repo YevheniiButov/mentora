@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import app
-from models import db, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, EmailCampaign, SystemNotification, User
+from models import db, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, CommunicationCampaign, SystemNotification, User
 from datetime import datetime, timedelta
 import json
 import random
@@ -211,7 +211,7 @@ def create_admin_tools_data():
             template = random.choice(templates)
             status = random.choice(campaign_statuses)
             
-            campaign = EmailCampaign(
+            campaign = CommunicationCampaign(
                 admin_user_id=admin.id,
                 name=f"Кампания {i+1}: {template.name}",
                 description=f"Описание кампании {i+1}",
@@ -299,7 +299,7 @@ def create_admin_tools_data():
             print(f"   - {SystemHealthLog.query.count()} логов состояния системы")
             print(f"   - {DatabaseBackup.query.count()} записей резервных копий")
             print(f"   - {EmailTemplate.query.count()} email шаблонов")
-            print(f"   - {EmailCampaign.query.count()} email кампаний")
+            print(f"   - {CommunicationCampaign.query.count()} email кампаний")
             print(f"   - {SystemNotification.query.count()} системных уведомлений")
             
         except Exception as e:

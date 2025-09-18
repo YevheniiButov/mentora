@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
-from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, EmailCampaign, SystemNotification
+from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, CommunicationCampaign, SystemNotification
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_
@@ -4115,8 +4115,8 @@ def communication_hub():
         email_templates = EmailTemplate.query.filter_by(is_active=True).all()
         
         # Get email campaigns
-        email_campaigns = EmailCampaign.query.order_by(
-            EmailCampaign.created_at.desc()
+        email_campaigns = CommunicationCampaign.query.order_by(
+            CommunicationCampaign.created_at.desc()
         ).limit(10).all()
         
         # Get template statistics
@@ -4125,9 +4125,9 @@ def communication_hub():
         system_templates = EmailTemplate.query.filter_by(is_system=True).count()
         
         # Get campaign statistics
-        total_campaigns = EmailCampaign.query.count()
-        draft_campaigns = EmailCampaign.query.filter_by(status='draft').count()
-        sent_campaigns = EmailCampaign.query.filter_by(status='sent').count()
+        total_campaigns = CommunicationCampaign.query.count()
+        draft_campaigns = CommunicationCampaign.query.filter_by(status='draft').count()
+        sent_campaigns = CommunicationCampaign.query.filter_by(status='completed').count()
         
         return render_template('admin/communication_hub.html',
                              email_templates=email_templates,

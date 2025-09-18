@@ -5245,72 +5245,7 @@ class EmailTemplate(db.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
-class EmailCampaign(db.Model):
-    """Email marketing campaigns"""
-    __tablename__ = 'email_campaign'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    admin_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
-    # Campaign details
-    name = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    template_id = db.Column(db.Integer, db.ForeignKey('email_template.id'), nullable=False)
-    
-    # Target audience
-    target_criteria = db.Column(db.Text, nullable=True)  # JSON with filter criteria
-    target_count = db.Column(db.Integer, nullable=True)  # Number of recipients
-    
-    # Campaign status
-    status = db.Column(db.String(20), default='draft')  # draft, scheduled, sending, sent, failed
-    scheduled_at = db.Column(db.DateTime, nullable=True)
-    started_at = db.Column(db.DateTime, nullable=True)
-    completed_at = db.Column(db.DateTime, nullable=True)
-    
-    # Results
-    sent_count = db.Column(db.Integer, default=0)
-    delivered_count = db.Column(db.Integer, default=0)
-    opened_count = db.Column(db.Integer, default=0)
-    clicked_count = db.Column(db.Integer, default=0)
-    bounced_count = db.Column(db.Integer, default=0)
-    unsubscribed_count = db.Column(db.Integer, default=0)
-    
-    # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    admin_user = db.relationship('User', backref='email_campaigns')
-    template = db.relationship('EmailTemplate', backref='campaigns')
-    
-    def __repr__(self):
-        return f'<EmailCampaign {self.name}: {self.status}>'
-    
-    def to_dict(self):
-        """Convert to dictionary for JSON serialization"""
-        return {
-            'id': self.id,
-            'admin_user_id': self.admin_user_id,
-            'admin_email': self.admin_user.email if self.admin_user else None,
-            'name': self.name,
-            'description': self.description,
-            'template_id': self.template_id,
-            'template_name': self.template.name if self.template else None,
-            'target_criteria': self.target_criteria,
-            'target_count': self.target_count,
-            'status': self.status,
-            'scheduled_at': self.scheduled_at.isoformat() if self.scheduled_at else None,
-            'started_at': self.started_at.isoformat() if self.started_at else None,
-            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
-            'sent_count': self.sent_count,
-            'delivered_count': self.delivered_count,
-            'opened_count': self.opened_count,
-            'clicked_count': self.clicked_count,
-            'bounced_count': self.bounced_count,
-            'unsubscribed_count': self.unsubscribed_count,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
-        }
+# EmailCampaign model removed - using CommunicationCampaign instead
 
 class SystemNotification(db.Model):
     """System notifications and alerts"""
