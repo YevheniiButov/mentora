@@ -687,7 +687,7 @@ function showSuccessMessage(message) {
     
     messageDiv.innerHTML = `
         <div class="success-icon">✅</div>
-        <h2 style="margin: 0 0 20px 0; font-size: 24px;">Registration Completed!</h2>
+        <h2 style="margin: 0 0 20px 0; font-size: 24px;">Welcome to Mentora!</h2>
         <div style="font-size: 16px; line-height: 1.6;">${message}</div>
         <div style="margin-top: 30px;">
             <button id="continueBtn" style="
@@ -709,8 +709,8 @@ function showSuccessMessage(message) {
     overlay.appendChild(messageDiv);
     document.body.appendChild(overlay);
     
-    // "Continue" button or automatic redirect after 8 seconds
-    let countdown = 8;
+    // "Continue" button or automatic redirect after 15 seconds
+    let countdown = 15;
     const continueBtn = document.getElementById('continueBtn');
     
     const updateButton = () => {
@@ -847,14 +847,20 @@ async function submitForm() {
         if (result.success) {
             console.log('Registration successful!');
             
-            // Show simple success message
+            // Show beautiful success message with countdown
             const userEmail = formData.get('email') || 'your email';
-            alert(`✅ Registration Successful!\n\n📧 Check your email: ${userEmail}\n\n⚠️ Check your Spam folder!\n\n🚀 After confirming email, you can log in and receive notifications about program launch in 2026`);
+            const successMessage = `
+                <div style="text-align: left; line-height: 1.8;">
+                    <p><strong>📧 Check your email:</strong> ${userEmail}</p>
+                    <p><strong>⚠️ Important:</strong> Check your Spam folder if you don't see the email!</p>
+                    <p><strong>🚀 Next steps:</strong> After confirming your email, you can log in and receive updates about our program.</p>
+                    <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                        <em>We'll keep you informed about program developments and important updates.</em>
+                    </p>
+                </div>
+            `;
             
-            // Redirect to login
-            setTimeout(() => {
-                window.location.href = '/auth/login';
-            }, 2000);
+            showSuccessMessage(successMessage);
         } else {
             console.log('Registration failed:', result.error);
             const errorMessage = result.error || 'Registration failed. Please try again.';
