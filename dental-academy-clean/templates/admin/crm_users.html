@@ -628,6 +628,21 @@
 
 {% block extra_js %}
 <script>
+// Debug function to test if everything is loaded
+function debugEmailFunctions() {
+    console.log('=== EMAIL FUNCTIONS DEBUG ===');
+    console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+    console.log('sendEmailModal element:', document.getElementById('sendEmailModal'));
+    console.log('emailForm element:', document.getElementById('emailForm'));
+    console.log('sendEmail function:', typeof sendEmail);
+    console.log('sendBulkEmail function:', typeof sendBulkEmail);
+    console.log('=============================');
+}
+
+// Run debug on page load
+document.addEventListener('DOMContentLoaded', function() {
+    debugEmailFunctions();
+});
 // Sorting functionality
 function sortTable(column) {
     const currentSort = '{{ sort_by }}';
@@ -702,14 +717,25 @@ function viewUserDetails(userId) {
 }
 
 function sendEmail(userId) {
+    console.log('sendEmail called with userId:', userId);
     // Set user ID for email form
-    document.getElementById('emailForm').dataset.userId = userId;
-    new bootstrap.Modal(document.getElementById('sendEmailModal')).show();
+    const emailForm = document.getElementById('emailForm');
+    if (!emailForm) {
+        console.error('emailForm not found');
+        alert('Email form not found');
+        return;
+    }
+    emailForm.dataset.userId = userId;
+    const modal = new bootstrap.Modal(document.getElementById('sendEmailModal'));
+    modal.show();
 }
 
 function sendBulkEmail() {
+    console.log('sendBulkEmail called');
     const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked'))
         .map(cb => cb.value);
+    
+    console.log('Selected users:', selectedUsers);
     
     if (selectedUsers.length === 0) {
         alert('Please select users to send email to');
@@ -717,12 +743,22 @@ function sendBulkEmail() {
     }
     
     // Set bulk user IDs for email form
-    document.getElementById('emailForm').dataset.userIds = selectedUsers.join(',');
-    new bootstrap.Modal(document.getElementById('sendEmailModal')).show();
+    const emailForm = document.getElementById('emailForm');
+    if (!emailForm) {
+        console.error('emailForm not found');
+        alert('Email form not found');
+        return;
+    }
+    emailForm.dataset.userIds = selectedUsers.join(',');
+    const modal = new bootstrap.Modal(document.getElementById('sendEmailModal'));
+    modal.show();
 }
 
 // Email form submission
-document.getElementById('emailForm').addEventListener('submit', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+    const emailForm = document.getElementById('emailForm');
+    if (emailForm) {
+        emailForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const userId = this.dataset.userId;
@@ -761,11 +797,16 @@ document.getElementById('emailForm').addEventListener('submit', function(e) {
         console.error('Error:', error);
         alert('Error sending email');
     });
+        });
+    } else {
+        console.error('emailForm not found for event listener');
+    }
 });
 
 // View switching
 function changeView(view) {
     // This would switch between table and card views
-    // For now, we only have table view}
+    // For now, we only have table view
+}
 </script>
 {% endblock %}
