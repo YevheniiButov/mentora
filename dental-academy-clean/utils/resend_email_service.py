@@ -8,7 +8,7 @@ import requests
 import json
 from flask import current_app
 from models import User
-from utils.email_tokens import generate_confirmation_token, confirm_token
+# Токены генерируются в модели User
 
 def send_email_confirmation_resend(user):
     """
@@ -16,8 +16,8 @@ def send_email_confirmation_resend(user):
     """
     try:
         # Генерируем токен подтверждения
-        token = generate_confirmation_token(user.email)
-        confirmation_url = f"{current_app.config.get('BASE_URL', 'https://bigmentor.nl')}/confirm/{token}"
+        token = user.generate_email_confirmation_token()
+        confirmation_url = f"{current_app.config.get('BASE_URL', 'https://bigmentor.nl')}/auth/confirm-email/{token}"
         
         print(f"=== RESEND EMAIL CONFIRMATION for {user.email} ===")
         print(f"=== CONFIRMATION_URL: {confirmation_url} ===")
