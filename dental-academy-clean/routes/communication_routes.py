@@ -5,7 +5,7 @@ Communication Hub Routes
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
-from models import db, User, Contact
+from models import db, User, Contact, CommunicationHistory, EmailTemplate, CommunicationCampaign
 # Models are now in main models.py
 from datetime import datetime, timedelta
 import json

@@ -44,7 +44,7 @@ def send_email_confirmation_resend(user):
         
         # Получаем настройки Resend
         api_key = current_app.config.get('RESEND_API_KEY')
-        from_email = current_app.config.get('RESEND_FROM_EMAIL', 'Mentora <noreply@bigmentor.nl>')
+        from_email = current_app.config.get('RESEND_FROM_EMAIL', 'Mentora <info@bigmentor.nl>')
         
         if not api_key:
             print("❌ RESEND_API_KEY not configured")
@@ -58,7 +58,9 @@ def send_email_confirmation_resend(user):
             "to": [user.email],
             "subject": "MENTORA - Email Confirmation",
             "html": get_confirmation_email_html(user, confirmation_url),
-            "text": get_confirmation_email_text(user, confirmation_url)
+            "text": get_confirmation_email_text(user, confirmation_url),
+            "click_tracking": False,  # Отключаем click tracking для лучшей доставляемости
+            "open_tracking": False   # Отключаем open tracking для лучшей доставляемости
         }
         
         # Отправляем через Resend API

@@ -4947,6 +4947,75 @@ class ProfessionAnalytics(db.Model):
     
     def __repr__(self):
         return f'<ProfessionAnalytics {self.profession_id}>'
+
+class ContactActivity(db.Model):
+    """Модель активности контактов"""
+    __tablename__ = 'contact_activity'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    contact_id = db.Column(db.Integer, db.ForeignKey('contact.id'), nullable=False, comment='ID контакта')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, comment='ID пользователя, выполнившего действие')
+    
+    # Информация об активности
+    activity_type = db.Column(db.String(50), nullable=False, comment='Тип активности: call, email, meeting, note, task')
+    activity_subtype = db.Column(db.String(50), nullable=True, comment='Подтип активности')
+    subject = db.Column(db.String(200), nullable=True, comment='Тема активности')
+    description = db.Column(db.Text, nullable=True, comment='Описание активности')
+    
+    # Детали активности
+    duration = db.Column(db.Integer, nullable=True, comment='Длительность в минутах')
+    outcome = db.Column(db.String(100), nullable=True, comment='Результат активности')
+    next_action = db.Column(db.String(200), nullable=True, comment='Следующее действие')
+    next_action_date = db.Column(db.DateTime, nullable=True, comment='Дата следующего действия')
+    
+    # Статус
+    status = db.Column(db.String(50), default='completed', comment='Статус: planned, in_progress, completed, cancelled')
+    priority = db.Column(db.String(20), default='normal', comment='Приоритет: low, normal, high, urgent')
+    
+    # Дополнительные данные
+    activity_metadata = db.Column(db.Text, nullable=True, comment='Дополнительные данные в JSON')
+    attachments = db.Column(db.Text, nullable=True, comment='Вложения в JSON')
+    
+    # Временные метки
+    scheduled_at = db.Column(db.DateTime, nullable=True, comment='Запланированное время')
+    started_at = db.Column(db.DateTime, nullable=True, comment='Время начала')
+    completed_at = db.Column(db.DateTime, nullable=True, comment='Время завершения')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Связи
+    contact = db.relationship('Contact', backref='activities')
+    user = db.relationship('User', backref='contact_activities')
+    
+    def __repr__(self):
+        return f'<ContactActivity {self.activity_type}: {self.contact.full_name if self.contact else "Unknown"}>'
+    
+    def to_dict(self):
+        """Преобразование в словарь для JSON"""
+        return {
+            'id': self.id,
+            'contact_id': self.contact_id,
+            'contact_name': self.contact.full_name if self.contact else None,
+            'user_id': self.user_id,
+            'user_name': self.user.get_display_name() if self.user else None,
+            'activity_type': self.activity_type,
+            'activity_subtype': self.activity_subtype,
+            'subject': self.subject,
+            'description': self.description,
+            'duration': self.duration,
+            'outcome': self.outcome,
+            'next_action': self.next_action,
+            'next_action_date': self.next_action_date.isoformat() if self.next_action_date else None,
+            'status': self.status,
+            'priority': self.priority,
+            'activity_metadata': self.activity_metadata,
+            'attachments': self.attachments,
+            'scheduled_at': self.scheduled_at.isoformat() if self.scheduled_at else None,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
     
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
@@ -5325,26 +5394,6 @@ class CommunicationHistory(db.Model):
     def __repr__(self):
         return f'<CommunicationHistory {self.id}: {self.recipient_email}>'
 
-class EmailTemplate(db.Model):
-    """Шаблоны email для переиспользования"""
-    __tablename__ = 'email_templates'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    subject = db.Column(db.String(500), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    email_type = db.Column(db.String(50), nullable=False)
-    action_url = db.Column(db.String(500), nullable=True)
-    action_text = db.Column(db.String(255), nullable=True)
-    is_active = db.Column(db.Boolean, default=True)
-    created_by = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    usage_count = db.Column(db.Integer, default=0)
-    
-    def __repr__(self):
-        return f'<EmailTemplate {self.id}: {self.name}>'
 
 class CommunicationCampaign(db.Model):
     """Кампании массовых рассылок"""

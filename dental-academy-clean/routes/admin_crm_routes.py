@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
 from models import db, User
-from admin_models import Profession, Contact, ContactActivity, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics
+from models import Profession, Contact, ContactActivity, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_, desc, asc

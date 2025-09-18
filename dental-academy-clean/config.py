@@ -82,7 +82,7 @@ class Config:
     
     # Resend API Configuration
     RESEND_API_KEY = os.environ.get('RESEND_API_KEY', None)
-    RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'Mentora <noreply@bigmentor.nl>')
+    RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'Mentora <info@bigmentor.nl>')
     
     # DigiD Configuration
     DIGID_ENABLED = True

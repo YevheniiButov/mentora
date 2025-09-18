@@ -456,6 +456,14 @@ try:
     except ImportError as communication_error:
         logger.warning(f"Could not import Communication Hub routes: {communication_error}")
     
+    # CRM System
+    try:
+        from routes.admin_crm_routes import crm_bp
+        app.register_blueprint(crm_bp)
+        logger.info("✅ CRM blueprint registered successfully")
+    except ImportError as crm_error:
+        logger.warning(f"Could not import CRM routes: {crm_error}")
+    
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
         # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется
