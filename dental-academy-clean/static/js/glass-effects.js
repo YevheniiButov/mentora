@@ -198,13 +198,13 @@ class GlassEffects {
     }
 
     activateGlassEffects() {
-        // if (this.header) {
+        if (this.header) {
             this.header.classList.add('glass-active');
         }
     }
 
     deactivateGlassEffects() {
-        // if (this.header) {
+        if (this.header) {
             this.header.classList.remove('glass-active', 'scrolled');
             // Сбрасываем CSS переменные
             this.header.style.removeProperty('--dynamic-blur');

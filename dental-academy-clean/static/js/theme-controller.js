@@ -40,8 +40,7 @@ class ThemeController {
         
         // Отправляем событие
         this.notifyThemeChange();
-        
-        // }
+    }
 
     toggleTheme() {
         if (this.theme !== 'toggle') {
@@ -59,8 +58,7 @@ class ThemeController {
         
         // Применяем изменения
         this.applyTheme();
-        
-        // }
+    }
 
     notifyThemeChange() {
         const event = new CustomEvent('themechange', {

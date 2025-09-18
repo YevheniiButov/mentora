@@ -199,7 +199,7 @@ async function loadRecommendations() {
       }
     }
     
-    // if (data.success && data.recommendations) {
+    if (data.success && data.recommendations) {
       renderRecommendations(data.recommendations);
     } else {
       throw new Error(data.error || 'No recommendations data');
