@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app
 from flask_login import login_required, current_user
-from flask_mail import Message
-from extensions import mail, db
+from extensions import db
 from models import User, Contact
 from utils.decorators import admin_required
 from datetime import datetime, timedelta
@@ -10,12 +9,13 @@ import logging
 
 communication_bp = Blueprint('communication', __name__, url_prefix='/admin/communication')
 
-# Проверка SMTP конфигурации
+# Проверка Resend API конфигурации
 @communication_bp.before_request
-def check_mail_config():
-    """Проверяем, что SMTP настроен"""
-    if not mail:
-        flash('SMTP не настроен! Проверьте конфигурацию email.', 'error')
+def check_resend_config():
+    """Проверяем, что Resend API настроен"""
+    resend_api_key = current_app.config.get('RESEND_API_KEY')
+    if not resend_api_key:
+        flash('Resend API не настроен! Проверьте конфигурацию email.', 'error')
 
 # Главная страница Communication Hub
 @communication_bp.route('/')
