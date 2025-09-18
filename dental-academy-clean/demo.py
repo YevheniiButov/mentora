@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Dental Academy - Demo Registration System
+Mentora - Demo Registration System
 Простой запуск демо-версии
 """
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     
     port = int(os.environ.get('PORT', 5002))
     
-    print("🦷 Dental Academy - Demo Registration System")
+    print("🎓 Mentora - Demo Registration System")
     print("=" * 50)
     print("✅ Расширенная форма регистрации")
     print("✅ Опциональная загрузка документов")

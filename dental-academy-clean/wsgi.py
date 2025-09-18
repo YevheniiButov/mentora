@@ -28,7 +28,7 @@ except ImportError as e:
     @application.route('/')
     def hello():
         return '''
-        <h1>Dental Academy</h1>
+        <h1>Mentora</h1>
         <p>Приложение загружается...</p>
         <p>Ошибка: {}</p>
         <p>Проверьте логи в разделе Web на PythonAnywhere</p>

@@ -117,11 +117,11 @@ def get_confirmation_email_html(user, confirmation_url):
         <div class="container">
             <div class="header">
                 <h1>🎓 Mentora</h1>
-                <p>Dental Academy Platform</p>
+                <p>Professional Platform</p>
             </div>
             <div class="content">
                 <h2>Welcome to Mentora, {user.first_name}!</h2>
-                <p>Thank you for registering with Mentora. To complete your registration and start your dental learning journey, please confirm your email address.</p>
+                <p>Thank you for registering with Mentora. To complete your registration and start your professional journey, please confirm your email address.</p>
                 
                 <p>Click the button below to confirm your email:</p>
                 
@@ -148,7 +148,7 @@ def get_confirmation_email_text(user, confirmation_url):
     return f"""
 Welcome to Mentora, {user.first_name}!
 
-Thank you for registering with Mentora. To complete your registration and start your dental learning journey, please confirm your email address.
+Thank you for registering with Mentora. To complete your registration and start your professional journey, please confirm your email address.
 
 Click the link below to confirm your email:
 {confirmation_url}
@@ -161,6 +161,6 @@ Best regards,
 The Mentora Team
 
 ---
-© 2024 Mentora. All rights reserved.
+© 2025 Mentora. All rights reserved.
 This email was sent to {user.email}
     """

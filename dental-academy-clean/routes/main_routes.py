@@ -1009,7 +1009,7 @@ def health():
     """Health check endpoint для мониторинга"""
     return jsonify({
         'status': 'healthy',
-        'message': 'Mentora Dental Academy is running',
+        'message': 'Mentora Professional Platform is running',
         'version': '1.0.0',
         'database': 'connected'
     }) 
