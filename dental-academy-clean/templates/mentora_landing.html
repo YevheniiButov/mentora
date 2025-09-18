@@ -23,15 +23,217 @@
             position: relative;
         }
 
-        /* Animated cosmic background */
+        /* Interstellar Black hole with correct layering */
+        .blackhole-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .blackhole {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 900px;
+            height: 900px;
+        }
+
+        /* LAYER 1: Bottom lensed arc - furthest back */
+        .bottom-arc {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 350px;
+            background: 
+                conic-gradient(from 20deg,
+                    transparent 0deg,
+                    transparent 10deg,
+                    rgba(255, 140, 0, 0.3) 20deg,
+                    rgba(255, 140, 0, 0.8) 35deg,
+                    rgba(255, 69, 0, 0.9) 50deg,
+                    rgba(255, 215, 0, 0.7) 65deg,
+                    rgba(255, 140, 0, 0.8) 80deg,
+                    rgba(255, 140, 0, 0.3) 95deg,
+                    transparent 105deg,
+                    transparent 360deg
+                );
+            border-radius: 50%;
+            filter: blur(3px);
+            z-index: 1;
+            mask: 
+                radial-gradient(circle, transparent 42%, black 45%, black 55%, transparent 58%),
+                linear-gradient(to top, black 50%, transparent 50%);
+            mask-composite: intersect;
+            -webkit-mask: 
+                radial-gradient(circle, transparent 42%, black 45%, black 55%, transparent 58%),
+                linear-gradient(to top, black 50%, transparent 50%);
+            -webkit-mask-composite: source-in;
+        }
+
+        /* LAYER 2: Event horizon */
+        .event-horizon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: #000000;
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Shadow from accretion disk on black hole - solid black and positioned higher */
+        .disk-shadow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateY(-50px);
+            width: 200px;
+            height: 100px;
+            background: #000000;
+            border-radius: 100px 100px 0 0;
+            z-index: 10;
+        }
+
+        /* LAYER 3: Top lensed arc - above black hole */
+        .top-arc {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 350px;
+            background: 
+                conic-gradient(from 200deg,
+                    transparent 0deg,
+                    transparent 10deg,
+                    rgba(255, 140, 0, 0.3) 20deg,
+                    rgba(255, 140, 0, 0.8) 35deg,
+                    rgba(255, 69, 0, 0.9) 50deg,
+                    rgba(255, 215, 0, 0.7) 65deg,
+                    rgba(255, 140, 0, 0.8) 80deg,
+                    rgba(255, 140, 0, 0.3) 95deg,
+                    transparent 105deg,
+                    transparent 360deg
+                );
+            border-radius: 50%;
+            filter: blur(3px);
+            z-index: 3;
+            mask: 
+                radial-gradient(circle, transparent 42%, black 45%, black 55%, transparent 58%),
+                linear-gradient(to bottom, black 50%, transparent 50%);
+            mask-composite: intersect;
+            -webkit-mask: 
+                radial-gradient(circle, transparent 42%, black 45%, black 55%, transparent 58%),
+                linear-gradient(to bottom, black 50%, transparent 50%);
+            -webkit-mask-composite: source-in;
+        }
+
+        /* LAYER 4: Primary horizontal disk - with animated light */
+        .primary-disk {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 200px;
+            background: 
+                radial-gradient(ellipse 60% 20% at 50% 50%, 
+                    transparent 30%,
+                    rgba(255, 140, 0, 0.7) 35%,
+                    rgba(255, 69, 0, 1) 40%,
+                    rgba(255, 215, 0, 1) 45%,
+                    rgba(255, 255, 255, 0.9) 50%,
+                    rgba(255, 215, 0, 1) 55%,
+                    rgba(255, 69, 0, 1) 60%,
+                    rgba(255, 140, 0, 0.8) 65%,
+                    rgba(255, 165, 0, 0.6) 70%,
+                    rgba(255, 140, 0, 0.4) 75%,
+                    transparent 80%
+                );
+            filter: blur(1px);
+            z-index: 4;
+            border-radius: 50%;
+            animation: disk-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes disk-glow {
+            0%, 100% { 
+                filter: blur(1px) brightness(1);
+            }
+            50% { 
+                filter: blur(1px) brightness(1.3);
+            }
+        }
+
+        /* LAYER 5: Inner bright ring - also with larger hole */
+        .inner-disk {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 120px;
+            background: 
+                radial-gradient(ellipse 50% 25% at 50% 50%, 
+                    transparent 40%,
+                    rgba(255, 255, 255, 1) 45%,
+                    rgba(255, 255, 255, 1) 50%,
+                    rgba(255, 255, 200, 1) 55%,
+                    rgba(255, 215, 0, 0.9) 60%,
+                    rgba(255, 140, 0, 0.7) 65%,
+                    transparent 70%
+                );
+            filter: blur(0.5px);
+            z-index: 5;
+            border-radius: 50%;
+        }
+
+        /* Einstein ring - gravitational lensing effect */
+        .einstein-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 50%;
+            z-index: 6;
+            animation: subtle-glow 6s ease-in-out infinite;
+        }
+
+        @keyframes subtle-glow {
+            0%, 100% { 
+                opacity: 0.2; 
+                box-shadow: 0 0 20px rgba(255, 140, 0, 0.1);
+            }
+            50% { 
+                opacity: 0.4; 
+                box-shadow: 0 0 40px rgba(255, 140, 0, 0.2);
+            }
+        }
+
+        /* Cosmic background */
         .cosmic-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(ellipse at top, #1e3c72 0%, #2a5298 50%, #0f1419 100%);
-            z-index: -3;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 30%, #0f1419 100%);
+            z-index: -4;
         }
 
         .stars {
@@ -45,19 +247,18 @@
 
         .star {
             position: absolute;
-            width: 2px;
-            height: 2px;
+            width: 1px;
+            height: 1px;
             background: #ffffff;
             border-radius: 50%;
-            animation: twinkle 3s infinite;
+            animation: twinkle 4s infinite;
         }
 
         @keyframes twinkle {
             0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
+            50% { opacity: 0.9; }
         }
 
-        /* Floating particles */
         .particles {
             position: fixed;
             top: 0;
@@ -69,76 +270,41 @@
 
         .particle {
             position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #00d4ff;
+            width: 2px;
+            height: 2px;
+            background: rgba(0, 212, 255, 0.5);
             border-radius: 50%;
-            animation: float 20s infinite linear;
+            animation: float 25s infinite linear;
         }
 
         @keyframes float {
             0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
             100% { transform: translateY(-100px) translateX(100px); opacity: 0; }
         }
 
-        /* Glowing orbs */
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(1px);
-            animation: drift 15s infinite ease-in-out;
-        }
-
-        .orb1 {
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, #00d4ff 0%, transparent 70%);
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .orb2 {
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle, #0099cc 0%, transparent 70%);
-            top: 60%;
-            right: 15%;
-            animation-delay: 5s;
-        }
-
-        .orb3 {
-            width: 40px;
-            height: 40px;
-            background: radial-gradient(circle, #66ccff 0%, transparent 70%);
-            bottom: 20%;
-            left: 60%;
-            animation-delay: 10s;
-        }
-
-        @keyframes drift {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(30px, -30px) rotate(90deg); }
-            50% { transform: translate(-20px, 20px) rotate(180deg); }
-            75% { transform: translate(-30px, -10px) rotate(270deg); }
-        }
-
         .container {
-            background: rgba(0, 15, 30, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(0, 212, 255, 0.2);
+            background: rgba(0, 15, 30, 0.95);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 25px;
             padding: 60px 40px;
             box-shadow: 
-                0 25px 80px rgba(0, 212, 255, 0.1),
+                0 25px 80px rgba(0, 212, 255, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             text-align: center;
             max-width: 500px;
             width: 100%;
             position: relative;
-            z-index: 1;
+            z-index: 30;
+            transition: all 0.5s ease;
+        }
+
+        .container.hidden {
+            opacity: 0;
+            transform: translateY(-50px);
+            pointer-events: none;
         }
 
         .container::before {
@@ -158,6 +324,38 @@
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 15, 30, 0.9);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 50%;
+            color: #00d4ff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .toggle-btn:hover {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .toggle-btn:active {
+            transform: scale(0.95);
         }
 
         .logo-container {
@@ -314,6 +512,31 @@
         }
 
         @media (max-width: 600px) {
+            .blackhole {
+                width: 600px;
+                height: 600px;
+            }
+            
+            .event-horizon {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .primary-disk { 
+                width: 500px; 
+                height: 120px; 
+            }
+            
+            .inner-disk { 
+                width: 300px; 
+                height: 80px; 
+            }
+            
+            .top-arc, .bottom-arc { 
+                width: 280px; 
+                height: 280px; 
+            }
+            
             .container {
                 padding: 40px 30px;
                 margin: 20px;
@@ -345,18 +568,44 @@
     </style>
 </head>
 <body>
-    <div class="cosmic-bg"></div>
+    <!-- Toggle button -->
+    <button class="toggle-btn" id="toggleBtn" title="Hide/Show Login">
+        👁️
+    </button>
     
+    <!-- Interstellar Black hole with correct layering -->
+    <div class="blackhole-container">
+        <div class="blackhole">
+            <!-- Layer 1: Bottom arc (behind everything) -->
+            <div class="bottom-arc"></div>
+            
+            <!-- Layer 2: Event horizon -->
+            <div class="event-horizon"></div>
+            
+            <!-- Disk shadow on black hole -->
+            <div class="disk-shadow"></div>
+            
+            <!-- Layer 3: Top arc (above black hole) -->
+            <div class="top-arc"></div>
+            
+            <!-- Layer 4: Primary horizontal disk (front) -->
+            <div class="primary-disk"></div>
+            
+            <!-- Layer 5: Inner bright ring (brightest) -->
+            <div class="inner-disk"></div>
+            
+            <!-- Layer 6: Einstein ring -->
+            <div class="einstein-ring"></div>
+        </div>
+    </div>
+    
+    <div class="cosmic-bg"></div>
     <div class="stars"></div>
     <div class="particles"></div>
     
-    <div class="orb orb1"></div>
-    <div class="orb orb2"></div>
-    <div class="orb orb3"></div>
-    
     <div class="container">
         <div class="logo-container">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Logo" class="logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <img src="/static/images/logo.png" alt="Mentora Logo" class="logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <h1 class="logo" style="display: none;">MENT<span class="logo-accent">O</span>RA</h1>
         </div>
         
@@ -379,17 +628,36 @@
     </div>
 
     <script>
+        // Toggle login form visibility
+        const toggleBtn = document.getElementById('toggleBtn');
+        const container = document.querySelector('.container');
+        let isVisible = true;
+        
+        toggleBtn.addEventListener('click', function() {
+            isVisible = !isVisible;
+            
+            if (isVisible) {
+                container.classList.remove('hidden');
+                toggleBtn.textContent = '👁️';
+                toggleBtn.title = 'Hide Login';
+            } else {
+                container.classList.add('hidden');
+                toggleBtn.textContent = '🕳️';
+                toggleBtn.title = 'Show Login';
+            }
+        });
+
         // Create stars
         function createStars() {
             const starsContainer = document.querySelector('.stars');
-            const starCount = 100;
+            const starCount = 80;
             
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
                 star.style.left = Math.random() * 100 + '%';
                 star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDelay = Math.random() * 4 + 's';
                 starsContainer.appendChild(star);
             }
         }
@@ -397,14 +665,14 @@
         // Create floating particles
         function createParticles() {
             const particlesContainer = document.querySelector('.particles');
-            const particleCount = 20;
+            const particleCount = 15;
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
                 particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 20 + 's';
-                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particle.style.animationDelay = Math.random() * 25 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 20) + 's';
                 particlesContainer.appendChild(particle);
             }
         }
@@ -417,7 +685,6 @@
         document.querySelector('.login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Show wrong password message
             const container = document.querySelector('.container');
             
             // Remove existing message if any
@@ -453,6 +720,18 @@
             // Clear form
             document.querySelector('input[type="text"]').value = '';
             document.querySelector('input[type="password"]').value = '';
+        });
+
+        // Subtle mouse interaction with black hole
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', function(e) {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 10;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 10;
+            
+            const blackhole = document.querySelector('.blackhole');
+            blackhole.style.transform = `translate(calc(-50% + ${mouseX}px), calc(-50% + ${mouseY}px))`;
         });
     </script>
 </body>
