@@ -10,9 +10,35 @@ def init_mail(app):
     return mail
 
 def send_email_confirmation(user, token):
-    """Send email confirmation using direct method (reliable)"""
+    """Send email confirmation using Resend API or SMTP fallback"""
     try:
         print(f"=== EMAIL CONFIRMATION START for {user.email} ===")
+        
+        # Check email provider
+        email_provider = current_app.config.get('EMAIL_PROVIDER', 'smtp')
+        print(f"=== EMAIL_PROVIDER: {email_provider} ===")
+        
+        if email_provider == 'resend':
+            # Use Resend API
+            from utils.resend_email_service import send_email_confirmation_resend
+            return send_email_confirmation_resend(user)
+        else:
+            # Use SMTP fallback
+            return send_email_confirmation_smtp(user, token)
+            
+    except Exception as e:
+        print(f"=== EMAIL CONFIRMATION ERROR: {str(e)} ===")
+        print(f"=== ERROR TYPE: {type(e).__name__} ===")
+        import traceback
+        print(f"=== TRACEBACK: {traceback.format_exc()} ===")
+        
+        current_app.logger.error(f"Failed to send email confirmation to {user.email}: {str(e)}")
+        return False
+
+def send_email_confirmation_smtp(user, token):
+    """Send email confirmation using SMTP (fallback method)"""
+    try:
+        print(f"=== SMTP EMAIL CONFIRMATION for {user.email} ===")
         
         # Generate confirmation URL
         base_url = current_app.config.get('BASE_URL', 'https://bigmentor.nl')
@@ -40,7 +66,7 @@ def send_email_confirmation(user, token):
             current_app.logger.info(f"Email confirmation (console mode) for {user.email}")
             return True
         
-        print("=== PRODUCTION MODE - SENDING REAL EMAIL ===")
+        print("=== PRODUCTION MODE - SENDING REAL EMAIL VIA SMTP ===")
         
         # Create message
         msg = Message(
@@ -56,20 +82,20 @@ def send_email_confirmation(user, token):
         msg.body = get_confirmation_email_text(user, confirmation_url)
         
         # Send email
-        print("=== ATTEMPTING TO SEND EMAIL ===")
+        print("=== ATTEMPTING TO SEND EMAIL VIA SMTP ===")
         mail.send(msg)
-        print("=== EMAIL SENT SUCCESSFULLY ===")
+        print("=== EMAIL SENT SUCCESSFULLY VIA SMTP ===")
         
-        current_app.logger.info(f"Email confirmation sent to {user.email}")
+        current_app.logger.info(f"Email confirmation sent to {user.email} via SMTP")
         return True
         
     except Exception as e:
-        print(f"=== EMAIL CONFIRMATION ERROR: {str(e)} ===")
+        print(f"=== SMTP EMAIL CONFIRMATION ERROR: {str(e)} ===")
         print(f"=== ERROR TYPE: {type(e).__name__} ===")
         import traceback
         print(f"=== TRACEBACK: {traceback.format_exc()} ===")
         
-        current_app.logger.error(f"Failed to send email confirmation to {user.email}: {str(e)}")
+        current_app.logger.error(f"Failed to send email confirmation to {user.email} via SMTP: {str(e)}")
         return False
 
 def get_confirmation_email_html(user, confirmation_url):
