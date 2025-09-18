@@ -49,31 +49,35 @@ def send_professional():
                 flash('Please fill in all required fields!', 'error')
                 return redirect(url_for('communication.send_professional'))
             
-            # РЕАЛЬНАЯ отправка через Flask-Mail
+            # РЕАЛЬНАЯ отправка через Resend API
             sent_count = 0
             failed_count = 0
             
             for recipient_email in recipients:
                 try:
-                    # Создаем сообщение
-                    msg = Message(
-                        subject=subject,
-                        recipients=[recipient_email],
-                        html=render_template(
-                            f'admin/communication/email_templates/{template_type}.html',
-                            additional_data=additional_data,
-                            recipient_email=recipient_email,
-                            current_user=current_user
-                        ),
-                        sender=('Mentora Team', 'info@bigmentor.nl')
+                    # Генерируем HTML контент
+                    html_content = render_template(
+                        f'admin/communication/email_templates/{template_type}.html',
+                        additional_data=additional_data,
+                        recipient_email=recipient_email,
+                        current_user=current_user
                     )
                     
-                    # Отправляем email
-                    mail.send(msg)
-                    sent_count += 1
+                    # Отправляем через Resend API
+                    from utils.resend_email_service import send_email_via_resend
+                    success = send_email_via_resend(
+                        to_email=recipient_email,
+                        subject=subject,
+                        html_content=html_content,
+                        from_name="Mentora Team"
+                    )
                     
-                    # Логируем успешную отправку
-                    current_app.logger.info(f'Professional email sent to {recipient_email} using template {template_type}')
+                    if success:
+                        sent_count += 1
+                        current_app.logger.info(f'Professional email sent to {recipient_email} using template {template_type} via Resend API')
+                    else:
+                        failed_count += 1
+                        current_app.logger.error(f'Failed to send email to {recipient_email} via Resend API')
                     
                 except Exception as e:
                     failed_count += 1
@@ -179,78 +183,96 @@ def preview_template():
         current_app.logger.error(f'Template preview failed: {str(e)}')
         return jsonify({'success': False, 'error': str(e)})
 
-# Тестовый маршрут для проверки SMTP
+# Тестовый маршрут для проверки Resend API
 @communication_bp.route('/test-smtp')
 @login_required
 @admin_required
 def test_smtp():
-    """Тестовый маршрут для проверки SMTP конфигурации"""
+    """Тестовый маршрут для проверки Resend API конфигурации"""
     try:
         # Проверяем конфигурацию
-        mail_server = current_app.config.get('MAIL_SERVER')
-        mail_port = current_app.config.get('MAIL_PORT')
-        mail_username = current_app.config.get('MAIL_USERNAME')
-        mail_default_sender = current_app.config.get('MAIL_DEFAULT_SENDER')
+        email_provider = current_app.config.get('EMAIL_PROVIDER', 'smtp')
+        resend_api_key = current_app.config.get('RESEND_API_KEY')
+        resend_from_email = current_app.config.get('RESEND_FROM_EMAIL')
+        mail_suppress_send = current_app.config.get('MAIL_SUPPRESS_SEND', False)
         
         config_info = {
-            'MAIL_SERVER': mail_server,
-            'MAIL_PORT': mail_port,
-            'MAIL_USERNAME': mail_username,
-            'MAIL_DEFAULT_SENDER': mail_default_sender,
-            'MAIL_SUPPRESS_SEND': current_app.config.get('MAIL_SUPPRESS_SEND', False)
+            'EMAIL_PROVIDER': email_provider,
+            'RESEND_API_KEY': '***' + (resend_api_key[-4:] if resend_api_key else 'None'),
+            'RESEND_FROM_EMAIL': resend_from_email,
+            'MAIL_SUPPRESS_SEND': mail_suppress_send
         }
         
         # Если отправка отключена, показываем только конфигурацию
-        if current_app.config.get('MAIL_SUPPRESS_SEND', False):
+        if mail_suppress_send:
             return f"""
-            <h2>SMTP Configuration Test</h2>
+            <h2>📧 Resend API Configuration Test</h2>
             <p><strong>Status:</strong> Email sending is suppressed (development mode)</p>
             <h3>Configuration:</h3>
             <pre>{json.dumps(config_info, indent=2)}</pre>
             <p>To test real sending, set MAIL_SUPPRESS_SEND=false</p>
+            <p><a href="{url_for('communication.hub')}">← Back to Communication Hub</a></p>
             """
         
-        # Пытаемся отправить тестовый email
+        # Пытаемся отправить тестовый email через Resend API
         test_email = request.args.get('email', 'test@example.com')
         
-        msg = Message(
-            subject='🧪 SMTP Test from Mentora',
-            recipients=[test_email],
-            html='''
-            <h2>✅ SMTP Test Successful!</h2>
-            <p>This is a test email to verify SMTP configuration.</p>
-            <p><strong>Sent from:</strong> Mentora Communication Hub</p>
-            <p><strong>Time:</strong> {}</p>
-            <p><strong>Configuration:</strong></p>
-            <pre>{}</pre>
-            '''.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
-                      json.dumps(config_info, indent=2)),
-            sender=('Mentora Team', 'info@bigmentor.nl')
+        from utils.resend_email_service import send_email_via_resend
+        
+        test_html = f'''
+        <h2>✅ Resend API Test Successful!</h2>
+        <p>This is a test email to verify Resend API configuration.</p>
+        <p><strong>Sent from:</strong> Mentora Communication Hub</p>
+        <p><strong>Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        <p><strong>Provider:</strong> Resend API</p>
+        <p><strong>Configuration:</strong></p>
+        <pre>{json.dumps(config_info, indent=2)}</pre>
+        '''
+        
+        success = send_email_via_resend(
+            to_email=test_email,
+            subject='🧪 Resend API Test from Mentora',
+            html_content=test_html,
+            from_name="Mentora Team"
         )
         
-        mail.send(msg)
-        
-        return f"""
-        <h2>✅ SMTP Test Successful!</h2>
-        <p>Test email sent successfully to: <strong>{test_email}</strong></p>
-        <h3>Configuration:</h3>
-        <pre>{json.dumps(config_info, indent=2)}</pre>
-        <p><a href="{url_for('communication.hub')}">← Back to Communication Hub</a></p>
-        """
+        if success:
+            return f"""
+            <h2>✅ Resend API Test Successful!</h2>
+            <p>Test email sent successfully to: <strong>{test_email}</strong></p>
+            <h3>Configuration:</h3>
+            <pre>{json.dumps(config_info, indent=2)}</pre>
+            <p><a href="{url_for('communication.hub')}">← Back to Communication Hub</a></p>
+            """
+        else:
+            return f"""
+            <h2>❌ Resend API Test Failed!</h2>
+            <p>Failed to send test email to: <strong>{test_email}</strong></p>
+            <h3>Configuration:</h3>
+            <pre>{json.dumps(config_info, indent=2)}</pre>
+            <p><strong>Possible solutions:</strong></p>
+            <ul>
+                <li>Check RESEND_API_KEY is set correctly</li>
+                <li>Verify RESEND_FROM_EMAIL is valid</li>
+                <li>Check Resend API quota and limits</li>
+                <li>Verify domain authentication in Resend</li>
+            </ul>
+            <p><a href="{url_for('communication.hub')}">← Back to Communication Hub</a></p>
+            """
         
     except Exception as e:
-        current_app.logger.error(f'SMTP test failed: {str(e)}')
+        current_app.logger.error(f'Resend API test failed: {str(e)}')
         return f"""
-        <h2>❌ SMTP Test Failed!</h2>
+        <h2>❌ Resend API Test Failed!</h2>
         <p><strong>Error:</strong> {str(e)}</p>
         <h3>Configuration:</h3>
         <pre>{json.dumps(config_info, indent=2)}</pre>
         <p><strong>Possible solutions:</strong></p>
         <ul>
-            <li>Check MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD</li>
-            <li>Verify SMTP credentials</li>
-            <li>Check firewall settings</li>
-            <li>Enable "Less secure app access" for Gmail</li>
+            <li>Check RESEND_API_KEY is set correctly</li>
+            <li>Verify RESEND_FROM_EMAIL is valid</li>
+            <li>Check Resend API quota and limits</li>
+            <li>Verify domain authentication in Resend</li>
         </ul>
         <p><a href="{url_for('communication.hub')}">← Back to Communication Hub</a></p>
         """
