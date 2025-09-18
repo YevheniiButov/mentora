@@ -194,7 +194,7 @@ PROFESSION_CONTENT = {
                     '''
                 },
                 {
-                    'icon': '🎓',
+                    'icon': '📚',
                     'title': 'SKV accreditatie voorbereiding',
                     'description': '''
                     Speciale voorbereiding op Nederlandse zorgstandaarden:

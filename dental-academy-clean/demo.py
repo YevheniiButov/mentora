@@ -23,7 +23,7 @@ if __name__ == '__main__':
     
     port = int(os.environ.get('PORT', 5002))
     
-    print("🎓 Mentora - Demo Registration System")
+    print("Mentora - Registration System")
     print("=" * 50)
     print("✅ Расширенная форма регистрации")
     print("✅ Опциональная загрузка документов")

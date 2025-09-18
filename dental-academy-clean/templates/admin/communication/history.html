@@ -1,195 +1,83 @@
 {% extends "admin/base.html" %}
 
-{% block title %}История переписки - Communication Hub{% endblock %}
-
-{% block extra_css %}
-<style>
-.email-item {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-left: 4px solid #e9ecef;
-    transition: all 0.3s ease;
-}
-
-.email-item:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.email-item.crm_lead { border-left-color: #ffc107; }
-.email-item.crm_follow_up { border-left-color: #17a2b8; }
-.email-item.crm_welcome { border-left-color: #28a745; }
-.email-item.notification { border-left-color: #6f42c1; }
-.email-item.custom { border-left-color: #6c757d; }
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.status-sent { background: #d1ecf1; color: #0c5460; }
-.status-delivered { background: #d4edda; color: #155724; }
-.status-opened { background: #fff3cd; color: #856404; }
-.status-clicked { background: #f8d7da; color: #721c24; }
-.status-failed { background: #f5c6cb; color: #721c24; }
-
-.filter-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-</style>
-{% endblock %}
+{% block title %}Email History - Mentora{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gray-800">📬 История переписки</h1>
-            <p class="text-muted">Все отправленные письма и их статусы</p>
-        </div>
-        <div>
-            <a href="{{ url_for('communication.dashboard') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Назад
-            </a>
-        </div>
+        <h1 class="h2">📜 Email History</h1>
+        <a href="{{ url_for('communication.hub') }}" class="btn btn-outline-secondary">
+            ← Back to Hub
+        </a>
     </div>
-
-    <!-- Filters -->
-    <div class="filter-card">
-        <form method="GET" class="row g-3">
-            <div class="col-md-3">
-                <label for="type" class="form-label">Тип получателя</label>
-                <select class="form-select" id="type" name="type">
-                    <option value="all" {% if recipient_type == 'all' %}selected{% endif %}>Все</option>
-                    <option value="user" {% if recipient_type == 'user' %}selected{% endif %}>Пользователи</option>
-                    <option value="contact" {% if recipient_type == 'contact' %}selected{% endif %}>Контакты</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="email_type" class="form-label">Тип письма</label>
-                <select class="form-select" id="email_type" name="email_type">
-                    <option value="all" {% if email_type == 'all' %}selected{% endif %}>Все</option>
-                    <option value="crm_lead" {% if email_type == 'crm_lead' %}selected{% endif %}>Потенциальные клиенты</option>
-                    <option value="crm_follow_up" {% if email_type == 'crm_follow_up' %}selected{% endif %}>Напоминания</option>
-                    <option value="crm_welcome" {% if email_type == 'crm_welcome' %}selected{% endif %}>Приветственные</option>
-                    <option value="notification" {% if email_type == 'notification' %}selected{% endif %}>Уведомления</option>
-                    <option value="custom" {% if email_type == 'custom' %}selected{% endif %}>Кастомные</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="status" class="form-label">Статус</label>
-                <select class="form-select" id="status" name="status">
-                    <option value="all" {% if status == 'all' %}selected{% endif %}>Все</option>
-                    <option value="sent" {% if status == 'sent' %}selected{% endif %}>Отправлено</option>
-                    <option value="delivered" {% if status == 'delivered' %}selected{% endif %}>Доставлено</option>
-                    <option value="opened" {% if status == 'opened' %}selected{% endif %}>Открыто</option>
-                    <option value="clicked" {% if status == 'clicked' %}selected{% endif %}>Кликнуто</option>
-                    <option value="failed" {% if status == 'failed' %}selected{% endif %}>Ошибка</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="search" class="form-label">Поиск</label>
-                <input type="text" class="form-control" id="search" name="search" 
-                       value="{{ search }}" placeholder="Email, тема, имя...">
-            </div>
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search"></i> Применить фильтры
-                </button>
-                <a href="{{ url_for('communication.history') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle"></i> Сбросить
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <!-- Email List -->
-    {% if emails.items %}
-        {% for email in emails.items %}
-        <div class="email-item {{ email.email_type }}">
-            <div class="row">
-                <div class="col-md-8">
-                    <h6 class="mb-1">{{ email.subject }}</h6>
-                    <p class="mb-1 text-muted">
-                        <strong>Получатель:</strong> {{ email.recipient_name or email.recipient_email }}
-                        <span class="badge bg-{{ 'primary' if email.recipient_type == 'user' else 'info' }} ms-2">
-                            {{ email.recipient_type }}
-                        </span>
-                    </p>
-                    <small class="text-muted">
-                        <strong>Отправитель:</strong> {{ email.sender_name or 'Система' }} • 
-                        <strong>Тип:</strong> {{ email.email_type }} • 
-                        <strong>Отправлено:</strong> {{ email.sent_at.strftime('%d.%m.%Y %H:%M') }}
-                    </small>
-                </div>
-                <div class="col-md-4 text-end">
-                    <span class="status-badge status-{{ email.status }}">{{ email.status }}</span>
-                    {% if email.external_id %}
-                    <br><small class="text-muted">ID: {{ email.external_id[:8] }}...</small>
-                    {% endif %}
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📧 Sent Emails</h5>
+                    <p class="text-muted">History of all sent emails through Communication Hub</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Template</th>
+                                    <th>Recipients</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">
+                                        <i class="fas fa-inbox fa-2x mb-3"></i><br>
+                                        No emails sent yet. Start sending emails to see history here.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-        {% endfor %}
-
-        <!-- Pagination -->
-        {% if emails.pages > 1 %}
-        <nav aria-label="Email history pagination">
-            <ul class="pagination justify-content-center">
-                {% if emails.has_prev %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('communication.history', page=emails.prev_num, type=recipient_type, email_type=email_type, status=status, search=search) }}">
-                        Предыдущая
-                    </a>
-                </li>
-                {% endif %}
-                
-                {% for page_num in emails.iter_pages() %}
-                    {% if page_num %}
-                        {% if page_num != emails.page %}
-                        <li class="page-item">
-                            <a class="page-link" href="{{ url_for('communication.history', page=page_num, type=recipient_type, email_type=email_type, status=status, search=search) }}">
-                                {{ page_num }}
-                            </a>
-                        </li>
-                        {% else %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ page_num }}</span>
-                        </li>
-                        {% endif %}
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if emails.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('communication.history', page=emails.next_num, type=recipient_type, email_type=email_type, status=status, search=search) }}">
-                        Следующая
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-    {% else %}
-        <div class="text-center py-5">
-            <i class="bi bi-envelope" style="font-size: 4rem; color: #dee2e6;"></i>
-            <h4 class="text-muted mt-3">Письма не найдены</h4>
-            <p class="text-muted">Попробуйте изменить фильтры или отправьте первое письмо</p>
-            <a href="{{ url_for('communication.send_email') }}" class="btn btn-primary">
-                <i class="bi bi-envelope-plus"></i> Отправить письмо
-            </a>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📊 Quick Stats</h5>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">0</h4>
+                            <small class="text-muted">Total Sent</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">0</h4>
+                            <small class="text-muted">Successful</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    {% endif %}
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🎯 Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('communication.send_professional') }}" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Send New Email
+                        </a>
+                        <a href="{{ url_for('communication.test_smtp') }}" class="btn btn-outline-info">
+                            <i class="fas fa-cog"></i> Test SMTP
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

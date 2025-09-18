@@ -116,7 +116,7 @@ def get_confirmation_email_html(user, confirmation_url):
     <body>
         <div class="container">
             <div class="header">
-                <h1>🎓 Mentora</h1>
+                <h1>Mentora</h1>
                 <p>Professional Platform</p>
             </div>
             <div class="content">

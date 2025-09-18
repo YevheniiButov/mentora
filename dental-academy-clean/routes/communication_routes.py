@@ -1,479 +1,276 @@
-"""
-Communication Hub Routes
-Центр коммуникации для управления перепиской с клиентами
-"""
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app
 from flask_login import login_required, current_user
+from flask_mail import Message
+from extensions import mail, db
+from models import User, Contact
 from utils.decorators import admin_required
-from models import db, User, Contact, CommunicationHistory, EmailTemplate, CommunicationCampaign
-# Models are now in main models.py
 from datetime import datetime, timedelta
 import json
-from flask import render_template_string
+import logging
 
 communication_bp = Blueprint('communication', __name__, url_prefix='/admin/communication')
 
+# Проверка SMTP конфигурации
+@communication_bp.before_request
+def check_mail_config():
+    """Проверяем, что SMTP настроен"""
+    if not mail:
+        flash('SMTP не настроен! Проверьте конфигурацию email.', 'error')
+
+# Главная страница Communication Hub
 @communication_bp.route('/')
 @login_required
 @admin_required
-def dashboard():
+def hub():
     """Главная страница Communication Hub"""
+    # Получаем статистику для отображения
+    users = User.query.filter(User.email.isnot(None)).all()
+    contacts = Contact.query.filter(Contact.email.isnot(None)).all()
     
-    # Статистика за последние 30 дней
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-    
-    stats = {
-        'total_emails_sent': CommunicationHistory.query.filter(
-            CommunicationHistory.sent_at >= thirty_days_ago
-        ).count(),
-        'emails_to_users': CommunicationHistory.query.filter(
-            CommunicationHistory.recipient_type == 'user',
-            CommunicationHistory.sent_at >= thirty_days_ago
-        ).count(),
-        'emails_to_contacts': CommunicationHistory.query.filter(
-            CommunicationHistory.recipient_type == 'contact',
-            CommunicationHistory.sent_at >= thirty_days_ago
-        ).count(),
-        'active_campaigns': CommunicationCampaign.query.filter(
-            CommunicationCampaign.status.in_(['scheduled', 'running'])
-        ).count(),
-        'templates_count': EmailTemplate.query.filter_by(is_active=True).count()
-    }
-    
-    # Последние отправленные письма
-    recent_emails = CommunicationHistory.query.order_by(
-        CommunicationHistory.sent_at.desc()
-    ).limit(10).all()
-    
-    # Активные кампании
-    active_campaigns = CommunicationCampaign.query.filter(
-        CommunicationCampaign.status.in_(['scheduled', 'running'])
-    ).order_by(CommunicationCampaign.scheduled_at.desc()).limit(5).all()
-    
-    # Популярные шаблоны
-    popular_templates = EmailTemplate.query.filter_by(is_active=True).order_by(
-        EmailTemplate.sent_count.desc()
-    ).limit(5).all()
-    
-    return render_template('admin/communication/dashboard.html',
-                         stats=stats,
-                         recent_emails=recent_emails,
-                         active_campaigns=active_campaigns,
-                         popular_templates=popular_templates)
+    return render_template('admin/communication/hub.html', 
+                         users=users, contacts=contacts)
 
+# Отправка профессиональных email
+@communication_bp.route('/send-professional', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def send_professional():
+    """Отправка профессиональных email с реальной функциональностью"""
+    
+    if request.method == 'POST':
+        try:
+            # Получение данных формы
+            template_type = request.form.get('template_type')
+            recipients = request.form.getlist('recipients')
+            subject = request.form.get('subject')
+            additional_data = request.form.get('additional_data', '')
+            
+            if not template_type or not recipients or not subject:
+                flash('Please fill in all required fields!', 'error')
+                return redirect(url_for('communication.send_professional'))
+            
+            # РЕАЛЬНАЯ отправка через Flask-Mail
+            sent_count = 0
+            failed_count = 0
+            
+            for recipient_email in recipients:
+                try:
+                    # Создаем сообщение
+                    msg = Message(
+                        subject=subject,
+                        recipients=[recipient_email],
+                        html=render_template(
+                            f'admin/communication/email_templates/{template_type}.html',
+                            additional_data=additional_data,
+                            recipient_email=recipient_email,
+                            current_user=current_user
+                        ),
+                        sender=('Mentora Team', 'info@bigmentor.nl')
+                    )
+                    
+                    # Отправляем email
+                    mail.send(msg)
+                    sent_count += 1
+                    
+                    # Логируем успешную отправку
+                    current_app.logger.info(f'Professional email sent to {recipient_email} using template {template_type}')
+                    
+                except Exception as e:
+                    failed_count += 1
+                    current_app.logger.error(f'Failed to send email to {recipient_email}: {str(e)}')
+            
+            # Результат отправки
+            if sent_count > 0:
+                if failed_count == 0:
+                    flash(f'✅ Email sent successfully to {sent_count} recipients!', 'success')
+                else:
+                    flash(f'⚠️ Email sent to {sent_count} recipients, {failed_count} failed.', 'warning')
+            else:
+                flash('❌ Failed to send email to any recipients!', 'error')
+            
+            return redirect(url_for('communication.hub'))
+            
+        except Exception as e:
+            current_app.logger.error(f'Email sending failed: {str(e)}')
+            flash(f'❌ Email sending failed: {str(e)}', 'error')
+    
+    # Получение пользователей для выбора получателей
+    users = User.query.filter(User.email.isnot(None)).all()
+    contacts = Contact.query.filter(Contact.email.isnot(None)).all()
+    
+    return render_template('admin/communication/send_professional.html', 
+                         users=users, contacts=contacts)
+
+# API для поиска пользователей
+@communication_bp.route('/api/search-users')
+@login_required
+@admin_required
+def search_users():
+    """API для поиска пользователей и контактов"""
+    query = request.args.get('query', '').strip()
+    
+    if len(query) < 2:
+        return jsonify([])
+    
+    # Поиск пользователей
+    users = User.query.filter(
+        db.or_(
+            User.email.contains(query),
+            User.first_name.contains(query),
+            User.last_name.contains(query)
+        )
+    ).filter(User.email.isnot(None)).limit(10).all()
+    
+    # Поиск контактов
+    contacts = Contact.query.filter(
+        db.or_(
+            Contact.email.contains(query),
+            Contact.first_name.contains(query),
+            Contact.last_name.contains(query)
+        )
+    ).filter(Contact.email.isnot(None)).limit(10).all()
+    
+    # Формируем результат
+    result = []
+    
+    # Добавляем пользователей
+    for user in users:
+        result.append({
+            'id': f'user_{user.id}',
+            'email': user.email,
+            'name': f"{user.first_name} {user.last_name}".strip() or user.username,
+            'type': 'User',
+            'type_icon': '👤'
+        })
+    
+    # Добавляем контакты
+    for contact in contacts:
+        result.append({
+            'id': f'contact_{contact.id}',
+            'email': contact.email,
+            'name': f"{contact.first_name} {contact.last_name}".strip() or contact.email,
+            'type': 'Contact',
+            'type_icon': '📇'
+        })
+    
+    return jsonify(result)
+
+# Предварительный просмотр шаблона
+@communication_bp.route('/api/preview-template')
+@login_required
+@admin_required
+def preview_template():
+    """API для предварительного просмотра email шаблона"""
+    template_type = request.args.get('template_type')
+    additional_data = request.args.get('additional_data', '')
+    
+    if not template_type:
+        return jsonify({'success': False, 'error': 'Template type is required'})
+    
+    try:
+        html_content = render_template(
+            f'admin/communication/email_templates/{template_type}.html',
+            additional_data=additional_data,
+            recipient_email='example@example.com',
+            current_user=current_user
+        )
+        return jsonify({'success': True, 'html': html_content})
+    except Exception as e:
+        current_app.logger.error(f'Template preview failed: {str(e)}')
+        return jsonify({'success': False, 'error': str(e)})
+
+# Тестовый маршрут для проверки SMTP
+@communication_bp.route('/test-smtp')
+@login_required
+@admin_required
+def test_smtp():
+    """Тестовый маршрут для проверки SMTP конфигурации"""
+    try:
+        # Проверяем конфигурацию
+        mail_server = current_app.config.get('MAIL_SERVER')
+        mail_port = current_app.config.get('MAIL_PORT')
+        mail_username = current_app.config.get('MAIL_USERNAME')
+        mail_default_sender = current_app.config.get('MAIL_DEFAULT_SENDER')
+        
+        config_info = {
+            'MAIL_SERVER': mail_server,
+            'MAIL_PORT': mail_port,
+            'MAIL_USERNAME': mail_username,
+            'MAIL_DEFAULT_SENDER': mail_default_sender,
+            'MAIL_SUPPRESS_SEND': current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        }
+        
+        # Если отправка отключена, показываем только конфигурацию
+        if current_app.config.get('MAIL_SUPPRESS_SEND', False):
+            return f"""
+            <h2>SMTP Configuration Test</h2>
+            <p><strong>Status:</strong> Email sending is suppressed (development mode)</p>
+            <h3>Configuration:</h3>
+            <pre>{json.dumps(config_info, indent=2)}</pre>
+            <p>To test real sending, set MAIL_SUPPRESS_SEND=false</p>
+            """
+        
+        # Пытаемся отправить тестовый email
+        test_email = request.args.get('email', 'test@example.com')
+        
+        msg = Message(
+            subject='🧪 SMTP Test from Mentora',
+            recipients=[test_email],
+            html='''
+            <h2>✅ SMTP Test Successful!</h2>
+            <p>This is a test email to verify SMTP configuration.</p>
+            <p><strong>Sent from:</strong> Mentora Communication Hub</p>
+            <p><strong>Time:</strong> {}</p>
+            <p><strong>Configuration:</strong></p>
+            <pre>{}</pre>
+            '''.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
+                      json.dumps(config_info, indent=2)),
+            sender=('Mentora Team', 'info@bigmentor.nl')
+        )
+        
+        mail.send(msg)
+        
+        return f"""
+        <h2>✅ SMTP Test Successful!</h2>
+        <p>Test email sent successfully to: <strong>{test_email}</strong></p>
+        <h3>Configuration:</h3>
+        <pre>{json.dumps(config_info, indent=2)}</pre>
+        <p><a href="{url_for('communication.hub')}">← Back to Communication Hub</a></p>
+        """
+        
+    except Exception as e:
+        current_app.logger.error(f'SMTP test failed: {str(e)}')
+        return f"""
+        <h2>❌ SMTP Test Failed!</h2>
+        <p><strong>Error:</strong> {str(e)}</p>
+        <h3>Configuration:</h3>
+        <pre>{json.dumps(config_info, indent=2)}</pre>
+        <p><strong>Possible solutions:</strong></p>
+        <ul>
+            <li>Check MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD</li>
+            <li>Verify SMTP credentials</li>
+            <li>Check firewall settings</li>
+            <li>Enable "Less secure app access" for Gmail</li>
+        </ul>
+        <p><a href="{url_for('communication.hub')}">← Back to Communication Hub</a></p>
+        """
+
+# Статистика отправленных email
+@communication_bp.route('/stats')
+@login_required
+@admin_required
+def stats():
+    """Статистика отправленных email"""
+    # Здесь можно добавить логику для подсчета отправленных email
+    # Пока возвращаем простую страницу
+    return render_template('admin/communication/stats.html')
+
+# История отправленных email
 @communication_bp.route('/history')
 @login_required
 @admin_required
 def history():
-    """История всех отправленных писем"""
-    
-    # Фильтры
-    page = request.args.get('page', 1, type=int)
-    recipient_type = request.args.get('type', 'all')
-    email_type = request.args.get('email_type', 'all')
-    status = request.args.get('status', 'all')
-    search = request.args.get('search', '')
-    
-    # Построение запроса
-    query = CommunicationHistory.query
-    
-    if recipient_type != 'all':
-        query = query.filter(CommunicationHistory.recipient_type == recipient_type)
-    
-    if email_type != 'all':
-        query = query.filter(CommunicationHistory.email_type == email_type)
-    
-    if status != 'all':
-        query = query.filter(CommunicationHistory.status == status)
-    
-    if search:
-        query = query.filter(
-            or_(
-                CommunicationHistory.recipient_email.contains(search),
-                CommunicationHistory.subject.contains(search),
-                CommunicationHistory.recipient_name.contains(search)
-            )
-        )
-    
-    # Пагинация
-    emails = query.order_by(CommunicationHistory.sent_at.desc()).paginate(
-        page=page, per_page=20, error_out=False
-    )
-    
-    return render_template('admin/communication/history.html',
-                         emails=emails,
-                         recipient_type=recipient_type,
-                         email_type=email_type,
-                         status=status,
-                         search=search)
-
-@communication_bp.route('/templates')
-@login_required
-@admin_required
-def templates():
-    """Управление шаблонами email"""
-    
-    templates = EmailTemplate.query.filter_by(is_active=True).order_by(
-        EmailTemplate.updated_at.desc()
-    ).all()
-    
-    return render_template('admin/communication/templates.html', templates=templates)
-
-@communication_bp.route('/templates/create', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def create_template():
-    """Создание нового шаблона"""
-    
-    if request.method == 'POST':
-        try:
-            template = EmailTemplate(
-                name=request.form.get('name'),
-                description=request.form.get('description'),
-                subject=request.form.get('subject'),
-                message=request.form.get('message'),
-                email_type=request.form.get('email_type'),
-                action_url=request.form.get('action_url'),
-                action_text=request.form.get('action_text'),
-                created_by=current_user.id
-            )
-            
-            db.session.add(template)
-            db.session.commit()
-            
-            flash('Шаблон создан успешно', 'success')
-            return redirect(url_for('communication.templates'))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Ошибка создания шаблона: {str(e)}', 'error')
-    
-    return render_template('admin/communication/create_template.html')
-
-@communication_bp.route('/templates/<int:template_id>/edit', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def edit_template(template_id):
-    """Редактирование шаблона"""
-    
-    template = EmailTemplate.query.get_or_404(template_id)
-    
-    if request.method == 'POST':
-        try:
-            template.name = request.form.get('name')
-            template.description = request.form.get('description')
-            template.subject = request.form.get('subject')
-            template.message = request.form.get('message')
-            template.email_type = request.form.get('email_type')
-            template.action_url = request.form.get('action_url')
-            template.action_text = request.form.get('action_text')
-            template.updated_at = datetime.utcnow()
-            
-            db.session.commit()
-            
-            flash('Шаблон обновлен успешно', 'success')
-            return redirect(url_for('communication.templates'))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Ошибка обновления шаблона: {str(e)}', 'error')
-    
-    return render_template('admin/communication/edit_template.html', template=template)
-
-@communication_bp.route('/campaigns')
-@login_required
-@admin_required
-def campaigns():
-    """Управление кампаниями рассылок"""
-    
-    campaigns = CommunicationCampaign.query.order_by(
-        CommunicationCampaign.created_at.desc()
-    ).all()
-    
-    return render_template('admin/communication/campaigns.html', campaigns=campaigns)
-
-@communication_bp.route('/campaigns/create', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def create_campaign():
-    """Создание новой кампании"""
-    
-    if request.method == 'POST':
-        try:
-            campaign = CommunicationCampaign(
-                name=request.form.get('name'),
-                description=request.form.get('description'),
-                email_type=request.form.get('email_type'),
-                subject=request.form.get('subject'),
-                message=request.form.get('message'),
-                action_url=request.form.get('action_url'),
-                action_text=request.form.get('action_text'),
-                target_type=request.form.get('target_type'),
-                target_filters=json.loads(request.form.get('target_filters', '{}')),
-                created_by=current_user.id
-            )
-            
-            db.session.add(campaign)
-            db.session.commit()
-            
-            flash('Кампания создана успешно', 'success')
-            return redirect(url_for('communication.campaigns'))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Ошибка создания кампании: {str(e)}', 'error')
-    
-    return render_template('admin/communication/create_campaign.html')
-
-@communication_bp.route('/send-professional')
-@login_required
-@admin_required
-def send_professional():
-    """Страница для отправки профессиональных email"""
-    return render_template('admin/communication/send_professional_email.html')
-
-def send_professional_email(recipient, email_type, subject, template_data=None):
-    """Отправка профессионального email с использованием шаблонов"""
-    try:
-        from utils.resend_email_service import send_email_via_resend
-        
-        # Выбираем шаблон в зависимости от типа
-        template_map = {
-            'welcome': 'emails/welcome_professional.html',
-            'follow_up': 'emails/follow_up_professional.html',
-            'reminder': 'emails/reminder_professional.html',
-            'notification': 'emails/notification_professional.html',
-            'campaign': 'emails/campaign_professional.html'
-        }
-        
-        template_name = template_map.get(email_type, 'emails/notification_professional.html')
-        
-        # Подготавливаем данные для шаблона
-        template_context = {
-            'user': recipient,
-            'contact': recipient,
-            'recipient': recipient,
-            'recipient_email': recipient.email if hasattr(recipient, 'email') else recipient.email,
-            'unsubscribe_url': f"https://www.bigmentor.nl/unsubscribe?email={recipient.email}",
-            'privacy_policy_url': "https://www.bigmentor.nl/privacy",
-            'terms_url': "https://www.bigmentor.nl/terms",
-            'dashboard_url': "https://www.bigmentor.nl/dashboard"
-        }
-        
-        # Добавляем дополнительные данные
-        if template_data:
-            template_context.update(template_data)
-        
-        # Рендерим HTML шаблон
-        html_content = render_template(template_name, **template_context)
-        
-        # Отправляем через Resend
-        success = send_email_via_resend(
-            to_email=recipient.email,
-            subject=subject,
-            html_content=html_content,
-            from_name="Mentora Team"
-        )
-        
-        if success:
-            # Записываем в историю
-            history = CommunicationHistory(
-                recipient_type='user' if hasattr(recipient, 'id') else 'contact',
-                recipient_id=recipient.id if hasattr(recipient, 'id') else None,
-                recipient_email=recipient.email,
-                subject=subject,
-                message_type=email_type,
-                status='sent',
-                sent_at=datetime.utcnow(),
-                sent_by=current_user.id
-            )
-            db.session.add(history)
-            db.session.commit()
-            
-        return success
-        
-    except Exception as e:
-        current_app.logger.error(f"Error sending professional email: {str(e)}")
-        return False
-
-@communication_bp.route('/send-email', methods=['POST'])
-@login_required
-@admin_required
-def send_email():
-    """Отправка email через Communication Hub"""
-    
-    try:
-        data = request.get_json()
-        recipient_type = data.get('recipient_type')  # 'user' или 'contact'
-        recipient_id = data.get('recipient_id')
-        subject = data.get('subject')
-        message = data.get('message')
-        email_type = data.get('email_type', 'custom')
-        action_url = data.get('action_url')
-        action_text = data.get('action_text')
-        
-        if not all([recipient_type, recipient_id, subject, message]):
-            return jsonify({'success': False, 'error': 'Missing required fields'})
-        
-        # Получаем получателя
-        if recipient_type == 'user':
-            recipient = User.query.get(recipient_id)
-            recipient_email = recipient.email
-            recipient_name = recipient.get_display_name()
-        elif recipient_type == 'contact':
-            recipient = Contact.query.get(recipient_id)
-            recipient_email = recipient.email
-            recipient_name = recipient.full_name
-        else:
-            return jsonify({'success': False, 'error': 'Invalid recipient type'})
-        
-        if not recipient:
-            return jsonify({'success': False, 'error': 'Recipient not found'})
-        
-        # Отправляем email
-        from utils.admin_email_service import send_admin_email
-        
-        email_sent = send_admin_email(
-            recipient, 
-            subject, 
-            message, 
-            email_type,
-            action_url=action_url,
-            action_text=action_text
-        )
-        
-        if email_sent:
-            # Сохраняем в историю
-            history = CommunicationHistory(
-                recipient_type=recipient_type,
-                recipient_id=recipient_id,
-                recipient_email=recipient_email,
-                recipient_name=recipient_name,
-                sender_id=current_user.id,
-                sender_name=current_user.get_display_name(),
-                subject=subject,
-                message=message,
-                email_type=email_type,
-                action_url=action_url,
-                action_text=action_text,
-                template_used=f"{email_type}_template"
-            )
-            
-            db.session.add(history)
-            db.session.commit()
-            
-            return jsonify({'success': True, 'message': 'Email sent successfully'})
-        else:
-            return jsonify({'success': False, 'error': 'Failed to send email'})
-            
-    except Exception as e:
-        current_app.logger.error(f"Error sending email: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)})
-
-@communication_bp.route('/send-professional-email', methods=['POST'])
-@login_required
-@admin_required
-def send_professional_email_endpoint():
-    """API endpoint для отправки профессиональных email"""
-    try:
-        data = request.get_json()
-        recipient_type = data.get('recipient_type')  # 'user' или 'contact'
-        recipient_id = data.get('recipient_id')
-        email_type = data.get('email_type', 'notification')  # welcome, follow_up, reminder, notification, campaign
-        subject = data.get('subject')
-        template_data = data.get('template_data', {})
-        
-        if not all([recipient_type, recipient_id, email_type, subject]):
-            return jsonify({'success': False, 'error': 'Missing required fields'})
-        
-        # Получаем получателя
-        if recipient_type == 'user':
-            recipient = User.query.get(recipient_id)
-        else:
-            recipient = Contact.query.get(recipient_id)
-        
-        if not recipient:
-            return jsonify({'success': False, 'error': 'Recipient not found'})
-        
-        # Отправляем профессиональный email
-        success = send_professional_email(recipient, email_type, subject, template_data)
-        
-        if success:
-            return jsonify({'success': True, 'message': 'Professional email sent successfully'})
-        else:
-            return jsonify({'success': False, 'error': 'Failed to send email'})
-            
-    except Exception as e:
-        current_app.logger.error(f"Error in send_professional_email_endpoint: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)})
-
-@communication_bp.route('/api/recipients')
-@login_required
-@admin_required
-def get_recipients():
-    """API для получения списка получателей"""
-    
-    recipient_type = request.args.get('type', 'all')
-    search = request.args.get('search', '')
-    
-    recipients = []
-    
-    if recipient_type in ['all', 'users']:
-        users_query = User.query
-        if search:
-            users_query = users_query.filter(
-                or_(
-                    User.email.contains(search),
-                    User.first_name.contains(search),
-                    User.last_name.contains(search)
-                )
-            )
-        
-        users = users_query.limit(50).all()
-        for user in users:
-            recipients.append({
-                'id': user.id,
-                'type': 'user',
-                'email': user.email,
-                'name': user.get_display_name(),
-                'status': 'Active' if user.is_active else 'Inactive'
-            })
-    
-    if recipient_type in ['all', 'contacts']:
-        contacts_query = Contact.query
-        if search:
-            contacts_query = contacts_query.filter(
-                or_(
-                    Contact.email.contains(search),
-                    Contact.first_name.contains(search),
-                    Contact.last_name.contains(search)
-                )
-            )
-        
-        contacts = contacts_query.limit(50).all()
-        for contact in contacts:
-            recipients.append({
-                'id': contact.id,
-                'type': 'contact',
-                'email': contact.email,
-                'name': contact.full_name,
-                'status': contact.contact_status.title()
-            })
-    
-    return jsonify({'recipients': recipients})
-
-@communication_bp.route('/api/templates')
-@login_required
-@admin_required
-def get_templates():
-    """API для получения шаблонов"""
-    
-    email_type = request.args.get('type', 'all')
-    
-    query = EmailTemplate.query.filter_by(is_active=True)
-    if email_type != 'all':
-        query = query.filter(EmailTemplate.email_type == email_type)
-    
-    templates = query.all()
-    
-    return jsonify({'templates': [template.to_dict() for template in templates]})
+    """История отправленных email"""
+    # Здесь можно добавить логику для отображения истории
+    # Пока возвращаем простую страницу
+    return render_template('admin/communication/history.html')
