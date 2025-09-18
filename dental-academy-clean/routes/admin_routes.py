@@ -3566,6 +3566,50 @@ def crm_profession_create():
     
     return render_template('admin/crm_profession_form.html')
 
+@admin_bp.route('/crm/contacts/send-email', methods=['POST'])
+@login_required
+@admin_required
+def crm_contacts_send_email():
+    """Send email to CRM contacts"""
+    try:
+        data = request.get_json()
+        subject = data.get('subject')
+        message = data.get('message')
+        contact_id = data.get('contact_id')
+        contact_ids = data.get('contact_ids')
+        email_type = data.get('email_type', 'crm_lead')
+        
+        if not subject or not message:
+            return jsonify({'success': False, 'error': 'Subject and message are required'})
+        
+        # Get contacts to send email to
+        if contact_id:
+            contacts = [Contact.query.get(contact_id)]
+        elif contact_ids:
+            contact_id_list = [int(id) for id in contact_ids.split(',')]
+            contacts = Contact.query.filter(Contact.id.in_(contact_id_list)).all()
+        else:
+            return jsonify({'success': False, 'error': 'No contacts specified'})
+        
+        # Send emails using CRM email service
+        from utils.admin_email_service import send_bulk_admin_emails
+        
+        result = send_bulk_admin_emails(contacts, subject, message, email_type)
+        sent_count = result['sent']
+        
+        if result['errors']:
+            current_app.logger.warning(f"Some CRM emails failed to send: {result['errors']}")
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Email sent to {sent_count} contacts',
+            'sent_count': sent_count
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Error sending CRM emails: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @admin_bp.route('/crm/api/contacts/stats')
 @login_required
 @admin_required

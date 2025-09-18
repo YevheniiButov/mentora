@@ -184,11 +184,14 @@
                 <div class="col-md-2 text-end">
                     <div class="btn-group btn-group-sm">
                         <a href="{{ url_for('admin.crm_contact_detail', contact_id=contact.id) }}" 
-                           class="btn btn-outline-primary">
+                           class="btn btn-outline-primary" title="Просмотр">
                             <i class="bi bi-eye"></i>
                         </a>
-                        <button class="btn btn-outline-secondary" onclick="editContact({{ contact.id }})">
+                        <button class="btn btn-outline-secondary" onclick="editContact({{ contact.id }})" title="Редактировать">
                             <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-success" onclick="sendEmailToContact({{ contact.id }})" title="Отправить email">
+                            <i class="bi bi-envelope"></i>
                         </button>
                     </div>
                     <br>
@@ -344,6 +347,50 @@
         </div>
     </div>
 </div>
+<!-- Send Email Modal -->
+<div class="modal fade" id="sendEmailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Отправить email контакту</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="emailForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="emailType" class="form-label">Тип письма</label>
+                        <select class="form-select" id="emailType" required>
+                            <option value="crm_lead">Письмо потенциальному клиенту</option>
+                            <option value="crm_follow_up">Напоминание</option>
+                            <option value="crm_welcome">Приветственное письмо</option>
+                            <option value="custom">Кастомное письмо</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailSubject" class="form-label">Тема</label>
+                        <input type="text" class="form-control" id="emailSubject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailMessage" class="form-label">Сообщение</label>
+                        <textarea class="form-control" id="emailMessage" rows="10" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="actionUrl" class="form-label">Ссылка для кнопки (необязательно)</label>
+                        <input type="url" class="form-control" id="actionUrl" placeholder="https://example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="actionText" class="form-label">Текст кнопки (необязательно)</label>
+                        <input type="text" class="form-control" id="actionText" placeholder="Узнать больше">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Отправить email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -352,6 +399,70 @@ function editContact(contactId) {
     // Redirect to contact detail page for editing
     window.location.href = `/admin/crm/contacts/${contactId}`;
 }
+
+function sendEmailToContact(contactId) {
+    console.log('sendEmailToContact called with contactId:', contactId);
+    // Set contact ID for email form
+    const emailForm = document.getElementById('emailForm');
+    if (!emailForm) {
+        console.error('emailForm not found');
+        alert('Email form not found');
+        return;
+    }
+    emailForm.dataset.contactId = contactId;
+    const modal = new bootstrap.Modal(document.getElementById('sendEmailModal'));
+    modal.show();
+}
+
+// Email form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const emailForm = document.getElementById('emailForm');
+    if (emailForm) {
+        emailForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const contactId = this.dataset.contactId;
+            const subject = document.getElementById('emailSubject').value;
+            const message = document.getElementById('emailMessage').value;
+            const emailType = document.getElementById('emailType').value;
+            const actionUrl = document.getElementById('actionUrl').value;
+            const actionText = document.getElementById('actionText').value;
+            
+            const data = {
+                subject: subject,
+                message: message,
+                email_type: emailType,
+                contact_id: contactId
+            };
+            
+            if (actionUrl) data.action_url = actionUrl;
+            if (actionText) data.action_text = actionText;
+            
+            fetch('/admin/crm/contacts/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email отправлен успешно!');
+                    bootstrap.Modal.getInstance(document.getElementById('sendEmailModal')).hide();
+                } else {
+                    alert('Ошибка отправки email: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка отправки email');
+            });
+        });
+    } else {
+        console.error('emailForm not found for event listener');
+    }
+});
 
 // Auto-submit form on filter change
 document.getElementById('status').addEventListener('change', function() {

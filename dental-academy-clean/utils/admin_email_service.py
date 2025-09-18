@@ -162,6 +162,33 @@ def get_admin_email_html(user, subject, message, email_type, **kwargs):
             'action_url': kwargs.get('action_url'),
             'action_text': kwargs.get('action_text')
         }
+    elif email_type == 'crm_lead':
+        template = 'emails/crm_lead_email.html'
+        template_vars = {
+            'contact': user,  # В CRM используем contact вместо user
+            'subject': subject,
+            'message': message,
+            'action_url': kwargs.get('action_url'),
+            'action_text': kwargs.get('action_text')
+        }
+    elif email_type == 'crm_follow_up':
+        template = 'emails/crm_follow_up.html'
+        template_vars = {
+            'contact': user,  # В CRM используем contact вместо user
+            'subject': subject,
+            'message': message,
+            'action_url': kwargs.get('action_url'),
+            'action_text': kwargs.get('action_text')
+        }
+    elif email_type == 'crm_welcome':
+        template = 'emails/crm_welcome.html'
+        template_vars = {
+            'contact': user,  # В CRM используем contact вместо user
+            'subject': subject,
+            'message': message,
+            'action_url': kwargs.get('action_url'),
+            'action_text': kwargs.get('action_text')
+        }
     else:  # custom
         template = 'emails/admin_custom.html'
         template_vars = {
@@ -304,6 +331,76 @@ def send_custom_email(user, subject, message, action_url=None, action_text=None)
         subject, 
         message, 
         'custom', 
+        action_url=action_url,
+        action_text=action_text
+    )
+
+# CRM Email Functions
+def send_crm_lead_email(contact, subject, message, action_url=None, action_text=None):
+    """
+    Отправляет письмо потенциальному клиенту (лиду)
+    
+    Args:
+        contact: Объект контакта
+        subject: Тема письма
+        message: Содержимое письма
+        action_url: URL для кнопки действия
+        action_text: Текст кнопки действия
+    
+    Returns:
+        bool: True если письмо отправлено успешно
+    """
+    return send_admin_email(
+        contact, 
+        subject, 
+        message, 
+        'crm_lead', 
+        action_url=action_url,
+        action_text=action_text
+    )
+
+def send_crm_follow_up_email(contact, subject, message, action_url=None, action_text=None):
+    """
+    Отправляет письмо-напоминание контакту
+    
+    Args:
+        contact: Объект контакта
+        subject: Тема письма
+        message: Содержимое письма
+        action_url: URL для кнопки действия
+        action_text: Текст кнопки действия
+    
+    Returns:
+        bool: True если письмо отправлено успешно
+    """
+    return send_admin_email(
+        contact, 
+        subject, 
+        message, 
+        'crm_follow_up', 
+        action_url=action_url,
+        action_text=action_text
+    )
+
+def send_crm_welcome_email(contact, subject, message, action_url=None, action_text=None):
+    """
+    Отправляет приветственное письмо новому контакту
+    
+    Args:
+        contact: Объект контакта
+        subject: Тема письма
+        message: Содержимое письма
+        action_url: URL для кнопки действия
+        action_text: Текст кнопки действия
+    
+    Returns:
+        bool: True если письмо отправлено успешно
+    """
+    return send_admin_email(
+        contact, 
+        subject, 
+        message, 
+        'crm_welcome', 
         action_url=action_url,
         action_text=action_text
     )
