@@ -356,7 +356,7 @@
 {% block content %}
 <div class="documents-container">
     <div class="container">
-        <a href="{{ url_for('profile.index', lang=lang) }}" class="btn-back">
+        <a href="{{ url_for('profile.profile', lang=lang) if lang != 'en' else url_for('profile.profile') }}" class="btn-back">
             <i class="fas fa-arrow-left"></i>
             {{ t('back_to_profile', lang) | default('Назад к профилю') }}
         </a>

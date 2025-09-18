@@ -50,8 +50,8 @@
     {# Специальная обработка для маршрутов профиля #}
     {% if request.endpoint.startswith('profile.') %}
       {# Для страниц профиля используем прямые URL с параметром lang #}
-      {% if request.endpoint == 'profile.index' %}
-        {{ url_for('profile.index', lang=language) }}
+      {% if request.endpoint == 'profile.profile' %}
+        {{ url_for('profile.profile', lang=language) if language != 'en' else url_for('profile.profile') }}
       {% elif request.endpoint == 'profile.personal_info' %}
         {{ url_for('profile.personal_info', lang=language) }}
       {% elif request.endpoint == 'profile.documents' %}
