@@ -2,8 +2,8 @@
 <html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'light' }}">
 <head>
     <!-- Preload critical CSS -->
-    <link rel="preload" href="{{ url_for('static', filename='css/main.css') }}" as="style">
-    <link rel="preload" href="{{ url_for('static', filename='css/universal-styles.css') }}" as="style">
+    <link rel="preload" href="{{ static_versioned('css/main.css') }}" as="style">
+    <link rel="preload" href="{{ static_versioned('css/universal-styles.css') }}" as="style">
 
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -52,14 +52,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
     
     <!-- 2. Основные стили -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-theme.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ static_versioned('css/unified-theme.css') }}">
+    <link rel="stylesheet" href="{{ static_versioned('css/main.css') }}">
     
     <!-- 3. Универсальные стили из index.html (используют переменные тем) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-styles.css') }}">
+    <link rel="stylesheet" href="{{ static_versioned('css/universal-styles.css') }}">
     
     <!-- 4. Универсальная система лейаутов -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+    <link rel="stylesheet" href="{{ static_versioned('css/universal-layout-system.css') }}">
     
     <!-- 5. Дополнительные стили компонентов -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/footer-spacing.css') }}">

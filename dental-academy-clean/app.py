@@ -65,6 +65,22 @@ init_extensions(app)
 # Initialize analytics middleware
 init_analytics_middleware(app)
 
+# ========================================
+# STATIC FILE VERSIONING
+# ========================================
+
+@app.template_global()
+def static_versioned(filename):
+    """Generate versioned static file URLs to prevent caching issues"""
+    import time
+    # Use timestamp for development, or version for production
+    if app.config.get('FLASK_ENV') == 'production':
+        version = '1.0.0'  # Change this when you want to force cache refresh
+    else:
+        version = str(int(time.time()))  # Use timestamp in development
+    
+    return url_for('static', filename=filename, v=version)
+
 # Create all database tables
 with app.app_context():
     db.create_all()  # Создаст все таблицы
