@@ -225,6 +225,13 @@ def create_campaign():
     
     return render_template('admin/communication/create_campaign.html')
 
+@communication_bp.route('/send-professional')
+@login_required
+@admin_required
+def send_professional():
+    """Страница для отправки профессиональных email"""
+    return render_template('admin/communication/send_professional_email.html')
+
 def send_professional_email(recipient, email_type, subject, template_data=None):
     """Отправка профессионального email с использованием шаблонов"""
     try:
