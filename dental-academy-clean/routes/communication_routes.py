@@ -102,7 +102,7 @@ def send_professional():
     users = User.query.filter(User.email.isnot(None)).all()
     contacts = Contact.query.filter(Contact.email.isnot(None)).all()
     
-    return render_template('admin/communication/send_professional.html', 
+    return render_template('admin/communication/send_professional_email.html', 
                          users=users, contacts=contacts)
 
 # API для поиска пользователей
