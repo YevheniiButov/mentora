@@ -457,12 +457,7 @@ except ImportError as e:
     #     logger.warning(f"Could not import DigiD routes: {digid_error}")
     
     # Пытаемся зарегистрировать Diagnostic blueprint
-    try:
-        from routes.diagnostic_routes import diagnostic_bp
-        app.register_blueprint(diagnostic_bp)
-        logger.info("✅ Diagnostic blueprint registered successfully")
-    except ImportError as diagnostic_error:
-        logger.warning(f"Could not import Diagnostic routes: {diagnostic_error}")
+    # Diagnostic blueprint already registered above
     
 
     
