@@ -5360,3 +5360,84 @@ class SystemNotification(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'expires_at': self.expires_at.isoformat() if self.expires_at else None
         }
+
+# Communication Models
+class CommunicationHistory(db.Model):
+    """История коммуникации с пользователями и контактами"""
+    __tablename__ = 'communication_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    recipient_type = db.Column(db.String(20), nullable=False)
+    recipient_id = db.Column(db.Integer, nullable=False)
+    recipient_email = db.Column(db.String(255), nullable=False)
+    recipient_name = db.Column(db.String(255), nullable=True)
+    sender_id = db.Column(db.Integer, nullable=False)
+    sender_name = db.Column(db.String(255), nullable=True)
+    subject = db.Column(db.String(500), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    email_type = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(20), default='sent')
+    external_id = db.Column(db.String(255), nullable=True)
+    action_url = db.Column(db.String(500), nullable=True)
+    action_text = db.Column(db.String(255), nullable=True)
+    template_used = db.Column(db.String(100), nullable=True)
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+    delivered_at = db.Column(db.DateTime, nullable=True)
+    opened_at = db.Column(db.DateTime, nullable=True)
+    clicked_at = db.Column(db.DateTime, nullable=True)
+    extra_data = db.Column(db.JSON, nullable=True)
+    
+    def __repr__(self):
+        return f'<CommunicationHistory {self.id}: {self.recipient_email}>'
+
+class EmailTemplate(db.Model):
+    """Шаблоны email для переиспользования"""
+    __tablename__ = 'email_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    subject = db.Column(db.String(500), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    email_type = db.Column(db.String(50), nullable=False)
+    action_url = db.Column(db.String(500), nullable=True)
+    action_text = db.Column(db.String(255), nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    created_by = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    usage_count = db.Column(db.Integer, default=0)
+    
+    def __repr__(self):
+        return f'<EmailTemplate {self.id}: {self.name}>'
+
+class CommunicationCampaign(db.Model):
+    """Кампании массовых рассылок"""
+    __tablename__ = 'communication_campaigns'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    email_type = db.Column(db.String(50), nullable=False)
+    subject = db.Column(db.String(500), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    action_url = db.Column(db.String(500), nullable=True)
+    action_text = db.Column(db.String(255), nullable=True)
+    target_type = db.Column(db.String(20), nullable=False)
+    target_filters = db.Column(db.JSON, nullable=True)
+    status = db.Column(db.String(20), default='draft')
+    scheduled_at = db.Column(db.DateTime, nullable=True)
+    started_at = db.Column(db.DateTime, nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    total_recipients = db.Column(db.Integer, default=0)
+    sent_count = db.Column(db.Integer, default=0)
+    delivered_count = db.Column(db.Integer, default=0)
+    opened_count = db.Column(db.Integer, default=0)
+    clicked_count = db.Column(db.Integer, default=0)
+    failed_count = db.Column(db.Integer, default=0)
+    created_by = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<CommunicationCampaign {self.id}: {self.name}>'

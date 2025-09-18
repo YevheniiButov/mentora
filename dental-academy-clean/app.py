@@ -448,6 +448,14 @@ try:
     from routes.migration_routes import migration_bp
     app.register_blueprint(migration_bp)
     
+    # Communication Hub
+    try:
+        from routes.communication_routes import communication_bp
+        app.register_blueprint(communication_bp)
+        logger.info("✅ Communication Hub blueprint registered successfully")
+    except ImportError as communication_error:
+        logger.warning(f"Could not import Communication Hub routes: {communication_error}")
+    
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
         # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется
