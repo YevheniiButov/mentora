@@ -9,6 +9,7 @@ from models import db, User, Contact, CommunicationHistory, EmailTemplate, Commu
 # Models are now in main models.py
 from datetime import datetime, timedelta
 import json
+from flask import render_template_string
 
 communication_bp = Blueprint('communication', __name__, url_prefix='/admin/communication')
 
@@ -224,6 +225,70 @@ def create_campaign():
     
     return render_template('admin/communication/create_campaign.html')
 
+def send_professional_email(recipient, email_type, subject, template_data=None):
+    """Отправка профессионального email с использованием шаблонов"""
+    try:
+        from utils.resend_email_service import send_email_via_resend
+        
+        # Выбираем шаблон в зависимости от типа
+        template_map = {
+            'welcome': 'emails/welcome_professional.html',
+            'follow_up': 'emails/follow_up_professional.html',
+            'reminder': 'emails/reminder_professional.html',
+            'notification': 'emails/notification_professional.html',
+            'campaign': 'emails/campaign_professional.html'
+        }
+        
+        template_name = template_map.get(email_type, 'emails/notification_professional.html')
+        
+        # Подготавливаем данные для шаблона
+        template_context = {
+            'user': recipient,
+            'contact': recipient,
+            'recipient': recipient,
+            'recipient_email': recipient.email if hasattr(recipient, 'email') else recipient.email,
+            'unsubscribe_url': f"https://www.bigmentor.nl/unsubscribe?email={recipient.email}",
+            'privacy_policy_url': "https://www.bigmentor.nl/privacy",
+            'terms_url': "https://www.bigmentor.nl/terms",
+            'dashboard_url': "https://www.bigmentor.nl/dashboard"
+        }
+        
+        # Добавляем дополнительные данные
+        if template_data:
+            template_context.update(template_data)
+        
+        # Рендерим HTML шаблон
+        html_content = render_template(template_name, **template_context)
+        
+        # Отправляем через Resend
+        success = send_email_via_resend(
+            to_email=recipient.email,
+            subject=subject,
+            html_content=html_content,
+            from_name="Mentora Team"
+        )
+        
+        if success:
+            # Записываем в историю
+            history = CommunicationHistory(
+                recipient_type='user' if hasattr(recipient, 'id') else 'contact',
+                recipient_id=recipient.id if hasattr(recipient, 'id') else None,
+                recipient_email=recipient.email,
+                subject=subject,
+                message_type=email_type,
+                status='sent',
+                sent_at=datetime.utcnow(),
+                sent_by=current_user.id
+            )
+            db.session.add(history)
+            db.session.commit()
+            
+        return success
+        
+    except Exception as e:
+        current_app.logger.error(f"Error sending professional email: {str(e)}")
+        return False
+
 @communication_bp.route('/send-email', methods=['POST'])
 @login_required
 @admin_required
@@ -296,6 +361,43 @@ def send_email():
             
     except Exception as e:
         current_app.logger.error(f"Error sending email: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@communication_bp.route('/send-professional-email', methods=['POST'])
+@login_required
+@admin_required
+def send_professional_email_endpoint():
+    """API endpoint для отправки профессиональных email"""
+    try:
+        data = request.get_json()
+        recipient_type = data.get('recipient_type')  # 'user' или 'contact'
+        recipient_id = data.get('recipient_id')
+        email_type = data.get('email_type', 'notification')  # welcome, follow_up, reminder, notification, campaign
+        subject = data.get('subject')
+        template_data = data.get('template_data', {})
+        
+        if not all([recipient_type, recipient_id, email_type, subject]):
+            return jsonify({'success': False, 'error': 'Missing required fields'})
+        
+        # Получаем получателя
+        if recipient_type == 'user':
+            recipient = User.query.get(recipient_id)
+        else:
+            recipient = Contact.query.get(recipient_id)
+        
+        if not recipient:
+            return jsonify({'success': False, 'error': 'Recipient not found'})
+        
+        # Отправляем профессиональный email
+        success = send_professional_email(recipient, email_type, subject, template_data)
+        
+        if success:
+            return jsonify({'success': True, 'message': 'Professional email sent successfully'})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to send email'})
+            
+    except Exception as e:
+        current_app.logger.error(f"Error in send_professional_email_endpoint: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
 
 @communication_bp.route('/api/recipients')

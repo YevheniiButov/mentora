@@ -164,3 +164,64 @@ The Mentora Team
 © 2025 Mentora. All rights reserved.
 This email was sent to {user.email}
     """
+
+def send_email_via_resend(to_email, subject, html_content, from_name="Mentora Team"):
+    """
+    Универсальная функция для отправки email через Resend API
+    """
+    try:
+        from flask import current_app
+        
+        # Проверяем, отключена ли отправка email
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        
+        if mail_suppress:
+            print(f"\n{'='*60}")
+            print(f"📧 EMAIL (Resend - console mode) to {to_email}")
+            print(f"{'='*60}")
+            print(f"📧 To: {to_email}")
+            print(f"📧 Subject: {subject}")
+            print(f"📧 From: {from_name}")
+            print(f"📧 Content: HTML email with professional template")
+            print(f"{'='*60}\n")
+            return True
+        
+        # Получаем настройки Resend
+        api_key = current_app.config.get('RESEND_API_KEY')
+        from_email = current_app.config.get('RESEND_FROM_EMAIL', 'Mentora <info@bigmentor.nl>')
+        
+        if not api_key:
+            print("❌ RESEND_API_KEY not configured")
+            return False
+        
+        # Подготавливаем данные для Resend API
+        email_data = {
+            "from": from_email,
+            "to": [to_email],
+            "subject": subject,
+            "html": html_content,
+            "click_tracking": False,
+            "open_tracking": False
+        }
+        
+        # Отправляем через Resend API
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post("https://api.resend.com/emails", headers=headers, json=email_data)
+        response.raise_for_status()
+        
+        response_json = response.json()
+        print(f"✅ Email sent successfully via Resend to {to_email}")
+        print(f"📧 Email ID: {response_json.get('id')}")
+        
+        return True
+        
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Resend API request failed: {e}")
+        return False
+    except Exception as e:
+        print(f"❌ Failed to send email via Resend API: {e}")
+        return False
