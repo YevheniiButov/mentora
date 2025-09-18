@@ -230,12 +230,19 @@
             <select id="profession" name="profession" class="form-control" required>
                 <option value="">{{ t('select_profession', lang) | default('Выберите профессию') }}</option>
                 <option value="dentist">{{ t('dentist', lang) | default('Стоматолог') }}</option>
-                <option value="dental_hygienist">{{ t('dental_hygienist', lang) | default('Стоматолог-гигиенист') }}</option>
-                <option value="dental_assistant">{{ t('dental_assistant', lang) | default('Стоматологический ассистент') }}</option>
-                <option value="dental_technician">{{ t('dental_technician', lang) | default('Зубной техник') }}</option>
+                <option value="pharmacist">{{ t('pharmacist', lang) | default('Фармацевт') }}</option>
+                <option value="family_doctor">{{ t('family_doctor', lang) | default('Семейный врач') }}</option>
+                <option value="nurse">{{ t('nurse', lang) | default('Медсестра') }}</option>
                 <option value="other">{{ t('other', lang) | default('Другое') }}</option>
             </select>
             <div class="error-message" id="professionError"></div>
+        </div>
+
+        <!-- Поле для другой профессии -->
+        <div class="form-group" id="otherProfessionGroup" style="display: none;">
+            <label for="otherProfession">{{ t('other_profession', lang) | default('Укажите вашу профессию') }} *</label>
+            <input type="text" id="otherProfession" name="otherProfession" class="form-control" placeholder="{{ t('enter_profession', lang) | default('Введите вашу профессию') }}">
+            <div class="error-message" id="otherProfessionError"></div>
         </div>
 
         <!-- reCAPTCHA -->
@@ -301,6 +308,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('quickRegisterForm');
     const submitBtn = document.getElementById('submitBtn');
     
+    // Обработка изменения профессии
+    const professionSelect = document.getElementById('profession');
+    const otherProfessionGroup = document.getElementById('otherProfessionGroup');
+    const otherProfessionInput = document.getElementById('otherProfession');
+    
+    professionSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            otherProfessionGroup.style.display = 'block';
+            otherProfessionInput.required = true;
+        } else {
+            otherProfessionGroup.style.display = 'none';
+            otherProfessionInput.required = false;
+            otherProfessionInput.value = '';
+        }
+    });
+    
     // Валидация формы
     function validateForm() {
         let isValid = true;
@@ -354,6 +377,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!profession) {
             showError('professionError', '{{ t("profession_required", lang) | default("Профессия обязательна") }}');
             isValid = false;
+        } else if (profession === 'other') {
+            // Если выбрано "другое", проверяем поле для ввода
+            const otherProfession = document.getElementById('otherProfession').value.trim();
+            if (!otherProfession) {
+                showError('otherProfessionError', '{{ t("other_profession_required", lang) | default("Укажите вашу профессию") }}');
+                isValid = false;
+            }
         }
         
         // Валидация reCAPTCHA
@@ -404,6 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 birthDate: document.getElementById('birthDate').value,
                 email: document.getElementById('email').value.trim(),
                 profession: document.getElementById('profession').value,
+                otherProfession: document.getElementById('otherProfession').value.trim(),
                 privacyConsent: document.getElementById('privacyConsent').checked,
                 termsConsent: document.getElementById('termsConsent').checked,
                 marketingConsent: document.getElementById('marketingConsent').checked

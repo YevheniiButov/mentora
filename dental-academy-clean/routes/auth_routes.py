@@ -1139,6 +1139,26 @@ def quick_register():
                     'error': f'Field {field} is required'
                 }), 400
         
+        # Валидация профессии
+        profession = data.get('profession')
+        valid_professions = ['dentist', 'pharmacist', 'family_doctor', 'nurse', 'other']
+        if profession not in valid_professions:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid profession selected'
+            }), 400
+        
+        # Если выбрано "другое", проверяем поле otherProfession
+        if profession == 'other':
+            other_profession = data.get('otherProfession', '').strip()
+            if not other_profession:
+                return jsonify({
+                    'success': False,
+                    'error': 'Please specify your profession'
+                }), 400
+            # Используем указанную профессию вместо "other"
+            profession = other_profession
+        
         # Проверка reCAPTCHA
         if current_app.config.get('RECAPTCHA_ENABLED', True):
             recaptcha_response = data.get('g-recaptcha-response')
