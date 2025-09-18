@@ -1112,4 +1112,104 @@ def reset_password(token):
         return jsonify({
             'success': False,
             'error': 'Failed to reset password'
+        }), 500
+
+@auth_bp.route('/quick-register', methods=['GET', 'POST'])
+def quick_register():
+    """Quick registration form for new users"""
+    print(f"=== QUICK REGISTER ROUTE CALLED - METHOD: {request.method} ===")
+    
+    if request.method == 'GET':
+        print("=== HANDLING GET REQUEST ===")
+        from flask import g
+        lang = g.get('lang', 'nl')
+        return render_template('auth/quick_register.html', lang=lang)
+    
+    try:
+        print("=== HANDLING POST REQUEST ===")
+        data = request.get_json()
+        print(f"=== REQUEST DATA: {data} ===")
+        
+        # Валидация данных
+        required_fields = ['firstName', 'lastName', 'birthDate', 'email', 'profession']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({
+                    'success': False,
+                    'error': f'Field {field} is required'
+                }), 400
+        
+        # Проверка reCAPTCHA
+        if current_app.config.get('RECAPTCHA_ENABLED', True):
+            recaptcha_response = data.get('g-recaptcha-response')
+            if not recaptcha_response:
+                return jsonify({
+                    'success': False,
+                    'error': 'Please complete the reCAPTCHA verification'
+                }), 400
+            
+            if not verify_recaptcha(recaptcha_response):
+                return jsonify({
+                    'success': False,
+                    'error': 'reCAPTCHA verification failed. Please try again.'
+                }), 400
+        
+        # Проверка согласий
+        if not data.get('privacyConsent') or not data.get('termsConsent'):
+            return jsonify({
+                'success': False,
+                'error': 'You must agree to the privacy policy and terms of service'
+            }), 400
+        
+        # Проверка существования пользователя
+        existing_user = User.query.filter_by(email=data['email']).first()
+        if existing_user:
+            return jsonify({
+                'success': False,
+                'error': 'User with this email already exists'
+            }), 400
+        
+        # Создание нового пользователя
+        user = User(
+            first_name=data['firstName'],
+            last_name=data['lastName'],
+            email=data['email'],
+            birth_date=datetime.strptime(data['birthDate'], '%Y-%m-%d').date(),
+            profession=data['profession'],
+            marketing_consent=data.get('marketingConsent', False),
+            is_active=False,  # Требует подтверждения email
+            email_confirmed=False
+        )
+        
+        # Установка пароля (генерируем временный)
+        import secrets
+        import string
+        temp_password = ''.join(secrets.choices(string.ascii_letters + string.digits, k=12))
+        user.set_password(temp_password)
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        print(f"=== USER CREATED: {user.email} ===")
+        
+        # Отправка email подтверждения
+        from utils.email_service import send_email_confirmation
+        if send_email_confirmation(user, user.generate_email_confirmation_token()):
+            print(f"=== EMAIL CONFIRMATION SENT TO: {user.email} ===")
+        else:
+            print(f"=== FAILED TO SEND EMAIL CONFIRMATION TO: {user.email} ===")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Registration successful! Please check your email to confirm your account.',
+            'redirect_url': url_for('auth.login')
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Quick registration error: {str(e)}")
+        print(f"=== QUICK REGISTRATION ERROR: {str(e)} ===")
+        return jsonify({
+            'success': False,
+            'error': 'Registration failed. Please try again.'
         }), 500 

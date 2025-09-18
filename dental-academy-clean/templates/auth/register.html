@@ -29,6 +29,23 @@
     font-size: 16px;
 }
 
+.quick-register-link {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.quick-register-link .btn {
+    border-radius: 25px;
+    padding: 8px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.quick-register-link .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
 .registration-form {
     background: white;
     border-radius: 10px;
@@ -665,6 +682,14 @@
             </div>
             <h1>{{ t('early_registration_title', lang)|default('Предварительная регистрация') }}</h1>
             <p class="main-subtitle">{{ t('comprehensive_program_subtitle', lang)|default('Зарегистрируйтесь сейчас для участия в комплексной программе подготовки к BIG экзамену с практическими стажировками') }}</p>
+            
+            <!-- Ссылка на быструю регистрацию -->
+            <div class="quick-register-link">
+                <a href="{{ url_for('auth.quick_register', lang=lang) if lang != 'en' else url_for('auth.quick_register') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-lightning-charge"></i>
+                    {{ t('quick_registration', lang)|default('Быстрая регистрация') }}
+                </a>
+            </div>
         </div>
         
         <!-- Преимущества ранней регистрации -->

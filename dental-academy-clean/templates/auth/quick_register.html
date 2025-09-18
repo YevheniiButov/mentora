@@ -1,0 +1,493 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('quick_registration', lang) | default('Quick Registration') }} - Mentora{% endblock %}
+
+{% block description %}{{ t('quick_registration_description', lang) | default('Quick registration for Mentora BIG preparation program') }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<style>
+.quick-register-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-top: 100px;
+}
+
+.quick-register-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.quick-register-header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 2rem;
+}
+
+.quick-register-header p {
+    color: #7f8c8d;
+    font-size: 16px;
+}
+
+.quick-register-form {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+}
+
+.success-message {
+    color: #28a745;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+}
+
+.btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.back-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back-link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link a:hover {
+    text-decoration: underline;
+}
+
+.recaptcha-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.recaptcha-help {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.consent-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.consent-checkbox input[type="checkbox"] {
+    margin-top: 3px;
+}
+
+.consent-checkbox label {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #495057;
+}
+
+.consent-checkbox a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.consent-checkbox a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .quick-register-container {
+        padding: 15px;
+        padding-top: 80px;
+    }
+    
+    .quick-register-form {
+        padding: 25px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .quick-register-header h1 {
+        font-size: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quick-register-container">
+    <div class="quick-register-header">
+        <h1>
+            <i class="bi bi-lightning-charge text-primary"></i>
+            {{ t('quick_registration', lang) | default('Быстрая регистрация') }}
+        </h1>
+        <p>{{ t('quick_registration_subtitle', lang) | default('Заполните основные данные для быстрого доступа к программе') }}</p>
+    </div>
+
+    <form id="quickRegisterForm" class="quick-register-form">
+        <!-- Имя и Фамилия -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="firstName">{{ t('first_name', lang) | default('Имя') }} *</label>
+                <input type="text" id="firstName" name="firstName" class="form-control" required>
+                <div class="error-message" id="firstNameError"></div>
+            </div>
+            <div class="form-group">
+                <label for="lastName">{{ t('last_name', lang) | default('Фамилия') }} *</label>
+                <input type="text" id="lastName" name="lastName" class="form-control" required>
+                <div class="error-message" id="lastNameError"></div>
+            </div>
+        </div>
+
+        <!-- Дата рождения -->
+        <div class="form-group">
+            <label for="birthDate">{{ t('birth_date', lang) | default('Дата рождения') }} *</label>
+            <input type="date" id="birthDate" name="birthDate" class="form-control" required>
+            <div class="error-message" id="birthDateError"></div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+            <label for="email">{{ t('email', lang) | default('Email') }} *</label>
+            <input type="email" id="email" name="email" class="form-control" required>
+            <div class="error-message" id="emailError"></div>
+        </div>
+
+        <!-- Профессия -->
+        <div class="form-group">
+            <label for="profession">{{ t('profession', lang) | default('Профессия') }} *</label>
+            <select id="profession" name="profession" class="form-control" required>
+                <option value="">{{ t('select_profession', lang) | default('Выберите профессию') }}</option>
+                <option value="dentist">{{ t('dentist', lang) | default('Стоматолог') }}</option>
+                <option value="dental_hygienist">{{ t('dental_hygienist', lang) | default('Стоматолог-гигиенист') }}</option>
+                <option value="dental_assistant">{{ t('dental_assistant', lang) | default('Стоматологический ассистент') }}</option>
+                <option value="dental_technician">{{ t('dental_technician', lang) | default('Зубной техник') }}</option>
+                <option value="other">{{ t('other', lang) | default('Другое') }}</option>
+            </select>
+            <div class="error-message" id="professionError"></div>
+        </div>
+
+        <!-- reCAPTCHA -->
+        {% if config.RECAPTCHA_PUBLIC_KEY %}
+        <div class="recaptcha-container">
+            <div class="g-recaptcha" data-sitekey="{{ config.RECAPTCHA_PUBLIC_KEY }}" data-action="QUICK_REGISTER"></div>
+            <div class="recaptcha-help">
+                {{ t('recaptcha_help', lang) | default('This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.') }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Согласия -->
+        <div class="consent-checkbox">
+            <input type="checkbox" id="privacyConsent" name="privacyConsent" required>
+            <label for="privacyConsent">
+                {{ t('privacy_consent', lang) | default('Я согласен с') }} 
+                <a href="{{ url_for('main.privacy', lang=lang) if lang != 'en' else url_for('main.privacy') }}" target="_blank">
+                    {{ t('privacy_policy', lang) | default('Политикой конфиденциальности') }}
+                </a>
+            </label>
+        </div>
+
+        <div class="consent-checkbox">
+            <input type="checkbox" id="termsConsent" name="termsConsent" required>
+            <label for="termsConsent">
+                {{ t('terms_consent', lang) | default('Я согласен с') }} 
+                <a href="{{ url_for('main.terms', lang=lang) if lang != 'en' else url_for('main.terms') }}" target="_blank">
+                    {{ t('terms_of_service', lang) | default('Условиями использования') }}
+                </a>
+            </label>
+        </div>
+
+        <div class="consent-checkbox">
+            <input type="checkbox" id="marketingConsent" name="marketingConsent">
+            <label for="marketingConsent">
+                {{ t('marketing_consent', lang) | default('Я хочу получать информацию о новых курсах и предложениях') }}
+            </label>
+        </div>
+
+        <!-- Кнопка отправки -->
+        <button type="submit" class="btn-submit" id="submitBtn">
+            <i class="bi bi-check-circle"></i>
+            {{ t('complete_registration', lang) | default('Завершить регистрацию') }}
+        </button>
+    </form>
+
+    <div class="back-link">
+        <a href="{{ url_for('auth.register', lang=lang) if lang != 'en' else url_for('auth.register') }}">
+            <i class="bi bi-arrow-left"></i>
+            {{ t('back_to_full_registration', lang) | default('Вернуться к полной регистрации') }}
+        </a>
+    </div>
+</div>
+
+<!-- reCAPTCHA Script -->
+{% if config.RECAPTCHA_PUBLIC_KEY %}
+<script src="https://www.google.com/recaptcha/api.js?hl={{ lang }}" async defer></script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('quickRegisterForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Валидация формы
+    function validateForm() {
+        let isValid = true;
+        
+        // Очистка предыдущих ошибок
+        document.querySelectorAll('.error-message').forEach(error => {
+            error.style.display = 'none';
+        });
+        
+        // Валидация имени
+        const firstName = document.getElementById('firstName').value.trim();
+        if (!firstName) {
+            showError('firstNameError', '{{ t("first_name_required", lang) | default("Имя обязательно") }}');
+            isValid = false;
+        }
+        
+        // Валидация фамилии
+        const lastName = document.getElementById('lastName').value.trim();
+        if (!lastName) {
+            showError('lastNameError', '{{ t("last_name_required", lang) | default("Фамилия обязательна") }}');
+            isValid = false;
+        }
+        
+        // Валидация даты рождения
+        const birthDate = document.getElementById('birthDate').value;
+        if (!birthDate) {
+            showError('birthDateError', '{{ t("birth_date_required", lang) | default("Дата рождения обязательна") }}');
+            isValid = false;
+        } else {
+            const birthYear = new Date(birthDate).getFullYear();
+            const currentYear = new Date().getFullYear();
+            if (currentYear - birthYear < 16) {
+                showError('birthDateError', '{{ t("age_restriction", lang) | default("Вам должно быть не менее 16 лет") }}');
+                isValid = false;
+            }
+        }
+        
+        // Валидация email
+        const email = document.getElementById('email').value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            showError('emailError', '{{ t("email_required", lang) | default("Email обязателен") }}');
+            isValid = false;
+        } else if (!emailRegex.test(email)) {
+            showError('emailError', '{{ t("email_invalid", lang) | default("Неверный формат email") }}');
+            isValid = false;
+        }
+        
+        // Валидация профессии
+        const profession = document.getElementById('profession').value;
+        if (!profession) {
+            showError('professionError', '{{ t("profession_required", lang) | default("Профессия обязательна") }}');
+            isValid = false;
+        }
+        
+        // Валидация reCAPTCHA
+        {% if config.RECAPTCHA_PUBLIC_KEY %}
+        if (typeof grecaptcha !== 'undefined') {
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (recaptchaResponse.length === 0) {
+                alert('{{ t("recaptcha_required", lang) | default("Пожалуйста, пройдите проверку reCAPTCHA") }}');
+                isValid = false;
+            }
+        }
+        {% endif %}
+        
+        // Валидация согласий
+        const privacyConsent = document.getElementById('privacyConsent').checked;
+        const termsConsent = document.getElementById('termsConsent').checked;
+        
+        if (!privacyConsent || !termsConsent) {
+            alert('{{ t("consent_required", lang) | default("Необходимо согласиться с условиями использования и политикой конфиденциальности") }}');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    function showError(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+    
+    // Обработка отправки формы
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> {{ t("processing", lang) | default("Обработка...") }}';
+        
+        try {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Добавляем reCAPTCHA response
+            {% if config.RECAPTCHA_PUBLIC_KEY %}
+            if (typeof grecaptcha !== 'undefined') {
+                data['g-recaptcha-response'] = grecaptcha.getResponse();
+            }
+            {% endif %}
+            
+            const response = await fetch('{{ url_for("auth.quick_register") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Показываем сообщение об успехе
+                showSuccessMessage('{{ t("registration_success", lang) | default("Регистрация успешно завершена! Проверьте email для подтверждения.") }}');
+                
+                // Перенаправляем через 3 секунды
+                setTimeout(() => {
+                    window.location.href = '{{ url_for("auth.login", lang=lang) if lang != "en" else url_for("auth.login") }}';
+                }, 3000);
+            } else {
+                showErrorMessage(result.error || '{{ t("registration_error", lang) | default("Ошибка регистрации") }}');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            showErrorMessage('{{ t("network_error", lang) | default("Ошибка сети. Попробуйте еще раз.") }}');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> {{ t("complete_registration", lang) | default("Завершить регистрацию") }}';
+        }
+    });
+    
+    function showSuccessMessage(message) {
+        // Создаем уведомление об успехе
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-success';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 400px;
+        `;
+        notification.innerHTML = `
+            <i class="bi bi-check-circle-fill"></i>
+            ${message}
+        `;
+        document.body.appendChild(notification);
+        
+        // Убираем уведомление через 5 секунд
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+    
+    function showErrorMessage(message) {
+        // Создаем уведомление об ошибке
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-danger';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 400px;
+        `;
+        notification.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            ${message}
+        `;
+        document.body.appendChild(notification);
+        
+        // Убираем уведомление через 5 секунд
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}
