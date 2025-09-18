@@ -51,7 +51,7 @@ def dashboard():
     
     # Популярные шаблоны
     popular_templates = EmailTemplate.query.filter_by(is_active=True).order_by(
-        EmailTemplate.usage_count.desc()
+        EmailTemplate.sent_count.desc()
     ).limit(5).all()
     
     return render_template('admin/communication/dashboard.html',
