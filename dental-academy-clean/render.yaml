@@ -12,3 +12,21 @@ services:
         value: production
       - key: FLASK_DEBUG
         value: false
+      - key: MAIL_SUPPRESS_SEND
+        value: false
+      - key: MAIL_SERVER
+        fromService:
+          type: mailersend
+          property: smtpHost
+      - key: MAIL_USERNAME
+        fromService:
+          type: mailersend
+          property: username
+      - key: MAIL_PASSWORD
+        fromService:
+          type: mailersend
+          property: password
+      - key: MAIL_DEFAULT_SENDER
+        value: "Mentora <noreply@bigmentor.nl>"
+  - type: mailersend
+    name: mentora-mailersend
