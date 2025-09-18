@@ -44,16 +44,16 @@ class Config:
     CACHE_DEFAULT_TIMEOUT = 300
     
     # Base URL for email links
-    BASE_URL = os.environ.get('BASE_URL', 'https://mentora.com.in')
+    BASE_URL = os.environ.get('BASE_URL', 'https://bigmentor.nl')
     
     # Server configuration for URL generation
-    SERVER_NAME = os.environ.get('SERVER_NAME', 'mentora.com.in')
+    SERVER_NAME = os.environ.get('SERVER_NAME', 'bigmentor.nl')
     APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
     PREFERRED_URL_SCHEME = os.environ.get('PREFERRED_URL_SCHEME', 'https')
     
     # Contact information
-    SUPPORT_EMAIL = 'support@mentora.com.in'
-    INFO_EMAIL = 'info@mentora.com.in'
+    SUPPORT_EMAIL = 'info@bigmentor.nl'
+    INFO_EMAIL = 'info@bigmentor.nl'
     
     # Email Configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
@@ -62,7 +62,7 @@ class Config:
     MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'false').lower() in ['true', 'on', '1']
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Mentora <noreply@mentora.com.in>')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Mentora <info@bigmentor.nl>')
     
     # Email Confirmation
     EMAIL_CONFIRMATION_EXPIRES = 86400  # 24 hours
@@ -72,7 +72,7 @@ class Config:
     RECAPTCHA_ENABLED = os.environ.get('RECAPTCHA_ENABLED', 'false').lower() == 'true'
     RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', None)
     RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', None)
-    RECAPTCHA_DOMAINS = os.environ.get('RECAPTCHA_DOMAINS', 'mentora.com.in,www.mentora.com.in,mentora-nl.onrender.com,bigmentor.nl,www.bigmentor.nl').split(',')
+    RECAPTCHA_DOMAINS = os.environ.get('RECAPTCHA_DOMAINS', 'bigmentor.nl,www.bigmentor.nl,mentora-nl.onrender.com').split(',')
     
     # Development mode - suppress email sending
     MAIL_SUPPRESS_SEND = os.environ.get('MAIL_SUPPRESS_SEND', 'false').lower() in ['true', 'on', '1']
