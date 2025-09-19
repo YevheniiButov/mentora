@@ -504,23 +504,21 @@ def change_password():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     """Extended registration form for new users"""
-    print(f"=== REGISTER ROUTE CALLED - METHOD: {request.method} ===")
-    print(f"=== REQUEST URL: {request.url} ===")
+    from utils.registration_logger import registration_logger
     
     if request.method == 'GET':
-        print("=== HANDLING GET REQUEST ===")
         from flask import g
         lang = g.get('lang', 'nl')
         return render_template('auth/register.html', lang=lang)
     
+    # Get form data
+    data = request.form.to_dict()
+    files = request.files
+    
+    # Log registration start
+    registration_logger.log_registration_start('full_registration', data)
+    
     try:
-        print("=== HANDLING POST REQUEST ===")
-        print(f"=== FORM DATA KEYS: {list(request.form.keys())} ===")
-        print(f"=== FILES: {list(request.files.keys())} ===")
-        
-        # Get form data
-        data = request.form.to_dict()
-        files = request.files
         
         # Validate reCAPTCHA (only if enabled and configured)
         recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
@@ -528,41 +526,33 @@ def register():
 
         if recaptcha_enabled and recaptcha_secret and recaptcha_secret.strip():
             recaptcha_response = data.get('g-recaptcha-response')
-            print(f"=== reCAPTCHA RESPONSE: {recaptcha_response[:20] if recaptcha_response else 'None'}... ===")
             
             if not recaptcha_response:
-                print("=== reCAPTCHA VALIDATION FAILED - NO RESPONSE ===")
+                registration_logger.log_validation_error('full_registration', 'g-recaptcha-response', 'No reCAPTCHA response provided', data)
                 return jsonify({'success': False, 'error': 'Please complete the reCAPTCHA verification'}), 400
             elif not verify_recaptcha(recaptcha_response):
-                print("=== reCAPTCHA VALIDATION FAILED - INVALID RESPONSE ===")
+                registration_logger.log_validation_error('full_registration', 'g-recaptcha-response', 'Invalid reCAPTCHA response', data)
                 return jsonify({'success': False, 'error': 'reCAPTCHA verification failed. Please try again.'}), 400
-            else:
-                print("=== reCAPTCHA VALIDATION PASSED ===")
-        else:
-            print("=== reCAPTCHA DISABLED OR NOT CONFIGURED - SKIPPING VALIDATION ===")
         
         # Validate email format and domain
         email = data.get('email', '').strip().lower()
         if not validate_email_format(email):
-            print("=== EMAIL FORMAT VALIDATION FAILED ===")
+            registration_logger.log_validation_error('full_registration', 'email', 'Invalid email format', data)
             return jsonify({'success': False, 'error': 'Invalid email format'}), 400
         
         if not validate_email_domain(email):
-            print("=== EMAIL DOMAIN VALIDATION FAILED ===")
+            registration_logger.log_validation_error('full_registration', 'email', 'Disposable email domain not allowed', data)
             return jsonify({'success': False, 'error': 'Disposable email addresses are not allowed'}), 400
         
         # Validate required fields
         required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'birth_date', 'nationality', 'profession', 'legal_status', 'dutch_level', 'university_name', 'degree_type', 'study_start_year', 'study_end_year', 'study_country', 'required_consents', 'digital_signature']
         errors = []
         
-        print("=== VALIDATING REQUIRED FIELDS ===")
         for field in required_fields:
             value = data.get(field)
-            print(f"=== {field}: '{value}' ===")
             if not value:
                 errors.append(f'{field} is required')
-        
-        print(f"=== VALIDATION ERRORS: {errors} ===")
+                registration_logger.log_validation_error('full_registration', field, 'Required field is missing', data)
         
         # Validate password
         password = data.get('password', '')
@@ -570,33 +560,38 @@ def register():
         
         if password != confirm_password:
             errors.append('Passwords do not match')
+            registration_logger.log_validation_error('full_registration', 'password', 'Passwords do not match', data)
         
         if len(password) < 8:
             errors.append('Password must be at least 8 characters long')
+            registration_logger.log_validation_error('full_registration', 'password', 'Password too short', data)
         
         if not any(c.isalpha() for c in password):
             errors.append('Password must contain at least one letter')
+            registration_logger.log_validation_error('full_registration', 'password', 'Password missing letters', data)
         
         if not any(c.isdigit() for c in password):
             errors.append('Password must contain at least one number')
+            registration_logger.log_validation_error('full_registration', 'password', 'Password missing numbers', data)
         
         # Check if email already exists
-        print(f"=== CHECKING EMAIL: {data['email']} ===")
         existing_user = User.query.filter_by(email=data['email']).first()
-        print(f"=== EXISTING USER FOUND: {existing_user is not None} ===")
         if existing_user:
-            print(f"=== EXISTING USER: {existing_user.email} ({existing_user.first_name} {existing_user.last_name}) ===")
+            registration_logger.log_business_logic_error('full_registration', 'email_exists', f'Email already registered: {existing_user.email}', data)
             errors.append('Email already registered')
         
         # Validate "Other" fields
         if data.get('profession') == 'other' and not data.get('other_profession'):
             errors.append('Please specify your profession')
+            registration_logger.log_validation_error('full_registration', 'other_profession', 'Other profession not specified', data)
         
         if data.get('nationality') == 'OTHER' and not data.get('other_nationality'):
             errors.append('Please specify your nationality')
+            registration_logger.log_validation_error('full_registration', 'other_nationality', 'Other nationality not specified', data)
         
         if data.get('legal_status') == 'other' and not data.get('other_legal_status'):
             errors.append('Please specify your legal status')
+            registration_logger.log_validation_error('full_registration', 'other_legal_status', 'Other legal status not specified', data)
         
         # Validate digital signature (more flexible)
         digital_signature = data.get('digital_signature', '').strip()
@@ -605,8 +600,10 @@ def register():
         
         if not digital_signature:
             errors.append('Digital signature is required')
+            registration_logger.log_validation_error('full_registration', 'digital_signature', 'Digital signature is required', data)
         elif len(digital_signature) < 3:
             errors.append('Digital signature must be at least 3 characters long')
+            registration_logger.log_validation_error('full_registration', 'digital_signature', 'Digital signature too short', data)
         elif first_name and last_name:
             # Check if signature contains both first and last name (flexible matching)
             first_name_lower = first_name.lower()
@@ -615,9 +612,10 @@ def register():
             
             if not (first_name_lower in signature_lower and last_name_lower in signature_lower):
                 errors.append('Digital signature should contain your first and last name')
+                registration_logger.log_validation_error('full_registration', 'digital_signature', 'Digital signature does not contain full name', data)
         
         if errors:
-            print(f"=== RETURNING ERRORS: {errors} ===")
+            registration_logger.log_validation_error('full_registration', 'multiple_fields', f'Multiple validation errors: {errors}', data)
             return jsonify({
                 'success': False,
                 'error': '; '.join(errors)
@@ -687,21 +685,33 @@ def register():
         if 'diploma_file' in files and files['diploma_file'].filename:
             diploma_file = files['diploma_file']
             if allowed_file(diploma_file.filename, ALLOWED_DOCUMENT_EXTENSIONS):
-                filename = secure_filename(f"diploma_{user.id}_{diploma_file.filename}")
-                filepath = os.path.join(DOCUMENTS_FOLDER, filename)
-                diploma_file.save(filepath)
-                user.diploma_file = filepath
-                uploaded_files['diploma'] = filepath
+                try:
+                    filename = secure_filename(f"diploma_{user.id}_{diploma_file.filename}")
+                    filepath = os.path.join(DOCUMENTS_FOLDER, filename)
+                    diploma_file.save(filepath)
+                    user.diploma_file = filepath
+                    uploaded_files['diploma'] = filepath
+                except Exception as e:
+                    registration_logger.log_file_upload_error('full_registration', diploma_file.filename, str(e), data)
+                    raise
+            else:
+                registration_logger.log_file_upload_error('full_registration', diploma_file.filename, 'File type not allowed', data)
         
         # Language certificates
         language_certs = []
         if 'language_certificates' in files:
             for file in files.getlist('language_certificates'):
                 if file.filename and allowed_file(file.filename, ALLOWED_DOCUMENT_EXTENSIONS):
-                    filename = secure_filename(f"lang_cert_{user.id}_{file.filename}")
-                    filepath = os.path.join(DOCUMENTS_FOLDER, filename)
-                    file.save(filepath)
-                    language_certs.append(filepath)
+                    try:
+                        filename = secure_filename(f"lang_cert_{user.id}_{file.filename}")
+                        filepath = os.path.join(DOCUMENTS_FOLDER, filename)
+                        file.save(filepath)
+                        language_certs.append(filepath)
+                    except Exception as e:
+                        registration_logger.log_file_upload_error('full_registration', file.filename, str(e), data)
+                        raise
+                elif file.filename:
+                    registration_logger.log_file_upload_error('full_registration', file.filename, 'File type not allowed', data)
         
         if language_certs:
             user.language_certificates = json.dumps(language_certs)
@@ -711,10 +721,16 @@ def register():
         if 'additional_documents' in files:
             for file in files.getlist('additional_documents'):
                 if file.filename and allowed_file(file.filename, ALLOWED_DOCUMENT_EXTENSIONS):
-                    filename = secure_filename(f"additional_{user.id}_{file.filename}")
-                    filepath = os.path.join(DOCUMENTS_FOLDER, filename)
-                    file.save(filepath)
-                    additional_docs.append(filepath)
+                    try:
+                        filename = secure_filename(f"additional_{user.id}_{file.filename}")
+                        filepath = os.path.join(DOCUMENTS_FOLDER, filename)
+                        file.save(filepath)
+                        additional_docs.append(filepath)
+                    except Exception as e:
+                        registration_logger.log_file_upload_error('full_registration', file.filename, str(e), data)
+                        raise
+                elif file.filename:
+                    registration_logger.log_file_upload_error('full_registration', file.filename, 'File type not allowed', data)
         
         if additional_docs:
             user.additional_documents = json.dumps(additional_docs)
@@ -734,25 +750,27 @@ def register():
         # Store in user's additional data
         user.notification_settings = json.dumps(registration_data)
         
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            registration_logger.log_database_error('full_registration', 'commit_user', str(e), data)
+            raise
         
         # Send email confirmation
-        print("=== STARTING EMAIL CONFIRMATION PROCESS ===")
-        print(f"=== USER ID: {user.id} ===")
-        print(f"=== USER EMAIL: {user.email} ===")
-        print(f"=== TOKEN: {confirmation_token[:20]}... ===")
-        
         from utils.email_service import send_email_confirmation
         
-        print("=== CALLING send_email_confirmation ===")
         email_sent = send_email_confirmation(user, confirmation_token)
-        print(f"=== EMAIL CONFIRMATION RESULT: {email_sent} ===")
+        if not email_sent:
+            registration_logger.log_email_error('full_registration', user.email, 'Failed to send confirmation email', data)
         
-        # Log registration
+        # Log successful registration
+        registration_logger.log_registration_success('full_registration', user.id, user.email, data)
+        
+        # Log registration in user profile
         try:
             user.log_profile_change('registration', 'user_registered', 'User completed registration')
         except Exception as e:
-            print(f"Warning: Could not log registration: {e}")
+            registration_logger.log_database_error('full_registration', 'log_profile_change', str(e), data)
             # Continue without failing the registration
         
         return jsonify({
@@ -764,7 +782,7 @@ def register():
         
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Registration error: {str(e)}")
+        registration_logger.log_unexpected_error('full_registration', e, data)
         return jsonify({
             'success': False,
             'error': 'Registration failed. Please try again.'
@@ -1117,23 +1135,24 @@ def reset_password(token):
 @auth_bp.route('/quick-register', methods=['GET', 'POST'])
 def quick_register():
     """Quick registration form for new users"""
-    print(f"=== QUICK REGISTER ROUTE CALLED - METHOD: {request.method} ===")
+    from utils.registration_logger import registration_logger
     
     if request.method == 'GET':
-        print("=== HANDLING GET REQUEST ===")
         from flask import g
         lang = g.get('lang', 'nl')
         return render_template('auth/quick_register.html', lang=lang)
     
     try:
-        print("=== HANDLING POST REQUEST ===")
         data = request.get_json()
-        print(f"=== REQUEST DATA: {data} ===")
+        
+        # Log registration start
+        registration_logger.log_registration_start('quick_registration', data)
         
         # Валидация данных
         required_fields = ['firstName', 'lastName', 'birthDate', 'email', 'profession']
         for field in required_fields:
             if not data.get(field):
+                registration_logger.log_validation_error('quick_registration', field, 'Required field is missing', data)
                 return jsonify({
                     'success': False,
                     'error': f'Field {field} is required'
@@ -1143,6 +1162,7 @@ def quick_register():
         profession = data.get('profession')
         valid_professions = ['dentist', 'pharmacist', 'family_doctor', 'nurse', 'other']
         if profession not in valid_professions:
+            registration_logger.log_validation_error('quick_registration', 'profession', 'Invalid profession selected', data)
             return jsonify({
                 'success': False,
                 'error': 'Invalid profession selected'
@@ -1152,6 +1172,7 @@ def quick_register():
         if profession == 'other':
             other_profession = data.get('otherProfession', '').strip()
             if not other_profession:
+                registration_logger.log_validation_error('quick_registration', 'otherProfession', 'Other profession not specified', data)
                 return jsonify({
                     'success': False,
                     'error': 'Please specify your profession'
@@ -1163,12 +1184,14 @@ def quick_register():
         if current_app.config.get('RECAPTCHA_ENABLED', True):
             recaptcha_response = data.get('g-recaptcha-response')
             if not recaptcha_response:
+                registration_logger.log_validation_error('quick_registration', 'g-recaptcha-response', 'No reCAPTCHA response provided', data)
                 return jsonify({
                     'success': False,
                     'error': 'Please complete the reCAPTCHA verification'
                 }), 400
             
             if not verify_recaptcha(recaptcha_response):
+                registration_logger.log_validation_error('quick_registration', 'g-recaptcha-response', 'Invalid reCAPTCHA response', data)
                 return jsonify({
                     'success': False,
                     'error': 'reCAPTCHA verification failed. Please try again.'
@@ -1178,9 +1201,8 @@ def quick_register():
         privacy_consent = data.get('privacyConsent', False)
         terms_consent = data.get('termsConsent', False)
         
-        print(f"=== CONSENT CHECK: privacy={privacy_consent}, terms={terms_consent} ===")
-        
         if not privacy_consent or not terms_consent:
+            registration_logger.log_validation_error('quick_registration', 'consent', 'Privacy or terms consent not provided', data)
             return jsonify({
                 'success': False,
                 'error': 'You must agree to the privacy policy and terms of service'
@@ -1189,13 +1211,13 @@ def quick_register():
         # Проверка существования пользователя
         existing_user = User.query.filter_by(email=data['email']).first()
         if existing_user:
+            registration_logger.log_business_logic_error('quick_registration', 'email_exists', f'Email already registered: {existing_user.email}', data)
             return jsonify({
                 'success': False,
                 'error': 'User with this email already exists'
             }), 400
         
         # Создание нового пользователя
-        print(f"=== CREATING USER: {data['email']} ===")
         user = User(
             first_name=data['firstName'],
             last_name=data['lastName'],
@@ -1213,17 +1235,21 @@ def quick_register():
         temp_password = ''.join(secrets.choices(string.ascii_letters + string.digits, k=12))
         user.set_password(temp_password)
         
-        db.session.add(user)
-        db.session.commit()
-        
-        print(f"=== USER CREATED: {user.email} ===")
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except Exception as e:
+            registration_logger.log_database_error('quick_registration', 'create_user', str(e), data)
+            raise
         
         # Отправка email подтверждения
         from utils.email_service import send_email_confirmation
-        if send_email_confirmation(user, user.generate_email_confirmation_token()):
-            print(f"=== EMAIL CONFIRMATION SENT TO: {user.email} ===")
-        else:
-            print(f"=== FAILED TO SEND EMAIL CONFIRMATION TO: {user.email} ===")
+        email_sent = send_email_confirmation(user, user.generate_email_confirmation_token())
+        if not email_sent:
+            registration_logger.log_email_error('quick_registration', user.email, 'Failed to send confirmation email', data)
+        
+        # Log successful registration
+        registration_logger.log_registration_success('quick_registration', user.id, user.email, data)
         
         return jsonify({
             'success': True,
@@ -1233,9 +1259,168 @@ def quick_register():
         
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Quick registration error: {str(e)}")
-        print(f"=== QUICK REGISTRATION ERROR: {str(e)} ===")
+        registration_logger.log_unexpected_error('quick_registration', e, data)
         return jsonify({
             'success': False,
             'error': 'Registration failed. Please try again.'
+        }), 500
+
+
+# ========================================
+# INVITATION-BASED REGISTRATION
+# ========================================
+
+@auth_bp.route('/invite/<token>')
+def invite_register(token):
+    """Страница регистрации по приглашению"""
+    from utils.registration_logger import registration_logger
+    
+    try:
+        from models import Invitation
+        
+        # Находим приглашение по токену
+        invitation = Invitation.query.filter_by(token=token).first()
+        
+        if not invitation:
+            registration_logger.log_business_logic_error('invite_registration', 'invalid_token', f'Invalid invitation token: {token}', {'token': token})
+            flash('Недействительная ссылка приглашения', 'error')
+            return redirect(url_for('auth.login'))
+        
+        if not invitation.is_valid():
+            if invitation.is_expired():
+                registration_logger.log_business_logic_error('invite_registration', 'expired_token', f'Expired invitation token: {token}', {'token': token, 'email': invitation.email})
+                flash('Срок действия приглашения истек', 'error')
+            else:
+                registration_logger.log_business_logic_error('invite_registration', 'used_token', f'Used invitation token: {token}', {'token': token, 'email': invitation.email})
+                flash('Приглашение уже использовано или отменено', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Проверяем, не зарегистрирован ли уже пользователь с этим email
+        existing_user = User.query.filter_by(email=invitation.email).first()
+        if existing_user:
+            registration_logger.log_business_logic_error('invite_registration', 'email_exists', f'Email already registered: {invitation.email}', {'token': token, 'email': invitation.email})
+            flash('Пользователь с этим email уже зарегистрирован', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Получаем язык из параметров или используем английский по умолчанию
+        lang = request.args.get('lang', 'en')
+        
+        return render_template('auth/invite_register.html',
+                             invitation=invitation,
+                             lang=lang)
+    
+    except Exception as e:
+        registration_logger.log_unexpected_error('invite_registration', e, {'token': token})
+        flash('Ошибка загрузки страницы приглашения', 'error')
+        return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/invite/<token>/register', methods=['POST'])
+def invite_register_submit(token):
+    """Обработка регистрации по приглашению"""
+    from utils.registration_logger import registration_logger
+    
+    try:
+        from models import Invitation
+        
+        # Получаем данные формы
+        data = request.get_json()
+        
+        # Log registration start
+        registration_logger.log_registration_start('invite_registration', data)
+        
+        # Находим приглашение
+        invitation = Invitation.query.filter_by(token=token).first()
+        
+        if not invitation or not invitation.is_valid():
+            registration_logger.log_business_logic_error('invite_registration', 'invalid_token', f'Invalid or expired invitation token: {token}', data)
+            return jsonify({
+                'success': False,
+                'error': 'Недействительное или истекшее приглашение'
+            }), 400
+        
+        if not data:
+            registration_logger.log_validation_error('invite_registration', 'form_data', 'No form data received', data)
+            return jsonify({
+                'success': False,
+                'error': 'Данные формы не получены'
+            }), 400
+        
+        # Валидация пароля
+        password = data.get('password', '').strip()
+        confirm_password = data.get('confirmPassword', '').strip()
+        
+        if not password or len(password) < 6:
+            registration_logger.log_validation_error('invite_registration', 'password', 'Password too short', data)
+            return jsonify({
+                'success': False,
+                'error': 'Пароль должен содержать минимум 6 символов'
+            }), 400
+        
+        if password != confirm_password:
+            registration_logger.log_validation_error('invite_registration', 'password', 'Passwords do not match', data)
+            return jsonify({
+                'success': False,
+                'error': 'Пароли не совпадают'
+            }), 400
+        
+        # Проверяем, не зарегистрирован ли уже пользователь
+        existing_user = User.query.filter_by(email=invitation.email).first()
+        if existing_user:
+            registration_logger.log_business_logic_error('invite_registration', 'email_exists', f'Email already registered: {invitation.email}', data)
+            return jsonify({
+                'success': False,
+                'error': 'Пользователь с этим email уже зарегистрирован'
+            }), 400
+        
+        # Создаем нового пользователя
+        user = User(
+            first_name=invitation.contact.full_name.split()[0] if invitation.contact.full_name else '',
+            last_name=' '.join(invitation.contact.full_name.split()[1:]) if invitation.contact.full_name and len(invitation.contact.full_name.split()) > 1 else '',
+            email=invitation.email,
+            phone=invitation.contact.phone,
+            profession=invitation.contact.profession.name if invitation.contact.profession else None,
+            workplace=invitation.contact.workplace,
+            is_active=True,  # Активируем сразу, так как приглашение от админа
+            email_confirmed=True,  # Подтверждаем email сразу
+            registration_completed=True
+        )
+        
+        # Устанавливаем пароль
+        user.set_password(password)
+        
+        try:
+            db.session.add(user)
+            
+            # Обновляем приглашение
+            invitation.status = 'accepted'
+            invitation.accepted_at = datetime.utcnow()
+            invitation.user_id = user.id
+            
+            # Связываем контакт с пользователем
+            invitation.contact.user_id = user.id
+            
+            db.session.commit()
+        except Exception as e:
+            registration_logger.log_database_error('invite_registration', 'create_user_and_update_invitation', str(e), data)
+            raise
+        
+        # Автоматически логиним пользователя
+        login_user(user, remember=True)
+        
+        # Log successful registration
+        registration_logger.log_registration_success('invite_registration', user.id, user.email, data)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Регистрация успешно завершена!',
+            'redirect_url': url_for('main.dashboard')
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        registration_logger.log_unexpected_error('invite_registration', e, data)
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка регистрации. Попробуйте еще раз.'
         }), 500 

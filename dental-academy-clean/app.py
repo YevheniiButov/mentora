@@ -464,6 +464,14 @@ try:
     except ImportError as crm_error:
         logger.warning(f"Could not import CRM routes: {crm_error}")
     
+    # Monitoring System
+    try:
+        from routes.admin_monitoring_routes import monitoring_bp
+        app.register_blueprint(monitoring_bp)
+        logger.info("✅ Monitoring blueprint registered successfully")
+    except ImportError as monitoring_error:
+        logger.warning(f"Could not import Monitoring routes: {monitoring_error}")
+    
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
         # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется

@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
 from models import db, User
-from models import Profession, Contact, ContactActivity, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics
+from models import Profession, Contact, ContactActivity, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, Invitation
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_, desc, asc
@@ -626,4 +626,165 @@ def api_contact_update_status(contact_id):
     except Exception as e:
         current_app.logger.error(f"Ошибка обновления статуса контакта: {str(e)}")
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# ========================================
+# INVITATION SYSTEM ROUTES
+# ========================================
+
+@crm_bp.route('/contacts/<int:contact_id>/send-invitation', methods=['POST'])
+@login_required
+@admin_required
+def send_invitation(contact_id):
+    """Отправить приглашение контакту для регистрации"""
+    try:
+        contact = Contact.query.get_or_404(contact_id)
+        
+        # Проверяем, есть ли уже активное приглашение
+        existing_invitation = Invitation.query.filter_by(
+            contact_id=contact_id,
+            status='pending'
+        ).first()
+        
+        if existing_invitation and not existing_invitation.is_expired():
+            return jsonify({
+                'success': False,
+                'error': 'У этого контакта уже есть активное приглашение'
+            }), 400
+        
+        # Создаем новое приглашение
+        import secrets
+        import hashlib
+        
+        # Генерируем уникальный токен
+        token = secrets.token_urlsafe(32)
+        
+        # Создаем приглашение
+        invitation = Invitation(
+            contact_id=contact_id,
+            invited_by=current_user.id,
+            email=contact.email,
+            token=token,
+            expires_at=datetime.utcnow() + timedelta(days=7),  # 7 дней на регистрацию
+            message=request.json.get('message', '') if request.is_json else ''
+        )
+        
+        db.session.add(invitation)
+        db.session.commit()
+        
+        # Отправляем email с приглашением
+        from utils.email_service import send_invitation_email
+        success = send_invitation_email(contact, invitation)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Приглашение отправлено успешно',
+                'invitation_id': invitation.id
+            })
+        else:
+            # Если email не отправился, удаляем приглашение
+            db.session.delete(invitation)
+            db.session.commit()
+            return jsonify({
+                'success': False,
+                'error': 'Ошибка отправки email'
+            }), 500
+    
+    except Exception as e:
+        current_app.logger.error(f"Ошибка отправки приглашения: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@crm_bp.route('/invitations')
+@login_required
+@admin_required
+def invitations_list():
+    """Список всех приглашений"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        status_filter = request.args.get('status', '')
+        
+        # Базовый запрос
+        query = Invitation.query
+        
+        # Фильтр по статусу
+        if status_filter:
+            query = query.filter_by(status=status_filter)
+        
+        # Сортировка по дате создания
+        query = query.order_by(Invitation.created_at.desc())
+        
+        # Пагинация
+        invitations = query.paginate(
+            page=page, per_page=20, error_out=False
+        )
+        
+        return render_template('admin/crm/invitations.html',
+                             invitations=invitations,
+                             status_filter=status_filter)
+    
+    except Exception as e:
+        current_app.logger.error(f"Ошибка загрузки списка приглашений: {str(e)}")
+        flash('Ошибка загрузки списка приглашений', 'error')
+        return redirect(url_for('crm.dashboard'))
+
+
+@crm_bp.route('/invitations/<int:invitation_id>/cancel', methods=['POST'])
+@login_required
+@admin_required
+def cancel_invitation(invitation_id):
+    """Отменить приглашение"""
+    try:
+        invitation = Invitation.query.get_or_404(invitation_id)
+        
+        if invitation.status != 'pending':
+            return jsonify({
+                'success': False,
+                'error': 'Можно отменить только активные приглашения'
+            }), 400
+        
+        invitation.status = 'cancelled'
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Приглашение отменено'
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Ошибка отмены приглашения: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@crm_bp.route('/api/invitations/stats')
+@login_required
+@admin_required
+def api_invitations_stats():
+    """API для статистики приглашений"""
+    try:
+        total_invitations = Invitation.query.count()
+        pending_invitations = Invitation.query.filter_by(status='pending').count()
+        accepted_invitations = Invitation.query.filter_by(status='accepted').count()
+        expired_invitations = Invitation.query.filter_by(status='expired').count()
+        
+        # Приглашения за последние 30 дней
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        recent_invitations = Invitation.query.filter(
+            Invitation.created_at >= thirty_days_ago
+        ).count()
+        
+        return jsonify({
+            'total': total_invitations,
+            'pending': pending_invitations,
+            'accepted': accepted_invitations,
+            'expired': expired_invitations,
+            'recent': recent_invitations
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Ошибка получения статистики приглашений: {str(e)}")
         return jsonify({'error': str(e)}), 500

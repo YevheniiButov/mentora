@@ -5425,3 +5425,59 @@ class CommunicationCampaign(db.Model):
     
     def __repr__(self):
         return f'<CommunicationCampaign {self.id}: {self.name}>'
+
+
+class Invitation(db.Model):
+    """Модель для системы приглашений пользователей"""
+    __tablename__ = 'invitation'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    contact_id = db.Column(db.Integer, db.ForeignKey('contact.id'), nullable=False)
+    invited_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Данные приглашения
+    email = db.Column(db.String(120), nullable=False, index=True)
+    token = db.Column(db.String(255), nullable=False, unique=True, index=True)
+    
+    # Статус приглашения
+    status = db.Column(db.String(20), default='pending')  # pending, accepted, expired, cancelled
+    expires_at = db.Column(db.DateTime, nullable=False)
+    
+    # Дополнительная информация
+    message = db.Column(db.Text, nullable=True)  # Персональное сообщение от админа
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Созданный пользователь
+    
+    # Временные метки
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    accepted_at = db.Column(db.DateTime, nullable=True)
+    
+    # Связи
+    contact = db.relationship('Contact', backref='invitations')
+    inviter = db.relationship('User', foreign_keys=[invited_by], backref='sent_invitations')
+    created_user = db.relationship('User', foreign_keys=[user_id], backref='invitation_created_user')
+    
+    def __repr__(self):
+        return f'<Invitation {self.email}: {self.status}>'
+    
+    def is_expired(self):
+        """Проверка истечения срока действия приглашения"""
+        return datetime.utcnow() > self.expires_at
+    
+    def is_valid(self):
+        """Проверка валидности приглашения"""
+        return self.status == 'pending' and not self.is_expired()
+    
+    def to_dict(self):
+        """Преобразование в словарь для JSON"""
+        return {
+            'id': self.id,
+            'contact_id': self.contact_id,
+            'contact_name': self.contact.full_name if self.contact else None,
+            'email': self.email,
+            'status': self.status,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'accepted_at': self.accepted_at.isoformat() if self.accepted_at else None,
+            'is_expired': self.is_expired(),
+            'is_valid': self.is_valid()
+        }

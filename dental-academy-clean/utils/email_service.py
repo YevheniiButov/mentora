@@ -428,3 +428,219 @@ Mentora Team
         print(f"=== WELCOME EMAIL ERROR: {str(e)} ===")
         current_app.logger.error(f"Failed to send welcome email: {str(e)}")
         return False
+
+
+def send_invitation_email(contact, invitation):
+    """Send invitation email to contact"""
+    try:
+        print(f"=== INVITATION EMAIL START for {contact.email} ===")
+        
+        # Check email provider
+        email_provider = current_app.config.get('EMAIL_PROVIDER', 'smtp')
+        print(f"=== EMAIL_PROVIDER: {email_provider} ===")
+        
+        if email_provider == 'resend':
+            # Use Resend API
+            from utils.resend_email_service import send_invitation_email_resend
+            return send_invitation_email_resend(contact, invitation)
+        else:
+            # Use SMTP fallback
+            return send_invitation_email_smtp(contact, invitation)
+            
+    except Exception as e:
+        print(f"=== INVITATION EMAIL ERROR: {str(e)} ===")
+        current_app.logger.error(f"Failed to send invitation email to {contact.email}: {str(e)}")
+        return False
+
+
+def send_invitation_email_smtp(contact, invitation):
+    """Send invitation email using SMTP"""
+    try:
+        print(f"=== SMTP INVITATION EMAIL for {contact.email} ===")
+        
+        # Generate invitation URL
+        base_url = current_app.config.get('BASE_URL', 'https://bigmentor.nl')
+        invitation_url = f"{base_url}/auth/invite/{invitation.token}"
+        
+        print(f"=== INVITATION_URL: {invitation_url} ===")
+        
+        # Check if email sending is suppressed
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        if mail_suppress:
+            print(f"=== MAIL_SUPPRESS_SEND is True, skipping actual email send ===")
+            return True
+        
+        # Create message
+        msg = Message(
+            subject="You're invited to join Mentora!",
+            recipients=[contact.email],
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@bigmentor.nl')
+        )
+        
+        # Email body
+        msg.body = f"""
+Hello {contact.full_name}!
+
+You have been invited to join Mentora - the comprehensive platform for dental professionals preparing for the BIG exam.
+
+To complete your registration, please click the link below and set your password:
+
+{invitation_url}
+
+This invitation will expire on {invitation.expires_at.strftime('%B %d, %Y at %H:%M')}.
+
+{f"Personal message: {invitation.message}" if invitation.message else ""}
+
+Once you complete your registration, you will have access to:
+- Comprehensive study materials
+- Practice exams and questions
+- Progress tracking
+- Expert guidance and support
+
+If you have any questions, please don't hesitate to contact us.
+
+Best regards,
+Mentora Team
+        """
+        
+        # HTML version
+        msg.html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Invitation to Mentora</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .content {{ background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }}
+                .button {{ display: inline-block; background: #3498db; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                .button:hover {{ background: #2980b9; }}
+                .features {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }}
+                .feature {{ margin: 10px 0; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #7f8c8d; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Welcome to Mentora!</h1>
+                    <p>Your invitation to join our platform</p>
+                </div>
+                
+                <div class="content">
+                    <h2>Hello {contact.full_name}!</h2>
+                    
+                    <p>You have been invited to join <strong>Mentora</strong> - the comprehensive platform for dental professionals preparing for the BIG exam.</p>
+                    
+                    <p>To complete your registration, please click the button below and set your password:</p>
+                    
+                    <div style="text-align: center;">
+                        <a href="{invitation_url}" class="button">Complete Registration</a>
+                    </div>
+                    
+                    <p><strong>Important:</strong> This invitation will expire on {invitation.expires_at.strftime('%B %d, %Y at %H:%M')}.</p>
+                    
+                    {f'<div style="background: #e8f4fd; padding: 15px; border-radius: 5px; margin: 20px 0;"><strong>Personal message:</strong><br>{invitation.message}</div>' if invitation.message else ''}
+                    
+                    <div class="features">
+                        <h3>What you'll get access to:</h3>
+                        <div class="feature">📚 Comprehensive study materials</div>
+                        <div class="feature">📝 Practice exams and questions</div>
+                        <div class="feature">📊 Progress tracking</div>
+                        <div class="feature">👨‍⚕️ Expert guidance and support</div>
+                    </div>
+                    
+                    <p>If you have any questions, please don't hesitate to contact us.</p>
+                    
+                    <div class="footer">
+                        <p>Best regards,<br>Mentora Team</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        mail.send(msg)
+        
+        current_app.logger.info(f"Invitation email sent to {contact.email}")
+        return True
+        
+    except Exception as e:
+        print(f"=== INVITATION EMAIL ERROR: {str(e)} ===")
+        current_app.logger.error(f"Failed to send invitation email: {str(e)}")
+        return False
+
+
+def send_admin_alert_email(admin_email, subject, message):
+    """Send alert email to admin"""
+    try:
+        print(f"=== ADMIN ALERT EMAIL to {admin_email} ===")
+        
+        # Check if email sending is suppressed
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        if mail_suppress:
+            print(f"=== MAIL_SUPPRESS_SEND is True, skipping admin alert email ===")
+            return True
+        
+        # Create message
+        msg = Message(
+            subject=subject,
+            recipients=[admin_email],
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@bigmentor.nl')
+        )
+        
+        # Email body
+        msg.body = message
+        
+        # HTML version
+        msg.html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Admin Alert</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 800px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #dc3545; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .content {{ background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }}
+                .alert {{ background: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #ffeaa7; }}
+                .code {{ background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🚨 Admin Alert</h1>
+                    <p>Critical System Event</p>
+                </div>
+                
+                <div class="content">
+                    <div class="alert">
+                        <strong>⚠️ Attention Required:</strong> A critical error has occurred in the registration system.
+                    </div>
+                    
+                    <h2>Alert Details</h2>
+                    <div class="code">{message}</div>
+                    
+                    <p><strong>Action Required:</strong> Please investigate this issue and take appropriate action.</p>
+                    
+                    <p>This is an automated alert from the Mentora registration system.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        mail.send(msg)
+        
+        current_app.logger.info(f"Admin alert email sent to {admin_email}")
+        return True
+        
+    except Exception as e:
+        print(f"=== ADMIN ALERT EMAIL ERROR: {str(e)} ===")
+        current_app.logger.error(f"Failed to send admin alert email: {str(e)}")
+        return False

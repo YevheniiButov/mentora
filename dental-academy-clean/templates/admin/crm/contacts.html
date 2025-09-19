@@ -469,6 +469,9 @@
                 <button class="action-btn warning" onclick="updateStatus({{ contact.id }}, '{{ contact.contact_status }}')">
                     📊 Изменить статус
                 </button>
+                <button class="action-btn info" onclick="sendInvitation({{ contact.id }}, '{{ contact.full_name }}', '{{ contact.email }}')">
+                    📧 Отправить приглашение
+                </button>
                 {% if contact.next_followup_date %}
                 <span class="action-btn" style="background: #17a2b8; color: white;">
                     📅 Следующий контакт: {{ contact.next_followup_date.strftime('%d.%m.%Y') }}
@@ -581,6 +584,48 @@ function updateStatus(contactId, currentStatus) {
             });
         }
     }
+}
+
+// Send invitation function
+function sendInvitation(contactId, contactName, contactEmail) {
+    const message = prompt(`Отправить приглашение для регистрации ${contactName} (${contactEmail})?\n\nДополнительное сообщение (необязательно):`);
+    
+    if (message === null) return; // User cancelled
+    
+    // Show loading
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '⏳ Отправка...';
+    button.disabled = true;
+    
+    fetch(`/admin/crm/contacts/${contactId}/send-invitation`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: message || ''
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Приглашение отправлено успешно!');
+            // Optionally refresh the page or update UI
+            location.reload();
+        } else {
+            alert(`❌ Ошибка: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Ошибка отправки приглашения');
+    })
+    .finally(() => {
+        // Restore button
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
 }
 
 // Add hover effects
