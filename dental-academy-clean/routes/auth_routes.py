@@ -905,8 +905,9 @@ def confirm_email(token):
             flash('Confirmation link has expired. Please request a new one.', 'error')
             return redirect(url_for('auth.login'))
         
-        # Confirm email
+        # Confirm email and activate user
         user.confirm_email()
+        user.is_active = True  # Activate user after email confirmation
         db.session.commit()
         
         # Send welcome email (with error handling)
