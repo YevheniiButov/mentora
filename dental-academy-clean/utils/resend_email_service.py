@@ -11,17 +11,20 @@ from models import User
 from utils.email_service import get_confirmation_email_html, get_confirmation_email_text
 # Токены генерируются в модели User
 
-def send_email_confirmation_resend(user, temp_password=None):
+def send_email_confirmation_resend(user, temp_password=None, token=None):
     """
     Отправляет email подтверждение через Resend API
     """
     try:
-        # Генерируем токен подтверждения
-        token = user.generate_email_confirmation_token()
+        # Используем переданный токен или генерируем новый
+        if not token:
+            token = user.generate_email_confirmation_token()
+        
         confirmation_url = f"{current_app.config.get('BASE_URL', 'https://bigmentor.nl')}/auth/confirm-email/{token}"
         
         print(f"=== RESEND EMAIL CONFIRMATION for {user.email} ===")
         print(f"=== CONFIRMATION_URL: {confirmation_url} ===")
+        print(f"=== TEMP_PASSWORD: {temp_password} ===")
         
         # Проверяем, отключена ли отправка email
         mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)

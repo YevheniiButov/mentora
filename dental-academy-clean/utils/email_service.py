@@ -21,7 +21,7 @@ def send_email_confirmation(user, token, temp_password=None):
         if email_provider == 'resend':
             # Use Resend API
             from utils.resend_email_service import send_email_confirmation_resend
-            return send_email_confirmation_resend(user, temp_password)
+            return send_email_confirmation_resend(user, temp_password, token)
         else:
             # Use SMTP fallback
             return send_email_confirmation_smtp(user, token, temp_password)
