@@ -5481,3 +5481,59 @@ class Invitation(db.Model):
             'is_expired': self.is_expired(),
             'is_valid': self.is_valid()
         }
+
+# ========================================
+# REGISTRATION LOGGING
+# ========================================
+
+class RegistrationLog(db.Model):
+    """Model for storing registration logs in database"""
+    __tablename__ = 'registration_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    event_type = db.Column(db.String(50), nullable=False, index=True)  # registration_started, validation_error, etc.
+    registration_type = db.Column(db.String(50), nullable=False, index=True)  # quick_registration, full_registration, etc.
+    level = db.Column(db.String(20), nullable=False, index=True)  # INFO, WARNING, ERROR
+    
+    # Context data
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)
+    referrer = db.Column(db.Text, nullable=True)
+    url = db.Column(db.Text, nullable=True)
+    method = db.Column(db.String(10), nullable=True)
+    
+    # User context
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    user_email = db.Column(db.String(120), nullable=True, index=True)
+    user_type = db.Column(db.String(20), nullable=True)  # authenticated, anonymous
+    
+    # Event specific data
+    field = db.Column(db.String(100), nullable=True)  # for validation errors
+    error_code = db.Column(db.String(100), nullable=True)  # for business logic errors
+    error_message = db.Column(db.Text, nullable=True)
+    form_data = db.Column(db.Text, nullable=True)  # JSON string of sanitized form data
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'event_type': self.event_type,
+            'registration_type': self.registration_type,
+            'level': self.level,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'referrer': self.referrer,
+            'url': self.url,
+            'method': self.method,
+            'user_id': self.user_id,
+            'user_email': self.user_email,
+            'user_type': self.user_type,
+            'field': self.field,
+            'error_code': self.error_code,
+            'error_message': self.error_message,
+            'form_data': json.loads(self.form_data) if self.form_data else None,
+            'created_at': self.created_at.isoformat()
+        }

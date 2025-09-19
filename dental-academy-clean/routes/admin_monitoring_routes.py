@@ -124,80 +124,116 @@ def api_mark_notification_read():
         return jsonify({'error': str(e)}), 500
 
 def _get_registration_logs(page, per_page):
-    """Get registration logs with pagination"""
+    """Get registration logs with pagination from database"""
     try:
-        log_file = os.path.join(os.getcwd(), 'logs', 'registration.log')
-        if not os.path.exists(log_file):
-            return [], 0
+        from models import RegistrationLog
         
-        with open(log_file, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-        
-        # Parse log lines
-        logs = []
-        for line in lines:
-            try:
-                # Extract JSON part from log line
-                json_start = line.find('{')
-                if json_start != -1:
-                    json_part = line[json_start:]
-                    log_data = json.loads(json_part)
-                    logs.append(log_data)
-            except:
-                continue
-        
-        # Reverse to show newest first
-        logs.reverse()
+        # Get logs from database
+        logs_query = RegistrationLog.query.order_by(RegistrationLog.created_at.desc())
+        total_logs = logs_query.count()
         
         # Pagination
-        total = len(logs)
-        start = (page - 1) * per_page
-        end = start + per_page
-        page_logs = logs[start:end]
+        logs = logs_query.offset((page - 1) * per_page).limit(per_page).all()
         
-        return page_logs, total
+        # Convert to dict format
+        logs_data = [log.to_dict() for log in logs]
+        
+        return logs_data, total_logs
     
     except Exception as e:
-        current_app.logger.error(f"Error reading registration logs: {str(e)}")
-        return [], 0
+        current_app.logger.error(f"Error reading registration logs from database: {str(e)}")
+        # Fallback to file-based logging
+        try:
+            log_file = os.path.join(os.getcwd(), 'logs', 'registration.log')
+            if not os.path.exists(log_file):
+                return [], 0
+            
+            with open(log_file, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            
+            # Parse log lines
+            logs = []
+            for line in lines:
+                try:
+                    # Extract JSON part from log line
+                    json_start = line.find('{')
+                    if json_start != -1:
+                        json_part = line[json_start:]
+                        log_data = json.loads(json_part)
+                        logs.append(log_data)
+                except:
+                    continue
+            
+            # Reverse to show newest first
+            logs.reverse()
+            
+            # Pagination
+            total = len(logs)
+            start = (page - 1) * per_page
+            end = start + per_page
+            page_logs = logs[start:end]
+            
+            return page_logs, total
+        except Exception as fallback_error:
+            current_app.logger.error(f"Error reading registration logs from file: {str(fallback_error)}")
+            return [], 0
 
 def _get_error_logs(page, per_page):
-    """Get error logs with pagination"""
+    """Get error logs with pagination from database"""
     try:
-        log_file = os.path.join(os.getcwd(), 'logs', 'registration_errors.log')
-        if not os.path.exists(log_file):
-            return [], 0
+        from models import RegistrationLog
         
-        with open(log_file, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-        
-        # Parse log lines
-        logs = []
-        for line in lines:
-            try:
-                # Extract JSON part from log line
-                json_start = line.find('{')
-                if json_start != -1:
-                    json_part = line[json_start:]
-                    log_data = json.loads(json_part)
-                    logs.append(log_data)
-            except:
-                continue
-        
-        # Reverse to show newest first
-        logs.reverse()
+        # Get error logs from database
+        logs_query = RegistrationLog.query.filter(
+            RegistrationLog.level.in_(['ERROR', 'WARNING'])
+        ).order_by(RegistrationLog.created_at.desc())
+        total_logs = logs_query.count()
         
         # Pagination
-        total = len(logs)
-        start = (page - 1) * per_page
-        end = start + per_page
-        page_logs = logs[start:end]
+        logs = logs_query.offset((page - 1) * per_page).limit(per_page).all()
         
-        return page_logs, total
+        # Convert to dict format
+        logs_data = [log.to_dict() for log in logs]
+        
+        return logs_data, total_logs
     
     except Exception as e:
-        current_app.logger.error(f"Error reading error logs: {str(e)}")
-        return [], 0
+        current_app.logger.error(f"Error reading error logs from database: {str(e)}")
+        # Fallback to file-based logging
+        try:
+            log_file = os.path.join(os.getcwd(), 'logs', 'registration_errors.log')
+            if not os.path.exists(log_file):
+                return [], 0
+            
+            with open(log_file, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            
+            # Parse log lines
+            logs = []
+            for line in lines:
+                try:
+                    # Extract JSON part from log line
+                    json_start = line.find('{')
+                    if json_start != -1:
+                        json_part = line[json_start:]
+                        log_data = json.loads(json_part)
+                        logs.append(log_data)
+                except:
+                    continue
+            
+            # Reverse to show newest first
+            logs.reverse()
+            
+            # Pagination
+            total = len(logs)
+            start = (page - 1) * per_page
+            end = start + per_page
+            page_logs = logs[start:end]
+            
+            return page_logs, total
+        except Exception as fallback_error:
+            current_app.logger.error(f"Error reading error logs from file: {str(fallback_error)}")
+            return [], 0
 
 def _get_notification_logs(page, per_page):
     """Get notification logs with pagination"""

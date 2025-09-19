@@ -106,6 +106,7 @@ class RegistrationLogger:
             context['form_data'] = sanitized_data
         
         self.logger.info(f"Registration started: {json.dumps(context, indent=2)}")
+        self._save_to_database('registration_started', registration_type, 'INFO', context)
     
     def log_validation_error(self, registration_type, field, error_message, form_data=None):
         """Log validation errors"""
@@ -123,6 +124,7 @@ class RegistrationLogger:
             context['form_data'] = sanitized_data
         
         self.logger.warning(f"Validation error: {json.dumps(context, indent=2)}")
+        self._save_to_database('validation_error', registration_type, 'WARNING', context)
     
     def log_business_logic_error(self, registration_type, error_type, error_message, form_data=None):
         """Log business logic errors (email exists, etc.)"""
@@ -140,6 +142,7 @@ class RegistrationLogger:
             context['form_data'] = sanitized_data
         
         self.logger.warning(f"Business logic error: {json.dumps(context, indent=2)}")
+        self._save_to_database('business_logic_error', registration_type, 'WARNING', context)
     
     def log_database_error(self, registration_type, operation, error_message, form_data=None):
         """Log database-related errors"""
@@ -157,6 +160,7 @@ class RegistrationLogger:
             context['form_data'] = sanitized_data
         
         self.logger.error(f"Database error: {json.dumps(context, indent=2)}")
+        self._save_to_database('database_error', registration_type, 'ERROR', context)
     
     def log_email_error(self, registration_type, email_address, error_message, form_data=None):
         """Log email sending errors"""
@@ -174,6 +178,7 @@ class RegistrationLogger:
             context['form_data'] = sanitized_data
         
         self.logger.error(f"Email error: {json.dumps(context, indent=2)}")
+        self._save_to_database('email_error', registration_type, 'ERROR', context)
     
     def log_file_upload_error(self, registration_type, filename, error_message, form_data=None):
         """Log file upload errors"""
@@ -191,6 +196,7 @@ class RegistrationLogger:
             context['form_data'] = sanitized_data
         
         self.logger.error(f"File upload error: {json.dumps(context, indent=2)}")
+        self._save_to_database('file_upload_error', registration_type, 'ERROR', context)
     
     def log_registration_success(self, registration_type, user_id, email, form_data=None):
         """Log successful registration"""
@@ -208,6 +214,7 @@ class RegistrationLogger:
             context['form_data'] = sanitized_data
         
         self.logger.info(f"Registration success: {json.dumps(context, indent=2)}")
+        self._save_to_database('registration_success', registration_type, 'INFO', context)
     
     def log_unexpected_error(self, registration_type, error, form_data=None):
         """Log unexpected errors with full traceback"""
@@ -226,6 +233,7 @@ class RegistrationLogger:
             context['form_data'] = sanitized_data
         
         self.logger.error(f"Unexpected error: {json.dumps(context, indent=2)}")
+        self._save_to_database('unexpected_error', registration_type, 'ERROR', context)
         
         # Send admin notification for critical errors
         self._send_admin_notification('critical_error', context)
@@ -344,6 +352,47 @@ Please check the logs for more details.
             
         except Exception as e:
             print(f"Warning: Could not send critical error email: {e}")
+
+    def _save_to_database(self, event_type, registration_type, level, context):
+        """Save log entry to database"""
+        try:
+            from flask import current_app
+            from models import RegistrationLog, db
+            
+            # Check if we're in an application context
+            if not current_app:
+                print("Warning: No Flask application context for database logging")
+                return
+            
+            # Extract data from context
+            request_context = context.get('request_context', {})
+            user_context = context.get('user_context', {})
+            form_data = context.get('form_data', {})
+            
+            # Create log entry
+            log_entry = RegistrationLog(
+                event_type=event_type,
+                registration_type=registration_type,
+                level=level,
+                ip_address=request_context.get('ip_address'),
+                user_agent=request_context.get('user_agent'),
+                referrer=request_context.get('referrer'),
+                url=request_context.get('url'),
+                method=request_context.get('method'),
+                user_id=user_context.get('user_id'),
+                user_email=user_context.get('user_email'),
+                user_type=user_context.get('user_type'),
+                field=context.get('field'),
+                error_code=context.get('code'),
+                error_message=context.get('error_message'),
+                form_data=json.dumps(form_data) if form_data else None
+            )
+            
+            db.session.add(log_entry)
+            db.session.commit()
+            
+        except Exception as e:
+            print(f"Warning: Could not save log to database: {e}")
 
 # Global instance
 registration_logger = RegistrationLogger()
