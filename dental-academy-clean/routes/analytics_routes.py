@@ -228,3 +228,48 @@ def export_data():
         current_app.logger.error(f"Export error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+
+@analytics_bp.route('/track-profession-click', methods=['POST'])
+def track_profession_click():
+    """Track profession card clicks on BIG info page"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['profession', 'type', 'url', 'page_url']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Extract data
+        profession = data.get('profession', '').strip()
+        profession_type = data.get('type', '').strip()  # 'eu' or 'non-eu'
+        target_url = data.get('url', '').strip()
+        page_url = data.get('page_url', '').strip()
+        user_agent = data.get('user_agent', '')
+        timestamp = data.get('timestamp', '')
+        language = data.get('language', 'unknown')
+        
+        # Get IP address
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ',' in ip_address:
+            ip_address = ip_address.split(',')[0].strip()
+        
+        # Log the profession click
+        current_app.logger.info(f"PROFESSION_CLICK: {profession} ({profession_type}) -> {target_url} from {page_url} | IP: {ip_address} | Lang: {language}")
+        
+        # You can also save to database if needed
+        # For now, we'll just log it
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Profession click tracked',
+            'profession': profession,
+            'type': profession_type,
+            'url': target_url
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error tracking profession click: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+

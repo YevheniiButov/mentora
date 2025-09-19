@@ -1489,6 +1489,62 @@
             element.textContent = translation;
         });
     }
+
+    // Функция для логирования кликов по профессиям
+    function logProfessionClick(profession, type, url) {
+        console.log('Profession clicked:', {
+            profession: profession,
+            type: type,
+            url: url,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            language: document.documentElement.lang || 'unknown'
+        });
+
+        // Отправляем данные на сервер для логирования
+        fetch('/analytics/track-profession-click', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                profession: profession,
+                type: type, // 'eu' или 'non-eu'
+                url: url,
+                page_url: window.location.href,
+                user_agent: navigator.userAgent,
+                timestamp: new Date().toISOString(),
+                language: document.documentElement.lang || 'unknown'
+            })
+        }).catch(error => {
+            console.error('Error logging profession click:', error);
+        });
+    }
+
+    // Добавляем обработчики кликов для всех карточек профессий
+    document.addEventListener('DOMContentLoaded', function() {
+        // EU профессии
+        const euProfessionCards = document.querySelectorAll('#eu-professions .profession-card');
+        euProfessionCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                const url = this.getAttribute('href');
+                const professionName = this.querySelector('h3 span').textContent || 
+                                     this.querySelector('h3').textContent;
+                logProfessionClick(professionName, 'eu', url);
+            });
+        });
+
+        // Non-EU профессии
+        const nonEuProfessionCards = document.querySelectorAll('#non-eu-professions .profession-card');
+        nonEuProfessionCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                const url = this.getAttribute('href');
+                const professionName = this.querySelector('h3 span').textContent || 
+                                     this.querySelector('h3').textContent;
+                logProfessionClick(professionName, 'non-eu', url);
+            });
+        });
+    });
 </script>
 
 <div class="big-info-container">
