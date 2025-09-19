@@ -2795,8 +2795,22 @@ def bulk_user_actions():
             flash(f'Деактивировано пользователей: {len(user_ids)}', 'success')
             
         elif action == 'delete':
+            # Additional safety check - prevent deleting admins without confirmation
+            admin_users = User.query.filter(User.id.in_(user_ids), User.is_admin == True).all()
+            if admin_users:
+                flash('Нельзя удалить администраторов через массовые действия. Удаляйте их по одному.', 'danger')
+                return redirect(url_for('admin.users_list'))
+            
+            # Get user emails for logging before deletion
+            users_to_delete = User.query.filter(User.id.in_(user_ids)).all()
+            user_emails = [user.email for user in users_to_delete]
+            
+            # Delete users
             User.query.filter(User.id.in_(user_ids)).delete()
             flash(f'Удалено пользователей: {len(user_ids)}', 'success')
+            
+            # Log the action
+            current_app.logger.info(f"Admin {current_user.email} bulk deleted users: {user_emails}")
             
         elif action == 'make_admin':
             User.query.filter(User.id.in_(user_ids)).update({'role': 'admin'})
