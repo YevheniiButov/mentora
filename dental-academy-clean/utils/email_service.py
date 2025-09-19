@@ -633,6 +633,240 @@ Mentora Team
         return False
 
 
+def send_invitation_with_password(user, temp_password):
+    """Send invitation email with temporary password"""
+    try:
+        print(f"=== INVITATION WITH PASSWORD START for {user.email} ===")
+        
+        # Generate confirmation token
+        token = user.generate_email_confirmation_token()
+        confirmation_url = f"{current_app.config.get('BASE_URL', 'https://bigmentor.nl')}/auth/confirm-email/{token}"
+        
+        print(f"=== INVITATION_URL: {confirmation_url} ===")
+        print(f"=== TEMP_PASSWORD: {temp_password} ===")
+        
+        # Check email provider
+        email_provider = current_app.config.get('EMAIL_PROVIDER', 'smtp')
+        print(f"=== EMAIL_PROVIDER: {email_provider} ===")
+        
+        if email_provider == 'resend':
+            # Use Resend API
+            from utils.resend_email_service import send_invitation_with_password_resend
+            return send_invitation_with_password_resend(user, temp_password, token)
+        else:
+            # Use SMTP fallback
+            return send_invitation_with_password_smtp(user, temp_password, token)
+            
+    except Exception as e:
+        print(f"=== INVITATION WITH PASSWORD ERROR: {str(e)} ===")
+        current_app.logger.error(f"Failed to send invitation with password to {user.email}: {str(e)}")
+        return False
+
+
+def send_invitation_with_password_smtp(user, temp_password, token):
+    """Send invitation with password using SMTP"""
+    try:
+        print(f"=== SMTP INVITATION WITH PASSWORD for {user.email} ===")
+        
+        confirmation_url = f"{current_app.config.get('BASE_URL', 'https://bigmentor.nl')}/auth/confirm-email/{token}"
+        
+        # Check if email sending is suppressed
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        if mail_suppress:
+            print(f"=== MAIL_SUPPRESS_SEND is True, skipping actual email send ===")
+            print(f"=== INVITATION EMAIL CONTENT ===")
+            print(f"To: {user.email}")
+            print(f"Subject: Welcome to Mentora - Your Account Details")
+            print(f"Confirmation URL: {confirmation_url}")
+            print(f"Temporary Password: {temp_password}")
+            print(f"=== END INVITATION EMAIL CONTENT ===")
+            return True
+        
+        # Create message
+        msg = Message(
+            subject="Welcome to Mentora - Your Account Details",
+            recipients=[user.email],
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'Mentora <info@bigmentor.nl>')
+        )
+        
+        # HTML content
+        msg.html = get_invitation_with_password_html(user, confirmation_url, temp_password)
+        
+        # Text content
+        msg.body = get_invitation_with_password_text(user, confirmation_url, temp_password)
+        
+        # Send email
+        mail = current_app.extensions.get('mail')
+        if mail:
+            mail.send(msg)
+            print(f"=== INVITATION WITH PASSWORD EMAIL SENT via SMTP ===")
+        else:
+            print(f"=== MAIL EXTENSION NOT FOUND ===")
+            return False
+        
+        current_app.logger.info(f"Invitation with password email sent to {user.email}")
+        return True
+        
+    except Exception as e:
+        print(f"=== INVITATION WITH PASSWORD ERROR: {str(e)} ===")
+        current_app.logger.error(f"Failed to send invitation with password email: {str(e)}")
+        return False
+
+
+def get_invitation_with_password_html(user, confirmation_url, temp_password):
+    """Generate HTML content for invitation with password email"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to Mentora</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
+                <h1 style="margin: 0; font-size: 32px; font-weight: bold;">MENTORA</h1>
+                <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Medical Education Platform</p>
+            </div>
+            
+            <!-- Content -->
+            <div style="padding: 40px 30px;">
+                <h2 style="color: #2d3748; margin-top: 0; font-size: 24px;">Welcome to Mentora, {user.first_name}!</h2>
+                
+                <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
+                    You have been invited to join Mentora - the comprehensive platform for dental professionals preparing for the BIG exam.
+                </p>
+                
+                <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
+                    <strong>Your account has been created with the following credentials:</strong>
+                </p>
+                
+                <!-- Login Credentials -->
+                <div style="background-color: #e6fffa; border: 2px solid #3ECDC1; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                    <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px;">🔑 Your Login Credentials</h3>
+                    <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                        <strong>📧 Email:</strong> {user.email}<br>
+                        <strong>🔑 Temporary Password:</strong>
+                    </p>
+                    <div style="background-color: #ffffff; border: 2px solid #3ECDC1; border-radius: 6px; padding: 15px; text-align: center; margin: 15px 0;">
+                        <p style="color: #2d3748; font-size: 20px; font-weight: bold; font-family: monospace; margin: 0; letter-spacing: 2px;">
+                            {temp_password}
+                        </p>
+                    </div>
+                    <p style="color: #4a5568; font-size: 14px; line-height: 1.5; margin: 15px 0 0 0;">
+                        <strong>Important:</strong> Please save this password securely. You can change it after confirming your email and logging in.
+                    </p>
+                </div>
+                
+                <!-- CTA Button -->
+                <div style="text-align: center; margin: 40px 0;">
+                    <a href="{confirmation_url}" 
+                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); 
+                              color: white; 
+                              padding: 16px 32px; 
+                              text-decoration: none; 
+                              border-radius: 8px; 
+                              font-weight: bold; 
+                              font-size: 16px;
+                              display: inline-block;
+                              box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);">
+                        ✅ Confirm Email & Activate Account
+                    </a>
+                </div>
+                
+                <!-- Next Steps -->
+                <div style="background-color: #fef5e7; border-left: 4px solid #f6ad55; padding: 20px; margin: 30px 0;">
+                    <h3 style="color: #744210; margin: 0 0 15px 0; font-size: 18px;">🚀 What happens next?</h3>
+                    <ol style="color: #744210; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 20px;">
+                        <li>Click the "Confirm Email & Activate Account" button above</li>
+                        <li>You'll be redirected to the login page</li>
+                        <li>Use your email and the temporary password to log in</li>
+                        <li>You can change your password in your profile settings</li>
+                        <li>Start exploring the Mentora learning platform!</li>
+                    </ol>
+                </div>
+                
+                <!-- Alternative link -->
+                <div style="background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                    <p style="color: #4a5568; font-size: 14px; margin: 0 0 10px 0;">
+                        <strong>If the button doesn't work,</strong> copy and paste this link into your browser address bar:
+                    </p>
+                    <p style="color: #3182ce; font-size: 14px; word-break: break-all; margin: 0; font-family: monospace; background: white; padding: 10px; border-radius: 4px;">
+                        {confirmation_url}
+                    </p>
+                </div>
+                
+                <!-- Important note -->
+                <div style="background-color: #fef5e7; border-left: 4px solid #f6ad55; padding: 15px; margin: 20px 0;">
+                    <p style="color: #744210; font-size: 14px; margin: 0;">
+                        <strong>Important:</strong> This link is valid for 24 hours. After that, you will need to request a new confirmation link.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background-color: #f7fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="color: #718096; font-size: 14px; margin: 0 0 15px 0;">
+                    If you did not expect this invitation, please ignore this email.
+                </p>
+                
+                <p style="color: #4a5568; font-size: 14px; margin: 0;">
+                    <strong>Mentora</strong><br>
+                    Email: <a href="mailto:info@bigmentor.nl" style="color: #3182ce;">info@bigmentor.nl</a><br>
+                    Website: <a href="https://bigmentor.nl" style="color: #3182ce;">bigmentor.nl</a>
+                </p>
+                
+                <p style="color: #a0aec0; font-size: 12px; margin: 20px 0 0 0;">
+                    © 2024 Mentora. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+
+def get_invitation_with_password_text(user, confirmation_url, temp_password):
+    """Generate text content for invitation with password email"""
+    return f"""
+MENTORA - Welcome to Your Account
+
+Hello, {user.first_name}!
+
+You have been invited to join Mentora - the comprehensive platform for dental professionals preparing for the BIG exam.
+
+YOUR ACCOUNT CREDENTIALS:
+📧 Email: {user.email}
+🔑 Temporary Password: {temp_password}
+
+🚀 WHAT HAPPENS NEXT:
+1. Click the confirmation link below
+2. You'll be redirected to the login page
+3. Use your email and the temporary password to log in
+4. You can change your password in your profile settings
+5. Start exploring the Mentora learning platform!
+
+Confirmation link:
+{confirmation_url}
+
+If the link doesn't work, copy and paste it into your browser address bar.
+
+Important: This link is valid for 24 hours. After that, you will need to request a new confirmation link.
+
+If you did not expect this invitation, please ignore this email.
+
+Best regards,
+The Mentora Team
+
+Email: info@bigmentor.nl
+Website: https://bigmentor.nl
+
+© 2024 Mentora. All rights reserved.
+"""
+
+
 def send_admin_alert_email(admin_email, subject, message):
     """Send alert email to admin"""
     try:

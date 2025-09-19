@@ -8,7 +8,7 @@ import requests
 import json
 from flask import current_app
 from models import User
-from utils.email_service import get_confirmation_email_html, get_confirmation_email_text
+from utils.email_service import get_confirmation_email_html, get_confirmation_email_text, get_invitation_with_password_html, get_invitation_with_password_text
 # Токены генерируются в модели User
 
 def send_email_confirmation_resend(user, temp_password=None, token=None):
@@ -114,6 +114,95 @@ def send_email_confirmation_resend(user, temp_password=None, token=None):
         traceback.print_exc()
         current_app.logger.error(f"Resend email confirmation error: {str(e)}", exc_info=True)
         return False
+
+
+def send_invitation_with_password_resend(user, temp_password, token):
+    """
+    Отправляет приглашение с паролем через Resend API
+    """
+    try:
+        confirmation_url = f"{current_app.config.get('BASE_URL', 'https://bigmentor.nl')}/auth/confirm-email/{token}"
+        
+        print(f"=== RESEND INVITATION WITH PASSWORD for {user.email} ===")
+        print(f"=== CONFIRMATION_URL: {confirmation_url} ===")
+        print(f"=== TEMP_PASSWORD: {temp_password} ===")
+        
+        # Проверяем, отключена ли отправка email
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        print(f"=== MAIL_SUPPRESS_SEND: {mail_suppress} ===")
+        
+        if mail_suppress:
+            # Development mode - console output
+            print(f"\n{'='*60}")
+            print(f"📧 INVITATION WITH PASSWORD for {user.email}")
+            print(f"{'='*60}")
+            print(f"Subject: Welcome to Mentora - Your Account Details")
+            print(f"To: {user.email}")
+            print(f"Confirmation URL: {confirmation_url}")
+            print(f"Temporary Password: {temp_password}")
+            print(f"{'='*60}")
+            return True
+        
+        # Получаем API ключ
+        api_key = current_app.config.get('RESEND_API_KEY')
+        if not api_key:
+            print("❌ RESEND_API_KEY not configured")
+            return False
+        
+        print("=== PRODUCTION MODE - SENDING REAL EMAIL VIA RESEND ===")
+        
+        # Подготавливаем данные для Resend API
+        # Проверка совместимости для старой/новой версии функций
+        try:
+            # Попытка с новой сигнатурой (3 аргумента)
+            html_content = get_invitation_with_password_html(user, confirmation_url, temp_password)
+            text_content = get_invitation_with_password_text(user, confirmation_url, temp_password)
+        except TypeError:
+            # Fallback для старой сигнатуры (2 аргумента)
+            print("=== USING OLD SIGNATURE FALLBACK ===")
+            html_content = get_invitation_with_password_html(user, confirmation_url)
+            text_content = get_invitation_with_password_text(user, confirmation_url)
+        
+        email_data = {
+            "from": "Mentora <noreply@bigmentor.nl>",
+            "to": [user.email],
+            "subject": "Welcome to Mentora - Your Account Details",
+            "html": html_content,
+            "text": text_content,
+            "click_tracking": False,  # Отключаем click tracking для лучшей доставляемости
+            "open_tracking": False   # Отключаем open tracking для лучшей доставляемости
+        }
+        
+        # Отправляем через Resend API
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers=headers,
+            json=email_data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"✅ INVITATION WITH PASSWORD EMAIL SENT via Resend")
+            print(f"Email ID: {result.get('id', 'N/A')}")
+            return True
+        else:
+            print(f"❌ RESEND API ERROR: {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"=== RESEND INVITATION WITH PASSWORD ERROR: {str(e)} ===")
+        print(f"=== ERROR TYPE: {type(e).__name__} ===")
+        import traceback
+        print(f"=== TRACEBACK: {traceback.format_exc()}")
+        return False
+
 
 def get_confirmation_email_html(user, confirmation_url):
     """Генерирует HTML версию email подтверждения"""

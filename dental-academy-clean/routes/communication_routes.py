@@ -360,8 +360,8 @@ def create_user():
             
             # Отправка email с приглашением
             try:
-                from utils.email_service import send_email_confirmation
-                email_sent = send_email_confirmation(user, user.generate_email_confirmation_token(), temp_password)
+                from utils.email_service import send_invitation_with_password
+                email_sent = send_invitation_with_password(user, temp_password)
                 
                 if email_sent:
                     flash(f'✅ Пользователь {first_name} {last_name} создан успешно! Приглашение отправлено на {email}', 'success')
