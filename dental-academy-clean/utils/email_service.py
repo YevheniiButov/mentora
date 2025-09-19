@@ -540,7 +540,7 @@ def send_invitation_email_smtp(contact, invitation):
         msg.body = f"""
 Hello {contact.full_name}!
 
-You have been invited to join Mentora - the comprehensive platform for dental professionals preparing for the BIG exam.
+You have been invited to join Mentora - the comprehensive platform for medical professionals preparing for the BIG exam.
 
 To complete your registration, please click the link below and set your password:
 
@@ -633,13 +633,15 @@ Mentora Team
         return False
 
 
-def send_invitation_with_password(user, temp_password):
+def send_invitation_with_password(user, temp_password, token=None):
     """Send invitation email with temporary password"""
     try:
         print(f"=== INVITATION WITH PASSWORD START for {user.email} ===")
         
-        # Generate confirmation token
-        token = user.generate_email_confirmation_token()
+        # Use provided token or generate new one
+        if not token:
+            token = user.generate_email_confirmation_token()
+        
         confirmation_url = f"{current_app.config.get('BASE_URL', 'https://bigmentor.nl')}/auth/confirm-email/{token}"
         
         print(f"=== INVITATION_URL: {confirmation_url} ===")
@@ -736,7 +738,7 @@ def get_invitation_with_password_html(user, confirmation_url, temp_password):
                 <h2 style="color: #2d3748; margin-top: 0; font-size: 24px;">Welcome to Mentora, {user.first_name}!</h2>
                 
                 <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
-                    You have been invited to join Mentora - the comprehensive platform for dental professionals preparing for the BIG exam.
+                    You have been invited to join Mentora - the comprehensive platform for medical professionals preparing for the BIG exam.
                 </p>
                 
                 <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
@@ -835,7 +837,7 @@ MENTORA - Welcome to Your Account
 
 Hello, {user.first_name}!
 
-You have been invited to join Mentora - the comprehensive platform for dental professionals preparing for the BIG exam.
+You have been invited to join Mentora - the comprehensive platform for medical professionals preparing for the BIG exam.
 
 YOUR ACCOUNT CREDENTIALS:
 📧 Email: {user.email}

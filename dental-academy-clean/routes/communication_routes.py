@@ -354,6 +354,9 @@ def create_user():
             # Установка пароля
             user.set_password(temp_password)
             
+            # Генерация токена подтверждения email
+            confirmation_token = user.generate_email_confirmation_token()
+            
             # Сохранение в базу данных
             db.session.add(user)
             db.session.commit()
@@ -361,7 +364,7 @@ def create_user():
             # Отправка email с приглашением
             try:
                 from utils.email_service import send_invitation_with_password
-                email_sent = send_invitation_with_password(user, temp_password)
+                email_sent = send_invitation_with_password(user, temp_password, confirmation_token)
                 
                 if email_sent:
                     flash(f'✅ Пользователь {first_name} {last_name} создан успешно! Приглашение отправлено на {email}', 'success')
