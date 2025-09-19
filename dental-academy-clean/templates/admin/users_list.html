@@ -453,7 +453,10 @@ function toggleSelectAll() {
 
 // Bulk actions
 function bulkAction(action) {
+    console.log('bulkAction called with action:', action);
+    
     const selectedUsers = document.querySelectorAll('.user-checkbox:checked');
+    console.log('Selected users count:', selectedUsers.length);
     
     if (selectedUsers.length === 0) {
         alert('Выберите пользователей для выполнения действия');
@@ -479,9 +482,16 @@ function bulkAction(action) {
             break;
     }
     
+    console.log('Confirm message:', confirmMessage);
+    
     if (confirm(confirmMessage)) {
+        console.log('User confirmed, setting action and submitting form');
         document.getElementById('bulkAction').value = action;
+        console.log('Form action set to:', action);
+        console.log('Submitting form...');
         document.getElementById('bulkActionForm').submit();
+    } else {
+        console.log('User cancelled action');
     }
 }
 

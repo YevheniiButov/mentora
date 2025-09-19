@@ -2768,10 +2768,16 @@ def delete_user(user_id):
 @admin_required
 def bulk_user_actions():
     """Bulk actions on users"""
+    print(f"=== BULK ACTIONS DEBUG ===")
+    print(f"Form data: {request.form}")
+    print(f"Action: {request.form.get('action')}")
+    print(f"User IDs: {request.form.getlist('user_ids')}")
+    
     action = request.form.get('action')
     user_ids = request.form.getlist('user_ids')
     
     if not user_ids:
+        print("=== NO USER IDS SELECTED ===")
         flash('Не выбраны пользователи', 'warning')
         return redirect(url_for('admin.users_list'))
     
