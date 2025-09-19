@@ -9,7 +9,7 @@ def init_mail(app):
     mail.init_app(app)
     return mail
 
-def send_email_confirmation(user, token):
+def send_email_confirmation(user, token, temp_password=None):
     """Send email confirmation using Resend API or SMTP fallback"""
     try:
         print(f"=== EMAIL CONFIRMATION START for {user.email} ===")
@@ -21,10 +21,10 @@ def send_email_confirmation(user, token):
         if email_provider == 'resend':
             # Use Resend API
             from utils.resend_email_service import send_email_confirmation_resend
-            return send_email_confirmation_resend(user)
+            return send_email_confirmation_resend(user, temp_password)
         else:
             # Use SMTP fallback
-            return send_email_confirmation_smtp(user, token)
+            return send_email_confirmation_smtp(user, token, temp_password)
             
     except Exception as e:
         print(f"=== EMAIL CONFIRMATION ERROR: {str(e)} ===")
@@ -35,7 +35,7 @@ def send_email_confirmation(user, token):
         current_app.logger.error(f"Failed to send email confirmation to {user.email}: {str(e)}")
         return False
 
-def send_email_confirmation_smtp(user, token):
+def send_email_confirmation_smtp(user, token, temp_password=None):
     """Send email confirmation using SMTP (fallback method)"""
     try:
         print(f"=== SMTP EMAIL CONFIRMATION for {user.email} ===")
@@ -57,10 +57,14 @@ def send_email_confirmation_smtp(user, token):
             print(f"{'='*60}")
             print(f"👤 User: {user.first_name} {user.last_name}")
             print(f"📧 Email: {user.email}")
+            if temp_password:
+                print(f"🔑 Temporary Password: {temp_password}")
             print(f"🔗 Confirmation link: {confirmation_url}")
             print(f"⏰ Token valid for: 24 hours")
             print(f"{'='*60}")
             print(f"💡 Copy the link above and open in browser to confirm")
+            if temp_password:
+                print(f"🔑 User can login with email and password: {temp_password}")
             print(f"{'='*60}\n")
             
             current_app.logger.info(f"Email confirmation (console mode) for {user.email}")
@@ -76,10 +80,10 @@ def send_email_confirmation_smtp(user, token):
         )
         
         # HTML content (inline for reliability)
-        msg.html = get_confirmation_email_html(user, confirmation_url)
+        msg.html = get_confirmation_email_html(user, confirmation_url, temp_password)
         
         # Text content (inline for reliability)  
-        msg.body = get_confirmation_email_text(user, confirmation_url)
+        msg.body = get_confirmation_email_text(user, confirmation_url, temp_password)
         
         # Send email
         print("=== ATTEMPTING TO SEND EMAIL VIA SMTP ===")
@@ -98,7 +102,7 @@ def send_email_confirmation_smtp(user, token):
         current_app.logger.error(f"Failed to send email confirmation to {user.email} via SMTP: {str(e)}")
         return False
 
-def get_confirmation_email_html(user, confirmation_url):
+def get_confirmation_email_html(user, confirmation_url, temp_password=None):
     """Generate HTML content for confirmation email"""
     return f"""
     <!DOCTYPE html>
@@ -127,6 +131,24 @@ def get_confirmation_email_html(user, confirmation_url):
                 <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
                     Thank you for registering with Mentora. To complete your pre-registration and activate your account, please confirm your email address.
                 </p>
+                
+                {f'''
+                <!-- Temporary Password Info -->
+                <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                    <h3 style="color: #856404; margin: 0 0 15px 0; font-size: 18px;">🔑 Your Temporary Password</h3>
+                    <p style="color: #856404; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                        For your quick registration, we have generated a temporary password for you:
+                    </p>
+                    <div style="background-color: #ffffff; border: 2px solid #856404; border-radius: 6px; padding: 15px; text-align: center; margin: 15px 0;">
+                        <p style="color: #856404; font-size: 20px; font-weight: bold; font-family: monospace; margin: 0; letter-spacing: 2px;">
+                            {temp_password}
+                        </p>
+                    </div>
+                    <p style="color: #856404; font-size: 14px; line-height: 1.5; margin: 15px 0 0 0;">
+                        <strong>Important:</strong> Please save this password securely. You can change it after confirming your email and logging in.
+                    </p>
+                </div>
+                ''' if temp_password else ''}
                 
                 <!-- CTA Button -->
                 <div style="text-align: center; margin: 40px 0;">
@@ -183,7 +205,7 @@ def get_confirmation_email_html(user, confirmation_url):
     </html>
     """
 
-def get_confirmation_email_text(user, confirmation_url):
+def get_confirmation_email_text(user, confirmation_url, temp_password=None):
     """Generate text content for confirmation email"""
     return f"""
 MENTORA - Email Confirmation
@@ -191,6 +213,14 @@ MENTORA - Email Confirmation
 Hello, {user.first_name}!
 
 Thank you for registering with Mentora. To complete your pre-registration and activate your account, please confirm your email address.
+
+{f'''
+🔑 YOUR TEMPORARY PASSWORD:
+{temp_password}
+
+Important: Please save this password securely. You can change it after confirming your email and logging in.
+
+''' if temp_password else ''}
 
 Confirmation link:
 {confirmation_url}

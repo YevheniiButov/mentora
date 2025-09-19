@@ -1336,10 +1336,10 @@ def quick_register(lang=None):
             safe_log('log_database_error', 'quick_registration', 'create_user', str(e), data)
             raise
         
-        # Отправка email подтверждения
+        # Отправка email подтверждения с временным паролем
         try:
             from utils.email_service import send_email_confirmation
-            email_sent = send_email_confirmation(user, user.generate_email_confirmation_token())
+            email_sent = send_email_confirmation(user, user.generate_email_confirmation_token(), temp_password)
             if not email_sent:
                 safe_log('log_email_error', 'quick_registration', user.email, 'Failed to send confirmation email', data)
         except Exception as e:

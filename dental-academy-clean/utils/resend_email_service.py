@@ -8,9 +8,10 @@ import requests
 import json
 from flask import current_app
 from models import User
+from utils.email_service import get_confirmation_email_html, get_confirmation_email_text
 # Токены генерируются в модели User
 
-def send_email_confirmation_resend(user):
+def send_email_confirmation_resend(user, temp_password=None):
     """
     Отправляет email подтверждение через Resend API
     """
@@ -33,10 +34,14 @@ def send_email_confirmation_resend(user):
             print(f"{'='*60}")
             print(f"👤 User: {user.first_name} {user.last_name}")
             print(f"📧 Email: {user.email}")
+            if temp_password:
+                print(f"🔑 Temporary Password: {temp_password}")
             print(f"🔗 Confirmation link: {confirmation_url}")
             print(f"⏰ Token valid for: 24 hours")
             print(f"{'='*60}")
             print(f"💡 Copy the link above and open in browser to confirm")
+            if temp_password:
+                print(f"🔑 User can login with email and password: {temp_password}")
             print(f"{'='*60}\n")
             
             current_app.logger.info(f"Email confirmation (console mode) for {user.email}")
@@ -57,8 +62,8 @@ def send_email_confirmation_resend(user):
             "from": from_email,
             "to": [user.email],
             "subject": "MENTORA - Email Confirmation",
-            "html": get_confirmation_email_html(user, confirmation_url),
-            "text": get_confirmation_email_text(user, confirmation_url),
+            "html": get_confirmation_email_html(user, confirmation_url, temp_password),
+            "text": get_confirmation_email_text(user, confirmation_url, temp_password),
             "click_tracking": False,  # Отключаем click tracking для лучшей доставляемости
             "open_tracking": False   # Отключаем open tracking для лучшей доставляемости
         }
