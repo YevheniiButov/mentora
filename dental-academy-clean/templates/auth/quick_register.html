@@ -213,7 +213,7 @@
         <!-- Дата рождения -->
         <div class="form-group">
             <label for="birthDate">{{ t('birth_date', lang) | default('Дата рождения') }} *</label>
-            <input type="date" id="birthDate" name="birthDate" class="form-control" required>
+            <input type="date" id="birthDate" name="birthDate" class="form-control" required min="1900-01-01" max="2010-12-31">
             <div class="error-message" id="birthDateError"></div>
         </div>
 
@@ -307,6 +307,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('quickRegisterForm');
     const submitBtn = document.getElementById('submitBtn');
+    
+    // Устанавливаем значение по умолчанию для даты рождения (2000 год)
+    const birthDateInput = document.getElementById('birthDate');
+    if (birthDateInput && !birthDateInput.value) {
+        birthDateInput.value = '2000-01-01';
+    }
     
     // Обработка изменения профессии
     const professionSelect = document.getElementById('profession');

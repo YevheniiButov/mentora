@@ -1,5 +1,11 @@
 // Clean registration.js without Jinja2 template tags
 document.addEventListener('DOMContentLoaded', function() {
+    // Устанавливаем значение по умолчанию для даты рождения (2000 год)
+    const birthDateInput = document.getElementById('birth_date');
+    if (birthDateInput && !birthDateInput.value) {
+        birthDateInput.value = '2000-01-01';
+    }
+    
     // File upload handling
     setupFileUploads();
     
