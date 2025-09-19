@@ -789,11 +789,19 @@ def register():
         }), 500
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
-def login():
+@auth_bp.route('/<string:lang>/login', methods=['GET', 'POST'])
+def login(lang=None):
     """Login form for registered users"""
     if request.method == 'GET':
-        from flask import g
-        lang = g.get('lang', 'nl')
+        from flask import g, session
+        
+        # Get language from URL parameter, session, or default
+        if lang and lang in ['nl', 'en', 'ru', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']:
+            g.lang = lang
+            session['lang'] = lang
+        else:
+            lang = g.get('lang', session.get('lang', 'nl'))
+        
         return render_template('auth/login.html', lang=lang)
     
     try:
@@ -829,10 +837,25 @@ def login():
             user.last_login = datetime.now(timezone.utc)
             db.session.commit()
             
+            # Determine redirect URL
+            from flask import session
+            next_url = session.pop('next', None)
+            
+            if next_url:
+                # If there's a stored URL, redirect there
+                redirect_url = next_url
+            else:
+                # Default redirect based on user role and language
+                user_lang = user.language or session.get('lang', 'nl')
+                if user.is_admin:
+                    redirect_url = '/admin'
+                else:
+                    redirect_url = f'/{user_lang}/'
+            
             return jsonify({
                 'success': True,
                 'message': 'Login successful',
-                'redirect_url': url_for('profile.index')
+                'redirect_url': redirect_url
             })
         else:
             return jsonify({

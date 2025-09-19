@@ -33,6 +33,34 @@ def init_extensions(app):
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'
     
+    # Custom login redirect handler to preserve language
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        from flask import request, redirect, url_for, session
+        # Get current language from URL or session
+        lang = None
+        if request.view_args and 'lang' in request.view_args:
+            lang = request.view_args['lang']
+        elif session.get('lang'):
+            lang = session['lang']
+        else:
+            # Try to extract from referrer URL
+            if request.referrer:
+                import re
+                match = re.search(r'/([a-z]{2})/', request.referrer)
+                if match:
+                    lang = match.group(1)
+        
+        # Default to Dutch if no language found
+        if not lang or lang not in ['nl', 'en', 'ru', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']:
+            lang = 'nl'
+        
+        # Store the original URL for redirect after login
+        session['next'] = request.url
+        
+        # Redirect to login with language preserved
+        return redirect(url_for('auth.login', lang=lang))
+    
     # Password hashing
     bcrypt.init_app(app)
     
