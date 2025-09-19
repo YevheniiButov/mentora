@@ -909,9 +909,13 @@ def confirm_email(token):
         user.confirm_email()
         db.session.commit()
         
-        # Send welcome email
-        from utils.email_service import send_welcome_email
-        send_welcome_email(user)
+        # Send welcome email (with error handling)
+        try:
+            from utils.email_service import send_welcome_email
+            send_welcome_email(user)
+        except Exception as welcome_error:
+            print(f"=== WELCOME EMAIL ERROR (non-critical): {str(welcome_error)} ===")
+            current_app.logger.warning(f"Failed to send welcome email to {user.email}: {str(welcome_error)}")
         
         flash('Email successfully confirmed! Welcome to Mentora!', 'success')
         return redirect(url_for('auth.login'))
