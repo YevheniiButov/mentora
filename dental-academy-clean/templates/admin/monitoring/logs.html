@@ -109,17 +109,22 @@
     <div class="search-form">
         <form id="searchForm">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="searchQuery" class="form-label">Search</label>
                     <input type="text" class="form-control" id="searchQuery" name="q" 
                            placeholder="Search in logs..." value="{{ request.args.get('q', '') }}">
                 </div>
                 <div class="col-md-3">
+                    <label for="emailSearch" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="emailSearch" name="email" 
+                           placeholder="Search by email..." value="{{ search_email or '' }}">
+                </div>
+                <div class="col-md-2">
                     <label for="dateFrom" class="form-label">From Date</label>
                     <input type="datetime-local" class="form-control" id="dateFrom" name="date_from"
                            value="{{ request.args.get('date_from', '') }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="dateTo" class="form-label">To Date</label>
                     <input type="datetime-local" class="form-control" id="dateTo" name="date_to"
                            value="{{ request.args.get('date_to', '') }}">
@@ -186,15 +191,18 @@
                 </div>
             {% endif %}
             
-            {% if log.get('email') %}
+            {% if log.get('user_email') %}
                 <div class="mb-2">
-                    <strong>Email:</strong> {{ log.get('email') }}
+                    <strong>Email:</strong> {{ log.get('user_email') }}
                 </div>
             {% endif %}
             
             <div class="log-meta">
                 {% if log.get('request_context', {}).get('ip_address') %}
                     <span><i class="bi bi-geo-alt"></i> {{ log.get('request_context', {}).get('ip_address') }}</span>
+                {% endif %}
+                {% if log.get('user_email') %}
+                    <span><i class="bi bi-envelope"></i> {{ log.get('user_email') }}</span>
                 {% endif %}
                 {% if log.get('user_id') %}
                     <span><i class="bi bi-person"></i> User ID: {{ log.get('user_id') }}</span>
@@ -267,6 +275,14 @@ function toggleDetails(element) {
 
 // Auto-submit search form on Enter
 document.getElementById('searchQuery').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('searchForm').submit();
+    }
+});
+
+// Auto-submit search form on Enter for email field
+document.getElementById('emailSearch').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         e.preventDefault();
         document.getElementById('searchForm').submit();

@@ -20,6 +20,7 @@ def logs():
     """View registration logs"""
     try:
         log_type = request.args.get('type', 'all')  # all, errors, notifications
+        search_email = request.args.get('email', '').strip()  # Search by email
         page = request.args.get('page', 1, type=int)
         per_page = 50
         
@@ -27,9 +28,9 @@ def logs():
         total_logs = 0
         
         if log_type == 'all':
-            logs_data, total_logs = _get_registration_logs(page, per_page)
+            logs_data, total_logs = _get_registration_logs(page, per_page, search_email)
         elif log_type == 'errors':
-            logs_data, total_logs = _get_error_logs(page, per_page)
+            logs_data, total_logs = _get_error_logs(page, per_page, search_email)
         elif log_type == 'notifications':
             logs_data, total_logs = _get_notification_logs(page, per_page)
         
@@ -39,6 +40,7 @@ def logs():
         return render_template('admin/monitoring/logs.html',
                              logs=logs_data,
                              log_type=log_type,
+                             search_email=search_email,
                              page=page,
                              total_pages=total_pages,
                              total_logs=total_logs)
@@ -123,13 +125,19 @@ def api_mark_notification_read():
         current_app.logger.error(f"Error marking notification as read: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-def _get_registration_logs(page, per_page):
+def _get_registration_logs(page, per_page, search_email=None):
     """Get registration logs with pagination from database"""
     try:
         from models import RegistrationLog
         
         # Get logs from database
-        logs_query = RegistrationLog.query.order_by(RegistrationLog.created_at.desc())
+        logs_query = RegistrationLog.query
+        
+        # Filter by email if provided
+        if search_email:
+            logs_query = logs_query.filter(RegistrationLog.user_email.ilike(f'%{search_email}%'))
+        
+        logs_query = logs_query.order_by(RegistrationLog.created_at.desc())
         total_logs = logs_query.count()
         
         # Pagination
@@ -178,7 +186,7 @@ def _get_registration_logs(page, per_page):
             current_app.logger.error(f"Error reading registration logs from file: {str(fallback_error)}")
             return [], 0
 
-def _get_error_logs(page, per_page):
+def _get_error_logs(page, per_page, search_email=None):
     """Get error logs with pagination from database"""
     try:
         from models import RegistrationLog
@@ -186,7 +194,13 @@ def _get_error_logs(page, per_page):
         # Get error logs from database
         logs_query = RegistrationLog.query.filter(
             RegistrationLog.level.in_(['ERROR', 'WARNING'])
-        ).order_by(RegistrationLog.created_at.desc())
+        )
+        
+        # Filter by email if provided
+        if search_email:
+            logs_query = logs_query.filter(RegistrationLog.user_email.ilike(f'%{search_email}%'))
+        
+        logs_query = logs_query.order_by(RegistrationLog.created_at.desc())
         total_logs = logs_query.count()
         
         # Pagination

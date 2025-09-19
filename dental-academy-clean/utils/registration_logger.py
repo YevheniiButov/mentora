@@ -369,6 +369,15 @@ Please check the logs for more details.
             user_context = context.get('user_context', {})
             form_data = context.get('form_data', {})
             
+            # Extract email from form data if available
+            registration_email = None
+            if form_data and isinstance(form_data, dict):
+                registration_email = form_data.get('email')
+            
+            # Use email from user context if not in form data
+            if not registration_email:
+                registration_email = user_context.get('user_email')
+            
             # Create log entry
             log_entry = RegistrationLog(
                 event_type=event_type,
@@ -380,7 +389,7 @@ Please check the logs for more details.
                 url=request_context.get('url'),
                 method=request_context.get('method'),
                 user_id=user_context.get('user_id'),
-                user_email=user_context.get('user_email'),
+                user_email=registration_email,  # Use extracted email
                 user_type=user_context.get('user_type'),
                 field=context.get('field'),
                 error_code=context.get('code'),
