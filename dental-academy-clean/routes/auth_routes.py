@@ -982,7 +982,7 @@ def unsubscribe(user_id):
         user = User.query.get(user_id)
         if user:
             # Update user's marketing consent
-            user.marketing_consent = False
+            user.optional_consents = False
             db.session.commit()
             
             flash('You have been successfully unsubscribed from marketing communications.', 'success')
@@ -1308,7 +1308,8 @@ def quick_register(lang=None):
             email=data['email'],
             birth_date=birth_date,
             profession=data['profession'],
-            marketing_consent=data.get('marketingConsent', False),
+            required_consents=True,  # Terms and privacy consent
+            optional_consents=data.get('marketingConsent', False),  # Marketing consent
             is_active=False,  # Требует подтверждения email
             email_confirmed=False
         )
