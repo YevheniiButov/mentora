@@ -1173,22 +1173,45 @@ def reset_password(token):
         }), 500
 
 @auth_bp.route('/quick-register', methods=['GET', 'POST'])
-def quick_register():
+@auth_bp.route('/<string:lang>/quick-register', methods=['GET', 'POST'])
+def quick_register(lang=None):
     """Quick registration form for new users"""
     
     if request.method == 'GET':
-        from flask import g
-        lang = g.get('lang', 'nl')
+        from flask import g, session
+        
+        # Get language from URL parameter, session, or default
+        if lang and lang in ['nl', 'en', 'ru', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']:
+            g.lang = lang
+            session['lang'] = lang
+        else:
+            lang = g.get('lang', session.get('lang', 'nl'))
+        
         return render_template('auth/quick_register.html', lang=lang)
     
     # Log the attempt immediately, even if it fails
+    print(f"Quick registration POST request received")
+    
+    # Check if we have access to Flask context
+    try:
+        from flask import current_app
+        print(f"Flask context available: {current_app is not None}")
+    except Exception as e:
+        print(f"Flask context error: {e}")
+    
     safe_log('log_registration_start', 'quick_registration', {'method': 'POST', 'url': request.url})
     
     try:
+        print(f"Attempting to get JSON data from request")
         data = request.get_json()
-        
-        # Additional logging for debugging
         print(f"Quick registration attempt - Data received: {data}")
+        
+        if not data:
+            print("No data received in request")
+            return jsonify({
+                'success': False,
+                'error': 'No data received'
+            }), 400
         
         # Log registration start
         safe_log('log_registration_start', 'quick_registration', data)
@@ -1226,7 +1249,13 @@ def quick_register():
             profession = other_profession
         
         # Проверка reCAPTCHA
-        if current_app.config.get('RECAPTCHA_ENABLED', True):
+        try:
+            recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
+        except Exception as e:
+            print(f"Error getting RECAPTCHA config: {e}")
+            recaptcha_enabled = True
+        
+        if recaptcha_enabled:
             recaptcha_response = data.get('g-recaptcha-response')
             if not recaptcha_response:
                 safe_log('log_validation_error', 'quick_registration', 'g-recaptcha-response', 'No reCAPTCHA response provided', data)
@@ -1263,11 +1292,21 @@ def quick_register():
             }), 400
         
         # Создание нового пользователя
+        try:
+            birth_date = datetime.strptime(data['birthDate'], '%Y-%m-%d').date()
+        except Exception as e:
+            print(f"Error parsing birth date: {e}")
+            safe_log('log_validation_error', 'quick_registration', 'birthDate', f'Invalid birth date format: {e}', data)
+            return jsonify({
+                'success': False,
+                'error': 'Invalid birth date format'
+            }), 400
+        
         user = User(
             first_name=data['firstName'],
             last_name=data['lastName'],
             email=data['email'],
-            birth_date=datetime.strptime(data['birthDate'], '%Y-%m-%d').date(),
+            birth_date=birth_date,
             profession=data['profession'],
             marketing_consent=data.get('marketingConsent', False),
             is_active=False,  # Требует подтверждения email
@@ -1275,10 +1314,18 @@ def quick_register():
         )
         
         # Установка пароля (генерируем временный)
-        import secrets
-        import string
-        temp_password = ''.join(secrets.choices(string.ascii_letters + string.digits, k=12))
-        user.set_password(temp_password)
+        try:
+            import secrets
+            import string
+            temp_password = ''.join(secrets.choices(string.ascii_letters + string.digits, k=12))
+            user.set_password(temp_password)
+        except Exception as e:
+            print(f"Error generating password: {e}")
+            safe_log('log_unexpected_error', 'quick_registration', e, data)
+            return jsonify({
+                'success': False,
+                'error': 'Failed to create user account'
+            }), 500
         
         try:
             db.session.add(user)
@@ -1288,10 +1335,14 @@ def quick_register():
             raise
         
         # Отправка email подтверждения
-        from utils.email_service import send_email_confirmation
-        email_sent = send_email_confirmation(user, user.generate_email_confirmation_token())
-        if not email_sent:
-            safe_log('log_email_error', 'quick_registration', user.email, 'Failed to send confirmation email', data)
+        try:
+            from utils.email_service import send_email_confirmation
+            email_sent = send_email_confirmation(user, user.generate_email_confirmation_token())
+            if not email_sent:
+                safe_log('log_email_error', 'quick_registration', user.email, 'Failed to send confirmation email', data)
+        except Exception as e:
+            print(f"Error sending confirmation email: {e}")
+            safe_log('log_email_error', 'quick_registration', user.email, f'Email service error: {e}', data)
         
         # Log successful registration
         safe_log('log_registration_success', 'quick_registration', user.id, user.email, data)
