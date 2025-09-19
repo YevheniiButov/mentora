@@ -296,3 +296,91 @@ def history():
     # Здесь можно добавить логику для отображения истории
     # Пока возвращаем простую страницу
     return render_template('admin/communication/history.html')
+
+# Создание пользователя с отправкой приглашения
+@communication_bp.route('/create-user', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_user():
+    """Создание нового пользователя с отправкой приглашения"""
+    
+    if request.method == 'POST':
+        try:
+            # Получение данных формы
+            first_name = request.form.get('first_name', '').strip()
+            last_name = request.form.get('last_name', '').strip()
+            email = request.form.get('email', '').strip()
+            profession = request.form.get('profession', 'dentist')
+            birth_date_str = request.form.get('birth_date', '')
+            
+            # Валидация
+            if not all([first_name, last_name, email]):
+                flash('Пожалуйста, заполните все обязательные поля!', 'error')
+                return redirect(url_for('communication.create_user'))
+            
+            # Проверка на существующего пользователя
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash(f'Пользователь с email {email} уже существует!', 'error')
+                return redirect(url_for('communication.create_user'))
+            
+            # Парсинг даты рождения
+            birth_date = None
+            if birth_date_str:
+                try:
+                    birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    flash('Неверный формат даты рождения!', 'error')
+                    return redirect(url_for('communication.create_user'))
+            
+            # Генерация временного пароля
+            import secrets
+            import string
+            temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+            
+            # Создание пользователя
+            user = User(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                birth_date=birth_date,
+                profession=profession,
+                required_consents=True,  # Админ создает пользователя
+                optional_consents=False,  # По умолчанию без маркетинговых согласий
+                is_active=False,  # Требует подтверждения email
+                email_confirmed=False
+            )
+            
+            # Установка пароля
+            user.set_password(temp_password)
+            
+            # Сохранение в базу данных
+            db.session.add(user)
+            db.session.commit()
+            
+            # Отправка email с приглашением
+            try:
+                from utils.email_service import send_email_confirmation
+                email_sent = send_email_confirmation(user, user.generate_email_confirmation_token(), temp_password)
+                
+                if email_sent:
+                    flash(f'✅ Пользователь {first_name} {last_name} создан успешно! Приглашение отправлено на {email}', 'success')
+                    current_app.logger.info(f'User {user.email} created by admin {current_user.email} with invitation sent')
+                else:
+                    flash(f'⚠️ Пользователь создан, но не удалось отправить приглашение на {email}', 'warning')
+                    current_app.logger.warning(f'User {user.email} created but invitation email failed')
+                    
+            except Exception as e:
+                flash(f'⚠️ Пользователь создан, но ошибка при отправке приглашения: {str(e)}', 'warning')
+                current_app.logger.error(f'User {user.email} created but invitation email error: {str(e)}')
+            
+            return redirect(url_for('communication.hub'))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'User creation failed: {str(e)}')
+            flash(f'❌ Ошибка при создании пользователя: {str(e)}', 'error')
+            return redirect(url_for('communication.create_user'))
+    
+    # GET запрос - показать форму
+    return render_template('admin/communication/create_user.html')
