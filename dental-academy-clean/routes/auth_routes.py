@@ -1318,7 +1318,8 @@ def quick_register(lang=None):
         try:
             import secrets
             import string
-            temp_password = ''.join(secrets.choices(string.ascii_letters + string.digits, k=12))
+            # Use secrets.choice in a loop for compatibility with older Python versions
+            temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
             user.set_password(temp_password)
         except Exception as e:
             print(f"Error generating password: {e}")
