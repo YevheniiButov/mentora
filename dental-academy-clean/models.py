@@ -5537,3 +5537,46 @@ class RegistrationLog(db.Model):
             'form_data': json.loads(self.form_data) if self.form_data else None,
             'created_at': self.created_at.isoformat()
         }
+
+
+class ProfessionClick(db.Model, JSONSerializableMixin):
+    """Track profession card clicks on BIG info page"""
+    __tablename__ = 'profession_clicks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Click data
+    profession = db.Column(db.String(100), nullable=False, index=True)
+    profession_type = db.Column(db.String(20), nullable=False, index=True)  # 'eu' or 'non-eu'
+    target_url = db.Column(db.String(500), nullable=False)
+    page_url = db.Column(db.String(500), nullable=False)
+    
+    # User context
+    ip_address = db.Column(db.String(45), nullable=False, index=True)
+    user_agent = db.Column(db.Text, nullable=True)
+    language = db.Column(db.String(10), nullable=True, index=True)
+    
+    # User identification (if logged in)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    user_email = db.Column(db.String(120), nullable=True, index=True)
+    
+    # Timestamps
+    clicked_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'profession': self.profession,
+            'profession_type': self.profession_type,
+            'target_url': self.target_url,
+            'page_url': self.page_url,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'language': self.language,
+            'user_id': self.user_id,
+            'user_email': self.user_email,
+            'clicked_at': self.clicked_at.isoformat(),
+            'created_at': self.created_at.isoformat()
+        }

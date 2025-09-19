@@ -2,10 +2,11 @@
 
 from flask import Blueprint, render_template, jsonify, request, current_app
 from flask_login import login_required, current_user
-from models import db, WebsiteVisit, PageView, UserSession
+from models import db, WebsiteVisit, PageView, UserSession, ProfessionClick
 from utils.analytics import get_analytics_data, get_recent_visits, get_ip_analytics, cleanup_old_data
 from utils.analytics_middleware import track_custom_event, track_user_action
 import json
+from datetime import datetime, timedelta
 
 analytics_bp = Blueprint('analytics', __name__, url_prefix='/analytics')
 
@@ -258,8 +259,25 @@ def track_profession_click():
         # Log the profession click
         current_app.logger.info(f"PROFESSION_CLICK: {profession} ({profession_type}) -> {target_url} from {page_url} | IP: {ip_address} | Lang: {language}")
         
-        # You can also save to database if needed
-        # For now, we'll just log it
+        # Save to database
+        try:
+            profession_click = ProfessionClick(
+                profession=profession,
+                profession_type=profession_type,
+                target_url=target_url,
+                page_url=page_url,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                language=language,
+                user_id=current_user.id if current_user.is_authenticated else None,
+                user_email=current_user.email if current_user.is_authenticated else None,
+                clicked_at=datetime.fromisoformat(timestamp.replace('Z', '+00:00')) if timestamp else datetime.utcnow()
+            )
+            db.session.add(profession_click)
+            db.session.commit()
+        except Exception as db_error:
+            current_app.logger.error(f"Error saving profession click to database: {str(db_error)}")
+            db.session.rollback()
         
         return jsonify({
             'status': 'success',
@@ -272,4 +290,136 @@ def track_profession_click():
     except Exception as e:
         current_app.logger.error(f"Error tracking profession click: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+
+@analytics_bp.route('/profession-clicks')
+@login_required
+def profession_clicks():
+    """Show profession click tracking dashboard"""
+    try:
+        # Get query parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        profession_filter = request.args.get('profession', '')
+        type_filter = request.args.get('type', '')
+        language_filter = request.args.get('language', '')
+        date_from = request.args.get('date_from', '')
+        date_to = request.args.get('date_to', '')
+        
+        # Build query
+        query = ProfessionClick.query
+        
+        # Apply filters
+        if profession_filter:
+            query = query.filter(ProfessionClick.profession.ilike(f'%{profession_filter}%'))
+        if type_filter:
+            query = query.filter(ProfessionClick.profession_type == type_filter)
+        if language_filter:
+            query = query.filter(ProfessionClick.language == language_filter)
+        if date_from:
+            try:
+                date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
+                query = query.filter(ProfessionClick.clicked_at >= date_from_obj)
+            except ValueError:
+                pass
+        if date_to:
+            try:
+                date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
+                query = query.filter(ProfessionClick.clicked_at <= date_to_obj)
+            except ValueError:
+                pass
+        
+        # Order by most recent first
+        query = query.order_by(ProfessionClick.clicked_at.desc())
+        
+        # Paginate
+        clicks = query.paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Get statistics
+        stats = _get_profession_click_stats()
+        
+        # Get unique values for filters
+        unique_professions = db.session.query(ProfessionClick.profession).distinct().all()
+        unique_professions = [p[0] for p in unique_professions]
+        
+        unique_types = db.session.query(ProfessionClick.profession_type).distinct().all()
+        unique_types = [t[0] for t in unique_types]
+        
+        unique_languages = db.session.query(ProfessionClick.language).distinct().all()
+        unique_languages = [l[0] for l in unique_languages if l[0]]
+        
+        return render_template('admin/analytics/profession_clicks.html',
+                             clicks=clicks,
+                             stats=stats,
+                             unique_professions=unique_professions,
+                             unique_types=unique_types,
+                             unique_languages=unique_languages,
+                             current_filters={
+                                 'profession': profession_filter,
+                                 'type': type_filter,
+                                 'language': language_filter,
+                                 'date_from': date_from,
+                                 'date_to': date_to
+                             })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading profession clicks: {str(e)}")
+        return render_template('admin/analytics/profession_clicks.html',
+                             error=str(e))
+
+
+def _get_profession_click_stats():
+    """Get profession click statistics"""
+    try:
+        # Total clicks
+        total_clicks = ProfessionClick.query.count()
+        
+        # Clicks by profession
+        profession_stats = db.session.query(
+            ProfessionClick.profession,
+            db.func.count(ProfessionClick.id).label('count')
+        ).group_by(ProfessionClick.profession).order_by(db.func.count(ProfessionClick.id).desc()).all()
+        
+        # Clicks by type
+        type_stats = db.session.query(
+            ProfessionClick.profession_type,
+            db.func.count(ProfessionClick.id).label('count')
+        ).group_by(ProfessionClick.profession_type).all()
+        
+        # Clicks by language
+        language_stats = db.session.query(
+            ProfessionClick.language,
+            db.func.count(ProfessionClick.id).label('count')
+        ).group_by(ProfessionClick.language).order_by(db.func.count(ProfessionClick.id).desc()).all()
+        
+        # Recent clicks (last 24 hours)
+        yesterday = datetime.utcnow() - timedelta(days=1)
+        recent_clicks = ProfessionClick.query.filter(
+            ProfessionClick.clicked_at >= yesterday
+        ).count()
+        
+        # Unique IPs
+        unique_ips = db.session.query(ProfessionClick.ip_address).distinct().count()
+        
+        return {
+            'total_clicks': total_clicks,
+            'recent_clicks': recent_clicks,
+            'unique_ips': unique_ips,
+            'profession_stats': profession_stats,
+            'type_stats': type_stats,
+            'language_stats': language_stats
+        }
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting profession click stats: {str(e)}")
+        return {
+            'total_clicks': 0,
+            'recent_clicks': 0,
+            'unique_ips': 0,
+            'profession_stats': [],
+            'type_stats': [],
+            'language_stats': []
+        }
 

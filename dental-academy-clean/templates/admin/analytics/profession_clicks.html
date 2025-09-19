@@ -1,0 +1,466 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Profession Clicks Analytics - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stats-card h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.stats-card p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.filter-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+}
+
+.profession-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.profession-badge.eu {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.profession-badge.non-eu {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.language-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.click-row {
+    transition: background-color 0.2s;
+}
+
+.click-row:hover {
+    background-color: #f8f9fa;
+}
+
+.user-info {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.click-details {
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Profession Clicks Analytics</h1>
+            <p class="text-muted">Track and analyze profession card clicks on BIG info page</p>
+        </div>
+        <div>
+            <a href="{{ url_for('analytics.profession_clicks', export='csv') }}" class="btn btn-outline-primary">
+                <i class="fas fa-download"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        Error loading data: {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.total_clicks }}</h3>
+                <p>Total Clicks</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.recent_clicks }}</h3>
+                <p>Last 24 Hours</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.unique_ips }}</h3>
+                <p>Unique Visitors</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>{{ unique_professions|length }}</h3>
+                <p>Professions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-pie"></i> Clicks by Profession</h5>
+                {% if stats.profession_stats %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Profession</th>
+                                <th>Clicks</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for profession, count in stats.profession_stats %}
+                            <tr>
+                                <td>{{ profession }}</td>
+                                <td><strong>{{ count }}</strong></td>
+                                <td>{{ "%.1f"|format((count / stats.total_clicks * 100) if stats.total_clicks > 0 else 0) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No data available</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-globe"></i> Clicks by Type</h5>
+                {% if stats.type_stats %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Clicks</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for type, count in stats.type_stats %}
+                            <tr>
+                                <td>
+                                    <span class="profession-badge {{ type }}">
+                                        {{ type.upper() }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ count }}</strong></td>
+                                <td>{{ "%.1f"|format((count / stats.total_clicks * 100) if stats.total_clicks > 0 else 0) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Statistics -->
+    {% if stats.language_stats %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5><i class="fas fa-language"></i> Clicks by Language</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Language</th>
+                                <th>Clicks</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for language, count in stats.language_stats %}
+                            <tr>
+                                <td>
+                                    {% if language %}
+                                        <span class="language-badge">{{ language.upper() }}</span>
+                                    {% else %}
+                                        <span class="language-badge">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ count }}</strong></td>
+                                <td>{{ "%.1f"|format((count / stats.total_clicks * 100) if stats.total_clicks > 0 else 0) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="filter-section">
+        <h5><i class="fas fa-filter"></i> Filters</h5>
+        <form method="GET" action="{{ url_for('analytics.profession_clicks') }}">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="profession" class="form-label">Profession</label>
+                    <select class="form-select" id="profession" name="profession">
+                        <option value="">All Professions</option>
+                        {% for profession in unique_professions %}
+                        <option value="{{ profession }}" {% if current_filters.profession == profession %}selected{% endif %}>
+                            {{ profession }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="type" class="form-label">Type</label>
+                    <select class="form-select" id="type" name="type">
+                        <option value="">All Types</option>
+                        {% for type in unique_types %}
+                        <option value="{{ type }}" {% if current_filters.type == type %}selected{% endif %}>
+                            {{ type.upper() }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="language" class="form-label">Language</label>
+                    <select class="form-select" id="language" name="language">
+                        <option value="">All Languages</option>
+                        {% for language in unique_languages %}
+                        <option value="{{ language }}" {% if current_filters.language == language %}selected{% endif %}>
+                            {{ language.upper() }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="date_from" class="form-label">From Date</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" 
+                           value="{{ current_filters.date_from }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_to" class="form-label">To Date</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" 
+                           value="{{ current_filters.date_to }}">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <a href="{{ url_for('analytics.profession_clicks') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Clicks Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-mouse-pointer"></i> Recent Clicks
+                {% if clicks.total > 0 %}
+                <span class="badge bg-primary">{{ clicks.total }} total</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if clicks.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Profession</th>
+                            <th>Type</th>
+                            <th>Target URL</th>
+                            <th>User Info</th>
+                            <th>Language</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for click in clicks.items %}
+                        <tr class="click-row">
+                            <td class="click-details">
+                                <strong>{{ click.clicked_at.strftime('%Y-%m-%d') }}</strong><br>
+                                <small>{{ click.clicked_at.strftime('%H:%M:%S') }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ click.profession }}</strong>
+                            </td>
+                            <td>
+                                <span class="profession-badge {{ click.profession_type }}">
+                                    {{ click.profession_type.upper() }}
+                                </span>
+                            </td>
+                            <td class="click-details">
+                                <a href="{{ click.target_url }}" target="_blank" class="text-decoration-none">
+                                    {{ click.target_url }}
+                                    <i class="fas fa-external-link-alt fa-xs"></i>
+                                </a>
+                            </td>
+                            <td class="user-info">
+                                {% if click.user_email %}
+                                    <strong>{{ click.user_email }}</strong><br>
+                                    <small>User ID: {{ click.user_id }}</small>
+                                {% else %}
+                                    <em>Anonymous</em>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if click.language %}
+                                    <span class="language-badge">{{ click.language.upper() }}</span>
+                                {% else %}
+                                    <span class="language-badge">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td class="click-details">
+                                <code>{{ click.ip_address }}</code>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if clicks.pages > 1 %}
+            <nav aria-label="Profession clicks pagination">
+                <ul class="pagination justify-content-center">
+                    {% if clicks.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('analytics.profession_clicks', 
+                                                           page=clicks.prev_num,
+                                                           profession=current_filters.profession,
+                                                           type=current_filters.type,
+                                                           language=current_filters.language,
+                                                           date_from=current_filters.date_from,
+                                                           date_to=current_filters.date_to) }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in clicks.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != clicks.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('analytics.profession_clicks', 
+                                                                   page=page_num,
+                                                                   profession=current_filters.profession,
+                                                                   type=current_filters.type,
+                                                                   language=current_filters.language,
+                                                                   date_from=current_filters.date_from,
+                                                                   date_to=current_filters.date_to) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if clicks.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('analytics.profession_clicks', 
+                                                           page=clicks.next_num,
+                                                           profession=current_filters.profession,
+                                                           type=current_filters.type,
+                                                           language=current_filters.language,
+                                                           date_from=current_filters.date_from,
+                                                           date_to=current_filters.date_to) }}">
+                            Next
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-mouse-pointer fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No clicks found</h5>
+                <p class="text-muted">No profession clicks match your current filters.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh every 30 seconds
+    setInterval(function() {
+        if (document.visibilityState === 'visible') {
+            location.reload();
+        }
+    }, 30000);
+});
+</script>
+{% endblock %}
