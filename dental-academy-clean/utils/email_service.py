@@ -132,6 +132,12 @@ def get_confirmation_email_html(user, confirmation_url, temp_password=None):
                     Thank you for registering with Mentora. To complete your pre-registration and activate your account, please confirm your email address.
                 </p>
                 
+                <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
+                    <strong>Your login credentials:</strong><br>
+                    📧 Email: <strong>{user.email}</strong><br>
+                    🔑 Password: Use the temporary password below
+                </p>
+                
                 {f'''
                 <!-- Temporary Password Info -->
                 <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 30px 0;">
@@ -176,6 +182,18 @@ def get_confirmation_email_html(user, confirmation_url, temp_password=None):
                     </p>
                 </div>
                 
+                <!-- Next steps -->
+                <div style="background-color: #e6fffa; border-left: 4px solid #3ECDC1; padding: 20px; margin: 30px 0;">
+                    <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px;">🚀 What happens next?</h3>
+                    <ol style="color: #4a5568; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 20px;">
+                        <li>Click the "Confirm Email" button above</li>
+                        <li>You'll be redirected to the login page</li>
+                        <li>Use your email and the temporary password to log in</li>
+                        <li>You can change your password in your profile settings</li>
+                        <li>Start exploring the Mentora learning platform!</li>
+                    </ol>
+                </div>
+                
                 <!-- Important note -->
                 <div style="background-color: #fef5e7; border-left: 4px solid #f6ad55; padding: 15px; margin: 20px 0;">
                     <p style="color: #744210; font-size: 14px; margin: 0;">
@@ -214,6 +232,10 @@ Hello, {user.first_name}!
 
 Thank you for registering with Mentora. To complete your pre-registration and activate your account, please confirm your email address.
 
+YOUR LOGIN CREDENTIALS:
+📧 Email: {user.email}
+🔑 Password: Use the temporary password below
+
 {f'''
 🔑 YOUR TEMPORARY PASSWORD:
 {temp_password}
@@ -221,6 +243,13 @@ Thank you for registering with Mentora. To complete your pre-registration and ac
 Important: Please save this password securely. You can change it after confirming your email and logging in.
 
 ''' if temp_password else ''}
+
+🚀 WHAT HAPPENS NEXT:
+1. Click the confirmation link below
+2. You'll be redirected to the login page
+3. Use your email and the temporary password to log in
+4. You can change your password in your profile settings
+5. Start exploring the Mentora learning platform!
 
 Confirmation link:
 {confirmation_url}

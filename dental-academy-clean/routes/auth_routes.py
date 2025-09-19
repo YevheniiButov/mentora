@@ -891,14 +891,10 @@ def login(lang=None):
 def confirm_email(token):
     """Confirm user's email with token"""
     try:
-        # Find user by token
-        user = User.query.filter_by(email_confirmation_token=token).first()
-        
-        if not user:
-            # Try to find by hashed token
-            import hashlib
-            token_hash = hashlib.sha256(token.encode()).hexdigest()
-            user = User.query.filter_by(email_confirmation_token=token_hash).first()
+        # Find user by hashed token (tokens are stored as hashes)
+        import hashlib
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        user = User.query.filter_by(email_confirmation_token=token_hash).first()
         
         if not user:
             flash('Invalid or expired confirmation link', 'error')
