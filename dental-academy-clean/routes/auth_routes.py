@@ -15,6 +15,23 @@ import requests
 import re
 from datetime import datetime, timezone
 
+# Import registration logger
+try:
+    from utils.registration_logger import registration_logger
+except ImportError as e:
+    print(f"Warning: Could not import registration_logger: {e}")
+    registration_logger = None
+
+def safe_log(log_method, *args, **kwargs):
+    """Safely call registration logger methods"""
+    if registration_logger and hasattr(registration_logger, log_method):
+        try:
+            getattr(registration_logger, log_method)(*args, **kwargs)
+        except Exception as e:
+            print(f"Failed to log {log_method}: {e}")
+    else:
+        print(f"Registration logger not available for {log_method}")
+
 auth_bp = Blueprint('auth', __name__)
 
 # reCAPTCHA validation
@@ -1158,24 +1175,29 @@ def reset_password(token):
 @auth_bp.route('/quick-register', methods=['GET', 'POST'])
 def quick_register():
     """Quick registration form for new users"""
-    from utils.registration_logger import registration_logger
     
     if request.method == 'GET':
         from flask import g
         lang = g.get('lang', 'nl')
         return render_template('auth/quick_register.html', lang=lang)
     
+    # Log the attempt immediately, even if it fails
+    safe_log('log_registration_start', 'quick_registration', {'method': 'POST', 'url': request.url})
+    
     try:
         data = request.get_json()
         
+        # Additional logging for debugging
+        print(f"Quick registration attempt - Data received: {data}")
+        
         # Log registration start
-        registration_logger.log_registration_start('quick_registration', data)
+        safe_log('log_registration_start', 'quick_registration', data)
         
         # Валидация данных
         required_fields = ['firstName', 'lastName', 'birthDate', 'email', 'profession']
         for field in required_fields:
             if not data.get(field):
-                registration_logger.log_validation_error('quick_registration', field, 'Required field is missing', data)
+                safe_log('log_validation_error', 'quick_registration', field, 'Required field is missing', data)
                 return jsonify({
                     'success': False,
                     'error': f'Field {field} is required'
@@ -1185,7 +1207,7 @@ def quick_register():
         profession = data.get('profession')
         valid_professions = ['dentist', 'pharmacist', 'family_doctor', 'nurse', 'other']
         if profession not in valid_professions:
-            registration_logger.log_validation_error('quick_registration', 'profession', 'Invalid profession selected', data)
+            safe_log('log_validation_error', 'quick_registration', 'profession', 'Invalid profession selected', data)
             return jsonify({
                 'success': False,
                 'error': 'Invalid profession selected'
@@ -1195,7 +1217,7 @@ def quick_register():
         if profession == 'other':
             other_profession = data.get('otherProfession', '').strip()
             if not other_profession:
-                registration_logger.log_validation_error('quick_registration', 'otherProfession', 'Other profession not specified', data)
+                safe_log('log_validation_error', 'quick_registration', 'otherProfession', 'Other profession not specified', data)
                 return jsonify({
                     'success': False,
                     'error': 'Please specify your profession'
@@ -1207,14 +1229,14 @@ def quick_register():
         if current_app.config.get('RECAPTCHA_ENABLED', True):
             recaptcha_response = data.get('g-recaptcha-response')
             if not recaptcha_response:
-                registration_logger.log_validation_error('quick_registration', 'g-recaptcha-response', 'No reCAPTCHA response provided', data)
+                safe_log('log_validation_error', 'quick_registration', 'g-recaptcha-response', 'No reCAPTCHA response provided', data)
                 return jsonify({
                     'success': False,
                     'error': 'Please complete the reCAPTCHA verification'
                 }), 400
             
             if not verify_recaptcha(recaptcha_response):
-                registration_logger.log_validation_error('quick_registration', 'g-recaptcha-response', 'Invalid reCAPTCHA response', data)
+                safe_log('log_validation_error', 'quick_registration', 'g-recaptcha-response', 'Invalid reCAPTCHA response', data)
                 return jsonify({
                     'success': False,
                     'error': 'reCAPTCHA verification failed. Please try again.'
@@ -1225,7 +1247,7 @@ def quick_register():
         terms_consent = data.get('termsConsent', False)
         
         if not privacy_consent or not terms_consent:
-            registration_logger.log_validation_error('quick_registration', 'consent', 'Privacy or terms consent not provided', data)
+            safe_log('log_validation_error', 'quick_registration', 'consent', 'Privacy or terms consent not provided', data)
             return jsonify({
                 'success': False,
                 'error': 'You must agree to the privacy policy and terms of service'
@@ -1234,7 +1256,7 @@ def quick_register():
         # Проверка существования пользователя
         existing_user = User.query.filter_by(email=data['email']).first()
         if existing_user:
-            registration_logger.log_business_logic_error('quick_registration', 'email_exists', f'Email already registered: {existing_user.email}', data)
+            safe_log('log_business_logic_error', 'quick_registration', 'email_exists', f'Email already registered: {existing_user.email}', data)
             return jsonify({
                 'success': False,
                 'error': 'User with this email already exists'
@@ -1262,17 +1284,17 @@ def quick_register():
             db.session.add(user)
             db.session.commit()
         except Exception as e:
-            registration_logger.log_database_error('quick_registration', 'create_user', str(e), data)
+            safe_log('log_database_error', 'quick_registration', 'create_user', str(e), data)
             raise
         
         # Отправка email подтверждения
         from utils.email_service import send_email_confirmation
         email_sent = send_email_confirmation(user, user.generate_email_confirmation_token())
         if not email_sent:
-            registration_logger.log_email_error('quick_registration', user.email, 'Failed to send confirmation email', data)
+            safe_log('log_email_error', 'quick_registration', user.email, 'Failed to send confirmation email', data)
         
         # Log successful registration
-        registration_logger.log_registration_success('quick_registration', user.id, user.email, data)
+        safe_log('log_registration_success', 'quick_registration', user.id, user.email, data)
         
         return jsonify({
             'success': True,
@@ -1282,7 +1304,15 @@ def quick_register():
         
     except Exception as e:
         db.session.rollback()
-        registration_logger.log_unexpected_error('quick_registration', e, data)
+        
+        # Enhanced error logging
+        safe_log('log_unexpected_error', 'quick_registration', e, data if 'data' in locals() else None)
+        
+        # Fallback logging
+        import traceback
+        print(f"Quick registration error: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
+        
         return jsonify({
             'success': False,
             'error': 'Registration failed. Please try again.'

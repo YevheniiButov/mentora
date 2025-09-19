@@ -57,23 +57,38 @@ class RegistrationLogger:
     
     def _get_request_context(self):
         """Get request context information"""
-        return {
-            'ip_address': request.remote_addr,
-            'user_agent': request.headers.get('User-Agent', ''),
-            'referrer': request.headers.get('Referer', ''),
-            'url': request.url,
-            'method': request.method,
-            'timestamp': datetime.utcnow().isoformat()
-        }
+        try:
+            from flask import request
+            return {
+                'ip_address': request.remote_addr,
+                'user_agent': request.headers.get('User-Agent', ''),
+                'referrer': request.headers.get('Referer', ''),
+                'url': request.url,
+                'method': request.method,
+                'timestamp': datetime.utcnow().isoformat()
+            }
+        except (RuntimeError, ImportError):  # Working outside of request context
+            return {
+                'ip_address': 'N/A',
+                'user_agent': 'N/A',
+                'referrer': 'N/A',
+                'url': 'N/A',
+                'method': 'N/A',
+                'timestamp': datetime.utcnow().isoformat()
+            }
     
     def _get_user_context(self):
         """Get current user context if available"""
-        if current_user and current_user.is_authenticated:
-            return {
-                'user_id': current_user.id,
-                'user_email': current_user.email,
-                'user_type': 'authenticated'
-            }
+        try:
+            from flask_login import current_user
+            if current_user and current_user.is_authenticated:
+                return {
+                    'user_id': current_user.id,
+                    'user_email': current_user.email,
+                    'user_type': 'authenticated'
+                }
+        except (RuntimeError, ImportError):
+            pass
         return {'user_type': 'anonymous'}
     
     def log_registration_start(self, registration_type, form_data=None):
