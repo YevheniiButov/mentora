@@ -58,12 +58,23 @@ def send_email_confirmation_resend(user, temp_password=None):
         print("=== PRODUCTION MODE - SENDING REAL EMAIL VIA RESEND ===")
         
         # Подготавливаем данные для Resend API
+        # Проверка совместимости для старой/новой версии функций
+        try:
+            # Попытка с новой сигнатурой (3 аргумента)
+            html_content = get_confirmation_email_html(user, confirmation_url, temp_password)
+            text_content = get_confirmation_email_text(user, confirmation_url, temp_password)
+        except TypeError:
+            # Fallback для старой сигнатуры (2 аргумента)
+            print("=== USING OLD SIGNATURE FALLBACK ===")
+            html_content = get_confirmation_email_html(user, confirmation_url)
+            text_content = get_confirmation_email_text(user, confirmation_url)
+        
         email_data = {
             "from": from_email,
             "to": [user.email],
             "subject": "MENTORA - Email Confirmation",
-            "html": get_confirmation_email_html(user, confirmation_url, temp_password),
-            "text": get_confirmation_email_text(user, confirmation_url, temp_password),
+            "html": html_content,
+            "text": text_content,
             "click_tracking": False,  # Отключаем click tracking для лучшей доставляемости
             "open_tracking": False   # Отключаем open tracking для лучшей доставляемости
         }
