@@ -560,7 +560,7 @@ except ImportError as e:
     
     @app.route('/profile')
     def profile():
-        return render_template('auth/profile.html')
+        return render_template('profile/index.html', user=current_user)
     
     @app.route('/edit_profile')
     def edit_profile():
