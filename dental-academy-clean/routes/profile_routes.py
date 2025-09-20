@@ -11,7 +11,7 @@ profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
 @login_required
 def profile():
     """Profile page"""
-    return render_template('profile/profile.html', user=current_user)
+    return render_template('profile/index.html', user=current_user)
 
 @profile_bp.route('/settings')
 @login_required
