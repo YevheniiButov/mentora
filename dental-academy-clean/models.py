@@ -757,6 +757,7 @@ class UserSession(db.Model):
         try:
             # Check if ProfileAuditLog table exists
             from sqlalchemy import inspect
+            from flask import current_app
             inspector = inspect(db.engine)
             if 'profile_audit_logs' not in inspector.get_table_names():
                 current_app.logger.warning("ProfileAuditLog table does not exist, skipping audit log")
@@ -774,6 +775,7 @@ class UserSession(db.Model):
             db.session.commit()
         except Exception as e:
             # Log the error but don't fail the main operation
+            from flask import current_app
             current_app.logger.error(f"Failed to log profile change: {str(e)}")
             db.session.rollback()
     

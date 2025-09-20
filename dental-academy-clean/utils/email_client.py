@@ -5,6 +5,7 @@ Email client utility for POP/IMAP operations
 import poplib
 import imaplib
 import email
+import email.utils
 import ssl
 import os
 import json
@@ -36,8 +37,10 @@ class EmailClient:
     def connect_pop(self):
         """Connect to POP server"""
         try:
-            # Create SSL context
+            # Create SSL context with relaxed verification
             context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
             
             # Connect to POP server
             if self.config.get('pop_port') == 995:
@@ -68,8 +71,10 @@ class EmailClient:
     def connect_imap(self):
         """Connect to IMAP server"""
         try:
-            # Create SSL context
+            # Create SSL context with relaxed verification
             context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
             
             # Connect to IMAP server
             if self.config.get('imap_port') == 993:
