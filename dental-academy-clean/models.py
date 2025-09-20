@@ -757,10 +757,14 @@ class UserSession(db.Model):
         try:
             # Check if ProfileAuditLog table exists
             from sqlalchemy import inspect
-            from flask import current_app
             inspector = inspect(db.engine)
-            if 'profile_audit_logs' not in inspector.get_table_names():
-                current_app.logger.warning("ProfileAuditLog table does not exist, skipping audit log")
+            if 'profile_audit_log' not in inspector.get_table_names():
+                # Try to get current_app for logging, but don't fail if not available
+                try:
+                    from flask import current_app
+                    current_app.logger.warning("ProfileAuditLog table does not exist, skipping audit log")
+                except (RuntimeError, ImportError):
+                    pass  # current_app not available, skip logging
                 return
                 
             audit_log = ProfileAuditLog(
@@ -775,9 +779,15 @@ class UserSession(db.Model):
             db.session.commit()
         except Exception as e:
             # Log the error but don't fail the main operation
-            from flask import current_app
-            current_app.logger.error(f"Failed to log profile change: {str(e)}")
-            db.session.rollback()
+            try:
+                from flask import current_app
+                current_app.logger.error(f"Failed to log profile change: {str(e)}")
+            except (RuntimeError, ImportError):
+                pass  # current_app not available, skip logging
+            try:
+                db.session.rollback()
+            except:
+                pass  # Don't fail if rollback fails
     
     def __repr__(self):
         return f'<UserSession {self.session_id}: {self.ip_address}>'
