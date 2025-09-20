@@ -827,6 +827,52 @@ def web_recreate_topics():
 
 logger.info("✅ Web recreate topics endpoint registered")
 
+# Email client fix endpoint
+@app.route('/admin/fix-email-client', methods=['GET', 'POST'])
+def web_fix_email_client():
+    """Веб-эндпоинт для исправления email client"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Fix Email Client</title></head>
+        <body>
+            <h1>Fix Email Client Database Schema</h1>
+            <form method="POST">
+                <button type="submit">Fix Email Client</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.fix_email_client import fix_email_client
+        
+        print("🔧 Starting email client fix...")
+        success = fix_email_client()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Email client database schema fixed successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to fix email client database schema'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_fix_email_client: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web fix email client endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
