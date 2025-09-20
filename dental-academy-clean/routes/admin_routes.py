@@ -626,8 +626,38 @@ def backup_database():
 
 def save_config_to_file(config):
     """Save configuration to file"""
-    # Implement saving to config.py or environment file
-    pass
+    import os
+    import json
+    from datetime import datetime
+    
+    try:
+        # Create config backup directory
+        config_dir = os.path.join(current_app.root_path, 'config_backups')
+        os.makedirs(config_dir, exist_ok=True)
+        
+        # Create backup filename with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_file = os.path.join(config_dir, f'config_backup_{timestamp}.json')
+        
+        # Save current config to backup file
+        with open(backup_file, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False, default=str)
+        
+        # Also save to environment file if specified
+        env_file = os.path.join(current_app.root_path, '.env')
+        if os.path.exists(env_file):
+            # Create environment backup
+            env_backup = os.path.join(config_dir, f'env_backup_{timestamp}.env')
+            with open(env_file, 'r', encoding='utf-8') as src:
+                with open(env_backup, 'w', encoding='utf-8') as dst:
+                    dst.write(src.read())
+        
+        current_app.logger.info(f"Configuration saved to {backup_file}")
+        return True
+        
+    except Exception as e:
+        current_app.logger.error(f"Error saving configuration: {str(e)}")
+        return False
 
 def handle_upload_scenario():
     """Обработка загрузки сценария виртуального пациента"""
@@ -3072,12 +3102,35 @@ def visitors_analytics():
                 current_app.logger.error(f"Error fetching hourly stats: {str(e)}")
                 hourly_stats = []
         
+        # Calculate bounce rate (sessions with only 1 page view)
+        bounce_sessions = db.session.query(UserSession.session_id).join(
+            PageView, UserSession.session_id == PageView.session_id
+        ).group_by(UserSession.session_id).having(
+            func.count(PageView.id) == 1
+        ).subquery()
+        
+        total_sessions = UserSession.query.count()
+        bounced_sessions = db.session.query(bounce_sessions.c.session_id).count()
+        bounce_rate = (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
+        
+        # Calculate average session duration
+        avg_duration_query = db.session.query(
+            func.avg(
+                func.julianday(UserSession.last_activity_at) - 
+                func.julianday(UserSession.created_at)
+            ) * 24 * 60 * 60  # Convert to seconds
+        ).filter(
+            UserSession.last_activity_at.isnot(None)
+        ).scalar()
+        
+        avg_session_duration = avg_duration_query or 0
+        
         stats = {
             'total_visits': total_visits,
             'unique_visitors': unique_visitors,
             'registered_user_visits': registered_user_visits,
-            'bounce_rate': 0,  # TODO: Calculate based on session data
-            'avg_session_duration': 0  # TODO: Calculate from session data
+            'bounce_rate': round(bounce_rate, 2),
+            'avg_session_duration': round(avg_session_duration, 0)
         }
         
         return render_template('admin/visitors_analytics.html',
@@ -4378,6 +4431,188 @@ def create_notification():
         current_app.logger.error(f"Error creating notification: {str(e)}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+# ========================================
+# CAMPAIGN MANAGEMENT ROUTES
+# ========================================
+
+@admin_bp.route('/communication/campaigns/<int:campaign_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_campaign(campaign_id):
+    """Edit communication campaign"""
+    try:
+        campaign = CommunicationCampaign.query.get_or_404(campaign_id)
+        
+        if request.method == 'POST':
+            campaign.name = request.form.get('name', campaign.name)
+            campaign.description = request.form.get('description', campaign.description)
+            campaign.message = request.form.get('message', campaign.message)
+            campaign.action_url = request.form.get('action_url', campaign.action_url)
+            campaign.action_text = request.form.get('action_text', campaign.action_text)
+            campaign.target_filters = request.form.get('target_filters', campaign.target_filters)
+            
+            db.session.commit()
+            flash('Кампания обновлена успешно', 'success')
+            return redirect(url_for('admin.communication_campaigns'))
+        
+        return render_template('admin/communication/edit_campaign.html', campaign=campaign)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error editing campaign: {str(e)}")
+        flash(f'Ошибка редактирования кампании: {str(e)}', 'error')
+        return redirect(url_for('admin.communication_campaigns'))
+
+@admin_bp.route('/communication/campaigns/<int:campaign_id>/start', methods=['POST'])
+@login_required
+@admin_required
+def start_campaign(campaign_id):
+    """Start communication campaign"""
+    try:
+        campaign = CommunicationCampaign.query.get_or_404(campaign_id)
+        
+        if campaign.status == 'draft':
+            campaign.status = 'active'
+            campaign.started_at = datetime.utcnow()
+            db.session.commit()
+            
+            # Log admin action
+            audit_log = AdminAuditLog(
+                admin_user_id=current_user.id,
+                action='campaign_started',
+                target_type='campaign',
+                target_id=campaign_id,
+                details=json.dumps({'campaign_name': campaign.name}),
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent'),
+                request_url=request.url,
+                request_method=request.method
+            )
+            db.session.add(audit_log)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Кампания запущена успешно'})
+        else:
+            return jsonify({'success': False, 'error': 'Кампания уже активна или завершена'})
+            
+    except Exception as e:
+        current_app.logger.error(f"Error starting campaign: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/communication/campaigns/<int:campaign_id>/stop', methods=['POST'])
+@login_required
+@admin_required
+def stop_campaign(campaign_id):
+    """Stop communication campaign"""
+    try:
+        campaign = CommunicationCampaign.query.get_or_404(campaign_id)
+        
+        if campaign.status == 'active':
+            campaign.status = 'stopped'
+            campaign.stopped_at = datetime.utcnow()
+            db.session.commit()
+            
+            # Log admin action
+            audit_log = AdminAuditLog(
+                admin_user_id=current_user.id,
+                action='campaign_stopped',
+                target_type='campaign',
+                target_id=campaign_id,
+                details=json.dumps({'campaign_name': campaign.name}),
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent'),
+                request_url=request.url,
+                request_method=request.method
+            )
+            db.session.add(audit_log)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Кампания остановлена успешно'})
+        else:
+            return jsonify({'success': False, 'error': 'Кампания не активна'})
+            
+    except Exception as e:
+        current_app.logger.error(f"Error stopping campaign: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/communication/campaigns/<int:campaign_id>/cancel', methods=['POST'])
+@login_required
+@admin_required
+def cancel_campaign(campaign_id):
+    """Cancel communication campaign"""
+    try:
+        campaign = CommunicationCampaign.query.get_or_404(campaign_id)
+        
+        if campaign.status in ['draft', 'active']:
+            campaign.status = 'cancelled'
+            campaign.cancelled_at = datetime.utcnow()
+            db.session.commit()
+            
+            # Log admin action
+            audit_log = AdminAuditLog(
+                admin_user_id=current_user.id,
+                action='campaign_cancelled',
+                target_type='campaign',
+                target_id=campaign_id,
+                details=json.dumps({'campaign_name': campaign.name}),
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent'),
+                request_url=request.url,
+                request_method=request.method
+            )
+            db.session.add(audit_log)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Кампания отменена успешно'})
+        else:
+            return jsonify({'success': False, 'error': 'Кампания уже завершена или отменена'})
+            
+    except Exception as e:
+        current_app.logger.error(f"Error cancelling campaign: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/communication/campaigns/<int:campaign_id>/details')
+@login_required
+@admin_required
+def campaign_details(campaign_id):
+    """View campaign details"""
+    try:
+        campaign = CommunicationCampaign.query.get_or_404(campaign_id)
+        
+        # Get campaign statistics
+        stats = {
+            'total_recipients': 0,
+            'emails_sent': 0,
+            'emails_delivered': 0,
+            'emails_opened': 0,
+            'clicks': 0
+        }
+        
+        # Calculate stats based on campaign type and filters
+        if campaign.target_filters:
+            try:
+                filters = json.loads(campaign.target_filters)
+                query = User.query
+                
+                if filters.get('status'):
+                    query = query.filter(User.is_active == (filters['status'] == 'active'))
+                if filters.get('profession'):
+                    query = query.filter(User.profession == filters['profession'])
+                if filters.get('country'):
+                    query = query.filter(User.country == filters['country'])
+                
+                stats['total_recipients'] = query.count()
+            except:
+                pass
+        
+        return render_template('admin/communication/campaign_details.html', 
+                             campaign=campaign, stats=stats)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error viewing campaign details: {str(e)}")
+        flash(f'Ошибка загрузки деталей кампании: {str(e)}', 'error')
+        return redirect(url_for('admin.communication_campaigns'))
 
 
 def perform_database_backup(backup_record):

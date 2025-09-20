@@ -530,10 +530,10 @@ def run_daily_scheduler_check():
         if overdue:
             logger.info(f"Found {len(overdue)} overdue diagnostic reassessments")
             
-            # TODO: Send email/push notifications
+            # Send email/push notifications
             for item in overdue:
                 logger.info(f"User {item['user_id']}: {item['overdue_days']} days overdue")
-                # send_diagnostic_reminder(item)
+                send_diagnostic_reminder(item)
         
         # Get recommendations for upcoming reassessments
         recommendations = scheduler.get_reassessment_recommendations(limit=50)
@@ -541,10 +541,11 @@ def run_daily_scheduler_check():
         if recommendations:
             logger.info(f"Generated {len(recommendations)} reassessment recommendations")
             
-            # TODO: Update plans with new schedules
+            # Update plans with new schedules
             for rec in recommendations:
                 if rec.priority in [ReassessmentPriority.HIGH, ReassessmentPriority.CRITICAL]:
                     scheduler.update_plan_schedule(rec.plan_id)
+                    logger.info(f"Updated schedule for plan {rec.plan_id} with priority {rec.priority.value}")
         
         logger.info("Daily diagnostic scheduler check completed")
         
@@ -560,11 +561,50 @@ def send_diagnostic_reminder(overdue_item: Dict):
         overdue_item: Overdue reassessment item
     """
     try:
-        # TODO: Implement email/push notification
-        logger.info(f"Sending diagnostic reminder to user {overdue_item['user_id']}")
+        from flask import current_app
+        from models import User
+        
+        user_id = overdue_item['user_id']
+        overdue_days = overdue_item['overdue_days']
+        
+        # Get user
+        user = User.query.get(user_id)
+        if not user or not user.email:
+            logger.warning(f"User {user_id} not found or has no email")
+            return
+        
+        # Send email notification
+        try:
+            from utils.email_service import send_email_confirmation
+            
+            # Create reminder email content
+            subject = f"Напоминание о диагностическом тестировании - {overdue_days} дней просрочки"
+            message = f"""
+            Добрый день, {user.first_name}!
+            
+            Это напоминание о том, что ваше диагностическое тестирование просрочено на {overdue_days} дней.
+            
+            Пожалуйста, пройдите диагностику для продолжения обучения:
+            https://bigmentor.nl/dashboard/diagnostic
+            
+            С уважением,
+            Команда Mentora
+            """
+            
+            # Send email using existing email service
+            email_sent = send_email_confirmation(user, message)
+            
+            if email_sent:
+                logger.info(f"Diagnostic reminder email sent to user {user_id}")
+            else:
+                logger.warning(f"Failed to send diagnostic reminder email to user {user_id}")
+                
+        except Exception as email_error:
+            logger.error(f"Error sending diagnostic reminder email: {str(email_error)}")
         
         # Mark reminder as sent
         scheduler.mark_reminder_sent(overdue_item['plan_id'])
+        logger.info(f"Diagnostic reminder sent to user {user_id} for plan {overdue_item['plan_id']}")
         
     except Exception as e:
         logger.error(f"Error sending diagnostic reminder: {str(e)}")

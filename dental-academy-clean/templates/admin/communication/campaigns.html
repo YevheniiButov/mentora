@@ -209,34 +209,88 @@
 {% block extra_js %}
 <script>
 function editCampaign(campaignId) {
-    // TODO: Implement edit campaign functionality
-    alert('Функция редактирования кампании будет добавлена в следующей версии');
+    // Redirect to edit campaign page
+    window.location.href = `/admin/communication/campaigns/${campaignId}/edit`;
 }
 
 function startCampaign(campaignId) {
     if (confirm('Вы уверены, что хотите запустить эту кампанию?')) {
-        // TODO: Implement start campaign functionality
-        alert('Функция запуска кампании будет добавлена в следующей версии');
+        fetch(`/admin/communication/campaigns/${campaignId}/start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload page to update status
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при запуске кампании');
+        });
     }
 }
 
 function cancelCampaign(campaignId) {
     if (confirm('Вы уверены, что хотите отменить эту кампанию?')) {
-        // TODO: Implement cancel campaign functionality
-        alert('Функция отмены кампании будет добавлена в следующей версии');
+        fetch(`/admin/communication/campaigns/${campaignId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload page to update status
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при отмене кампании');
+        });
     }
 }
 
 function stopCampaign(campaignId) {
     if (confirm('Вы уверены, что хотите остановить эту кампанию?')) {
-        // TODO: Implement stop campaign functionality
-        alert('Функция остановки кампании будет добавлена в следующей версии');
+        fetch(`/admin/communication/campaigns/${campaignId}/stop`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload page to update status
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при остановке кампании');
+        });
     }
 }
 
 function viewCampaignDetails(campaignId) {
-    // TODO: Implement view campaign details functionality
-    alert('Функция просмотра деталей кампании будет добавлена в следующей версии');
+    // Open campaign details in new window
+    window.open(`/admin/communication/campaigns/${campaignId}/details`, '_blank');
 }
 </script>
 {% endblock %}
