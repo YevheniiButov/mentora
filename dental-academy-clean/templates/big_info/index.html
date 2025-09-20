@@ -1521,29 +1521,43 @@
         });
     }
 
-    // Добавляем обработчики кликов для всех карточек профессий
-    document.addEventListener('DOMContentLoaded', function() {
+    // Функция для добавления обработчиков кликов
+    function addClickHandlers() {
         // EU профессии
         const euProfessionCards = document.querySelectorAll('#eu-professions .profession-card');
         euProfessionCards.forEach(card => {
-            card.addEventListener('click', function(e) {
-                const url = this.getAttribute('href');
-                const professionName = this.querySelector('h3 span').textContent || 
-                                     this.querySelector('h3').textContent;
-                logProfessionClick(professionName, 'eu', url);
-            });
+            // Удаляем старые обработчики, если есть
+            card.removeEventListener('click', handleProfessionClick);
+            // Добавляем новый обработчик
+            card.addEventListener('click', handleProfessionClick);
         });
 
         // Non-EU профессии
         const nonEuProfessionCards = document.querySelectorAll('#non-eu-professions .profession-card');
         nonEuProfessionCards.forEach(card => {
-            card.addEventListener('click', function(e) {
-                const url = this.getAttribute('href');
-                const professionName = this.querySelector('h3 span').textContent || 
-                                     this.querySelector('h3').textContent;
-                logProfessionClick(professionName, 'non-eu', url);
-            });
+            // Удаляем старые обработчики, если есть
+            card.removeEventListener('click', handleProfessionClick);
+            // Добавляем новый обработчик
+            card.addEventListener('click', handleProfessionClick);
         });
+    }
+
+    // Обработчик клика по профессии
+    function handleProfessionClick(e) {
+        const url = this.getAttribute('href');
+        const professionName = this.querySelector('h3 span').textContent || 
+                             this.querySelector('h3').textContent;
+        
+        // Определяем тип профессии по родительской секции
+        const isEU = this.closest('#eu-professions') !== null;
+        const type = isEU ? 'eu' : 'non-eu';
+        
+        logProfessionClick(professionName, type, url);
+    }
+
+    // Добавляем обработчики при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        addClickHandlers();
     });
 </script>
 
@@ -1930,6 +1944,11 @@ function showEUProfessions() {
     if (euCard) euCard.style.transform = 'translateY(-5px)';
     if (nonEuCard) nonEuCard.style.transform = 'translateY(0px)';
     
+    // Добавляем обработчики кликов после показа секции
+    setTimeout(() => {
+        addClickHandlers();
+    }, 100);
+    
     // Scroll to professions section
     setTimeout(() => {
         const target = document.getElementById('eu-professions');
@@ -1939,7 +1958,7 @@ function showEUProfessions() {
                 block: 'start'
             });
         }
-    }, 100);
+    }, 200);
 }
 
 function showNonEUProfessions() {
@@ -1953,6 +1972,11 @@ function showNonEUProfessions() {
     if (nonEuCard) nonEuCard.style.transform = 'translateY(-5px)';
     if (euCard) euCard.style.transform = 'translateY(0px)';
     
+    // Добавляем обработчики кликов после показа секции
+    setTimeout(() => {
+        addClickHandlers();
+    }, 100);
+    
     // Scroll to professions section
     setTimeout(() => {
         const target = document.getElementById('non-eu-professions');
@@ -1962,7 +1986,7 @@ function showNonEUProfessions() {
                 block: 'start'
             });
         }
-    }, 100);
+    }, 200);
 }
 </script>
 {% endblock %}
