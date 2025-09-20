@@ -37,6 +37,7 @@
 {% endblock %}
 
 {% block content %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <div class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -70,7 +71,11 @@
                         <span class="usage-badge">{{ template.usage_count }} использований</span>
                     </div>
                     
-                    {% set variables = template.variables|from_json if template.variables else {} %}
+                    {% if template.variables %}
+                        {% set variables = template.variables|from_json %}
+                    {% else %}
+                        {% set variables = {} %}
+                    {% endif %}
                     <p class="text-muted mb-2">{{ variables.description or 'Без описания' }}</p>
                     
                     <div class="mb-3">
@@ -82,7 +87,6 @@
                         <p class="text-muted small">{{ template.html_content[:100] }}{% if template.html_content|length > 100 %}...{% endif %}</p>
                     </div>
                     
-                    {% set variables = template.variables|from_json if template.variables else {} %}
                     {% if variables.action_url %}
                     <div class="mb-3">
                         <strong>Кнопка:</strong> 
