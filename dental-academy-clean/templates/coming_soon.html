@@ -1,141 +1,182 @@
-{% extends "base.html" %}
-
-{% block title %}{{ feature_name }} - Binnenkort beschikbaar{% endblock %}
-
-{% block head %}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="{{ lang or 'nl' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIG Diagnostic - Coming Soon | Mentora</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/coming_soon.css') }}">
     <style>
-    .coming-soon-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: calc(100vh - 70px); /* Учитываем высоту хедера */
-        margin-top: 70px; /* Отступ для фиксированного хедера */
-        background: linear-gradient(135deg, #f0f8f5 0%, #e8f5f0 50%, #d4f1e8 100%);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    .coming-soon-content {
-        text-align: center;
-        background: white;
-        padding: 3rem;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        max-width: 500px;
-        width: 90%;
-    }
-    .icon-container {
-        font-size: 4rem;
-        color: #3ECDC1;
-        margin-bottom: 1.5rem;
-    }
-    h2 {
-        color: #2c3e50;
-        margin-bottom: 1rem;
-        font-weight: 700;
-    }
-    p {
-        color: #6c757d;
-        margin-bottom: 2rem;
-        font-size: 1.1rem;
-    }
-    .progress-container {
-        margin: 2rem 0;
-    }
-    .progress-bar {
-        width: 100%;
-        height: 8px;
-        background: #eee;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-bottom: 0.5rem;
-    }
-    .progress-fill {
-        height: 100%;
-        width: 75%;
-        background: linear-gradient(90deg, #3ECDC1, #4DD0E1);
-        animation: pulse 2s ease-in-out infinite;
-    }
-    .progress-text {
-        color: #6c757d;
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
-    .actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    .btn-back, .btn-community {
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .btn-back {
-        background: #3ECDC1;
-        color: white;
-    }
-    .btn-back:hover {
-        background: #2BA69A;
-        transform: translateY(-2px);
-        color: white;
-    }
-    .btn-community {
-        background: #48bb78;
-        color: white;
-    }
-    .btn-community:hover {
-        background: #38a169;
-        transform: translateY(-2px);
-        color: white;
-    }
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-    }
-    @media (max-width: 576px) {
-        .coming-soon-content {
-            padding: 2rem 1.5rem;
-        }
-        .actions {
-            flex-direction: column;
+        .coming-soon-container {
+            min-height: 100vh;
+            display: flex;
             align-items: center;
-        }
-        .btn-back, .btn-community {
-            width: 100%;
             justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
         }
-    }
+        
+        .coming-soon-content {
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .coming-soon-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .coming-soon-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .coming-soon-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .coming-soon-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+        
+        .back-button {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .coming-soon-content {
+                padding: 30px 20px;
+            }
+            
+            .coming-soon-title {
+                font-size: 2rem;
+            }
+            
+            .coming-soon-subtitle {
+                font-size: 1rem;
+            }
+        }
     </style>
-{% endblock %}
-
-{% block content %}
-<div class="coming-soon-container">
-    <div class="coming-soon-content">
-        <div class="icon-container">
-            <i class="fas fa-tools"></i>
-        </div>
-        <h2>{{ feature_name }} komt binnenkort</h2>
-        <p>{{ feature_description or 'Deze functie wordt momenteel ontwikkeld' }}</p>
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            <span class="progress-text">75% voltooid</span>
-        </div>
-        <div class="actions">
-            <a href="{{ url_for('main.index', lang=lang) }}" class="btn-back">
-                <i class="fas fa-home"></i> Terug naar hoofdpagina
-            </a>
-            <a href="{{ url_for('main.community', lang=lang) }}" class="btn-community">
-                <i class="fas fa-users"></i> Ga naar community
+</head>
+<body>
+    <div class="coming-soon-container">
+        <div class="coming-soon-content">
+            <div class="coming-soon-icon">🚧</div>
+            <h1 class="coming-soon-title">
+                {% if lang == 'nl' %}
+                    BIG Diagnostic
+                {% elif lang == 'en' %}
+                    BIG Diagnostic
+                {% elif lang == 'ru' %}
+                    BIG Диагностика
+                {% elif lang == 'es' %}
+                    Diagnóstico BIG
+                {% elif lang == 'pt' %}
+                    Diagnóstico BIG
+                {% elif lang == 'tr' %}
+                    BIG Tanı
+                {% elif lang == 'fa' %}
+                    تشخیص BIG
+                {% elif lang == 'uk' %}
+                    BIG Діагностика
+                {% else %}
+                    BIG Diagnostic
+                {% endif %}
+            </h1>
+            
+            <h2 class="coming-soon-subtitle">
+                {% if lang == 'nl' %}
+                    Binnenkort beschikbaar
+                {% elif lang == 'en' %}
+                    Coming Soon
+                {% elif lang == 'ru' %}
+                    Скоро будет доступно
+                {% elif lang == 'es' %}
+                    Próximamente
+                {% elif lang == 'pt' %}
+                    Em breve
+                {% elif lang == 'tr' %}
+                    Yakında
+                {% elif lang == 'fa' %}
+                    به زودی
+                {% elif lang == 'uk' %}
+                    Незабаром
+                {% else %}
+                    Coming Soon
+                {% endif %}
+            </h2>
+            
+            <p class="coming-soon-description">
+                {% if lang == 'nl' %}
+                    We werken hard aan de BIG Diagnostic functie. Deze tool zal je helpen om je kennisniveau te bepalen en een gepersonaliseerd leerpad te creëren. Blijf op de hoogte voor updates!
+                {% elif lang == 'en' %}
+                    We're working hard on the BIG Diagnostic feature. This tool will help you assess your knowledge level and create a personalized learning path. Stay tuned for updates!
+                {% elif lang == 'ru' %}
+                    Мы усердно работаем над функцией BIG Диагностики. Этот инструмент поможет вам оценить уровень знаний и создать персонализированный путь обучения. Следите за обновлениями!
+                {% elif lang == 'es' %}
+                    Estamos trabajando duro en la función de Diagnóstico BIG. Esta herramienta te ayudará a evaluar tu nivel de conocimiento y crear un camino de aprendizaje personalizado. ¡Mantente atento a las actualizaciones!
+                {% elif lang == 'pt' %}
+                    Estamos trabalhando duro na funcionalidade de Diagnóstico BIG. Esta ferramenta ajudará você a avaliar seu nível de conhecimento e criar um caminho de aprendizado personalizado. Fique atento às atualizações!
+                {% elif lang == 'tr' %}
+                    BIG Tanı özelliği üzerinde çok çalışıyoruz. Bu araç, bilgi seviyenizi değerlendirmenize ve kişiselleştirilmiş bir öğrenme yolu oluşturmanıza yardımcı olacak. Güncellemeler için takipte kalın!
+                {% elif lang == 'fa' %}
+                    ما سخت روی ویژگی تشخیص BIG کار می‌کنیم. این ابزار به شما کمک می‌کند تا سطح دانش خود را ارزیابی کنید و مسیر یادگیری شخصی‌سازی شده ایجاد کنید. برای به‌روزرسانی‌ها در جریان باشید!
+                {% elif lang == 'uk' %}
+                    Ми наполегливо працюємо над функцією BIG Діагностики. Цей інструмент допоможе вам оцінити рівень знань і створити персоналізований шлях навчання. Слідкуйте за оновленнями!
+                {% else %}
+                    We're working hard on the BIG Diagnostic feature. This tool will help you assess your knowledge level and create a personalized learning path. Stay tuned for updates!
+                {% endif %}
+            </p>
+            
+            <a href="{{ url_for('main.index', lang=lang or 'nl') }}" class="back-button">
+                {% if lang == 'nl' %}
+                    ← Terug naar hoofdpagina
+                {% elif lang == 'en' %}
+                    ← Back to Homepage
+                {% elif lang == 'ru' %}
+                    ← Назад на главную
+                {% elif lang == 'es' %}
+                    ← Volver al inicio
+                {% elif lang == 'pt' %}
+                    ← Voltar ao início
+                {% elif lang == 'tr' %}
+                    ← Ana sayfaya dön
+                {% elif lang == 'fa' %}
+                    ← بازگشت به صفحه اصلی
+                {% elif lang == 'uk' %}
+                    ← Назад на головну
+                {% else %}
+                    ← Back to Homepage
+                {% endif %}
             </a>
         </div>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>
