@@ -591,6 +591,7 @@ def inbox():
         per_page = request.args.get('per_page', 20, type=int)
         category = request.args.get('category', 'all')
         status = request.args.get('status', 'all')  # all, unread, important, spam
+        source = request.args.get('source', 'all')  # all, info, support
         
         # Build query
         query = IncomingEmail.query.filter_by(is_deleted=False)
@@ -598,6 +599,9 @@ def inbox():
         # Apply filters
         if category != 'all':
             query = query.filter_by(category=category)
+        
+        if source != 'all':
+            query = query.filter_by(source_account=source)
         
         if status == 'unread':
             query = query.filter_by(is_read=False)
@@ -621,14 +625,17 @@ def inbox():
             'total': IncomingEmail.query.filter_by(is_deleted=False).count(),
             'unread': IncomingEmail.query.filter_by(is_deleted=False, is_read=False).count(),
             'important': IncomingEmail.query.filter_by(is_deleted=False, is_important=True).count(),
-            'spam': IncomingEmail.query.filter_by(is_deleted=False, is_spam=True).count()
+            'spam': IncomingEmail.query.filter_by(is_deleted=False, is_spam=True).count(),
+            'info': IncomingEmail.query.filter_by(is_deleted=False, source_account='info').count(),
+            'support': IncomingEmail.query.filter_by(is_deleted=False, source_account='support').count()
         }
         
         return render_template('admin/communication/inbox.html', 
                              emails=emails, 
                              stats=stats,
                              current_category=category,
-                             current_status=status)
+                             current_status=status,
+                             current_source=source)
         
     except Exception as e:
         current_app.logger.error(f"Error loading inbox: {str(e)}")
@@ -662,62 +669,77 @@ def view_email(email_id):
 def fetch_emails():
     """Fetch new emails from POP/IMAP server"""
     try:
-        from utils.email_client import EmailClient, get_email_config
+        from utils.email_client import EmailClient, get_multiple_email_configs
         
-        # Get configuration
-        config = get_email_config()
-        client = EmailClient(config)
+        # Get configurations for all email accounts
+        configs = get_multiple_email_configs()
+        total_saved = 0
         
-        # Try IMAP first, then POP
-        emails_data = client.fetch_emails_imap(limit=50)
-        if not emails_data:
-            emails_data = client.fetch_emails_pop(limit=50)
-        
-        client.disconnect()
-        
-        if not emails_data:
-            return jsonify({'success': False, 'error': 'No emails fetched'})
-        
-        # Save emails to database
-        saved_count = 0
-        for email_data in emails_data:
+        for account_key, config in configs.items():
             try:
-                # Check if email already exists
-                existing = IncomingEmail.query.filter_by(
-                    message_id=email_data['message_id']
-                ).first()
+                current_app.logger.info(f"Fetching emails from {config['name']} ({config['email']})")
                 
-                if existing:
+                client = EmailClient(config)
+                
+                # Try IMAP first, then POP
+                emails_data = client.fetch_emails_imap(limit=50)
+                if not emails_data:
+                    emails_data = client.fetch_emails_pop(limit=50)
+                
+                client.disconnect()
+                
+                if not emails_data:
+                    current_app.logger.info(f"No emails found in {config['name']} account")
                     continue
                 
-                # Create new email record
-                email = IncomingEmail(
-                    message_id=email_data['message_id'],
-                    subject=email_data['subject'],
-                    sender_email=email_data['sender_email'],
-                    sender_name=email_data['sender_name'],
-                    recipient_email=email_data['recipient_email'],
-                    html_content=email_data['html_content'],
-                    text_content=email_data['text_content'],
-                    date_received=email_data['date_received'],
-                    size_bytes=email_data['size_bytes'],
-                    has_attachments=email_data['has_attachments'],
-                    attachment_count=email_data['attachment_count']
-                )
+                # Save emails to database
+                saved_count = 0
+                for email_data in emails_data:
+                    try:
+                        # Check if email already exists
+                        existing = IncomingEmail.query.filter_by(
+                            message_id=email_data['message_id']
+                        ).first()
+                        
+                        if existing:
+                            continue
+                        
+                        # Create new email record
+                        email = IncomingEmail(
+                            message_id=email_data['message_id'],
+                            subject=email_data['subject'],
+                            sender_email=email_data['sender_email'],
+                            sender_name=email_data['sender_name'],
+                            recipient_email=email_data['recipient_email'],
+                            source_account=account_key,  # Add source account
+                            html_content=email_data['html_content'],
+                            text_content=email_data['text_content'],
+                            date_received=email_data['date_received'],
+                            size_bytes=email_data['size_bytes'],
+                            has_attachments=email_data['has_attachments'],
+                            attachment_count=email_data['attachment_count']
+                        )
+                        
+                        db.session.add(email)
+                        saved_count += 1
+                        
+                    except Exception as e:
+                        current_app.logger.error(f"Error saving email from {config['name']}: {str(e)}")
+                        continue
                 
-                db.session.add(email)
-                saved_count += 1
+                total_saved += saved_count
+                current_app.logger.info(f"Saved {saved_count} emails from {config['name']} account")
                 
             except Exception as e:
-                current_app.logger.error(f"Error saving email: {str(e)}")
+                current_app.logger.error(f"Error fetching emails from {config['name']}: {str(e)}")
                 continue
         
         db.session.commit()
         
         return jsonify({
             'success': True, 
-            'message': f'Fetched {saved_count} new emails',
-            'count': saved_count
+            'message': f'Fetched {total_saved} new emails from all accounts',
+            'count': total_saved
         })
         
     except Exception as e:

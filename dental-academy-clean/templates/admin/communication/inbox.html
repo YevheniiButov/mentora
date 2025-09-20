@@ -319,6 +319,14 @@
             <div class="stat-number">{{ stats.spam }}</div>
             <div class="stat-label">Spam</div>
         </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.info }}</div>
+            <div class="stat-label">Info Account</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.support }}</div>
+            <div class="stat-label">Support Account</div>
+        </div>
     </div>
     
     <!-- Controls -->
@@ -342,6 +350,14 @@
                     <option value="spam" {% if current_status == 'spam' %}selected{% endif %}>Spam</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label>Source</label>
+                <select id="sourceFilter" onchange="applyFilters()">
+                    <option value="all" {% if current_source == 'all' %}selected{% endif %}>All Accounts</option>
+                    <option value="info" {% if current_source == 'info' %}selected{% endif %}>Info Account</option>
+                    <option value="support" {% if current_source == 'support' %}selected{% endif %}>Support Account</option>
+                </select>
+            </div>
         </div>
         <button class="fetch-btn" onclick="fetchEmails()" id="fetchBtn">
             <i class="fas fa-sync"></i> Fetch New Emails
@@ -359,6 +375,12 @@
                 </div>
                 <div class="email-sender">
                     {{ email.sender_name or email.sender_email }}
+                    <br>
+                    <small class="text-muted">
+                        <span class="badge badge-{% if email.source_account == 'info' %}primary{% else %}success{% endif %}">
+                            {{ email.source_account|title }} Account
+                        </span>
+                    </small>
                 </div>
                 <div class="email-subject">
                     {{ email.subject }}
@@ -403,7 +425,7 @@
     {% if emails.pages > 1 %}
     <div class="pagination">
         {% if emails.has_prev %}
-            <a href="{{ url_for('communication.inbox', page=emails.prev_num, category=current_category, status=current_status) }}" class="page-link">
+            <a href="{{ url_for('communication.inbox', page=emails.prev_num, category=current_category, status=current_status, source=current_source) }}" class="page-link">
                 <i class="fas fa-chevron-left"></i> Previous
             </a>
         {% endif %}
@@ -411,7 +433,7 @@
         {% for page_num in emails.iter_pages() %}
             {% if page_num %}
                 {% if page_num != emails.page %}
-                    <a href="{{ url_for('communication.inbox', page=page_num, category=current_category, status=current_status) }}" class="page-link">{{ page_num }}</a>
+                    <a href="{{ url_for('communication.inbox', page=page_num, category=current_category, status=current_status, source=current_source) }}" class="page-link">{{ page_num }}</a>
                 {% else %}
                     <span class="page-link active">{{ page_num }}</span>
                 {% endif %}
@@ -421,7 +443,7 @@
         {% endfor %}
         
         {% if emails.has_next %}
-            <a href="{{ url_for('communication.inbox', page=emails.next_num, category=current_category, status=current_status) }}" class="page-link">
+            <a href="{{ url_for('communication.inbox', page=emails.next_num, category=current_category, status=current_status, source=current_source) }}" class="page-link">
                 Next <i class="fas fa-chevron-right"></i>
             </a>
         {% endif %}
@@ -435,10 +457,12 @@
 function applyFilters() {
     const category = document.getElementById('categoryFilter').value;
     const status = document.getElementById('statusFilter').value;
+    const source = document.getElementById('sourceFilter').value;
     
     const url = new URL(window.location);
     url.searchParams.set('category', category);
     url.searchParams.set('status', status);
+    url.searchParams.set('source', source);
     url.searchParams.set('page', '1');
     
     window.location.href = url.toString();

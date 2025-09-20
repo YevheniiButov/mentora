@@ -394,3 +394,41 @@ def get_email_config():
         'smtp_username': os.getenv('SMTP_USERNAME', 'info@mentora.com.in'),
         'smtp_password': os.getenv('SMTP_PASSWORD', '59620372')
     }
+
+
+def get_multiple_email_configs():
+    """Get configurations for multiple email accounts"""
+    return {
+        'info': {
+            'name': 'Info',
+            'email': 'info@mentora.com.in',
+            'pop_host': os.getenv('POP_HOST', 'webhost.dynadot.com'),
+            'pop_port': int(os.getenv('POP_PORT', 995)),
+            'pop_username': os.getenv('POP_USERNAME', 'info@mentora.com.in'),
+            'pop_password': os.getenv('POP_PASSWORD', '59620372'),
+            'imap_host': os.getenv('IMAP_HOST', 'webhost.dynadot.com'),
+            'imap_port': int(os.getenv('IMAP_PORT', 993)),
+            'imap_username': os.getenv('IMAP_USERNAME', 'info@mentora.com.in'),
+            'imap_password': os.getenv('IMAP_PASSWORD', '59620372'),
+            'smtp_host': os.getenv('SMTP_HOST', 'webhost.dynadot.com'),
+            'smtp_port': int(os.getenv('SMTP_PORT', 587)),
+            'smtp_username': os.getenv('SMTP_USERNAME', 'info@mentora.com.in'),
+            'smtp_password': os.getenv('SMTP_PASSWORD', '59620372')
+        },
+        'support': {
+            'name': 'Support',
+            'email': 'support@mentora.com.in',
+            'pop_host': os.getenv('SUPPORT_POP_HOST', 'webhost.dynadot.com'),
+            'pop_port': int(os.getenv('SUPPORT_POP_PORT', 995)),
+            'pop_username': os.getenv('SUPPORT_POP_USERNAME', 'support@mentora.com.in'),
+            'pop_password': os.getenv('SUPPORT_POP_PASSWORD', '59620372'),
+            'imap_host': os.getenv('SUPPORT_IMAP_HOST', 'webhost.dynadot.com'),
+            'imap_port': int(os.getenv('SUPPORT_IMAP_PORT', 993)),
+            'imap_username': os.getenv('SUPPORT_IMAP_USERNAME', 'support@mentora.com.in'),
+            'imap_password': os.getenv('SUPPORT_IMAP_PASSWORD', '59620372'),
+            'smtp_host': os.getenv('SUPPORT_SMTP_HOST', 'webhost.dynadot.com'),
+            'smtp_port': int(os.getenv('SUPPORT_SMTP_PORT', 587)),
+            'smtp_username': os.getenv('SUPPORT_SMTP_USERNAME', 'support@mentora.com.in'),
+            'smtp_password': os.getenv('SUPPORT_SMTP_PASSWORD', '59620372')
+        }
+    }

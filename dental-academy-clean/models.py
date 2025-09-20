@@ -5603,6 +5603,7 @@ class IncomingEmail(db.Model):
     sender_email = db.Column(db.String(255), nullable=False)
     sender_name = db.Column(db.String(255), nullable=True)
     recipient_email = db.Column(db.String(255), nullable=False)
+    source_account = db.Column(db.String(50), nullable=False, default='info')  # info, support, etc.
     
     # Content
     html_content = db.Column(db.Text, nullable=True)
@@ -5644,6 +5645,7 @@ class IncomingEmail(db.Model):
             'sender_email': self.sender_email,
             'sender_name': self.sender_name,
             'recipient_email': self.recipient_email,
+            'source_account': self.source_account,
             'html_content': self.html_content,
             'text_content': self.text_content,
             'date_received': self.date_received.isoformat() if self.date_received else None,
