@@ -809,7 +809,7 @@ def web_recreate_topics():
         from scripts.recreate_production_topics import recreate_production_topics
         recreate_production_topics()
         
-        return jsonify({
+        return safe_jsonify({
             'success': True,
             'message': 'Topics recreated successfully!'
         }), 200
@@ -819,7 +819,7 @@ def web_recreate_topics():
         error_details = traceback.format_exc()
         print(f"Error in web_recreate_topics: {error_details}")
         
-        return jsonify({
+        return safe_jsonify({
             'success': False,
             'error': str(e),
             'details': error_details
@@ -1056,36 +1056,6 @@ def force_load_data():
 
 logger.info("✅ Force load data command registered")
 
-# ========================================
-# APPLICATION ENTRY POINT
-# ========================================
-
-if __name__ == '__main__':
-    # Create database tables if they don't exist
-    with app.app_context():
-        try:
-            db.create_all()
-            logger.info("✅ Database initialized")
-        except Exception as e:
-            logger.error(f"❌ Database initialization failed: {e}")
-    
-    # Create admin user if it doesn't exist (production only)
-    with app.app_context():
-        create_admin_if_not_exists()
-    
-    # Run the application
-    port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
-    
-    logger.info(f"🚀 Starting Mentora on port {port}")
-    logger.info(f"🔧 Debug mode: {debug}")
-    
-    app.run(
-        host='0.0.0.0',
-        port=port,
-        debug=debug
-    )
-
 def create_admin_if_not_exists():
     """Create admin user if it doesn't exist (for production)"""
     try:
@@ -1129,4 +1099,34 @@ def create_admin_if_not_exists():
         logger.info("⚠️  IMPORTANT: Change password after first login!")
         
     except Exception as e:
-        logger.error(f"❌ Error creating admin: {str(e)}") 
+        logger.error(f"❌ Error creating admin: {str(e)}")
+
+# ========================================
+# APPLICATION ENTRY POINT
+# ========================================
+
+if __name__ == '__main__':
+    # Create database tables if they don't exist
+    with app.app_context():
+        try:
+            db.create_all()
+            logger.info("✅ Database initialized")
+        except Exception as e:
+            logger.error(f"❌ Database initialization failed: {e}")
+    
+    # Run the application
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    
+    logger.info(f"🚀 Starting Mentora on port {port}")
+    logger.info(f"🔧 Debug mode: {debug}")
+    
+    # Create admin user if it doesn't exist (production only)
+    with app.app_context():
+        create_admin_if_not_exists()
+    
+    app.run(
+        host='0.0.0.0',
+        port=port,
+        debug=debug
+    ) 
