@@ -1930,7 +1930,10 @@ def choose_diagnostic_type():
     """Страница выбора типа диагностики - временно закрыта"""
     # Получаем язык из сессии или используем дефолтный
     lang = session.get('lang', 'nl')
-    return render_template('coming_soon.html', lang=lang)
+    return render_template('coming_soon.html', 
+                         lang=lang,
+                         feature_name='BIG Diagnostic',
+                         feature_description='Deze functie wordt momenteel ontwikkeld en zal binnenkort beschikbaar zijn.')
 
 @diagnostic_bp.route('/question/<int:session_id>', methods=['GET'])
 @login_required
