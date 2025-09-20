@@ -70,7 +70,8 @@
                         <span class="usage-badge">{{ template.usage_count }} использований</span>
                     </div>
                     
-                    <p class="text-muted mb-2">{{ template.description or 'Без описания' }}</p>
+                    {% set variables = template.variables|from_json if template.variables else {} %}
+                    <p class="text-muted mb-2">{{ variables.description or 'Без описания' }}</p>
                     
                     <div class="mb-3">
                         <strong>Тема:</strong> {{ template.subject }}
@@ -78,14 +79,15 @@
                     
                     <div class="mb-3">
                         <strong>Сообщение:</strong>
-                        <p class="text-muted small">{{ template.message[:100] }}{% if template.message|length > 100 %}...{% endif %}</p>
+                        <p class="text-muted small">{{ template.html_content[:100] }}{% if template.html_content|length > 100 %}...{% endif %}</p>
                     </div>
                     
-                    {% if template.action_url %}
+                    {% set variables = template.variables|from_json if template.variables else {} %}
+                    {% if variables.action_url %}
                     <div class="mb-3">
                         <strong>Кнопка:</strong> 
-                        <a href="{{ template.action_url }}" class="text-decoration-none" target="_blank">
-                            {{ template.action_text or 'Ссылка' }}
+                        <a href="{{ variables.action_url }}" class="text-decoration-none" target="_blank">
+                            {{ variables.action_text or 'Ссылка' }}
                         </a>
                     </div>
                     {% endif %}
@@ -104,6 +106,18 @@
                                     title="Использовать">
                                 <i class="bi bi-envelope"></i>
                             </button>
+                            <button class="btn btn-outline-info" 
+                                    onclick="duplicateTemplate({{ template.id }})" 
+                                    title="Дублировать">
+                                <i class="bi bi-files"></i>
+                            </button>
+                            {% if not template.is_system %}
+                            <button class="btn btn-outline-danger" 
+                                    onclick="deleteTemplate({{ template.id }})" 
+                                    title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -128,6 +142,54 @@
 function useTemplate(templateId) {
     // Redirect to send email page with template pre-selected
     window.location.href = `{{ url_for('communication.send_email') }}?template_id=${templateId}`;
+}
+
+function duplicateTemplate(templateId) {
+    if (confirm('Создать копию этого шаблона?')) {
+        fetch(`/admin/communication/templates/${templateId}/duplicate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при копировании шаблона');
+        });
+    }
+}
+
+function deleteTemplate(templateId) {
+    if (confirm('Вы уверены, что хотите удалить этот шаблон? Это действие нельзя отменить.')) {
+        fetch(`/admin/communication/templates/${templateId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении шаблона');
+        });
+    }
 }
 </script>
 {% endblock %}

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app
 from flask_login import login_required, current_user
 from extensions import db
-from models import User, Contact
+from models import User, Contact, EmailTemplate
 from utils.decorators import admin_required
 from datetime import datetime, timedelta
 import json
@@ -387,3 +387,190 @@ def create_user():
     
     # GET запрос - показать форму
     return render_template('admin/communication/create_user.html')
+
+
+# ========================================
+# EMAIL TEMPLATE MANAGEMENT ROUTES
+# ========================================
+
+@communication_bp.route('/templates')
+@login_required
+@admin_required
+def templates():
+    """List all email templates"""
+    try:
+        # Get all templates with usage statistics
+        templates = EmailTemplate.query.filter_by(is_active=True).order_by(EmailTemplate.created_at.desc()).all()
+        
+        # Add usage count for each template
+        for template in templates:
+            template.usage_count = template.sent_count
+        
+        return render_template('admin/communication/templates.html', templates=templates)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading templates: {str(e)}")
+        flash('Ошибка загрузки шаблонов', 'error')
+        return redirect(url_for('communication.hub'))
+
+@communication_bp.route('/templates/create', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_template():
+    """Create new email template"""
+    if request.method == 'POST':
+        try:
+            # Get form data
+            name = request.form.get('name', '').strip()
+            subject = request.form.get('subject', '').strip()
+            email_type = request.form.get('email_type', '').strip()
+            description = request.form.get('description', '').strip()
+            message = request.form.get('message', '').strip()
+            action_url = request.form.get('action_url', '').strip()
+            action_text = request.form.get('action_text', '').strip()
+            
+            # Validation
+            if not name or not subject or not email_type or not message:
+                flash('Заполните все обязательные поля', 'error')
+                return redirect(url_for('communication.create_template'))
+            
+            # Create template
+            template = EmailTemplate(
+                name=name,
+                subject=subject,
+                template_type=email_type,
+                html_content=message,
+                text_content=message,  # Use same content for text version
+                variables=json.dumps({
+                    'description': description,
+                    'action_url': action_url,
+                    'action_text': action_text
+                }),
+                is_active=True,
+                is_system=False
+            )
+            
+            db.session.add(template)
+            db.session.commit()
+            
+            flash('Шаблон успешно создан!', 'success')
+            return redirect(url_for('communication.templates'))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error creating template: {str(e)}")
+            flash(f'Ошибка создания шаблона: {str(e)}', 'error')
+            return redirect(url_for('communication.create_template'))
+    
+    # GET request - show form
+    return render_template('admin/communication/create_template.html')
+
+@communication_bp.route('/templates/<int:template_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_template(template_id):
+    """Edit email template"""
+    template = EmailTemplate.query.get_or_404(template_id)
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            template.name = request.form.get('name', '').strip()
+            template.subject = request.form.get('subject', '').strip()
+            template.template_type = request.form.get('email_type', '').strip()
+            template.html_content = request.form.get('message', '').strip()
+            template.text_content = template.html_content  # Use same content for text version
+            
+            # Parse variables
+            description = request.form.get('description', '').strip()
+            action_url = request.form.get('action_url', '').strip()
+            action_text = request.form.get('action_text', '').strip()
+            
+            template.variables = json.dumps({
+                'description': description,
+                'action_url': action_url,
+                'action_text': action_text
+            })
+            
+            template.updated_at = datetime.utcnow()
+            
+            db.session.commit()
+            
+            flash('Шаблон успешно обновлен!', 'success')
+            return redirect(url_for('communication.templates'))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error updating template: {str(e)}")
+            flash(f'Ошибка обновления шаблона: {str(e)}', 'error')
+            return redirect(url_for('communication.edit_template', template_id=template_id))
+    
+    # GET request - show form with template data
+    try:
+        variables = json.loads(template.variables) if template.variables else {}
+    except:
+        variables = {}
+    
+    return render_template('admin/communication/edit_template.html', 
+                         template=template,
+                         description=variables.get('description', ''),
+                         action_url=variables.get('action_url', ''),
+                         action_text=variables.get('action_text', ''))
+
+@communication_bp.route('/templates/<int:template_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_template(template_id):
+    """Delete email template"""
+    try:
+        template = EmailTemplate.query.get_or_404(template_id)
+        
+        # Don't allow deletion of system templates
+        if template.is_system:
+            flash('Системные шаблоны нельзя удалять', 'error')
+            return redirect(url_for('communication.templates'))
+        
+        # Soft delete - mark as inactive
+        template.is_active = False
+        template.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Шаблон успешно удален!'})
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting template: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@communication_bp.route('/templates/<int:template_id>/duplicate', methods=['POST'])
+@login_required
+@admin_required
+def duplicate_template(template_id):
+    """Duplicate email template"""
+    try:
+        original_template = EmailTemplate.query.get_or_404(template_id)
+        
+        # Create duplicate
+        new_template = EmailTemplate(
+            name=f"{original_template.name} (копия)",
+            subject=original_template.subject,
+            template_type=original_template.template_type,
+            html_content=original_template.html_content,
+            text_content=original_template.text_content,
+            variables=original_template.variables,
+            is_active=True,
+            is_system=False,
+            sent_count=0,
+            last_sent_at=None
+        )
+        
+        db.session.add(new_template)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Шаблон успешно скопирован!'})
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error duplicating template: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
