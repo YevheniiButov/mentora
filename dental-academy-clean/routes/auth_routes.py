@@ -783,7 +783,7 @@ def register():
         # Log successful registration
         registration_logger.log_registration_success('full_registration', user.id, user.email, data)
         
-        # Log registration in user profile
+        # Log registration in user profile (after user is saved to database)
         try:
             user.log_profile_change('registration', 'user_registered', 'User completed registration')
         except Exception as e:
