@@ -291,8 +291,8 @@ def route_by_domain():
     
     # Для mentora.com.in - показываем только главную страницу
     if 'mentora.com.in' in host:
-        # Исключаем админ панель и API из редиректа
-        if request.path != '/' and not request.path.startswith('/admin') and not request.path.startswith('/api'):
+        # Исключаем админ панель, API и analytics из редиректа
+        if request.path != '/' and not request.path.startswith('/admin') and not request.path.startswith('/api') and not request.path.startswith('/analytics'):
             # Все остальные пути редиректим на главную
             return redirect('/')
 

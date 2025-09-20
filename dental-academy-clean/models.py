@@ -755,6 +755,13 @@ class UserSession(db.Model):
     def log_profile_change(self, field, old_value, new_value, changed_by=None):
         """Log a profile change for audit trail"""
         try:
+            # Check if ProfileAuditLog table exists
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            if 'profile_audit_logs' not in inspector.get_table_names():
+                current_app.logger.warning("ProfileAuditLog table does not exist, skipping audit log")
+                return
+                
             audit_log = ProfileAuditLog(
                 user_id=self.id,
                 field_changed=field,
@@ -767,7 +774,7 @@ class UserSession(db.Model):
             db.session.commit()
         except Exception as e:
             # Log the error but don't fail the main operation
-            print(f"Warning: Could not log profile change: {e}")
+            current_app.logger.error(f"Failed to log profile change: {str(e)}")
             db.session.rollback()
     
     def __repr__(self):
