@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app
 from flask_login import login_required, current_user
 from extensions import db
-from models import User, Contact, EmailTemplate
+from models import User, Contact, EmailTemplate, IncomingEmail, EmailAttachment
 from utils.decorators import admin_required
 from datetime import datetime, timedelta
 import json
@@ -574,3 +574,281 @@ def duplicate_template(template_id):
         db.session.rollback()
         current_app.logger.error(f"Error duplicating template: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ========================================
+# EMAIL CLIENT ROUTES (POP/IMAP)
+# ========================================
+
+@communication_bp.route('/inbox')
+@login_required
+@admin_required
+def inbox():
+    """Email inbox - view incoming emails"""
+    try:
+        # Get pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        category = request.args.get('category', 'all')
+        status = request.args.get('status', 'all')  # all, unread, important, spam
+        
+        # Build query
+        query = IncomingEmail.query.filter_by(is_deleted=False)
+        
+        # Apply filters
+        if category != 'all':
+            query = query.filter_by(category=category)
+        
+        if status == 'unread':
+            query = query.filter_by(is_read=False)
+        elif status == 'important':
+            query = query.filter_by(is_important=True)
+        elif status == 'spam':
+            query = query.filter_by(is_spam=True)
+        
+        # Order by date (newest first)
+        query = query.order_by(IncomingEmail.date_received.desc())
+        
+        # Paginate
+        emails = query.paginate(
+            page=page, 
+            per_page=per_page, 
+            error_out=False
+        )
+        
+        # Get statistics
+        stats = {
+            'total': IncomingEmail.query.filter_by(is_deleted=False).count(),
+            'unread': IncomingEmail.query.filter_by(is_deleted=False, is_read=False).count(),
+            'important': IncomingEmail.query.filter_by(is_deleted=False, is_important=True).count(),
+            'spam': IncomingEmail.query.filter_by(is_deleted=False, is_spam=True).count()
+        }
+        
+        return render_template('admin/communication/inbox.html', 
+                             emails=emails, 
+                             stats=stats,
+                             current_category=category,
+                             current_status=status)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading inbox: {str(e)}")
+        flash('Ошибка загрузки почты', 'error')
+        return redirect(url_for('communication.hub'))
+
+@communication_bp.route('/inbox/<int:email_id>')
+@login_required
+@admin_required
+def view_email(email_id):
+    """View individual email"""
+    try:
+        email = IncomingEmail.query.get_or_404(email_id)
+        
+        # Mark as read
+        if not email.is_read:
+            email.is_read = True
+            email.updated_at = datetime.utcnow()
+            db.session.commit()
+        
+        return render_template('admin/communication/view_email.html', email=email)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error viewing email: {str(e)}")
+        flash('Ошибка загрузки письма', 'error')
+        return redirect(url_for('communication.inbox'))
+
+@communication_bp.route('/inbox/fetch', methods=['POST'])
+@login_required
+@admin_required
+def fetch_emails():
+    """Fetch new emails from POP/IMAP server"""
+    try:
+        from utils.email_client import EmailClient, get_email_config
+        
+        # Get configuration
+        config = get_email_config()
+        client = EmailClient(config)
+        
+        # Try IMAP first, then POP
+        emails_data = client.fetch_emails_imap(limit=50)
+        if not emails_data:
+            emails_data = client.fetch_emails_pop(limit=50)
+        
+        client.disconnect()
+        
+        if not emails_data:
+            return jsonify({'success': False, 'error': 'No emails fetched'})
+        
+        # Save emails to database
+        saved_count = 0
+        for email_data in emails_data:
+            try:
+                # Check if email already exists
+                existing = IncomingEmail.query.filter_by(
+                    message_id=email_data['message_id']
+                ).first()
+                
+                if existing:
+                    continue
+                
+                # Create new email record
+                email = IncomingEmail(
+                    message_id=email_data['message_id'],
+                    subject=email_data['subject'],
+                    sender_email=email_data['sender_email'],
+                    sender_name=email_data['sender_name'],
+                    recipient_email=email_data['recipient_email'],
+                    html_content=email_data['html_content'],
+                    text_content=email_data['text_content'],
+                    date_received=email_data['date_received'],
+                    size_bytes=email_data['size_bytes'],
+                    has_attachments=email_data['has_attachments'],
+                    attachment_count=email_data['attachment_count']
+                )
+                
+                db.session.add(email)
+                saved_count += 1
+                
+            except Exception as e:
+                current_app.logger.error(f"Error saving email: {str(e)}")
+                continue
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Fetched {saved_count} new emails',
+            'count': saved_count
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error fetching emails: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@communication_bp.route('/inbox/<int:email_id>/mark-important', methods=['POST'])
+@login_required
+@admin_required
+def mark_important(email_id):
+    """Mark email as important/unimportant"""
+    try:
+        email = IncomingEmail.query.get_or_404(email_id)
+        email.is_important = not email.is_important
+        email.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'is_important': email.is_important
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error marking email important: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@communication_bp.route('/inbox/<int:email_id>/mark-spam', methods=['POST'])
+@login_required
+@admin_required
+def mark_spam(email_id):
+    """Mark email as spam/not spam"""
+    try:
+        email = IncomingEmail.query.get_or_404(email_id)
+        email.is_spam = not email.is_spam
+        email.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'is_spam': email.is_spam
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error marking email spam: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@communication_bp.route('/inbox/<int:email_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_email(email_id):
+    """Delete email (soft delete)"""
+    try:
+        email = IncomingEmail.query.get_or_404(email_id)
+        email.is_deleted = True
+        email.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Email deleted'})
+        
+    except Exception as e:
+        current_app.logger.error(f"Error deleting email: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@communication_bp.route('/inbox/<int:email_id>/reply', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def reply_email(email_id):
+    """Reply to email"""
+    try:
+        email = IncomingEmail.query.get_or_404(email_id)
+        
+        if request.method == 'POST':
+            # Get reply data
+            reply_subject = request.form.get('subject', '').strip()
+            reply_content = request.form.get('content', '').strip()
+            
+            if not reply_subject or not reply_content:
+                flash('Заполните все поля', 'error')
+                return redirect(url_for('communication.reply_email', email_id=email_id))
+            
+            # Send reply (using existing email service)
+            try:
+                from utils.email_service import send_email_confirmation
+                
+                # Create reply content
+                reply_html = f"""
+                <div style="border-left: 3px solid #ccc; padding-left: 15px; margin: 20px 0;">
+                    <p><strong>От:</strong> {email.sender_name or email.sender_email}</p>
+                    <p><strong>Дата:</strong> {email.date_received.strftime('%d.%m.%Y %H:%M')}</p>
+                    <p><strong>Тема:</strong> {email.subject}</p>
+                    <div style="background: #f5f5f5; padding: 10px; margin: 10px 0;">
+                        {email.html_content or email.text_content}
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    {reply_content}
+                </div>
+                """
+                
+                # Send email
+                success = send_email_confirmation(
+                    recipient_email=email.sender_email,
+                    subject=reply_subject,
+                    html_content=reply_html
+                )
+                
+                if success:
+                    # Mark as replied
+                    email.is_replied = True
+                    email.reply_sent_at = datetime.utcnow()
+                    email.updated_at = datetime.utcnow()
+                    db.session.commit()
+                    
+                    flash('Ответ отправлен успешно!', 'success')
+                    return redirect(url_for('communication.view_email', email_id=email_id))
+                else:
+                    flash('Ошибка отправки ответа', 'error')
+                    
+            except Exception as e:
+                current_app.logger.error(f"Error sending reply: {str(e)}")
+                flash(f'Ошибка отправки ответа: {str(e)}', 'error')
+        
+        # GET request - show reply form
+        reply_subject = f"Re: {email.subject}" if not email.subject.startswith('Re:') else email.subject
+        
+        return render_template('admin/communication/reply_email.html', 
+                             email=email, 
+                             reply_subject=reply_subject)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error replying to email: {str(e)}")
+        flash('Ошибка при ответе на письмо', 'error')
+        return redirect(url_for('communication.inbox'))

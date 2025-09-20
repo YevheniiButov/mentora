@@ -5587,3 +5587,110 @@ class ProfessionClick(db.Model, JSONSerializableMixin):
             'clicked_at': self.clicked_at.isoformat(),
             'created_at': self.created_at.isoformat()
         }
+
+
+class IncomingEmail(db.Model):
+    """Incoming emails from POP/IMAP"""
+    __tablename__ = 'incoming_emails'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Email details
+    message_id = db.Column(db.String(255), unique=True, nullable=False)
+    subject = db.Column(db.String(500), nullable=False)
+    sender_email = db.Column(db.String(255), nullable=False)
+    sender_name = db.Column(db.String(255), nullable=True)
+    recipient_email = db.Column(db.String(255), nullable=False)
+    
+    # Content
+    html_content = db.Column(db.Text, nullable=True)
+    text_content = db.Column(db.Text, nullable=True)
+    
+    # Email metadata
+    date_received = db.Column(db.DateTime, nullable=False)
+    size_bytes = db.Column(db.Integer, default=0)
+    has_attachments = db.Column(db.Boolean, default=False)
+    attachment_count = db.Column(db.Integer, default=0)
+    
+    # Status
+    is_read = db.Column(db.Boolean, default=False)
+    is_important = db.Column(db.Boolean, default=False)
+    is_spam = db.Column(db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)
+    
+    # Categories/Tags
+    category = db.Column(db.String(50), nullable=True)  # support, sales, general, etc.
+    tags = db.Column(db.Text, nullable=True)  # JSON array of tags
+    
+    # Response tracking
+    is_replied = db.Column(db.Boolean, default=False)
+    reply_sent_at = db.Column(db.DateTime, nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<IncomingEmail {self.message_id}: {self.subject}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'message_id': self.message_id,
+            'subject': self.subject,
+            'sender_email': self.sender_email,
+            'sender_name': self.sender_name,
+            'recipient_email': self.recipient_email,
+            'html_content': self.html_content,
+            'text_content': self.text_content,
+            'date_received': self.date_received.isoformat() if self.date_received else None,
+            'size_bytes': self.size_bytes,
+            'has_attachments': self.has_attachments,
+            'attachment_count': self.attachment_count,
+            'is_read': self.is_read,
+            'is_important': self.is_important,
+            'is_spam': self.is_spam,
+            'is_deleted': self.is_deleted,
+            'category': self.category,
+            'tags': self.tags,
+            'is_replied': self.is_replied,
+            'reply_sent_at': self.reply_sent_at.isoformat() if self.reply_sent_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class EmailAttachment(db.Model):
+    """Email attachments"""
+    __tablename__ = 'email_attachments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    email_id = db.Column(db.Integer, db.ForeignKey('incoming_emails.id'), nullable=False)
+    
+    # Attachment details
+    filename = db.Column(db.String(255), nullable=False)
+    content_type = db.Column(db.String(100), nullable=False)
+    size_bytes = db.Column(db.Integer, nullable=False)
+    file_path = db.Column(db.String(500), nullable=True)  # Path to stored file
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    email = db.relationship('IncomingEmail', backref='attachments')
+    
+    def __repr__(self):
+        return f'<EmailAttachment {self.filename}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'email_id': self.email_id,
+            'filename': self.filename,
+            'content_type': self.content_type,
+            'size_bytes': self.size_bytes,
+            'file_path': self.file_path,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
