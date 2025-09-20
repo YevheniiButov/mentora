@@ -1738,6 +1738,24 @@ translations = {
     'topic_created_success': '¡Tema creado exitosamente!',
     'error_creating_topic': 'Error al crear tema. Por favor intente de nuevo.',
     
+    # New topic creation translations
+    'create_new_topic_description': 'Crear un nuevo tema de discusión en la comunidad',
+    'category': 'Categoría',
+    'select_category': 'Seleccionar una categoría',
+    'category_help': 'Elija la categoría más apropiada para su tema',
+    'title_help': 'Haga su título claro y descriptivo (máx. 200 caracteres)',
+    'content_help': 'Proporcione información detallada sobre su tema. Mínimo 10 caracteres.',
+    'fill_all_fields': 'Por favor complete todos los campos requeridos',
+    'title_too_short': 'El título debe tener al menos 5 caracteres',
+    'content_too_short': 'El contenido debe tener al menos 10 caracteres',
+    'unknown_error': 'Error desconocido',
+    'network_error': 'Error de red',
+    'delete_topic': 'Eliminar Tema',
+    'delete_topic_confirm': '¿Está seguro de que desea eliminar este tema? Esta acción no se puede deshacer.',
+    'topic_deleted': 'Tema eliminado exitosamente',
+    'error_deleting_topic': 'Error al eliminar tema',
+    'not_authorized_delete': 'No tiene permisos para eliminar este tema',
+    
     # Forum categories
     'general_discussion': 'Discusión General',
     'clinical_cases': 'Casos Clínicos',

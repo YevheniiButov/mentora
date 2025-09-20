@@ -1776,6 +1776,24 @@ translations = {
     'topic_created_success': 'موضوع با موفقیت ایجاد شد!',
     'error_creating_topic': 'خطا در ایجاد موضوع. لطفاً دوباره تلاش کنید.',
     
+    # New topic creation translations
+    'create_new_topic_description': 'ایجاد موضوع بحث جدید در انجمن',
+    'category': 'دسته‌بندی',
+    'select_category': 'یک دسته‌بندی انتخاب کنید',
+    'category_help': 'مناسب‌ترین دسته‌بندی را برای موضوع خود انتخاب کنید',
+    'title_help': 'عنوان خود را واضح و توصیفی کنید (حداکثر 200 کاراکتر)',
+    'content_help': 'اطلاعات مفصلی در مورد موضوع خود ارائه دهید. حداقل 10 کاراکتر.',
+    'fill_all_fields': 'لطفاً تمام فیلدهای مورد نیاز را پر کنید',
+    'title_too_short': 'عنوان باید حداقل 5 کاراکتر باشد',
+    'content_too_short': 'محتوا باید حداقل 10 کاراکتر باشد',
+    'unknown_error': 'خطای ناشناخته',
+    'network_error': 'خطای شبکه',
+    'delete_topic': 'حذف موضوع',
+    'delete_topic_confirm': 'آیا مطمئن هستید که می‌خواهید این موضوع را حذف کنید؟ این عمل قابل برگشت نیست.',
+    'topic_deleted': 'موضوع با موفقیت حذف شد',
+    'error_deleting_topic': 'خطا در حذف موضوع',
+    'not_authorized_delete': 'شما مجوز حذف این موضوع را ندارید',
+    
     # Forum categories
     'general_discussion': 'بحث عمومی',
     'clinical_cases': 'موارد بالینی',

@@ -1651,6 +1651,24 @@ translations = {
     'topic_created_success': 'Тему успішно створено!',
     'error_creating_topic': 'Помилка створення теми. Будь ласка, спробуйте знову.',
     
+    # New topic creation translations
+    'create_new_topic_description': 'Створіть нову тему для обговорення в спільноті',
+    'category': 'Категорія',
+    'select_category': 'Виберіть категорію',
+    'category_help': 'Виберіть найбільш підходящу категорію для вашої теми',
+    'title_help': 'Зробіть вашу назву чіткою та описовою (макс. 200 символів)',
+    'content_help': 'Надайте детальну інформацію про вашу тему. Мінімум 10 символів.',
+    'fill_all_fields': 'Будь ласка, заповніть всі обов\'язкові поля',
+    'title_too_short': 'Назва повинна містити мінімум 5 символів',
+    'content_too_short': 'Зміст повинен містити мінімум 10 символів',
+    'unknown_error': 'Невідома помилка',
+    'network_error': 'Помилка мережі',
+    'delete_topic': 'Видалити тему',
+    'delete_topic_confirm': 'Ви впевнені, що хочете видалити цю тему? Цю дію неможливо скасувати.',
+    'topic_deleted': 'Тему успішно видалено',
+    'error_deleting_topic': 'Помилка видалення теми',
+    'not_authorized_delete': 'У вас немає прав для видалення цієї теми',
+    
     # Forum categories
     'general_discussion': 'Загальні обговорення',
     'clinical_cases': 'Клінічні випадки',

@@ -1647,6 +1647,24 @@ translations = {
     'topic_created_success': 'Konu başarıyla oluşturuldu!',
     'error_creating_topic': 'Konu oluşturulurken hata oluştu. Lütfen tekrar deneyin.',
     
+    # New topic creation translations
+    'create_new_topic_description': 'Toplulukta yeni bir tartışma konusu oluşturun',
+    'category': 'Kategori',
+    'select_category': 'Bir kategori seçin',
+    'category_help': 'Konunuz için en uygun kategoriyi seçin',
+    'title_help': 'Başlığınızı net ve açıklayıcı yapın (maks. 200 karakter)',
+    'content_help': 'Konunuz hakkında detaylı bilgi sağlayın. Minimum 10 karakter.',
+    'fill_all_fields': 'Lütfen tüm gerekli alanları doldurun',
+    'title_too_short': 'Başlık en az 5 karakter olmalıdır',
+    'content_too_short': 'İçerik en az 10 karakter olmalıdır',
+    'unknown_error': 'Bilinmeyen hata',
+    'network_error': 'Ağ hatası',
+    'delete_topic': 'Konuyu Sil',
+    'delete_topic_confirm': 'Bu konuyu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+    'topic_deleted': 'Konu başarıyla silindi',
+    'error_deleting_topic': 'Konu silinirken hata oluştu',
+    'not_authorized_delete': 'Bu konuyu silme yetkiniz yok',
+    
     # Forum categories
     'general_discussion': 'Genel Tartışma',
     'clinical_cases': 'Klinik Vakalar',

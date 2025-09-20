@@ -1686,6 +1686,24 @@ translations = {
     'topic_created_success': 'Tópico criado com sucesso!',
     'error_creating_topic': 'Erro ao criar tópico. Por favor tente novamente.',
     
+    # New topic creation translations
+    'create_new_topic_description': 'Criar um novo tópico de discussão na comunidade',
+    'category': 'Categoria',
+    'select_category': 'Selecionar uma categoria',
+    'category_help': 'Escolha a categoria mais apropriada para seu tópico',
+    'title_help': 'Faça seu título claro e descritivo (máx. 200 caracteres)',
+    'content_help': 'Forneça informações detalhadas sobre seu tópico. Mínimo 10 caracteres.',
+    'fill_all_fields': 'Por favor preencha todos os campos obrigatórios',
+    'title_too_short': 'O título deve ter pelo menos 5 caracteres',
+    'content_too_short': 'O conteúdo deve ter pelo menos 10 caracteres',
+    'unknown_error': 'Erro desconhecido',
+    'network_error': 'Erro de rede',
+    'delete_topic': 'Excluir Tópico',
+    'delete_topic_confirm': 'Tem certeza de que deseja excluir este tópico? Esta ação não pode ser desfeita.',
+    'topic_deleted': 'Tópico excluído com sucesso',
+    'error_deleting_topic': 'Erro ao excluir tópico',
+    'not_authorized_delete': 'Você não tem permissão para excluir este tópico',
+    
     # Forum categories
     'general_discussion': 'Discussão Geral',
     'clinical_cases': 'Casos Clínicos',
