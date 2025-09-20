@@ -1892,6 +1892,24 @@ translations = {
     'topic_created_success': 'Onderwerp succesvol aangemaakt!',
     'error_creating_topic': 'Fout bij het maken van onderwerp. Probeer het opnieuw.',
     
+    # New topic creation translations
+    'create_new_topic_description': 'Maak een nieuw discussieonderwerp in de gemeenschap',
+    'category': 'Categorie',
+    'select_category': 'Selecteer een categorie',
+    'category_help': 'Kies de meest geschikte categorie voor je onderwerp',
+    'title_help': 'Maak je titel duidelijk en beschrijvend (max 200 karakters)',
+    'content_help': 'Geef gedetailleerde informatie over je onderwerp. Minimum 10 karakters.',
+    'fill_all_fields': 'Vul alle verplichte velden in',
+    'title_too_short': 'Titel moet minimaal 5 karakters lang zijn',
+    'content_too_short': 'Inhoud moet minimaal 10 karakters lang zijn',
+    'unknown_error': 'Onbekende fout',
+    'network_error': 'Netwerkfout',
+    'delete_topic': 'Onderwerp Verwijderen',
+    'delete_topic_confirm': 'Weet je zeker dat je dit onderwerp wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
+    'topic_deleted': 'Onderwerp succesvol verwijderd',
+    'error_deleting_topic': 'Fout bij het verwijderen van onderwerp',
+    'not_authorized_delete': 'Je hebt geen toestemming om dit onderwerp te verwijderen',
+    
     # Forum categories
     'general_discussion': 'Algemene Discussie',
     'clinical_cases': 'Klinische Gevallen',

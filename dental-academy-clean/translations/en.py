@@ -2059,6 +2059,24 @@ translations = {
     'topic_created_success': 'Topic created successfully!',
     'error_creating_topic': 'Error creating topic. Please try again.',
     
+    # New topic creation translations
+    'create_new_topic_description': 'Create a new discussion topic in the community',
+    'category': 'Category',
+    'select_category': 'Select a category',
+    'category_help': 'Choose the most appropriate category for your topic',
+    'title_help': 'Make your title clear and descriptive (max 200 characters)',
+    'content_help': 'Provide detailed information about your topic. Minimum 10 characters.',
+    'fill_all_fields': 'Please fill in all required fields',
+    'title_too_short': 'Title must be at least 5 characters long',
+    'content_too_short': 'Content must be at least 10 characters long',
+    'unknown_error': 'Unknown error',
+    'network_error': 'Network error',
+    'delete_topic': 'Delete Topic',
+    'delete_topic_confirm': 'Are you sure you want to delete this topic? This action cannot be undone.',
+    'topic_deleted': 'Topic successfully deleted',
+    'error_deleting_topic': 'Error deleting topic',
+    'not_authorized_delete': 'You do not have permission to delete this topic',
+    
     # Forum categories
     'general_discussion': 'General Discussion',
     'clinical_cases': 'Clinical Cases',

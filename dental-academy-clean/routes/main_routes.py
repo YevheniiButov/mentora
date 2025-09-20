@@ -775,18 +775,18 @@ def update_post(lang, post_id):
 @main_bp.route('/community/topic/<int:topic_id>/delete', methods=['POST'])
 @login_required
 def delete_topic(lang, topic_id):
-    """Delete topic (admin only)"""
+    """Delete topic (admin or topic author)"""
     from models import ForumTopic
     from flask import jsonify
     
     try:
         topic = ForumTopic.query.get_or_404(topic_id)
         
-        # Проверяем права администратора
-        if not current_user.is_admin:
+        # Проверяем права администратора или автора темы
+        if not current_user.is_admin and topic.author_id != current_user.id:
             return jsonify({
                 'success': False,
-                'error': 'You do not have permission to delete topics'
+                'error': 'You do not have permission to delete this topic'
             }), 403
         
         # Удаляем тему и все связанные посты
@@ -795,7 +795,7 @@ def delete_topic(lang, topic_id):
         
         return jsonify({
             'success': True,
-            'message': 'Тема успешно удалена',
+            'message': 'Topic successfully deleted',
             'redirect_url': url_for('main.community', lang=lang)
         })
         
@@ -964,7 +964,7 @@ def get_topic_content(lang, topic_id):
             'is_locked': topic.is_locked,
             'status': topic.status,
             'can_edit': topic.author_id == current_user.id or current_user.is_admin,
-            'can_delete': current_user.is_admin,
+            'can_delete': topic.author_id == current_user.id or current_user.is_admin,
             'can_moderate': current_user.is_admin
         }
         
