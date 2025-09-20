@@ -2,6 +2,7 @@
 
 from flask import Blueprint, render_template, jsonify, request, current_app
 from flask_login import login_required, current_user
+from utils.decorators import admin_required
 from models import db, WebsiteVisit, PageView, UserSession, ProfessionClick
 from utils.analytics import get_analytics_data, get_recent_visits, get_ip_analytics, cleanup_old_data
 from utils.analytics_middleware import track_custom_event, track_user_action
@@ -294,6 +295,7 @@ def track_profession_click():
 
 @analytics_bp.route('/profession-clicks')
 @login_required
+@admin_required
 def profession_clicks():
     """Show profession click tracking dashboard"""
     try:
