@@ -457,7 +457,9 @@ def new_topic(lang):
     # Получаем все категории для выбора
     categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
     
-    return redirect(url_for('main.community', lang=lang))
+    return render_template('community/new_topic.html', 
+                         categories=categories, 
+                         lang=lang)
 
 @main_bp.route('/community/create-topic', methods=['POST'])
 @login_required
