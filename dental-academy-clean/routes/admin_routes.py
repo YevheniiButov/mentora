@@ -4049,32 +4049,64 @@ def create_database_backup():
             admin_user_id=current_user.id,
             backup_name=backup_name,
             backup_type='manual',
-            status='pending'
+            status='in_progress'
         )
         
         db.session.add(backup)
         db.session.commit()
         
-        # Log admin action
-        audit_log = AdminAuditLog(
-            admin_user_id=current_user.id,
-            action='database_backup_created',
-            target_type='system',
-            details=json.dumps({'backup_name': backup_name}),
-            ip_address=request.remote_addr,
-            user_agent=request.headers.get('User-Agent'),
-            request_url=request.url,
-            request_method=request.method
-        )
-        db.session.add(audit_log)
-        db.session.commit()
-        
-        flash(f'Резервная копия "{backup_name}" создана успешно', 'success')
-        return jsonify({
-            'status': 'success',
-            'message': 'Backup created successfully',
-            'backup_id': backup.id
-        })
+        # Perform actual backup
+        try:
+            backup_result = perform_database_backup(backup)
+            
+            # Update backup record with results
+            backup.status = 'completed'
+            backup.completed_at = datetime.utcnow()
+            backup.file_path = backup_result.get('file_path')
+            backup.file_size = backup_result.get('file_size')
+            backup.tables_count = backup_result.get('tables_count')
+            backup.records_count = backup_result.get('records_count')
+            backup.backup_duration = backup_result.get('duration')
+            backup.expires_at = datetime.utcnow() + timedelta(days=30)  # Keep for 30 days
+            
+            db.session.commit()
+            
+            # Log admin action
+            audit_log = AdminAuditLog(
+                admin_user_id=current_user.id,
+                action='database_backup_completed',
+                target_type='system',
+                details=json.dumps({
+                    'backup_name': backup_name,
+                    'file_size': backup.file_size,
+                    'tables_count': backup.tables_count,
+                    'records_count': backup.records_count
+                }),
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent'),
+                request_url=request.url,
+                request_method=request.method
+            )
+            db.session.add(audit_log)
+            db.session.commit()
+            
+            flash(f'Резервная копия "{backup_name}" создана успешно', 'success')
+            return jsonify({
+                'status': 'success',
+                'message': 'Backup created successfully',
+                'backup_id': backup.id
+            })
+            
+        except Exception as backup_error:
+            # Update backup record with error
+            backup.status = 'failed'
+            backup.error_message = str(backup_error)
+            backup.completed_at = datetime.utcnow()
+            db.session.commit()
+            
+            current_app.logger.error(f"Backup failed: {str(backup_error)}")
+            flash(f'Ошибка создания резервной копии: {str(backup_error)}', 'error')
+            return jsonify({'error': str(backup_error)}), 500
     
     except Exception as e:
         current_app.logger.error(f"Error creating database backup: {str(e)}")
@@ -4345,4 +4377,80 @@ def create_notification():
     except Exception as e:
         current_app.logger.error(f"Error creating notification: {str(e)}")
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({'error': str(e)}), 500
+
+
+def perform_database_backup(backup_record):
+    """Perform actual database backup"""
+    import os
+    import sqlite3
+    import shutil
+    from datetime import datetime
+    
+    start_time = datetime.utcnow()
+    
+    try:
+        # Get database path
+        db_uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if db_uri.startswith('sqlite:///'):
+            db_path = db_uri.replace('sqlite:///', '')
+        else:
+            raise Exception("Only SQLite backups are currently supported")
+        
+        # Create backups directory if it doesn't exist
+        backup_dir = os.path.join(current_app.root_path, 'backups')
+        os.makedirs(backup_dir, exist_ok=True)
+        
+        # Create backup file path
+        backup_filename = f"{backup_record.backup_name}.db"
+        backup_file_path = os.path.join(backup_dir, backup_filename)
+        
+        # Perform SQLite backup
+        source_conn = sqlite3.connect(db_path)
+        backup_conn = sqlite3.connect(backup_file_path)
+        
+        # Copy database
+        source_conn.backup(backup_conn)
+        
+        # Close connections
+        source_conn.close()
+        backup_conn.close()
+        
+        # Get file size
+        file_size = os.path.getsize(backup_file_path)
+        
+        # Count tables and records
+        conn = sqlite3.connect(backup_file_path)
+        cursor = conn.cursor()
+        
+        # Get table count
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = cursor.fetchall()
+        tables_count = len(tables)
+        
+        # Get total record count
+        total_records = 0
+        for table in tables:
+            table_name = table[0]
+            if table_name != 'sqlite_sequence':  # Skip system table
+                cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                count = cursor.fetchone()[0]
+                total_records += count
+        
+        conn.close()
+        
+        # Calculate duration
+        end_time = datetime.utcnow()
+        duration = (end_time - start_time).total_seconds()
+        
+        return {
+            'file_path': backup_file_path,
+            'file_size': file_size,
+            'tables_count': tables_count,
+            'records_count': total_records,
+            'duration': duration
+        }
+        
+    except Exception as e:
+        current_app.logger.error(f"Database backup failed: {str(e)}")
+        raise Exception(f"Backup failed: {str(e)}") 
