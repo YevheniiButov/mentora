@@ -873,6 +873,53 @@ def web_fix_email_client():
 
 logger.info("✅ Web fix email client endpoint registered")
 
+# Add messages to topics endpoint
+@app.route('/admin/add-messages-to-topics', methods=['GET', 'POST'])
+def web_add_messages_to_topics():
+    """Веб-эндпоинт для добавления сообщений в темы"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Add Messages to Topics</title></head>
+        <body>
+            <h1>Add Messages to Community Topics</h1>
+            <p>This will add realistic conversation messages to existing topics.</p>
+            <form method="POST">
+                <button type="submit">Add Messages to Topics</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.add_messages_to_topics import add_messages_to_topics
+        
+        print("🔧 Starting add messages to topics...")
+        success = add_messages_to_topics()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Messages added to topics successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to add messages to topics'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_add_messages_to_topics: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web add messages to topics endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
