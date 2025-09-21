@@ -5529,6 +5529,68 @@ class RegistrationLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     user_email = db.Column(db.String(120), nullable=True, index=True)
     user_type = db.Column(db.String(20), nullable=True)  # authenticated, anonymous
+
+class RegistrationVisitor(db.Model):
+    """Model for tracking visitors to registration pages"""
+    __tablename__ = 'registration_visitors'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Visitor identification
+    ip_address = db.Column(db.String(45), nullable=False, index=True)
+    session_id = db.Column(db.String(100), nullable=True, index=True)
+    
+    # Visit details
+    page_type = db.Column(db.String(50), nullable=False, index=True)  # quick_register, full_register, login
+    entry_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    exit_time = db.Column(db.DateTime, nullable=True)
+    time_on_page = db.Column(db.Integer, nullable=True)  # seconds
+    
+    # Browser/Device info
+    user_agent = db.Column(db.Text, nullable=True)
+    referrer = db.Column(db.Text, nullable=True)
+    language = db.Column(db.String(10), nullable=True)
+    
+    # Interaction tracking
+    email_entered = db.Column(db.String(120), nullable=True, index=True)  # Partial email if entered
+    email_entered_at = db.Column(db.DateTime, nullable=True)
+    form_started = db.Column(db.Boolean, default=False, nullable=False)
+    form_abandoned = db.Column(db.Boolean, default=False, nullable=False)
+    registration_completed = db.Column(db.Boolean, default=False, nullable=False)
+    
+    # Additional data
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    
+    # Foreign key to user if registration completed
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+
+class RegistrationAnalytics(db.Model):
+    """Model for aggregated registration analytics"""
+    __tablename__ = 'registration_analytics'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Time period
+    date = db.Column(db.Date, nullable=False, index=True)
+    hour = db.Column(db.Integer, nullable=True, index=True)  # 0-23
+    
+    # Metrics
+    page_visits = db.Column(db.Integer, default=0, nullable=False)
+    unique_visitors = db.Column(db.Integer, default=0, nullable=False)
+    email_entries = db.Column(db.Integer, default=0, nullable=False)
+    form_starts = db.Column(db.Integer, default=0, nullable=False)
+    form_abandonments = db.Column(db.Integer, default=0, nullable=False)
+    successful_registrations = db.Column(db.Integer, default=0, nullable=False)
+    
+    # Conversion rates (stored as percentages * 100 for precision)
+    email_to_form_rate = db.Column(db.Integer, nullable=True)  # (form_starts / email_entries) * 10000
+    form_to_success_rate = db.Column(db.Integer, nullable=True)  # (successful_registrations / form_starts) * 10000
+    
+    # Page type breakdown
+    page_type = db.Column(db.String(50), nullable=False, index=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
     # Event specific data
     field = db.Column(db.String(100), nullable=True)  # for validation errors

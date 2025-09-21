@@ -4722,4 +4722,71 @@ def mobile_admin():
         'total_messages': ForumPost.query.count()
     }
     
-    return render_template('admin/mobile_admin.html', stats=stats) 
+    return render_template('admin/mobile_admin.html', stats=stats)
+
+@admin_bp.route('/registration-analytics')
+@login_required
+@admin_required
+def registration_analytics():
+    """Аналитика регистрации"""
+    from utils.visitor_tracker import VisitorTracker
+    from models import RegistrationVisitor
+    from datetime import datetime, timedelta
+    from sqlalchemy import func, desc
+    
+    # Получаем период (по умолчанию 7 дней)
+    days = request.args.get('days', 7, type=int)
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=days)
+    
+    # Получаем сводку
+    summary = VisitorTracker.get_analytics_summary(days)
+    
+    # Получаем детальную статистику по дням
+    daily_stats = db.session.query(
+        func.date(RegistrationVisitor.entry_time).label('date'),
+        RegistrationVisitor.page_type,
+        func.count(RegistrationVisitor.id).label('visits'),
+        func.count(func.distinct(RegistrationVisitor.ip_address)).label('unique_visitors'),
+        func.count(RegistrationVisitor.email_entered).label('email_entries'),
+        func.count(RegistrationVisitor.form_started).label('form_starts'),
+        func.count(RegistrationVisitor.form_abandoned).label('form_abandonments'),
+        func.count(RegistrationVisitor.registration_completed).label('successful_registrations')
+    ).filter(
+        RegistrationVisitor.entry_time >= start_date
+    ).group_by(
+        func.date(RegistrationVisitor.entry_time),
+        RegistrationVisitor.page_type
+    ).order_by(
+        desc('date')
+    ).all()
+    
+    # Получаем последние посетители с email
+    recent_visitors = RegistrationVisitor.query.filter(
+        RegistrationVisitor.email_entered.isnot(None),
+        RegistrationVisitor.entry_time >= start_date
+    ).order_by(
+        desc(RegistrationVisitor.entry_time)
+    ).limit(50).all()
+    
+    # Получаем статистику по странам (если есть данные)
+    country_stats = db.session.query(
+        RegistrationVisitor.country,
+        func.count(RegistrationVisitor.id).label('visits')
+    ).filter(
+        RegistrationVisitor.country.isnot(None),
+        RegistrationVisitor.entry_time >= start_date
+    ).group_by(
+        RegistrationVisitor.country
+    ).order_by(
+        desc('visits')
+    ).limit(20).all()
+    
+    return render_template('admin/registration_analytics.html',
+                         summary=summary,
+                         daily_stats=daily_stats,
+                         recent_visitors=recent_visitors,
+                         country_stats=country_stats,
+                         days=days,
+                         start_date=start_date,
+                         end_date=end_date) 

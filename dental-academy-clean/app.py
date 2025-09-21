@@ -440,6 +440,10 @@ try:
     from routes.analytics_routes import analytics_bp
     app.register_blueprint(analytics_bp)
     
+    # Tracking routes
+    from routes.tracking_routes import tracking_bp
+    app.register_blueprint(tracking_bp)
+    
     # Регистрация Profile blueprint
     from routes.profile_routes import profile_bp
     app.register_blueprint(profile_bp)

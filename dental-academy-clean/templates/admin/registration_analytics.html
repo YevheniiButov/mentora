@@ -1,0 +1,304 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Registration Analytics - Admin Panel{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+.analytics-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.metric-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.conversion-rate {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.table-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.visitor-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.visitor-item:last-child {
+    border-bottom: none;
+}
+
+.visitor-info {
+    flex: 1;
+}
+
+.visitor-email {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.visitor-details {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.visitor-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-abandoned {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-partial {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.filter-controls {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">📊 Registration Analytics</h1>
+                <div class="btn-group" role="group">
+                    <a href="?days=1" class="btn btn-outline-primary {% if days == 1 %}active{% endif %}">1 Day</a>
+                    <a href="?days=7" class="btn btn-outline-primary {% if days == 7 %}active{% endif %}">7 Days</a>
+                    <a href="?days=30" class="btn btn-outline-primary {% if days == 30 %}active{% endif %}">30 Days</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    {% if summary %}
+    <div class="row">
+        {% for page_data in summary %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="analytics-card">
+                <h4 class="mb-3">{{ page_data.page_type.replace('_', ' ').title() }}</h4>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-number">{{ page_data.total_visits }}</div>
+                            <div class="metric-label">Total Visits</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-number">{{ page_data.unique_visitors }}</div>
+                            <div class="metric-label">Unique Visitors</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-number">{{ page_data.email_entries }}</div>
+                            <div class="metric-label">Email Entries</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-number">{{ page_data.successful_registrations }}</div>
+                            <div class="metric-label">Completed</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="conversion-rate text-center">
+                        <div>Email → Form: {{ "%.1f"|format(page_data.email_to_form_rate) }}%</div>
+                        <div>Form → Success: {{ "%.1f"|format(page_data.form_to_success_rate) }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Recent Visitors with Email -->
+    <div class="row">
+        <div class="col-12">
+            <div class="analytics-card">
+                <h4 class="mb-3">📧 Recent Visitors with Email</h4>
+                
+                {% if recent_visitors %}
+                <div class="table-container">
+                    {% for visitor in recent_visitors %}
+                    <div class="visitor-item">
+                        <div class="visitor-info">
+                            <div class="visitor-email">{{ visitor.email_entered }}</div>
+                            <div class="visitor-details">
+                                {{ visitor.page_type.replace('_', ' ').title() }} • 
+                                {{ visitor.ip_address }} • 
+                                {{ visitor.entry_time.strftime('%Y-%m-%d %H:%M') }}
+                                {% if visitor.country %}• {{ visitor.country }}{% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            {% if visitor.registration_completed %}
+                                <span class="visitor-status status-completed">Completed</span>
+                            {% elif visitor.form_abandoned %}
+                                <span class="visitor-status status-abandoned">Abandoned</span>
+                            {% elif visitor.email_entered %}
+                                <span class="visitor-status status-partial">Email Only</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">No visitors with email entries found for the selected period.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Statistics -->
+    {% if daily_stats %}
+    <div class="row">
+        <div class="col-12">
+            <div class="analytics-card">
+                <h4 class="mb-3">📈 Daily Statistics</h4>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Page Type</th>
+                                <th>Visits</th>
+                                <th>Unique</th>
+                                <th>Email Entries</th>
+                                <th>Form Starts</th>
+                                <th>Abandoned</th>
+                                <th>Completed</th>
+                                <th>Conversion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in daily_stats %}
+                            <tr>
+                                <td>{{ stat.date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ stat.page_type.replace('_', ' ').title() }}</td>
+                                <td>{{ stat.visits }}</td>
+                                <td>{{ stat.unique_visitors }}</td>
+                                <td>{{ stat.email_entries }}</td>
+                                <td>{{ stat.form_starts }}</td>
+                                <td>{{ stat.form_abandonments }}</td>
+                                <td>{{ stat.successful_registrations }}</td>
+                                <td>
+                                    {% if stat.form_starts > 0 %}
+                                        {{ "%.1f"|format((stat.successful_registrations / stat.form_starts * 100)) }}%
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Country Statistics -->
+    {% if country_stats %}
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="analytics-card">
+                <h4 class="mb-3">🌍 Top Countries</h4>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Country</th>
+                                <th>Visits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for country_stat in country_stats %}
+                            <tr>
+                                <td>{{ country_stat.country or 'Unknown' }}</td>
+                                <td>{{ country_stat.visits }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Auto-refresh every 5 minutes
+setInterval(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

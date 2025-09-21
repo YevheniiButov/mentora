@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 # Import registration logger
 try:
     from utils.registration_logger import registration_logger
+    from utils.visitor_tracker import VisitorTracker
 except ImportError as e:
     print(f"Warning: Could not import registration_logger: {e}")
     registration_logger = None
@@ -522,6 +523,7 @@ def change_password():
 def register():
     """Extended registration form for new users"""
     from utils.registration_logger import registration_logger
+    from utils.visitor_tracker import VisitorTracker
     
     if request.method == 'GET':
         from flask import g
@@ -782,6 +784,9 @@ def register():
         
         # Log successful registration
         registration_logger.log_registration_success('full_registration', user.id, user.email, data)
+        
+        # Отслеживаем завершение регистрации
+        VisitorTracker.track_registration_completion('full_register', user.id)
         
         # Log registration in user profile (after user is saved to database)
         try:
@@ -1179,6 +1184,8 @@ def quick_register(lang=None):
     """Quick registration form for new users"""
     
     if request.method == 'GET':
+        # Отслеживаем посещение страницы быстрой регистрации
+        VisitorTracker.track_page_visit('quick_register', lang)
         from flask import g, session
         
         # Get language from URL parameter, session, or default
@@ -1350,6 +1357,9 @@ def quick_register(lang=None):
         # Log successful registration
         safe_log('log_registration_success', 'quick_registration', user.id, user.email, data)
         
+        # Отслеживаем завершение регистрации
+        VisitorTracker.track_registration_completion('quick_register', user.id)
+        
         return jsonify({
             'success': True,
             'message': 'Registration successful! Please check your email to confirm your account.',
@@ -1381,6 +1391,7 @@ def quick_register(lang=None):
 def invite_register(token):
     """Страница регистрации по приглашению"""
     from utils.registration_logger import registration_logger
+    from utils.visitor_tracker import VisitorTracker
     
     try:
         from models import Invitation
@@ -1426,6 +1437,7 @@ def invite_register(token):
 def invite_register_submit(token):
     """Обработка регистрации по приглашению"""
     from utils.registration_logger import registration_logger
+    from utils.visitor_tracker import VisitorTracker
     
     try:
         from models import Invitation
