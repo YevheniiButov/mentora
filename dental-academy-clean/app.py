@@ -1268,6 +1268,100 @@ def web_add_your_conversations():
 
 logger.info("✅ Web add your conversations endpoint registered")
 
+# Diagnose conversations endpoint
+@app.route('/admin/diagnose-conversations', methods=['GET', 'POST'])
+def web_diagnose_conversations():
+    """Веб-эндпоинт для диагностики проблем с переписками"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Diagnose Conversations</title></head>
+        <body>
+            <h1>🔍 Diagnose Conversations</h1>
+            <p>This will check users, topics, and messages to find the issue.</p>
+            <form method="POST">
+                <button type="submit">Run Diagnosis</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.diagnose_conversations import diagnose_conversations
+        
+        print("🔧 Starting diagnose conversations...")
+        success = diagnose_conversations()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Diagnosis completed successfully! Check logs for details.'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Diagnosis failed'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_diagnose_conversations: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web diagnose conversations endpoint registered")
+
+# Simple add conversations endpoint
+@app.route('/admin/simple-add-conversations', methods=['GET', 'POST'])
+def web_simple_add_conversations():
+    """Веб-эндпоинт для простого добавления переписок"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Simple Add Conversations</title></head>
+        <body>
+            <h1>💬 Simple Add Conversations</h1>
+            <p>This will add your conversations to topics WITHOUT messages (exactly like the old working script).</p>
+            <form method="POST">
+                <button type="submit">Add Conversations to Empty Topics</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.simple_add_conversations import simple_add_conversations
+        
+        print("🔧 Starting simple add conversations...")
+        success = simple_add_conversations()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Conversations added to empty topics successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to add conversations'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_simple_add_conversations: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web simple add conversations endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
