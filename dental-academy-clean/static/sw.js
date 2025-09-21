@@ -1,32 +1,55 @@
-
-// Service Worker for Mentora
-const CACHE_NAME = 'dental-academy-v1';
+// Service Worker for Mentora Admin PWA
+const CACHE_NAME = 'mentora-admin-v1';
 const urlsToCache = [
-    '/',
-    '/static/css/main.css',
-    '/static/css/unified-theme.css',
-    '/static/js/main.js',
-    '/static/js/universal-scripts.js',
-    '/static/images/logo.png'
+  '/admin/dashboard',
+  '/admin/users',
+  '/admin/analytics',
+  '/admin/monitoring',
+  '/admin/communication',
+  '/static/css/admin.css',
+  '/static/js/admin.js',
+  '/static/images/icon-192.png',
+  '/static/images/icon-512.png'
 ];
 
+// Install event
 self.addEventListener('install', function(event) {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(function(cache) {
-                return cache.addAll(urlsToCache);
-            })
-    );
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
 });
 
+// Fetch event
 self.addEventListener('fetch', function(event) {
-    event.respondWith(
-        caches.match(event.request)
-            .then(function(response) {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request);
-            })
-    );
+  event.respondWith(
+    caches.match(event.request)
+      .then(function(response) {
+        // Return cached version or fetch from network
+        if (response) {
+          return response;
+        }
+        return fetch(event.request);
+      }
+    )
+  );
+});
+
+// Activate event
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 });

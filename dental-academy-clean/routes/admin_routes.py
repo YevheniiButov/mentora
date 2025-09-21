@@ -4705,4 +4705,21 @@ def perform_database_backup(backup_record):
         
     except Exception as e:
         current_app.logger.error(f"Database backup failed: {str(e)}")
-        raise Exception(f"Backup failed: {str(e)}") 
+        raise Exception(f"Backup failed: {str(e)}")
+
+@admin_bp.route('/mobile')
+@login_required
+@admin_required
+def mobile_admin():
+    """Mobile admin panel"""
+    from models import User, ForumTopic, ForumPost
+    
+    # Get quick stats
+    stats = {
+        'total_users': User.query.count(),
+        'active_users': User.query.filter_by(is_active=True).count(),
+        'total_topics': ForumTopic.query.count(),
+        'total_messages': ForumPost.query.count()
+    }
+    
+    return render_template('admin/mobile_admin.html', stats=stats) 

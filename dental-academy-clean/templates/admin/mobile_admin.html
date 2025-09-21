@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Mentora Admin - Mobile{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<meta name="theme-color" content="#3ECDC1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mentora Admin">
+<style>
+/* Mobile Admin Styles */
+.mobile-admin-container {
+    padding: 1rem;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.mobile-admin-header {
+    background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
+    color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.mobile-admin-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.mobile-admin-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 0.5rem 0 0 0;
+}
+
+.mobile-admin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.mobile-admin-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.mobile-admin-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.mobile-admin-card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem auto;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.mobile-admin-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+}
+
+.mobile-admin-card-desc {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.mobile-admin-stats {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.mobile-admin-stats-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+}
+
+.mobile-admin-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.mobile-admin-stat {
+    text-align: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.mobile-admin-stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3ECDC1;
+    margin: 0;
+}
+
+.mobile-admin-stat-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0 0;
+}
+
+.mobile-admin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.mobile-admin-action-btn {
+    background: white;
+    border: 2px solid #3ECDC1;
+    color: #3ECDC1;
+    padding: 1rem;
+    border-radius: 12px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.mobile-admin-action-btn:hover {
+    background: #3ECDC1;
+    color: white;
+}
+
+.mobile-admin-action-btn.danger {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.mobile-admin-action-btn.danger:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* PWA Install Button */
+.pwa-install-btn {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #3ECDC1;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    cursor: pointer;
+    z-index: 1000;
+    display: none;
+}
+
+.pwa-install-btn.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 480px) {
+    .mobile-admin-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .mobile-admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mobile-admin-container">
+    <!-- Header -->
+    <div class="mobile-admin-header">
+        <h1 class="mobile-admin-title">Mentora Admin</h1>
+        <p class="mobile-admin-subtitle">Мобильная панель управления</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="mobile-admin-stats">
+        <h2 class="mobile-admin-stats-title">Статистика</h2>
+        <div class="mobile-admin-stats-grid">
+            <div class="mobile-admin-stat">
+                <p class="mobile-admin-stat-number">{{ stats.total_users or 0 }}</p>
+                <p class="mobile-admin-stat-label">Пользователей</p>
+            </div>
+            <div class="mobile-admin-stat">
+                <p class="mobile-admin-stat-number">{{ stats.active_users or 0 }}</p>
+                <p class="mobile-admin-stat-label">Активных</p>
+            </div>
+            <div class="mobile-admin-stat">
+                <p class="mobile-admin-stat-number">{{ stats.total_topics or 0 }}</p>
+                <p class="mobile-admin-stat-label">Тем</p>
+            </div>
+            <div class="mobile-admin-stat">
+                <p class="mobile-admin-stat-number">{{ stats.total_messages or 0 }}</p>
+                <p class="mobile-admin-stat-label">Сообщений</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Grid -->
+    <div class="mobile-admin-grid">
+        <a href="{{ url_for('admin.users_list') }}" class="mobile-admin-card">
+            <div class="mobile-admin-card-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 class="mobile-admin-card-title">Пользователи</h3>
+            <p class="mobile-admin-card-desc">Управление пользователями</p>
+        </a>
+
+        <a href="{{ url_for('admin.analytics_dashboard') }}" class="mobile-admin-card">
+            <div class="mobile-admin-card-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="mobile-admin-card-title">Аналитика</h3>
+            <p class="mobile-admin-card-desc">Статистика и отчеты</p>
+        </a>
+
+        <a href="{{ url_for('admin.monitoring_dashboard') }}" class="mobile-admin-card">
+            <div class="mobile-admin-card-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="mobile-admin-card-title">Мониторинг</h3>
+            <p class="mobile-admin-card-desc">Логи и ошибки</p>
+        </a>
+
+        <a href="{{ url_for('communication.hub') }}" class="mobile-admin-card">
+            <div class="mobile-admin-card-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <h3 class="mobile-admin-card-title">Коммуникации</h3>
+            <p class="mobile-admin-card-desc">Email и шаблоны</p>
+        </a>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mobile-admin-actions">
+        <a href="{{ url_for('admin.create_user') }}" class="mobile-admin-action-btn">
+            <i class="fas fa-user-plus"></i> Создать пользователя
+        </a>
+        
+        <a href="{{ url_for('admin.backup_database') }}" class="mobile-admin-action-btn">
+            <i class="fas fa-database"></i> Создать резервную копию
+        </a>
+        
+        <a href="{{ url_for('admin.force_add_messages') }}" class="mobile-admin-action-btn">
+            <i class="fas fa-comments"></i> Добавить переписки
+        </a>
+        
+        <a href="{{ url_for('admin.delete_all_topics') }}" class="mobile-admin-action-btn danger">
+            <i class="fas fa-trash"></i> Удалить все темы
+        </a>
+    </div>
+</div>
+
+<!-- PWA Install Button -->
+<button id="pwa-install-btn" class="pwa-install-btn">
+    <i class="fas fa-download"></i>
+</button>
+
+<script>
+// PWA Install functionality
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const installBtn = document.getElementById('pwa-install-btn');
+    installBtn.classList.add('show');
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+        document.getElementById('pwa-install-btn').classList.remove('show');
+    }
+});
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/sw.js')
+            .then((registration) => {
+                console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+                console.log('SW registration failed: ', registrationError);
+            });
+    });
+}
+</script>
+{% endblock %}
