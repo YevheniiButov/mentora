@@ -49,8 +49,12 @@
     
     .chat-main {
         width: 100%;
-        height: calc(100vh - 200px);
+        height: calc(100vh - 120px); /* Увеличиваем высоту для полного экрана */
         display: none; /* Скрываем чат на мобильных по умолчанию */
+        position: fixed; /* Фиксированное позиционирование */
+        top: 120px; /* Отступ сверху */
+        left: 0;
+        z-index: 1000; /* Поверх других элементов */
     }
     
     .chat-main.active {
@@ -684,17 +688,13 @@
         </div>
         
         <div class="chat-list" id="chat-list">
-            <!-- Debug info -->
-            <div style="padding: 1rem; background: #f0f0f0; margin: 1rem; border-radius: 8px; font-size: 0.8rem; color: #666;">
-                Debug: Found {{ recent_topics|length }} topics
-            </div>
             {% for topic in recent_topics %}
             <div class="chat-item" data-topic-id="{{ topic.id }}" onclick="selectTopic({{ topic.id }})">
                 <div class="chat-avatar">
                     {{ topic.author.first_name[0] if topic.author.first_name else 'U' }}
                 </div>
                 <div class="chat-info">
-                    <div class="chat-name">{{ topic.title[:30] }}{% if topic.title|length > 30 %}...{% endif %}</div>
+                    <div class="chat-name">{{ topic.title[:50] }}{% if topic.title|length > 50 %}...{% endif %}</div>
                     <div class="chat-preview">{{ topic.content[:50] }}{% if topic.content|length > 50 %}...{% endif %}</div>
                 </div>
                 <div class="chat-meta">
@@ -761,8 +761,6 @@ function initializeMessenger() {
     // On mobile, hide welcome screen immediately
     if (window.innerWidth <= 768) {
         document.getElementById('welcome-screen').style.display = 'none';
-        console.log('Mobile detected, welcome screen hidden');
-        console.log('Chat items found:', document.querySelectorAll('.chat-item').length);
     }
 }
 

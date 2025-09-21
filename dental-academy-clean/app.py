@@ -565,6 +565,7 @@ except ImportError as e:
     # Profile route moved to profile_routes.py blueprint
     
     @app.route('/community')
+    @app.route('/community/')
     @login_required
     def community_redirect():
         """Redirect /community to /nl/community"""
