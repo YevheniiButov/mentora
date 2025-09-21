@@ -12,10 +12,10 @@
 <style>
 /* SIMPLE WHATSAPP-STYLE COMMUNITY */
 .community-page {
-    height: 100vh;
+    min-height: 100vh;
     background: #f0f2f5;
     display: flex;
-    margin-top: 60px;
+    margin-top: 80px;
     overflow: hidden;
 }
 
@@ -26,6 +26,7 @@
     border-right: 1px solid #e1e5e9;
     display: flex;
     flex-direction: column;
+    height: calc(100vh - 80px);
 }
 
 /* Sidebar Header */
@@ -50,6 +51,7 @@
 }
 
 .search-container {
+    position: relative;
     display: flex;
     gap: 0.5rem;
     align-items: center;
@@ -80,26 +82,25 @@
 }
 
 .new-topic-btn {
-    background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
+    background: #3ECDC1;
     color: white;
     border: none;
-    border-radius: 25px;
-    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    padding: 0.75rem 1rem;
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 4px 15px rgba(62, 205, 193, 0.3);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .new-topic-btn:hover {
-    background: linear-gradient(135deg, #2dd4bf, #14b8a6);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(62, 205, 193, 0.4);
+    background: #2dd4bf;
+    transform: scale(1.05);
 }
 
 /* Chat List */
@@ -189,14 +190,11 @@
 /* Main Chat Area */
 .chat-main {
     flex: 1;
-    display: none;
+    display: flex;
     flex-direction: column;
     background: #f0f2f5;
     position: relative;
-}
-
-.chat-main.active {
-    display: flex;
+    height: calc(100vh - 80px);
 }
 
 /* Mobile Back Button */
@@ -320,15 +318,9 @@
 
 /* Reply Form */
 .reply-form {
-    position: fixed;
-    bottom: 0;
-    left: 350px;
-    right: 0;
     padding: 1rem;
     background: white;
     border-top: 1px solid #e1e5e9;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
     display: none;
 }
 
@@ -417,8 +409,8 @@
 /* MOBILE STYLES */
 @media (max-width: 768px) {
     .community-page {
-        margin-top: 50px;
-        height: calc(100vh - 50px);
+        margin-top: 60px;
+        height: calc(100vh - 60px);
     }
     
     .chat-sidebar {
@@ -429,11 +421,12 @@
     
     .chat-main {
         position: fixed;
-        top: 50px;
+        top: 60px;
         left: 0;
         right: 0;
         bottom: 0;
         z-index: 1000;
+        height: calc(100vh - 60px);
     }
     
     .mobile-back-btn {
@@ -444,12 +437,11 @@
         display: none !important;
     }
     
-    .chat-main .welcome-screen {
-        display: none !important;
-    }
-    
     .reply-form {
+        position: fixed;
+        bottom: 0;
         left: 0;
+        right: 0;
     }
 }
 
@@ -520,7 +512,7 @@
         </div>
 
         <!-- Chat Messages -->
-        <div class="chat-messages" id="chat-messages">
+        <div class="chat-messages" id="chat-messages" style="display: none;">
             <!-- Messages will be loaded here -->
         </div>
     </div>
@@ -549,8 +541,9 @@ function selectTopic(topicId) {
         selectedItem.classList.add('active');
     }
     
-    // Show chat area
-    document.querySelector('.chat-main').classList.add('active');
+    // Hide welcome screen and show chat content
+    document.querySelector('.welcome-screen').style.display = 'none';
+    document.querySelector('.chat-messages').style.display = 'block';
     
     // Mobile navigation
     if (window.innerWidth <= 768) {
@@ -563,8 +556,9 @@ function selectTopic(topicId) {
 }
 
 function showChatList() {
-    // Hide chat area
-    document.querySelector('.chat-main').classList.remove('active');
+    // Show welcome screen and hide chat content
+    document.querySelector('.welcome-screen').style.display = 'flex';
+    document.querySelector('.chat-messages').style.display = 'none';
     
     // Mobile navigation
     if (window.innerWidth <= 768) {
@@ -576,6 +570,12 @@ function showChatList() {
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
+    
+    // Remove reply form
+    const existingForm = document.getElementById('fixed-reply-form');
+    if (existingForm) {
+        existingForm.remove();
+    }
 }
 
 function createNewTopic() {
