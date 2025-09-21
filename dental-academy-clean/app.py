@@ -1217,6 +1217,57 @@ def web_fix_message_authors():
 
 logger.info("✅ Web fix message authors endpoint registered")
 
+# Add your conversations endpoint
+@app.route('/admin/add-your-conversations', methods=['GET', 'POST'])
+def web_add_your_conversations():
+    """Веб-эндпоинт для добавления ваших оригинальных переписок"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Add Your Conversations</title></head>
+        <body>
+            <h1>💬 Add Your Original Conversations</h1>
+            <p>This will add your original conversations using the working method from the old script.</p>
+            <ul>
+                <li>AKV tandartsen - BIG Registration Discussion 🦷 (9 messages)</li>
+                <li>General Chat - Let's talk about everything! 💬 (4 messages)</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Add Your Conversations</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.add_your_conversations import add_your_conversations
+        
+        print("🔧 Starting add your conversations...")
+        success = add_your_conversations()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Your original conversations added successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to add your conversations'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_add_your_conversations: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web add your conversations endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
