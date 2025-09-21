@@ -8,211 +8,35 @@
 
 {% block page_styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/community.css', v='6') }}">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
-/* MODERN MESSENGER-STYLE COMMUNITY */
+/* SIMPLE WHATSAPP-STYLE COMMUNITY */
 .community-page {
-    min-height: 100vh;
+    height: 100vh;
     background: #f0f2f5;
-    position: relative;
-    overflow: hidden;
     display: flex;
-    margin-top: 80px; /* Отступ от шапки */
+    margin-top: 60px;
+    overflow: hidden;
 }
 
-/* Left Sidebar - Chat List */
+/* Chat Sidebar - Topics List */
 .chat-sidebar {
     width: 350px;
-    background: #ffffff;
+    background: white;
     border-right: 1px solid #e1e5e9;
     display: flex;
     flex-direction: column;
-    height: 100vh;
 }
 
-/* Mobile Responsive - WhatsApp Style */
-@media (max-width: 768px) {
-    .community-page {
-        flex-direction: column;
-        margin-top: 60px;
-    }
-    
-    .chat-sidebar {
-        width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid #e1e5e9;
-        flex-shrink: 0;
-        display: flex !important; /* Всегда показываем список тем на мобильных */
-    }
-    
-    .chat-main {
-        width: 100%;
-        height: calc(100vh - 120px); /* Увеличиваем высоту для полного экрана */
-        display: none; /* Скрываем чат на мобильных по умолчанию */
-        position: fixed; /* Фиксированное позиционирование */
-        top: 120px; /* Отступ сверху */
-        left: 0;
-        z-index: 1000; /* Поверх других элементов */
-    }
-    
-    .chat-main.active {
-        display: flex; /* Показываем только при выборе чата */
-    }
-    
-    .chat-item {
-        padding: 1rem;
-        border-bottom: 1px solid #f0f0f0;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    
-    .chat-item:hover {
-        background-color: #f8f9fa;
-    }
-    
-    .chat-item.active {
-        background-color: #e3f2fd;
-    }
-    
-    .chat-avatar {
-        width: 50px;
-        height: 50px;
-        font-size: 1.2rem;
-    }
-    
-    .chat-name {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-    }
-    
-    .chat-preview {
-        font-size: 0.9rem;
-        color: #666;
-        line-height: 1.4;
-    }
-    
-    .chat-time {
-        font-size: 0.8rem;
-        color: #999;
-    }
-    
-    .sidebar-header {
-        padding: 1rem;
-    }
-    
-    .sidebar-title {
-        font-size: 1.1rem;
-    }
-    
-    .search-container {
-        margin: 0.5rem 0;
-        gap: 0.75rem;
-    }
-    
-    .search-input {
-        font-size: 1rem;
-        padding: 0.75rem 1rem 0.75rem 2.5rem;
-    }
-    
-    .new-topic-btn {
-        width: 45px;
-        height: 45px;
-    }
-    
-    .new-topic-btn i {
-        font-size: 1.3rem;
-    }
-    
-    /* Кнопка "Назад" для мобильных */
-    .mobile-back-btn {
-        display: block;
-        position: absolute;
-        top: 0.5rem;
-        left: 0.5rem;
-        background: rgba(255, 255, 255, 0.95);
-        border: 2px solid #3ECDC1;
-        border-radius: 50%;
-        width: 45px;
-        height: 45px;
-        font-size: 1.2rem;
-        color: #3ECDC1;
-        cursor: pointer;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-    }
-    
-    .mobile-back-btn:hover {
-        background: #3ECDC1;
-        color: white;
-        transform: scale(1.05);
-    }
-    
-    .mobile-back-btn.hidden {
-        display: none;
-    }
-    
-    /* Компактное поле ввода для мобильных */
-    .reply-form {
-        padding: 0.75rem;
-        transition: all 0.3s ease;
-    }
-    
-    .reply-form textarea {
-        min-height: 35px !important;
-        max-height: 35px !important;
-        transition: all 0.3s ease;
-        border-radius: 20px;
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-        resize: none;
-        overflow: hidden;
-    }
-    
-    .reply-form textarea:focus {
-        min-height: 80px !important;
-        max-height: 120px !important;
-        border-color: #3ECDC1;
-        box-shadow: 0 0 0 2px rgba(62, 205, 193, 0.2);
-    }
-    
-    .reply-form button {
-        height: 35px;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-    }
-    
-    /* Скрываем welcome-screen на мобильных */
-    .welcome-screen {
-        display: none !important;
-        height: 0 !important;
-        overflow: hidden !important;
-    }
-}
-
-/* Скрываем кнопку "назад" на десктопе */
-@media (min-width: 769px) {
-    .mobile-back-btn {
-        display: none !important;
-    }
-}
-
+/* Sidebar Header */
 .sidebar-header {
-    padding: 1rem 1.5rem;
+    padding: 1rem;
     border-bottom: 1px solid #e1e5e9;
-    background: #ffffff;
+    background: white;
 }
 
 .sidebar-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: #2c3e50;
     margin: 0 0 1rem 0;
@@ -226,39 +50,9 @@
 }
 
 .search-container {
-    position: relative;
-    margin-bottom: 1rem;
     display: flex;
     gap: 0.5rem;
     align-items: center;
-}
-
-/* New Topic Button */
-.new-topic-btn {
-    background: #3ECDC1;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 0.5rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-.new-topic-btn:hover {
-    background: #2dd4bf;
-    transform: scale(1.05);
-}
-
-.new-topic-btn i {
-    font-size: 1rem;
 }
 
 .search-input {
@@ -266,16 +60,14 @@
     padding: 0.75rem 1rem 0.75rem 2.5rem;
     border: 1px solid #e1e5e9;
     border-radius: 20px;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     background: #f8f9fa;
-    transition: all 0.2s ease;
 }
 
 .search-input:focus {
     outline: none;
     background: white;
     border-color: #3ECDC1;
-    box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.1);
 }
 
 .search-icon {
@@ -284,24 +76,39 @@
     top: 50%;
     transform: translateY(-50%);
     color: #6b7280;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
 }
 
+.new-topic-btn {
+    background: #3ECDC1;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.new-topic-btn:hover {
+    background: #2dd4bf;
+}
 
 /* Chat List */
 .chat-list {
     flex: 1;
     overflow-y: auto;
-    padding: 0.5rem 0;
 }
 
 .chat-item {
     display: flex;
     align-items: center;
-    padding: 1rem 1.5rem;
+    padding: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border-bottom: 1px solid #f8f9fa;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
 }
 
 .chat-item:hover {
@@ -310,7 +117,6 @@
 
 .chat-item.active {
     background: #e3f2fd;
-    border-right: 3px solid #3ECDC1;
 }
 
 .chat-avatar {
@@ -323,7 +129,6 @@
     justify-content: center;
     color: white;
     font-weight: 600;
-    font-size: 1.1rem;
     margin-right: 1rem;
     flex-shrink: 0;
 }
@@ -336,7 +141,7 @@
 .chat-name {
     font-weight: 600;
     color: #2c3e50;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     margin: 0 0 0.25rem 0;
     white-space: nowrap;
     overflow: hidden;
@@ -345,7 +150,7 @@
 
 .chat-preview {
     color: #6b7280;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -378,35 +183,46 @@
 /* Main Chat Area */
 .chat-main {
     flex: 1;
-    display: flex;
+    display: none;
     flex-direction: column;
     background: #f0f2f5;
     position: relative;
 }
 
-/* Chat Messages Area */
+.chat-main.active {
+    display: flex;
+}
+
+/* Mobile Back Button */
+.mobile-back-btn {
+    display: none;
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: white;
+    border: 1px solid #3ECDC1;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    color: #3ECDC1;
+    cursor: pointer;
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-back-btn:hover {
+    background: #3ECDC1;
+    color: white;
+}
+
+/* Chat Messages */
 .chat-messages {
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
     background: #f0f2f5;
-    background-image: 
-        radial-gradient(circle at 20% 20%, rgba(62, 205, 193, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(62, 205, 193, 0.05) 0%, transparent 50%);
-    padding-bottom: 120px; /* Отступ для закрепленной формы ответа */
-}
-
-/* Fixed Reply Form */
-.reply-form {
-    position: fixed;
-    bottom: 0;
-    left: 350px; /* Ширина сайдбара */
-    right: 0;
-    background: white;
-    border-top: 1px solid #e1e5e9;
-    padding: 1rem;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
 }
 
 /* Message Bubbles */
@@ -415,39 +231,30 @@
     margin-bottom: 1rem;
     display: flex;
     flex-direction: column;
-    position: relative;
-}
-
-.message-bubble.sent {
-    align-self: flex-end;
-    align-items: flex-end;
 }
 
 .message-bubble.received {
     align-self: flex-start;
-    align-items: flex-start;
 }
 
 .message-content {
     padding: 0.75rem 1rem;
     border-radius: 18px;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     line-height: 1.4;
-    word-wrap: break-word;
-    position: relative;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    background: white;
+    color: #2c3e50;
+    border: 1px solid #e1e5e9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .message-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     opacity: 0.7;
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.25rem;
 }
 
 .message-author {
@@ -459,69 +266,48 @@
     opacity: 0.7;
 }
 
-.message-edited {
-    color: #6b7280;
-    font-size: 0.7rem;
-    font-style: italic;
+/* Reply Form */
+.reply-form {
+    padding: 1rem;
+    background: white;
+    border-top: 1px solid #e1e5e9;
 }
 
-.message-text {
-    flex: 1;
-    line-height: 1.4;
-}
-
-.message-actions {
+.reply-form form {
     display: flex;
     gap: 0.5rem;
-    margin-top: 0.5rem;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    align-items: flex-end;
 }
 
-.message-bubble:hover .message-actions {
-    opacity: 1;
-}
-
-.message-bubble.sent .message-content {
-    background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
-    color: white;
-    border-bottom-right-radius: 4px;
-}
-
-.message-bubble.received .message-content {
-    background: #ffffff;
-    color: #2c3e50;
-    border-bottom-left-radius: 4px;
+.reply-form textarea {
+    flex: 1;
+    min-height: 40px;
+    max-height: 120px;
+    padding: 0.75rem;
     border: 1px solid #e1e5e9;
+    border-radius: 20px;
+    resize: vertical;
+    font-family: inherit;
 }
 
-/* Пузырьки для сообщений */
-.message-bubble.sent .message-content::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: -8px;
-    width: 0;
-    height: 0;
-    border: 8px solid transparent;
-    border-left-color: #2dd4bf;
-    border-bottom: none;
-    border-right: none;
+.reply-form textarea:focus {
+    outline: none;
+    border-color: #3ECDC1;
 }
 
-.message-bubble.received .message-content::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: -8px;
-    width: 0;
-    height: 0;
-    border: 8px solid transparent;
-    border-right-color: #ffffff;
-    border-bottom: none;
-    border-left: none;
+.reply-form button {
+    background: #3ECDC1;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    height: fit-content;
 }
 
+.reply-form button:hover {
+    background: #2dd4bf;
+}
 
 /* Welcome Screen */
 .welcome-screen {
@@ -532,11 +318,7 @@
     text-align: center;
     padding: 2rem;
     background: #f0f2f5;
-    background-image: 
-        radial-gradient(circle at 20% 20%, rgba(62, 205, 193, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(62, 205, 193, 0.05) 0%, transparent 50%);
-    height: calc(100vh - 80px); /* Полная высота минус отступ от шапки */
-    width: 100%;
+    height: 100%;
 }
 
 .welcome-icon {
@@ -561,107 +343,49 @@
 
 .welcome-subtitle {
     color: #6b7280;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     margin: 0 0 2rem 0;
 }
 
-.new-topic-btn {
-    background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    padding: 0.75rem 2rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.new-topic-btn:hover {
-    background: linear-gradient(135deg, #2dd4bf, #14b8a6);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(62, 205, 193, 0.3);
-    color: white;
-    text-decoration: none;
-}
-
-/* Edit and Delete Buttons */
-.edit-btn, .delete-btn {
-    background: none;
-    border: none;
-    color: #6b7280;
-    font-size: 0.7rem;
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    margin-left: 0.5rem;
-}
-
-.edit-btn:hover {
-    background: #e3f2fd;
-    color: #3ECDC1;
-}
-
-.delete-btn:hover {
-    background: #fee2e2;
-    color: #ef4444;
-}
-
-/* Reply Form Styling */
-.reply-form textarea {
-    transition: all 0.2s ease;
-}
-
-.reply-form textarea:focus {
-    outline: none;
-    border-color: #3ECDC1;
-    box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.1);
-}
-
-.reply-form button {
-    transition: all 0.2s ease;
-}
-
-.reply-form button:hover {
-    background: #2dd4bf;
-    transform: translateY(-1px);
-}
-
-.reply-form button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Responsive Design */
+/* MOBILE STYLES */
 @media (max-width: 768px) {
     .community-page {
-        flex-direction: column;
-        margin-top: 60px; /* Меньший отступ на мобильных */
+        margin-top: 50px;
+        height: calc(100vh - 50px);
     }
     
     .chat-sidebar {
         width: 100%;
-        height: auto;
-        max-height: 50vh;
+        height: 100%;
+        display: flex;
     }
     
     .chat-main {
-        height: 50vh;
+        position: fixed;
+        top: 50px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
     }
     
-    .reply-form {
-        left: 0; /* На мобильных форма занимает всю ширину */
+    .mobile-back-btn {
+        display: flex;
     }
     
-    .edit-btn, .delete-btn {
-        font-size: 0.6rem;
-        padding: 0.2rem 0.4rem;
+    .welcome-screen {
+        display: none !important;
+    }
+    
+    .chat-main .welcome-screen {
+        display: none !important;
+    }
+}
+
+/* DESKTOP STYLES */
+@media (min-width: 769px) {
+    .mobile-back-btn {
+        display: none !important;
     }
 }
 </style>
@@ -669,7 +393,7 @@
 
 {% block content %}
 <div class="community-page">
-    <!-- Left Sidebar - Chat List -->
+    <!-- Topics List Sidebar -->
     <div class="chat-sidebar">
         <div class="sidebar-header">
             <h2 class="sidebar-title">
@@ -680,14 +404,14 @@
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" class="search-input" placeholder="Search topics...">
-                <button class="new-topic-btn" onclick="createNewTopic()" title="Create New Topic">
+                <button class="new-topic-btn" onclick="createNewTopic()">
                     <i class="fas fa-plus"></i>
+                    New Topic
                 </button>
             </div>
-            
         </div>
         
-        <div class="chat-list" id="chat-list">
+        <div class="chat-list">
             {% for topic in recent_topics %}
             <div class="chat-item" data-topic-id="{{ topic.id }}" onclick="selectTopic({{ topic.id }})">
                 <div class="chat-avatar">
@@ -701,68 +425,46 @@
                     <div class="chat-time">{{ topic.created_at.strftime('%H:%M') }}</div>
                     {% if topic.replies_count > 0 %}
                     <div class="chat-badge">{{ topic.replies_count }}</div>
-                                {% endif %}
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
     
-    <!-- Main Chat Area -->
+    <!-- Chat Area -->
     <div class="chat-main">
         <!-- Mobile Back Button -->
-        <button class="mobile-back-btn hidden" onclick="showChatList()">
+        <button class="mobile-back-btn" onclick="showChatList()">
             <i class="fas fa-arrow-left"></i>
         </button>
         
-        <div id="welcome-screen" class="welcome-screen">
+        <!-- Welcome Screen (Desktop only) -->
+        <div class="welcome-screen">
             <div class="welcome-icon">
                 <i class="fas fa-comments"></i>
             </div>
             <h2 class="welcome-title">Welcome to Community</h2>
-            <p class="welcome-subtitle">Select a topic to start the conversation or create a new one</p>
-                <a href="{{ url_for('main.new_topic', lang=lang) }}" class="new-topic-btn">
-                    <i class="fas fa-plus"></i>
-                    {{ t('new_topic', lang) | default('New Topic') }}
-                </a>
-            </div>
-
-        <div id="chat-content" style="display: none;">
-            <div class="chat-messages" id="chat-messages">
-                <!-- Messages will be loaded here -->
-            </div>
+            <p class="welcome-subtitle">Select a topic to start the conversation</p>
         </div>
-                    </div>
-                    </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be loaded here -->
+        </div>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize messenger functionality
-    initializeMessenger();
-    
     // Search functionality
     const searchInput = document.querySelector('.search-input');
-    searchInput.addEventListener('input', function(e) {
-        filterTopics(e.target.value);
-    });
-    
-});
-
-function initializeMessenger() {
-    // Add click handlers to chat items
-    const chatItems = document.querySelectorAll('.chat-item');
-    chatItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const topicId = this.dataset.topicId;
-            selectTopic(topicId);
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            filterTopics(e.target.value);
         });
-    });
-    
-    // On mobile, hide welcome screen immediately
-    if (window.innerWidth <= 768) {
-        document.getElementById('welcome-screen').style.display = 'none';
     }
-}
+});
 
 function selectTopic(topicId) {
     // Remove active class from all items
@@ -776,71 +478,44 @@ function selectTopic(topicId) {
         selectedItem.classList.add('active');
     }
     
-    // Hide welcome screen and show chat content
-    document.getElementById('welcome-screen').style.display = 'none';
-    document.getElementById('chat-content').style.display = 'flex';
+    // Show chat area
+    document.querySelector('.chat-main').classList.add('active');
     
-    // Mobile navigation - show chat and hide sidebar
+    // Mobile navigation
     if (window.innerWidth <= 768) {
         document.querySelector('.chat-sidebar').style.display = 'none';
-        document.querySelector('.chat-main').classList.add('active');
-        document.querySelector('.mobile-back-btn').classList.remove('hidden');
+        document.querySelector('.mobile-back-btn').style.display = 'flex';
     }
     
     // Load topic content
     loadTopicContent(topicId);
 }
 
-// Mobile navigation - show chat list
 function showChatList() {
+    // Hide chat area
+    document.querySelector('.chat-main').classList.remove('active');
+    
+    // Mobile navigation
     if (window.innerWidth <= 768) {
         document.querySelector('.chat-sidebar').style.display = 'flex';
-        document.querySelector('.chat-main').classList.remove('active');
-        document.querySelector('.mobile-back-btn').classList.add('hidden');
-        
-        // Hide welcome screen on mobile (already hidden by CSS)
-        document.getElementById('welcome-screen').style.display = 'none';
-        document.getElementById('chat-content').style.display = 'none';
-        
-        // Remove active class from all items
-        document.querySelectorAll('.chat-item').forEach(item => {
-            item.classList.remove('active');
-        });
+        document.querySelector('.mobile-back-btn').style.display = 'none';
     }
+    
+    // Remove active class from all items
+    document.querySelectorAll('.chat-item').forEach(item => {
+        item.classList.remove('active');
+    });
 }
 
-// Create new topic
 function createNewTopic() {
-    // Get current language from URL or default to 'en'
     const currentLang = window.location.pathname.split('/')[1] || 'en';
-    
-    // Redirect to new topic page
     window.location.href = `/${currentLang}/community/new-topic`;
 }
 
-function showWelcomeScreen() {
-    // Show welcome screen and hide chat content (only on desktop)
-    if (window.innerWidth > 768) {
-        document.getElementById('welcome-screen').style.display = 'flex';
-    } else {
-        // On mobile, keep welcome screen hidden
-        document.getElementById('welcome-screen').style.display = 'none';
-    }
-    document.getElementById('chat-content').style.display = 'none';
-    
-    // Remove fixed reply form
-    const existingForm = document.getElementById('fixed-reply-form');
-    if (existingForm) {
-        existingForm.remove();
-    }
-}
-
 function loadTopicContent(topicId) {
-    // Show loading state
     const chatMessages = document.getElementById('chat-messages');
     chatMessages.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">Loading...</div>';
     
-    // Load topic content via AJAX
     fetch(`/{{ lang }}/community/topic/${topicId}/content`)
         .then(response => response.json())
         .then(data => {
@@ -857,7 +532,6 @@ function loadTopicContent(topicId) {
 }
 
 function displayTopicContent(topic, posts) {
-    // Update chat messages
     const chatMessages = document.getElementById('chat-messages');
     let messagesHTML = '';
     
@@ -870,17 +544,13 @@ function displayTopicContent(topic, posts) {
                     <span class="message-time">${topic.created_at}</span>
                 </div>
                 <div class="message-text">${topic.content}</div>
-                <div class="message-actions">
-                    ${topic.can_edit ? '<button class="edit-btn" onclick="editTopic(' + topic.id + ')">Edit</button>' : ''}
-                    ${topic.can_delete ? '<button class="delete-btn" onclick="deleteTopic(' + topic.id + ')">{{ t("delete_topic", lang) | default("Delete") }}</button>' : ''}
-                </div>
             </div>
         </div>
     `;
     
     // Add replies
     posts.forEach(post => {
-        if (post.id !== posts[0].id) { // Skip first post if it's the same as topic content
+        if (post.id !== posts[0].id) {
             messagesHTML += `
                 <div class="message-bubble received">
                     <div class="message-content">
@@ -890,10 +560,6 @@ function displayTopicContent(topic, posts) {
                             ${post.is_edited ? '<span class="message-edited">(edited)</span>' : ''}
                         </div>
                         <div class="message-text">${post.content}</div>
-                        <div class="message-actions">
-                            ${post.can_edit ? '<button class="edit-btn" onclick="editPost(' + post.id + ')">Edit</button>' : ''}
-                            ${post.can_delete ? '<button class="delete-btn" onclick="deletePost(' + post.id + ')">Delete</button>' : ''}
-                        </div>
                     </div>
                 </div>
             `;
@@ -902,49 +568,36 @@ function displayTopicContent(topic, posts) {
     
     chatMessages.innerHTML = messagesHTML;
     
-    // Add fixed reply form
-    addFixedReplyForm(topic.id);
+    // Add reply form
+    addReplyForm(topic.id);
 }
 
-function addFixedReplyForm(topicId) {
+function addReplyForm(topicId) {
     // Remove existing reply form
     const existingForm = document.getElementById('fixed-reply-form');
     if (existingForm) {
         existingForm.remove();
     }
     
-    // Create fixed reply form
+    // Create reply form
     const replyForm = document.createElement('div');
     replyForm.id = 'fixed-reply-form';
     replyForm.className = 'reply-form';
     replyForm.innerHTML = `
-        <form id="reply-form" onsubmit="submitReply(event, ${topicId})" style="display: flex; gap: 0.5rem; align-items: flex-end;">
-            <textarea id="reply-content" placeholder="Write your reply..." style="flex: 1; min-height: 40px; max-height: 120px; padding: 0.75rem; border: 1px solid #e1e5e9; border-radius: 8px; resize: vertical; font-family: inherit;"></textarea>
-            <button type="submit" style="background: #3ECDC1; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; height: fit-content; white-space: nowrap;">Send</button>
+        <form id="reply-form" onsubmit="submitReply(event, ${topicId})">
+            <textarea id="reply-content" placeholder="Write your reply..."></textarea>
+            <button type="submit">Send</button>
         </form>
     `;
     
     document.body.appendChild(replyForm);
     
-    // Добавляем автоматическое изменение размера textarea
+    // Auto-resize textarea
     const textarea = document.getElementById('reply-content');
     if (textarea) {
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        });
-        
-        // Добавляем фокус для плавного расширения
-        textarea.addEventListener('focus', function() {
-            this.style.minHeight = '80px';
-            this.style.maxHeight = '120px';
-        });
-        
-        textarea.addEventListener('blur', function() {
-            if (!this.value.trim()) {
-                this.style.minHeight = '35px';
-                this.style.maxHeight = '35px';
-            }
         });
     }
 }
@@ -955,13 +608,11 @@ function submitReply(event, topicId) {
     const content = document.getElementById('reply-content').value.trim();
     if (!content) return;
     
-    // Show loading state
     const submitBtn = event.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Sending...';
     submitBtn.disabled = true;
     
-    // Send reply
     fetch(`/{{ lang }}/community/topic/${topicId}/reply`, {
         method: 'POST',
         headers: {
@@ -973,9 +624,7 @@ function submitReply(event, topicId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Clear form
             document.getElementById('reply-content').value = '';
-            // Reload topic content
             loadTopicContent(topicId);
         } else {
             alert('Error: ' + data.error);
@@ -989,72 +638,6 @@ function submitReply(event, topicId) {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     });
-}
-
-function editTopic(topicId) {
-    window.location.href = `/{{ lang }}/community/topic/${topicId}/edit`;
-}
-
-function editPost(postId) {
-    window.location.href = `/{{ lang }}/community/post/${postId}/edit`;
-}
-
-function deleteTopic(topicId) {
-    if (confirm('{{ t("delete_topic_confirm", lang) | default("Are you sure you want to delete this topic?") }}')) {
-        fetch(`/{{ lang }}/community/topic/${topicId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Remove topic from sidebar
-                const topicItem = document.querySelector(`[data-topic-id="${topicId}"]`);
-                if (topicItem) {
-                    topicItem.remove();
-                }
-                // Show welcome screen
-                showWelcomeScreen();
-            } else {
-                alert('{{ t("error_deleting_topic", lang) | default("Error deleting topic") }}: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('{{ t("error_deleting_topic", lang) | default("Error deleting topic") }}');
-        });
-    }
-}
-
-function deletePost(postId) {
-    if (confirm('Are you sure you want to delete this post?')) {
-        fetch(`/{{ lang }}/community/post/${postId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Reload topic content
-                const activeTopic = document.querySelector('.chat-item.active');
-                if (activeTopic) {
-                    loadTopicContent(activeTopic.dataset.topicId);
-                }
-            } else {
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error deleting post');
-        });
-    }
 }
 
 function filterTopics(searchTerm) {
@@ -1072,7 +655,6 @@ function filterTopics(searchTerm) {
         }
     });
 }
-
 </script>
 
 {% endblock %} 
