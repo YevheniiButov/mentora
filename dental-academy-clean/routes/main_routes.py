@@ -416,7 +416,11 @@ def community_category(lang, category):
     # Получаем все категории для навигации
     all_categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
     
-    return redirect(url_for('main.community', lang=lang))
+    return render_template('community/category.html',
+                         category=forum_category,
+                         topics=topics,
+                         categories=all_categories,
+                         lang=lang)
 
 @main_bp.route('/community/topic/<int:topic_id>')
 @login_required
@@ -446,7 +450,11 @@ def community_topic(lang, topic_id):
     # Получаем все категории для навигации
     all_categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
     
-    return redirect(url_for('main.community', lang=lang))
+    return render_template('community/topic.html',
+                         topic=topic,
+                         posts=posts,
+                         categories=all_categories,
+                         lang=lang)
 
 @main_bp.route('/community/new-topic')
 @login_required
