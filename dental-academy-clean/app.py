@@ -1123,6 +1123,100 @@ def web_force_add_messages():
 
 logger.info("✅ Web force add messages endpoint registered")
 
+# Debug messages endpoint
+@app.route('/admin/debug-messages', methods=['GET', 'POST'])
+def web_debug_messages():
+    """Веб-эндпоинт для отладки сообщений"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Debug Messages</title></head>
+        <body>
+            <h1>🔍 Debug Messages in Topics</h1>
+            <p>This will check and fix message counts in topics.</p>
+            <form method="POST">
+                <button type="submit">Debug Messages</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.check_messages_debug import check_messages_debug
+        
+        print("🔧 Starting debug messages...")
+        success = check_messages_debug()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Messages debug completed successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to debug messages'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_debug_messages: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web debug messages endpoint registered")
+
+# Fix message authors endpoint
+@app.route('/admin/fix-message-authors', methods=['GET', 'POST'])
+def web_fix_message_authors():
+    """Веб-эндпоинт для исправления авторов сообщений"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Fix Message Authors</title></head>
+        <body>
+            <h1>🔧 Fix Message Authors</h1>
+            <p>This will fix invalid message authors and update message counts.</p>
+            <form method="POST">
+                <button type="submit">Fix Message Authors</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.fix_message_authors import fix_message_authors
+        
+        print("🔧 Starting fix message authors...")
+        success = fix_message_authors()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Message authors fixed successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to fix message authors'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_fix_message_authors: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web fix message authors endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
