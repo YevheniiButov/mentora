@@ -973,6 +973,54 @@ def web_create_production_topics():
 
 logger.info("✅ Web create production topics endpoint registered")
 
+# Delete all topics endpoint
+@app.route('/admin/delete-all-topics', methods=['GET', 'POST'])
+def web_delete_all_topics():
+    """Веб-эндпоинт для удаления всех тем"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Delete All Topics</title></head>
+        <body>
+            <h1>⚠️ Delete All Community Topics</h1>
+            <p><strong>WARNING:</strong> This will permanently delete ALL topics and messages in the community!</p>
+            <p>This action cannot be undone.</p>
+            <form method="POST">
+                <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">DELETE ALL TOPICS</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.delete_all_topics import delete_all_topics
+        
+        print("🗑️ Starting delete all topics...")
+        success = delete_all_topics()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'All topics and messages deleted successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to delete topics'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_delete_all_topics: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web delete all topics endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
