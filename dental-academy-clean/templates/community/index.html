@@ -104,11 +104,21 @@
     
     .search-container {
         margin: 0.5rem 0;
+        gap: 0.75rem;
     }
     
     .search-input {
         font-size: 1rem;
         padding: 0.75rem 1rem 0.75rem 2.5rem;
+    }
+    
+    .new-topic-btn {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .new-topic-btn i {
+        font-size: 1.3rem;
     }
     
     /* Кнопка "Назад" для мобильных */
@@ -153,10 +163,38 @@
 .search-container {
     position: relative;
     margin-bottom: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* New Topic Button */
+.new-topic-btn {
+    background: #25d366;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.new-topic-btn:hover {
+    background: #20c55a;
+    transform: scale(1.05);
+}
+
+.new-topic-btn i {
+    font-size: 1.2rem;
 }
 
 .search-input {
-    width: 100%;
+    flex: 1;
     padding: 0.75rem 1rem 0.75rem 2.5rem;
     border: 1px solid #e1e5e9;
     border-radius: 20px;
@@ -574,6 +612,9 @@
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" class="search-input" placeholder="Search topics...">
+                <button class="new-topic-btn" onclick="createNewTopic()" title="Create New Topic">
+                    <i class="fas fa-plus"></i>
+                </button>
             </div>
             
         </div>
@@ -693,6 +734,15 @@ function showChatList() {
             item.classList.remove('active');
         });
     }
+}
+
+// Create new topic
+function createNewTopic() {
+    // Get current language from URL or default to 'en'
+    const currentLang = window.location.pathname.split('/')[1] || 'en';
+    
+    // Redirect to new topic page
+    window.location.href = `/${currentLang}/community/new-topic`;
 }
 
 function showWelcomeScreen() {
