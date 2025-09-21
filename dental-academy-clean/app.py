@@ -562,9 +562,7 @@ except ImportError as e:
         logout_user()
         return redirect(url_for('index'))
     
-    @app.route('/profile')
-    def profile():
-        return render_template('profile/index.html', user=current_user)
+    # Profile route moved to profile_routes.py blueprint
     
     @app.route('/edit_profile')
     def edit_profile():
