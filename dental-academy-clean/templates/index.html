@@ -22,9 +22,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- CRITICAL FIX FOR SECTIONS AND HEADER DISPLAY -->
+<!-- Header and sections display fixes -->
 <style>
-/* ===== FORCED HEADER FIX ===== */
+/* ===== HEADER FIXES ===== */
 .modern-header {
   position: fixed !important;
   top: 0 !important;
@@ -180,8 +180,8 @@
   }
 }
 
-/* ===== ИСПРАВЛЕНИЯ КОНТЕНТА ===== */
-/* Принудительно делаем все секции видимыми */
+/* ===== CONTENT FIXES ===== */
+/* Ensure all sections are visible */
 .main-content {
   margin-top: 0 !important;
   padding-top: 0 !important;
@@ -224,7 +224,7 @@ body .hero-section {
   overflow: visible !important;
 }
 
-/* Принудительно показываем конкретные секции */
+/* Show specific sections */
 .features-section,
 .platform-features-section, 
 .benefits-section,
@@ -239,7 +239,7 @@ body .hero-section {
   padding-bottom: 3rem !important;
 }
 
-/* Принудительные стили для анимации телефона */
+/* Phone animation styles */
 
 .device-mockup .screen-slides {
     display: flex !important;
@@ -274,7 +274,7 @@ body .hero-section {
 
 {% block content %}
 
-{# === ИСПРАВЛЕННАЯ HERO SECTION === #}
+{# === HERO SECTION === #}
 <section class="hero-section">
   <!-- Background Effects (Reduced) -->
   <div class="hero-bg"></div>
@@ -921,19 +921,15 @@ body .hero-section {
 {% block body_scripts %}
 {{ super() }}
 
-<!-- Временно включаем логи для отладки мобильного меню -->
+<!-- Phone animation script -->
 <script>
-// Временно включаем логи для отладки мобильного меню</script>
-
-<!-- 🚀 Встроенная анимация телефона (работает всегда) -->
-<script>
-// 🚀 Встроенная анимация телефона (работает всегда)
+// Phone animation functionality
 (function() {
     'use strict';let currentScreen = 0;
     const totalScreens = 4;
     let autoInterval = null;
     
-    // === ДОБАВЛЕНО: функция для анимации частиц ===
+    // Particle animation function
     function setupParticles() {
         let particlesContainer = document.getElementById('particles');
         if (!particlesContainer) {
@@ -979,7 +975,7 @@ body .hero-section {
         };
         createParticle(particlesContainer);
         setTimeout(createParticles, 1000);}
-    // === КОНЕЦ ДОБАВЛЕНИЯ ===
+    // End particle animation
 
     function initPhoneAnimation() {
         // Ждем загрузки DOM
@@ -990,46 +986,47 @@ body .hero-section {
         }
     }
     
-    function setupAnimation() { // === ДОБАВЛЕНО: инициализация частиц ===
+    function setupAnimation() {
         setupParticles();
-        // === КОНЕЦ ДОБАВЛЕНИЯ ===
         
         const screenSlides = document.querySelector('.screen-slides');
         const indicators = document.querySelectorAll('.indicator');
         const deviceMockup = document.querySelector('.device-mockup');
         
         if (!screenSlides) {
-            console.warn('❌ .screen-slides не найден');
-    return;
-  }
-  
+            console.warn('Screen slides not found');
+            return;
+        }
+        
         if (!indicators || indicators.length === 0) {
-            console.warn('❌ .indicator элементы не найдены');
-    return;
-  } // Функция обновления экрана
+            console.warn('Indicators not found');
+            return;
+        }
+        
+        // Screen update function
         function updateScreen() {
-            const translateX = -currentScreen * 25; // 25% на экран
+            const translateX = -currentScreen * 25; // 25% per screen
             screenSlides.style.transform = `translateX(${translateX}%)`;
             
-            // Обновляем индикаторы
+            // Update indicators
             indicators.forEach((indicator, index) => {
                 indicator.classList.toggle('active', index === currentScreen);
             });}
         
-        // Переход к следующему экрану
+        // Go to next screen
         function nextScreen() {
             currentScreen = (currentScreen + 1) % totalScreens;
             updateScreen();
         }
         
-        // Переход к конкретному экрану
+        // Go to specific screen
         function goToScreen(index) {
             currentScreen = index;
             updateScreen();
             restartAutoAdvance();
         }
         
-        // Автопрокрутка
+        // Auto-advance
         function startAutoAdvance() {
             stopAutoAdvance();
             autoInterval = setInterval(nextScreen, 4000);}
@@ -1045,14 +1042,14 @@ body .hero-section {
             startAutoAdvance();
         }
         
-        // Обработчики событий
+        // Event handlers
         indicators.forEach((indicator, index) => {
             indicator.addEventListener('click', (e) => {
                 e.preventDefault();
                 goToScreen(index);});
         });
         
-        // Пауза при наведении на телефон
+        // Pause on hover
         if (deviceMockup) {
             deviceMockup.addEventListener('mouseenter', () => {
                 stopAutoAdvance();
@@ -1063,17 +1060,17 @@ body .hero-section {
             });
         }
         
-        // Swipe events для мобильных устройств (только для анимации телефона)
+        // Swipe events for mobile devices
         let startX = 0;
         screenSlides.addEventListener('touchstart', (e) => {
-            // Проверяем, что touch происходит именно на элементе анимации телефона
+            // Check if touch is on phone animation element
             if (!e.target.closest('.device-mockup, .screen-slides, .screen-content')) {
                 return;
             }
             startX = e.touches[0].clientX;}, { passive: true });
         
         screenSlides.addEventListener('touchend', (e) => {
-            // Проверяем, что touch происходит именно на элементе анимации телефона
+            // Check if touch is on phone animation element
             if (!e.target.closest('.device-mockup, .screen-slides, .screen-content')) {
                 return;
             }
@@ -1082,8 +1079,9 @@ body .hero-section {
             const endX = e.changedTouches[0].clientX;
             const diffX = startX - endX;
             
-            if (Math.abs(diffX) > 50) { // Минимальное расстояние свайпаif (diffX > 0) {
-                    nextScreen(); // Свайп влево
+            if (Math.abs(diffX) > 50) { // Minimum swipe distance
+                if (diffX > 0) {
+                    nextScreen(); // Swipe left
                 } else {
                     currentScreen = (currentScreen - 1 + totalScreens) % totalScreens;
                     updateScreen();
@@ -1093,11 +1091,11 @@ body .hero-section {
             startX = 0;
         }, { passive: true });
         
-        // Инициализация
+        // Initialize
         updateScreen();
         startAutoAdvance();
         
-        // Глобальный доступ для отладки
+        // Global access for debugging
         window.phoneAnimation = {
             next: nextScreen,
             goTo: goToScreen,
@@ -1106,21 +1104,21 @@ body .hero-section {
         };
     }
     
-    // Запуск
+    // Start
     initPhoneAnimation();
 })();
 
-// Notification System - показываем уведомление о предварительной регистрации
+// Notification System - show pre-registration notification
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         if (window.mentorNotifications) {
             mentorNotifications.showPreRegistration();
         }
-    }, 1000); // Показываем через 1 секунду
+    }, 1000); // Show after 1 second
 });
 
 </script>
 
-<!-- Подключение скриптов для анимации телефона -->
+<!-- Phone animation scripts -->
 
 {% endblock %}
