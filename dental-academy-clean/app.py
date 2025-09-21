@@ -564,6 +564,14 @@ except ImportError as e:
     
     # Profile route moved to profile_routes.py blueprint
     
+    @app.route('/community')
+    @login_required
+    def community_redirect():
+        """Redirect /community to /nl/community"""
+        from flask import session, redirect, url_for
+        lang = session.get('lang', 'nl')
+        return redirect(url_for('main.community', lang=lang))
+    
     @app.route('/edit_profile')
     def edit_profile():
         return render_template('auth/edit_profile.html')
