@@ -1362,6 +1362,58 @@ def web_simple_add_conversations():
 
 logger.info("✅ Web simple add conversations endpoint registered")
 
+# Fix conversations precise endpoint
+@app.route('/admin/fix-conversations-precise', methods=['GET', 'POST'])
+def web_fix_conversations_precise():
+    """Веб-эндпоинт для точного исправления переписок"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Fix Conversations Precise</title></head>
+        <body>
+            <h1>🎯 Fix Conversations Precise</h1>
+            <p>This will:</p>
+            <ul>
+                <li>Delete ALL existing messages</li>
+                <li>Add your conversations to the CORRECT topics</li>
+                <li>Fix the display issue</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Fix Conversations Precisely</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.fix_conversations_precise import fix_conversations_precise
+        
+        print("🔧 Starting fix conversations precise...")
+        success = fix_conversations_precise()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Conversations fixed precisely! Messages added to correct topics.'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to fix conversations'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_fix_conversations_precise: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web fix conversations precise endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
