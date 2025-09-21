@@ -188,6 +188,8 @@
     /* Скрываем welcome-screen на мобильных */
     .welcome-screen {
         display: none !important;
+        height: 0 !important;
+        overflow: hidden !important;
     }
 }
 
@@ -750,6 +752,11 @@ function initializeMessenger() {
             selectTopic(topicId);
         });
     });
+    
+    // On mobile, hide welcome screen immediately
+    if (window.innerWidth <= 768) {
+        document.getElementById('welcome-screen').style.display = 'none';
+    }
 }
 
 function selectTopic(topicId) {
@@ -786,8 +793,8 @@ function showChatList() {
         document.querySelector('.chat-main').classList.remove('active');
         document.querySelector('.mobile-back-btn').classList.add('hidden');
         
-        // Show welcome screen
-        document.getElementById('welcome-screen').style.display = 'flex';
+        // Hide welcome screen on mobile (already hidden by CSS)
+        document.getElementById('welcome-screen').style.display = 'none';
         document.getElementById('chat-content').style.display = 'none';
         
         // Remove active class from all items
@@ -807,8 +814,13 @@ function createNewTopic() {
 }
 
 function showWelcomeScreen() {
-    // Show welcome screen and hide chat content
-    document.getElementById('welcome-screen').style.display = 'flex';
+    // Show welcome screen and hide chat content (only on desktop)
+    if (window.innerWidth > 768) {
+        document.getElementById('welcome-screen').style.display = 'flex';
+    } else {
+        // On mobile, keep welcome screen hidden
+        document.getElementById('welcome-screen').style.display = 'none';
+    }
     document.getElementById('chat-content').style.display = 'none';
     
     // Remove fixed reply form
