@@ -1072,6 +1072,57 @@ def web_add_messages_only():
 
 logger.info("✅ Web add messages only endpoint registered")
 
+# Force add messages endpoint
+@app.route('/admin/force-add-messages', methods=['GET', 'POST'])
+def web_force_add_messages():
+    """Веб-эндпоинт для принудительного добавления сообщений"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Force Add Messages</title></head>
+        <body>
+            <h1>⚠️ Force Add Messages to Topics</h1>
+            <p><strong>WARNING:</strong> This will DELETE existing messages and add your original conversations!</p>
+            <ul>
+                <li>AKV tandartsen - BIG Registration Discussion 🦷 (9 messages)</li>
+                <li>General Chat - Let's talk about everything! 💬 (4 messages)</li>
+            </ul>
+            <form method="POST">
+                <button type="submit" style="background-color: orange; color: white; padding: 10px 20px; border: none; border-radius: 5px;">FORCE ADD MESSAGES</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.force_add_messages import force_add_messages
+        
+        print("🔧 Starting force add messages...")
+        success = force_add_messages()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Messages force added to topics successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to force add messages'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_force_add_messages: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web force add messages endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
