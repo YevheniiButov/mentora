@@ -920,6 +920,59 @@ def web_add_messages_to_topics():
 
 logger.info("✅ Web add messages to topics endpoint registered")
 
+# Create production topics endpoint
+@app.route('/admin/create-production-topics', methods=['GET', 'POST'])
+def web_create_production_topics():
+    """Веб-эндпоинт для создания тем с вашими переписками"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Create Production Topics</title></head>
+        <body>
+            <h1>Create Production Topics with Your Conversations</h1>
+            <p>This will create topics with your original conversations from the script.</p>
+            <ul>
+                <li>AKV tandartsen - BIG Registration Discussion 🦷</li>
+                <li>General Chat - Let's talk about everything! 💬</li>
+                <li>Welcome to Mentora Community! 👋</li>
+                <li>And 10 more topics...</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Create Topics with Your Conversations</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.create_production_topics_fixed import create_production_topics
+        
+        print("🔧 Starting create production topics...")
+        success = create_production_topics()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Production topics with your conversations created successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to create production topics'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_create_production_topics: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web create production topics endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
