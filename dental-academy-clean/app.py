@@ -1021,6 +1021,57 @@ def web_delete_all_topics():
 
 logger.info("✅ Web delete all topics endpoint registered")
 
+# Add messages only endpoint
+@app.route('/admin/add-messages-only', methods=['GET', 'POST'])
+def web_add_messages_only():
+    """Веб-эндпоинт для добавления только сообщений"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Add Messages Only</title></head>
+        <body>
+            <h1>Add Messages to Existing Topics</h1>
+            <p>This will add your original conversations to existing topics.</p>
+            <ul>
+                <li>AKV tandartsen - BIG Registration Discussion 🦷 (9 messages)</li>
+                <li>General Chat - Let's talk about everything! 💬 (4 messages)</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Add Messages to Topics</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.add_messages_only import add_messages_only
+        
+        print("🔧 Starting add messages only...")
+        success = add_messages_only()
+        
+        if success:
+            return safe_jsonify({
+                'success': True,
+                'message': 'Messages added to topics successfully!'
+            })
+        else:
+            return safe_jsonify({
+                'success': False,
+                'error': 'Failed to add messages'
+            }), 500
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_add_messages_only: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        }), 500
+
+logger.info("✅ Web add messages only endpoint registered")
+
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
 def direct_recreate_topics():
