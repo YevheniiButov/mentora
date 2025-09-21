@@ -125,18 +125,64 @@
     .mobile-back-btn {
         display: block;
         position: absolute;
-        top: 1rem;
-        left: 1rem;
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        color: #007bff;
+        top: 0.5rem;
+        left: 0.5rem;
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid #3ECDC1;
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+        color: #3ECDC1;
         cursor: pointer;
         z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-back-btn:hover {
+        background: #3ECDC1;
+        color: white;
+        transform: scale(1.05);
     }
     
     .mobile-back-btn.hidden {
         display: none;
+    }
+    
+    /* Компактное поле ввода для мобильных */
+    .reply-form {
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .reply-form textarea {
+        min-height: 35px !important;
+        max-height: 35px !important;
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        resize: none;
+        overflow: hidden;
+    }
+    
+    .reply-form textarea:focus {
+        min-height: 80px !important;
+        max-height: 120px !important;
+        border-color: #3ECDC1;
+        box-shadow: 0 0 0 2px rgba(62, 205, 193, 0.2);
+    }
+    
+    .reply-form button {
+        height: 35px;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
     }
 }
 
@@ -854,6 +900,28 @@ function addFixedReplyForm(topicId) {
     `;
     
     document.body.appendChild(replyForm);
+    
+    // Добавляем автоматическое изменение размера textarea
+    const textarea = document.getElementById('reply-content');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // Добавляем фокус для плавного расширения
+        textarea.addEventListener('focus', function() {
+            this.style.minHeight = '80px';
+            this.style.maxHeight = '120px';
+        });
+        
+        textarea.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.style.minHeight = '35px';
+                this.style.maxHeight = '35px';
+            }
+        });
+    }
 }
 
 function submitReply(event, topicId) {
