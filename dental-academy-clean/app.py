@@ -1423,6 +1423,49 @@ def web_fix_conversations_precise():
             'details': error_details
         }), 500
 
+# Add real conversations endpoint
+@app.route('/admin/add-real-conversations', methods=['GET', 'POST'])
+def web_add_real_conversations():
+    """Веб-эндпоинт для добавления реальных переписок пользователя"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Add Real Conversations</title></head>
+        <body>
+            <h1>🎯 Add Your Real Conversations</h1>
+            <p>This will:</p>
+            <ul>
+                <li>Add your conversations from create_production_topics.py</li>
+                <li>Replace existing messages in topics</li>
+                <li>Use correct authors and timing</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Add Real Conversations</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.add_your_real_conversations import add_real_conversations
+        
+        print("🔧 Starting add real conversations...")
+        add_real_conversations()
+        
+        return safe_jsonify({
+            'success': True,
+            'message': 'Real conversations added successfully!'
+        })
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_add_real_conversations: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': f'Error: {error_details}'
+        }), 500
+
 logger.info("✅ Web fix conversations precise endpoint registered")
 
 # Simple direct script execution endpoint
