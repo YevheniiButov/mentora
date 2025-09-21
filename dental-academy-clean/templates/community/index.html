@@ -31,6 +31,105 @@
     height: 100vh;
 }
 
+/* Mobile Responsive - WhatsApp Style */
+@media (max-width: 768px) {
+    .community-page {
+        flex-direction: column;
+        margin-top: 60px;
+    }
+    
+    .chat-sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #e1e5e9;
+        flex-shrink: 0;
+    }
+    
+    .chat-main {
+        width: 100%;
+        height: calc(100vh - 200px);
+        display: none; /* Скрываем чат на мобильных по умолчанию */
+    }
+    
+    .chat-main.active {
+        display: flex; /* Показываем только при выборе чата */
+    }
+    
+    .chat-item {
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .chat-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .chat-item.active {
+        background-color: #e3f2fd;
+    }
+    
+    .chat-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .chat-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .chat-preview {
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.4;
+    }
+    
+    .chat-time {
+        font-size: 0.8rem;
+        color: #999;
+    }
+    
+    .sidebar-header {
+        padding: 1rem;
+    }
+    
+    .sidebar-title {
+        font-size: 1.1rem;
+    }
+    
+    .search-container {
+        margin: 0.5rem 0;
+    }
+    
+    .search-input {
+        font-size: 1rem;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+    }
+    
+    /* Кнопка "Назад" для мобильных */
+    .mobile-back-btn {
+        display: block;
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #007bff;
+        cursor: pointer;
+        z-index: 10;
+    }
+    
+    .mobile-back-btn.hidden {
+        display: none;
+    }
+}
+
 .sidebar-header {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid #e1e5e9;
@@ -502,6 +601,11 @@
     
     <!-- Main Chat Area -->
     <div class="chat-main">
+        <!-- Mobile Back Button -->
+        <button class="mobile-back-btn hidden" onclick="showChatList()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        
         <div id="welcome-screen" class="welcome-screen">
             <div class="welcome-icon">
                 <i class="fas fa-comments"></i>
@@ -562,8 +666,33 @@ function selectTopic(topicId) {
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('chat-content').style.display = 'flex';
     
+    // Mobile navigation - show chat and hide sidebar
+    if (window.innerWidth <= 768) {
+        document.querySelector('.chat-sidebar').style.display = 'none';
+        document.querySelector('.chat-main').classList.add('active');
+        document.querySelector('.mobile-back-btn').classList.remove('hidden');
+    }
+    
     // Load topic content
     loadTopicContent(topicId);
+}
+
+// Mobile navigation - show chat list
+function showChatList() {
+    if (window.innerWidth <= 768) {
+        document.querySelector('.chat-sidebar').style.display = 'flex';
+        document.querySelector('.chat-main').classList.remove('active');
+        document.querySelector('.mobile-back-btn').classList.add('hidden');
+        
+        // Show welcome screen
+        document.getElementById('welcome-screen').style.display = 'flex';
+        document.getElementById('chat-content').style.display = 'none';
+        
+        // Remove active class from all items
+        document.querySelectorAll('.chat-item').forEach(item => {
+            item.classList.remove('active');
+        });
+    }
 }
 
 function showWelcomeScreen() {
