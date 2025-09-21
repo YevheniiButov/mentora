@@ -755,6 +755,10 @@ class UserSession(db.Model):
     def log_profile_change(self, field, old_value, new_value, changed_by=None):
         """Log a profile change for audit trail"""
         try:
+            # Ensure we have a valid user ID
+            if not hasattr(self, 'id') or self.id is None:
+                return
+                
             # Check if ProfileAuditLog table exists
             from sqlalchemy import inspect
             inspector = inspect(db.engine)

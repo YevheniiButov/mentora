@@ -2656,12 +2656,17 @@ def edit_user(user_id):
             for field, old_value in old_values.items():
                 new_value = getattr(user, field)
                 if old_value != new_value:
-                    user.log_profile_change(
-                        field=field,
-                        old_value=old_value,
-                        new_value=new_value,
-                        changed_by=current_user.id
-                    )
+                    try:
+                        if hasattr(user, 'log_profile_change'):
+                            user.log_profile_change(
+                                field=field,
+                                old_value=old_value,
+                                new_value=new_value,
+                                changed_by=current_user.id
+                            )
+                    except Exception as log_error:
+                        # Don't fail the main operation if logging fails
+                        print(f"Warning: Failed to log profile change: {log_error}")
             
             user.profile_updated_at = datetime.now(timezone.utc)
             db.session.commit()
@@ -2700,12 +2705,16 @@ def reset_user_password(user_id):
         user.password_reset_sent_at = None
         
         # Log the password reset
-        user.log_profile_change(
-            field='password',
-            old_value='[HIDDEN]',
-            new_value='[RESET BY ADMIN]',
-            changed_by=current_user.id
-        )
+        try:
+            if hasattr(user, 'log_profile_change'):
+                user.log_profile_change(
+                    field='password',
+                    old_value='[HIDDEN]',
+                    new_value='[RESET BY ADMIN]',
+                    changed_by=current_user.id
+                )
+        except Exception as log_error:
+            print(f"Warning: Failed to log password reset: {log_error}")
         
         db.session.commit()
         
@@ -2743,12 +2752,16 @@ def toggle_user_status(user_id):
         user.is_active = not user.is_active
         
         # Log the status change
-        user.log_profile_change(
-            field='is_active',
-            old_value=old_status,
-            new_value=user.is_active,
-            changed_by=current_user.id
-        )
+        try:
+            if hasattr(user, 'log_profile_change'):
+                user.log_profile_change(
+                    field='is_active',
+                    old_value=old_status,
+                    new_value=user.is_active,
+                    changed_by=current_user.id
+                )
+        except Exception as log_error:
+            print(f"Warning: Failed to log status change: {log_error}")
         
         db.session.commit()
         
@@ -3254,12 +3267,16 @@ def force_verify_email(user_id):
         user.confirm_email()
         
         # Log the action
-        user.log_profile_change(
-            field='email_confirmed',
-            old_value=False,
-            new_value=True,
-            changed_by=current_user.id
-        )
+        try:
+            if hasattr(user, 'log_profile_change'):
+                user.log_profile_change(
+                    field='email_confirmed',
+                    old_value=False,
+                    new_value=True,
+                    changed_by=current_user.id
+                )
+        except Exception as log_error:
+            print(f"Warning: Failed to log email verification: {log_error}")
         
         db.session.commit()
         
