@@ -1553,9 +1553,99 @@ def web_add_smart_fake_conversations():
             'error': f'Error: {error_details}'
         }), 500
 
+# Debug conversations endpoint
+@app.route('/admin/debug-conversations', methods=['GET', 'POST'])
+def web_debug_conversations():
+    """Веб-эндпоинт для диагностики переписок"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Debug Conversations</title></head>
+        <body>
+            <h1>🔍 Debug Conversations</h1>
+            <p>This will check:</p>
+            <ul>
+                <li>Number of users, topics, and posts</li>
+                <li>Posts per topic</li>
+                <li>Recent messages</li>
+                <li>User details</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Run Diagnostics</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.debug_conversations import debug_conversations
+        
+        print("🔧 Starting conversation diagnostics...")
+        debug_conversations()
+        
+        return safe_jsonify({
+            'success': True,
+            'message': 'Diagnostics completed! Check server logs for details.'
+        })
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_debug_conversations: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': f'Error: {error_details}'
+        }), 500
+
+# Add simple conversations endpoint
+@app.route('/admin/add-simple-conversations', methods=['GET', 'POST'])
+def web_add_simple_conversations():
+    """Веб-эндпоинт для добавления простых переписок"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Add Simple Conversations</title></head>
+        <body>
+            <h1>💬 Add Simple Conversations</h1>
+            <p>This will:</p>
+            <ul>
+                <li>Add 3-5 simple messages to each topic</li>
+                <li>Use basic messages like "Hello everyone!", "Great topic!"</li>
+                <li>Use the first available user as author</li>
+                <li>Replace existing messages</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Add Simple Conversations</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.add_simple_conversations import add_simple_conversations
+        
+        print("🔧 Starting simple conversations...")
+        add_simple_conversations()
+        
+        return safe_jsonify({
+            'success': True,
+            'message': 'Simple conversations added successfully!'
+        })
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_add_simple_conversations: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': f'Error: {error_details}'
+        }), 500
+
 logger.info("✅ Web fix conversations precise endpoint registered")
 logger.info("✅ Web add fake conversations endpoint registered")
 logger.info("✅ Web add smart fake conversations endpoint registered")
+logger.info("✅ Web debug conversations endpoint registered")
+logger.info("✅ Web add simple conversations endpoint registered")
 
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
