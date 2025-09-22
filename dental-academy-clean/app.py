@@ -1509,8 +1509,53 @@ def web_add_fake_conversations():
             'error': f'Error: {error_details}'
         }), 500
 
+# Add smart fake conversations endpoint
+@app.route('/admin/add-smart-fake-conversations', methods=['GET', 'POST'])
+def web_add_smart_fake_conversations():
+    """Веб-эндпоинт для добавления умных фейковых переписок"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Add Smart Fake Conversations</title></head>
+        <body>
+            <h1>🧠 Add Smart Fake Conversations</h1>
+            <p>This will:</p>
+            <ul>
+                <li>Add topic-specific conversations to each forum topic</li>
+                <li>Match conversations to topic content (BIG registration, study materials, etc.)</li>
+                <li>Create realistic discussions with proper context</li>
+                <li>Replace existing messages with relevant ones</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Add Smart Fake Conversations</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.add_smart_fake_conversations import add_smart_fake_conversations
+        
+        print("🔧 Starting add smart fake conversations...")
+        add_smart_fake_conversations()
+        
+        return safe_jsonify({
+            'success': True,
+            'message': 'Smart fake conversations added successfully!'
+        })
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_add_smart_fake_conversations: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': f'Error: {error_details}'
+        }), 500
+
 logger.info("✅ Web fix conversations precise endpoint registered")
 logger.info("✅ Web add fake conversations endpoint registered")
+logger.info("✅ Web add smart fake conversations endpoint registered")
 
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
