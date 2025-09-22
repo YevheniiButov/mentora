@@ -4635,61 +4635,125 @@ def campaign_details(campaign_id):
 def perform_database_backup(backup_record):
     """Perform actual database backup"""
     import os
-    import sqlite3
-    import shutil
+    import subprocess
+    import tempfile
     from datetime import datetime
     
     start_time = datetime.utcnow()
     
     try:
-        # Get database path
+        # Get database URI
         db_uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
-        if db_uri.startswith('sqlite:///'):
-            db_path = db_uri.replace('sqlite:///', '')
-        else:
-            raise Exception("Only SQLite backups are currently supported")
         
         # Create backups directory if it doesn't exist
         backup_dir = os.path.join(current_app.root_path, 'backups')
         os.makedirs(backup_dir, exist_ok=True)
         
         # Create backup file path
-        backup_filename = f"{backup_record.backup_name}.db"
+        backup_filename = f"{backup_record.backup_name}.sql"
         backup_file_path = os.path.join(backup_dir, backup_filename)
         
-        # Perform SQLite backup
-        source_conn = sqlite3.connect(db_path)
-        backup_conn = sqlite3.connect(backup_file_path)
+        if db_uri.startswith('sqlite:///'):
+            # SQLite backup
+            import sqlite3
+            db_path = db_uri.replace('sqlite:///', '')
+            
+            # Perform SQLite backup
+            source_conn = sqlite3.connect(db_path)
+            backup_conn = sqlite3.connect(backup_file_path.replace('.sql', '.db'))
+            
+            # Copy database
+            source_conn.backup(backup_conn)
+            
+            # Close connections
+            source_conn.close()
+            backup_conn.close()
+            
+            # Get file size
+            file_size = os.path.getsize(backup_file_path.replace('.sql', '.db'))
+            
+            # Count tables and records
+            conn = sqlite3.connect(backup_file_path.replace('.sql', '.db'))
+            cursor = conn.cursor()
+            
+            # Get table count
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tables = cursor.fetchall()
+            tables_count = len(tables)
+            
+            # Get total record count
+            total_records = 0
+            for table in tables:
+                table_name = table[0]
+                if table_name != 'sqlite_sequence':  # Skip system table
+                    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                    count = cursor.fetchone()[0]
+                    total_records += count
+            
+            conn.close()
+            
+        elif db_uri.startswith('postgresql://'):
+            # PostgreSQL backup using pg_dump
+            try:
+                # Parse PostgreSQL URI
+                import urllib.parse as urlparse
+                parsed = urlparse.urlparse(db_uri)
+                
+                # Set environment variables for pg_dump
+                env = os.environ.copy()
+                env['PGPASSWORD'] = parsed.password or ''
+                
+                # Build pg_dump command
+                cmd = [
+                    'pg_dump',
+                    '-h', parsed.hostname or 'localhost',
+                    '-p', str(parsed.port or 5432),
+                    '-U', parsed.username or 'postgres',
+                    '-d', parsed.path[1:] if parsed.path else 'postgres',
+                    '--no-password',
+                    '--verbose',
+                    '--clean',
+                    '--if-exists',
+                    '--create',
+                    '-f', backup_file_path
+                ]
+                
+                # Execute pg_dump
+                result = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=300)
+                
+                if result.returncode != 0:
+                    raise Exception(f"pg_dump failed: {result.stderr}")
+                
+                # Get file size
+                file_size = os.path.getsize(backup_file_path)
+                
+                # Count tables and records using SQLAlchemy
+                from sqlalchemy import text
+                with db.engine.connect() as conn:
+                    # Get table count
+                    result = conn.execute(text("""
+                        SELECT COUNT(*) 
+                        FROM information_schema.tables 
+                        WHERE table_schema = 'public'
+                    """))
+                    tables_count = result.scalar()
+                    
+                    # Get total record count
+                    result = conn.execute(text("""
+                        SELECT SUM(n_tup_ins - n_tup_del) as total_records
+                        FROM pg_stat_user_tables
+                    """))
+                    total_records = result.scalar() or 0
+                
+            except subprocess.TimeoutExpired:
+                raise Exception("Backup timeout - database too large")
+            except FileNotFoundError:
+                raise Exception("pg_dump not found - PostgreSQL tools not installed")
+            except Exception as e:
+                raise Exception(f"PostgreSQL backup failed: {str(e)}")
         
-        # Copy database
-        source_conn.backup(backup_conn)
-        
-        # Close connections
-        source_conn.close()
-        backup_conn.close()
-        
-        # Get file size
-        file_size = os.path.getsize(backup_file_path)
-        
-        # Count tables and records
-        conn = sqlite3.connect(backup_file_path)
-        cursor = conn.cursor()
-        
-        # Get table count
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        tables = cursor.fetchall()
-        tables_count = len(tables)
-        
-        # Get total record count
-        total_records = 0
-        for table in tables:
-            table_name = table[0]
-            if table_name != 'sqlite_sequence':  # Skip system table
-                cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
-                count = cursor.fetchone()[0]
-                total_records += count
-        
-        conn.close()
+        else:
+            raise Exception(f"Unsupported database type: {db_uri}")
         
         # Calculate duration
         end_time = datetime.utcnow()
