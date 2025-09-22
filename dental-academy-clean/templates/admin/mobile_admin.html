@@ -18,6 +18,32 @@
     margin: 0 auto;
 }
 
+.mobile-admin-nav {
+    margin-bottom: 1rem;
+}
+
+.nav-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #3ECDC1;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: rgba(62, 205, 193, 0.1);
+    transition: all 0.2s ease;
+}
+
+.nav-back-btn:hover {
+    background: rgba(62, 205, 193, 0.2);
+    color: #2dd4bf;
+}
+
+.nav-back-btn i {
+    font-size: 1rem;
+}
+
 .mobile-admin-header {
     background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
     color: white;
@@ -200,6 +226,14 @@
 
 {% block content %}
 <div class="mobile-admin-container">
+    <!-- Navigation -->
+    <div class="mobile-admin-nav">
+        <a href="{{ url_for('admin.dashboard') }}" class="nav-back-btn">
+            <i class="fas fa-arrow-left"></i>
+            <span>Назад к админке</span>
+        </a>
+    </div>
+    
     <!-- Header -->
     <div class="mobile-admin-header">
         <h1 class="mobile-admin-title">Mentora Admin</h1>
