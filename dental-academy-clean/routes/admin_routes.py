@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
-from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, CommunicationCampaign, SystemNotification
+from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, CommunicationCampaign, SystemNotification, ForumTopic, ForumPost
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_
@@ -4776,17 +4776,27 @@ def perform_database_backup(backup_record):
 @admin_required
 def mobile_admin():
     """Mobile admin panel"""
-    from models import User, ForumTopic, ForumPost
-    
-    # Get quick stats
-    stats = {
-        'total_users': User.query.count(),
-        'active_users': User.query.filter_by(is_active=True).count(),
-        'total_topics': ForumTopic.query.count(),
-        'total_messages': ForumPost.query.count()
-    }
-    
-    return render_template('admin/mobile_admin.html', stats=stats)
+    try:
+        # Get quick stats with error handling
+        stats = {
+            'total_users': User.query.count(),
+            'active_users': User.query.filter_by(is_active=True).count(),
+            'total_topics': ForumTopic.query.count(),
+            'total_messages': ForumPost.query.count()
+        }
+        
+        return render_template('admin/mobile_admin.html', stats=stats)
+        
+    except Exception as e:
+        current_app.logger.error(f"Mobile admin error: {str(e)}")
+        # Return with default stats if there's an error
+        stats = {
+            'total_users': 0,
+            'active_users': 0,
+            'total_topics': 0,
+            'total_messages': 0
+        }
+        return render_template('admin/mobile_admin.html', stats=stats)
 
 @admin_bp.route('/registration-analytics')
 @login_required
