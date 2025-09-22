@@ -1022,4 +1022,49 @@ def health():
         'message': 'Mentora Professional Platform is running',
         'version': '1.0.0',
         'database': 'connected'
-    }) 
+    })
+
+# Registration tracking endpoints
+@main_bp.route('/track-registration-visit', methods=['POST'])
+def track_registration_visit():
+    """Track registration page visits"""
+    try:
+        data = request.get_json()
+        current_app.logger.info(f"Registration visit tracked: {data}")
+        return jsonify({'success': True})
+    except Exception as e:
+        current_app.logger.error(f"Error tracking registration visit: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main_bp.route('/track-form-start', methods=['POST'])
+def track_form_start():
+    """Track form start events"""
+    try:
+        data = request.get_json()
+        current_app.logger.info(f"Form start tracked: {data}")
+        return jsonify({'success': True})
+    except Exception as e:
+        current_app.logger.error(f"Error tracking form start: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main_bp.route('/track-form-submit', methods=['POST'])
+def track_form_submit():
+    """Track form submission events"""
+    try:
+        data = request.get_json()
+        current_app.logger.info(f"Form submit tracked: {data}")
+        return jsonify({'success': True})
+    except Exception as e:
+        current_app.logger.error(f"Error tracking form submit: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main_bp.route('/track-page-exit', methods=['POST'])
+def track_page_exit():
+    """Track page exit events"""
+    try:
+        data = request.get_json()
+        current_app.logger.info(f"Page exit tracked: {data}")
+        return jsonify({'success': True})
+    except Exception as e:
+        current_app.logger.error(f"Error tracking page exit: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500 
