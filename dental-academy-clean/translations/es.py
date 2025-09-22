@@ -334,6 +334,11 @@ translations = {
     'register_now': 'Registrarse ahora',
     'early_access': 'Acceso temprano',
     'early_registration_title': 'Inscripción temprana',
+    
+    # IRT Test Announcement
+    'irt_test_title': 'Prueba IRT',
+    'irt_test_announcement': '¡Próximamente disponible: prueba diagnóstica IRT en modo beta!',
+    'irt_test_note': 'Para todos los usuarios registrados',
     'comprehensive_program_subtitle': 'Regístrate ahora para participar en el programa integral de preparación para el examen BIG con prácticas prácticas',
     'what_you_get': 'Lo que te espera:',
     'structured_big_prep': 'Preparación estructurada para BIG',

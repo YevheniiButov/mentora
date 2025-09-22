@@ -283,6 +283,11 @@ translations = {
     'register_now': 'الان ثبت‌نام کنید',
     'early_access': 'دسترسی زودهنگام',
     'early_registration_title': 'ثبت‌نام زودهنگام',
+    
+    # IRT Test Announcement
+    'irt_test_title': 'آزمون IRT',
+    'irt_test_announcement': 'به زودی در دسترس: آزمون تشخیصی IRT در حالت بتا!',
+    'irt_test_note': 'برای همه کاربران ثبت‌نام شده',
     'comprehensive_program_subtitle': 'الان ثبت‌نام کنید تا در برنامه جامع آمادگی آزمون BIG با کارآموزی عملی شرکت کنید',
     'what_you_get': 'آنچه در انتظار شماست:',
     'structured_big_prep': 'آمادگی ساختاریافته برای BIG',
