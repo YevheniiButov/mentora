@@ -1466,7 +1466,51 @@ def web_add_real_conversations():
             'error': f'Error: {error_details}'
         }), 500
 
+# Add fake conversations endpoint
+@app.route('/admin/add-fake-conversations', methods=['GET', 'POST'])
+def web_add_fake_conversations():
+    """Веб-эндпоинт для добавления фейковых переписок"""
+    if request.method == 'GET':
+        return """
+        <html>
+        <head><title>Add Fake Conversations</title></head>
+        <body>
+            <h1>💬 Add Fake Conversations</h1>
+            <p>This will:</p>
+            <ul>
+                <li>Add realistic conversations to existing topics</li>
+                <li>Create fake users if needed</li>
+                <li>Replace existing messages with new ones</li>
+            </ul>
+            <form method="POST">
+                <button type="submit">Add Fake Conversations</button>
+            </form>
+        </body>
+        </html>
+        """
+    
+    try:
+        from scripts.add_fake_conversations_simple import add_fake_conversations
+        
+        print("🔧 Starting add fake conversations...")
+        add_fake_conversations()
+        
+        return safe_jsonify({
+            'success': True,
+            'message': 'Fake conversations added successfully!'
+        })
+            
+    except Exception as e:
+        error_details = str(e)
+        print(f"Error in web_add_fake_conversations: {error_details}")
+        
+        return safe_jsonify({
+            'success': False,
+            'error': f'Error: {error_details}'
+        }), 500
+
 logger.info("✅ Web fix conversations precise endpoint registered")
+logger.info("✅ Web add fake conversations endpoint registered")
 
 # Simple direct script execution endpoint
 @app.route('/admin/recreate-topics-direct')
