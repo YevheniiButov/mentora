@@ -1969,6 +1969,17 @@ def track_page_exit():
         logger.error(f"Error tracking page exit: {str(e)}")
         return safe_jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/track-email-entry', methods=['POST'])
+def track_email_entry():
+    """Track email entry events"""
+    try:
+        data = request.get_json()
+        logger.info(f"Email entry tracked: {data}")
+        return safe_jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Error tracking email entry: {str(e)}")
+        return safe_jsonify({'success': False, 'error': str(e)}), 500
+
 # ========================================
 # APPLICATION ENTRY POINT
 # ========================================
