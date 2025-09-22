@@ -1922,6 +1922,54 @@ def create_admin_if_not_exists():
         logger.error(f"❌ Error creating admin: {str(e)}")
 
 # ========================================
+# REGISTRATION TRACKING ENDPOINTS (NO LANGUAGE PREFIX)
+# ========================================
+
+@app.route('/track-registration-visit', methods=['POST'])
+def track_registration_visit():
+    """Track registration page visits"""
+    try:
+        data = request.get_json()
+        logger.info(f"Registration visit tracked: {data}")
+        return safe_jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Error tracking registration visit: {str(e)}")
+        return safe_jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/track-form-start', methods=['POST'])
+def track_form_start():
+    """Track form start events"""
+    try:
+        data = request.get_json()
+        logger.info(f"Form start tracked: {data}")
+        return safe_jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Error tracking form start: {str(e)}")
+        return safe_jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/track-form-submit', methods=['POST'])
+def track_form_submit():
+    """Track form submission events"""
+    try:
+        data = request.get_json()
+        logger.info(f"Form submit tracked: {data}")
+        return safe_jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Error tracking form submit: {str(e)}")
+        return safe_jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/track-page-exit', methods=['POST'])
+def track_page_exit():
+    """Track page exit events"""
+    try:
+        data = request.get_json()
+        logger.info(f"Page exit tracked: {data}")
+        return safe_jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Error tracking page exit: {str(e)}")
+        return safe_jsonify({'success': False, 'error': str(e)}), 500
+
+# ========================================
 # APPLICATION ENTRY POINT
 # ========================================
 
