@@ -267,6 +267,141 @@ body .hero-section {
 .hero-section {
   margin-top: 0 !important;
 }
+
+/* ===== IRT ANNOUNCEMENT STICKER ===== */
+.irt-announcement-sticker {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  z-index: 1001;
+  max-width: 320px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: none;
+  transform: translateX(100%);
+  animation: none;
+}
+
+.irt-sticker-content {
+  padding: 20px;
+  position: relative;
+  color: white;
+}
+
+.irt-sticker-icon {
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.irt-sticker-text {
+  margin-left: 50px;
+  margin-bottom: 10px;
+}
+
+.irt-sticker-text h4 {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.irt-sticker-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.irt-sticker-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.irt-sticker-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.irt-sticker-ribbon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+  background-size: 300% 100%;
+  animation: ribbonFlow 3s ease-in-out infinite;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes ribbonFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Мобильная адаптация для наклейки */
+@media (max-width: 768px) {
+  .irt-announcement-sticker {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    top: 80px;
+  }
+}
 </style>
 {% endblock %}
 
@@ -916,6 +1051,25 @@ body .hero-section {
 
 
 
+<!-- IRT Test Announcement Sticker -->
+{% if current_user.is_authenticated %}
+<div id="irt-announcement" class="irt-announcement-sticker">
+  <div class="irt-sticker-content">
+    <div class="irt-sticker-icon">
+      <i class="fas fa-flask"></i>
+    </div>
+    <div class="irt-sticker-text">
+      <h4>🧪 IRT Тест</h4>
+      <p>Скоро доступен диагностический IRT тест в тестовом режиме!</p>
+    </div>
+    <button class="irt-sticker-close" onclick="closeIrtAnnouncement()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="irt-sticker-ribbon"></div>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block body_scripts %}
@@ -923,5 +1077,29 @@ body .hero-section {
 
 <!-- Phone animation script -->
 <script src="{{ url_for('static', filename='js/phone-animation.js') }}"></script>
+
+<!-- IRT Announcement Script -->
+<script>
+function closeIrtAnnouncement() {
+  const announcement = document.getElementById('irt-announcement');
+  if (announcement) {
+    announcement.style.animation = 'slideOutRight 0.5s ease-in-out forwards';
+    setTimeout(() => {
+      announcement.style.display = 'none';
+    }, 500);
+  }
+}
+
+// Show announcement after page load
+document.addEventListener('DOMContentLoaded', function() {
+  const announcement = document.getElementById('irt-announcement');
+  if (announcement) {
+    setTimeout(() => {
+      announcement.style.display = 'block';
+      announcement.style.animation = 'slideInRight 0.6s ease-out forwards';
+    }, 2000); // Show after 2 seconds
+  }
+});
+</script>
 
 {% endblock %}
