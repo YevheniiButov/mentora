@@ -201,7 +201,10 @@
 // Notification System - show pre-registration notification
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
-        if (window.mentorNotifications) {
+        // Check if user is authenticated
+        const isAuthenticated = document.querySelector('meta[name="user-authenticated"]')?.content === 'true';
+        
+        if (window.mentorNotifications && !isAuthenticated) {
             window.mentorNotifications.showPreRegistration();
         }
     }, 1000); // Show after 1 second

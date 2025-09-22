@@ -590,16 +590,9 @@
             }
 
             init() {
-                console.log('🍪 Cookie Notice System initializing...');
-                console.log('🍪 Has consent:', this.hasConsent());
-                console.log('🍪 Cookie name:', this.cookieName);
-                
                 // Check if user has already made a choice
                 if (!this.hasConsent()) {
-                    console.log('🍪 No consent found, showing notice...');
                     this.showNotice();
-                } else {
-                    console.log('🍪 Consent already given, hiding notice');
                 }
             }
 
@@ -609,18 +602,11 @@
 
             showNotice() {
                 const notice = document.getElementById('cookie-notice');
-                console.log('🍪 showNotice called, notice element:', notice);
-                
                 if (notice) {
-                    console.log('🍪 Notice element found, scheduling show in 1 second...');
                     // Delay showing to avoid interfering with page load
                     setTimeout(() => {
-                        console.log('🍪 Adding show class to notice...');
                         notice.classList.add('show');
-                        console.log('🍪 Notice classes:', notice.className);
                     }, 1000);
-                } else {
-                    console.error('🍪 Cookie notice element not found!');
                 }
             }
 
@@ -650,8 +636,6 @@
                         'analytics_storage': accepted ? 'granted' : 'denied'
                     });
                 }
-                
-                console.log('Cookie consent saved:', consent);
             }
 
             getConsent() {
@@ -673,18 +657,6 @@
             initCookieNotice();
         }
         
-        // Debug function for testing
-        window.testCookieNotice = function() {
-            console.log('🍪 Testing cookie notice...');
-            localStorage.removeItem('cookie_consent');
-            const cookieNotice = new CookieNoticeSystem();
-        };
-        
-        window.clearCookieConsent = function() {
-            console.log('🍪 Clearing cookie consent...');
-            localStorage.removeItem('cookie_consent');
-            location.reload();
-        };
 
         // Global functions for button clicks
         window.acceptCookies = function() {
