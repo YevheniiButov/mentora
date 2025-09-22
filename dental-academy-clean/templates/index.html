@@ -319,10 +319,19 @@ body .hero-section {
 }
 
 .irt-sticker-text p {
-  margin: 0;
+  margin: 0 0 8px 0;
   font-size: 0.9rem;
   opacity: 0.9;
   line-height: 1.4;
+}
+
+.irt-sticker-note {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4px;
 }
 
 .irt-sticker-close {
@@ -1052,7 +1061,6 @@ body .hero-section {
 
 
 <!-- IRT Test Announcement Sticker -->
-{% if current_user.is_authenticated %}
 <div id="irt-announcement" class="irt-announcement-sticker">
   <div class="irt-sticker-content">
     <div class="irt-sticker-icon">
@@ -1061,6 +1069,7 @@ body .hero-section {
     <div class="irt-sticker-text">
       <h4>🧪 IRT Тест</h4>
       <p>Скоро доступен диагностический IRT тест в тестовом режиме!</p>
+      <small class="irt-sticker-note">* Для всех зарегистрированных пользователей</small>
     </div>
     <button class="irt-sticker-close" onclick="closeIrtAnnouncement()">
       <i class="fas fa-times"></i>
@@ -1068,7 +1077,6 @@ body .hero-section {
   </div>
   <div class="irt-sticker-ribbon"></div>
 </div>
-{% endif %}
 
 {% endblock %}
 
