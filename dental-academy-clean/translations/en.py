@@ -757,6 +757,11 @@ translations = {
     'register_now': 'Register now',
     'early_access': 'Early access',
     'early_registration_title': 'Early registration',
+    
+    # IRT Test Announcement
+    'irt_test_title': 'IRT Test',
+    'irt_test_announcement': 'Soon available: diagnostic IRT test in beta mode!',
+    'irt_test_note': 'For all registered users',
     'comprehensive_program_subtitle': 'Register now to participate in the comprehensive BIG exam preparation program with practical internships',
     'what_you_get': 'What awaits you:',
     'structured_big_prep': 'Structured BIG preparation',

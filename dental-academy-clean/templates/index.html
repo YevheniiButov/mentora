@@ -271,11 +271,11 @@ body .hero-section {
 /* ===== IRT ANNOUNCEMENT STICKER ===== */
 .irt-announcement-sticker {
   position: fixed;
-  top: 100px;
+  top: 120px;
   right: 20px;
   z-index: 1001;
   max-width: 320px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3ECDC1 0%, #2dd4bf 100%);
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   overflow: hidden;
@@ -408,7 +408,7 @@ body .hero-section {
     right: 10px;
     left: 10px;
     max-width: none;
-    top: 80px;
+    top: 100px;
   }
 }
 </style>
@@ -1067,9 +1067,9 @@ body .hero-section {
       <i class="fas fa-flask"></i>
     </div>
     <div class="irt-sticker-text">
-      <h4>🧪 IRT Тест</h4>
-      <p>Скоро доступен диагностический IRT тест в тестовом режиме!</p>
-      <small class="irt-sticker-note">* Для всех зарегистрированных пользователей</small>
+      <h4>🧪 {{ t('irt_test_title', g.lang) | default('IRT Test') }}</h4>
+      <p>{{ t('irt_test_announcement', g.lang) | default('Soon available: diagnostic IRT test in beta mode!') }}</p>
+      <small class="irt-sticker-note">* {{ t('irt_test_note', g.lang) | default('For all registered users') }}</small>
     </div>
     <button class="irt-sticker-close" onclick="closeIrtAnnouncement()">
       <i class="fas fa-times"></i>
