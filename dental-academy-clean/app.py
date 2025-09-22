@@ -446,7 +446,7 @@ try:
     
     # Регистрация Profile blueprint
     from routes.profile_routes import profile_bp
-    app.register_blueprint(profile_bp)
+    app.register_blueprint(profile_bp, url_prefix='/profile')
     
     # Регистрация Migration blueprint
     from routes.migration_routes import migration_bp
