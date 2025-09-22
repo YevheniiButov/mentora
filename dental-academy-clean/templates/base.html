@@ -660,14 +660,24 @@
             }
         }
 
-        // Initialize cookie notice system
-        const cookieNotice = new CookieNoticeSystem();
+        // Initialize cookie notice system when DOM is ready
+        function initCookieNotice() {
+            const cookieNotice = new CookieNoticeSystem();
+            return cookieNotice;
+        }
+        
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCookieNotice);
+        } else {
+            initCookieNotice();
+        }
         
         // Debug function for testing
         window.testCookieNotice = function() {
             console.log('🍪 Testing cookie notice...');
             localStorage.removeItem('cookie_consent');
-            cookieNotice.init();
+            const cookieNotice = new CookieNoticeSystem();
         };
         
         window.clearCookieConsent = function() {
@@ -678,14 +688,17 @@
 
         // Global functions for button clicks
         window.acceptCookies = function() {
+            const cookieNotice = new CookieNoticeSystem();
             cookieNotice.setConsent(true);
         };
 
         window.declineCookies = function() {
+            const cookieNotice = new CookieNoticeSystem();
             cookieNotice.setConsent(false);
         };
 
         window.hideCookieNotice = function() {
+            const cookieNotice = new CookieNoticeSystem();
             cookieNotice.hideNotice();
         };
 
