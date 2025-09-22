@@ -227,6 +227,7 @@
     overflow-y: auto;
     padding: 1rem;
     background: #f0f2f5;
+    padding-bottom: 80px; /* Space for fixed reply form */
 }
 
 /* Mobile chat messages padding */
@@ -317,9 +318,15 @@
 
 /* Reply Form */
 .reply-form {
-    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
     background: white;
     border-top: 1px solid #e1e5e9;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
     display: none;
 }
 
@@ -331,36 +338,47 @@
     display: flex;
     gap: 0.5rem;
     align-items: flex-end;
+    max-width: 100%;
 }
 
 .reply-form textarea {
     flex: 1;
-    min-height: 40px;
-    max-height: 120px;
-    padding: 0.75rem;
+    min-height: 36px;
+    max-height: 108px;
+    padding: 0.5rem 0.75rem;
     border: 1px solid #e1e5e9;
-    border-radius: 20px;
-    resize: vertical;
+    border-radius: 18px;
+    resize: none;
     font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+    overflow-y: hidden;
 }
 
 .reply-form textarea:focus {
     outline: none;
     border-color: #3ECDC1;
+    box-shadow: 0 0 0 2px rgba(62, 205, 193, 0.1);
 }
 
 .reply-form button {
     background: #3ECDC1;
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    border-radius: 18px;
     cursor: pointer;
-    height: fit-content;
+    height: 36px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .reply-form button:hover {
     background: #2dd4bf;
+    transform: scale(1.02);
 }
 
 /* Welcome Screen */
@@ -464,12 +482,7 @@
         display: none !important;
     }
     
-    .reply-form {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-    }
+    /* Reply form already fixed in main CSS */
 }
 
 /* DESKTOP STYLES */
@@ -557,6 +570,13 @@ document.addEventListener('DOMContentLoaded', function() {
             filterTopics(e.target.value);
         });
     }
+    
+    // Initialize reply form (hidden by default)
+    addReplyForm(null);
+    const replyForm = document.getElementById('fixed-reply-form');
+    if (replyForm) {
+        replyForm.classList.remove('active');
+    }
 });
 
 function selectTopic(topicId) {
@@ -581,6 +601,12 @@ function selectTopic(topicId) {
         document.querySelector('.mobile-back-btn').style.display = 'flex';
     }
     
+    // Show reply form
+    const existingForm = document.getElementById('fixed-reply-form');
+    if (existingForm) {
+        existingForm.classList.add('active');
+    }
+    
     // Load topic content
     loadTopicContent(topicId);
 }
@@ -601,10 +627,10 @@ function showChatList() {
         item.classList.remove('active');
     });
     
-    // Remove reply form
+    // Hide reply form instead of removing it
     const existingForm = document.getElementById('fixed-reply-form');
     if (existingForm) {
-        existingForm.remove();
+        existingForm.classList.remove('active');
     }
 }
 
@@ -677,21 +703,32 @@ function displayTopicContent(topic, posts) {
     
     chatMessages.innerHTML = messagesHTML;
     
-    // Add reply form
-    addReplyForm(topic.id);
+    // Update existing reply form or create new one
+    const existingForm = document.getElementById('fixed-reply-form');
+    if (!existingForm) {
+        addReplyForm(topic.id);
+    } else {
+        // Update the form action for the current topic
+        const form = existingForm.querySelector('form');
+        if (form) {
+            form.setAttribute('onsubmit', `submitReply(event, ${topic.id})`);
+        }
+    }
 }
 
 function addReplyForm(topicId) {
-    // Remove existing reply form
-    const existingForm = document.getElementById('fixed-reply-form');
-    if (existingForm) {
-        existingForm.remove();
+    // Check if reply form already exists
+    let replyForm = document.getElementById('fixed-reply-form');
+    
+    if (!replyForm) {
+        // Create reply form only if it doesn't exist
+        replyForm = document.createElement('div');
+        replyForm.id = 'fixed-reply-form';
+        replyForm.className = 'reply-form';
+        document.body.appendChild(replyForm);
     }
     
-    // Create reply form
-    const replyForm = document.createElement('div');
-    replyForm.id = 'fixed-reply-form';
-    replyForm.className = 'reply-form active';
+    // Update form content
     replyForm.innerHTML = `
         <form id="reply-form" onsubmit="submitReply(event, ${topicId})">
             <textarea id="reply-content" placeholder="Write your reply..."></textarea>
@@ -699,14 +736,36 @@ function addReplyForm(topicId) {
         </form>
     `;
     
-    document.body.appendChild(replyForm);
+    // Show the form
+    replyForm.classList.add('active');
     
-    // Auto-resize textarea
+    // Auto-resize textarea with smooth expansion
     const textarea = document.getElementById('reply-content');
     if (textarea) {
         textarea.addEventListener('input', function() {
+            // Reset height to auto to get the correct scrollHeight
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            
+            // Calculate new height (max 3 lines = 108px)
+            const newHeight = Math.min(this.scrollHeight, 108);
+            this.style.height = newHeight + 'px';
+            
+            // Smooth transition
+            this.style.transition = 'height 0.2s ease';
+        });
+        
+        // Focus effect
+        textarea.addEventListener('focus', function() {
+            this.style.borderColor = '#3ECDC1';
+            this.style.boxShadow = '0 0 0 2px rgba(62, 205, 193, 0.1)';
+        });
+        
+        textarea.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.style.height = '36px'; // Reset to compact size
+                this.style.borderColor = '#e1e5e9';
+                this.style.boxShadow = 'none';
+            }
         });
     }
 }
@@ -731,14 +790,16 @@ function submitReply(event, topicId) {
         body: JSON.stringify({ content: content })
     })
     .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('reply-content').value = '';
-            loadTopicContent(topicId);
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
+           .then(data => {
+               if (data.success) {
+                   const textarea = document.getElementById('reply-content');
+                   textarea.value = '';
+                   textarea.style.height = '36px'; // Reset to compact size
+                   loadTopicContent(topicId);
+               } else {
+                   alert('Error: ' + data.error);
+               }
+           })
     .catch(error => {
         console.error('Error:', error);
         alert('Error sending reply');
@@ -766,16 +827,19 @@ function filterTopics(searchTerm) {
 }
 
 function editTopic(topicId) {
-    window.location.href = `/{{ lang }}/community/topic/${topicId}/edit`;
+    const currentLang = window.location.pathname.split('/')[1] || 'en';
+    window.location.href = `/${currentLang}/community/topic/${topicId}/edit`;
 }
 
 function editPost(postId) {
-    window.location.href = `/{{ lang }}/community/post/${postId}/edit`;
+    const currentLang = window.location.pathname.split('/')[1] || 'en';
+    window.location.href = `/${currentLang}/community/post/${postId}/edit`;
 }
 
 function deleteTopic(topicId) {
     if (confirm('Are you sure you want to delete this topic?')) {
-        fetch(`/{{ lang }}/community/topic/${topicId}/delete`, {
+        const currentLang = window.location.pathname.split('/')[1] || 'en';
+        fetch(`/${currentLang}/community/topic/${topicId}/delete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -803,7 +867,8 @@ function deleteTopic(topicId) {
 
 function deletePost(postId) {
     if (confirm('Are you sure you want to delete this post?')) {
-        fetch(`/{{ lang }}/community/post/${postId}/delete`, {
+        const currentLang = window.location.pathname.split('/')[1] || 'en';
+        fetch(`/${currentLang}/community/post/${postId}/delete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
