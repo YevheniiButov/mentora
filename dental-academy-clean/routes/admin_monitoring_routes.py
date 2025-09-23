@@ -213,6 +213,11 @@ def _get_error_logs(page, per_page, search_email=None):
     
     except Exception as e:
         current_app.logger.error(f"Error reading error logs from database: {str(e)}")
+        # Rollback any failed transaction
+        try:
+            db.session.rollback()
+        except:
+            pass
         # Fallback to file-based logging
         try:
             log_file = os.path.join(os.getcwd(), 'logs', 'registration_errors.log')
@@ -304,26 +309,31 @@ def _get_registration_stats():
         stats['total_registrations'] = len(recent_users)
         stats['successful_registrations'] = len(recent_users)
         
-        # Get registration visitor data
-        recent_visitors = RegistrationVisitor.query.filter(
-            RegistrationVisitor.entry_time >= cutoff_time
-        ).all()
-        
-        # Count registration types
-        for visitor in recent_visitors:
-            if visitor.page_type == 'quick_register':
-                stats['registration_types']['quick_registration'] += 1
-            elif visitor.page_type == 'register':
-                stats['registration_types']['full_registration'] += 1
-            elif visitor.page_type == 'invite_register':
-                stats['registration_types']['invite_registration'] += 1
-        
-        # Count form abandonments as failed registrations
-        abandoned_forms = RegistrationVisitor.query.filter(
-            RegistrationVisitor.entry_time >= cutoff_time,
-            RegistrationVisitor.form_abandoned == True
-        ).count()
-        stats['failed_registrations'] = abandoned_forms
+        # Get registration visitor data (with error handling)
+        try:
+            recent_visitors = RegistrationVisitor.query.filter(
+                RegistrationVisitor.entry_time >= cutoff_time
+            ).all()
+            
+            # Count registration types
+            for visitor in recent_visitors:
+                if visitor.page_type == 'quick_register':
+                    stats['registration_types']['quick_registration'] += 1
+                elif visitor.page_type == 'register':
+                    stats['registration_types']['full_registration'] += 1
+                elif visitor.page_type == 'invite_register':
+                    stats['registration_types']['invite_registration'] += 1
+            
+            # Count form abandonments as failed registrations
+            abandoned_forms = RegistrationVisitor.query.filter(
+                RegistrationVisitor.entry_time >= cutoff_time,
+                RegistrationVisitor.form_abandoned == True
+            ).count()
+            stats['failed_registrations'] = abandoned_forms
+            
+        except Exception as db_error:
+            current_app.logger.warning(f"Database error in registration stats: {str(db_error)}")
+            # Continue with default values if database query fails
         
         # Read registration logs
         log_file = os.path.join(os.getcwd(), 'logs', 'registration.log')
@@ -374,7 +384,20 @@ def _get_registration_stats():
     
     except Exception as e:
         current_app.logger.error(f"Error calculating registration stats: {str(e)}")
-        return {}
+        return {
+            'total_registrations': 0,
+            'successful_registrations': 0,
+            'failed_registrations': 0,
+            'validation_errors': 0,
+            'database_errors': 0,
+            'email_errors': 0,
+            'critical_errors': 0,
+            'registration_types': {
+                'full_registration': 0,
+                'quick_registration': 0,
+                'invite_registration': 0
+            }
+        }
 
 def _get_recent_errors(limit=10):
     """Get recent errors"""
