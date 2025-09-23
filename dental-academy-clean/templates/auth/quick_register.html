@@ -220,8 +220,25 @@
         <!-- Email -->
         <div class="form-group">
             <label for="email">{{ t('email', lang) | default('Email') }} *</label>
-            <input type="email" id="email" name="email" class="form-control" required>
+            <input type="email" id="email" name="email" class="form-control" required autocomplete="username">
             <div class="error-message" id="emailError"></div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="password">{{ t('password', lang) | default('Password') }} *</label>
+                <input type="password" id="password" name="password" class="form-control" required minlength="8" autocomplete="new-password">
+                <div class="error-message" id="passwordError"></div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                    {{ t('password_help', lang) | default('Minimum 8 characters') }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">{{ t('confirm_password', lang) | default('Confirm Password') }} *</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required minlength="8" autocomplete="new-password">
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
         </div>
 
         <!-- Профессия -->
@@ -378,6 +395,26 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
         
+        // Валидация пароля
+        const password = document.getElementById('password').value;
+        if (!password) {
+            showError('passwordError', '{{ t("password_required", lang) | default("Пароль обязателен") }}');
+            isValid = false;
+        } else if (password.length < 8) {
+            showError('passwordError', '{{ t("password_too_short", lang) | default("Пароль должен содержать минимум 8 символов") }}');
+            isValid = false;
+        }
+        
+        // Валидация подтверждения пароля
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (!confirmPassword) {
+            showError('confirmPasswordError', '{{ t("confirm_password_required", lang) | default("Подтверждение пароля обязательно") }}');
+            isValid = false;
+        } else if (password !== confirmPassword) {
+            showError('confirmPasswordError', '{{ t("passwords_dont_match", lang) | default("Пароли не совпадают") }}');
+            isValid = false;
+        }
+        
         // Валидация профессии
         const profession = document.getElementById('profession').value;
         if (!profession) {
@@ -439,6 +476,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastName: document.getElementById('lastName').value.trim(),
                 birthDate: document.getElementById('birthDate').value,
                 email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                confirmPassword: document.getElementById('confirmPassword').value,
                 profession: document.getElementById('profession').value,
                 otherProfession: document.getElementById('otherProfession').value.trim(),
                 privacyConsent: document.getElementById('privacyConsent').checked,
@@ -474,12 +513,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const userEmail = data.email || 'your email';
                 const successMessage = `
                     <div style="text-align: left; line-height: 1.8;">
-                        <p><strong>📧 Check your email:</strong> ${userEmail}</p>
-                        <p><strong>🔑 Your temporary password:</strong> Check the email for your login credentials</p>
-                        <p><strong>⚠️ Important:</strong> Check your Spam folder if you don't see the email!</p>
-                        <p><strong>🚀 Next steps:</strong> After confirming your email, you can log in and receive updates about our program.</p>
+                        <p><strong>✅ Registration Successful!</strong></p>
+                        <p><strong>📧 Email:</strong> ${userEmail}</p>
+                        <p><strong>🔑 Password:</strong> The password you just created</p>
+                        <p><strong>🚀 Next steps:</strong> You can now log in with your email and password to access your account.</p>
                         <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
-                            <em>We'll keep you informed about program developments and important updates.</em>
+                            <em>Welcome to Mentora! You'll receive updates about our program.</em>
                         </p>
                     </div>
                 `;
@@ -488,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Перенаправляем через 5 секунд (больше времени для чтения)
                 setTimeout(() => {
-                    window.location.href = '{{ url_for("auth.login", lang=lang) if lang != "en" else url_for("auth.login") }}';
+                    window.location.href = '/auth/login';
                 }, 5000);
             } else {
                 console.error('Registration failed:', result.error);
