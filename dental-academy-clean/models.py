@@ -5531,6 +5531,9 @@ class RegistrationLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     user_email = db.Column(db.String(120), nullable=True, index=True)
     user_type = db.Column(db.String(20), nullable=True)  # authenticated, anonymous
+    
+    # Timestamp
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
 
 class RegistrationVisitor(db.Model):
     """Model for tracking visitors to registration pages"""
