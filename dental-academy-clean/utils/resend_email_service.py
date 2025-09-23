@@ -273,6 +273,101 @@ The Mentora Team
 This email was sent to {user.email}
     """
 
+def send_password_reset_email_resend(user, token):
+    """
+    Отправляет email сброса пароля через Resend API
+    """
+    try:
+        reset_url = f"{current_app.config.get('BASE_URL', 'https://bigmentor.nl')}/auth/reset-password/{token}"
+        
+        print(f"=== RESEND PASSWORD RESET for {user.email} ===")
+        print(f"=== RESET_URL: {reset_url} ===")
+        
+        # Проверяем, отключена ли отправка email
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        print(f"=== MAIL_SUPPRESS_SEND: {mail_suppress} ===")
+        
+        if mail_suppress:
+            # Development mode - console output
+            print(f"\n{'='*60}")
+            print(f"🔐 PASSWORD RESET for {user.email}")
+            print(f"{'='*60}")
+            print(f"👤 User: {user.first_name} {user.last_name}")
+            print(f"📧 Email: {user.email}")
+            print(f"🔗 Reset link: {reset_url}")
+            print(f"⏰ Token valid for: 1 hour")
+            print(f"{'='*60}")
+            print(f"💡 Copy the link above and open in browser to reset password")
+            print(f"{'='*60}\n")
+            
+            # Log to file for admin access
+            try:
+                with open('logs/password_reset_links.log', 'a') as f:
+                    f.write(f"{datetime.now().isoformat()} - {user.email} - {reset_url} - RESEND_CONSOLE_MODE\n")
+            except:
+                pass
+                
+            return True
+        
+        # Production mode - send via Resend API
+        print("=== PRODUCTION MODE - SENDING PASSWORD RESET VIA RESEND API ===")
+        
+        # Get Resend API key
+        resend_api_key = current_app.config.get('RESEND_API_KEY')
+        if not resend_api_key:
+            print("=== ERROR: RESEND_API_KEY not configured ===")
+            return False
+        
+        # Prepare email data
+        email_data = {
+            "from": current_app.config.get('MAIL_DEFAULT_SENDER', 'Mentora <info@bigmentor.nl>'),
+            "to": [user.email],
+            "subject": "MENTORA - Password Reset Request",
+            "html": get_password_reset_html_resend(user, reset_url),
+            "text": get_password_reset_text_resend(user, reset_url)
+        }
+        
+        print(f"=== SENDING TO RESEND API ===")
+        print(f"=== FROM: {email_data['from']} ===")
+        print(f"=== TO: {email_data['to']} ===")
+        print(f"=== SUBJECT: {email_data['subject']} ===")
+        
+        # Send via Resend API
+        headers = {
+            "Authorization": f"Bearer {resend_api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers=headers,
+            json=email_data,
+            timeout=30
+        )
+        
+        print(f"=== RESEND API RESPONSE STATUS: {response.status_code} ===")
+        print(f"=== RESEND API RESPONSE: {response.text} ===")
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"=== PASSWORD RESET EMAIL SENT SUCCESSFULLY VIA RESEND ===")
+            print(f"=== EMAIL ID: {result.get('id')} ===")
+            
+            current_app.logger.info(f"Password reset email sent to {user.email} via Resend API")
+            return True
+        else:
+            print(f"=== RESEND API ERROR: {response.status_code} - {response.text} ===")
+            current_app.logger.error(f"Failed to send password reset via Resend API to {user.email}: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"=== RESEND PASSWORD RESET ERROR: {str(e)} ===")
+        import traceback
+        print(f"=== TRACEBACK: {traceback.format_exc()} ===")
+        
+        current_app.logger.error(f"Failed to send password reset via Resend to {user.email}: {str(e)}")
+        return False
+
 def send_email_via_resend(to_email, subject, html_content, from_name="Mentora Team"):
     """
     Универсальная функция для отправки email через Resend API
@@ -333,3 +428,117 @@ def send_email_via_resend(to_email, subject, html_content, from_name="Mentora Te
     except Exception as e:
         print(f"❌ Failed to send email via Resend API: {e}")
         return False
+
+def get_password_reset_html_resend(user, reset_url):
+    """Generate HTML for password reset email via Resend"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Password Reset - Mentora</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
+                <h1 style="margin: 0; font-size: 32px; font-weight: bold;">MENTORA</h1>
+                <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Password Reset</p>
+            </div>
+            
+            <!-- Content -->
+            <div style="padding: 40px 30px;">
+                <h2 style="color: #2d3748; margin-top: 0; font-size: 24px;">Password Reset</h2>
+                
+                <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
+                    Hello, <strong>{user.first_name}</strong>!
+                </p>
+                
+                <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
+                    You have requested a password reset for your Mentora account. Click the button below to create a new password.
+                </p>
+                
+                <!-- CTA Button -->
+                <div style="text-align: center; margin: 40px 0;">
+                    <a href="{reset_url}" 
+                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); 
+                              color: white; 
+                              padding: 16px 32px; 
+                              text-decoration: none; 
+                              border-radius: 8px; 
+                              font-weight: bold; 
+                              font-size: 16px;
+                              display: inline-block;
+                              box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);">
+                        🔐 Reset Password
+                    </a>
+                </div>
+                
+                <!-- Alternative link -->
+                <div style="background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                    <p style="color: #4a5568; font-size: 14px; margin: 0 0 10px 0;">
+                        <strong>If the button doesn't work,</strong> copy this link:
+                    </p>
+                    <p style="word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; color: #2d3748;">
+                        {reset_url}
+                    </p>
+                </div>
+                
+                <!-- Warning -->
+                <div style="background-color: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                    <p style="color: #c53030; font-size: 14px; margin: 0;">
+                        <strong>⚠️ Important:</strong> This link will expire in 1 hour. If you didn't request this reset, please ignore this email.
+                    </p>
+                </div>
+                
+                <p style="color: #4a5568; font-size: 14px; line-height: 1.6;">
+                    If you have any questions, please contact our support team at 
+                    <a href="mailto:info@bigmentor.nl" style="color: #3ECDC1;">info@bigmentor.nl</a>
+                </p>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background-color: #f7fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="color: #718096; font-size: 14px; margin: 0;">
+                    <strong>Mentora Team</strong><br>
+                    Professional Development Platform<br>
+                    Website: <a href="https://bigmentor.nl" style="color: #3ECDC1;">bigmentor.nl</a>
+                </p>
+                <p style="color: #a0aec0; font-size: 12px; margin: 10px 0 0 0;">
+                    © 2024 Mentora. All rights reserved.<br>
+                    This email was sent to {user.email}
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+def get_password_reset_text_resend(user, reset_url):
+    """Generate text version for password reset email via Resend"""
+    return f"""
+MENTORA - Password Reset Request
+
+Hello {user.first_name} {user.last_name},
+
+We received a request to reset your password for your Mentora account.
+
+To reset your password, click the link below:
+{reset_url}
+
+IMPORTANT:
+- This link will expire in 1 hour
+- If you didn't request this reset, please ignore this email
+- Your password will remain unchanged until you click the link
+
+If you have any questions, please contact our support team at info@bigmentor.nl
+
+Best regards,
+Mentora Team
+Professional Development Platform
+Website: https://bigmentor.nl
+
+© 2024 Mentora. All rights reserved.
+This email was sent to {user.email}
+    """

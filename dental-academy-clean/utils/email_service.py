@@ -269,48 +269,30 @@ Website: https://bigmentor.nl
     """
 
 def send_password_reset_email(user, token):
-    """Send password reset email using direct method"""
+    """Send password reset email using the same logic as email confirmation"""
     try:
         print(f"=== PASSWORD RESET START for {user.email} ===")
         
-        # Generate reset URL
-        base_url = current_app.config.get('BASE_URL', 'https://bigmentor.nl')
-        reset_url = f"{base_url}/auth/reset-password/{token}"
+        # Check email provider (same as email confirmation)
+        email_provider = current_app.config.get('EMAIL_PROVIDER', 'smtp')
+        print(f"=== EMAIL_PROVIDER: {email_provider} ===")
         
-        print(f"=== RESET_URL: {reset_url} ===")
-        
-        # Check if suppressed
-        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
-        print(f"=== MAIL_SUPPRESS_SEND: {mail_suppress} ===")
-        
-        if mail_suppress:
-            print(f"\n{'='*60}")
-            print(f"🔐 PASSWORD RESET for {user.email}")
-            print(f"🔗 Link: {reset_url}")
-            print(f"{'='*60}\n")
-            return True
-        
-        print("=== PRODUCTION MODE - SENDING PASSWORD RESET ===")
-        
-        # Create message
-        msg = Message(
-            subject='MENTORA - Password Reset',
-            recipients=[user.email],
-            sender=current_app.config['MAIL_DEFAULT_SENDER']
-        )
-        
-        # HTML content
-        msg.html = get_password_reset_html(user, reset_url)
-        msg.body = get_password_reset_text(user, reset_url)
-        
-        # Send
-        print("=== ATTEMPTING TO SEND PASSWORD RESET ===")
-        mail.send(msg)
-        print("=== PASSWORD RESET EMAIL SENT SUCCESSFULLY ===")
-        
-        current_app.logger.info(f"Password reset email sent to {user.email}")
-        return True
-        
+        if email_provider == 'resend':
+            # Use Resend API (same as email confirmation)
+            print("=== USING RESEND API FOR PASSWORD RESET ===")
+            try:
+                from utils.resend_email_service import send_password_reset_email_resend
+                print("=== RESEND FUNCTION IMPORTED SUCCESSFULLY ===")
+                return send_password_reset_email_resend(user, token)
+            except ImportError as e:
+                print(f"=== RESEND IMPORT ERROR: {e} ===")
+                print("=== FALLING BACK TO SMTP ===")
+                return send_password_reset_email_smtp(user, token)
+        else:
+            # Use SMTP fallback (same as email confirmation)
+            print("=== USING SMTP FALLBACK FOR PASSWORD RESET ===")
+            return send_password_reset_email_smtp(user, token)
+            
     except Exception as e:
         print(f"=== PASSWORD RESET ERROR: {str(e)} ===")
         import traceback
