@@ -5534,6 +5534,24 @@ class RegistrationLog(db.Model):
     
     # Timestamp
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'event_type': self.event_type,
+            'registration_type': self.registration_type,
+            'level': self.level,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'referrer': self.referrer,
+            'url': self.url,
+            'method': self.method,
+            'user_id': self.user_id,
+            'user_email': self.user_email,
+            'user_type': self.user_type,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
 class RegistrationVisitor(db.Model):
     """Model for tracking visitors to registration pages"""
