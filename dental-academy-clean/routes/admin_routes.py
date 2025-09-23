@@ -4817,103 +4817,102 @@ def registration_analytics():
     summary = VisitorTracker.get_analytics_summary(days)
     
     # Получаем детальную статистику по дням
-    daily_stats = db.session.query(
-        func.date(RegistrationVisitor.entry_time).label('date'),
-        RegistrationVisitor.page_type,
-        func.count(RegistrationVisitor.id).label('visits'),
-        func.count(func.distinct(RegistrationVisitor.ip_address)).label('unique_visitors'),
-        func.count(RegistrationVisitor.email_entered).label('email_entries'),
-        func.count(RegistrationVisitor.form_started).label('form_starts'),
-        func.count(RegistrationVisitor.form_abandoned).label('form_abandonments'),
-        func.count(RegistrationVisitor.registration_completed).label('successful_registrations')
-    ).filter(
-        RegistrationVisitor.entry_time >= start_date
-    ).group_by(
-        func.date(RegistrationVisitor.entry_time),
-        RegistrationVisitor.page_type
-    ).order_by(
-        desc('date')
-    ).all()
-    
-    # Получаем последние посетители с email или именем (все данные)
     try:
-        # Проверяем, существуют ли поля имени в базе данных
-        inspector = db.inspect(db.engine)
-        columns = [col['name'] for col in inspector.get_columns('registration_visitors')]
-        has_name_fields = 'first_name_entered' in columns and 'last_name_entered' in columns
-        
-        if has_name_fields:
-            recent_visitors = RegistrationVisitor.query.filter(
-                or_(
-                    RegistrationVisitor.email_entered.isnot(None),
-                    RegistrationVisitor.first_name_entered.isnot(None)
-                ),
-                RegistrationVisitor.entry_time >= start_date
-            ).order_by(
-                desc(RegistrationVisitor.entry_time)
-            ).limit(100).all()
-        else:
-            # Если поля имени не существуют, используем только email
-            recent_visitors = RegistrationVisitor.query.filter(
-                RegistrationVisitor.email_entered.isnot(None),
-                RegistrationVisitor.entry_time >= start_date
-            ).order_by(
-                desc(RegistrationVisitor.entry_time)
-            ).limit(100).all()
+        daily_stats = db.session.query(
+            func.date(RegistrationVisitor.entry_time).label('date'),
+            RegistrationVisitor.page_type,
+            func.count(RegistrationVisitor.id).label('visits'),
+            func.count(func.distinct(RegistrationVisitor.ip_address)).label('unique_visitors'),
+            func.count(RegistrationVisitor.email_entered).label('email_entries'),
+            func.count(RegistrationVisitor.form_started).label('form_starts'),
+            func.count(RegistrationVisitor.form_abandoned).label('form_abandonments'),
+            func.count(RegistrationVisitor.registration_completed).label('successful_registrations')
+        ).filter(
+            RegistrationVisitor.entry_time >= start_date
+        ).group_by(
+            func.date(RegistrationVisitor.entry_time),
+            RegistrationVisitor.page_type
+        ).order_by(
+            desc('date')
+        ).all()
     except Exception as e:
-        current_app.logger.error(f"Error fetching recent visitors: {str(e)}")
-        # Fallback: получаем только посетителей с email
+        current_app.logger.error(f"Error fetching daily stats: {str(e)}")
+        daily_stats = []
+    
+    # Получаем последние посетители с email (безопасный запрос)
+    try:
+        # Используем только базовые поля, которые точно существуют
         recent_visitors = RegistrationVisitor.query.filter(
             RegistrationVisitor.email_entered.isnot(None),
             RegistrationVisitor.entry_time >= start_date
         ).order_by(
             desc(RegistrationVisitor.entry_time)
         ).limit(100).all()
+    except Exception as e:
+        current_app.logger.error(f"Error fetching recent visitors: {str(e)}")
+        # Fallback: пустой список
+        recent_visitors = []
     
     # Получаем всех посетителей за период (для подробной аналитики)
-    all_visitors = RegistrationVisitor.query.filter(
-        RegistrationVisitor.entry_time >= start_date
-    ).order_by(
-        desc(RegistrationVisitor.entry_time)
-    ).limit(500).all()
+    try:
+        all_visitors = RegistrationVisitor.query.filter(
+            RegistrationVisitor.entry_time >= start_date
+        ).order_by(
+            desc(RegistrationVisitor.entry_time)
+        ).limit(500).all()
+    except Exception as e:
+        current_app.logger.error(f"Error fetching all visitors: {str(e)}")
+        all_visitors = []
     
     # Получаем статистику по странам (если есть данные)
-    country_stats = db.session.query(
-        RegistrationVisitor.country,
-        func.count(RegistrationVisitor.id).label('visits')
-    ).filter(
-        RegistrationVisitor.country.isnot(None),
-        RegistrationVisitor.entry_time >= start_date
-    ).group_by(
-        RegistrationVisitor.country
-    ).order_by(
-        desc('visits')
-    ).limit(20).all()
+    try:
+        country_stats = db.session.query(
+            RegistrationVisitor.country,
+            func.count(RegistrationVisitor.id).label('visits')
+        ).filter(
+            RegistrationVisitor.country.isnot(None),
+            RegistrationVisitor.entry_time >= start_date
+        ).group_by(
+            RegistrationVisitor.country
+        ).order_by(
+            desc('visits')
+        ).limit(20).all()
+    except Exception as e:
+        current_app.logger.error(f"Error fetching country stats: {str(e)}")
+        country_stats = []
     
     # Получаем статистику по IP адресам
-    ip_stats = db.session.query(
-        RegistrationVisitor.ip_address,
-        func.count(RegistrationVisitor.id).label('visits'),
-        func.count(RegistrationVisitor.email_entered).label('email_entries'),
-        func.count(RegistrationVisitor.registration_completed).label('completed')
-    ).filter(
-        RegistrationVisitor.entry_time >= start_date
-    ).group_by(
-        RegistrationVisitor.ip_address
-    ).order_by(
-        desc('visits')
-    ).limit(50).all()
+    try:
+        ip_stats = db.session.query(
+            RegistrationVisitor.ip_address,
+            func.count(RegistrationVisitor.id).label('visits'),
+            func.count(RegistrationVisitor.email_entered).label('email_entries'),
+            func.count(RegistrationVisitor.registration_completed).label('completed')
+        ).filter(
+            RegistrationVisitor.entry_time >= start_date
+        ).group_by(
+            RegistrationVisitor.ip_address
+        ).order_by(
+            desc('visits')
+        ).limit(50).all()
+    except Exception as e:
+        current_app.logger.error(f"Error fetching IP stats: {str(e)}")
+        ip_stats = []
     
     # Получаем статистику по времени (часы дня)
-    hourly_stats = db.session.query(
-        func.extract('hour', RegistrationVisitor.entry_time).label('hour'),
-        func.count(RegistrationVisitor.id).label('visits'),
-        func.count(RegistrationVisitor.registration_completed).label('completed')
-    ).filter(
-        RegistrationVisitor.entry_time >= start_date
-    ).group_by(
-        func.extract('hour', RegistrationVisitor.entry_time)
-    ).order_by('hour').all()
+    try:
+        hourly_stats = db.session.query(
+            func.extract('hour', RegistrationVisitor.entry_time).label('hour'),
+            func.count(RegistrationVisitor.id).label('visits'),
+            func.count(RegistrationVisitor.registration_completed).label('completed')
+        ).filter(
+            RegistrationVisitor.entry_time >= start_date
+        ).group_by(
+            func.extract('hour', RegistrationVisitor.entry_time)
+        ).order_by('hour').all()
+    except Exception as e:
+        current_app.logger.error(f"Error fetching hourly stats: {str(e)}")
+        hourly_stats = []
     
     return render_template('admin/registration_analytics.html',
                          summary=summary,
