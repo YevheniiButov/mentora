@@ -4836,15 +4836,39 @@ def registration_analytics():
     ).all()
     
     # Получаем последние посетители с email или именем (все данные)
-    recent_visitors = RegistrationVisitor.query.filter(
-        or_(
+    try:
+        # Проверяем, существуют ли поля имени в базе данных
+        inspector = db.inspect(db.engine)
+        columns = [col['name'] for col in inspector.get_columns('registration_visitors')]
+        has_name_fields = 'first_name_entered' in columns and 'last_name_entered' in columns
+        
+        if has_name_fields:
+            recent_visitors = RegistrationVisitor.query.filter(
+                or_(
+                    RegistrationVisitor.email_entered.isnot(None),
+                    RegistrationVisitor.first_name_entered.isnot(None)
+                ),
+                RegistrationVisitor.entry_time >= start_date
+            ).order_by(
+                desc(RegistrationVisitor.entry_time)
+            ).limit(100).all()
+        else:
+            # Если поля имени не существуют, используем только email
+            recent_visitors = RegistrationVisitor.query.filter(
+                RegistrationVisitor.email_entered.isnot(None),
+                RegistrationVisitor.entry_time >= start_date
+            ).order_by(
+                desc(RegistrationVisitor.entry_time)
+            ).limit(100).all()
+    except Exception as e:
+        current_app.logger.error(f"Error fetching recent visitors: {str(e)}")
+        # Fallback: получаем только посетителей с email
+        recent_visitors = RegistrationVisitor.query.filter(
             RegistrationVisitor.email_entered.isnot(None),
-            RegistrationVisitor.first_name_entered.isnot(None)
-        ),
-        RegistrationVisitor.entry_time >= start_date
-    ).order_by(
-        desc(RegistrationVisitor.entry_time)
-    ).limit(100).all()
+            RegistrationVisitor.entry_time >= start_date
+        ).order_by(
+            desc(RegistrationVisitor.entry_time)
+        ).limit(100).all()
     
     # Получаем всех посетителей за период (для подробной аналитики)
     all_visitors = RegistrationVisitor.query.filter(

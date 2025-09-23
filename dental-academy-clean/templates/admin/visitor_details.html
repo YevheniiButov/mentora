@@ -38,7 +38,7 @@
                 <tr>
                     <td><strong>Name Entered:</strong></td>
                     <td>
-                        {% if visitor.first_name_entered or visitor.last_name_entered %}
+                        {% if hasattr(visitor, 'first_name_entered') and hasattr(visitor, 'last_name_entered') and (visitor.first_name_entered or visitor.last_name_entered) %}
                             <span class="badge bg-primary">
                                 {{ visitor.first_name_entered or '' }} {{ visitor.last_name_entered or '' }}
                             </span>
