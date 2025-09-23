@@ -691,14 +691,16 @@ class PageView(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     visit_id = db.Column(db.Integer, db.ForeignKey('website_visits.id'), nullable=False)
+    session_id = db.Column(db.String(100), db.ForeignKey('user_sessions.session_id'), nullable=True, index=True)
     page_url = db.Column(db.String(500), nullable=False)
     page_title = db.Column(db.String(200), nullable=True)
     time_on_page = db.Column(db.Integer, nullable=True)  # seconds
     scroll_depth = db.Column(db.Integer, nullable=True)  # percentage
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     
-    # Relationship
+    # Relationships
     visit = db.relationship('WebsiteVisit', backref='page_views')
+    session = db.relationship('UserSession', backref='page_views')
     
     def __repr__(self):
         return f'<PageView {self.id}: {self.page_url}>'
