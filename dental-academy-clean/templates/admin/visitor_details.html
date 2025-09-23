@@ -36,6 +36,18 @@
             <h6 class="text-muted mb-2">Registration Actions</h6>
             <table class="table table-sm">
                 <tr>
+                    <td><strong>Name Entered:</strong></td>
+                    <td>
+                        {% if visitor.first_name_entered or visitor.last_name_entered %}
+                            <span class="badge bg-primary">
+                                {{ visitor.first_name_entered or '' }} {{ visitor.last_name_entered or '' }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">No name entered</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <td><strong>Email Entered:</strong></td>
                     <td>
                         {% if visitor.email_entered %}

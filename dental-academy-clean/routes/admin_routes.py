@@ -4835,9 +4835,12 @@ def registration_analytics():
         desc('date')
     ).all()
     
-    # Получаем последние посетители с email (все данные)
+    # Получаем последние посетители с email или именем (все данные)
     recent_visitors = RegistrationVisitor.query.filter(
-        RegistrationVisitor.email_entered.isnot(None),
+        or_(
+            RegistrationVisitor.email_entered.isnot(None),
+            RegistrationVisitor.first_name_entered.isnot(None)
+        ),
         RegistrationVisitor.entry_time >= start_date
     ).order_by(
         desc(RegistrationVisitor.entry_time)

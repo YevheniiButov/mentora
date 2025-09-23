@@ -7,6 +7,7 @@ class RegistrationTracker {
         this.pageType = this.detectPageType();
         this.startTime = Date.now();
         this.emailEntered = false;
+        this.nameEntered = false;
         this.formStarted = false;
         this.trackingActive = true;
         
@@ -30,6 +31,9 @@ class RegistrationTracker {
         
         // Отслеживаем ввод email
         this.trackEmailInput();
+        
+        // Отслеживаем ввод имени
+        this.trackNameInput();
         
         // Отслеживаем начало заполнения формы
         this.trackFormStart();
@@ -79,6 +83,40 @@ class RegistrationTracker {
         });
     }
     
+    trackNameInput() {
+        const firstNameInputs = document.querySelectorAll('input[name="first_name"], input[name="firstName"], input[id="first_name"], input[id="firstName"]');
+        const lastNameInputs = document.querySelectorAll('input[name="last_name"], input[name="lastName"], input[id="last_name"], input[id="lastName"]');
+        
+        // Отслеживаем поля имени
+        [...firstNameInputs, ...lastNameInputs].forEach(input => {
+            let timeout;
+            
+            input.addEventListener('input', (e) => {
+                clearTimeout(timeout);
+                
+                // Ждем 2 секунды после остановки ввода
+                timeout = setTimeout(() => {
+                    const firstName = this.getValueByName('first_name') || this.getValueByName('firstName') || this.getValueById('first_name') || this.getValueById('firstName');
+                    const lastName = this.getValueByName('last_name') || this.getValueByName('lastName') || this.getValueById('last_name') || this.getValueById('lastName');
+                    
+                    if (firstName && lastName && firstName.length > 1 && lastName.length > 1) {
+                        this.trackNameEntry(firstName, lastName);
+                    }
+                }, 2000);
+            });
+        });
+    }
+    
+    getValueByName(name) {
+        const input = document.querySelector(`input[name="${name}"]`);
+        return input ? input.value.trim() : null;
+    }
+    
+    getValueById(id) {
+        const input = document.getElementById(id);
+        return input ? input.value.trim() : null;
+    }
+    
     async trackEmailEntry(email) {
         if (this.emailEntered) return;
         
@@ -102,6 +140,33 @@ class RegistrationTracker {
             }
         } catch (error) {
             console.error('❌ Error tracking email entry:', error);
+        }
+    }
+    
+    async trackNameEntry(firstName, lastName) {
+        if (this.nameEntered) return;
+        
+        try {
+            this.nameEntered = true;
+            
+            const response = await fetch('/track-name-entry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCSRFToken()
+                },
+                body: JSON.stringify({
+                    first_name: firstName,
+                    last_name: lastName,
+                    page_type: this.pageType
+                })
+            });
+            
+            if (response.ok) {
+                console.log('✅ Name entry tracked:', firstName, lastName);
+            }
+        } catch (error) {
+            console.error('❌ Error tracking name entry:', error);
         }
     }
     

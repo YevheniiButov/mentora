@@ -112,6 +112,38 @@ class VisitorTracker:
             return False
     
     @staticmethod
+    def track_name_entry(first_name, last_name, page_type):
+        """Отслеживает ввод имени пользователя"""
+        try:
+            ip_address = VisitorTracker.get_client_ip()
+            session_id = session.get('visitor_session_id')
+            
+            if not session_id:
+                return False
+            
+            # Находим активную сессию
+            visitor = RegistrationVisitor.query.filter_by(
+                ip_address=ip_address,
+                session_id=session_id,
+                page_type=page_type,
+                exit_time=None
+            ).first()
+            
+            if visitor:
+                visitor.first_name_entered = first_name
+                visitor.last_name_entered = last_name
+                visitor.name_entered_at = datetime.utcnow()
+                db.session.commit()
+                return True
+            
+            return False
+            
+        except Exception as e:
+            current_app.logger.error(f"Error tracking name entry: {str(e)}")
+            db.session.rollback()
+            return False
+    
+    @staticmethod
     def track_form_start(page_type):
         """Отслеживает начало заполнения формы"""
         try:

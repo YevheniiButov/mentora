@@ -5556,6 +5556,9 @@ class RegistrationVisitor(db.Model):
     # Interaction tracking
     email_entered = db.Column(db.String(120), nullable=True, index=True)  # Partial email if entered
     email_entered_at = db.Column(db.DateTime, nullable=True)
+    first_name_entered = db.Column(db.String(100), nullable=True, index=True)  # First name if entered
+    last_name_entered = db.Column(db.String(100), nullable=True, index=True)  # Last name if entered
+    name_entered_at = db.Column(db.DateTime, nullable=True)
     form_started = db.Column(db.Boolean, default=False, nullable=False)
     form_abandoned = db.Column(db.Boolean, default=False, nullable=False)
     registration_completed = db.Column(db.Boolean, default=False, nullable=False)

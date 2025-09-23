@@ -1969,19 +1969,59 @@ def track_page_exit():
         logger.error(f"Error tracking page exit: {str(e)}")
         return safe_jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/track-email-entry', methods=['POST'])
+@app.route("/track-email-entry", methods=["POST"])
 def track_email_entry():
     """Track email entry events"""
     try:
         data = request.get_json()
-        logger.info(f"Email entry tracked: {data}")
-        return safe_jsonify({'success': True})
+        email = data.get("email")
+        page_type = data.get("page_type")
+        
+        if not email or not page_type:
+            return safe_jsonify({"success": False, "error": "Missing email or page_type"}), 400
+        
+        # Use VisitorTracker to actually track the email entry
+        from utils.visitor_tracker import VisitorTracker
+        success = VisitorTracker.track_email_entry(email, page_type)
+        
+        if success:
+            logger.info(f"✅ Email entry tracked successfully: {email} on {page_type}")
+            return safe_jsonify({"success": True})
+        else:
+            logger.warning(f"⚠️ Failed to track email entry: {email} on {page_type}")
+            return safe_jsonify({"success": False, "error": "Failed to track email entry"}), 500
+            
     except Exception as e:
-        logger.error(f"Error tracking email entry: {str(e)}")
-        return safe_jsonify({'success': False, 'error': str(e)}), 500
-
+        logger.error(f"❌ Error tracking email entry: {str(e)}")
+        return safe_jsonify({"success": False, "error": str(e)}), 500
 # ========================================
-# APPLICATION ENTRY POINT
+
+@app.route("/track-name-entry", methods=["POST"])
+def track_name_entry():
+    """Track name entry events"""
+    try:
+        data = request.get_json()
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        page_type = data.get("page_type")
+        
+        if not first_name or not last_name or not page_type:
+            return safe_jsonify({"success": False, "error": "Missing first_name, last_name or page_type"}), 400
+        
+        # Use VisitorTracker to actually track the name entry
+        from utils.visitor_tracker import VisitorTracker
+        success = VisitorTracker.track_name_entry(first_name, last_name, page_type)
+        
+        if success:
+            logger.info(f"✅ Name entry tracked successfully: {first_name} {last_name} on {page_type}")
+            return safe_jsonify({"success": True})
+        else:
+            logger.warning(f"⚠️ Failed to track name entry: {first_name} {last_name} on {page_type}")
+            return safe_jsonify({"success": False, "error": "Failed to track name entry"}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Error tracking name entry: {str(e)}")
+        return safe_jsonify({"success": False, "error": str(e)}), 500# APPLICATION ENTRY POINT
 # ========================================
 
 if __name__ == '__main__':

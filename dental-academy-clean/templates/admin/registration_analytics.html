@@ -225,6 +225,7 @@
                             <tr>
                                 <th>Time</th>
                                 <th>IP Address</th>
+                                <th>Name</th>
                                 <th>Email</th>
                                 <th>Page Type</th>
                                 <th>Country</th>
@@ -242,6 +243,15 @@
                                 </td>
                                 <td>
                                     <code>{{ visitor.ip_address }}</code>
+                                </td>
+                                <td>
+                                    {% if visitor.first_name_entered or visitor.last_name_entered %}
+                                        <span class="badge bg-primary">
+                                            {{ visitor.first_name_entered or '' }} {{ visitor.last_name_entered or '' }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     {% if visitor.email_entered %}
