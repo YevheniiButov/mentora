@@ -1,0 +1,255 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Monitoring Dashboard - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Monitoring Dashboard</h1>
+                <div class="btn-group">
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <h5><i class="fas fa-exclamation-triangle"></i> Error</h5>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <!-- System Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.total_users }}</h4>
+                            <p class="card-text">Total Users</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.active_users }}</h4>
+                            <p class="card-text">Active Users</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.total_topics }}</h4>
+                            <p class="card-text">Forum Topics</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-comments fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ stats.total_messages }}</h4>
+                            <p class="card-text">Forum Messages</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-comment fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Analytics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line"></i> Registration Analytics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ registration_stats.total_visitors }}</h3>
+                                <p class="text-muted">Total Visitors</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-success">{{ registration_stats.completed_registrations }}</h3>
+                                <p class="text-muted">Completed Registrations</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-info">{{ registration_stats.email_entries }}</h3>
+                                <p class="text-muted">Email Entries</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-warning">{{ registration_stats.name_entries }}</h3>
+                                <p class="text-muted">Name Entries</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Visitors -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-eye"></i> Recent Visitors
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_visitors %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>Page Type</th>
+                                    <th>Entry Time</th>
+                                    <th>Email</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for visitor in recent_visitors %}
+                                <tr>
+                                    <td>{{ visitor.ip_address }}</td>
+                                    <td>
+                                        <span class="badge badge-info">{{ visitor.page_type }}</span>
+                                    </td>
+                                    <td>{{ visitor.entry_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if visitor.email_entered %}
+                                            <span class="text-success">
+                                                <i class="fas fa-check"></i> {{ visitor.email_entered }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if visitor.first_name_entered or visitor.last_name_entered %}
+                                            <span class="text-success">
+                                                <i class="fas fa-check"></i> {% if visitor.first_name_entered %}{{ visitor.first_name_entered }}{% endif %}{% if visitor.last_name_entered %} {{ visitor.last_name_entered }}{% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if visitor.registration_completed %}
+                                            <span class="badge badge-success">Completed</span>
+                                        {% elif visitor.form_started %}
+                                            <span class="badge badge-warning">In Progress</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Visited</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No recent visitors found</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Health -->
+    {% if latest_health %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-heartbeat"></i> System Health
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong> 
+                                <span class="badge badge-{{ 'success' if latest_health.status == 'healthy' else 'warning' if latest_health.status == 'warning' else 'danger' }}">
+                                    {{ latest_health.status.title() }}
+                                </span>
+                            </p>
+                            <p><strong>Last Check:</strong> {{ latest_health.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if latest_health.details %}
+                            <p><strong>Details:</strong> {{ latest_health.details }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function refreshData() {
+    location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    // Only refresh if user is not actively interacting
+    if (document.hidden) {
+        location.reload();
+    }
+}, 30000);
+</script>
+{% endblock %}

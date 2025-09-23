@@ -365,6 +365,103 @@ document.addEventListener('DOMContentLoaded', function() {
         birthDateInput.value = '2000-01-01';
     }
     
+    // Трекинг начала заполнения формы
+    let formStarted = false;
+    let emailTracked = false;
+    let nameTracked = false;
+    
+    // Отслеживаем начало заполнения формы
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (!formStarted) {
+                formStarted = true;
+                trackFormStart();
+            }
+        });
+    });
+    
+    // Отслеживаем ввод email
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const email = this.value.trim();
+            if (email && email.includes('@') && !emailTracked) {
+                emailTracked = true;
+                trackEmailEntry(email);
+            }
+        });
+    }
+    
+    // Отслеживаем ввод имени и фамилии
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    
+    if (firstNameInput) {
+        firstNameInput.addEventListener('input', function() {
+            const firstName = this.value.trim();
+            const lastName = lastNameInput ? lastNameInput.value.trim() : '';
+            if (firstName && lastName && !nameTracked) {
+                nameTracked = true;
+                trackNameEntry(firstName, lastName);
+            }
+        });
+    }
+    
+    if (lastNameInput) {
+        lastNameInput.addEventListener('input', function() {
+            const firstName = firstNameInput ? firstNameInput.value.trim() : '';
+            const lastName = this.value.trim();
+            if (firstName && lastName && !nameTracked) {
+                nameTracked = true;
+                trackNameEntry(firstName, lastName);
+            }
+        });
+    }
+    
+    // Функции трекинга
+    function trackFormStart() {
+        fetch('/track-form-start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                page_type: 'quick_register',
+                timestamp: new Date().toISOString()
+            })
+        }).catch(err => console.log('Form start tracking error:', err));
+    }
+    
+    function trackEmailEntry(email) {
+        fetch('/track-email-entry', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                page_type: 'quick_register',
+                timestamp: new Date().toISOString()
+            })
+        }).catch(err => console.log('Email tracking error:', err));
+    }
+    
+    function trackNameEntry(firstName, lastName) {
+        fetch('/track-name-entry', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName,
+                page_type: 'quick_register',
+                timestamp: new Date().toISOString()
+            })
+        }).catch(err => console.log('Name tracking error:', err));
+    }
+    
     // Обработка изменения профессии
     const professionSelect = document.getElementById('profession');
     const otherProfessionGroup = document.getElementById('otherProfessionGroup');

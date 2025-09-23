@@ -4798,6 +4798,75 @@ def mobile_admin():
         }
         return render_template('admin/mobile_admin.html', stats=stats)
 
+@admin_bp.route('/monitoring/dashboard')
+@login_required
+@admin_required
+def monitoring_dashboard():
+    """Monitoring dashboard with system health and analytics"""
+    try:
+        from models import db, User, ForumTopic, ForumPost, RegistrationVisitor, RegistrationLog
+        from datetime import datetime, timedelta
+        from sqlalchemy import func, desc
+        
+        # Get basic statistics
+        stats = {
+            'total_users': User.query.count(),
+            'active_users': User.query.filter_by(is_active=True).count(),
+            'total_topics': ForumTopic.query.count(),
+            'total_messages': ForumPost.query.count()
+        }
+        
+        # Get registration statistics
+        try:
+            registration_stats = {
+                'total_visitors': RegistrationVisitor.query.count(),
+                'completed_registrations': RegistrationVisitor.query.filter_by(registration_completed=True).count(),
+                'email_entries': RegistrationVisitor.query.filter(RegistrationVisitor.email_entered.isnot(None)).count(),
+                'name_entries': RegistrationVisitor.query.filter(RegistrationVisitor.first_name_entered.isnot(None)).count()
+            }
+        except Exception as e:
+            current_app.logger.error(f"Error fetching registration stats: {str(e)}")
+            registration_stats = {
+                'total_visitors': 0,
+                'completed_registrations': 0,
+                'email_entries': 0,
+                'name_entries': 0
+            }
+        
+        # Get recent activity
+        try:
+            recent_visitors = RegistrationVisitor.query.order_by(
+                desc(RegistrationVisitor.entry_time)
+            ).limit(10).all()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching recent visitors: {str(e)}")
+            recent_visitors = []
+        
+        # Get system health
+        try:
+            from models import SystemHealthLog
+            latest_health = SystemHealthLog.query.order_by(
+                desc(SystemHealthLog.created_at)
+            ).first()
+        except Exception as e:
+            current_app.logger.error(f"Error fetching system health: {str(e)}")
+            latest_health = None
+        
+        return render_template('admin/monitoring_dashboard.html', 
+                             stats=stats,
+                             registration_stats=registration_stats,
+                             recent_visitors=recent_visitors,
+                             latest_health=latest_health)
+        
+    except Exception as e:
+        current_app.logger.error(f"Monitoring dashboard error: {str(e)}")
+        return render_template('admin/monitoring_dashboard.html', 
+                             stats={'total_users': 0, 'active_users': 0, 'total_topics': 0, 'total_messages': 0},
+                             registration_stats={'total_visitors': 0, 'completed_registrations': 0, 'email_entries': 0, 'name_entries': 0},
+                             recent_visitors=[],
+                             latest_health=None,
+                             error=str(e))
+
 @admin_bp.route('/registration-analytics')
 @login_required
 @admin_required

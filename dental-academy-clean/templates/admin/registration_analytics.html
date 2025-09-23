@@ -160,8 +160,8 @@
                 
                 <div class="mt-3">
                     <div class="conversion-rate text-center">
-                        <div>Email → Form: {{ "%.1f"|format(page_data.email_to_form_rate) }}%</div>
-                        <div>Form → Success: {{ "%.1f"|format(page_data.form_to_success_rate) }}%</div>
+                        <div>Email → Form: {% if page_data.email_entries > 0 %}{{ "%.1f"|format((page_data.form_starts / page_data.email_entries * 100)) }}%{% else %}0%{% endif %}</div>
+                        <div>Form → Success: {% if page_data.form_starts > 0 %}{{ "%.1f"|format((page_data.successful_registrations / page_data.form_starts * 100)) }}%{% else %}0%{% endif %}</div>
                     </div>
                 </div>
             </div>
@@ -247,7 +247,7 @@
                                 <td>
                                     {% if visitor.first_name_entered or visitor.last_name_entered %}
                                         <span class="badge bg-primary">
-                                            {{ visitor.first_name_entered or '' }} {{ visitor.last_name_entered or '' }}
+                                            {% if visitor.first_name_entered %}{{ visitor.first_name_entered }}{% endif %}{% if visitor.last_name_entered %} {{ visitor.last_name_entered }}{% endif %}
                                         </span>
                                     {% else %}
                                         <span class="text-muted">-</span>
