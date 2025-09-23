@@ -277,6 +277,10 @@ def _get_notification_logs(page, per_page):
 def _get_registration_stats():
     """Get registration statistics for the last 24 hours"""
     try:
+        from models import User, RegistrationVisitor, db
+        from datetime import datetime, timedelta
+        from sqlalchemy import func
+        
         stats = {
             'total_registrations': 0,
             'successful_registrations': 0,
@@ -291,6 +295,35 @@ def _get_registration_stats():
                 'invite_registration': 0
             }
         }
+        
+        # Get data from database (last 24 hours)
+        cutoff_time = datetime.utcnow() - timedelta(hours=24)
+        
+        # Get user registrations from last 24 hours
+        recent_users = User.query.filter(User.created_at >= cutoff_time).all()
+        stats['total_registrations'] = len(recent_users)
+        stats['successful_registrations'] = len(recent_users)
+        
+        # Get registration visitor data
+        recent_visitors = RegistrationVisitor.query.filter(
+            RegistrationVisitor.entry_time >= cutoff_time
+        ).all()
+        
+        # Count registration types
+        for visitor in recent_visitors:
+            if visitor.page_type == 'quick_register':
+                stats['registration_types']['quick_registration'] += 1
+            elif visitor.page_type == 'register':
+                stats['registration_types']['full_registration'] += 1
+            elif visitor.page_type == 'invite_register':
+                stats['registration_types']['invite_registration'] += 1
+        
+        # Count form abandonments as failed registrations
+        abandoned_forms = RegistrationVisitor.query.filter(
+            RegistrationVisitor.entry_time >= cutoff_time,
+            RegistrationVisitor.form_abandoned == True
+        ).count()
+        stats['failed_registrations'] = abandoned_forms
         
         # Read registration logs
         log_file = os.path.join(os.getcwd(), 'logs', 'registration.log')

@@ -211,6 +211,186 @@
         </div>
     </div>
 
+    <!-- Detailed Visitor Information -->
+    {% if all_visitors %}
+    <div class="row">
+        <div class="col-12">
+            <div class="analytics-card">
+                <h4 class="mb-3">👥 Detailed Visitor Information</h4>
+                <p class="text-muted mb-3">Complete visitor data with timestamps, IP addresses, and actions</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>IP Address</th>
+                                <th>Email</th>
+                                <th>Page Type</th>
+                                <th>Country</th>
+                                <th>Form Started</th>
+                                <th>Form Abandoned</th>
+                                <th>Registration Completed</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visitor in all_visitors %}
+                            <tr>
+                                <td>
+                                    <small>{{ visitor.entry_time.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                                </td>
+                                <td>
+                                    <code>{{ visitor.ip_address }}</code>
+                                </td>
+                                <td>
+                                    {% if visitor.email_entered %}
+                                        <span class="badge bg-success">{{ visitor.email_entered }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ visitor.page_type.replace('_', ' ').title() }}</span>
+                                </td>
+                                <td>
+                                    {% if visitor.country %}
+                                        <span class="badge bg-secondary">{{ visitor.country }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if visitor.form_started %}
+                                        <i class="bi bi-check-circle text-success"></i>
+                                    {% else %}
+                                        <i class="bi bi-x-circle text-muted"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if visitor.form_abandoned %}
+                                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                                    {% else %}
+                                        <i class="bi bi-x-circle text-muted"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if visitor.registration_completed %}
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    {% else %}
+                                        <i class="bi bi-x-circle text-muted"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="showVisitorDetails({{ visitor.id }})">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- IP Address Statistics -->
+    {% if ip_stats %}
+    <div class="row">
+        <div class="col-12">
+            <div class="analytics-card">
+                <h4 class="mb-3">🌐 IP Address Statistics</h4>
+                <p class="text-muted mb-3">Top IP addresses with visit counts and conversion rates</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Total Visits</th>
+                                <th>Email Entries</th>
+                                <th>Completed Registrations</th>
+                                <th>Conversion Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ip_stat in ip_stats %}
+                            <tr>
+                                <td><code>{{ ip_stat.ip_address }}</code></td>
+                                <td>{{ ip_stat.visits }}</td>
+                                <td>{{ ip_stat.email_entries }}</td>
+                                <td>{{ ip_stat.completed }}</td>
+                                <td>
+                                    {% if ip_stat.visits > 0 %}
+                                        {{ "%.1f"|format((ip_stat.completed / ip_stat.visits * 100)) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hourly Statistics -->
+    {% if hourly_stats %}
+    <div class="row">
+        <div class="col-12">
+            <div class="analytics-card">
+                <h4 class="mb-3">⏰ Hourly Activity</h4>
+                <p class="text-muted mb-3">Visitor activity by hour of day</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Hour</th>
+                                <th>Total Visits</th>
+                                <th>Completed Registrations</th>
+                                <th>Conversion Rate</th>
+                                <th>Activity Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hour_stat in hourly_stats %}
+                            <tr>
+                                <td>{{ "%.0f"|format(hour_stat.hour) }}:00</td>
+                                <td>{{ hour_stat.visits }}</td>
+                                <td>{{ hour_stat.completed }}</td>
+                                <td>
+                                    {% if hour_stat.visits > 0 %}
+                                        {{ "%.1f"|format((hour_stat.completed / hour_stat.visits * 100)) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set activity_level = (hour_stat.visits / 10) * 100 %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ activity_level }}%">
+                                            {{ hour_stat.visits }}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Daily Statistics -->
     {% if daily_stats %}
     <div class="row">
@@ -300,5 +480,61 @@
 setInterval(function() {
     location.reload();
 }, 300000);
+
+// Function to show visitor details
+function showVisitorDetails(visitorId) {
+    // Create modal for visitor details
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'visitorDetailsModal';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Visitor Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading visitor details...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Load visitor details via AJAX
+    fetch(`/admin/visitor-details/${visitorId}`)
+        .then(response => response.text())
+        .then(html => {
+            modal.querySelector('.modal-body').innerHTML = html;
+        })
+        .catch(error => {
+            modal.querySelector('.modal-body').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Error loading visitor details: ${error.message}
+                </div>
+            `;
+        });
+    
+    // Clean up modal when closed
+    modal.addEventListener('hidden.bs.modal', function() {
+        modal.remove();
+    });
+}
+
+// Function to export data
+function exportData(format) {
+    const days = new URLSearchParams(window.location.search).get('days') || 7;
+    window.open(`/admin/registration-analytics/export?format=${format}&days=${days}`, '_blank');
+}
 </script>
 {% endblock %}

@@ -4804,7 +4804,7 @@ def mobile_admin():
 def registration_analytics():
     """Аналитика регистрации"""
     from utils.visitor_tracker import VisitorTracker
-    from models import RegistrationVisitor
+    from models import RegistrationVisitor, db
     from datetime import datetime, timedelta
     from sqlalchemy import func, desc
     
@@ -4835,13 +4835,20 @@ def registration_analytics():
         desc('date')
     ).all()
     
-    # Получаем последние посетители с email
+    # Получаем последние посетители с email (все данные)
     recent_visitors = RegistrationVisitor.query.filter(
         RegistrationVisitor.email_entered.isnot(None),
         RegistrationVisitor.entry_time >= start_date
     ).order_by(
         desc(RegistrationVisitor.entry_time)
-    ).limit(50).all()
+    ).limit(100).all()
+    
+    # Получаем всех посетителей за период (для подробной аналитики)
+    all_visitors = RegistrationVisitor.query.filter(
+        RegistrationVisitor.entry_time >= start_date
+    ).order_by(
+        desc(RegistrationVisitor.entry_time)
+    ).limit(500).all()
     
     # Получаем статистику по странам (если есть данные)
     country_stats = db.session.query(
@@ -4856,11 +4863,55 @@ def registration_analytics():
         desc('visits')
     ).limit(20).all()
     
+    # Получаем статистику по IP адресам
+    ip_stats = db.session.query(
+        RegistrationVisitor.ip_address,
+        func.count(RegistrationVisitor.id).label('visits'),
+        func.count(RegistrationVisitor.email_entered).label('email_entries'),
+        func.count(RegistrationVisitor.registration_completed).label('completed')
+    ).filter(
+        RegistrationVisitor.entry_time >= start_date
+    ).group_by(
+        RegistrationVisitor.ip_address
+    ).order_by(
+        desc('visits')
+    ).limit(50).all()
+    
+    # Получаем статистику по времени (часы дня)
+    hourly_stats = db.session.query(
+        func.extract('hour', RegistrationVisitor.entry_time).label('hour'),
+        func.count(RegistrationVisitor.id).label('visits'),
+        func.count(RegistrationVisitor.registration_completed).label('completed')
+    ).filter(
+        RegistrationVisitor.entry_time >= start_date
+    ).group_by(
+        func.extract('hour', RegistrationVisitor.entry_time)
+    ).order_by('hour').all()
+    
     return render_template('admin/registration_analytics.html',
                          summary=summary,
                          daily_stats=daily_stats,
                          recent_visitors=recent_visitors,
+                         all_visitors=all_visitors,
                          country_stats=country_stats,
+                         ip_stats=ip_stats,
+                         hourly_stats=hourly_stats,
                          days=days,
                          start_date=start_date,
-                         end_date=end_date) 
+                         end_date=end_date)
+
+@admin_bp.route('/visitor-details/<int:visitor_id>')
+@login_required
+@admin_required
+def visitor_details(visitor_id):
+    """Get detailed information about a specific visitor"""
+    try:
+        from models import RegistrationVisitor
+        
+        visitor = RegistrationVisitor.query.get_or_404(visitor_id)
+        
+        return render_template('admin/visitor_details.html', visitor=visitor)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading visitor details: {str(e)}")
+        return f"Error loading visitor details: {str(e)}", 500 
