@@ -402,7 +402,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="email" class="form-control" id="email" name="email" required autocomplete="email">
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Пароль</label>
@@ -436,7 +436,9 @@ function updateOnlineUsers() {
         .then(data => {
             document.getElementById('online-users-count').textContent = data.online_users;
         })
-        .catch(error =>}
+        .catch(error => {
+            console.error('Error updating online users:', error);
+        });
 
 // Update every 30 seconds
 setInterval(updateOnlineUsers, 30000);
