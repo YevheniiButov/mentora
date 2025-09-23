@@ -3129,11 +3129,11 @@ def visitors_analytics():
         # Calculate average session duration
         avg_duration_query = db.session.query(
             func.avg(
-                func.julianday(UserSession.last_activity_at) - 
-                func.julianday(UserSession.created_at)
+                func.julianday(UserSession.last_activity) - 
+                func.julianday(UserSession.started_at)
             ) * 24 * 60 * 60  # Convert to seconds
         ).filter(
-            UserSession.last_activity_at.isnot(None)
+            UserSession.last_activity.isnot(None)
         ).scalar()
         
         avg_session_duration = avg_duration_query or 0
