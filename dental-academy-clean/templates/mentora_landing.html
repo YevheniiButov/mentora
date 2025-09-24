@@ -760,6 +760,56 @@
         document.querySelector('.login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Get form data
+            const username = document.querySelector('input[type="text"]').value;
+            const password = document.querySelector('input[type="password"]').value;
+            
+            // Simple validation
+            if (!username || !password) {
+                showError('Please enter both username and password');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('.login-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Coming In...';
+            submitBtn.disabled = true;
+            
+            // Send login request
+            fetch('/mentora-login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Login successful - redirect to dashboard
+                    window.location.href = data.redirect_url || '/dashboard';
+                } else {
+                    // Login failed - show error
+                    showError(data.message || 'Login failed. Please check your credentials.');
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                showError('Connection error. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+        
+        // Helper function to show error messages
+        function showError(message) {
             const container = document.querySelector('.container');
             
             // Remove existing message if any
@@ -784,7 +834,7 @@
                     animation: fadeInUp 0.5s ease-out;
                 ">
                     <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
-                    Wrong password
+                    ${message}
                 </div>
             `;
             
@@ -795,7 +845,7 @@
             // Clear form
             document.querySelector('input[type="text"]').value = '';
             document.querySelector('input[type="password"]').value = '';
-        });
+        }
 
         // Subtle mouse interaction with black hole
         let mouseX = 0;

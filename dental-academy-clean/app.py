@@ -329,6 +329,63 @@ def index(lang='nl'):
     }
     return render_template('index.html', stats=stats, lang=lang)
 
+@app.route('/mentora-login', methods=['POST'])
+def mentora_login():
+    """Обработка входа с лендинговой страницы mentora.com.in"""
+    from flask_login import login_user
+    from werkzeug.security import check_password_hash
+    from models import User
+    
+    host = request.host.lower()
+    
+    # Проверяем, что запрос пришел с mentora.com.in
+    if 'mentora.com.in' not in host:
+        return jsonify({'success': False, 'message': 'Unauthorized domain'}), 403
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No data provided'}), 400
+        
+        username_or_email = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+        
+        if not username_or_email or not password:
+            return jsonify({'success': False, 'message': 'Username and password required'}), 400
+        
+        # Поиск пользователя по email или username
+        user = User.query.filter(
+            (User.email == username_or_email) | (User.username == username_or_email)
+        ).first()
+        
+        if not user:
+            return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+        
+        # Проверка пароля
+        if not user.check_password(password):
+            return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+        
+        # Проверка активности аккаунта
+        if not user.is_active:
+            return jsonify({'success': False, 'message': 'Account is disabled'}), 401
+        
+        # Вход пользователя
+        login_user(user, remember=True)
+        
+        # Обновить время последнего входа
+        user.last_login = datetime.now(timezone.utc)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Login successful',
+            'redirect_url': url_for('dashboard')
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Mentora login error: {str(e)}")
+        return jsonify({'success': False, 'message': 'Login failed'}), 500
+
 # ========================================
 # IMPORT ROUTES
 # ========================================
