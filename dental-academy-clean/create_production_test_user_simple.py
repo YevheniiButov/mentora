@@ -4,7 +4,7 @@
 """
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Добавляем путь к проекту
 sys.path.append('/home/render/project/src/dental-academy-clean')
@@ -33,9 +33,11 @@ def create_test_user():
                 first_name='Mentora',
                 last_name='Test',
                 is_active=True,
-                is_admin=False,
-                created_at=datetime.utcnow()
+                created_at=datetime.now(timezone.utc)
             )
+            
+            # Устанавливаем is_admin через свойство
+            test_user.is_admin = False
             
             db.session.add(test_user)
             db.session.commit()
