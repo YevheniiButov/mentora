@@ -10,17 +10,27 @@ def test_mentora_login():
     """Тестировать функциональность входа"""
     print("🧪 Тестирование входа на mentora.com.in...")
     
-    # Тестовые данные (замените на реальные)
+    # Тестовые данные
     test_credentials = [
+        {
+            "username": "mentora@bigmentor.nl",
+            "password": "mentora2024!",
+            "description": "Production test user"
+        },
+        {
+            "username": "mentora_prod_test",
+            "password": "mentora2024!",
+            "description": "Production test user (username)"
+        },
+        {
+            "username": "test@mentora.com",
+            "password": "mentora123",
+            "description": "Local test user"
+        },
         {
             "username": "admin@mentora.com",
             "password": "admin123",
             "description": "Admin user"
-        },
-        {
-            "username": "test@mentora.com", 
-            "password": "test123",
-            "description": "Test user"
         }
     ]
     

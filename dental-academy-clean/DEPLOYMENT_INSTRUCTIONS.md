@@ -18,7 +18,13 @@ pg_dump -h localhost -U your_user -d your_db > backup_$(date +%Y%m%d_%H%M%S).sql
 python3 backup_production_postgresql.py
 ```
 
-### 2. На тестовом сервере (mentora.com.in):
+### 2. Создать тестового пользователя на продакшн сервере:
+```bash
+# На продакшн сервере (bigmentor.nl)
+python3 create_production_test_user.py
+```
+
+### 3. На тестовом сервере (mentora.com.in):
 ```bash
 # Клонировать репозиторий
 git clone https://github.com/your-repo/dental-academy-clean.git
@@ -35,6 +41,9 @@ pip install -r requirements.txt
 
 # Настроить БД (если нужно)
 python3 -c "from app import create_app, db; app = create_app(); app.app_context().push(); db.create_all()"
+
+# Создать тестового пользователя (если используете отдельную БД)
+python3 create_test_user.py
 
 # Запустить приложение
 gunicorn --bind 0.0.0.0:5000 --workers 4 app:app
@@ -82,6 +91,23 @@ python3 test_mentora_login.py
 3. **Аналитика** - исправления PostgreSQL совместимости
 4. **Админ панель** - без ошибок julianday/date функций
 5. **Все остальные функции** - как на продакшне
+
+## 🔑 Учетные данные для тестирования:
+
+### Тестовый пользователь (создан на продакшн сервере):
+- **Email**: `mentora@bigmentor.nl`
+- **Username**: `mentora_prod_test`
+- **Password**: `mentora2024!`
+
+### Локальный тестовый пользователь (если используете отдельную БД):
+- **Email**: `test@mentora.com`
+- **Username**: `mentora_test`
+- **Password**: `mentora123`
+
+### Админ пользователь (если создан):
+- **Email**: `admin@mentora.com`
+- **Username**: `mentora_admin`
+- **Password**: `admin123`
 
 ## 🚨 В случае проблем:
 
