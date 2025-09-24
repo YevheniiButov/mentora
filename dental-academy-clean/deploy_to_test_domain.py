@@ -52,11 +52,14 @@ def deploy_to_test_domain():
     print("🚀 Начинаем деплой на тестовый домен...")
     
     # Переключиться на тестовую конфигурацию
-    if os.path.exists('.env.test'):
+    if os.path.exists('mentora_test_config.env'):
+        os.system('cp mentora_test_config.env .env')
+        print("✅ Переключились на конфигурацию mentora.com.in")
+    elif os.path.exists('.env.test'):
         os.system('cp .env.test .env')
         print("✅ Переключились на тестовую конфигурацию")
     else:
-        print("❌ Файл .env.test не найден")
+        print("❌ Файлы конфигурации не найдены")
         return False
     
     # Установить зависимости
@@ -90,7 +93,8 @@ def run_tests():
     tests = [
         "python3 -c \"from routes.admin_routes import admin_bp; print('Admin routes OK')\"",
         "python3 -c \"from models import db; print('Models OK')\"",
-        "python3 -c \"from app import create_app; app = create_app(); print('App creation OK')\""
+        "python3 -c \"from app import create_app; app = create_app(); print('App creation OK')\"",
+        "python3 -c \"import os; print('Mentora landing config:', 'mentora.com.in' in os.environ.get('TEST_DOMAIN', ''))\""
     ]
     
     for test in tests:
