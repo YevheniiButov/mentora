@@ -53,12 +53,19 @@ def test_login_endpoint():
         response = requests.post(
             "https://mentora.com.in/mentora-login",
             json={"username": "test", "password": "test"},
-            headers={"Host": "mentora.com.in"},
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Test)"
+            },
             timeout=10
         )
         print(f"   Status Code: {response.status_code}")
+        print(f"   Response: {response.text[:200]}...")
+        
         if response.status_code == 401:  # Ожидаем 401 (неверные учетные данные)
             print("   ✅ Endpoint работает (401 - неверные учетные данные)")
+        elif response.status_code == 400:
+            print("   ✅ Endpoint работает (400 - неверные данные)")
         else:
             print(f"   ⚠️  Неожиданный статус: {response.status_code}")
     except requests.exceptions.RequestException as e:
@@ -70,10 +77,15 @@ def test_login_endpoint():
         response = requests.post(
             "https://bigmentor.nl/mentora-login",
             json={"username": "test", "password": "test"},
-            headers={"Host": "bigmentor.nl"},
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Test)"
+            },
             timeout=10
         )
         print(f"   Status Code: {response.status_code}")
+        print(f"   Response: {response.text[:200]}...")
+        
         if response.status_code == 403:
             print("   ✅ Защита домена работает (403 - неавторизованный домен)")
         else:

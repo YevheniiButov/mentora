@@ -338,8 +338,12 @@ def mentora_login():
     
     host = request.host.lower()
     
+    # Отладочная информация
+    current_app.logger.info(f"Mentora login attempt from host: {host}")
+    
     # Проверяем, что запрос пришел с mentora.com.in
     if 'mentora.com.in' not in host:
+        current_app.logger.warning(f"Unauthorized domain attempt: {host}")
         return jsonify({'success': False, 'message': 'Unauthorized domain'}), 403
     
     try:
