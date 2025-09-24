@@ -11,6 +11,28 @@ from sqlalchemy import func, and_, or_
 from datetime import timezone
 import logging
 
+def get_date_func():
+    """Get database-specific date function"""
+    try:
+        # Try to detect database type
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        if inspector.dialect.name == 'postgresql':
+            return func.date_trunc('day', func.cast(func.now(), db.Date))
+        else:
+            return func.date
+    except:
+        return func.date
+
+def safe_date_query(query, date_column, target_date):
+    """Safe date query that works with both PostgreSQL and SQLite"""
+    try:
+        # Try PostgreSQL first
+        return query.filter(func.date_trunc('day', date_column) == target_date)
+    except Exception:
+        # Fallback to SQLite
+        return query.filter(func.date(date_column) == target_date)
+
 admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/')
@@ -19,93 +41,105 @@ admin_bp = Blueprint('admin', __name__)
 @admin_required
 def dashboard():
     """Enhanced admin dashboard with real-time metrics"""
+    try:
+        today = date.today()
+        week_ago = today - timedelta(days=7)
+        month_ago = today - timedelta(days=30)
+        
+        # 1. ПОЛЬЗОВАТЕЛЬСКИЕ МЕТРИКИ
+        users_metrics = {
+            'total_users': User.query.count(),
+            'new_today': User.query.filter(
+                func.date(User.created_at) == today
+            ).count(),
+            'new_week': User.query.filter(
+                User.created_at >= week_ago
+            ).count(),
+            'active_week': User.query.join(UserProgress).filter(
+                UserProgress.last_accessed >= week_ago
+            ).distinct().count(),
+            'with_diagnostic': User.query.join(DiagnosticSession).filter(
+                DiagnosticSession.status == 'completed'
+            ).distinct().count(),
+            'with_active_plan': User.query.join(PersonalLearningPlan).filter(
+                PersonalLearningPlan.status == 'active'
+            ).distinct().count()
+        }
+        
+        # 2. ДИАГНОСТИЧЕСКИЕ МЕТРИКИ
+        diagnostic_metrics = {
+            'total_sessions': DiagnosticSession.query.count(),
+            'completed_sessions': DiagnosticSession.query.filter_by(status='completed').count(),
+            'sessions_today': DiagnosticSession.query.filter(
+                func.date(DiagnosticSession.started_at) == today
+            ).count(),
+            'sessions_week': DiagnosticSession.query.filter(
+                DiagnosticSession.started_at >= week_ago
+            ).count(),
+            'avg_ability': db.session.query(
+                func.avg(DiagnosticSession.current_ability)
+            ).filter(DiagnosticSession.status == 'completed').scalar() or 0,
+            'completion_rate': 0
+        }
+        if diagnostic_metrics['total_sessions'] > 0:
+            diagnostic_metrics['completion_rate'] = round(
+                (diagnostic_metrics['completed_sessions'] / diagnostic_metrics['total_sessions']) * 100, 1
+            )
+        
+        # 3. ПЛАНЫ ОБУЧЕНИЯ МЕТРИКИ
+        learning_metrics = {
+            'active_plans': PersonalLearningPlan.query.filter_by(status='active').count(),
+            'plans_created_week': PersonalLearningPlan.query.filter(
+                PersonalLearningPlan.last_updated >= week_ago
+            ).count(),
+            'avg_progress': db.session.query(
+                func.avg(PersonalLearningPlan.overall_progress)
+            ).filter(PersonalLearningPlan.status == 'active').scalar() or 0,
+            'overdue_reassessments': PersonalLearningPlan.query.filter(
+                PersonalLearningPlan.status == 'active',
+                PersonalLearningPlan.next_diagnostic_date < today
+            ).count()
+        }
+        
+        # 4. КОНТЕНТ МЕТРИКИ
+        content_metrics = {
+            'total_questions': Question.query.count(),
+            'questions_with_irt': Question.query.join(IRTParameters).count(),
+            'total_lessons': Lesson.query.count(),
+            'lessons_completed_week': UserProgress.query.filter(
+                UserProgress.completed == True,
+                UserProgress.completed_at >= week_ago
+            ).count(),
+            'avg_time_per_lesson': db.session.query(
+                func.avg(UserProgress.time_spent)
+            ).filter(UserProgress.completed == True).scalar() or 0
+        }
+        
+        # 5. ПОСЛЕДНИЕ ДАННЫЕ
+        recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
+        recent_sessions = DiagnosticSession.query.join(User).order_by(
+            DiagnosticSession.started_at.desc()
+        ).limit(5).all()
+        
+        return render_template('admin/dashboard_new.html',
+                                 users_metrics=users_metrics,
+                                 diagnostic_metrics=diagnostic_metrics,
+                                 learning_metrics=learning_metrics,
+                                 content_metrics=content_metrics,
+                                 recent_users=recent_users,
+                                 recent_sessions=recent_sessions)
     
-    today = date.today()
-    week_ago = today - timedelta(days=7)
-    month_ago = today - timedelta(days=30)
-    
-    # 1. ПОЛЬЗОВАТЕЛЬСКИЕ МЕТРИКИ
-    users_metrics = {
-        'total_users': User.query.count(),
-        'new_today': User.query.filter(
-            func.date(User.created_at) == today
-        ).count(),
-        'new_week': User.query.filter(
-            User.created_at >= week_ago
-        ).count(),
-        'active_week': User.query.join(UserProgress).filter(
-            UserProgress.last_accessed >= week_ago
-        ).distinct().count(),
-        'with_diagnostic': User.query.join(DiagnosticSession).filter(
-            DiagnosticSession.status == 'completed'
-        ).distinct().count(),
-        'with_active_plan': User.query.join(PersonalLearningPlan).filter(
-            PersonalLearningPlan.status == 'active'
-        ).distinct().count()
-    }
-    
-    # 2. ДИАГНОСТИЧЕСКИЕ МЕТРИКИ
-    diagnostic_metrics = {
-        'total_sessions': DiagnosticSession.query.count(),
-        'completed_sessions': DiagnosticSession.query.filter_by(status='completed').count(),
-        'sessions_today': DiagnosticSession.query.filter(
-            func.date(DiagnosticSession.started_at) == today
-        ).count(),
-        'sessions_week': DiagnosticSession.query.filter(
-            DiagnosticSession.started_at >= week_ago
-        ).count(),
-        'avg_ability': db.session.query(
-            func.avg(DiagnosticSession.current_ability)
-        ).filter(DiagnosticSession.status == 'completed').scalar() or 0,
-        'completion_rate': 0
-    }
-    if diagnostic_metrics['total_sessions'] > 0:
-        diagnostic_metrics['completion_rate'] = round(
-            (diagnostic_metrics['completed_sessions'] / diagnostic_metrics['total_sessions']) * 100, 1
-        )
-    
-    # 3. ПЛАНЫ ОБУЧЕНИЯ МЕТРИКИ
-    learning_metrics = {
-        'active_plans': PersonalLearningPlan.query.filter_by(status='active').count(),
-        'plans_created_week': PersonalLearningPlan.query.filter(
-            PersonalLearningPlan.last_updated >= week_ago
-        ).count(),
-        'avg_progress': db.session.query(
-            func.avg(PersonalLearningPlan.overall_progress)
-        ).filter(PersonalLearningPlan.status == 'active').scalar() or 0,
-        'overdue_reassessments': PersonalLearningPlan.query.filter(
-            PersonalLearningPlan.status == 'active',
-            PersonalLearningPlan.next_diagnostic_date < today
-        ).count()
-    }
-    
-    # 4. КОНТЕНТ МЕТРИКИ
-    content_metrics = {
-        'total_questions': Question.query.count(),
-        'questions_with_irt': Question.query.join(IRTParameters).count(),
-        'total_lessons': Lesson.query.count(),
-        'lessons_completed_week': UserProgress.query.filter(
-            UserProgress.completed == True,
-            UserProgress.completed_at >= week_ago
-        ).count(),
-        'avg_time_per_lesson': db.session.query(
-            func.avg(UserProgress.time_spent)
-        ).filter(UserProgress.completed == True).scalar() or 0
-    }
-    
-    # 5. ПОСЛЕДНИЕ ДАННЫЕ
-    recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
-    recent_sessions = DiagnosticSession.query.join(User).order_by(
-        DiagnosticSession.started_at.desc()
-    ).limit(5).all()
-    
-    return render_template('admin/dashboard_new.html',
-                         users_metrics=users_metrics,
-                         diagnostic_metrics=diagnostic_metrics,
-                         learning_metrics=learning_metrics,
-                         content_metrics=content_metrics,
-                         recent_users=recent_users,
-                         recent_sessions=recent_sessions)
+    except Exception as e:
+        current_app.logger.error(f"Dashboard error: {str(e)}")
+        # Return basic dashboard with error message
+        return render_template('admin/dashboard_new.html',
+                             users_metrics={'total_users': 0, 'new_today': 0, 'new_week': 0, 'active_week': 0},
+                             diagnostic_metrics={'total_sessions': 0, 'completed_sessions': 0, 'sessions_today': 0, 'sessions_week': 0, 'avg_ability': 0, 'completion_rate': 0},
+                             learning_metrics={'total_plans': 0, 'active_plans': 0, 'avg_progress': 0, 'overdue_reassessments': 0},
+                             content_metrics={'total_lessons': 0, 'lessons_completed_week': 0, 'avg_time_per_lesson': 0},
+                             recent_users=[],
+                             recent_sessions=[],
+                             error=str(e))
 
 @admin_bp.route('/diagnostics')
 @login_required
@@ -3127,14 +3161,31 @@ def visitors_analytics():
         bounce_rate = (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
         
         # Calculate average session duration
-        avg_duration_query = db.session.query(
-            func.avg(
-                func.julianday(UserSession.last_activity) - 
-                func.julianday(UserSession.started_at)
-            ) * 24 * 60 * 60  # Convert to seconds
-        ).filter(
-            UserSession.last_activity.isnot(None)
-        ).scalar()
+        # Use PostgreSQL-compatible function instead of julianday
+        try:
+            # Try PostgreSQL EXTRACT function first
+            avg_duration_query = db.session.query(
+                func.avg(
+                    func.extract('epoch', UserSession.last_activity) - 
+                    func.extract('epoch', UserSession.started_at)
+                )
+            ).filter(
+                UserSession.last_activity.isnot(None)
+            ).scalar()
+        except Exception as e:
+            # Fallback for SQLite or other databases
+            try:
+                avg_duration_query = db.session.query(
+                    func.avg(
+                        func.julianday(UserSession.last_activity) - 
+                        func.julianday(UserSession.started_at)
+                    ) * 24 * 60 * 60  # Convert to seconds
+                ).filter(
+                    UserSession.last_activity.isnot(None)
+                ).scalar()
+            except Exception:
+                # If both fail, return 0
+                avg_duration_query = 0
         
         avg_session_duration = avg_duration_query or 0
         
@@ -3407,9 +3458,16 @@ def crm_dashboard():
         
         # Key metrics
         total_contacts = Contact.query.count()
-        new_contacts_today = Contact.query.filter(
-            func.date(Contact.created_at) == date.today()
-        ).count()
+        # Try PostgreSQL-compatible date function first
+        try:
+            new_contacts_today = Contact.query.filter(
+                func.date_trunc('day', Contact.created_at) == date.today()
+            ).count()
+        except Exception:
+            # Fallback for SQLite
+            new_contacts_today = Contact.query.filter(
+                func.date(Contact.created_at) == date.today()
+            ).count()
         
         # Conversion rate calculation
         conversion_rate = 0
@@ -4887,23 +4945,44 @@ def registration_analytics():
     
     # Получаем детальную статистику по дням
     try:
-        daily_stats = db.session.query(
-            func.date(RegistrationVisitor.entry_time).label('date'),
-            RegistrationVisitor.page_type,
-            func.count(RegistrationVisitor.id).label('visits'),
-            func.count(func.distinct(RegistrationVisitor.ip_address)).label('unique_visitors'),
-            func.count(RegistrationVisitor.email_entered).label('email_entries'),
-            func.count(RegistrationVisitor.form_started).label('form_starts'),
-            func.count(RegistrationVisitor.form_abandoned).label('form_abandonments'),
-            func.count(RegistrationVisitor.registration_completed).label('successful_registrations')
-        ).filter(
-            RegistrationVisitor.entry_time >= start_date
-        ).group_by(
-            func.date(RegistrationVisitor.entry_time),
-            RegistrationVisitor.page_type
-        ).order_by(
-            desc('date')
-        ).all()
+        # Try PostgreSQL-compatible date function first
+        try:
+            daily_stats = db.session.query(
+                func.date_trunc('day', RegistrationVisitor.entry_time).label('date'),
+                RegistrationVisitor.page_type,
+                func.count(RegistrationVisitor.id).label('visits'),
+                func.count(func.distinct(RegistrationVisitor.ip_address)).label('unique_visitors'),
+                func.count(RegistrationVisitor.email_entered).label('email_entries'),
+                func.count(RegistrationVisitor.form_started).label('form_starts'),
+                func.count(RegistrationVisitor.form_abandoned).label('form_abandonments'),
+                func.count(RegistrationVisitor.registration_completed).label('successful_registrations')
+            ).filter(
+                RegistrationVisitor.entry_time >= start_date
+            ).group_by(
+                func.date_trunc('day', RegistrationVisitor.entry_time),
+                RegistrationVisitor.page_type
+            ).order_by(
+                desc('date')
+            ).all()
+        except Exception:
+            # Fallback for SQLite
+            daily_stats = db.session.query(
+                func.date(RegistrationVisitor.entry_time).label('date'),
+                RegistrationVisitor.page_type,
+                func.count(RegistrationVisitor.id).label('visits'),
+                func.count(func.distinct(RegistrationVisitor.ip_address)).label('unique_visitors'),
+                func.count(RegistrationVisitor.email_entered).label('email_entries'),
+                func.count(RegistrationVisitor.form_started).label('form_starts'),
+                func.count(RegistrationVisitor.form_abandoned).label('form_abandonments'),
+                func.count(RegistrationVisitor.registration_completed).label('successful_registrations')
+            ).filter(
+                RegistrationVisitor.entry_time >= start_date
+            ).group_by(
+                func.date(RegistrationVisitor.entry_time),
+                RegistrationVisitor.page_type
+            ).order_by(
+                desc('date')
+            ).all()
     except Exception as e:
         current_app.logger.error(f"Error fetching daily stats: {str(e)}")
         daily_stats = []
