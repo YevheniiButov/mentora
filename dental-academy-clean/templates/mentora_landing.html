@@ -616,11 +616,11 @@
         
         <form class="login-form" action="javascript:void(0);" method="POST">
             <div class="input-group">
-                <input type="text" class="input-field" placeholder="Username or Email" required>
+                <input type="text" class="input-field" placeholder="Username or Email" autocomplete="username" required>
             </div>
             
             <div class="input-group">
-                <input type="password" class="input-field" placeholder="Password" required>
+                <input type="password" class="input-field" placeholder="Password" autocomplete="current-password" required>
             </div>
             
             <button type="submit" class="login-btn">Come In</button>
@@ -650,6 +650,10 @@
         // Create stars
         function createStars() {
             const starsContainer = document.querySelector('.stars');
+            if (!starsContainer) {
+                console.log('Stars container not found, skipping...');
+                return;
+            }
             const starCount = 80;
             
             for (let i = 0; i < starCount; i++) {
@@ -665,6 +669,10 @@
         // Create floating particles
         function createParticles() {
             const particlesContainer = document.querySelector('.particles');
+            if (!particlesContainer) {
+                console.log('Particles container not found, skipping...');
+                return;
+            }
             const particleCount = 15;
             
             for (let i = 0; i < particleCount; i++) {
@@ -680,6 +688,10 @@
         // Create Hawking radiation particles
         function createHawkingRadiation() {
             const container = document.querySelector('.hawking-radiation');
+            if (!container) {
+                console.log('Hawking radiation container not found, skipping...');
+                return;
+            }
             const particleCount = 20;
             
             for (let i = 0; i < particleCount; i++) {
@@ -710,6 +722,10 @@
         // Create distorted stars
         function createDistortedStars() {
             const container = document.querySelector('.distorted-starfield');
+            if (!container) {
+                console.log('Distorted starfield container not found, skipping...');
+                return;
+            }
             const starCount = 30;
             
             for (let i = 0; i < starCount; i++) {
@@ -725,6 +741,10 @@
         // Create supernova debris
         function createSupernovaDebris() {
             const container = document.querySelector('.supernova');
+            if (!container) {
+                console.log('Supernova container not found, skipping...');
+                return;
+            }
             const debrisCount = 15;
             
             for (let i = 0; i < debrisCount; i++) {
@@ -749,15 +769,32 @@
             }
         }
 
-        // Initialize cosmic effects
-        createStars();
-        createParticles();
-        createHawkingRadiation();
-        createDistortedStars();
-        createSupernovaDebris();
+        // Initialize cosmic effects when DOM is ready
+        function initializeCosmicEffects() {
+            createStars();
+            createParticles();
+            createHawkingRadiation();
+            createDistortedStars();
+            createSupernovaDebris();
+        }
+        
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeCosmicEffects);
+        } else {
+            initializeCosmicEffects();
+        }
 
         // Handle form submission
-        document.querySelector('.login-form').addEventListener('submit', function(e) {
+        function initializeFormHandler() {
+            const form = document.querySelector('.login-form');
+            if (!form) {
+                console.log('Login form not found, retrying...');
+                setTimeout(initializeFormHandler, 100);
+                return;
+            }
+            
+            form.addEventListener('submit', function(e) {
             e.preventDefault();
             
             // Get form data
@@ -817,6 +854,14 @@
                 submitBtn.disabled = false;
             });
         });
+        }
+        
+        // Initialize form handler when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeFormHandler);
+        } else {
+            initializeFormHandler();
+        }
         
         // Helper function to show error messages
         function showError(message) {
