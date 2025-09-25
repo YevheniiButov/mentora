@@ -329,7 +329,7 @@ def index(lang='nl'):
     }
     return render_template('index.html', stats=stats, lang=lang)
 
-@app.route('/mentora-login', methods=['POST'])
+@app.route('/mentora-login', methods=['GET', 'POST'])
 def mentora_login():
     """Обработка входа с лендинговой страницы mentora.com.in"""
     from flask_login import login_user
@@ -339,7 +339,11 @@ def mentora_login():
     host = request.host.lower()
     
     # Отладочная информация
-    current_app.logger.info(f"Mentora login attempt from host: {host}")
+    current_app.logger.info(f"Mentora login attempt from host: {host}, method: {request.method}")
+    
+    # Обработка GET запросов - перенаправляем на главную страницу
+    if request.method == 'GET':
+        return redirect(url_for('index'))
     
     # Проверяем, что запрос пришел с mentora.com.in
     if 'mentora.com.in' not in host:

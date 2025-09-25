@@ -777,7 +777,7 @@
             submitBtn.disabled = true;
             
             // Send login request
-            fetch('/mentora-login', {
+            fetch(window.location.origin + '/mentora-login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -787,8 +787,18 @@
                     password: password
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return response.json();
+            })
             .then(data => {
+                console.log('Login response:', data);
                 if (data.success) {
                     // Login successful - redirect to dashboard
                     window.location.href = data.redirect_url || '/dashboard';
@@ -799,7 +809,7 @@
             })
             .catch(error => {
                 console.error('Login error:', error);
-                showError('Connection error. Please try again.');
+                showError('Login failed: ' + error.message);
             })
             .finally(() => {
                 // Reset button state
