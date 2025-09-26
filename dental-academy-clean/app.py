@@ -329,6 +329,18 @@ def index(lang='nl'):
     }
     return render_template('index.html', stats=stats, lang=lang)
 
+@app.route('/debug-mentora-login', methods=['GET', 'POST'])
+def debug_mentora_login():
+    """Debug endpoint to test mentora-login routing"""
+    return jsonify({
+        'success': True,
+        'message': 'Debug endpoint reached',
+        'host': request.host,
+        'method': request.method,
+        'url': request.url,
+        'path': request.path
+    })
+
 @app.route('/mentora-login', methods=['GET', 'POST'])
 def mentora_login():
     """Обработка входа с лендинговой страницы mentora.com.in"""
@@ -340,9 +352,12 @@ def mentora_login():
     
     # Отладочная информация
     current_app.logger.info(f"Mentora login attempt from host: {host}, method: {request.method}")
+    current_app.logger.info(f"Request URL: {request.url}")
+    current_app.logger.info(f"Request path: {request.path}")
     
     # Обработка GET запросов - перенаправляем на главную страницу
     if request.method == 'GET':
+        current_app.logger.info("GET request to mentora-login, redirecting to index")
         return redirect(url_for('index'))
     
     # Проверяем, что запрос пришел с mentora.com.in

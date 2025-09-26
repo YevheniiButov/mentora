@@ -813,8 +813,31 @@
             submitBtn.textContent = 'Coming In...';
             submitBtn.disabled = true;
             
+            // Test debug endpoint first
+            const debugUrl = window.location.origin + '/debug-mentora-login';
+            console.log('Testing debug endpoint:', debugUrl);
+            
+            fetch(debugUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ test: 'debug' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Debug endpoint response:', data);
+            })
+            .catch(error => {
+                console.error('Debug endpoint error:', error);
+            });
+            
             // Send login request
-            fetch(window.location.origin + '/mentora-login', {
+            const loginUrl = window.location.origin + '/mentora-login';
+            console.log('Sending login request to:', loginUrl);
+            console.log('Request data:', { username, password: '***' });
+            
+            fetch(loginUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -830,6 +853,18 @@
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                console.log('Response content-type:', contentType);
+                
+                if (!contentType || !contentType.includes('application/json')) {
+                    // If not JSON, get text to see what we got
+                    return response.text().then(text => {
+                        console.log('Non-JSON response received:', text.substring(0, 200) + '...');
+                        throw new Error('Server returned non-JSON response');
+                    });
                 }
                 
                 return response.json();
