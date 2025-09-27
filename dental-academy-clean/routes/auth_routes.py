@@ -781,6 +781,12 @@ def forgot_password():
         
         print(f"=== USER FOUND: {user.email} ===")
         
+        # Clear any existing reset token first
+        if user.password_reset_token:
+            print("=== CLEARING EXISTING RESET TOKEN ===")
+            user.clear_password_reset_token()
+            db.session.commit()
+        
         # Generate password reset token
         print("=== GENERATING PASSWORD RESET TOKEN ===")
         reset_token = user.generate_password_reset_token()
@@ -824,18 +830,26 @@ def forgot_password():
 def reset_password(token):
     """Reset password with token"""
     try:
+        print(f"=== RESET PASSWORD ROUTE CALLED ===")
+        print(f"=== TOKEN RECEIVED: {token[:20]}... ===")
+        
         # Find user by hashed token (since we store hashed tokens in database)
         import hashlib
         token_hash = hashlib.sha256(token.encode()).hexdigest()
+        print(f"=== TOKEN HASH: {token_hash[:20]}... ===")
+        
         user = User.query.filter_by(password_reset_token=token_hash).first()
         
         if not user:
-            flash('Invalid or expired password reset link', 'error')
+            print(f"=== NO USER FOUND FOR TOKEN ===")
+            flash('Invalid or expired password reset link. Please request a new password reset.', 'error')
             return redirect(url_for('auth.forgot_password'))
+        
+        print(f"=== USER FOUND: {user.email} ===")
         
         # Verify token
         if not user.verify_password_reset_token(token):
-            flash('Password reset link has expired. Please request a new one.', 'error')
+            flash('Password reset link has expired. Please request a new password reset.', 'error')
             return redirect(url_for('auth.forgot_password'))
         
         if request.method == 'GET':
