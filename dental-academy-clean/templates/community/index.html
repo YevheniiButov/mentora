@@ -424,8 +424,9 @@
     padding: 0.5rem;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     display: none;
-    z-index: 1000;
+    z-index: 200;
     margin-bottom: 0.5rem;
+    pointer-events: auto;
 }
 
 .reaction-picker.show {
@@ -723,6 +724,63 @@
     background: #5a32a3;
 }
 
+/* Mobile interaction fixes */
+@media (max-width: 768px) {
+    /* Ensure proper touch interaction */
+    .chat-messages {
+        -webkit-overflow-scrolling: touch;
+        overflow-scrolling: touch;
+        touch-action: pan-y;
+        padding-bottom: 100px; /* Extra space for reply form */
+    }
+    
+    /* Fix reply form interaction */
+    .reply-form {
+        z-index: 100;
+        pointer-events: auto;
+    }
+    
+    .reply-form * {
+        pointer-events: auto;
+    }
+    
+    /* Ensure poll form is accessible */
+    .poll-form {
+        z-index: 150;
+        pointer-events: auto;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    /* Fix reaction picker positioning */
+    .reaction-picker {
+        z-index: 200;
+        pointer-events: auto;
+        position: fixed;
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-bottom: 0;
+    }
+    
+    /* Ensure all interactive elements are touchable */
+    button, input, textarea, select {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Fix message bubbles touch interaction */
+    .message-bubble {
+        touch-action: manipulation;
+    }
+    
+    /* Ensure chat items are touchable */
+    .chat-item {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+}
+
 .message-time {
     opacity: 0.7;
 }
@@ -774,8 +832,9 @@
     background: white;
     border-top: 1px solid #e1e5e9;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1001;
+    z-index: 100;
     display: none;
+    pointer-events: auto;
 }
 
 .reply-form.active {
@@ -920,7 +979,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 1000;
+        z-index: 50;
         height: calc(100vh - 60px);
         display: none; /* Hidden by default on mobile */
     }
@@ -1565,7 +1624,10 @@ function showReactionPicker(messageId, type) {
         const btn = document.createElement('div');
         btn.className = 'reaction-emoji-btn';
         btn.textContent = emoji;
-        btn.onclick = () => addReaction(messageId, type, emoji);
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            addReaction(messageId, type, emoji);
+        };
         grid.appendChild(btn);
     });
     
@@ -1574,13 +1636,20 @@ function showReactionPicker(messageId, type) {
     // Find the add reaction button and position picker
     const addBtn = document.querySelector(`[onclick="showReactionPicker(${messageId}, '${type}')"]`);
     if (addBtn) {
-        addBtn.style.position = 'relative';
-        addBtn.appendChild(picker);
+        if (window.innerWidth <= 768) {
+            // On mobile, append to body for better positioning
+            document.body.appendChild(picker);
+        } else {
+            // On desktop, append to button
+            addBtn.style.position = 'relative';
+            addBtn.appendChild(picker);
+        }
     }
     
     // Hide picker when clicking outside
     setTimeout(() => {
         document.addEventListener('click', hideReactionPickers);
+        document.addEventListener('touchstart', hideReactionPickers);
     }, 100);
 }
 
@@ -1589,6 +1658,7 @@ function hideReactionPickers() {
         picker.remove();
     });
     document.removeEventListener('click', hideReactionPickers);
+    document.removeEventListener('touchstart', hideReactionPickers);
 }
 
 function addReaction(messageId, type, emoji) {
