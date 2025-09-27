@@ -1151,8 +1151,8 @@
                     {% if topic.replies_count and topic.replies_count > 0 %}
                     <div class="chat-badge">{{ topic.replies_count }}</div>
                     {% endif %}
-                    {% if topic.id in [40, 41, 42] %}
-                    <div class="unread-count">3</div>
+                    {% if topic.unread_count and topic.unread_count > 0 %}
+                    <div class="unread-count">{{ topic.unread_count }}</div>
                     {% endif %}
                 </div>
             </div>
@@ -1175,26 +1175,26 @@
             <h2 class="welcome-title">Welcome to Community</h2>
             <p class="welcome-subtitle">Select a topic to start the conversation or create a new one</p>
             <a href="{{ url_for('main.new_topic', lang=lang) }}" class="welcome-new-topic-btn">
-                <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus"></i>
                 <span>{{ t('new_topic') | default('New Topic') }}</span>
-            </a>
-        </div>
+                </a>
+            </div>
 
         <!-- Chat Messages -->
         <div class="chat-messages" id="chat-messages" style="display: none;">
-            <!-- Messages will be loaded here -->
+                <!-- Messages will be loaded here -->
         </div>
-    </div>
-</div>
+                    </div>
+                    </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Search functionality
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            filterTopics(e.target.value);
-        });
+    searchInput.addEventListener('input', function(e) {
+        filterTopics(e.target.value);
+    });
     }
     
     // Initialize reply form (hidden by default)
@@ -1299,8 +1299,8 @@ function displayTopicContent(topic, posts) {
     const chatMessages = document.getElementById('chat-messages');
     let messagesHTML = '';
     
-    // Add demo poll to topic
-    const topicWithPoll = addDemoPollToTopic(topic);
+    // Add poll data if available
+    const topicWithPoll = addPollToTopic(topic);
     
     // Add topic content as first message
     messagesHTML += `
@@ -1332,8 +1332,8 @@ function displayTopicContent(topic, posts) {
     // Add replies
     posts.forEach(post => {
         if (post.id !== posts[0].id) {
-            // Add demo poll to some posts and demo chat style
-            const postWithDemo = addDemoChatStyle(addDemoPollToPost(post));
+            // Add poll data and chat style if available
+            const postWithDemo = addChatStyle(addPollToPost(post));
             
             messagesHTML += `
                 <div class="message-bubble ${getMessageBubbleClass(postWithDemo.author.id)}">
@@ -1368,7 +1368,7 @@ function displayTopicContent(topic, posts) {
     
     // Apply colorful usernames after content is loaded
     applyColorsAfterLoad();
-    
+
     // Update existing reply form or create new one
     const existingForm = document.getElementById('fixed-reply-form');
     if (!existingForm) {
@@ -1389,8 +1389,8 @@ function addReplyForm(topicId) {
     if (!replyForm) {
         // Create reply form only if it doesn't exist
         replyForm = document.createElement('div');
-        replyForm.id = 'fixed-reply-form';
-        replyForm.className = 'reply-form';
+    replyForm.id = 'fixed-reply-form';
+    replyForm.className = 'reply-form';
         document.body.appendChild(replyForm);
     }
     
@@ -1465,16 +1465,16 @@ function submitReply(event, topicId) {
         body: JSON.stringify({ content: content })
     })
     .then(response => response.json())
-           .then(data => {
-               if (data.success) {
+    .then(data => {
+        if (data.success) {
                    const textarea = document.getElementById('reply-content');
                    textarea.value = '';
                    textarea.style.height = '36px'; // Reset to compact size
-                   loadTopicContent(topicId);
-               } else {
-                   alert('Error: ' + data.error);
-               }
-           })
+            loadTopicContent(topicId);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
     .catch(error => {
         console.error('Error:', error);
         alert('Error sending reply');
@@ -1629,7 +1629,7 @@ function generateUserColorRgb(username) {
         r = 0; g = x; b = c;
     } else if (h < 5/6) {
         r = x; g = 0; b = c;
-    } else {
+        } else {
         r = c; g = 0; b = x;
     }
     
@@ -1662,9 +1662,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load reactions from localStorage
     loadReactionsFromStorage();
     
-    // Set a demo current user ID for testing
-    setCurrentUserId('demo_user_1');
-    
     // Try to get current user ID from page data
     const userElement = document.querySelector('[data-user-id]');
     if (userElement) {
@@ -1676,8 +1673,8 @@ document.addEventListener('DOMContentLoaded', function() {
         setCurrentUserId(window.currentUserId);
     }
     
-    // Add demo unread messages
-    addDemoUnreadMessages();
+    // Initialize unread messages tracking
+    initializeUnreadMessages();
 });
 
 // Apply colorful usernames after loading topic content
@@ -2103,76 +2100,20 @@ function voteInPoll(pollId, optionIndex) {
     alert(`Voted for option ${optionIndex + 1}! (This would be saved to server)`);
 }
 
-// Demo poll data
-const demoPolls = {
-    'topic-40': {
-        id: 'poll-40',
-        question: 'Welke taal certificaten heb je nodig voor BIG registratie?',
-        options: [
-            { text: 'Nederlands C1', votes: 12 },
-            { text: 'Engels B2+', votes: 8 },
-            { text: 'Beide talen', votes: 15 },
-            { text: 'Alleen Nederlands', votes: 3 }
-        ],
-        userVote: null,
-        expiry: '2025-10-01T12:00:00Z'
-    },
-    'topic-41': {
-        id: 'poll-41',
-        question: 'Hoe lang duurt het BIG registratie proces?',
-        options: [
-            { text: '1-3 maanden', votes: 5 },
-            { text: '3-6 maanden', votes: 18 },
-            { text: '6-12 maanden', votes: 7 },
-            { text: 'Meer dan 1 jaar', votes: 2 }
-        ],
-        userVote: 1, // User voted for option 1
-        expiry: '2025-10-05T18:00:00Z'
-    }
-};
-
-// Add demo poll to topic data
-function addDemoPollToTopic(topic) {
-    const pollKey = `topic-${topic.id}`;
-    if (demoPolls[pollKey]) {
-        topic.poll = demoPolls[pollKey];
-    }
+// Poll data functions (will be populated from server data)
+function addPollToTopic(topic) {
+    // Poll data will come from server
     return topic;
 }
 
-// Add demo poll to post data
-function addDemoPollToPost(post) {
-    // Randomly add polls to some posts
-    if (post.id % 3 === 0) {
-        const pollKey = `post-${post.id}`;
-        post.poll = {
-            id: pollKey,
-            question: `Demo poll for post ${post.id}`,
-            options: [
-                { text: 'Option A', votes: Math.floor(Math.random() * 10) },
-                { text: 'Option B', votes: Math.floor(Math.random() * 10) },
-                { text: 'Option C', votes: Math.floor(Math.random() * 10) }
-            ],
-            userVote: null,
-            expiry: null
-        };
-    }
+function addPollToPost(post) {
+    // Poll data will come from server
     return post;
 }
 
-// Demo user IDs for chat style demonstration
-const demoCurrentUserId = 'demo_user_1';
-
-// Modify author ID for some posts to demonstrate chat style
-function addDemoChatStyle(post) {
-    // Make every 4th post from current user to show chat style
-    if (post.id % 4 === 0) {
-        post.author = {
-            ...post.author,
-            id: demoCurrentUserId,
-            name: 'You (Demo)'
-        };
-    }
+// Chat style functions (will use real user data)
+function addChatStyle(post) {
+    // Chat style will be determined by real user ID comparison
     return post;
 }
 
@@ -2247,14 +2188,10 @@ function updateUnreadIndicators() {
     });
 }
 
-// Demo: Add some unread messages
-function addDemoUnreadMessages() {
-    // Mark some messages as unread for demo
-    setTimeout(() => {
-        markMessageAsUnread('40-1');
-        markMessageAsUnread('41-2');
-        markMessageAsUnread('42-3');
-    }, 2000);
+// Unread messages will be tracked from server data
+function initializeUnreadMessages() {
+    // Unread messages will be loaded from server
+    updateUnreadIndicators();
 }
 </script>
 
