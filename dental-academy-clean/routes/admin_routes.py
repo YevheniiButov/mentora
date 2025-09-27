@@ -2578,7 +2578,16 @@ def user_detail(user_id):
         # Check if user is currently online with error handling
         try:
             online_threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
-            is_online = user.last_login and user.last_login >= online_threshold
+            if user.last_login:
+                # Ensure both datetimes are timezone-aware
+                if user.last_login.tzinfo is None:
+                    # If last_login is naive, assume it's UTC
+                    last_login_aware = user.last_login.replace(tzinfo=timezone.utc)
+                else:
+                    last_login_aware = user.last_login
+                is_online = last_login_aware >= online_threshold
+            else:
+                is_online = False
         except Exception as e:
             current_app.logger.error(f"Error checking online status for user {user_id}: {str(e)}")
             is_online = False
@@ -2641,7 +2650,10 @@ def user_detail_extended(user_id):
                     last_login_utc = user.last_login
                 
                 online_threshold = now_utc - timedelta(minutes=5)
-                is_online = last_login_utc >= online_threshold
+                # Ensure both datetimes are timezone-aware for comparison
+                if last_login_utc and last_login_utc.tzinfo is None:
+                    last_login_utc = last_login_utc.replace(tzinfo=timezone.utc)
+                is_online = last_login_utc and last_login_utc >= online_threshold
         except Exception as tz_error:
             current_app.logger.warning(f"Error checking online status for user {user_id}: {str(tz_error)}")
             is_online = False

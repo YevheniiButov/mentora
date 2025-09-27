@@ -183,13 +183,12 @@ def get_or_create_admin(cur):
         'last_name': 'Istrator',
         'password_hash': hashlib.sha256('admin123'.encode()).hexdigest(),
         'created_at': datetime.now(timezone.utc),
-        'is_active': True,
-        'is_verified': True
+        'is_active': True
     }
     
     insert_query = """
-    INSERT INTO \"user\" (email, first_name, last_name, password_hash, created_at, is_active, is_verified)
-    VALUES (%(email)s, %(first_name)s, %(last_name)s, %(password_hash)s, %(created_at)s, %(is_active)s, %(is_verified)s)
+    INSERT INTO \"user\" (email, first_name, last_name, password_hash, created_at, is_active)
+    VALUES (%(email)s, %(first_name)s, %(last_name)s, %(password_hash)s, %(created_at)s, %(is_active)s)
     RETURNING id
     """
     
@@ -216,13 +215,12 @@ def create_demo_user(cur, username):
         'last_name': 'Voter',
         'password_hash': hashlib.sha256('demo123'.encode()).hexdigest(),
         'created_at': datetime.now(timezone.utc),
-        'is_active': True,
-        'is_verified': True
+        'is_active': True
     }
     
     insert_query = """
-    INSERT INTO \"user\" (email, first_name, last_name, password_hash, created_at, is_active, is_verified)
-    VALUES (%(email)s, %(first_name)s, %(last_name)s, %(password_hash)s, %(created_at)s, %(is_active)s, %(is_verified)s)
+    INSERT INTO \"user\" (email, first_name, last_name, password_hash, created_at, is_active)
+    VALUES (%(email)s, %(first_name)s, %(last_name)s, %(password_hash)s, %(created_at)s, %(is_active)s)
     RETURNING id
     """
     
