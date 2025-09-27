@@ -949,7 +949,7 @@ def quick_register(lang=None):
         safe_log('log_registration_start', 'quick_registration', data)
         
         # Валидация данных
-        required_fields = ['firstName', 'lastName', 'birthDate', 'email', 'profession']
+        required_fields = ['firstName', 'lastName', 'birthDate', 'email', 'password', 'profession']
         for field in required_fields:
             if not data.get(field):
                 safe_log('log_validation_error', 'quick_registration', field, 'Required field is missing', data)
@@ -957,6 +957,24 @@ def quick_register(lang=None):
                     'success': False,
                     'error': f'Field {field} is required'
                 }), 400
+        
+        # Валидация пароля
+        password = data.get('password', '').strip()
+        confirm_password = data.get('confirmPassword', '').strip()
+        
+        if len(password) < 8:
+            safe_log('log_validation_error', 'quick_registration', 'password', 'Password too short', data)
+            return jsonify({
+                'success': False,
+                'error': 'Password must be at least 8 characters long'
+            }), 400
+        
+        if password != confirm_password:
+            safe_log('log_validation_error', 'quick_registration', 'password', 'Passwords do not match', data)
+            return jsonify({
+                'success': False,
+                'error': 'Passwords do not match'
+            }), 400
         
         # Валидация профессии
         profession = data.get('profession')
@@ -1042,19 +1060,15 @@ def quick_register(lang=None):
             profession=data['profession'],
             required_consents=True,  # Terms and privacy consent
             optional_consents=data.get('marketingConsent', False),  # Marketing consent
-            is_active=False,  # Требует подтверждения email
-            email_confirmed=False
+            is_active=True,  # Активируем сразу
+            email_confirmed=True  # Считаем email подтвержденным
         )
         
-        # Установка пароля (генерируем временный)
+        # Установка пароля пользователя
         try:
-            import secrets
-            import string
-            # Use secrets.choice in a loop for compatibility with older Python versions
-            temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
-            user.set_password(temp_password)
+            user.set_password(password)
         except Exception as e:
-            print(f"Error generating password: {e}")
+            print(f"Error setting password: {e}")
             safe_log('log_unexpected_error', 'quick_registration', e, data)
             return jsonify({
                 'success': False,
@@ -1068,15 +1082,7 @@ def quick_register(lang=None):
             safe_log('log_database_error', 'quick_registration', 'create_user', str(e), data)
             raise
         
-        # Отправка email подтверждения с временным паролем
-        try:
-            from utils.email_service import send_email_confirmation
-            email_sent = send_email_confirmation(user, user.generate_email_confirmation_token(), temp_password)
-            if not email_sent:
-                safe_log('log_email_error', 'quick_registration', user.email, 'Failed to send confirmation email', data)
-        except Exception as e:
-            print(f"Error sending confirmation email: {e}")
-            safe_log('log_email_error', 'quick_registration', user.email, f'Email service error: {e}', data)
+        # Email подтверждение больше не требуется - аккаунт активирован сразу
         
         # Log successful registration
         safe_log('log_registration_success', 'quick_registration', user.id, user.email, data)
@@ -1086,7 +1092,7 @@ def quick_register(lang=None):
         
         return jsonify({
             'success': True,
-            'message': 'Registration successful! Please check your email to confirm your account.',
+            'message': 'Registration successful! You can now log in with your email and password.',
             'redirect_url': url_for('auth.login')
         })
         
