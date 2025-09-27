@@ -2455,16 +2455,20 @@ let pollVotes = {};
 // Load poll votes from localStorage
 function loadPollVotes() {
     try {
+        console.log('🔄 Loading poll votes from localStorage...');
         const stored = localStorage.getItem('community_poll_votes');
+        console.log('📦 Raw stored data:', stored);
+        
         if (stored) {
             pollVotes = JSON.parse(stored);
-            console.log('Loaded poll votes from localStorage:', pollVotes);
+            console.log('✅ Loaded poll votes from localStorage:', pollVotes);
         } else {
-            console.log('No stored poll votes found in localStorage');
+            console.log('📭 No stored poll votes found in localStorage');
             pollVotes = {};
         }
     } catch (e) {
-        console.log('Error loading poll votes from localStorage:', e);
+        console.error('❌ Error loading poll votes from localStorage:', e);
+        console.error('Error details:', e.message);
         pollVotes = {};
     }
 }
@@ -2472,22 +2476,34 @@ function loadPollVotes() {
 // Save poll votes to localStorage
 function savePollVotes() {
     try {
+        console.log('💾 Attempting to save poll votes:', pollVotes);
         localStorage.setItem('community_poll_votes', JSON.stringify(pollVotes));
-        console.log('Saved poll votes to localStorage:', pollVotes);
+        console.log('✅ Successfully saved poll votes to localStorage');
+        
+        // Verify the save
+        const saved = localStorage.getItem('community_poll_votes');
+        console.log('🔍 Verification - saved data:', saved);
     } catch (e) {
-        console.error('Failed to save poll votes:', e);
+        console.error('❌ Failed to save poll votes:', e);
+        console.error('Error details:', e.message);
     }
 }
 
 // Create interactive poll from text content
 function createInteractivePoll(messageElement) {
+    console.log('🔍 Checking message element for poll content...');
     const messageContent = messageElement.querySelector('.message-content');
-    if (!messageContent) return;
+    if (!messageContent) {
+        console.log('⚠️ No message content found');
+        return;
+    }
     
     const content = messageContent.innerHTML;
+    console.log('📝 Message content preview:', content.substring(0, 100) + '...');
     
     // Check if this is the Dutch level poll
     if (content.includes('Op welk niveau Nederlands spreek je?') || content.includes('What level of Dutch do you speak?')) {
+        console.log('✅ Found Dutch level poll content, creating interactive poll...');
         const pollHTML = `
             <div class="poll-voting-container">
                 <div class="poll-question">🗳️ Op welk niveau Nederlands spreek je? / What level of Dutch do you speak?</div>
@@ -2527,30 +2543,53 @@ function createInteractivePoll(messageElement) {
         
         // Replace the text content with interactive poll
         messageContent.innerHTML = pollHTML;
+        console.log('✅ Replaced text content with interactive poll HTML');
         
         // Apply saved votes
+        console.log('🔄 Applying saved votes...');
         applySavedPollVotes();
+        console.log('✅ Interactive poll creation completed');
+    } else {
+        console.log('📭 No poll content found in this message');
     }
 }
 
 // Vote in Dutch level poll
 function voteInDutchPoll(level) {
+    console.log(`🎯 Starting vote for Dutch level: ${level}`);
     const pollKey = 'dutch_level_poll';
+    
+    // Ensure pollVotes is initialized
+    if (!pollVotes) {
+        console.log('⚠️ pollVotes not initialized, initializing...');
+        pollVotes = {};
+    }
+    
+    console.log('📊 Current pollVotes before vote:', pollVotes);
     
     // Remove previous vote
     if (pollVotes[pollKey]) {
         const previousLevel = pollVotes[pollKey];
+        console.log(`🔄 Removing previous vote for: ${previousLevel}`);
         const previousElement = document.querySelector(`[onclick="voteInDutchPoll('${previousLevel}')"]`);
         if (previousElement) {
             previousElement.classList.remove('voted');
+            console.log(`✅ Removed voted class from previous element`);
+        } else {
+            console.log(`⚠️ Previous element not found for level: ${previousLevel}`);
         }
     }
     
     // Add new vote
     pollVotes[pollKey] = level;
+    console.log(`✅ Added new vote for: ${level}`);
+    
     const newElement = document.querySelector(`[onclick="voteInDutchPoll('${level}')"]`);
     if (newElement) {
         newElement.classList.add('voted');
+        console.log(`✅ Added voted class to new element`);
+    } else {
+        console.log(`❌ New element not found for level: ${level}`);
     }
     
     // Update vote count (simulate +1 vote)
@@ -2558,6 +2597,9 @@ function voteInDutchPoll(level) {
     if (voteCountElement) {
         const currentCount = parseInt(voteCountElement.textContent);
         voteCountElement.textContent = currentCount + 1;
+        console.log(`📈 Updated vote count for ${level}: ${currentCount} → ${currentCount + 1}`);
+    } else {
+        console.log(`⚠️ Vote count element not found for level: ${level}`);
     }
     
     // Update total votes
@@ -2565,21 +2607,36 @@ function voteInDutchPoll(level) {
     if (totalElement) {
         const currentTotal = parseInt(totalElement.textContent);
         totalElement.textContent = currentTotal + 1;
+        console.log(`📊 Updated total votes: ${currentTotal} → ${currentTotal + 1}`);
+    } else {
+        console.log(`⚠️ Total votes element not found`);
     }
     
+    // Save votes
+    console.log('💾 Saving poll votes:', pollVotes);
     savePollVotes();
-    console.log(`Voted for Dutch level: ${level}`);
+    
+    console.log(`🎉 Vote completed for Dutch level: ${level}`);
 }
 
 // Apply saved poll votes on page load
 function applySavedPollVotes() {
+    console.log('🔄 Applying saved poll votes...');
     const pollKey = 'dutch_level_poll';
-    if (pollVotes[pollKey]) {
+    
+    if (pollVotes && pollVotes[pollKey]) {
         const level = pollVotes[pollKey];
+        console.log(`🎯 Applying saved vote for level: ${level}`);
+        
         const element = document.querySelector(`[onclick="voteInDutchPoll('${level}')"]`);
         if (element) {
             element.classList.add('voted');
+            console.log(`✅ Applied voted class to element for level: ${level}`);
+        } else {
+            console.log(`⚠️ Element not found for saved vote level: ${level}`);
         }
+    } else {
+        console.log('📭 No saved poll votes to apply');
     }
 }
 
