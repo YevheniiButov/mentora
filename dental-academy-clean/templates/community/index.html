@@ -2,6 +2,11 @@
 
 {% block title %}Mentora Community Forum{% endblock %}
 
+<!-- Add user ID for JavaScript -->
+{% if current_user.is_authenticated %}
+<meta name="user-id" content="{{ current_user.id }}">
+{% endif %}
+
 {% block extra_head %}
 <meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
@@ -1721,9 +1726,18 @@ function getCurrentUserId() {
         const userElement = document.querySelector('[data-user-id]');
         if (userElement) {
             currentUserId = userElement.getAttribute('data-user-id');
+            console.log('Found user ID from data attribute:', currentUserId);
         } else {
-            // Fallback: try to get from window object or set a default
-            currentUserId = window.currentUserId || 'current_user';
+            // Try to get from meta tag
+            const metaUser = document.querySelector('meta[name="user-id"]');
+            if (metaUser) {
+                currentUserId = metaUser.getAttribute('content');
+                console.log('Found user ID from meta tag:', currentUserId);
+            } else {
+                // Fallback: try to get from window object
+                currentUserId = window.currentUserId || null;
+                console.log('User ID from window object:', currentUserId);
+            }
         }
     }
     return currentUserId;
@@ -1732,7 +1746,9 @@ function getCurrentUserId() {
 // Determine if message is from current user
 function isCurrentUserMessage(authorId) {
     const currentUser = getCurrentUserId();
-    return authorId == currentUser || authorId === currentUser;
+    const isCurrent = authorId == currentUser || authorId === currentUser;
+    console.log('Checking if current user:', { authorId, currentUser, isCurrent });
+    return isCurrent;
 }
 
 // Get CSS class for message bubble based on author
