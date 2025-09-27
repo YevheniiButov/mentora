@@ -1689,9 +1689,24 @@ function applyColorsAfterLoad() {
 function loadAllReactions() {
     // Load reactions for all visible messages
     document.querySelectorAll('[id^="reactions-"]').forEach(element => {
-        const id = element.id.replace('reactions-', '').replace('reactions-post-', '');
-        const type = element.id.includes('post-') ? 'post' : 'topic';
-        const messageId = element.id.includes('post-') ? id : id;
+        console.log('Processing element:', element.id);
+        
+        let type, messageId;
+        
+        if (element.id.startsWith('reactions-post-')) {
+            // Post reaction container: reactions-post-518
+            type = 'post';
+            messageId = element.id.replace('reactions-post-', '');
+        } else if (element.id.startsWith('reactions-') && !element.id.includes('post-')) {
+            // Topic reaction container: reactions-40
+            type = 'topic';
+            messageId = element.id.replace('reactions-', '');
+        } else {
+            console.log('Unknown reaction container format:', element.id);
+            return;
+        }
+        
+        console.log('Loading reactions for:', { type, messageId });
         loadReactionsForMessage(messageId, type);
     });
 }
