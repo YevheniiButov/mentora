@@ -1916,6 +1916,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load poll votes from localStorage
     loadPollVotes();
     
+    // Check admin status
+    checkAdminStatus();
+    
     // Try to get current user ID from page data
     const userElement = document.querySelector('[data-user-id]');
     if (userElement) {
@@ -2746,6 +2749,36 @@ function createInteractivePolls() {
     });
 }
 
+// Check if current user is admin and show/hide admin controls
+let isCurrentUserAdmin = false;
+
+function checkAdminStatus() {
+    fetch('/api/community/user/is-admin')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            isCurrentUserAdmin = data.is_admin;
+            console.log(`🔐 Admin status: ${isCurrentUserAdmin}`);
+            
+            // Show/hide admin controls based on status
+            const adminControls = document.querySelectorAll('.admin-controls');
+            adminControls.forEach(control => {
+                control.style.display = isCurrentUserAdmin ? 'flex' : 'none';
+            });
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error checking admin status:', error);
+        isCurrentUserAdmin = false;
+        
+        // Hide admin controls on error
+        const adminControls = document.querySelectorAll('.admin-controls');
+        adminControls.forEach(control => {
+            control.style.display = 'none';
+        });
+    });
+}
+
 // Admin message editing and deletion functions
 let editingMessages = new Set();
 
@@ -2821,31 +2854,50 @@ function saveMessageEdit(messageKey) {
         return;
     }
     
-    // Find message element
-    const messageElement = document.querySelector(`[data-message-id="${messageKey}"]`);
-    if (!messageElement) {
-        console.log('❌ Message element not found');
-        return;
-    }
+    // Parse message key to get ID and type
+    const [messageType, messageId] = messageKey.split('-');
     
-    const messageContent = messageElement.querySelector('.message-content');
-    if (!messageContent) {
-        console.log('❌ Message content not found');
-        return;
-    }
-    
-    // Update content
-    messageContent.innerHTML = newContent;
-    messageContent.classList.remove('edit-mode');
-    
-    // Remove from editing set
-    editingMessages.delete(messageKey);
-    
-    console.log(`✅ Message edit saved: ${messageKey}`);
-    
-    // Here you would normally send the update to the server
-    // For now, we just update the UI
-    alert('Message updated successfully! (Note: This is a demo - changes are not saved to server)');
+    // Send to server
+    fetch('/api/community/message/edit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            message_id: parseInt(messageId),
+            message_type: messageType,
+            content: newContent
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Find message element
+            const messageElement = document.querySelector(`[data-message-id="${messageKey}"]`);
+            if (messageElement) {
+                const messageContent = messageElement.querySelector('.message-content');
+                if (messageContent) {
+                    // Update content
+                    messageContent.innerHTML = newContent;
+                    messageContent.classList.remove('edit-mode');
+                    
+                    // Remove from editing set
+                    editingMessages.delete(messageKey);
+                    
+                    console.log(`✅ Message edit saved: ${messageKey}`);
+                    alert('Message updated successfully!');
+                }
+            }
+        } else {
+            console.error('❌ Edit failed:', data.error);
+            alert(`Failed to update message: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        console.error('❌ Edit error:', error);
+        alert('Network error. Please try again.');
+    });
 }
 
 // Cancel message edit
@@ -2901,13 +2953,43 @@ function deleteMessage(messageId, type) {
     messageElement.style.opacity = '0';
     messageElement.style.transform = 'translateX(-100%)';
     
-    setTimeout(() => {
-        messageElement.remove();
-        console.log(`✅ Message deleted: ${messageKey}`);
+    // Send to server
+    fetch('/api/community/message/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            message_id: parseInt(messageId),
+            message_type: type
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            setTimeout(() => {
+                messageElement.remove();
+                console.log(`✅ Message deleted: ${messageKey}`);
+                alert('Message deleted successfully!');
+            }, 300);
+        } else {
+            console.error('❌ Delete failed:', data.error);
+            alert(`Failed to delete message: ${data.error}`);
+            
+            // Restore element if deletion failed
+            messageElement.style.opacity = '1';
+            messageElement.style.transform = 'translateX(0)';
+        }
+    })
+    .catch(error => {
+        console.error('❌ Delete error:', error);
+        alert('Network error. Please try again.');
         
-        // Here you would normally send the deletion request to the server
-        alert('Message deleted successfully! (Note: This is a demo - changes are not saved to server)');
-    }, 300);
+        // Restore element if deletion failed
+        messageElement.style.opacity = '1';
+        messageElement.style.transform = 'translateX(0)';
+    });
 }
 
 const unreadMessages = new Set();

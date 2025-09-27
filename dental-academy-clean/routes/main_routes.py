@@ -1009,6 +1009,162 @@ def get_topic_content(lang, topic_id):
             'error': 'Error loading topic'
         }), 500
 
+# API endpoints for message editing and deletion
+@main_bp.route('/api/community/message/edit', methods=['POST'])
+@login_required
+def api_edit_message():
+    """API endpoint for editing messages (topics or posts)"""
+    try:
+        data = request.get_json()
+        message_id = data.get('message_id')
+        message_type = data.get('message_type')  # 'topic' or 'post'
+        new_content = data.get('content', '').strip()
+        
+        if not message_id or not message_type or not new_content:
+            return jsonify({
+                'success': False,
+                'error': 'Missing required parameters'
+            }), 400
+        
+        # Check if user is admin
+        if not current_user.is_admin:
+            return jsonify({
+                'success': False,
+                'error': 'Access denied. Admin privileges required.'
+            }), 403
+        
+        if message_type == 'topic':
+            # Edit topic
+            topic = ForumTopic.query.get_or_404(message_id)
+            topic.content = new_content
+            topic.updated_at = datetime.now(timezone.utc)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Topic updated successfully',
+                'updated_at': topic.updated_at.strftime('%d.%m.%Y %H:%M')
+            })
+            
+        elif message_type == 'post':
+            # Edit post
+            post = ForumPost.query.get_or_404(message_id)
+            post.content = new_content
+            post.updated_at = datetime.now(timezone.utc)
+            post.is_edited = True
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Post updated successfully',
+                'updated_at': post.updated_at.strftime('%d.%m.%Y %H:%M')
+            })
+        
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid message type'
+            }), 400
+            
+    except Exception as e:
+        current_app.logger.error(f"Error editing message: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to update message'
+        }), 500
+
+@main_bp.route('/api/community/message/delete', methods=['POST'])
+@login_required
+def api_delete_message():
+    """API endpoint for deleting messages (topics or posts)"""
+    try:
+        data = request.get_json()
+        message_id = data.get('message_id')
+        message_type = data.get('message_type')  # 'topic' or 'post'
+        
+        if not message_id or not message_type:
+            return jsonify({
+                'success': False,
+                'error': 'Missing required parameters'
+            }), 400
+        
+        # Check if user is admin
+        if not current_user.is_admin:
+            return jsonify({
+                'success': False,
+                'error': 'Access denied. Admin privileges required.'
+            }), 403
+        
+        if message_type == 'topic':
+            # Delete topic
+            topic = ForumTopic.query.get_or_404(message_id)
+            
+            # Soft delete all posts in this topic
+            ForumPost.query.filter_by(topic_id=message_id).update({
+                'is_deleted': True, 
+                'deleted_at': datetime.now(timezone.utc),
+                'deleted_by': current_user.id
+            })
+            
+            # Soft delete the topic
+            topic.is_deleted = True
+            topic.deleted_at = datetime.now(timezone.utc)
+            topic.deleted_by = current_user.id
+            topic.updated_at = datetime.now(timezone.utc)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Topic deleted successfully'
+            })
+            
+        elif message_type == 'post':
+            # Delete post
+            post = ForumPost.query.get_or_404(message_id)
+            post.is_deleted = True
+            post.deleted_at = datetime.now(timezone.utc)
+            post.deleted_by = current_user.id
+            post.updated_at = datetime.now(timezone.utc)
+            
+            # Update topic stats
+            topic = ForumTopic.query.get(post.topic_id)
+            if topic:
+                topic.replies_count = ForumPost.query.filter_by(
+                    topic_id=post.topic_id, 
+                    is_deleted=False
+                ).count()
+                topic.updated_at = datetime.now(timezone.utc)
+            
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Post deleted successfully'
+            })
+        
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid message type'
+            }), 400
+            
+    except Exception as e:
+        current_app.logger.error(f"Error deleting message: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to delete message'
+        }), 500
+
+@main_bp.route('/api/community/user/is-admin')
+@login_required
+def api_check_admin():
+    """API endpoint to check if current user is admin"""
+    return jsonify({
+        'success': True,
+        'is_admin': current_user.is_admin,
+        'user_id': current_user.id
+    })
+
 @main_bp.route('/test')
 def test_page():
     """Тестовая страница для отладки"""
