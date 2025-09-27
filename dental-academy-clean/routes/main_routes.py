@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, g, send_from_directory, request, s
 from flask_login import current_user, login_required
 from models import LearningPath, Subject, Module, Lesson, UserProgress
 from extensions import db
+from sqlalchemy import or_
 
 # Создаем blueprint с языковой поддержкой
 main_bp = Blueprint('main', __name__, url_prefix='/<string:lang>')
@@ -374,11 +375,15 @@ def community(lang):
     # Получаем все категории с количеством тем
     categories = ForumCategory.query.filter_by(is_active=True).order_by(ForumCategory.order).all()
     
-    # Получаем последние темы
-    recent_topics = ForumTopic.query.order_by(ForumTopic.created_at.desc()).limit(10).all()
+    # Получаем последние темы (исключаем удаленные)
+    recent_topics = ForumTopic.query.filter(
+        or_(ForumTopic.is_deleted == False, ForumTopic.is_deleted.is_(None))
+    ).order_by(ForumTopic.created_at.desc()).limit(10).all()
     
-    # Получаем популярные темы (по количеству просмотров)
-    popular_topics = ForumTopic.query.order_by(ForumTopic.views_count.desc()).limit(5).all()
+    # Получаем популярные темы (по количеству просмотров, исключаем удаленные)
+    popular_topics = ForumTopic.query.filter(
+        or_(ForumTopic.is_deleted == False, ForumTopic.is_deleted.is_(None))
+    ).order_by(ForumTopic.views_count.desc()).limit(5).all()
     
     return render_template('community/index.html', 
                          categories=categories,
@@ -402,8 +407,10 @@ def community_category(lang, category):
     page = request.args.get('page', 1, type=int)
     per_page = 20
     
-    # Сначала закрепленные темы, потом обычные
-    topics_query = ForumTopic.query.filter_by(category_id=forum_category.id)
+    # Сначала закрепленные темы, потом обычные (исключаем удаленные)
+    topics_query = ForumTopic.query.filter_by(category_id=forum_category.id).filter(
+        or_(ForumTopic.is_deleted == False, ForumTopic.is_deleted.is_(None))
+    )
     topics = topics_query.order_by(
         ForumTopic.is_sticky.desc(),
         ForumTopic.created_at.desc()
@@ -1106,15 +1113,11 @@ def api_delete_message():
                 'deleted_by': current_user.id
             })
             
-            # TODO: Uncomment after running migration add_forum_topic_deletion_fields.py
             # Soft delete the topic
-            # topic.is_deleted = True
-            # topic.deleted_at = datetime.now(timezone.utc)
-            # topic.deleted_by = current_user.id
+            topic.is_deleted = True
+            topic.deleted_at = datetime.now(timezone.utc)
+            topic.deleted_by = current_user.id
             topic.updated_at = datetime.now(timezone.utc)
-            
-            # Temporary: Mark topic as deleted using status field
-            topic.status = 'hidden'
             db.session.commit()
             
             return jsonify({

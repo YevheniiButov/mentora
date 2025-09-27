@@ -1956,10 +1956,9 @@ class ForumTopic(db.Model):
     status = db.Column(db.String(20), default='normal')  # normal, pinned, locked, hidden
     is_sticky = db.Column(db.Boolean, default=False)
     is_locked = db.Column(db.Boolean, default=False)
-    # TODO: Uncomment after running migration add_forum_topic_deletion_fields.py
-    # is_deleted = db.Column(db.Boolean, default=False)
-    # deleted_at = db.Column(db.DateTime)
-    # deleted_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_at = db.Column(db.DateTime)
+    deleted_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     # Статистика
     views_count = db.Column(db.Integer, default=0)
@@ -1975,8 +1974,7 @@ class ForumTopic(db.Model):
     # Relationships
     author = db.relationship('User', foreign_keys=[author_id], backref='forum_topics')
     last_reply_user = db.relationship('User', foreign_keys=[last_reply_by], backref='last_replies')
-    # TODO: Uncomment after running migration add_forum_topic_deletion_fields.py
-    # deleted_by_user = db.relationship('User', foreign_keys=[deleted_by], backref='deleted_topics')
+    deleted_by_user = db.relationship('User', foreign_keys=[deleted_by], backref='deleted_topics')
     posts = db.relationship('ForumPost', backref='topic', lazy='dynamic', cascade="all, delete-orphan")
     likes = db.relationship('ForumTopicLike', backref='topic', lazy='dynamic', cascade="all, delete-orphan")
     
