@@ -863,6 +863,87 @@
     background: #ffed4e;
     border-color: #ffed4e;
 }
+
+/* CSS for interactive poll voting */
+.poll-voting-container {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.poll-question {
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 16px;
+}
+
+.poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.poll-option {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.poll-option:hover {
+    border-color: #007bff;
+    background: #f8f9ff;
+}
+
+.poll-option.voted {
+    border-color: #28a745;
+    background: #f8fff9;
+}
+
+.poll-option.voted::after {
+    content: "✓";
+    position: absolute;
+    right: 12px;
+    color: #28a745;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.poll-option-text {
+    flex: 1;
+    font-weight: 500;
+}
+
+.poll-vote-count {
+    background: #e9ecef;
+    color: #6c757d;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: center;
+}
+
+.poll-option.voted .poll-vote-count {
+    background: #28a745;
+    color: white;
+}
+
+.poll-total-votes {
+    margin-top: 15px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+}
     border-radius: 50%;
     width: 8px;
     height: 8px;
@@ -1733,6 +1814,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load pinned messages from localStorage
     loadPinnedMessages();
     
+    // Load poll votes from localStorage
+    loadPollVotes();
+    
     // Try to get current user ID from page data
     const userElement = document.querySelector('[data-user-id]');
     if (userElement) {
@@ -1756,6 +1840,8 @@ function applyColorsAfterLoad() {
         loadAllReactions();
         // Apply pinned status to messages
         applyPinnedStatus();
+        // Create interactive polls
+        createInteractivePolls();
     }, 100);
 }
 
@@ -2360,6 +2446,147 @@ function applyPinnedStatus() {
             pinButton.classList.add('pinned');
             pinButton.textContent = '📌 Pinned';
         }
+    });
+}
+
+// Interactive poll voting functionality
+let pollVotes = {};
+
+// Load poll votes from localStorage
+function loadPollVotes() {
+    try {
+        const stored = localStorage.getItem('community_poll_votes');
+        if (stored) {
+            pollVotes = JSON.parse(stored);
+            console.log('Loaded poll votes from localStorage:', pollVotes);
+        } else {
+            console.log('No stored poll votes found in localStorage');
+            pollVotes = {};
+        }
+    } catch (e) {
+        console.log('Error loading poll votes from localStorage:', e);
+        pollVotes = {};
+    }
+}
+
+// Save poll votes to localStorage
+function savePollVotes() {
+    try {
+        localStorage.setItem('community_poll_votes', JSON.stringify(pollVotes));
+        console.log('Saved poll votes to localStorage:', pollVotes);
+    } catch (e) {
+        console.error('Failed to save poll votes:', e);
+    }
+}
+
+// Create interactive poll from text content
+function createInteractivePoll(messageElement) {
+    const messageContent = messageElement.querySelector('.message-content');
+    if (!messageContent) return;
+    
+    const content = messageContent.innerHTML;
+    
+    // Check if this is the Dutch level poll
+    if (content.includes('Op welk niveau Nederlands spreek je?') || content.includes('What level of Dutch do you speak?')) {
+        const pollHTML = `
+            <div class="poll-voting-container">
+                <div class="poll-question">🗳️ Op welk niveau Nederlands spreek je? / What level of Dutch do you speak?</div>
+                <div class="poll-options">
+                    <div class="poll-option" onclick="voteInDutchPoll('A1')">
+                        <span class="poll-option-text">A1 - Beginner</span>
+                        <span class="poll-vote-count" id="vote-count-A1">3</span>
+                    </div>
+                    <div class="poll-option" onclick="voteInDutchPoll('A2')">
+                        <span class="poll-option-text">A2 - Elementary</span>
+                        <span class="poll-vote-count" id="vote-count-A2">10</span>
+                    </div>
+                    <div class="poll-option" onclick="voteInDutchPoll('B1')">
+                        <span class="poll-option-text">B1 - Intermediate</span>
+                        <span class="poll-vote-count" id="vote-count-B1">23</span>
+                    </div>
+                    <div class="poll-option" onclick="voteInDutchPoll('B2')">
+                        <span class="poll-option-text">B2 - Upper Intermediate</span>
+                        <span class="poll-vote-count" id="vote-count-B2">11</span>
+                    </div>
+                    <div class="poll-option" onclick="voteInDutchPoll('B2+')">
+                        <span class="poll-option-text">B2+ - Advanced Intermediate</span>
+                        <span class="poll-vote-count" id="vote-count-B2+">8</span>
+                    </div>
+                    <div class="poll-option" onclick="voteInDutchPoll('C1')">
+                        <span class="poll-option-text">C1 - Advanced</span>
+                        <span class="poll-vote-count" id="vote-count-C1">5</span>
+                    </div>
+                    <div class="poll-option" onclick="voteInDutchPoll('C2')">
+                        <span class="poll-option-text">C2 - Proficiency</span>
+                        <span class="poll-vote-count" id="vote-count-C2">2</span>
+                    </div>
+                </div>
+                <div class="poll-total-votes">Total votes: <span id="total-votes">62</span></div>
+            </div>
+        `;
+        
+        // Replace the text content with interactive poll
+        messageContent.innerHTML = pollHTML;
+        
+        // Apply saved votes
+        applySavedPollVotes();
+    }
+}
+
+// Vote in Dutch level poll
+function voteInDutchPoll(level) {
+    const pollKey = 'dutch_level_poll';
+    
+    // Remove previous vote
+    if (pollVotes[pollKey]) {
+        const previousLevel = pollVotes[pollKey];
+        const previousElement = document.querySelector(`[onclick="voteInDutchPoll('${previousLevel}')"]`);
+        if (previousElement) {
+            previousElement.classList.remove('voted');
+        }
+    }
+    
+    // Add new vote
+    pollVotes[pollKey] = level;
+    const newElement = document.querySelector(`[onclick="voteInDutchPoll('${level}')"]`);
+    if (newElement) {
+        newElement.classList.add('voted');
+    }
+    
+    // Update vote count (simulate +1 vote)
+    const voteCountElement = document.getElementById(`vote-count-${level}`);
+    if (voteCountElement) {
+        const currentCount = parseInt(voteCountElement.textContent);
+        voteCountElement.textContent = currentCount + 1;
+    }
+    
+    // Update total votes
+    const totalElement = document.getElementById('total-votes');
+    if (totalElement) {
+        const currentTotal = parseInt(totalElement.textContent);
+        totalElement.textContent = currentTotal + 1;
+    }
+    
+    savePollVotes();
+    console.log(`Voted for Dutch level: ${level}`);
+}
+
+// Apply saved poll votes on page load
+function applySavedPollVotes() {
+    const pollKey = 'dutch_level_poll';
+    if (pollVotes[pollKey]) {
+        const level = pollVotes[pollKey];
+        const element = document.querySelector(`[onclick="voteInDutchPoll('${level}')"]`);
+        if (element) {
+            element.classList.add('voted');
+        }
+    }
+}
+
+// Create interactive polls for all messages
+function createInteractivePolls() {
+    document.querySelectorAll('[data-message-id]').forEach(element => {
+        createInteractivePoll(element);
     });
 }
 
