@@ -301,6 +301,161 @@ def send_password_reset_email(user, token):
         current_app.logger.error(f"Failed to send password reset to {user.email}: {str(e)}")
         return False
 
+def send_admin_password_reset_email(user, temp_password, language='ru'):
+    """Send admin password reset email with temporary password"""
+    try:
+        print(f"=== ADMIN PASSWORD RESET EMAIL for {user.email} (lang: {language}) ===")
+        
+        # Check email provider
+        email_provider = current_app.config.get('EMAIL_PROVIDER', 'smtp')
+        print(f"=== EMAIL_PROVIDER: {email_provider} ===")
+        
+        if email_provider == 'resend':
+            # Use Resend API
+            from utils.resend_email_service import send_admin_password_reset_email_resend
+            return send_admin_password_reset_email_resend(user, temp_password, language)
+        else:
+            # Use SMTP fallback
+            return send_admin_password_reset_email_smtp(user, temp_password, language)
+            
+    except Exception as e:
+        print(f"=== ADMIN PASSWORD RESET ERROR: {str(e)} ===")
+        current_app.logger.error(f"Failed to send admin password reset email to {user.email}: {str(e)}")
+        return False
+
+def send_admin_password_reset_email_smtp(user, temp_password, language='ru'):
+    """Send admin password reset email using SMTP"""
+    try:
+        print(f"=== SMTP ADMIN PASSWORD RESET for {user.email} ===")
+        
+        # Generate login URL
+        base_url = current_app.config.get('BASE_URL', 'https://bigmentor.nl')
+        login_url = f"{base_url}/auth/login"
+        
+        print(f"=== LOGIN_URL: {login_url} ===")
+        
+        # Check if email sending is suppressed
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        if mail_suppress:
+            print("=== EMAIL SENDING SUPPRESSED (TESTING MODE) ===")
+            return True
+        
+        # Create message
+        subject = "Сброс пароля - Mentora"
+        
+        # Render HTML template
+        from flask import render_template_string
+        try:
+            with open(f'templates/emails/password_reset_admin_{language}.html', 'r', encoding='utf-8') as f:
+                html_template = f.read()
+            html_body = render_template_string(html_template, 
+                                             user=user, 
+                                             temp_password=temp_password,
+                                             login_url=login_url)
+        except Exception as e:
+            print(f"=== ERROR RENDERING HTML TEMPLATE: {e} ===")
+            html_body = f"""
+            <h2>Сброс пароля - Mentora</h2>
+            <p>Здравствуйте, {user.first_name}!</p>
+            <p>Ваш пароль был сброшен администратором системы Mentora.</p>
+            <p><strong>Ваш новый временный пароль: {temp_password}</strong></p>
+            <p><a href="{login_url}">Войти в систему</a></p>
+            """
+        
+        # Render text template
+        try:
+            with open(f'templates/emails/password_reset_admin_{language}.txt', 'r', encoding='utf-8') as f:
+                text_template = f.read()
+            text_body = render_template_string(text_template,
+                                             user=user,
+                                             temp_password=temp_password,
+                                             login_url=login_url)
+        except Exception as e:
+            print(f"=== ERROR RENDERING TEXT TEMPLATE: {e} ===")
+            text_body = f"""
+            Mentora - Сброс пароля
+            
+            Здравствуйте, {user.first_name}!
+            
+            Ваш пароль был сброшен администратором системы Mentora.
+            
+            Ваш новый временный пароль: {temp_password}
+            
+            Войти в систему: {login_url}
+            """
+        
+        # Create message
+        msg = Message(
+            subject=subject,
+            recipients=[user.email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@bigmentor.nl')
+        )
+        
+        print(f"=== SENDING EMAIL TO: {user.email} ===")
+        print(f"=== SUBJECT: {subject} ===")
+        
+        # Send email
+        mail.send(msg)
+        
+        print(f"=== EMAIL SENT SUCCESSFULLY to {user.email} ===")
+        return True
+        
+    except Exception as e:
+        print(f"=== SMTP ADMIN PASSWORD RESET ERROR: {str(e)} ===")
+        import traceback
+        print(f"=== TRACEBACK: {traceback.format_exc()} ===")
+        return False
+
+def send_password_reset_email_smtp(user, token):
+    """Send password reset email using SMTP"""
+    try:
+        print(f"=== SMTP PASSWORD RESET for {user.email} ===")
+        
+        # Generate reset URL
+        base_url = current_app.config.get('BASE_URL', 'https://bigmentor.nl')
+        reset_url = f"{base_url}/auth/reset-password/{token}"
+        
+        print(f"=== RESET_URL: {reset_url} ===")
+        
+        # Check if email sending is suppressed
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        if mail_suppress:
+            print("=== EMAIL SENDING SUPPRESSED (TESTING MODE) ===")
+            return True
+        
+        # Create message
+        subject = "Сброс пароля - Mentora"
+        
+        # Get HTML and text content
+        html_body = get_password_reset_html(user, reset_url)
+        text_body = get_password_reset_text(user, reset_url)
+        
+        # Create message
+        msg = Message(
+            subject=subject,
+            recipients=[user.email],
+            html=html_body,
+            body=text_body,
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@bigmentor.nl')
+        )
+        
+        print(f"=== SENDING EMAIL TO: {user.email} ===")
+        print(f"=== SUBJECT: {subject} ===")
+        
+        # Send email
+        mail.send(msg)
+        
+        print(f"=== EMAIL SENT SUCCESSFULLY to {user.email} ===")
+        return True
+        
+    except Exception as e:
+        print(f"=== SMTP PASSWORD RESET ERROR: {str(e)} ===")
+        import traceback
+        print(f"=== TRACEBACK: {traceback.format_exc()} ===")
+        return False
+
 def get_password_reset_html(user, reset_url):
     """Generate HTML for password reset email"""
     return f"""

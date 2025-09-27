@@ -49,6 +49,17 @@ def reset_user_password(email, new_password=None):
             # Сохраняем изменения
             db.session.commit()
             
+            # Отправляем email с новым паролем
+            try:
+                from utils.email_service import send_admin_password_reset_email
+                email_sent = send_admin_password_reset_email(user, new_password, 'ru')
+                if email_sent:
+                    print(f"📧 Email с новым паролем отправлен")
+                else:
+                    print(f"⚠️ Не удалось отправить email")
+            except Exception as e:
+                print(f"⚠️ Ошибка отправки email: {str(e)}")
+            
             print(f"✅ Пароль успешно сброшен!")
             print(f"🔑 Новый пароль: {new_password}")
             print(f"✅ Аккаунт активирован")
