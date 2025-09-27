@@ -1206,6 +1206,25 @@ translations = {
     'email_placeholder': 'Введіть вашу адресу електронної пошти',
     'send_reset_link': 'Надіслати посилання для скидання',
     'back_to_login': 'Повернутися до входу',
+    
+    # Переклади для сторінки скидання пароля
+    'reset_password': 'Скинути пароль',
+    'reset_password_subtitle': 'Введіть новий пароль нижче',
+    'new_password_placeholder': 'Введіть новий пароль',
+    'confirm_new_password': 'Підтвердіть новий пароль',
+    'confirm_new_password_placeholder': 'Підтвердіть новий пароль',
+    'password_help': 'Мінімум 8 символів, повинні містити літери та цифри',
+    'passwords_required': 'Обидва поля пароля обов\'язкові',
+    'passwords_dont_match': 'Паролі не співпадають',
+    'password_too_short': 'Пароль повинен містити мінімум 8 символів',
+    'password_no_letters': 'Пароль повинен містити принаймні одну літеру',
+    'password_no_numbers': 'Пароль повинен містити принаймні одну цифру',
+    'resetting': 'Скидання...',
+    'reset_failed': 'Не вдалося скинути пароль. Будь ласка, спробуйте ще раз.',
+    'network_error': 'Помилка мережі. Перевірте з\'єднання та спробуйте ще раз.',
+    'password_weak': 'Слабкий пароль',
+    'password_medium': 'Середній пароль',
+    'password_strong': 'Надійний пароль',
 
     
     # New translations for improved registration form

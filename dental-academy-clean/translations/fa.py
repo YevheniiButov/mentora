@@ -1286,6 +1286,25 @@ translations = {
     'email_placeholder': 'آدرس ایمیل خود را وارد کنید',
     'send_reset_link': 'ارسال لینک بازنشانی',
     'back_to_login': 'بازگشت به ورود',
+    
+    # ترجمه‌های فرم بازنشانی رمز عبور
+    'reset_password': 'بازنشانی رمز عبور',
+    'reset_password_subtitle': 'رمز عبور جدید خود را در زیر وارد کنید',
+    'new_password_placeholder': 'رمز عبور جدید خود را وارد کنید',
+    'confirm_new_password': 'تایید رمز عبور جدید',
+    'confirm_new_password_placeholder': 'رمز عبور جدید خود را تایید کنید',
+    'password_help': 'حداقل 8 کاراکتر، باید حاوی حروف و اعداد باشد',
+    'passwords_required': 'هر دو فیلد رمز عبور اجباری است',
+    'passwords_dont_match': 'رمزهای عبور مطابقت ندارند',
+    'password_too_short': 'رمز عبور باید حداقل 8 کاراکتر باشد',
+    'password_no_letters': 'رمز عبور باید حداقل یک حرف داشته باشد',
+    'password_no_numbers': 'رمز عبور باید حداقل یک عدد داشته باشد',
+    'resetting': 'در حال بازنشانی...',
+    'reset_failed': 'بازنشانی رمز عبور ناموفق. لطفاً دوباره تلاش کنید.',
+    'network_error': 'خطای شبکه. اتصال خود را بررسی کنید و دوباره تلاش کنید.',
+    'password_weak': 'رمز عبور ضعیف',
+    'password_medium': 'رمز عبور متوسط',
+    'password_strong': 'رمز عبور قوی',
 
     
     # New translations for improved registration form

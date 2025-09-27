@@ -1246,6 +1246,25 @@ translations = {
     'email_placeholder': 'Digite seu endereço de e-mail',
     'send_reset_link': 'Enviar Link de Redefinição',
     'back_to_login': 'Voltar ao Login',
+    
+    # Traduções do formulário de redefinição de senha
+    'reset_password': 'Redefinir Senha',
+    'reset_password_subtitle': 'Digite sua nova senha abaixo',
+    'new_password_placeholder': 'Digite sua nova senha',
+    'confirm_new_password': 'Confirmar Nova Senha',
+    'confirm_new_password_placeholder': 'Confirme sua nova senha',
+    'password_help': 'Mínimo 8 caracteres, deve conter letras e números',
+    'passwords_required': 'Ambos os campos de senha são obrigatórios',
+    'passwords_dont_match': 'As senhas não coincidem',
+    'password_too_short': 'A senha deve ter pelo menos 8 caracteres',
+    'password_no_letters': 'A senha deve conter pelo menos uma letra',
+    'password_no_numbers': 'A senha deve conter pelo menos um número',
+    'resetting': 'Redefinindo...',
+    'reset_failed': 'Falha ao redefinir senha. Tente novamente.',
+    'network_error': 'Erro de rede. Verifique sua conexão e tente novamente.',
+    'password_weak': 'Senha fraca',
+    'password_medium': 'Senha média',
+    'password_strong': 'Senha forte',
 
     
     # New translations for improved registration form

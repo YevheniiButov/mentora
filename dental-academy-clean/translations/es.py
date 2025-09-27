@@ -1297,6 +1297,25 @@ translations = {
     'email_placeholder': 'Ingrese su dirección de correo electrónico',
     'send_reset_link': 'Enviar Enlace de Restablecimiento',
     'back_to_login': 'Volver al Inicio de Sesión',
+    
+    # Traducciones de formulario de restablecimiento de contraseña
+    'reset_password': 'Restablecer Contraseña',
+    'reset_password_subtitle': 'Ingrese su nueva contraseña a continuación',
+    'new_password_placeholder': 'Ingrese su nueva contraseña',
+    'confirm_new_password': 'Confirmar Nueva Contraseña',
+    'confirm_new_password_placeholder': 'Confirme su nueva contraseña',
+    'password_help': 'Mínimo 8 caracteres, debe contener letras y números',
+    'passwords_required': 'Ambos campos de contraseña son obligatorios',
+    'passwords_dont_match': 'Las contraseñas no coinciden',
+    'password_too_short': 'La contraseña debe tener al menos 8 caracteres',
+    'password_no_letters': 'La contraseña debe contener al menos una letra',
+    'password_no_numbers': 'La contraseña debe contener al menos un número',
+    'resetting': 'Restableciendo...',
+    'reset_failed': 'Error al restablecer la contraseña. Inténtelo de nuevo.',
+    'network_error': 'Error de red. Verifique su conexión e inténtelo de nuevo.',
+    'password_weak': 'Contraseña débil',
+    'password_medium': 'Contraseña media',
+    'password_strong': 'Contraseña fuerte',
 
     
     # New translations for improved registration form

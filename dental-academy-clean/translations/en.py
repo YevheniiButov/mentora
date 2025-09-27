@@ -1824,6 +1824,25 @@ translations = {
     'send_reset_link': 'Send Reset Link',
     'back_to_login': 'Back to Login',
     
+    # Reset password page translations
+    'reset_password': 'Reset Password',
+    'reset_password_subtitle': 'Enter your new password below',
+    'new_password_placeholder': 'Enter your new password',
+    'confirm_new_password': 'Confirm New Password',
+    'confirm_new_password_placeholder': 'Confirm your new password',
+    'password_help': 'Minimum 8 characters, must contain letters and numbers',
+    'passwords_required': 'Both password fields are required',
+    'passwords_dont_match': 'Passwords do not match',
+    'password_too_short': 'Password must be at least 8 characters long',
+    'password_no_letters': 'Password must contain at least one letter',
+    'password_no_numbers': 'Password must contain at least one number',
+    'resetting': 'Resetting...',
+    'reset_failed': 'Failed to reset password. Please try again.',
+    'network_error': 'Network error. Please check your connection and try again.',
+    'password_weak': 'Weak password',
+    'password_medium': 'Medium strength password',
+    'password_strong': 'Strong password',
+    
     # New translations for improved registration form
     'search_nationality': 'Search nationality...',
     'university_name': 'University/Institution Name',

@@ -1725,6 +1725,25 @@ translations = {
     'email_placeholder': 'Введите ваш адрес электронной почты',
     'send_reset_link': 'Отправить ссылку для сброса',
     'back_to_login': 'Вернуться к входу',
+    
+    # Переводы для страницы сброса пароля
+    'reset_password': 'Сбросить пароль',
+    'reset_password_subtitle': 'Введите новый пароль ниже',
+    'new_password_placeholder': 'Введите новый пароль',
+    'confirm_new_password': 'Подтвердите новый пароль',
+    'confirm_new_password_placeholder': 'Подтвердите новый пароль',
+    'password_help': 'Минимум 8 символов, должны содержать буквы и цифры',
+    'passwords_required': 'Оба поля пароля обязательны',
+    'passwords_dont_match': 'Пароли не совпадают',
+    'password_too_short': 'Пароль должен содержать минимум 8 символов',
+    'password_no_letters': 'Пароль должен содержать хотя бы одну букву',
+    'password_no_numbers': 'Пароль должен содержать хотя бы одну цифру',
+    'resetting': 'Сброс...',
+    'reset_failed': 'Не удалось сбросить пароль. Попробуйте еще раз.',
+    'network_error': 'Ошибка сети. Проверьте соединение и попробуйте еще раз.',
+    'password_weak': 'Слабый пароль',
+    'password_medium': 'Средний пароль',
+    'password_strong': 'Надежный пароль',
 
     
     # New translations for improved registration form

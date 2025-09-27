@@ -1608,6 +1608,25 @@ translations = {
     'email_placeholder': 'Voer uw e-mailadres in',
     'send_reset_link': 'Reset Link Verzenden',
     'back_to_login': 'Terug naar Inloggen',
+    
+    # Wachtwoord reset formulier vertalingen
+    'reset_password': 'Wachtwoord Resetten',
+    'reset_password_subtitle': 'Voer hieronder uw nieuwe wachtwoord in',
+    'new_password_placeholder': 'Voer uw nieuwe wachtwoord in',
+    'confirm_new_password': 'Bevestig Nieuw Wachtwoord',
+    'confirm_new_password_placeholder': 'Bevestig uw nieuwe wachtwoord',
+    'password_help': 'Minimaal 8 karakters, moet letters en cijfers bevatten',
+    'passwords_required': 'Beide wachtwoordvelden zijn verplicht',
+    'passwords_dont_match': 'Wachtwoorden komen niet overeen',
+    'password_too_short': 'Wachtwoord moet minimaal 8 karakters bevatten',
+    'password_no_letters': 'Wachtwoord moet minimaal één letter bevatten',
+    'password_no_numbers': 'Wachtwoord moet minimaal één cijfer bevatten',
+    'resetting': 'Bezig met resetten...',
+    'reset_failed': 'Wachtwoord resetten mislukt. Probeer het opnieuw.',
+    'network_error': 'Netwerkfout. Controleer uw verbinding en probeer het opnieuw.',
+    'password_weak': 'Zwak wachtwoord',
+    'password_medium': 'Gemiddeld wachtwoord',
+    'password_strong': 'Sterk wachtwoord',
 
     
     # New translations for improved registration form

@@ -1174,6 +1174,25 @@ translations = {
     'email_placeholder': 'E-posta adresinizi girin',
     'send_reset_link': 'Sıfırlama Bağlantısı Gönder',
     'back_to_login': 'Girişe Dön',
+    
+    # Şifre sıfırlama formu çevirileri
+    'reset_password': 'Şifreyi Sıfırla',
+    'reset_password_subtitle': 'Yeni şifrenizi aşağıya girin',
+    'new_password_placeholder': 'Yeni şifrenizi girin',
+    'confirm_new_password': 'Yeni Şifreyi Onayla',
+    'confirm_new_password_placeholder': 'Yeni şifrenizi onaylayın',
+    'password_help': 'En az 8 karakter, harf ve rakam içermeli',
+    'passwords_required': 'Her iki şifre alanı da zorunludur',
+    'passwords_dont_match': 'Şifreler eşleşmiyor',
+    'password_too_short': 'Şifre en az 8 karakter olmalıdır',
+    'password_no_letters': 'Şifre en az bir harf içermelidir',
+    'password_no_numbers': 'Şifre en az bir rakam içermelidir',
+    'resetting': 'Sıfırlanıyor...',
+    'reset_failed': 'Şifre sıfırlama başarısız. Lütfen tekrar deneyin.',
+    'network_error': 'Ağ hatası. Bağlantınızı kontrol edin ve tekrar deneyin.',
+    'password_weak': 'Zayıf şifre',
+    'password_medium': 'Orta şifre',
+    'password_strong': 'Güçlü şifre',
 
     
     # New translations for improved registration form
