@@ -2000,7 +2000,10 @@ class ForumTopic(db.Model):
     
     def increment_views(self):
         """Увеличить счетчик просмотров"""
-        self.views_count += 1
+        if self.views_count is None:
+            self.views_count = 1
+        else:
+            self.views_count += 1
         db.session.commit()
     
     def update_reply_stats(self):
