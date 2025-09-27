@@ -474,6 +474,255 @@
     gap: 0.5rem;
 }
 
+/* Polls and Voting */
+.poll-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.poll-question {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.poll-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.poll-option:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+}
+
+.poll-option.selected {
+    background: #e3f2fd;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.poll-option-input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.poll-option-text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #2c3e50;
+}
+
+.poll-option-votes {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: right;
+}
+
+.poll-option-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    opacity: 0.1;
+    border-radius: 8px;
+    transition: width 0.3s ease;
+    z-index: 0;
+}
+
+.poll-option.selected .poll-option-bar {
+    opacity: 0.15;
+}
+
+.poll-option-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.poll-stats {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.poll-total-votes {
+    font-weight: 600;
+}
+
+.poll-expiry {
+    font-style: italic;
+}
+
+.poll-create-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    margin-top: 1rem;
+}
+
+.poll-create-btn:hover {
+    background: #218838;
+}
+
+.poll-form {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    margin-top: 1rem;
+    display: none;
+}
+
+.poll-form.show {
+    display: block;
+}
+
+.poll-form-group {
+    margin-bottom: 1rem;
+}
+
+.poll-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.poll-form-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.poll-form-textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.poll-option-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.poll-option-input-group input {
+    flex: 1;
+}
+
+.poll-remove-option {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.poll-add-option {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.poll-form-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.poll-cancel-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.poll-submit-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.poll-btn {
+    background: #6f42c1;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s ease;
+}
+
+.poll-btn:hover {
+    background: #5a32a3;
+}
+
 .message-time {
     opacity: 0.7;
 }
@@ -888,6 +1137,7 @@ function displayTopicContent(topic, posts) {
                     <span class="message-time">${topic.created_at}</span>
                 </div>
                 <div class="message-text">${topic.content}</div>
+                ${topic.poll ? generatePollHTML(topic.poll) : ''}
                 <div class="message-reactions" id="reactions-${topic.id}">
                     <!-- Reactions will be loaded here -->
                 </div>
@@ -916,6 +1166,7 @@ function displayTopicContent(topic, posts) {
                             ${post.is_edited ? '<span class="message-edited">(edited)</span>' : ''}
                         </div>
                         <div class="message-text">${post.content}</div>
+                        ${post.poll ? generatePollHTML(post.poll) : ''}
                         <div class="message-reactions" id="reactions-post-${post.id}">
                             <!-- Reactions will be loaded here -->
                         </div>
@@ -968,8 +1219,14 @@ function addReplyForm(topicId) {
     replyForm.innerHTML = `
         <form id="reply-form" onsubmit="submitReply(event, ${topicId})">
             <textarea id="reply-content" placeholder="Write your reply..."></textarea>
-            <button type="submit">Send</button>
+            <div class="form-actions">
+                <button type="button" class="poll-btn" onclick="showPollForm()">📊 Add Poll</button>
+                <button type="submit">Send</button>
+            </div>
         </form>
+        <div id="poll-form" class="poll-form">
+            <!-- Poll form will be loaded here -->
+        </div>
     `;
     
     // Show the form
@@ -1441,6 +1698,182 @@ function loadReactionsForMessage(messageId, type) {
     // In real app, load reactions from server
     // For now, we'll just update the display
     updateReactionsDisplay(messageId, type);
+}
+
+// Poll functionality
+let pollData = null;
+
+function generatePollHTML(poll) {
+    if (!poll) return '';
+    
+    const totalVotes = poll.options.reduce((sum, option) => sum + (option.votes || 0), 0);
+    const maxVotes = Math.max(...poll.options.map(option => option.votes || 0));
+    
+    let optionsHTML = poll.options.map((option, index) => {
+        const percentage = totalVotes > 0 ? Math.round((option.votes || 0) / totalVotes * 100) : 0;
+        const barWidth = totalVotes > 0 ? Math.round((option.votes || 0) / maxVotes * 100) : 0;
+        const isSelected = poll.userVote === index;
+        
+        return `
+            <div class="poll-option ${isSelected ? 'selected' : ''}" onclick="voteInPoll('${poll.id}', ${index})">
+                <div class="poll-option-bar" style="width: ${barWidth}%"></div>
+                <div class="poll-option-content">
+                    <input type="radio" class="poll-option-input" ${isSelected ? 'checked' : ''} readonly>
+                    <span class="poll-option-text">${option.text}</span>
+                    <span class="poll-option-votes">${option.votes || 0}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    return `
+        <div class="poll-container">
+            <div class="poll-question">${poll.question}</div>
+            <div class="poll-options">
+                ${optionsHTML}
+            </div>
+            <div class="poll-stats">
+                <span class="poll-total-votes">${totalVotes} votes</span>
+                ${poll.expiry ? `<span class="poll-expiry">Expires: ${poll.expiry}</span>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function showPollForm() {
+    const pollForm = document.getElementById('poll-form');
+    if (!pollForm) return;
+    
+    pollForm.innerHTML = `
+        <div class="poll-form-group">
+            <label class="poll-form-label">Poll Question</label>
+            <input type="text" class="poll-form-input" id="poll-question" placeholder="What would you like to ask?">
+        </div>
+        <div class="poll-form-group">
+            <label class="poll-form-label">Options</label>
+            <div id="poll-options-container">
+                <div class="poll-option-input-group">
+                    <input type="text" class="poll-form-input poll-option-input" placeholder="Option 1">
+                    <button type="button" class="poll-remove-option" onclick="removePollOption(this)" style="display: none;">×</button>
+                </div>
+                <div class="poll-option-input-group">
+                    <input type="text" class="poll-form-input poll-option-input" placeholder="Option 2">
+                    <button type="button" class="poll-remove-option" onclick="removePollOption(this)" style="display: none;">×</button>
+                </div>
+            </div>
+            <button type="button" class="poll-add-option" onclick="addPollOption()">+ Add Option</button>
+        </div>
+        <div class="poll-form-group">
+            <label class="poll-form-label">Duration (hours)</label>
+            <select class="poll-form-input" id="poll-duration">
+                <option value="1">1 hour</option>
+                <option value="6">6 hours</option>
+                <option value="24" selected>1 day</option>
+                <option value="72">3 days</option>
+                <option value="168">1 week</option>
+                <option value="0">No expiry</option>
+            </select>
+        </div>
+        <div class="poll-form-actions">
+            <button type="button" class="poll-cancel-btn" onclick="hidePollForm()">Cancel</button>
+            <button type="button" class="poll-submit-btn" onclick="submitPoll()">Create Poll</button>
+        </div>
+    `;
+    
+    pollForm.classList.add('show');
+    pollData = null;
+}
+
+function hidePollForm() {
+    const pollForm = document.getElementById('poll-form');
+    if (pollForm) {
+        pollForm.classList.remove('show');
+        pollForm.innerHTML = '';
+    }
+}
+
+function addPollOption() {
+    const container = document.getElementById('poll-options-container');
+    if (!container) return;
+    
+    const optionCount = container.children.length;
+    if (optionCount >= 10) {
+        alert('Maximum 10 options allowed');
+        return;
+    }
+    
+    const optionGroup = document.createElement('div');
+    optionGroup.className = 'poll-option-input-group';
+    optionGroup.innerHTML = `
+        <input type="text" class="poll-form-input poll-option-input" placeholder="Option ${optionCount + 1}">
+        <button type="button" class="poll-remove-option" onclick="removePollOption(this)">×</button>
+    `;
+    
+    container.appendChild(optionGroup);
+    updateRemoveButtons();
+}
+
+function removePollOption(button) {
+    const container = document.getElementById('poll-options-container');
+    if (container && container.children.length > 2) {
+        button.parentElement.remove();
+        updateRemoveButtons();
+    }
+}
+
+function updateRemoveButtons() {
+    const container = document.getElementById('poll-options-container');
+    if (!container) return;
+    
+    const removeButtons = container.querySelectorAll('.poll-remove-option');
+    removeButtons.forEach(btn => {
+        btn.style.display = container.children.length > 2 ? 'block' : 'none';
+    });
+}
+
+function submitPoll() {
+    const question = document.getElementById('poll-question')?.value.trim();
+    const duration = document.getElementById('poll-duration')?.value;
+    const optionInputs = document.querySelectorAll('.poll-option-input');
+    
+    if (!question) {
+        alert('Please enter a poll question');
+        return;
+    }
+    
+    const options = Array.from(optionInputs)
+        .map(input => input.value.trim())
+        .filter(text => text.length > 0);
+    
+    if (options.length < 2) {
+        alert('Please add at least 2 options');
+        return;
+    }
+    
+    // Create poll data
+    pollData = {
+        question: question,
+        options: options.map(text => ({ text, votes: 0 })),
+        duration: parseInt(duration),
+        expiry: duration > 0 ? new Date(Date.now() + duration * 60 * 60 * 1000).toISOString() : null
+    };
+    
+    // Update the reply textarea to show poll info
+    const replyContent = document.getElementById('reply-content');
+    if (replyContent) {
+        const pollPreview = `📊 POLL: ${question}\nOptions: ${options.join(', ')}`;
+        replyContent.value = pollPreview;
+    }
+    
+    hidePollForm();
+}
+
+function voteInPoll(pollId, optionIndex) {
+    // In real app, this would make an API call
+    console.log(`Voting in poll ${pollId} for option ${optionIndex}`);
+    
+    // For demo purposes, just show an alert
+    alert(`Voted for option ${optionIndex + 1}! (This would be saved to server)`);
 }
 </script>
 
