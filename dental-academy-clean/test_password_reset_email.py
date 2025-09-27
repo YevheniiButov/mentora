@@ -40,13 +40,13 @@ def test_password_reset_email():
             from utils.email_service import send_admin_password_reset_email
             
             print("📤 Отправляем email...")
-            email_sent = send_admin_password_reset_email(user, temp_password, 'ru')
+            email_sent = send_admin_password_reset_email(user, temp_password, 'en')
             
             if email_sent:
                 print("✅ Email отправлен успешно!")
                 print(f"📧 Получатель: {user.email}")
                 print(f"🔑 Пароль в письме: {temp_password}")
-                print(f"🌐 Язык: Русский")
+                print(f"🌐 Язык: English")
             else:
                 print("❌ Не удалось отправить email")
             
@@ -78,7 +78,7 @@ def test_template_rendering():
             # Тестируем HTML шаблон
             try:
                 from flask import render_template_string
-                with open('templates/emails/password_reset_admin_ru.html', 'r', encoding='utf-8') as f:
+                with open('templates/emails/password_reset_admin_en.html', 'r', encoding='utf-8') as f:
                     html_template = f.read()
                 html_body = render_template_string(html_template, 
                                                  user=test_user, 
@@ -91,7 +91,7 @@ def test_template_rendering():
             
             # Тестируем текстовый шаблон
             try:
-                with open('templates/emails/password_reset_admin_ru.txt', 'r', encoding='utf-8') as f:
+                with open('templates/emails/password_reset_admin_en.txt', 'r', encoding='utf-8') as f:
                     text_template = f.read()
                 text_body = render_template_string(text_template,
                                                  user=test_user,

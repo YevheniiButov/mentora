@@ -301,7 +301,7 @@ def send_password_reset_email(user, token):
         current_app.logger.error(f"Failed to send password reset to {user.email}: {str(e)}")
         return False
 
-def send_admin_password_reset_email(user, temp_password, language='ru'):
+def send_admin_password_reset_email(user, temp_password, language='en'):
     """Send admin password reset email with temporary password"""
     try:
         print(f"=== ADMIN PASSWORD RESET EMAIL for {user.email} (lang: {language}) ===")
@@ -323,7 +323,7 @@ def send_admin_password_reset_email(user, temp_password, language='ru'):
         current_app.logger.error(f"Failed to send admin password reset email to {user.email}: {str(e)}")
         return False
 
-def send_admin_password_reset_email_smtp(user, temp_password, language='ru'):
+def send_admin_password_reset_email_smtp(user, temp_password, language='en'):
     """Send admin password reset email using SMTP"""
     try:
         print(f"=== SMTP ADMIN PASSWORD RESET for {user.email} ===")
@@ -341,7 +341,7 @@ def send_admin_password_reset_email_smtp(user, temp_password, language='ru'):
             return True
         
         # Create message
-        subject = "Сброс пароля - Mentora"
+        subject = "Password Reset - Mentora"
         
         # Render HTML template
         from flask import render_template_string
@@ -355,11 +355,11 @@ def send_admin_password_reset_email_smtp(user, temp_password, language='ru'):
         except Exception as e:
             print(f"=== ERROR RENDERING HTML TEMPLATE: {e} ===")
             html_body = f"""
-            <h2>Сброс пароля - Mentora</h2>
-            <p>Здравствуйте, {user.first_name}!</p>
-            <p>Ваш пароль был сброшен администратором системы Mentora.</p>
-            <p><strong>Ваш новый временный пароль: {temp_password}</strong></p>
-            <p><a href="{login_url}">Войти в систему</a></p>
+            <h2>Password Reset - Mentora</h2>
+            <p>Hello, {user.first_name}!</p>
+            <p>Your password has been reset by a Mentora system administrator.</p>
+            <p><strong>Your new temporary password: {temp_password}</strong></p>
+            <p><a href="{login_url}">Log In to System</a></p>
             """
         
         # Render text template
@@ -373,15 +373,15 @@ def send_admin_password_reset_email_smtp(user, temp_password, language='ru'):
         except Exception as e:
             print(f"=== ERROR RENDERING TEXT TEMPLATE: {e} ===")
             text_body = f"""
-            Mentora - Сброс пароля
+            Mentora - Password Reset
             
-            Здравствуйте, {user.first_name}!
+            Hello, {user.first_name}!
             
-            Ваш пароль был сброшен администратором системы Mentora.
+            Your password has been reset by a Mentora system administrator.
             
-            Ваш новый временный пароль: {temp_password}
+            Your new temporary password: {temp_password}
             
-            Войти в систему: {login_url}
+            Log In to System: {login_url}
             """
         
         # Create message

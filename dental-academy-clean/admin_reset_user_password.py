@@ -52,7 +52,7 @@ def reset_user_password(email, new_password=None):
             # Отправляем email с новым паролем
             try:
                 from utils.email_service import send_admin_password_reset_email
-                email_sent = send_admin_password_reset_email(user, new_password, 'ru')
+                email_sent = send_admin_password_reset_email(user, new_password, 'en')
                 if email_sent:
                     print(f"📧 Email с новым паролем отправлен")
                 else:
