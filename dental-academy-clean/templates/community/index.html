@@ -294,6 +294,132 @@
     color: var(--user-color);
 }
 
+/* Message Reactions */
+.message-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.reaction-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.reaction-button:hover {
+    background: #e9ecef;
+    transform: translateY(-1px);
+}
+
+.reaction-button.active {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.reaction-emoji {
+    font-size: 1rem;
+}
+
+.reaction-count {
+    font-weight: 600;
+    color: #495057;
+    min-width: 1rem;
+    text-align: center;
+}
+
+.add-reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.add-reaction-btn:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.reaction-picker {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+    z-index: 1000;
+    margin-bottom: 0.5rem;
+}
+
+.reaction-picker.show {
+    display: block;
+}
+
+.reaction-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+}
+
+.reaction-emoji-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+}
+
+.reaction-emoji-btn:hover {
+    background: #e9ecef;
+    transform: scale(1.1);
+}
+
+.message-actions-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.message-actions-left {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.message-actions-right {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .message-time {
     opacity: 0.7;
 }
@@ -708,9 +834,17 @@ function displayTopicContent(topic, posts) {
                     <span class="message-time">${topic.created_at}</span>
                 </div>
                 <div class="message-text">${topic.content}</div>
-                <div class="message-actions">
-                    ${topic.can_edit ? '<button class="edit-btn" onclick="editTopic(' + topic.id + ')">Edit</button>' : ''}
-                    ${topic.can_delete ? '<button class="delete-btn" onclick="deleteTopic(' + topic.id + ')">Delete</button>' : ''}
+                <div class="message-reactions" id="reactions-${topic.id}">
+                    <!-- Reactions will be loaded here -->
+                </div>
+                <div class="message-actions-container">
+                    <div class="message-actions-left">
+                        <div class="add-reaction-btn" onclick="showReactionPicker(${topic.id}, 'topic')" title="Add reaction">+</div>
+                    </div>
+                    <div class="message-actions-right">
+                        ${topic.can_edit ? '<button class="edit-btn" onclick="editTopic(' + topic.id + ')">Edit</button>' : ''}
+                        ${topic.can_delete ? '<button class="delete-btn" onclick="deleteTopic(' + topic.id + ')">Delete</button>' : ''}
+                    </div>
                 </div>
             </div>
         </div>
@@ -728,9 +862,17 @@ function displayTopicContent(topic, posts) {
                             ${post.is_edited ? '<span class="message-edited">(edited)</span>' : ''}
                         </div>
                         <div class="message-text">${post.content}</div>
-                        <div class="message-actions">
-                            ${post.can_edit ? '<button class="edit-btn" onclick="editPost(' + post.id + ')">Edit</button>' : ''}
-                            ${post.can_delete ? '<button class="delete-btn" onclick="deletePost(' + post.id + ')">Delete</button>' : ''}
+                        <div class="message-reactions" id="reactions-post-${post.id}">
+                            <!-- Reactions will be loaded here -->
+                        </div>
+                        <div class="message-actions-container">
+                            <div class="message-actions-left">
+                                <div class="add-reaction-btn" onclick="showReactionPicker(${post.id}, 'post')" title="Add reaction">+</div>
+                            </div>
+                            <div class="message-actions-right">
+                                ${post.can_edit ? '<button class="edit-btn" onclick="editPost(' + post.id + ')">Edit</button>' : ''}
+                                ${post.can_delete ? '<button class="delete-btn" onclick="deletePost(' + post.id + ')">Delete</button>' : ''}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1027,7 +1169,179 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Apply colorful usernames after loading topic content
 function applyColorsAfterLoad() {
-    setTimeout(applyColorfulUsernames, 100);
+    setTimeout(() => {
+        applyColorfulUsernames();
+        // Load reactions for all messages
+        loadAllReactions();
+    }, 100);
+}
+
+function loadAllReactions() {
+    // Load reactions for all visible messages
+    document.querySelectorAll('[id^="reactions-"]').forEach(element => {
+        const id = element.id.replace('reactions-', '').replace('reactions-post-', '');
+        const type = element.id.includes('post-') ? 'post' : 'topic';
+        const messageId = element.id.includes('post-') ? id : id;
+        loadReactionsForMessage(messageId, type);
+    });
+}
+
+// Reactions functionality
+const AVAILABLE_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+
+// Store reactions in memory (in real app, this would be stored in database)
+const messageReactions = {};
+
+function showReactionPicker(messageId, type) {
+    // Hide any existing picker
+    hideReactionPickers();
+    
+    // Create picker element
+    const picker = document.createElement('div');
+    picker.className = 'reaction-picker show';
+    picker.id = `picker-${type}-${messageId}`;
+    
+    // Create emoji grid
+    const grid = document.createElement('div');
+    grid.className = 'reaction-picker-grid';
+    
+    AVAILABLE_REACTIONS.forEach(emoji => {
+        const btn = document.createElement('div');
+        btn.className = 'reaction-emoji-btn';
+        btn.textContent = emoji;
+        btn.onclick = () => addReaction(messageId, type, emoji);
+        grid.appendChild(btn);
+    });
+    
+    picker.appendChild(grid);
+    
+    // Find the add reaction button and position picker
+    const addBtn = document.querySelector(`[onclick="showReactionPicker(${messageId}, '${type}')"]`);
+    if (addBtn) {
+        addBtn.style.position = 'relative';
+        addBtn.appendChild(picker);
+    }
+    
+    // Hide picker when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', hideReactionPickers);
+    }, 100);
+}
+
+function hideReactionPickers() {
+    document.querySelectorAll('.reaction-picker').forEach(picker => {
+        picker.remove();
+    });
+    document.removeEventListener('click', hideReactionPickers);
+}
+
+function addReaction(messageId, type, emoji) {
+    const key = `${type}-${messageId}`;
+    
+    if (!messageReactions[key]) {
+        messageReactions[key] = {};
+    }
+    
+    if (!messageReactions[key][emoji]) {
+        messageReactions[key][emoji] = [];
+    }
+    
+    // Add current user to reaction (in real app, use actual user ID)
+    const currentUser = 'current_user'; // This should be replaced with actual user ID
+    const userIndex = messageReactions[key][emoji].indexOf(currentUser);
+    
+    if (userIndex > -1) {
+        // Remove reaction if user already reacted
+        messageReactions[key][emoji].splice(userIndex, 1);
+        if (messageReactions[key][emoji].length === 0) {
+            delete messageReactions[key][emoji];
+        }
+    } else {
+        // Add reaction
+        messageReactions[key][emoji].push(currentUser);
+    }
+    
+    // Update UI
+    updateReactionsDisplay(messageId, type);
+    
+    // Hide picker
+    hideReactionPickers();
+    
+    // In real app, save to server
+    saveReactionToServer(messageId, type, emoji, userIndex === -1);
+}
+
+function updateReactionsDisplay(messageId, type) {
+    const container = document.getElementById(`reactions-${type === 'topic' ? '' : 'post-'}${messageId}`);
+    if (!container) return;
+    
+    const key = `${type}-${messageId}`;
+    const reactions = messageReactions[key] || {};
+    
+    container.innerHTML = '';
+    
+    Object.entries(reactions).forEach(([emoji, users]) => {
+        if (users.length > 0) {
+            const btn = document.createElement('div');
+            btn.className = 'reaction-button';
+            
+            // Check if current user reacted
+            const currentUser = 'current_user'; // Replace with actual user ID
+            if (users.includes(currentUser)) {
+                btn.classList.add('active');
+            }
+            
+            btn.onclick = () => addReaction(messageId, type, emoji);
+            
+            btn.innerHTML = `
+                <span class="reaction-emoji">${emoji}</span>
+                <span class="reaction-count">${users.length}</span>
+            `;
+            
+            container.appendChild(btn);
+        }
+    });
+}
+
+function saveReactionToServer(messageId, type, emoji, isAdding) {
+    // This would make an API call to save the reaction
+    // For now, we'll just simulate it
+    console.log(`Saving reaction: ${type}-${messageId}, ${emoji}, ${isAdding ? 'add' : 'remove'}`);
+    
+    // In real implementation:
+    /*
+    const currentLang = window.location.pathname.split('/')[1] || 'en';
+    fetch(`/${currentLang}/community/${type}/${messageId}/reaction`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            emoji: emoji,
+            action: isAdding ? 'add' : 'remove'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error('Failed to save reaction:', data.error);
+            // Revert the reaction
+            addReaction(messageId, type, emoji);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving reaction:', error);
+        // Revert the reaction
+        addReaction(messageId, type, emoji);
+    });
+    */
+}
+
+function loadReactionsForMessage(messageId, type) {
+    // In real app, load reactions from server
+    // For now, we'll just update the display
+    updateReactionsDisplay(messageId, type);
 }
 </script>
 
