@@ -249,6 +249,60 @@
     align-self: flex-start;
 }
 
+.message-bubble.sent {
+    align-self: flex-end;
+    background: #007bff;
+    color: white;
+}
+
+.message-bubble.sent .message-content {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+.message-bubble.sent .message-author {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message-bubble.sent .message-time {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.message-bubble.sent .message-text {
+    color: white;
+}
+
+.message-bubble.sent .message-reactions {
+    border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.message-bubble.sent .reaction-button {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #333;
+}
+
+.message-bubble.sent .reaction-button:hover {
+    background: white;
+}
+
+.message-bubble.sent .reaction-button.active {
+    background: #e3f2fd;
+    border-color: #bbdefb;
+}
+
+.message-bubble.sent .add-reaction-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #333;
+}
+
+.message-bubble.sent .add-reaction-btn:hover {
+    background: white;
+    color: #333;
+}
+
 .message-content {
     padding: 0.75rem 1rem;
     border-radius: 18px;
@@ -827,7 +881,7 @@ function displayTopicContent(topic, posts) {
     
     // Add topic content as first message
     messagesHTML += `
-        <div class="message-bubble received">
+        <div class="message-bubble ${getMessageBubbleClass(topic.author.id)}">
             <div class="message-content">
                 <div class="message-header">
                     <span class="message-author">${topic.author.name}</span>
@@ -854,7 +908,7 @@ function displayTopicContent(topic, posts) {
     posts.forEach(post => {
         if (post.id !== posts[0].id) {
             messagesHTML += `
-                <div class="message-bubble received">
+                <div class="message-bubble ${getMessageBubbleClass(post.author.id)}">
                     <div class="message-content">
                         <div class="message-header">
                             <span class="message-author">${post.author.name}</span>
@@ -1165,6 +1219,17 @@ function applyColorfulUsernames() {
 // Apply colorful usernames when page loads
 document.addEventListener('DOMContentLoaded', function() {
     applyColorfulUsernames();
+    
+    // Try to get current user ID from page data
+    const userElement = document.querySelector('[data-user-id]');
+    if (userElement) {
+        setCurrentUserId(userElement.getAttribute('data-user-id'));
+    }
+    
+    // Alternative: try to get from window object
+    if (window.currentUserId) {
+        setCurrentUserId(window.currentUserId);
+    }
 });
 
 // Apply colorful usernames after loading topic content
@@ -1184,6 +1249,40 @@ function loadAllReactions() {
         const messageId = element.id.includes('post-') ? id : id;
         loadReactionsForMessage(messageId, type);
     });
+}
+
+// Chat style functionality
+let currentUserId = null;
+
+// Get current user ID (this should be set from server-side data)
+function getCurrentUserId() {
+    if (currentUserId === null) {
+        // Try to get from a data attribute or global variable
+        const userElement = document.querySelector('[data-user-id]');
+        if (userElement) {
+            currentUserId = userElement.getAttribute('data-user-id');
+        } else {
+            // Fallback: try to get from window object or set a default
+            currentUserId = window.currentUserId || 'current_user';
+        }
+    }
+    return currentUserId;
+}
+
+// Determine if message is from current user
+function isCurrentUserMessage(authorId) {
+    const currentUser = getCurrentUserId();
+    return authorId == currentUser || authorId === currentUser;
+}
+
+// Get CSS class for message bubble based on author
+function getMessageBubbleClass(authorId) {
+    return isCurrentUserMessage(authorId) ? 'sent' : 'received';
+}
+
+// Set current user ID (call this when user data is available)
+function setCurrentUserId(userId) {
+    currentUserId = userId;
 }
 
 // Reactions functionality
@@ -1246,8 +1345,8 @@ function addReaction(messageId, type, emoji) {
         messageReactions[key][emoji] = [];
     }
     
-    // Add current user to reaction (in real app, use actual user ID)
-    const currentUser = 'current_user'; // This should be replaced with actual user ID
+    // Add current user to reaction
+    const currentUser = getCurrentUserId();
     const userIndex = messageReactions[key][emoji].indexOf(currentUser);
     
     if (userIndex > -1) {
@@ -1286,7 +1385,7 @@ function updateReactionsDisplay(messageId, type) {
             btn.className = 'reaction-button';
             
             // Check if current user reacted
-            const currentUser = 'current_user'; // Replace with actual user ID
+            const currentUser = getCurrentUserId();
             if (users.includes(currentUser)) {
                 btn.classList.add('active');
             }
