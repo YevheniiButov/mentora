@@ -802,6 +802,67 @@
     right: 0.5rem;
     background: #dc3545;
     color: white;
+
+/* CSS for pinned messages */
+.message-bubble.pinned {
+    border: 2px solid #ffd700;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    position: relative;
+}
+
+.message-bubble.pinned::before {
+    content: "📌";
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    background: #ffd700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.message-bubble.pinned.sent {
+    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%);
+    border-color: #007bff;
+}
+
+.message-bubble.pinned.sent::before {
+    background: #007bff;
+    color: white;
+}
+
+.pin-button {
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+
+.pin-button:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.pin-button.pinned {
+    background: #ffd700;
+    border-color: #ffd700;
+    color: #333;
+    font-weight: bold;
+}
+
+.pin-button.pinned:hover {
+    background: #ffed4e;
+    border-color: #ffed4e;
+}
     border-radius: 50%;
     width: 8px;
     height: 8px;
@@ -1158,7 +1219,7 @@
                                 {% endif %}
                     {% if topic.unread_count and topic.unread_count > 0 %}
                     <div class="unread-count">{{ topic.unread_count }}</div>
-                    {% endif %}
+                                {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -1309,7 +1370,7 @@ function displayTopicContent(topic, posts) {
     
     // Add topic content as first message
     messagesHTML += `
-        <div class="message-bubble ${getMessageBubbleClass(topicWithPoll.author.id)}">
+        <div class="message-bubble ${getMessageBubbleClass(topicWithPoll.author.id)}" data-message-id="topic-${topicWithPoll.id}">
             <div class="message-content">
                 <div class="message-header">
                     <span class="message-author">${topicWithPoll.author.name}</span>
@@ -1326,6 +1387,7 @@ function displayTopicContent(topic, posts) {
                     </div>
                     <div class="message-actions-right">
                         <button class="reply-btn" onclick="replyToMessage(${topicWithPoll.id}, 'topic', '${topicWithPoll.author.name}', '${topicWithPoll.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
+                        <button class="pin-button" onclick="togglePin(${topicWithPoll.id}, 'topic')" title="Pin/Unpin message">📌</button>
                         ${topicWithPoll.can_edit ? '<button class="edit-btn" onclick="editTopic(' + topicWithPoll.id + ')">Edit</button>' : ''}
                         ${topicWithPoll.can_delete ? '<button class="delete-btn" onclick="deleteTopic(' + topicWithPoll.id + ')">Delete</button>' : ''}
                     </div>
@@ -1341,7 +1403,7 @@ function displayTopicContent(topic, posts) {
             const postWithDemo = addChatStyle(addPollToPost(post));
             
             messagesHTML += `
-                <div class="message-bubble ${getMessageBubbleClass(postWithDemo.author.id)}">
+                    <div class="message-bubble ${getMessageBubbleClass(postWithDemo.author.id)}" data-message-id="post-${postWithDemo.id}">
                     <div class="message-content">
                         <div class="message-header">
                             <span class="message-author">${postWithDemo.author.name}</span>
@@ -1359,6 +1421,7 @@ function displayTopicContent(topic, posts) {
                             </div>
                             <div class="message-actions-right">
                                 <button class="reply-btn" onclick="replyToMessage(${postWithDemo.id}, 'post', '${postWithDemo.author.name}', '${postWithDemo.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
+                                <button class="pin-button" onclick="togglePin(${postWithDemo.id}, 'post')" title="Pin/Unpin message">📌</button>
                                 ${postWithDemo.can_edit ? '<button class="edit-btn" onclick="editPost(' + postWithDemo.id + ')">Edit</button>' : ''}
                                 ${postWithDemo.can_delete ? '<button class="delete-btn" onclick="deletePost(' + postWithDemo.id + ')">Delete</button>' : ''}
                             </div>
@@ -1667,6 +1730,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load reactions from localStorage
     loadReactionsFromStorage();
     
+    // Load pinned messages from localStorage
+    loadPinnedMessages();
+    
     // Try to get current user ID from page data
     const userElement = document.querySelector('[data-user-id]');
     if (userElement) {
@@ -1688,6 +1754,8 @@ function applyColorsAfterLoad() {
         applyColorfulUsernames();
         // Load reactions for all messages
         loadAllReactions();
+        // Apply pinned status to messages
+        applyPinnedStatus();
     }, 100);
 }
 
@@ -2213,6 +2281,88 @@ function clearReplyToMessage() {
 }
 
 // New message tracking
+// Pinned messages functionality
+let pinnedMessages = new Set();
+
+// Load pinned messages from localStorage
+function loadPinnedMessages() {
+    try {
+        const stored = localStorage.getItem('community_pinned_messages');
+        if (stored) {
+            pinnedMessages = new Set(JSON.parse(stored));
+            console.log('Loaded pinned messages from localStorage:', pinnedMessages);
+        } else {
+            console.log('No stored pinned messages found in localStorage');
+            pinnedMessages = new Set();
+        }
+    } catch (e) {
+        console.log('Error loading pinned messages from localStorage:', e);
+        pinnedMessages = new Set();
+    }
+}
+
+// Save pinned messages to localStorage
+function savePinnedMessages() {
+    try {
+        localStorage.setItem('community_pinned_messages', JSON.stringify(Array.from(pinnedMessages)));
+        console.log('Saved pinned messages to localStorage:', pinnedMessages);
+    } catch (e) {
+        console.error('Failed to save pinned messages:', e);
+    }
+}
+
+// Toggle pin status for a message
+function togglePin(messageId, type) {
+    const messageKey = `${type}-${messageId}`;
+    const messageElement = document.querySelector(`[data-message-id="${messageKey}"]`);
+    
+    if (!messageElement) {
+        console.log('Message element not found:', messageKey);
+        return;
+    }
+    
+    const messageBubble = messageElement.querySelector('.message-bubble');
+    const pinButton = messageElement.querySelector('.pin-button');
+    
+    if (!messageBubble || !pinButton) {
+        console.log('Message bubble or pin button not found');
+        return;
+    }
+    
+    if (pinnedMessages.has(messageKey)) {
+        // Unpin the message
+        pinnedMessages.delete(messageKey);
+        messageBubble.classList.remove('pinned');
+        pinButton.classList.remove('pinned');
+        pinButton.textContent = '📌';
+        console.log('Unpinned message:', messageKey);
+    } else {
+        // Pin the message
+        pinnedMessages.add(messageKey);
+        messageBubble.classList.add('pinned');
+        pinButton.classList.add('pinned');
+        pinButton.textContent = '📌 Pinned';
+        console.log('Pinned message:', messageKey);
+    }
+    
+    savePinnedMessages();
+}
+
+// Apply pinned status to messages on load
+function applyPinnedStatus() {
+    document.querySelectorAll('[data-message-id]').forEach(element => {
+        const messageKey = element.getAttribute('data-message-id');
+        const messageBubble = element.querySelector('.message-bubble');
+        const pinButton = element.querySelector('.pin-button');
+        
+        if (messageKey && messageBubble && pinButton && pinnedMessages.has(messageKey)) {
+            messageBubble.classList.add('pinned');
+            pinButton.classList.add('pinned');
+            pinButton.textContent = '📌 Pinned';
+        }
+    });
+}
+
 const unreadMessages = new Set();
 
 function markMessageAsRead(messageId) {
