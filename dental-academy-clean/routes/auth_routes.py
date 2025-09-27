@@ -824,14 +824,10 @@ def forgot_password():
 def reset_password(token):
     """Reset password with token"""
     try:
-        # Find user by token
-        user = User.query.filter_by(password_reset_token=token).first()
-        
-        if not user:
-            # Try to find by hashed token
-            import hashlib
-            token_hash = hashlib.sha256(token.encode()).hexdigest()
-            user = User.query.filter_by(password_reset_token=token_hash).first()
+        # Find user by hashed token (since we store hashed tokens in database)
+        import hashlib
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        user = User.query.filter_by(password_reset_token=token_hash).first()
         
         if not user:
             flash('Invalid or expired password reset link', 'error')
