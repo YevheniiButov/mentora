@@ -1106,11 +1106,15 @@ def api_delete_message():
                 'deleted_by': current_user.id
             })
             
+            # TODO: Uncomment after running migration add_forum_topic_deletion_fields.py
             # Soft delete the topic
-            topic.is_deleted = True
-            topic.deleted_at = datetime.now(timezone.utc)
-            topic.deleted_by = current_user.id
+            # topic.is_deleted = True
+            # topic.deleted_at = datetime.now(timezone.utc)
+            # topic.deleted_by = current_user.id
             topic.updated_at = datetime.now(timezone.utc)
+            
+            # Temporary: Mark topic as deleted using status field
+            topic.status = 'hidden'
             db.session.commit()
             
             return jsonify({
