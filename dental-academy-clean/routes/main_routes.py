@@ -1166,11 +1166,21 @@ def api_delete_message():
 @login_required
 def api_check_admin():
     """API endpoint to check if current user is admin"""
-    return jsonify({
-        'success': True,
-        'is_admin': current_user.is_admin,
-        'user_id': current_user.id
-    })
+    try:
+        current_app.logger.info(f"Admin check request from user {current_user.id}")
+        result = {
+            'success': True,
+            'is_admin': current_user.is_admin,
+            'user_id': current_user.id
+        }
+        current_app.logger.info(f"Admin check result: {result}")
+        return jsonify(result)
+    except Exception as e:
+        current_app.logger.error(f"Error in admin check: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @main_bp.route('/test')
 def test_page():

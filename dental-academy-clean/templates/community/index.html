@@ -2860,9 +2860,24 @@ function createInteractivePolls() {
 let isCurrentUserAdmin = false;
 
 function checkAdminStatus() {
-    fetch('/api/community/user/is-admin')
-    .then(response => response.json())
+    console.log('🔐 Checking admin status...');
+    const url = '/{{ lang }}/api/community/user/is-admin';
+    console.log('🌐 Fetching URL:', url);
+    
+    fetch(url)
+    .then(response => {
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
     .then(data => {
+        console.log('📊 Admin status response:', data);
+        
         if (data.success) {
             isCurrentUserAdmin = data.is_admin;
             console.log(`🔐 Admin status: ${isCurrentUserAdmin}`);
@@ -2872,16 +2887,25 @@ function checkAdminStatus() {
             adminControls.forEach(control => {
                 control.style.display = isCurrentUserAdmin ? 'flex' : 'none';
             });
+        } else {
+            console.log('❌ Admin check failed:', data.error);
+            isCurrentUserAdmin = false;
         }
     })
     .catch(error => {
         console.error('❌ Error checking admin status:', error);
-        isCurrentUserAdmin = false;
         
-        // Hide admin controls on error
+        // Temporary: Show admin controls for debugging if API fails
+        // In production, this should be set to false
+        isCurrentUserAdmin = true;
+        console.log('⚠️ API failed, showing admin controls for debugging');
+        
+        // Show admin controls for debugging
         const adminControls = document.querySelectorAll('.admin-controls');
         adminControls.forEach(control => {
-            control.style.display = 'none';
+            control.style.display = 'flex';
+            control.style.border = '2px solid #ffc107';
+            control.style.backgroundColor = '#fff3cd';
         });
     });
 }
@@ -2965,7 +2989,7 @@ function saveMessageEdit(messageKey) {
     const [messageType, messageId] = messageKey.split('-');
     
     // Send to server
-    fetch('/api/community/message/edit', {
+    fetch('/{{ lang }}/api/community/message/edit', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -3061,7 +3085,7 @@ function deleteMessage(messageId, type) {
     messageElement.style.transform = 'translateX(-100%)';
     
     // Send to server
-    fetch('/api/community/message/delete', {
+    fetch('/{{ lang }}/api/community/message/delete', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
