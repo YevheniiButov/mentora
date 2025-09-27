@@ -1150,7 +1150,7 @@
                     <div class="chat-time">{{ topic.created_at.strftime('%H:%M') }}</div>
                     {% if topic.replies_count and topic.replies_count > 0 %}
                     <div class="chat-badge">{{ topic.replies_count }}</div>
-                    {% endif %}
+                                {% endif %}
                     {% if topic.unread_count and topic.unread_count > 0 %}
                     <div class="unread-count">{{ topic.unread_count }}</div>
                     {% endif %}
@@ -1742,9 +1742,13 @@ function loadReactionsFromStorage() {
         const stored = localStorage.getItem('community_reactions');
         if (stored) {
             messageReactions = JSON.parse(stored);
+            console.log('Loaded reactions from localStorage:', messageReactions);
+        } else {
+            console.log('No stored reactions found in localStorage');
+            messageReactions = {};
         }
     } catch (e) {
-        console.log('No stored reactions found');
+        console.log('Error loading reactions from localStorage:', e);
         messageReactions = {};
     }
 }
@@ -1753,6 +1757,7 @@ function loadReactionsFromStorage() {
 function saveReactionsToStorage() {
     try {
         localStorage.setItem('community_reactions', JSON.stringify(messageReactions));
+        console.log('Saved reactions to localStorage:', messageReactions);
     } catch (e) {
         console.error('Failed to save reactions:', e);
     }
@@ -1814,6 +1819,7 @@ function hideReactionPickers() {
 
 function addReaction(messageId, type, emoji) {
     const key = `${type}-${messageId}`;
+    console.log('Adding reaction:', { messageId, type, emoji, key });
     
     if (!messageReactions[key]) {
         messageReactions[key] = {};
@@ -1825,18 +1831,23 @@ function addReaction(messageId, type, emoji) {
     
     // Add current user to reaction
     const currentUser = getCurrentUserId();
+    console.log('Current user ID:', currentUser);
     const userIndex = messageReactions[key][emoji].indexOf(currentUser);
     
     if (userIndex > -1) {
         // Remove reaction if user already reacted
+        console.log('Removing existing reaction');
         messageReactions[key][emoji].splice(userIndex, 1);
         if (messageReactions[key][emoji].length === 0) {
             delete messageReactions[key][emoji];
         }
     } else {
         // Add reaction
+        console.log('Adding new reaction');
         messageReactions[key][emoji].push(currentUser);
     }
+    
+    console.log('Updated reactions:', messageReactions);
     
     // Update UI
     updateReactionsDisplay(messageId, type);
@@ -1852,16 +1863,24 @@ function addReaction(messageId, type, emoji) {
 }
 
 function updateReactionsDisplay(messageId, type) {
-    const container = document.getElementById(`reactions-${type === 'topic' ? '' : 'post-'}${messageId}`);
-    if (!container) return;
+    const containerId = `reactions-${type === 'topic' ? '' : 'post-'}${messageId}`;
+    const container = document.getElementById(containerId);
+    console.log('Updating reactions display:', { messageId, type, containerId, container });
+    
+    if (!container) {
+        console.log('Container not found:', containerId);
+        return;
+    }
     
     const key = `${type}-${messageId}`;
     const reactions = messageReactions[key] || {};
+    console.log('Reactions for key', key, ':', reactions);
     
     container.innerHTML = '';
     
     Object.entries(reactions).forEach(([emoji, users]) => {
         if (users.length > 0) {
+            console.log('Creating reaction button:', { emoji, users });
             const btn = document.createElement('div');
             btn.className = 'reaction-button';
             
@@ -1881,6 +1900,8 @@ function updateReactionsDisplay(messageId, type) {
             container.appendChild(btn);
         }
     });
+    
+    console.log('Updated container HTML:', container.innerHTML);
 }
 
 function saveReactionToServer(messageId, type, emoji, isAdding) {
@@ -1919,8 +1940,7 @@ function saveReactionToServer(messageId, type, emoji, isAdding) {
 }
 
 function loadReactionsForMessage(messageId, type) {
-    // In real app, load reactions from server
-    // For now, we'll just update the display
+    // Load reactions from localStorage and update display
     updateReactionsDisplay(messageId, type);
 }
 
