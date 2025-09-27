@@ -273,6 +273,25 @@
 .message-author {
     font-weight: 600;
     color: #3ECDC1;
+    transition: color 0.3s ease;
+}
+
+/* Colorful usernames */
+.message-author.colorful {
+    background: linear-gradient(45deg, var(--user-color), var(--user-color-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: var(--user-color);
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(var(--user-color-rgb), 0.3);
+}
+
+/* Fallback for browsers that don't support background-clip */
+.message-author.colorful {
+    background: none;
+    -webkit-text-fill-color: initial;
+    color: var(--user-color);
 }
 
 .message-time {
@@ -721,6 +740,9 @@ function displayTopicContent(topic, posts) {
     
     chatMessages.innerHTML = messagesHTML;
     
+    // Apply colorful usernames after content is loaded
+    applyColorsAfterLoad();
+    
     // Update existing reply form or create new one
     const existingForm = document.getElementById('fixed-reply-form');
     if (!existingForm) {
@@ -909,6 +931,103 @@ function deletePost(postId) {
             alert('Error deleting post');
         });
     }
+}
+
+// Colorful usernames functionality
+function generateUserColor(username) {
+    // Generate a consistent color based on username hash
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Convert hash to HSL values for better color distribution
+    const hue = Math.abs(hash) % 360;
+    const saturation = 65 + (Math.abs(hash >> 8) % 25); // 65-90%
+    const lightness = 45 + (Math.abs(hash >> 16) % 20); // 45-65%
+    
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function generateUserColorLight(username) {
+    // Generate a lighter version for gradients
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    const hue = Math.abs(hash) % 360;
+    const saturation = 65 + (Math.abs(hash >> 8) % 25);
+    const lightness = 65 + (Math.abs(hash >> 16) % 15); // Lighter: 65-80%
+    
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function generateUserColorRgb(username) {
+    // Generate RGB values for text-shadow
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    const hue = Math.abs(hash) % 360;
+    const saturation = 65 + (Math.abs(hash >> 8) % 25);
+    const lightness = 45 + (Math.abs(hash >> 16) % 20);
+    
+    // Convert HSL to RGB
+    const h = hue / 360;
+    const s = saturation / 100;
+    const l = lightness / 100;
+    
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+    const m = l - c / 2;
+    
+    let r, g, b;
+    if (h < 1/6) {
+        r = c; g = x; b = 0;
+    } else if (h < 2/6) {
+        r = x; g = c; b = 0;
+    } else if (h < 3/6) {
+        r = 0; g = c; b = x;
+    } else if (h < 4/6) {
+        r = 0; g = x; b = c;
+    } else if (h < 5/6) {
+        r = x; g = 0; b = c;
+    } else {
+        r = c; g = 0; b = x;
+    }
+    
+    return `${Math.round((r + m) * 255)}, ${Math.round((g + m) * 255)}, ${Math.round((b + m) * 255)}`;
+}
+
+function applyColorfulUsernames() {
+    // Apply colors to existing usernames
+    const authorElements = document.querySelectorAll('.message-author');
+    
+    authorElements.forEach(element => {
+        const username = element.textContent.trim();
+        if (username) {
+            const color = generateUserColor(username);
+            const colorLight = generateUserColorLight(username);
+            const colorRgb = generateUserColorRgb(username);
+            
+            element.classList.add('colorful');
+            element.style.setProperty('--user-color', color);
+            element.style.setProperty('--user-color-light', colorLight);
+            element.style.setProperty('--user-color-rgb', colorRgb);
+        }
+    });
+}
+
+// Apply colorful usernames when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    applyColorfulUsernames();
+});
+
+// Apply colorful usernames after loading topic content
+function applyColorsAfterLoad() {
+    setTimeout(applyColorfulUsernames, 100);
 }
 </script>
 
