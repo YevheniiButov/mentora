@@ -781,18 +781,30 @@
 }
 
 .reply-btn {
-    background: #6c757d;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
     border: none;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 0.7rem;
-    transition: background 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .reply-btn:hover {
-    background: #5a6268;
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.reply-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
 }
 
 /* New message indicators */
@@ -835,33 +847,43 @@
 }
 
 .pin-button {
-    background: transparent;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 4px 8px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px 12px;
     font-size: 12px;
-    color: #666;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-left: 8px;
 }
 
 .pin-button:hover {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
     border-color: #007bff;
     color: #007bff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
 }
 
 .pin-button.pinned {
-    background: #ffd700;
-    border-color: #ffd700;
-    color: #333;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-color: #ffc107;
+    color: #856404;
     font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
 }
 
 .pin-button.pinned:hover {
-    background: #ffed4e;
-    border-color: #ffed4e;
+    background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+    border-color: #ffb300;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.5);
 }
 
 /* CSS for interactive poll voting */
@@ -953,39 +975,45 @@
 }
 
 .admin-edit-btn, .admin-delete-btn {
-    background: transparent;
-    border: 1px solid #dc3545;
-    border-radius: 4px;
-    padding: 4px 8px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px 12px;
     font-size: 12px;
-    color: #dc3545;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .admin-edit-btn {
-    border-color: #ffc107;
-    color: #ffc107;
+    border-color: #28a745;
+    color: #28a745;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
 }
 
 .admin-edit-btn:hover {
-    background: #ffc107;
-    color: #333;
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.admin-delete-btn {
+    border-color: #dc3545;
+    color: #dc3545;
+    background: linear-gradient(135deg, #fff8f8 0%, #fce8e8 100%);
 }
 
 .admin-delete-btn:hover {
-    background: #dc3545;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: white;
-}
-
-.admin-controls .admin-edit-btn {
-    border-color: #28a745;
-    color: #28a745;
-}
-
-.admin-controls .admin-edit-btn:hover {
-    background: #28a745;
-    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 /* Edit mode styles */
@@ -1616,6 +1644,16 @@ function displayTopicContent(topic, posts) {
     
     // Apply colorful usernames after content is loaded
     applyColorsAfterLoad();
+    
+    // Apply saved reactions
+    loadAllReactions();
+    // Apply pinned status to messages
+    applyPinnedStatus();
+    // Create interactive polls
+    createInteractivePolls();
+    
+    // Check admin status for new messages
+    checkAdminStatus();
 
     // Update existing reply form or create new one
     const existingForm = document.getElementById('fixed-reply-form');
@@ -2501,11 +2539,13 @@ function savePinnedMessages() {
 
 // Toggle pin status for a message
 function togglePin(messageId, type) {
+    console.log(`📌 Toggling pin for ${type} message ID: ${messageId}`);
     const messageKey = `${type}-${messageId}`;
     const messageElement = document.querySelector(`[data-message-id="${messageKey}"]`);
     
     if (!messageElement) {
-        console.log('Message element not found:', messageKey);
+        console.log('❌ Message element not found:', messageKey);
+        alert('Message not found. Please refresh the page.');
         return;
     }
     
@@ -2513,7 +2553,9 @@ function togglePin(messageId, type) {
     const pinButton = messageElement.querySelector('.pin-button');
     
     if (!messageBubble || !pinButton) {
-        console.log('Message bubble or pin button not found');
+        console.log('❌ Message bubble or pin button not found');
+        console.log('Message bubble:', messageBubble);
+        console.log('Pin button:', pinButton);
         return;
     }
     
@@ -2522,18 +2564,83 @@ function togglePin(messageId, type) {
         pinnedMessages.delete(messageKey);
         messageBubble.classList.remove('pinned');
         pinButton.classList.remove('pinned');
-        pinButton.textContent = '📌';
-        console.log('Unpinned message:', messageKey);
+        pinButton.innerHTML = '📌';
+        pinButton.title = 'Pin message';
+        console.log('✅ Unpinned message:', messageKey);
+        
+        // Show feedback
+        showPinFeedback('Message unpinned!', 'info');
     } else {
         // Pin the message
         pinnedMessages.add(messageKey);
         messageBubble.classList.add('pinned');
         pinButton.classList.add('pinned');
-        pinButton.textContent = '📌 Pinned';
-        console.log('Pinned message:', messageKey);
+        pinButton.innerHTML = '📌 Pinned';
+        pinButton.title = 'Unpin message';
+        console.log('✅ Pinned message:', messageKey);
+        
+        // Show feedback
+        showPinFeedback('Message pinned!', 'success');
     }
     
     savePinnedMessages();
+}
+
+// Show pin feedback message
+function showPinFeedback(message, type) {
+    // Remove existing feedback if any
+    const existingFeedback = document.querySelector('.pin-feedback');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
+    
+    // Create feedback element
+    const feedback = document.createElement('div');
+    feedback.className = `pin-feedback pin-feedback-${type}`;
+    feedback.textContent = message;
+    feedback.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : '#17a2b8'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    // Add animation keyframes if not exists
+    if (!document.querySelector('#pin-feedback-styles')) {
+        const style = document.createElement('style');
+        style.id = 'pin-feedback-styles';
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(feedback);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        feedback.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.remove();
+            }
+        }, 300);
+    }, 3000);
 }
 
 // Apply pinned status to messages on load
