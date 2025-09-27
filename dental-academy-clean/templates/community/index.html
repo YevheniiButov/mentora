@@ -944,6 +944,101 @@
     color: #6c757d;
     font-size: 14px;
 }
+
+/* CSS for admin controls */
+.admin-controls {
+    display: flex;
+    gap: 8px;
+    margin-left: 8px;
+}
+
+.admin-edit-btn, .admin-delete-btn {
+    background: transparent;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #dc3545;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.admin-edit-btn {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.admin-edit-btn:hover {
+    background: #ffc107;
+    color: #333;
+}
+
+.admin-delete-btn:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.admin-controls .admin-edit-btn {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.admin-controls .admin-edit-btn:hover {
+    background: #28a745;
+    color: white;
+}
+
+/* Edit mode styles */
+.message-content.edit-mode {
+    background: #f8f9fa;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.edit-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.edit-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.save-btn, .cancel-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.save-btn {
+    background: #28a745;
+    color: white;
+}
+
+.save-btn:hover {
+    background: #218838;
+}
+
+.cancel-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.cancel-btn:hover {
+    background: #5a6268;
+}
     border-radius: 50%;
     width: 8px;
     height: 8px;
@@ -1469,8 +1564,10 @@ function displayTopicContent(topic, posts) {
                     <div class="message-actions-right">
                         <button class="reply-btn" onclick="replyToMessage(${topicWithPoll.id}, 'topic', '${topicWithPoll.author.name}', '${topicWithPoll.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
                         <button class="pin-button" onclick="togglePin(${topicWithPoll.id}, 'topic')" title="Pin/Unpin message">📌</button>
-                        ${topicWithPoll.can_edit ? '<button class="edit-btn" onclick="editTopic(' + topicWithPoll.id + ')">Edit</button>' : ''}
-                        ${topicWithPoll.can_delete ? '<button class="delete-btn" onclick="deleteTopic(' + topicWithPoll.id + ')">Delete</button>' : ''}
+                        <div class="admin-controls">
+                            <button class="admin-edit-btn" onclick="editMessage(${topicWithPoll.id}, 'topic')" title="Edit message">✏️ Edit</button>
+                            <button class="admin-delete-btn" onclick="deleteMessage(${topicWithPoll.id}, 'topic')" title="Delete message">🗑️ Delete</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1503,8 +1600,10 @@ function displayTopicContent(topic, posts) {
                             <div class="message-actions-right">
                                 <button class="reply-btn" onclick="replyToMessage(${postWithDemo.id}, 'post', '${postWithDemo.author.name}', '${postWithDemo.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
                                 <button class="pin-button" onclick="togglePin(${postWithDemo.id}, 'post')" title="Pin/Unpin message">📌</button>
-                                ${postWithDemo.can_edit ? '<button class="edit-btn" onclick="editPost(' + postWithDemo.id + ')">Edit</button>' : ''}
-                                ${postWithDemo.can_delete ? '<button class="delete-btn" onclick="deletePost(' + postWithDemo.id + ')">Delete</button>' : ''}
+                                <div class="admin-controls">
+                                    <button class="admin-edit-btn" onclick="editMessage(${postWithDemo.id}, 'post')" title="Edit message">✏️ Edit</button>
+                                    <button class="admin-delete-btn" onclick="deleteMessage(${postWithDemo.id}, 'post')" title="Delete message">🗑️ Delete</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2645,6 +2744,170 @@ function createInteractivePolls() {
     document.querySelectorAll('[data-message-id]').forEach(element => {
         createInteractivePoll(element);
     });
+}
+
+// Admin message editing and deletion functions
+let editingMessages = new Set();
+
+// Edit message function
+function editMessage(messageId, type) {
+    console.log(`✏️ Starting edit for ${type} message ID: ${messageId}`);
+    
+    const messageKey = `${type}-${messageId}`;
+    const messageElement = document.querySelector(`[data-message-id="${messageKey}"]`);
+    
+    if (!messageElement) {
+        console.log('❌ Message element not found');
+        return;
+    }
+    
+    const messageContent = messageElement.querySelector('.message-content');
+    if (!messageContent) {
+        console.log('❌ Message content not found');
+        return;
+    }
+    
+    // Check if already editing
+    if (editingMessages.has(messageKey)) {
+        console.log('⚠️ Message is already being edited');
+        return;
+    }
+    
+    // Get original content (remove HTML tags for editing)
+    const originalContent = messageContent.textContent || messageContent.innerText;
+    
+    // Create edit form
+    const editHTML = `
+        <div class="edit-mode">
+            <textarea class="edit-textarea" id="edit-textarea-${messageKey}" placeholder="Edit your message...">${originalContent}</textarea>
+            <div class="edit-buttons">
+                <button class="save-btn" onclick="saveMessageEdit('${messageKey}')">💾 Save</button>
+                <button class="cancel-btn" onclick="cancelMessageEdit('${messageKey}')">❌ Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    // Store original content
+    messageContent.setAttribute('data-original-content', originalContent);
+    messageContent.innerHTML = editHTML;
+    messageContent.classList.add('edit-mode');
+    
+    // Mark as editing
+    editingMessages.add(messageKey);
+    
+    // Focus textarea
+    const textarea = document.getElementById(`edit-textarea-${messageKey}`);
+    if (textarea) {
+        textarea.focus();
+        textarea.select();
+    }
+    
+    console.log(`✅ Edit mode activated for ${messageKey}`);
+}
+
+// Save message edit
+function saveMessageEdit(messageKey) {
+    console.log(`💾 Saving edit for message: ${messageKey}`);
+    
+    const textarea = document.getElementById(`edit-textarea-${messageKey}`);
+    if (!textarea) {
+        console.log('❌ Textarea not found');
+        return;
+    }
+    
+    const newContent = textarea.value.trim();
+    if (!newContent) {
+        alert('Message cannot be empty!');
+        return;
+    }
+    
+    // Find message element
+    const messageElement = document.querySelector(`[data-message-id="${messageKey}"]`);
+    if (!messageElement) {
+        console.log('❌ Message element not found');
+        return;
+    }
+    
+    const messageContent = messageElement.querySelector('.message-content');
+    if (!messageContent) {
+        console.log('❌ Message content not found');
+        return;
+    }
+    
+    // Update content
+    messageContent.innerHTML = newContent;
+    messageContent.classList.remove('edit-mode');
+    
+    // Remove from editing set
+    editingMessages.delete(messageKey);
+    
+    console.log(`✅ Message edit saved: ${messageKey}`);
+    
+    // Here you would normally send the update to the server
+    // For now, we just update the UI
+    alert('Message updated successfully! (Note: This is a demo - changes are not saved to server)');
+}
+
+// Cancel message edit
+function cancelMessageEdit(messageKey) {
+    console.log(`❌ Canceling edit for message: ${messageKey}`);
+    
+    const messageElement = document.querySelector(`[data-message-id="${messageKey}"]`);
+    if (!messageElement) {
+        console.log('❌ Message element not found');
+        return;
+    }
+    
+    const messageContent = messageElement.querySelector('.message-content');
+    if (!messageContent) {
+        console.log('❌ Message content not found');
+        return;
+    }
+    
+    // Restore original content
+    const originalContent = messageContent.getAttribute('data-original-content');
+    if (originalContent) {
+        messageContent.innerHTML = originalContent;
+    }
+    
+    messageContent.classList.remove('edit-mode');
+    
+    // Remove from editing set
+    editingMessages.delete(messageKey);
+    
+    console.log(`✅ Message edit canceled: ${messageKey}`);
+}
+
+// Delete message function
+function deleteMessage(messageId, type) {
+    console.log(`🗑️ Starting deletion for ${type} message ID: ${messageId}`);
+    
+    const messageKey = `${type}-${messageId}`;
+    
+    // Confirm deletion
+    if (!confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) {
+        console.log('❌ Deletion canceled by user');
+        return;
+    }
+    
+    const messageElement = document.querySelector(`[data-message-id="${messageKey}"]`);
+    if (!messageElement) {
+        console.log('❌ Message element not found');
+        return;
+    }
+    
+    // Add deletion animation
+    messageElement.style.transition = 'all 0.3s ease';
+    messageElement.style.opacity = '0';
+    messageElement.style.transform = 'translateX(-100%)';
+    
+    setTimeout(() => {
+        messageElement.remove();
+        console.log(`✅ Message deleted: ${messageKey}`);
+        
+        // Here you would normally send the deletion request to the server
+        alert('Message deleted successfully! (Note: This is a demo - changes are not saved to server)');
+    }, 300);
 }
 
 const unreadMessages = new Set();
