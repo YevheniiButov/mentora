@@ -1167,26 +1167,42 @@ def api_delete_message():
 def api_check_admin():
     """API endpoint to check if current user is admin"""
     try:
-        current_app.logger.info(f"Admin check request from user {current_user.id}")
+        # Debug logging
+        current_app.logger.info(f"=== ADMIN CHECK DEBUG ===")
+        current_app.logger.info(f"Current user object: {current_user}")
+        current_app.logger.info(f"Current user ID: {getattr(current_user, 'id', 'NO_ID')}")
+        current_app.logger.info(f"Current user authenticated: {getattr(current_user, 'is_authenticated', 'NO_AUTH_ATTR')}")
+        current_app.logger.info(f"Current user role: {getattr(current_user, 'role', 'NO_ROLE')}")
+        current_app.logger.info(f"Has role attr: {hasattr(current_user, 'role')}")
         
         # Check if user is admin - handle None role gracefully
         is_admin = False
-        if hasattr(current_user, 'role') and current_user.role:
-            is_admin = current_user.role == 'admin'
+        user_role = getattr(current_user, 'role', None)
+        if user_role:
+            is_admin = user_role == 'admin'
         
         result = {
             'success': True,
             'is_admin': is_admin,
-            'user_id': current_user.id,
-            'user_role': getattr(current_user, 'role', None)
+            'user_id': getattr(current_user, 'id', None),
+            'user_role': user_role,
+            'debug_info': {
+                'has_role_attr': hasattr(current_user, 'role'),
+                'role_value': user_role,
+                'is_authenticated': getattr(current_user, 'is_authenticated', None)
+            }
         }
         current_app.logger.info(f"Admin check result: {result}")
         return jsonify(result)
     except Exception as e:
         current_app.logger.error(f"Error in admin check: {str(e)}")
+        current_app.logger.error(f"Exception type: {type(e)}")
+        import traceback
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'error_type': str(type(e))
         }), 500
 
 @main_bp.route('/test')
