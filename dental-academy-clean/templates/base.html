@@ -185,11 +185,13 @@
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.1);
+        pointer-events: none;
     }
     
     .cookie-notice.show {
         transform: translateY(0);
         opacity: 1;
+        pointer-events: auto;
     }
     
     .cookie-notice-content {
@@ -323,6 +325,31 @@
         .cookie-notice-btn {
             width: 100%;
             justify-content: center;
+        }
+    }
+    
+    /* Global mobile interaction fixes */
+    @media (max-width: 768px) {
+        /* Ensure no invisible overlays block interaction */
+        body {
+            touch-action: manipulation;
+        }
+        
+        /* Fix all hidden elements that might block interaction */
+        [style*="display: none"] {
+            pointer-events: none !important;
+            z-index: -1 !important;
+        }
+        
+        /* Fix elements with visibility hidden */
+        [style*="visibility: hidden"] {
+            pointer-events: none !important;
+            z-index: -1 !important;
+        }
+        
+        /* Fix elements with opacity 0 */
+        [style*="opacity: 0"]:not(.cookie-notice) {
+            pointer-events: none !important;
         }
     }
     </style>
