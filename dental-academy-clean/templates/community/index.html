@@ -1795,6 +1795,7 @@ function selectTopic(topicId) {
     }
     
     // Load topic content
+    console.log('📥 Loading content for topic:', topicId);
     loadTopicContent(topicId);
 }
 
@@ -1948,12 +1949,15 @@ function refreshPageState() {
 
 
 function loadTopicContent(topicId) {
+    console.log('🔄 loadTopicContent called with topicId:', topicId);
+    
     const chatMessages = document.getElementById('chat-messages');
     if (!chatMessages) {
-        console.error('Chat messages container not found');
+        console.error('❌ Chat messages container not found');
         return;
     }
     
+    console.log('✅ Chat messages container found, showing loading...');
     chatMessages.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">Loading...</div>';
     
     // Add retry mechanism for mobile issues
@@ -1961,8 +1965,11 @@ function loadTopicContent(topicId) {
     const maxRetries = 3;
     
     function attemptLoad() {
+        console.log('🌐 Fetching topic content from:', `/{{ lang }}/community/topic/${topicId}/content`);
+        
     fetch(`/{{ lang }}/community/topic/${topicId}/content`)
             .then(response => {
+                console.log('📡 Response status:', response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
@@ -2005,7 +2012,14 @@ function loadTopicContent(topicId) {
 }
 
 function displayTopicContent(topic, posts) {
+    console.log('📝 displayTopicContent called with:', { topic: topic, posts: posts });
+    
     const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) {
+        console.error('❌ Chat messages container not found in displayTopicContent');
+        return;
+    }
+    
     let messagesHTML = '';
     
     // Add poll data if available
@@ -2079,6 +2093,7 @@ function displayTopicContent(topic, posts) {
         }
     });
     
+    console.log('📄 Setting chat messages HTML, length:', messagesHTML.length);
     chatMessages.innerHTML = messagesHTML;
     
     // Apply colorful usernames after content is loaded
@@ -3768,6 +3783,16 @@ function forceMobileFixes() {
         const chatSidebar = document.querySelector('.chat-sidebar');
         if (chatSidebar) {
             chatSidebar.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; position: relative !important;';
+        }
+        
+        // Ensure chat messages are visible when in topic view
+        const chatMain = document.querySelector('.chat-main');
+        const chatMessages = document.getElementById('chat-messages');
+        if (chatMain && chatMain.classList.contains('active') && chatMessages) {
+            chatMessages.style.display = 'block !important';
+            chatMessages.style.visibility = 'visible !important';
+            chatMessages.style.opacity = '1 !important';
+            console.log('🔧 Forced chat messages visibility');
         }
         
         // Force button sizes
