@@ -3181,7 +3181,21 @@ function saveMessageEdit(messageKey) {
         return;
     }
     
-    const newContent = textarea.value.trim();
+    let newContent = textarea.value.trim();
+    console.log(`📝 Raw content from textarea: ${newContent.substring(0, 200)}...`);
+    
+    // Clean the content - remove any HTML tags and admin buttons
+    newContent = newContent
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/\s*✏️\s*Edit\s*/g, '') // Remove Edit button text
+        .replace(/\s*🗑️\s*Delete\s*/g, '') // Remove Delete button text
+        .replace(/\s*Pin\s*/g, '') // Remove Pin button text
+        .replace(/\s*Reply\s*/g, '') // Remove Reply button text
+        .replace(/\s*Admin\s*/g, '') // Remove Admin text
+        .trim();
+    
+    console.log(`🧹 Cleaned content: ${newContent.substring(0, 100)}...`);
+    
     if (!newContent) {
         alert('Message cannot be empty!');
         return;
