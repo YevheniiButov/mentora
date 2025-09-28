@@ -1526,7 +1526,7 @@
                     {% if topic.unread_count and topic.unread_count > 0 %}
                     <div class="unread-count">{{ topic.unread_count }}</div>
                                 {% endif %}
-                    <div class="admin-controls" style="display: none;">
+                    <div class="admin-controls" style="display: flex;">
                         <a href="#" class="admin-link" onclick="event.stopPropagation(); deleteTopic({{ topic.id }}); return false;" title="Delete topic">🗑️ Delete</a>
                     </div>
                 </div>
@@ -1697,7 +1697,7 @@ function displayTopicContent(topic, posts) {
                     <div class="message-actions-right">
                         <button class="reply-btn" onclick="replyToMessage(${topicWithPoll.id}, 'topic', '${topicWithPoll.author.name}', '${topicWithPoll.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
                         <a href="#" class="admin-link" onclick="togglePin(${topicWithPoll.id}, 'topic'); return false;" title="Pin/Unpin message">📌 Pin</a>
-                        <div class="admin-controls">
+                        <div class="admin-controls" style="display: flex;">
                             <a href="#" class="admin-link" onclick="editMessage(${topicWithPoll.id}, 'topic'); return false;" title="Edit message">✏️ Edit</a>
                             <a href="#" class="admin-link" onclick="deleteMessage(${topicWithPoll.id}, 'topic'); return false;" title="Delete message">🗑️ Delete</a>
                         </div>
@@ -1733,7 +1733,7 @@ function displayTopicContent(topic, posts) {
                             <div class="message-actions-right">
                                 <button class="reply-btn" onclick="replyToMessage(${postWithDemo.id}, 'post', '${postWithDemo.author.name}', '${postWithDemo.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
                                 <a href="#" class="admin-link" onclick="togglePin(${postWithDemo.id}, 'post'); return false;" title="Pin/Unpin message">📌 Pin</a>
-                                <div class="admin-controls">
+                                <div class="admin-controls" style="display: flex;">
                                     <a href="#" class="admin-link" onclick="editMessage(${postWithDemo.id}, 'post'); return false;" title="Edit message">✏️ Edit</a>
                                     <a href="#" class="admin-link" onclick="deleteMessage(${postWithDemo.id}, 'post'); return false;" title="Delete message">🗑️ Delete</a>
                                 </div>

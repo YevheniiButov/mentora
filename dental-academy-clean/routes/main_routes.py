@@ -6,6 +6,12 @@ from models import LearningPath, Subject, Module, Lesson, UserProgress
 from extensions import db
 from sqlalchemy import or_
 
+def is_user_admin(user):
+    """Helper function to check if user is admin"""
+    if not hasattr(user, 'role') or not user.role:
+        return False
+    return user.role == 'admin'
+
 # Создаем blueprint с языковой поддержкой
 main_bp = Blueprint('main', __name__, url_prefix='/<string:lang>')
 
@@ -628,7 +634,7 @@ def edit_topic(lang, topic_id):
     topic = ForumTopic.query.get_or_404(topic_id)
     
     # Проверяем права на редактирование
-    if topic.author_id != current_user.id and not current_user.is_admin:
+    if topic.author_id != current_user.id and not is_user_admin(current_user):
         flash('You do not have permission to edit this topic', 'error')
         return redirect(url_for('main.community_topic', lang=lang, topic_id=topic_id))
     
@@ -650,7 +656,7 @@ def update_topic(lang, topic_id):
         topic = ForumTopic.query.get_or_404(topic_id)
         
         # Проверяем права на редактирование
-        if topic.author_id != current_user.id and not current_user.is_admin:
+        if topic.author_id != current_user.id and not is_user_admin(current_user):
             return jsonify({
                 'success': False,
                 'error': 'You do not have permission to edit this topic'
@@ -726,7 +732,7 @@ def edit_post(lang, post_id):
     post = ForumPost.query.get_or_404(post_id)
     
     # Проверяем права на редактирование
-    if post.author_id != current_user.id and not current_user.is_admin:
+    if post.author_id != current_user.id and not is_user_admin(current_user):
         flash('You do not have permission to edit this post', 'error')
         return redirect(url_for('main.community_topic', lang=lang, topic_id=post.topic_id))
     
@@ -745,7 +751,7 @@ def update_post(lang, post_id):
         post = ForumPost.query.get_or_404(post_id)
         
         # Проверяем права на редактирование
-        if post.author_id != current_user.id and not current_user.is_admin:
+        if post.author_id != current_user.id and not is_user_admin(current_user):
             return jsonify({
                 'success': False,
                 'error': 'You do not have permission to edit this post'
@@ -798,7 +804,7 @@ def delete_topic(lang, topic_id):
         topic = ForumTopic.query.get_or_404(topic_id)
         
         # Проверяем права администратора или автора темы
-        if not current_user.is_admin and topic.author_id != current_user.id:
+        if not is_user_admin(current_user) and topic.author_id != current_user.id:
             return jsonify({
                 'success': False,
                 'error': 'You do not have permission to delete this topic'
@@ -833,7 +839,7 @@ def delete_post(lang, post_id):
         post = ForumPost.query.get_or_404(post_id)
         
         # Проверяем права администратора
-        if not current_user.is_admin:
+        if not is_user_admin(current_user):
             return jsonify({
                 'success': False,
                 'error': 'You do not have permission to delete posts'
@@ -869,7 +875,7 @@ def toggle_topic_sticky(lang, topic_id):
         topic = ForumTopic.query.get_or_404(topic_id)
         
         # Проверяем права администратора
-        if not current_user.is_admin:
+        if not is_user_admin(current_user):
             return jsonify({
                 'success': False,
                 'error': 'You do not have permission to change topic status'
@@ -908,7 +914,7 @@ def toggle_topic_lock(lang, topic_id):
         topic = ForumTopic.query.get_or_404(topic_id)
         
         # Проверяем права администратора
-        if not current_user.is_admin:
+        if not is_user_admin(current_user):
             return jsonify({
                 'success': False,
                 'error': 'You do not have permission to lock topics'
@@ -978,9 +984,9 @@ def get_topic_content(lang, topic_id):
             'is_sticky': topic.is_sticky,
             'is_locked': topic.is_locked,
             'status': topic.status,
-            'can_edit': topic.author_id == current_user.id or current_user.is_admin,
-            'can_delete': topic.author_id == current_user.id or current_user.is_admin,
-            'can_moderate': current_user.is_admin
+            'can_edit': topic.author_id == current_user.id or is_user_admin(current_user),
+            'can_delete': topic.author_id == current_user.id or is_user_admin(current_user),
+            'can_moderate': is_user_admin(current_user)
         }
         
         # Формируем данные постов
@@ -998,8 +1004,8 @@ def get_topic_content(lang, topic_id):
                 'updated_at': post.updated_at.strftime('%d.%m.%Y %H:%M') if post.updated_at else None,
                 'is_edited': post.is_edited,
                 'is_deleted': post.is_deleted,
-                'can_edit': post.author_id == current_user.id or current_user.is_admin,
-                'can_delete': current_user.is_admin
+                'can_edit': post.author_id == current_user.id or is_user_admin(current_user),
+                'can_delete': is_user_admin(current_user)
             }
             posts_data.append(post_data)
         
@@ -1034,7 +1040,7 @@ def api_edit_message():
             }), 400
         
         # Check if user is admin
-        if not current_user.is_admin:
+        if not is_user_admin(current_user):
             return jsonify({
                 'success': False,
                 'error': 'Access denied. Admin privileges required.'
@@ -1096,7 +1102,7 @@ def api_delete_message():
             }), 400
         
         # Check if user is admin
-        if not current_user.is_admin:
+        if not is_user_admin(current_user):
             return jsonify({
                 'success': False,
                 'error': 'Access denied. Admin privileges required.'
