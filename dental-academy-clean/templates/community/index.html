@@ -1264,10 +1264,15 @@
         background: #f8f9fa;
     }
     
-    /* Ensure welcome screen is always visible on mobile */
+    /* Hide welcome screen on mobile - show chat sidebar instead */
     .welcome-screen {
+        display: none !important;
+    }
+    
+    /* Ensure chat sidebar is visible on mobile */
+    .chat-sidebar {
         display: flex !important;
-        background: #f8f9fa;
+        background: white;
         min-height: 100vh;
     }
     
@@ -1672,7 +1677,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (chatSidebar) chatSidebar.style.display = 'flex';
         if (chatMain) chatMain.classList.remove('active');
         if (mobileBackBtn) mobileBackBtn.style.display = 'none';
-        if (welcomeScreen) welcomeScreen.style.display = 'flex'; // Show welcome screen by default
+        if (welcomeScreen) welcomeScreen.style.display = 'none'; // Hide welcome screen on mobile
         
         console.log('📱 Mobile layout initialized');
     }
@@ -1715,36 +1720,49 @@ function selectTopic(topicId) {
 function showChatList() {
     console.log('🔄 Showing chat list...');
     
-    // Show welcome screen and hide chat content
-    const welcomeScreen = document.querySelector('.welcome-screen');
-    const chatMessages = document.querySelector('.chat-messages');
-    
-    if (welcomeScreen) {
-        welcomeScreen.style.display = 'flex';
-        console.log('✅ Welcome screen shown');
-    }
-    if (chatMessages) {
-        chatMessages.style.display = 'none';
-        console.log('✅ Chat messages hidden');
-    }
-    
-    // Mobile navigation
+    // Mobile navigation - show chat sidebar, hide chat main
     if (window.innerWidth <= 768) {
         const chatSidebar = document.querySelector('.chat-sidebar');
         const chatMain = document.querySelector('.chat-main');
         const mobileBackBtn = document.querySelector('.mobile-back-btn');
+        const welcomeScreen = document.querySelector('.welcome-screen');
+        const chatMessages = document.querySelector('.chat-messages');
         
         if (chatSidebar) {
             chatSidebar.style.display = 'flex';
+            chatSidebar.style.visibility = 'visible';
+            chatSidebar.style.opacity = '1';
             console.log('✅ Chat sidebar shown on mobile');
         }
         if (chatMain) {
             chatMain.classList.remove('active');
+            chatMain.style.display = 'none';
             console.log('✅ Chat main deactivated');
         }
         if (mobileBackBtn) {
             mobileBackBtn.style.display = 'none';
             console.log('✅ Mobile back button hidden');
+        }
+        if (welcomeScreen) {
+            welcomeScreen.style.display = 'none';
+            console.log('✅ Welcome screen hidden on mobile');
+        }
+        if (chatMessages) {
+            chatMessages.style.display = 'none';
+            console.log('✅ Chat messages hidden');
+        }
+    } else {
+        // Desktop navigation - show welcome screen
+        const welcomeScreen = document.querySelector('.welcome-screen');
+        const chatMessages = document.querySelector('.chat-messages');
+        
+        if (welcomeScreen) {
+            welcomeScreen.style.display = 'flex';
+            console.log('✅ Welcome screen shown on desktop');
+        }
+        if (chatMessages) {
+            chatMessages.style.display = 'none';
+            console.log('✅ Chat messages hidden');
         }
     }
     
