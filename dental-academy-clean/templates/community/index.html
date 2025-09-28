@@ -1252,6 +1252,23 @@
         background: #f8f9fa;
     }
     
+    /* Ensure welcome screen is always visible on mobile */
+    .welcome-screen {
+        display: flex !important;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+    
+    /* Prevent gray screen on mobile */
+    .chat-main {
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+    
+    .chat-main.active {
+        background: #f8f9fa;
+    }
+    
     
     
     /* Ensure no invisible overlays block interaction */
@@ -1591,7 +1608,7 @@
     <!-- Chat Area -->
     <div class="chat-main">
         <!-- Mobile Back Button -->
-        <button class="mobile-back-btn" onclick="showChatList()">
+        <button class="mobile-back-btn" onclick="showChatList(); return false;">
             <i class="fas fa-arrow-left"></i>
         </button>
         
@@ -1643,7 +1660,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (chatSidebar) chatSidebar.style.display = 'flex';
         if (chatMain) chatMain.classList.remove('active');
         if (mobileBackBtn) mobileBackBtn.style.display = 'none';
-        if (welcomeScreen) welcomeScreen.style.display = 'none';
+        if (welcomeScreen) welcomeScreen.style.display = 'flex'; // Show welcome screen by default
+        
+        console.log('📱 Mobile layout initialized');
     }
     
 });
@@ -1682,12 +1701,20 @@ function selectTopic(topicId) {
 }
 
 function showChatList() {
+    console.log('🔄 Showing chat list...');
+    
     // Show welcome screen and hide chat content
     const welcomeScreen = document.querySelector('.welcome-screen');
     const chatMessages = document.querySelector('.chat-messages');
     
-    if (welcomeScreen) welcomeScreen.style.display = 'flex';
-    if (chatMessages) chatMessages.style.display = 'none';
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'flex';
+        console.log('✅ Welcome screen shown');
+    }
+    if (chatMessages) {
+        chatMessages.style.display = 'none';
+        console.log('✅ Chat messages hidden');
+    }
     
     // Mobile navigation
     if (window.innerWidth <= 768) {
@@ -1695,26 +1722,52 @@ function showChatList() {
         const chatMain = document.querySelector('.chat-main');
         const mobileBackBtn = document.querySelector('.mobile-back-btn');
         
-        if (chatSidebar) chatSidebar.style.display = 'flex';
-        if (chatMain) chatMain.classList.remove('active');
-        if (mobileBackBtn) mobileBackBtn.style.display = 'none';
+        if (chatSidebar) {
+            chatSidebar.style.display = 'flex';
+            console.log('✅ Chat sidebar shown on mobile');
+        }
+        if (chatMain) {
+            chatMain.classList.remove('active');
+            console.log('✅ Chat main deactivated');
+        }
+        if (mobileBackBtn) {
+            mobileBackBtn.style.display = 'none';
+            console.log('✅ Mobile back button hidden');
+        }
     }
     
     // Remove active class from all items
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
+    console.log('✅ Removed active class from chat items');
     
     // Hide reply form instead of removing it
     const existingForm = document.getElementById('fixed-reply-form');
     if (existingForm) {
         existingForm.classList.remove('active');
+        console.log('✅ Reply form hidden');
     }
     
-    // Clear any loading states
+    // Clear any loading states and ensure proper content
     if (chatMessages) {
         chatMessages.innerHTML = '';
+        console.log('✅ Chat messages cleared');
     }
+    
+    // Force refresh the page state
+    setTimeout(() => {
+        console.log('🔄 Force refreshing page state...');
+        const welcomeScreen = document.querySelector('.welcome-screen');
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        const chatMain = document.querySelector('.chat-main');
+        
+        if (welcomeScreen) welcomeScreen.style.display = 'flex';
+        if (chatSidebar) chatSidebar.style.display = 'flex';
+        if (chatMain) chatMain.classList.remove('active');
+        
+        console.log('✅ Page state refreshed');
+    }, 100);
 }
 
 function createNewTopic() {
