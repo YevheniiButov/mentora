@@ -1787,10 +1787,40 @@ function selectTopic(topicId) {
         const mobileBackBtn = document.querySelector('.mobile-back-btn');
         const chatMessages = document.querySelector('.chat-messages');
         
-        if (chatSidebar) chatSidebar.style.display = 'none';
-        if (chatMain) chatMain.classList.add('active');
-        if (mobileBackBtn) mobileBackBtn.style.display = 'flex';
-        if (chatMessages) chatMessages.style.display = 'block';
+        console.log('🔍 Before navigation:', {
+            chatSidebar: chatSidebar ? chatSidebar.style.display : 'not found',
+            chatMain: chatMain ? chatMain.classList.contains('active') : 'not found',
+            mobileBackBtn: mobileBackBtn ? mobileBackBtn.style.display : 'not found',
+            chatMessages: chatMessages ? chatMessages.style.display : 'not found'
+        });
+        
+        if (chatSidebar) {
+            chatSidebar.style.display = 'none';
+            chatSidebar.style.visibility = 'hidden';
+            chatSidebar.style.opacity = '0';
+        }
+        if (chatMain) {
+            chatMain.classList.add('active');
+            chatMain.style.display = 'flex';
+            chatMain.style.visibility = 'visible';
+            chatMain.style.opacity = '1';
+        }
+        if (mobileBackBtn) {
+            mobileBackBtn.style.display = 'flex';
+            mobileBackBtn.style.visibility = 'visible';
+        }
+        if (chatMessages) {
+            chatMessages.style.display = 'block';
+            chatMessages.style.visibility = 'visible';
+            chatMessages.style.opacity = '1';
+        }
+        
+        console.log('🔍 After navigation:', {
+            chatSidebar: chatSidebar ? chatSidebar.style.display : 'not found',
+            chatMain: chatMain ? chatMain.classList.contains('active') : 'not found',
+            mobileBackBtn: mobileBackBtn ? mobileBackBtn.style.display : 'not found',
+            chatMessages: chatMessages ? chatMessages.style.display : 'not found'
+        });
         
         console.log('📱 Mobile navigation applied');
     } else {
