@@ -1221,7 +1221,7 @@
         -webkit-overflow-scrolling: touch;
         overflow-scrolling: touch;
         touch-action: pan-y;
-        padding-bottom: 100px; /* Extra space for reply form */
+        padding-bottom: 120px; /* Extra space for reply form - increased for mobile */
     }
     
     /* Fix reply form interaction */
@@ -1245,6 +1245,39 @@
         -webkit-overflow-scrolling: touch;
         overflow-scrolling: touch;
         touch-action: pan-y;
+        /* Prevent gray screen issues */
+        min-height: 200px;
+        background: #f8f9fa;
+    }
+    
+    /* Ensure chat main is properly sized */
+    .chat-main {
+        min-height: 100vh;
+        background: #f8f9fa;
+    }
+    
+    /* Fix potential gray screen issues */
+    .chat-main.active {
+        background: #f8f9fa;
+    }
+    
+    /* Better mobile back button */
+    .mobile-back-btn {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
     
     /* Ensure no invisible overlays block interaction */
@@ -1627,11 +1660,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // Ensure proper mobile display on page load
     if (window.innerWidth <= 768) {
         // On mobile, show chat list by default
-        document.querySelector('.chat-sidebar').style.display = 'flex';
-        document.querySelector('.chat-main').classList.remove('active');
-        document.querySelector('.mobile-back-btn').style.display = 'none';
-        document.querySelector('.welcome-screen').style.display = 'none';
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        const chatMain = document.querySelector('.chat-main');
+        const mobileBackBtn = document.querySelector('.mobile-back-btn');
+        const welcomeScreen = document.querySelector('.welcome-screen');
+        
+        if (chatSidebar) chatSidebar.style.display = 'flex';
+        if (chatMain) chatMain.classList.remove('active');
+        if (mobileBackBtn) mobileBackBtn.style.display = 'none';
+        if (welcomeScreen) welcomeScreen.style.display = 'none';
     }
+    
+    // Handle browser back/forward navigation
+    window.addEventListener('popstate', function(event) {
+        // Force refresh the page state
+        setTimeout(() => {
+            if (window.innerWidth <= 768) {
+                const chatMain = document.querySelector('.chat-main');
+                if (chatMain && chatMain.classList.contains('active')) {
+                    // If we're in chat view, go back to list
+                    showChatList();
+                }
+            }
+        }, 100);
+    });
+    
+    // Handle page visibility changes (mobile browser tab switching)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // Page became visible again, refresh state
+            setTimeout(() => {
+                if (window.innerWidth <= 768) {
+                    const chatMain = document.querySelector('.chat-main');
+                    const chatSidebar = document.querySelector('.chat-sidebar');
+                    
+                    if (chatMain && chatMain.classList.contains('active') && chatSidebar) {
+                        // Ensure proper mobile state
+                        chatSidebar.style.display = 'none';
+                    }
+                }
+            }, 200);
+        }
+    });
 });
 
 function selectTopic(topicId) {
@@ -1669,14 +1739,21 @@ function selectTopic(topicId) {
 
 function showChatList() {
     // Show welcome screen and hide chat content
-    document.querySelector('.welcome-screen').style.display = 'flex';
-    document.querySelector('.chat-messages').style.display = 'none';
+    const welcomeScreen = document.querySelector('.welcome-screen');
+    const chatMessages = document.querySelector('.chat-messages');
+    
+    if (welcomeScreen) welcomeScreen.style.display = 'flex';
+    if (chatMessages) chatMessages.style.display = 'none';
     
     // Mobile navigation
     if (window.innerWidth <= 768) {
-        document.querySelector('.chat-sidebar').style.display = 'flex';
-        document.querySelector('.chat-main').classList.remove('active');
-        document.querySelector('.mobile-back-btn').style.display = 'none';
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        const chatMain = document.querySelector('.chat-main');
+        const mobileBackBtn = document.querySelector('.mobile-back-btn');
+        
+        if (chatSidebar) chatSidebar.style.display = 'flex';
+        if (chatMain) chatMain.classList.remove('active');
+        if (mobileBackBtn) mobileBackBtn.style.display = 'none';
     }
     
     // Remove active class from all items
@@ -1689,6 +1766,11 @@ function showChatList() {
     if (existingForm) {
         existingForm.classList.remove('active');
     }
+    
+    // Clear any loading states
+    if (chatMessages) {
+        chatMessages.innerHTML = '';
+    }
 }
 
 function createNewTopic() {
@@ -1696,23 +1778,83 @@ function createNewTopic() {
     window.location.href = `/${currentLang}/community/new-topic`;
 }
 
+// Force refresh page state for mobile issues
+function refreshPageState() {
+    if (window.innerWidth <= 768) {
+        const chatMain = document.querySelector('.chat-main');
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        const welcomeScreen = document.querySelector('.welcome-screen');
+        
+        if (chatMain && chatMain.classList.contains('active')) {
+            // We're in chat view, ensure proper state
+            if (chatSidebar) chatSidebar.style.display = 'none';
+            if (welcomeScreen) welcomeScreen.style.display = 'none';
+        } else {
+            // We're in list view, ensure proper state
+            if (chatSidebar) chatSidebar.style.display = 'flex';
+            if (welcomeScreen) welcomeScreen.style.display = 'flex';
+        }
+    }
+}
+
+// Add periodic state check for mobile
+setInterval(refreshPageState, 2000);
+
 function loadTopicContent(topicId) {
     const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) {
+        console.error('Chat messages container not found');
+        return;
+    }
+    
     chatMessages.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">Loading...</div>';
     
-    fetch(`/{{ lang }}/community/topic/${topicId}/content`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                displayTopicContent(data.topic, data.posts);
-            } else {
-                chatMessages.innerHTML = '<div style="text-align: center; padding: 2rem; color: #ef4444;">Error loading topic</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            chatMessages.innerHTML = '<div style="text-align: center; padding: 2rem; color: #ef4444;">Error loading topic</div>';
-        });
+    // Add retry mechanism for mobile issues
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    function attemptLoad() {
+        fetch(`/{{ lang }}/community/topic/${topicId}/content`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    displayTopicContent(data.topic, data.posts);
+                } else {
+                    throw new Error(data.error || 'Failed to load topic content');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading topic:', error);
+                retryCount++;
+                
+                if (retryCount < maxRetries) {
+                    console.log(`Retrying load (${retryCount}/${maxRetries})...`);
+                    setTimeout(attemptLoad, 1000 * retryCount); // Exponential backoff
+                } else {
+                    chatMessages.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                            <p>Error loading topic</p>
+                            <button onclick="loadTopicContent(${topicId})" style="
+                                background: #3ECDC1; 
+                                color: white; 
+                                border: none; 
+                                padding: 0.5rem 1rem; 
+                                border-radius: 6px; 
+                                cursor: pointer;
+                                margin-top: 1rem;
+                            ">Retry</button>
+                        </div>
+                    `;
+                }
+            });
+    }
+    
+    attemptLoad();
 }
 
 function displayTopicContent(topic, posts) {
