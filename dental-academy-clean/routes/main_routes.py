@@ -1025,7 +1025,7 @@ def get_topic_content(lang, topic_id):
 # API endpoints for message editing and deletion
 @main_bp.route('/api/community/message/edit', methods=['POST'])
 @login_required
-def api_edit_message():
+def api_edit_message(lang):
     """API endpoint for editing messages (topics or posts)"""
     try:
         # Debug logging
@@ -1104,7 +1104,7 @@ def api_edit_message():
 
 @main_bp.route('/api/community/message/delete', methods=['POST'])
 @login_required
-def api_delete_message():
+def api_delete_message(lang):
     """API endpoint for deleting messages (topics or posts)"""
     try:
         data = request.get_json()
@@ -1186,7 +1186,7 @@ def api_delete_message():
 
 @main_bp.route('/api/community/user/is-admin')
 @login_required
-def api_check_admin():
+def api_check_admin(lang):
     """API endpoint to check if current user is admin"""
     try:
         # Debug logging
