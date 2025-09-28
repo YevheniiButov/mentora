@@ -1225,6 +1225,42 @@
         pointer-events: auto;
     }
     
+    /* Ensure hidden elements don't block interaction */
+    .reply-form[style*="display: none"] {
+        pointer-events: none !important;
+        z-index: -1 !important;
+    }
+    
+    /* Fix mobile scrolling issues */
+    .chat-messages {
+        -webkit-overflow-scrolling: touch;
+        overflow-scrolling: touch;
+        touch-action: pan-y;
+    }
+    
+    /* Ensure no invisible overlays block interaction */
+    body {
+        touch-action: manipulation;
+    }
+    
+    /* Fix all hidden elements that might block interaction */
+    [style*="display: none"] {
+        pointer-events: none !important;
+        z-index: -1 !important;
+    }
+    
+    /* Specific fix for reaction picker when hidden */
+    .reaction-picker[style*="display: none"] {
+        pointer-events: none !important;
+        z-index: -1 !important;
+    }
+    
+    /* Fix poll form when hidden */
+    .poll-form[style*="display: none"] {
+        pointer-events: none !important;
+        z-index: -1 !important;
+    }
+    
     /* Ensure poll form is accessible */
     .poll-form {
         z-index: 150;
@@ -3396,6 +3432,28 @@ function initializeUnreadMessages() {
     // Unread messages will be loaded from server
     updateUnreadIndicators();
 }
+
+// Function to fix hidden elements blocking interaction
+function fixHiddenElementsInteraction() {
+    // Find all elements with display: none and disable pointer events
+    const hiddenElements = document.querySelectorAll('[style*="display: none"]');
+    hiddenElements.forEach(element => {
+        element.style.pointerEvents = 'none';
+        element.style.zIndex = '-1';
+    });
+    
+    // Also check for elements with class-based hiding
+    const classHiddenElements = document.querySelectorAll('.d-none, .hidden, [style*="visibility: hidden"]');
+    classHiddenElements.forEach(element => {
+        element.style.pointerEvents = 'none';
+        element.style.zIndex = '-1';
+    });
+    
+    console.log(`🔧 Fixed ${hiddenElements.length + classHiddenElements.length} hidden elements`);
+}
+
+// Call the fix function periodically to catch dynamically hidden elements
+setInterval(fixHiddenElementsInteraction, 2000);
 </script>
 
 {% endblock %} 
