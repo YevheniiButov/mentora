@@ -1757,6 +1757,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function selectTopic(topicId) {
+    console.log('🎯 Selecting topic:', topicId);
+    
     // Remove active class from all items
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
@@ -1768,15 +1770,22 @@ function selectTopic(topicId) {
         selectedItem.classList.add('active');
     }
     
-    // Hide welcome screen and show chat content
-    document.querySelector('.welcome-screen').style.display = 'none';
-    document.querySelector('.chat-messages').style.display = 'block';
-    
-    // Mobile navigation
+    // Mobile navigation - hide chat sidebar, show chat main
     if (window.innerWidth <= 768) {
-        document.querySelector('.chat-sidebar').style.display = 'none';
-        document.querySelector('.chat-main').classList.add('active');
-        document.querySelector('.mobile-back-btn').style.display = 'flex';
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        const chatMain = document.querySelector('.chat-main');
+        const mobileBackBtn = document.querySelector('.mobile-back-btn');
+        
+        if (chatSidebar) chatSidebar.style.display = 'none';
+        if (chatMain) chatMain.classList.add('active');
+        if (mobileBackBtn) mobileBackBtn.style.display = 'flex';
+        
+        console.log('📱 Mobile navigation applied');
+    } else {
+        // Desktop navigation
+        document.querySelector('.welcome-screen').style.display = 'none';
+        document.querySelector('.chat-messages').style.display = 'block';
+        console.log('🖥️ Desktop navigation applied');
     }
     
     // Show reply form
@@ -1850,6 +1859,17 @@ function showChatList() {
         existingForm.classList.remove('active');
         console.log('✅ Reply form hidden');
     }
+    
+    // Re-enable click handlers for chat items
+    document.querySelectorAll('.chat-item').forEach(item => {
+        const topicId = item.getAttribute('data-topic-id');
+        if (topicId) {
+            item.onclick = function() {
+                selectTopic(parseInt(topicId));
+            };
+        }
+    });
+    console.log('✅ Re-enabled click handlers for chat items');
     
     // Clear any loading states and ensure proper content
     const chatMessages = document.querySelector('.chat-messages');
@@ -3754,6 +3774,16 @@ function forceMobileFixes() {
         const adminLinks = document.querySelectorAll('.admin-link, .reply-btn, .pin-button');
         adminLinks.forEach(btn => {
             btn.style.cssText = 'font-size: 0.75rem !important; opacity: 0.7 !important; background: none !important; border: none !important; padding: 0 !important; margin: 0 0.5rem 0 0 !important; display: inline !important; height: auto !important; width: auto !important; line-height: 1 !important; box-shadow: none !important; outline: none !important; text-decoration: none !important;';
+        });
+        
+        // Re-enable click handlers for chat items (in case they were broken)
+        document.querySelectorAll('.chat-item').forEach(item => {
+            const topicId = item.getAttribute('data-topic-id');
+            if (topicId && !item.onclick) {
+                item.onclick = function() {
+                    selectTopic(parseInt(topicId));
+                };
+            }
         });
         
         console.log('✅ Force mobile fixes applied');
