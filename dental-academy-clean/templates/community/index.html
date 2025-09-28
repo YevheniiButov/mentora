@@ -15,6 +15,44 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
+/* AGGRESSIVE MOBILE FIXES - MUST BE FIRST */
+@media (max-width: 768px) {
+    /* Force hide welcome screen on mobile */
+    .welcome-screen {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
+    }
+    
+    /* Force show chat sidebar on mobile */
+    .chat-sidebar {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+    }
+    
+    /* Force button sizes to match text */
+    .admin-link, .reply-btn, .pin-button {
+        font-size: 0.75rem !important;
+        opacity: 0.7 !important;
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 0.5rem 0 0 !important;
+        display: inline !important;
+        height: auto !important;
+        width: auto !important;
+        line-height: 1 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        text-decoration: none !important;
+    }
+}
+
 /* SIMPLE WHATSAPP-STYLE COMMUNITY */
 .community-page {
     min-height: 100vh;
@@ -1696,6 +1734,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize current user ID
     getCurrentUserId();
+    
+    // Force apply mobile fixes
+    forceMobileFixes();
     
     // Ensure proper mobile display on page load
     if (window.innerWidth <= 768) {
@@ -3691,6 +3732,36 @@ function fixHiddenElementsInteraction() {
 
 // Call the fix function periodically to catch dynamically hidden elements
 setInterval(fixHiddenElementsInteraction, 2000);
+
+// Force apply mobile fixes
+function forceMobileFixes() {
+    if (window.innerWidth <= 768) {
+        console.log('🔧 Applying force mobile fixes...');
+        
+        // Force hide welcome screen
+        const welcomeScreen = document.querySelector('.welcome-screen');
+        if (welcomeScreen) {
+            welcomeScreen.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; top: -9999px !important;';
+        }
+        
+        // Force show chat sidebar
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        if (chatSidebar) {
+            chatSidebar.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; position: relative !important;';
+        }
+        
+        // Force button sizes
+        const adminLinks = document.querySelectorAll('.admin-link, .reply-btn, .pin-button');
+        adminLinks.forEach(btn => {
+            btn.style.cssText = 'font-size: 0.75rem !important; opacity: 0.7 !important; background: none !important; border: none !important; padding: 0 !important; margin: 0 0.5rem 0 0 !important; display: inline !important; height: auto !important; width: auto !important; line-height: 1 !important; box-shadow: none !important; outline: none !important; text-decoration: none !important;';
+        });
+        
+        console.log('✅ Force mobile fixes applied');
+    }
+}
+
+// Apply fixes periodically
+setInterval(forceMobileFixes, 1000);
 </script>
 
 {% endblock %} 
