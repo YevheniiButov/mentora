@@ -1028,12 +1028,24 @@ def get_topic_content(lang, topic_id):
 def api_edit_message():
     """API endpoint for editing messages (topics or posts)"""
     try:
+        # Debug logging
+        current_app.logger.info(f"=== EDIT MESSAGE DEBUG ===")
+        current_app.logger.info(f"Current user: {current_user}")
+        current_app.logger.info(f"Current user ID: {getattr(current_user, 'id', 'NO_ID')}")
+        current_app.logger.info(f"Current user role: {getattr(current_user, 'role', 'NO_ROLE')}")
+        current_app.logger.info(f"Is admin: {is_user_admin(current_user)}")
+        
         data = request.get_json()
+        current_app.logger.info(f"Request data: {data}")
+        
         message_id = data.get('message_id')
         message_type = data.get('message_type')  # 'topic' or 'post'
         new_content = data.get('content', '').strip()
         
+        current_app.logger.info(f"Parsed: message_id={message_id}, message_type={message_type}, content_length={len(new_content)}")
+        
         if not message_id or not message_type or not new_content:
+            current_app.logger.error(f"Missing parameters: message_id={message_id}, message_type={message_type}, content={bool(new_content)}")
             return jsonify({
                 'success': False,
                 'error': 'Missing required parameters'
@@ -1081,9 +1093,13 @@ def api_edit_message():
             
     except Exception as e:
         current_app.logger.error(f"Error editing message: {str(e)}")
+        current_app.logger.error(f"Exception type: {type(e)}")
+        import traceback
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             'success': False,
-            'error': 'Failed to update message'
+            'error': str(e),
+            'error_type': str(type(e))
         }), 500
 
 @main_bp.route('/api/community/message/delete', methods=['POST'])
