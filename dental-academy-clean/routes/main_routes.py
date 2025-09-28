@@ -1168,10 +1168,17 @@ def api_check_admin():
     """API endpoint to check if current user is admin"""
     try:
         current_app.logger.info(f"Admin check request from user {current_user.id}")
+        
+        # Check if user is admin - handle None role gracefully
+        is_admin = False
+        if hasattr(current_user, 'role') and current_user.role:
+            is_admin = current_user.role == 'admin'
+        
         result = {
             'success': True,
-            'is_admin': current_user.is_admin,
-            'user_id': current_user.id
+            'is_admin': is_admin,
+            'user_id': current_user.id,
+            'user_role': getattr(current_user, 'role', None)
         }
         current_app.logger.info(f"Admin check result: {result}")
         return jsonify(result)

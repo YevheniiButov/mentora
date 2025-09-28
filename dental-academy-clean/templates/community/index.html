@@ -2983,44 +2983,44 @@ function checkAdminStatus() {
             isCurrentUserAdmin = false;
         }
     })
-    .catch(error => {
-        console.error('❌ Error checking admin status:', error);
-        
-        // Temporary: Show admin controls for debugging if API fails
-        // In production, this should be set to false
-        isCurrentUserAdmin = true;
-        console.log('⚠️ API failed, showing admin controls for debugging');
-        
-        // Show admin controls for debugging
-        const adminControls = document.querySelectorAll('.admin-controls');
-        adminControls.forEach(control => {
-            control.style.display = 'flex';
-            // Force remove ALL borders and outlines
-            control.style.border = 'none !important';
-            control.style.backgroundColor = 'transparent !important';
-            control.style.outline = 'none !important';
-            control.style.boxShadow = 'none !important';
+        .catch(error => {
+            console.error('❌ Error checking admin status:', error);
             
-            // Force remove borders from all buttons inside
-            const buttons = control.querySelectorAll('button');
-            buttons.forEach(button => {
-                button.style.border = '0 !important';
-                button.style.outline = '0 !important';
-                button.style.boxShadow = 'none !important';
-                button.style.borderRadius = '8px !important';
-            });
-            
-            // Also show admin controls in chat list for debugging
-            const chatListAdminControls = document.querySelectorAll('.chat-item .admin-controls');
-            chatListAdminControls.forEach(control => {
-                control.style.display = 'flex';
-                control.style.border = 'none !important';
-                control.style.backgroundColor = 'transparent !important';
-                control.style.outline = 'none !important';
-                control.style.boxShadow = 'none !important';
-            });
+            // Temporary: Show admin controls if user is authenticated
+            // Check if user is logged in by looking for user ID
+            const metaUser = document.querySelector('meta[name="user-id"]');
+            if (metaUser && metaUser.getAttribute('content')) {
+                isCurrentUserAdmin = true; // Assume admin for now
+                console.log('⚠️ API failed but user is authenticated, showing admin controls temporarily');
+                
+                // Show admin controls
+                const adminControls = document.querySelectorAll('.admin-controls');
+                adminControls.forEach(control => {
+                    control.style.display = 'flex';
+                });
+                
+                // Also show admin controls in chat list
+                const chatListAdminControls = document.querySelectorAll('.chat-item .admin-controls');
+                chatListAdminControls.forEach(control => {
+                    control.style.display = 'flex';
+                });
+            } else {
+                isCurrentUserAdmin = false;
+                console.log('⚠️ API failed and user not authenticated, hiding admin controls');
+                
+                // Hide all admin controls
+                const adminControls = document.querySelectorAll('.admin-controls');
+                adminControls.forEach(control => {
+                    control.style.display = 'none';
+                });
+                
+                // Also hide admin controls in chat list
+                const chatListAdminControls = document.querySelectorAll('.chat-item .admin-controls');
+                chatListAdminControls.forEach(control => {
+                    control.style.display = 'none';
+                });
+            }
         });
-    });
 }
 
 // Admin message editing and deletion functions
