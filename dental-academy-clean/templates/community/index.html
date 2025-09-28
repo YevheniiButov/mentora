@@ -794,6 +794,7 @@
     opacity: 0.7; /* Same as message-time */
     text-decoration: none;
     margin-right: 0.5rem;
+    display: inline;
 }
 
 .reply-btn:hover {
@@ -1608,7 +1609,7 @@
                     <div class="unread-count">{{ topic.unread_count }}</div>
                                 {% endif %}
                     <div class="admin-controls" style="display: flex;">
-                        <a href="#" class="admin-link" onclick="event.stopPropagation(); deleteTopic({{ topic.id }}); return false;" title="Delete topic">Delete</a>
+                        <span class="admin-link" onclick="event.stopPropagation(); deleteTopic({{ topic.id }}); return false;" title="Delete topic">Delete</span>
                     </div>
                 </div>
             </div>
@@ -1917,11 +1918,11 @@ function displayTopicContent(topic, posts) {
                         <div class="add-reaction-btn" onclick="showReactionPicker(${topicWithPoll.id}, 'topic')" title="Add reaction">+</div>
                     </div>
                     <div class="message-actions-right">
-                        <button class="reply-btn" onclick="replyToMessage(${topicWithPoll.id}, 'topic', '${topicWithPoll.author.name}', '${topicWithPoll.content.replace(/'/g, "\\'").substring(0, 50)}...')" title="Reply">↩️</button>
-                        <a href="#" class="admin-link" onclick="togglePin(${topicWithPoll.id}, 'topic'); return false;" title="Pin/Unpin message">Pin</a>
+                        <span class="reply-btn" onclick="replyToMessage(${topicWithPoll.id}, 'topic', '${topicWithPoll.author.name}', '${topicWithPoll.content.replace(/'/g, "\\'").substring(0, 50)}...')" title="Reply">↩️</span>
+                        <span class="admin-link" onclick="togglePin(${topicWithPoll.id}, 'topic'); return false;" title="Pin/Unpin message">Pin</span>
                         <div class="admin-controls" style="display: flex;">
-                            <a href="#" class="admin-link" onclick="editMessage(${topicWithPoll.id}, 'topic'); return false;" title="Edit message">Edit</a>
-                            <a href="#" class="admin-link" onclick="deleteMessage(${topicWithPoll.id}, 'topic'); return false;" title="Delete message">Delete</a>
+                            <span class="admin-link" onclick="editMessage(${topicWithPoll.id}, 'topic'); return false;" title="Edit message">Edit</span>
+                            <span class="admin-link" onclick="deleteMessage(${topicWithPoll.id}, 'topic'); return false;" title="Delete message">Delete</span>
                         </div>
                     </div>
                 </div>
@@ -1953,11 +1954,11 @@ function displayTopicContent(topic, posts) {
                                 <div class="add-reaction-btn" onclick="showReactionPicker(${postWithDemo.id}, 'post')" title="Add reaction">+</div>
                             </div>
                             <div class="message-actions-right">
-                                <button class="reply-btn" onclick="replyToMessage(${postWithDemo.id}, 'post', '${postWithDemo.author.name}', '${postWithDemo.content.replace(/'/g, "\\'").substring(0, 50)}...')" title="Reply">↩️</button>
-                                <a href="#" class="admin-link" onclick="togglePin(${postWithDemo.id}, 'post'); return false;" title="Pin/Unpin message">Pin</a>
+                                <span class="reply-btn" onclick="replyToMessage(${postWithDemo.id}, 'post', '${postWithDemo.author.name}', '${postWithDemo.content.replace(/'/g, "\\'").substring(0, 50)}...')" title="Reply">↩️</span>
+                                <span class="admin-link" onclick="togglePin(${postWithDemo.id}, 'post'); return false;" title="Pin/Unpin message">Pin</span>
                                 <div class="admin-controls" style="display: flex;">
-                                    <a href="#" class="admin-link" onclick="editMessage(${postWithDemo.id}, 'post'); return false;" title="Edit message">Edit</a>
-                                    <a href="#" class="admin-link" onclick="deleteMessage(${postWithDemo.id}, 'post'); return false;" title="Delete message">Delete</a>
+                                    <span class="admin-link" onclick="editMessage(${postWithDemo.id}, 'post'); return false;" title="Edit message">Edit</span>
+                                    <span class="admin-link" onclick="deleteMessage(${postWithDemo.id}, 'post'); return false;" title="Delete message">Delete</span>
                                 </div>
                             </div>
                         </div>
