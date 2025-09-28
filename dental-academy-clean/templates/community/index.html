@@ -1775,10 +1775,12 @@ function selectTopic(topicId) {
         const chatSidebar = document.querySelector('.chat-sidebar');
         const chatMain = document.querySelector('.chat-main');
         const mobileBackBtn = document.querySelector('.mobile-back-btn');
+        const chatMessages = document.querySelector('.chat-messages');
         
         if (chatSidebar) chatSidebar.style.display = 'none';
         if (chatMain) chatMain.classList.add('active');
         if (mobileBackBtn) mobileBackBtn.style.display = 'flex';
+        if (chatMessages) chatMessages.style.display = 'block';
         
         console.log('📱 Mobile navigation applied');
     } else {
@@ -3789,9 +3791,7 @@ function forceMobileFixes() {
         const chatMain = document.querySelector('.chat-main');
         const chatMessages = document.getElementById('chat-messages');
         if (chatMain && chatMain.classList.contains('active') && chatMessages) {
-            chatMessages.style.display = 'block !important';
-            chatMessages.style.visibility = 'visible !important';
-            chatMessages.style.opacity = '1 !important';
+            chatMessages.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; background: #f8f9fa !important; min-height: 200px !important;';
             console.log('🔧 Forced chat messages visibility');
         }
         
