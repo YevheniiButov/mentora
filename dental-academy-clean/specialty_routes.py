@@ -615,3 +615,5 @@ def get_pilot_progress(specialty_id):
             'success': False,
             'error': 'Failed to get pilot progress'
         }), 500
+
+

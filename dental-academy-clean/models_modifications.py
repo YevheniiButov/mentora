@@ -262,3 +262,5 @@ def get_percentile_rank(self, specialty_id):
     if latest_result:
         return latest_result.percentile_rank
     return None
+
+

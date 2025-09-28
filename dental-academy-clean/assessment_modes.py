@@ -482,3 +482,5 @@ class PilotMode:
         except Exception as e:
             logger.error(f"Error triggering calibration: {str(e)}")
             db.session.rollback()
+
+

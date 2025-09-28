@@ -170,3 +170,5 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Mobile JS initialization complete');
 });
 
+
+

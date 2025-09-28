@@ -164,3 +164,5 @@ def track_registration_completion():
     except Exception as e:
         current_app.logger.error(f"Error in track_registration_completion: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+

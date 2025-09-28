@@ -519,3 +519,5 @@ class ResultsComparison:
                 'theta_std': None,
                 'average_accuracy': None
             }
+
+

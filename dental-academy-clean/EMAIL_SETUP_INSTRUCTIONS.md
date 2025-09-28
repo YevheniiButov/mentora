@@ -62,3 +62,5 @@ MAIL_PASSWORD=your-mailersend-password
 
 Нужно только добавить MAIL_USERNAME и MAIL_PASSWORD в Render Dashboard.
 
+
+

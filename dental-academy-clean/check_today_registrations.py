@@ -93,3 +93,5 @@ def check_today_registrations():
 
 if __name__ == "__main__":
     check_today_registrations()
+
+

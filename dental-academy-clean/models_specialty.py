@@ -256,3 +256,5 @@ class DiagnosticResult(db.Model):
             return "Below Average"
         else:
             return "Needs Improvement"
+
+
