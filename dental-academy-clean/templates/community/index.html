@@ -1756,17 +1756,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
 });
 
-// Global flag to prevent multiple simultaneous topic selections
-let isSelectingTopic = false;
-
 function selectTopic(topicId) {
-    // Prevent multiple simultaneous calls
-    if (isSelectingTopic) {
-        console.log('🚫 Topic selection already in progress, ignoring duplicate call');
-        return;
-    }
-    
-    isSelectingTopic = true;
     console.log('🎯 Selecting topic:', topicId);
     
     // Remove active class from all items
@@ -1782,52 +1772,10 @@ function selectTopic(topicId) {
     
     // Mobile navigation - hide chat sidebar, show chat main
     if (window.innerWidth <= 768) {
-        const chatSidebar = document.querySelector('.chat-sidebar');
-        const chatMain = document.querySelector('.chat-main');
-        const mobileBackBtn = document.querySelector('.mobile-back-btn');
-        const chatMessages = document.querySelector('.chat-messages');
-        
-        console.log('🔍 Before navigation:', {
-            chatSidebar: chatSidebar ? chatSidebar.style.display : 'not found',
-            chatMain: chatMain ? chatMain.classList.contains('active') : 'not found',
-            mobileBackBtn: mobileBackBtn ? mobileBackBtn.style.display : 'not found',
-            chatMessages: chatMessages ? chatMessages.style.display : 'not found'
-        });
-        
-        if (chatSidebar) {
-            chatSidebar.style.display = 'none';
-            chatSidebar.style.visibility = 'hidden';
-            chatSidebar.style.opacity = '0';
-        }
-        if (chatMain) {
-            // Only activate if not already active
-            if (!chatMain.classList.contains('active')) {
-                chatMain.classList.add('active');
-                chatMain.style.display = 'flex';
-                chatMain.style.visibility = 'visible';
-                chatMain.style.opacity = '1';
-                console.log('✅ Chat main activated');
-            } else {
-                console.log('⚠️ Chat main already active, skipping activation');
-            }
-        }
-        if (mobileBackBtn) {
-            mobileBackBtn.style.display = 'flex';
-            mobileBackBtn.style.visibility = 'visible';
-        }
-        if (chatMessages) {
-            chatMessages.style.display = 'block';
-            chatMessages.style.visibility = 'visible';
-            chatMessages.style.opacity = '1';
-        }
-        
-        console.log('🔍 After navigation:', {
-            chatSidebar: chatSidebar ? chatSidebar.style.display : 'not found',
-            chatMain: chatMain ? chatMain.classList.contains('active') : 'not found',
-            mobileBackBtn: mobileBackBtn ? mobileBackBtn.style.display : 'not found',
-            chatMessages: chatMessages ? chatMessages.style.display : 'not found'
-        });
-        
+        document.querySelector('.chat-sidebar').style.display = 'none';
+        document.querySelector('.chat-main').classList.add('active');
+        document.querySelector('.mobile-back-btn').style.display = 'flex';
+        document.querySelector('.chat-messages').style.display = 'block';
         console.log('📱 Mobile navigation applied');
     } else {
         // Desktop navigation
@@ -1843,25 +1791,7 @@ function selectTopic(topicId) {
     }
     
     // Load topic content
-    console.log('📥 Loading content for topic:', topicId);
     loadTopicContent(topicId);
-    
-    // Ensure all chat items have working click handlers
-    document.querySelectorAll('.chat-item').forEach(item => {
-        const itemTopicId = item.getAttribute('data-topic-id');
-        if (itemTopicId && !item.onclick) {
-            item.onclick = function() {
-                console.log('🖱️ Chat item clicked (selectTopic fix), topicId:', itemTopicId);
-                selectTopic(parseInt(itemTopicId));
-            };
-        }
-    });
-    
-    // Reset flag after a short delay to allow for navigation to complete
-    setTimeout(() => {
-        isSelectingTopic = false;
-        console.log('✅ Topic selection completed, flag reset');
-    }, 1000);
 }
 
 function showChatList() {
@@ -3843,55 +3773,7 @@ function fixHiddenElementsInteraction() {
 // Call the fix function periodically to catch dynamically hidden elements
 setInterval(fixHiddenElementsInteraction, 2000);
 
-// Force apply mobile fixes
-function forceMobileFixes() {
-    if (window.innerWidth <= 768) {
-        console.log('🔧 Applying force mobile fixes...');
-        
-        // Force hide welcome screen
-        const welcomeScreen = document.querySelector('.welcome-screen');
-        if (welcomeScreen) {
-            welcomeScreen.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; top: -9999px !important;';
-        }
-        
-        // Force show chat sidebar
-        const chatSidebar = document.querySelector('.chat-sidebar');
-        if (chatSidebar) {
-            chatSidebar.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; position: relative !important;';
-        }
-        
-        // Ensure chat messages are visible when in topic view
-        const chatMain = document.querySelector('.chat-main');
-        const chatMessages = document.getElementById('chat-messages');
-        if (chatMain && chatMain.classList.contains('active') && chatMessages) {
-            chatMessages.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; background: #f8f9fa !important; min-height: 200px !important;';
-            console.log('🔧 Forced chat messages visibility');
-        }
-        
-        // Force button sizes
-        const adminLinks = document.querySelectorAll('.admin-link, .reply-btn, .pin-button');
-        adminLinks.forEach(btn => {
-            btn.style.cssText = 'font-size: 0.75rem !important; opacity: 0.7 !important; background: none !important; border: none !important; padding: 0 !important; margin: 0 0.5rem 0 0 !important; display: inline !important; height: auto !important; width: auto !important; line-height: 1 !important; box-shadow: none !important; outline: none !important; text-decoration: none !important;';
-        });
-        
-        // Re-enable click handlers for chat items (in case they were broken)
-        document.querySelectorAll('.chat-item').forEach(item => {
-            const topicId = item.getAttribute('data-topic-id');
-            if (topicId && !item.onclick) {
-                // Only add onclick if it doesn't exist
-                item.onclick = function() {
-                    console.log('🖱️ Chat item clicked (forceMobileFixes), topicId:', topicId);
-                    selectTopic(parseInt(topicId));
-                };
-            }
-        });
-        
-        console.log('✅ Force mobile fixes applied');
-    }
-}
-
-// Apply fixes periodically (disabled to prevent conflicts with navigation)
-// setInterval(forceMobileFixes, 1000);
+// Simple mobile fixes - no complex logic
 </script>
 
 {% endblock %} 
