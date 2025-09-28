@@ -2,9 +2,10 @@
 
 from flask import Blueprint, render_template, g, send_from_directory, request, session, current_app, jsonify, redirect, url_for
 from flask_login import current_user, login_required
-from models import LearningPath, Subject, Module, Lesson, UserProgress
+from models import LearningPath, Subject, Module, Lesson, UserProgress, ForumTopic, ForumPost
 from extensions import db
 from sqlalchemy import or_
+from datetime import datetime, timezone
 
 def is_user_admin(user):
     """Helper function to check if user is admin"""
