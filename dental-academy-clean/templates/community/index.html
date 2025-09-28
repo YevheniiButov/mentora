@@ -1772,10 +1772,19 @@ function selectTopic(topicId) {
     
     // Mobile navigation - hide chat sidebar, show chat main
     if (window.innerWidth <= 768) {
-        document.querySelector('.chat-sidebar').style.display = 'none';
-        document.querySelector('.chat-main').classList.add('active');
-        document.querySelector('.mobile-back-btn').style.display = 'flex';
-        document.querySelector('.chat-messages').style.display = 'block';
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        const chatMain = document.querySelector('.chat-main');
+        const mobileBackBtn = document.querySelector('.mobile-back-btn');
+        const chatMessages = document.querySelector('.chat-messages');
+        
+        if (chatSidebar) chatSidebar.style.display = 'none';
+        if (chatMain) chatMain.classList.add('active');
+        if (mobileBackBtn) mobileBackBtn.style.display = 'flex';
+        if (chatMessages) {
+            chatMessages.style.display = 'block';
+            chatMessages.style.visibility = 'visible';
+            chatMessages.style.opacity = '1';
+        }
         console.log('📱 Mobile navigation applied');
     } else {
         // Desktop navigation
@@ -2099,6 +2108,9 @@ function displayTopicContent(topic, posts) {
     });
     
     console.log('📄 Setting chat messages HTML, length:', messagesHTML.length);
+    
+    // Fix gray screen after content is loaded
+    setTimeout(fixGrayScreen, 100);
     chatMessages.innerHTML = messagesHTML;
     
     // Apply colorful usernames after content is loaded
@@ -3773,7 +3785,21 @@ function fixHiddenElementsInteraction() {
 // Call the fix function periodically to catch dynamically hidden elements
 setInterval(fixHiddenElementsInteraction, 2000);
 
-// Simple mobile fixes - no complex logic
+// Simple function to fix gray screen
+function fixGrayScreen() {
+    const chatMain = document.querySelector('.chat-main');
+    const chatMessages = document.querySelector('.chat-messages');
+    
+    if (chatMain && chatMain.classList.contains('active') && chatMessages) {
+        chatMessages.style.display = 'block';
+        chatMessages.style.visibility = 'visible';
+        chatMessages.style.opacity = '1';
+        console.log('🔧 Fixed gray screen');
+    }
+}
+
+// Apply fix after content loads
+setTimeout(fixGrayScreen, 500);
 </script>
 
 {% endblock %} 
