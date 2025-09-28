@@ -3192,6 +3192,14 @@ function saveMessageEdit(messageKey) {
         .replace(/\s*Pin\s*/g, '') // Remove Pin button text
         .replace(/\s*Reply\s*/g, '') // Remove Reply button text
         .replace(/\s*Admin\s*/g, '') // Remove Admin text
+        .replace(/\s*Edit\s*/g, '') // Remove Edit text (without emoji)
+        .replace(/\s*Delete\s*/g, '') // Remove Delete text (without emoji)
+        .replace(/\s*\+\s*Edit\s*/g, '') // Remove "+Edit" pattern
+        .replace(/\s*\+\s*Delete\s*/g, '') // Remove "+Delete" pattern
+        .replace(/\s*\+\s*/g, '') // Remove standalone "+" symbols
+        .replace(/\n\s*\n\s*\n/g, '\n\n') // Clean up multiple newlines
+        .replace(/\s+\n/g, '\n') // Remove trailing spaces before newlines
+        .replace(/\n\s+/g, '\n') // Remove leading spaces after newlines
         .trim();
     
     console.log(`🧹 Cleaned content: ${newContent.substring(0, 100)}...`);
