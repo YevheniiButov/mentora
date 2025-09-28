@@ -961,6 +961,35 @@
     outline: none !important;
 }
 
+/* Admin links styling - simple text links */
+.admin-link {
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.admin-link:hover {
+    color: #007bff;
+    text-decoration: none;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.admin-link:focus {
+    outline: none;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.admin-link:active {
+    color: #0056b3;
+    text-decoration: none;
+}
+
 /* Nuclear option: remove ALL borders from ALL elements in admin controls */
 .admin-controls * {
     border: none !important;
@@ -1481,7 +1510,7 @@
                     <div class="unread-count">{{ topic.unread_count }}</div>
                                 {% endif %}
                     <div class="admin-controls" style="display: none;">
-                        <button class="admin-delete-btn" onclick="event.stopPropagation(); deleteTopic({{ topic.id }})" title="Delete topic">🗑️</button>
+                        <a href="#" class="admin-link" onclick="event.stopPropagation(); deleteTopic({{ topic.id }}); return false;" title="Delete topic">🗑️ Delete</a>
                     </div>
                 </div>
             </div>
@@ -1650,10 +1679,10 @@ function displayTopicContent(topic, posts) {
                     </div>
                     <div class="message-actions-right">
                         <button class="reply-btn" onclick="replyToMessage(${topicWithPoll.id}, 'topic', '${topicWithPoll.author.name}', '${topicWithPoll.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
-                        <button class="pin-button" onclick="togglePin(${topicWithPoll.id}, 'topic')" title="Pin/Unpin message">📌</button>
+                        <a href="#" class="admin-link" onclick="togglePin(${topicWithPoll.id}, 'topic'); return false;" title="Pin/Unpin message">📌 Pin</a>
                         <div class="admin-controls">
-                            <button class="admin-edit-btn" onclick="editMessage(${topicWithPoll.id}, 'topic')" title="Edit message">✏️ Edit</button>
-                            <button class="admin-delete-btn" onclick="deleteMessage(${topicWithPoll.id}, 'topic')" title="Delete message">🗑️ Delete</button>
+                            <a href="#" class="admin-link" onclick="editMessage(${topicWithPoll.id}, 'topic'); return false;" title="Edit message">✏️ Edit</a>
+                            <a href="#" class="admin-link" onclick="deleteMessage(${topicWithPoll.id}, 'topic'); return false;" title="Delete message">🗑️ Delete</a>
                         </div>
                     </div>
                 </div>
@@ -1686,10 +1715,10 @@ function displayTopicContent(topic, posts) {
                             </div>
                             <div class="message-actions-right">
                                 <button class="reply-btn" onclick="replyToMessage(${postWithDemo.id}, 'post', '${postWithDemo.author.name}', '${postWithDemo.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
-                                <button class="pin-button" onclick="togglePin(${postWithDemo.id}, 'post')" title="Pin/Unpin message">📌</button>
+                                <a href="#" class="admin-link" onclick="togglePin(${postWithDemo.id}, 'post'); return false;" title="Pin/Unpin message">📌 Pin</a>
                                 <div class="admin-controls">
-                                    <button class="admin-edit-btn" onclick="editMessage(${postWithDemo.id}, 'post')" title="Edit message">✏️ Edit</button>
-                                    <button class="admin-delete-btn" onclick="deleteMessage(${postWithDemo.id}, 'post')" title="Delete message">🗑️ Delete</button>
+                                    <a href="#" class="admin-link" onclick="editMessage(${postWithDemo.id}, 'post'); return false;" title="Edit message">✏️ Edit</a>
+                                    <a href="#" class="admin-link" onclick="deleteMessage(${postWithDemo.id}, 'post'); return false;" title="Delete message">🗑️ Delete</a>
                                 </div>
                             </div>
                         </div>
@@ -1869,9 +1898,9 @@ function deleteTopic(topicId) {
     console.log('🌐 Deleting topic via URL:', url);
     
     fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
         }
     })
@@ -1884,10 +1913,10 @@ function deleteTopic(topicId) {
         
         return response.json();
     })
-    .then(data => {
+        .then(data => {
         console.log('📊 Delete response data:', data);
         
-        if (data.success) {
+            if (data.success) {
             // Remove topic from list with animation
             const topicElement = document.querySelector(`[data-topic-id="${topicId}"]`);
             if (topicElement) {
@@ -1903,12 +1932,12 @@ function deleteTopic(topicId) {
             
             // Show success message
             showDeleteFeedback('Topic deleted successfully!', 'success');
-        } else {
+            } else {
             console.error('❌ Delete failed:', data.error);
             showDeleteFeedback(`Failed to delete topic: ${data.error}`, 'error');
-        }
-    })
-    .catch(error => {
+            }
+        })
+        .catch(error => {
         console.error('❌ Delete error:', error);
         showDeleteFeedback('Network error. Please try again.', 'error');
     });
