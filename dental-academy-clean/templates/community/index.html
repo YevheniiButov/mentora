@@ -1757,184 +1757,70 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function selectTopic(topicId) {
-    console.log('🎯 Selecting topic:', topicId);
+    console.log('🎯 Opening chat:', topicId);
     
-    // Remove active class from all items
+    // Mark selected item as active
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
-    
-    // Add active class to selected item
     const selectedItem = document.querySelector(`[data-topic-id="${topicId}"]`);
     if (selectedItem) {
         selectedItem.classList.add('active');
     }
     
-    // Mobile navigation - hide chat sidebar, show chat main
+    // Show chat (like in WhatsApp/Telegram)
     if (window.innerWidth <= 768) {
-        const chatSidebar = document.querySelector('.chat-sidebar');
-        const chatMain = document.querySelector('.chat-main');
-        const mobileBackBtn = document.querySelector('.mobile-back-btn');
-        const chatMessages = document.querySelector('.chat-messages');
-        
-        if (chatSidebar) chatSidebar.style.display = 'none';
-        if (chatMain) chatMain.classList.add('active');
-        if (mobileBackBtn) mobileBackBtn.style.display = 'flex';
-        if (chatMessages) {
-            chatMessages.style.display = 'block';
-            chatMessages.style.visibility = 'visible';
-            chatMessages.style.opacity = '1';
-        }
-        console.log('📱 Mobile navigation applied');
+        // Mobile: hide sidebar, show chat
+        document.querySelector('.chat-sidebar').style.display = 'none';
+        document.querySelector('.chat-main').style.display = 'block';
+        document.querySelector('.mobile-back-btn').style.display = 'flex';
     } else {
-        // Desktop navigation
+        // Desktop: hide welcome, show chat
         document.querySelector('.welcome-screen').style.display = 'none';
-        document.querySelector('.chat-messages').style.display = 'block';
-        console.log('🖥️ Desktop navigation applied');
+        document.querySelector('.chat-main').style.display = 'block';
     }
     
     // Show reply form
-    const existingForm = document.getElementById('fixed-reply-form');
-    if (existingForm) {
-        existingForm.classList.add('active');
+    const replyForm = document.getElementById('fixed-reply-form');
+    if (replyForm) {
+        replyForm.classList.add('active');
     }
     
-    // Load topic content
+    // Load content
     loadTopicContent(topicId);
 }
 
 function showChatList() {
-    console.log('🔄 Showing chat list...');
+    console.log('🔄 Back to chat list');
     
-    // Mobile navigation - show chat sidebar, hide chat main
+    // Hide chat, show list (like WhatsApp back button)
     if (window.innerWidth <= 768) {
-        const chatSidebar = document.querySelector('.chat-sidebar');
-        const chatMain = document.querySelector('.chat-main');
-        const mobileBackBtn = document.querySelector('.mobile-back-btn');
-        const welcomeScreen = document.querySelector('.welcome-screen');
-        const chatMessages = document.querySelector('.chat-messages');
-        
-        if (chatSidebar) {
-            chatSidebar.style.display = 'flex';
-            chatSidebar.style.visibility = 'visible';
-            chatSidebar.style.opacity = '1';
-            console.log('✅ Chat sidebar shown on mobile');
-        }
-        if (chatMain) {
-            if (chatMain.classList.contains('active')) {
-                chatMain.classList.remove('active');
-                chatMain.style.display = 'none';
-                chatMain.style.visibility = 'hidden';
-                chatMain.style.opacity = '0';
-                console.log('✅ Chat main deactivated');
-            } else {
-                console.log('⚠️ Chat main already deactivated, skipping');
-            }
-        }
-        if (mobileBackBtn) {
-            mobileBackBtn.style.display = 'none';
-            console.log('✅ Mobile back button hidden');
-        }
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'none';
-            console.log('✅ Welcome screen hidden on mobile');
-        }
-        if (chatMessages) {
-            chatMessages.style.display = 'none';
-            console.log('✅ Chat messages hidden');
-        }
+        // Mobile: show sidebar, hide chat
+        document.querySelector('.chat-sidebar').style.display = 'flex';
+        document.querySelector('.chat-main').style.display = 'none';
+        document.querySelector('.mobile-back-btn').style.display = 'none';
     } else {
-        // Desktop navigation - show welcome screen
-        const welcomeScreen = document.querySelector('.welcome-screen');
-        const chatMessages = document.querySelector('.chat-messages');
-        
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'flex';
-            console.log('✅ Welcome screen shown on desktop');
-        }
-        if (chatMessages) {
-            chatMessages.style.display = 'none';
-            console.log('✅ Chat messages hidden');
-        }
+        // Desktop: show welcome, hide chat
+        document.querySelector('.welcome-screen').style.display = 'flex';
+        document.querySelector('.chat-main').style.display = 'none';
     }
     
-    // Remove active class from all items
+    // Remove active selection
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
-    console.log('✅ Removed active class from chat items');
     
-    // Hide reply form instead of removing it
-    const existingForm = document.getElementById('fixed-reply-form');
-    if (existingForm) {
-        existingForm.classList.remove('active');
-        console.log('✅ Reply form hidden');
+    // Hide reply form
+    const replyForm = document.getElementById('fixed-reply-form');
+    if (replyForm) {
+        replyForm.classList.remove('active');
     }
     
-    // Re-enable click handlers for chat items with simplified approach
-    document.querySelectorAll('.chat-item').forEach(item => {
-        const topicId = item.getAttribute('data-topic-id');
-        if (topicId) {
-            // Remove any existing event listeners
-            item.onclick = null;
-            // Add single event listener
-            item.onclick = function() {
-                console.log('🖱️ Chat item clicked, topicId:', topicId);
-                selectTopic(parseInt(topicId));
-            };
-        }
-    });
-    console.log('✅ Re-enabled click handlers for chat items (onclick only)');
-    
-    // Clear any loading states and ensure proper content
+    // Clear chat content
     const chatMessages = document.querySelector('.chat-messages');
     if (chatMessages) {
         chatMessages.innerHTML = '';
-        console.log('✅ Chat messages cleared');
     }
-    
-    // Force refresh the page state multiple times to prevent gray screen
-    setTimeout(() => {
-        console.log('🔄 Force refreshing page state...');
-        const welcomeScreen = document.querySelector('.welcome-screen');
-        const chatSidebar = document.querySelector('.chat-sidebar');
-        const chatMain = document.querySelector('.chat-main');
-        
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'flex';
-            welcomeScreen.style.visibility = 'visible';
-            welcomeScreen.style.opacity = '1';
-        }
-        if (chatSidebar) {
-            chatSidebar.style.display = 'flex';
-            chatSidebar.style.visibility = 'visible';
-            chatSidebar.style.opacity = '1';
-        }
-        if (chatMain) {
-            chatMain.classList.remove('active');
-            chatMain.style.display = 'none';
-        }
-        
-        console.log('✅ Page state refreshed');
-    }, 50);
-    
-    // Additional refresh after a longer delay
-    setTimeout(() => {
-        console.log('🔄 Second refresh...');
-        const welcomeScreen = document.querySelector('.welcome-screen');
-        const chatSidebar = document.querySelector('.chat-sidebar');
-        
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'flex !important';
-            welcomeScreen.style.visibility = 'visible !important';
-        }
-        if (chatSidebar) {
-            chatSidebar.style.display = 'flex !important';
-            chatSidebar.style.visibility = 'visible !important';
-        }
-        
-        console.log('✅ Second refresh completed');
-    }, 200);
 }
 
 function createNewTopic() {
@@ -2108,9 +1994,6 @@ function displayTopicContent(topic, posts) {
     });
     
     console.log('📄 Setting chat messages HTML, length:', messagesHTML.length);
-    
-    // Fix gray screen after content is loaded
-    setTimeout(fixGrayScreen, 100);
     chatMessages.innerHTML = messagesHTML;
     
     // Apply colorful usernames after content is loaded
@@ -3785,21 +3668,7 @@ function fixHiddenElementsInteraction() {
 // Call the fix function periodically to catch dynamically hidden elements
 setInterval(fixHiddenElementsInteraction, 2000);
 
-// Simple function to fix gray screen
-function fixGrayScreen() {
-    const chatMain = document.querySelector('.chat-main');
-    const chatMessages = document.querySelector('.chat-messages');
-    
-    if (chatMain && chatMain.classList.contains('active') && chatMessages) {
-        chatMessages.style.display = 'block';
-        chatMessages.style.visibility = 'visible';
-        chatMessages.style.opacity = '1';
-        console.log('🔧 Fixed gray screen');
-    }
-}
-
-// Apply fix after content loads
-setTimeout(fixGrayScreen, 500);
+// Simple navigation - no complex fixes needed
 </script>
 
 {% endblock %} 
