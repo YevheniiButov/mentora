@@ -1800,10 +1800,16 @@ function selectTopic(topicId) {
             chatSidebar.style.opacity = '0';
         }
         if (chatMain) {
-            chatMain.classList.add('active');
-            chatMain.style.display = 'flex';
-            chatMain.style.visibility = 'visible';
-            chatMain.style.opacity = '1';
+            // Only activate if not already active
+            if (!chatMain.classList.contains('active')) {
+                chatMain.classList.add('active');
+                chatMain.style.display = 'flex';
+                chatMain.style.visibility = 'visible';
+                chatMain.style.opacity = '1';
+                console.log('✅ Chat main activated');
+            } else {
+                console.log('⚠️ Chat main already active, skipping activation');
+            }
         }
         if (mobileBackBtn) {
             mobileBackBtn.style.display = 'flex';
@@ -1876,9 +1882,15 @@ function showChatList() {
             console.log('✅ Chat sidebar shown on mobile');
         }
         if (chatMain) {
-            chatMain.classList.remove('active');
-            chatMain.style.display = 'none';
-            console.log('✅ Chat main deactivated');
+            if (chatMain.classList.contains('active')) {
+                chatMain.classList.remove('active');
+                chatMain.style.display = 'none';
+                chatMain.style.visibility = 'hidden';
+                chatMain.style.opacity = '0';
+                console.log('✅ Chat main deactivated');
+            } else {
+                console.log('⚠️ Chat main already deactivated, skipping');
+            }
         }
         if (mobileBackBtn) {
             mobileBackBtn.style.display = 'none';
@@ -3878,8 +3890,8 @@ function forceMobileFixes() {
     }
 }
 
-// Apply fixes periodically
-setInterval(forceMobileFixes, 1000);
+// Apply fixes periodically (disabled to prevent conflicts with navigation)
+// setInterval(forceMobileFixes, 1000);
 </script>
 
 {% endblock %} 
