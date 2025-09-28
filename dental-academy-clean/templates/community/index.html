@@ -783,18 +783,23 @@
 }
 
 .reply-btn {
-    background: #6c757d;
-    color: white;
+    background: none;
+    color: #6c757d;
     border: none;
-    padding: 0.125rem 0.25rem;
-    border-radius: 2px;
+    padding: 0;
+    border-radius: 0;
     cursor: pointer;
-    font-size: 0.35rem;
-    transition: background 0.2s ease;
+    font-size: 0.75rem; /* Same as message-time */
+    transition: color 0.2s ease;
+    opacity: 0.7; /* Same as message-time */
+    text-decoration: none;
+    margin-right: 0.5rem;
 }
 
 .reply-btn:hover {
-    background: #5a6268;
+    background: none;
+    color: #007bff;
+    opacity: 1;
 }
 
 /* New message indicators */
@@ -837,40 +842,45 @@
 }
 
 .pin-button {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: none;
     border: none;
-    border-radius: 4px;
-    padding: 4px 6px;
-    font-size: 6px;
-    font-weight: 600;
+    border-radius: 0;
+    padding: 0;
+    font-size: 0.75rem; /* Same as message-time */
+    font-weight: 400;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     color: #6c757d;
-    display: flex;
+    display: inline;
     align-items: center;
-    gap: 3px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    margin-left: 4px;
+    gap: 0;
+    box-shadow: none;
+    margin-left: 0.5rem;
+    opacity: 0.7; /* Same as message-time */
+    text-decoration: none;
 }
 
 .pin-button:hover {
-    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    background: none;
     color: #007bff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+    transform: none;
+    box-shadow: none;
+    opacity: 1;
 }
 
 .pin-button.pinned {
-    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-    color: #856404;
+    background: none;
+    color: #ffd700;
     font-weight: bold;
-    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
+    box-shadow: none;
+    opacity: 1;
 }
 
 .pin-button.pinned:hover {
-    background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.5);
+    background: none;
+    transform: none;
+    box-shadow: none;
+    opacity: 1;
 }
 
 /* CSS for interactive poll voting */
@@ -967,12 +977,12 @@
 .admin-link {
     color: #6c757d !important;
     text-decoration: none !important;
-    font-size: 7px !important;
-    font-weight: 300 !important;
-    padding: 1px 2px !important;
-    border-radius: 2px !important;
+    font-size: 0.75rem !important; /* Same as message-time */
+    font-weight: 400 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
     transition: all 0.2s ease !important;
-    display: inline-block !important;
+    display: inline !important;
     background: none !important;
     border: none !important;
     outline: none !important;
@@ -980,7 +990,8 @@
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
-    margin-right: 0 !important;
+    margin-right: 0.5rem !important;
+    opacity: 0.7 !important; /* Same as message-time */
 }
 
 /* Admin controls container - remove gaps between buttons */
@@ -1755,19 +1766,48 @@ function showChatList() {
         console.log('✅ Chat messages cleared');
     }
     
-    // Force refresh the page state
+    // Force refresh the page state multiple times to prevent gray screen
     setTimeout(() => {
         console.log('🔄 Force refreshing page state...');
         const welcomeScreen = document.querySelector('.welcome-screen');
         const chatSidebar = document.querySelector('.chat-sidebar');
         const chatMain = document.querySelector('.chat-main');
         
-        if (welcomeScreen) welcomeScreen.style.display = 'flex';
-        if (chatSidebar) chatSidebar.style.display = 'flex';
-        if (chatMain) chatMain.classList.remove('active');
+        if (welcomeScreen) {
+            welcomeScreen.style.display = 'flex';
+            welcomeScreen.style.visibility = 'visible';
+            welcomeScreen.style.opacity = '1';
+        }
+        if (chatSidebar) {
+            chatSidebar.style.display = 'flex';
+            chatSidebar.style.visibility = 'visible';
+            chatSidebar.style.opacity = '1';
+        }
+        if (chatMain) {
+            chatMain.classList.remove('active');
+            chatMain.style.display = 'none';
+        }
         
         console.log('✅ Page state refreshed');
-    }, 100);
+    }, 50);
+    
+    // Additional refresh after a longer delay
+    setTimeout(() => {
+        console.log('🔄 Second refresh...');
+        const welcomeScreen = document.querySelector('.welcome-screen');
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        
+        if (welcomeScreen) {
+            welcomeScreen.style.display = 'flex !important';
+            welcomeScreen.style.visibility = 'visible !important';
+        }
+        if (chatSidebar) {
+            chatSidebar.style.display = 'flex !important';
+            chatSidebar.style.visibility = 'visible !important';
+        }
+        
+        console.log('✅ Second refresh completed');
+    }, 200);
 }
 
 function createNewTopic() {
@@ -1809,21 +1849,21 @@ function loadTopicContent(topicId) {
     const maxRetries = 3;
     
     function attemptLoad() {
-        fetch(`/{{ lang }}/community/topic/${topicId}/content`)
+    fetch(`/{{ lang }}/community/topic/${topicId}/content`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 return response.json();
             })
-            .then(data => {
-                if (data.success) {
-                    displayTopicContent(data.topic, data.posts);
-                } else {
+        .then(data => {
+            if (data.success) {
+                displayTopicContent(data.topic, data.posts);
+            } else {
                     throw new Error(data.error || 'Failed to load topic content');
-                }
-            })
-            .catch(error => {
+            }
+        })
+        .catch(error => {
                 console.error('Error loading topic:', error);
                 retryCount++;
                 
@@ -1877,7 +1917,7 @@ function displayTopicContent(topic, posts) {
                         <div class="add-reaction-btn" onclick="showReactionPicker(${topicWithPoll.id}, 'topic')" title="Add reaction">+</div>
                     </div>
                     <div class="message-actions-right">
-                        <button class="reply-btn" onclick="replyToMessage(${topicWithPoll.id}, 'topic', '${topicWithPoll.author.name}', '${topicWithPoll.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
+                        <button class="reply-btn" onclick="replyToMessage(${topicWithPoll.id}, 'topic', '${topicWithPoll.author.name}', '${topicWithPoll.content.replace(/'/g, "\\'").substring(0, 50)}...')" title="Reply">↩️</button>
                         <a href="#" class="admin-link" onclick="togglePin(${topicWithPoll.id}, 'topic'); return false;" title="Pin/Unpin message">Pin</a>
                         <div class="admin-controls" style="display: flex;">
                             <a href="#" class="admin-link" onclick="editMessage(${topicWithPoll.id}, 'topic'); return false;" title="Edit message">Edit</a>
@@ -1913,7 +1953,7 @@ function displayTopicContent(topic, posts) {
                                 <div class="add-reaction-btn" onclick="showReactionPicker(${postWithDemo.id}, 'post')" title="Add reaction">+</div>
                             </div>
                             <div class="message-actions-right">
-                                <button class="reply-btn" onclick="replyToMessage(${postWithDemo.id}, 'post', '${postWithDemo.author.name}', '${postWithDemo.content.replace(/'/g, "\\'").substring(0, 50)}...')">Reply</button>
+                                <button class="reply-btn" onclick="replyToMessage(${postWithDemo.id}, 'post', '${postWithDemo.author.name}', '${postWithDemo.content.replace(/'/g, "\\'").substring(0, 50)}...')" title="Reply">↩️</button>
                                 <a href="#" class="admin-link" onclick="togglePin(${postWithDemo.id}, 'post'); return false;" title="Pin/Unpin message">Pin</a>
                                 <div class="admin-controls" style="display: flex;">
                                     <a href="#" class="admin-link" onclick="editMessage(${postWithDemo.id}, 'post'); return false;" title="Edit message">Edit</a>
