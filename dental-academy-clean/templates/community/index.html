@@ -1756,7 +1756,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
 });
 
+// Global flag to prevent multiple simultaneous topic selections
+let isSelectingTopic = false;
+
 function selectTopic(topicId) {
+    // Prevent multiple simultaneous calls
+    if (isSelectingTopic) {
+        console.log('🚫 Topic selection already in progress, ignoring duplicate call');
+        return;
+    }
+    
+    isSelectingTopic = true;
     console.log('🎯 Selecting topic:', topicId);
     
     // Remove active class from all items
@@ -1810,6 +1820,12 @@ function selectTopic(topicId) {
             };
         }
     });
+    
+    // Reset flag after a short delay to allow for navigation to complete
+    setTimeout(() => {
+        isSelectingTopic = false;
+        console.log('✅ Topic selection completed, flag reset');
+    }, 1000);
 }
 
 function showChatList() {
@@ -1874,26 +1890,20 @@ function showChatList() {
         console.log('✅ Reply form hidden');
     }
     
-    // Re-enable click handlers for chat items with more robust approach
+    // Re-enable click handlers for chat items with simplified approach
     document.querySelectorAll('.chat-item').forEach(item => {
         const topicId = item.getAttribute('data-topic-id');
         if (topicId) {
             // Remove any existing event listeners
             item.onclick = null;
-            // Add new event listener
+            // Add single event listener
             item.onclick = function() {
                 console.log('🖱️ Chat item clicked, topicId:', topicId);
                 selectTopic(parseInt(topicId));
             };
-            // Also add event listener as backup
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('🖱️ Chat item clicked (addEventListener), topicId:', topicId);
-                selectTopic(parseInt(topicId));
-            });
         }
     });
-    console.log('✅ Re-enabled click handlers for chat items (both onclick and addEventListener)');
+    console.log('✅ Re-enabled click handlers for chat items (onclick only)');
     
     // Clear any loading states and ensure proper content
     const chatMessages = document.querySelector('.chat-messages');
@@ -3825,21 +3835,12 @@ function forceMobileFixes() {
         // Re-enable click handlers for chat items (in case they were broken)
         document.querySelectorAll('.chat-item').forEach(item => {
             const topicId = item.getAttribute('data-topic-id');
-            if (topicId) {
-                // Always re-enable onclick
+            if (topicId && !item.onclick) {
+                // Only add onclick if it doesn't exist
                 item.onclick = function() {
                     console.log('🖱️ Chat item clicked (forceMobileFixes), topicId:', topicId);
                     selectTopic(parseInt(topicId));
                 };
-                // Also ensure addEventListener is working
-                if (!item.hasAttribute('data-listener-added')) {
-                    item.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        console.log('🖱️ Chat item clicked (forceMobileFixes addEventListener), topicId:', topicId);
-                        selectTopic(parseInt(topicId));
-                    });
-                    item.setAttribute('data-listener-added', 'true');
-                }
             }
         });
         
