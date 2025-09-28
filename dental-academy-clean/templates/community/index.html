@@ -1738,9 +1738,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize current user ID with delay to ensure meta-tag is loaded
     setTimeout(() => {
         getCurrentUserId();
-    }, 100);
+        console.log('🔍 User ID after delay:', window.currentUserId);
+        
+        // Force re-initialize if still null
+        if (currentUserId === null) {
+            const metaUser = document.querySelector('meta[name="user-id"]');
+            if (metaUser && metaUser.getAttribute('content')) {
+                currentUserId = metaUser.getAttribute('content');
+                window.currentUserId = currentUserId;
+                console.log('🔄 Force-set User ID:', currentUserId);
+            }
+        }
+    }, 500);
     
     // Mobile fixes applied inline below
+    
+    // Force show chat content if it's hidden (gray screen fix)
+    setTimeout(() => {
+        const chatMessages = document.querySelector('.chat-messages');
+        if (chatMessages && chatMessages.style.display === 'none') {
+            chatMessages.style.display = 'block';
+            console.log('🔧 Force-showed chat messages');
+        }
+    }, 1000);
     
     // Ensure proper mobile display on page load
     if (window.innerWidth <= 768) {
