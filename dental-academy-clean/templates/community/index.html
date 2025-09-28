@@ -1666,6 +1666,9 @@ document.addEventListener('DOMContentLoaded', function() {
         replyForm.classList.remove('active');
     }
     
+    // Initialize current user ID
+    getCurrentUserId();
+    
     // Ensure proper mobile display on page load
     if (window.innerWidth <= 768) {
         // On mobile, show chat list by default
@@ -1780,6 +1783,7 @@ function showChatList() {
     }
     
     // Clear any loading states and ensure proper content
+    const chatMessages = document.querySelector('.chat-messages');
     if (chatMessages) {
         chatMessages.innerHTML = '';
         console.log('✅ Chat messages cleared');
@@ -2430,17 +2434,17 @@ let currentUserId = null;
 // Get current user ID (this should be set from server-side data)
 function getCurrentUserId() {
     if (currentUserId === null) {
-        // Try to get from a data attribute or global variable
-        const userElement = document.querySelector('[data-user-id]');
-        if (userElement) {
-            currentUserId = userElement.getAttribute('data-user-id');
-            console.log('Found user ID from data attribute:', currentUserId);
+        // Try to get from meta tag first
+        const metaUser = document.querySelector('meta[name="user-id"]');
+        if (metaUser && metaUser.getAttribute('content')) {
+            currentUserId = metaUser.getAttribute('content');
+            console.log('Found user ID from meta tag:', currentUserId);
         } else {
-            // Try to get from meta tag
-            const metaUser = document.querySelector('meta[name="user-id"]');
-            if (metaUser) {
-                currentUserId = metaUser.getAttribute('content');
-                console.log('Found user ID from meta tag:', currentUserId);
+            // Try to get from a data attribute
+            const userElement = document.querySelector('[data-user-id]');
+            if (userElement) {
+                currentUserId = userElement.getAttribute('data-user-id');
+                console.log('Found user ID from data attribute:', currentUserId);
             } else {
                 // Fallback: try to get from window object
                 currentUserId = window.currentUserId || null;
@@ -2448,6 +2452,7 @@ function getCurrentUserId() {
             }
         }
     }
+    console.log('User ID from window object:', currentUserId);
     return currentUserId;
 }
 
