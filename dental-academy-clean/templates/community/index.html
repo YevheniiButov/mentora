@@ -1735,11 +1735,12 @@ document.addEventListener('DOMContentLoaded', function() {
         replyForm.classList.remove('active');
     }
     
-    // Initialize current user ID
-    getCurrentUserId();
+    // Initialize current user ID with delay to ensure meta-tag is loaded
+    setTimeout(() => {
+        getCurrentUserId();
+    }, 100);
     
-    // Force apply mobile fixes
-    forceMobileFixes();
+    // Mobile fixes applied inline below
     
     // Ensure proper mobile display on page load
     if (window.innerWidth <= 768) {
