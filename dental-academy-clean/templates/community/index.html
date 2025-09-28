@@ -957,27 +957,55 @@
     display: flex;
     gap: 8px;
     margin-left: 8px;
+    border: none !important;
+    outline: none !important;
+}
+
+/* Force remove all borders from admin buttons */
+.admin-controls button,
+.admin-controls .admin-edit-btn,
+.admin-controls .admin-delete-btn {
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+}
+
+.admin-controls button:focus,
+.admin-controls .admin-edit-btn:focus,
+.admin-controls .admin-delete-btn:focus {
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
 }
 
 .admin-edit-btn, .admin-delete-btn {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: #6c757d;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    color: #6c757d !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    outline: 0 !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    box-sizing: border-box !important;
 }
 
 .admin-edit-btn {
-    color: #28a745;
-    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+    color: #28a745 !important;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%) !important;
+    border: 0 !important;
+    outline: 0 !important;
 }
 
 .admin-edit-btn:hover {
@@ -988,8 +1016,10 @@
 }
 
 .admin-delete-btn {
-    color: #dc3545;
-    background: linear-gradient(135deg, #fff8f8 0%, #fce8e8 100%);
+    color: #dc3545 !important;
+    background: linear-gradient(135deg, #fff8f8 0%, #fce8e8 100%) !important;
+    border: 0 !important;
+    outline: 0 !important;
 }
 
 .admin-delete-btn:hover {
@@ -1407,6 +1437,9 @@
                     {% if topic.unread_count and topic.unread_count > 0 %}
                     <div class="unread-count">{{ topic.unread_count }}</div>
                                 {% endif %}
+                    <div class="admin-controls" style="display: none;">
+                        <button class="admin-delete-btn" onclick="event.stopPropagation(); deleteTopic({{ topic.id }})" title="Delete topic">🗑️</button>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -1781,32 +1814,101 @@ function editPost(postId) {
 }
 
 function deleteTopic(topicId) {
-    if (confirm('Are you sure you want to delete this topic?')) {
-        const currentLang = window.location.pathname.split('/')[1] || 'en';
-        fetch(`/${currentLang}/community/topic/${topicId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const topicItem = document.querySelector(`[data-topic-id="${topicId}"]`);
-                if (topicItem) {
-                    topicItem.remove();
-                }
-                showChatList();
-            } else {
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error deleting topic');
-        });
+    console.log(`🗑️ Deleting topic ID: ${topicId}`);
+    
+    if (!confirm('Are you sure you want to delete this topic? This action cannot be undone.')) {
+        console.log('❌ Topic deletion cancelled by user');
+        return;
     }
+    
+    const currentLang = window.location.pathname.split('/')[1] || 'en';
+    const url = `/${currentLang}/community/topic/${topicId}/delete`;
+    console.log('🌐 Deleting topic via URL:', url);
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => {
+        console.log('📡 Delete response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Delete response data:', data);
+        
+        if (data.success) {
+            // Remove topic from list with animation
+            const topicElement = document.querySelector(`[data-topic-id="${topicId}"]`);
+            if (topicElement) {
+                topicElement.style.transition = 'all 0.3s ease';
+                topicElement.style.opacity = '0';
+                topicElement.style.transform = 'translateX(-100%)';
+                
+                setTimeout(() => {
+                    topicElement.remove();
+                    console.log('✅ Topic removed from list');
+                }, 300);
+            }
+            
+            // Show success message
+            showDeleteFeedback('Topic deleted successfully!', 'success');
+        } else {
+            console.error('❌ Delete failed:', data.error);
+            showDeleteFeedback(`Failed to delete topic: ${data.error}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Delete error:', error);
+        showDeleteFeedback('Network error. Please try again.', 'error');
+    });
+}
+
+// Show delete feedback message
+function showDeleteFeedback(message, type) {
+    // Remove existing feedback if any
+    const existingFeedback = document.querySelector('.delete-feedback');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
+    
+    // Create feedback element
+    const feedback = document.createElement('div');
+    feedback.className = `delete-feedback delete-feedback-${type}`;
+    feedback.textContent = message;
+    feedback.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    document.body.appendChild(feedback);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        feedback.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.remove();
+            }
+        }, 300);
+    }, 3000);
 }
 
 function deletePost(postId) {
@@ -2870,6 +2972,12 @@ function checkAdminStatus() {
             adminControls.forEach(control => {
                 control.style.display = isCurrentUserAdmin ? 'flex' : 'none';
             });
+            
+            // Also show/hide admin controls in chat list
+            const chatListAdminControls = document.querySelectorAll('.chat-item .admin-controls');
+            chatListAdminControls.forEach(control => {
+                control.style.display = isCurrentUserAdmin ? 'flex' : 'none';
+            });
         } else {
             console.log('❌ Admin check failed:', data.error);
             isCurrentUserAdmin = false;
@@ -2887,8 +2995,30 @@ function checkAdminStatus() {
         const adminControls = document.querySelectorAll('.admin-controls');
         adminControls.forEach(control => {
             control.style.display = 'flex';
-            control.style.border = '2px solid #ffc107';
-            control.style.backgroundColor = '#fff3cd';
+            // Force remove ALL borders and outlines
+            control.style.border = 'none !important';
+            control.style.backgroundColor = 'transparent !important';
+            control.style.outline = 'none !important';
+            control.style.boxShadow = 'none !important';
+            
+            // Force remove borders from all buttons inside
+            const buttons = control.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.style.border = '0 !important';
+                button.style.outline = '0 !important';
+                button.style.boxShadow = 'none !important';
+                button.style.borderRadius = '8px !important';
+            });
+            
+            // Also show admin controls in chat list for debugging
+            const chatListAdminControls = document.querySelectorAll('.chat-item .admin-controls');
+            chatListAdminControls.forEach(control => {
+                control.style.display = 'flex';
+                control.style.border = 'none !important';
+                control.style.backgroundColor = 'transparent !important';
+                control.style.outline = 'none !important';
+                control.style.boxShadow = 'none !important';
+            });
         });
     });
 }
