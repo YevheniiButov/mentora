@@ -1221,7 +1221,7 @@
         -webkit-overflow-scrolling: touch;
         overflow-scrolling: touch;
         touch-action: pan-y;
-        padding-bottom: 120px; /* Extra space for reply form - increased for mobile */
+        padding-bottom: 80px; /* Extra space for reply form */
     }
     
     /* Fix reply form interaction */
@@ -1250,35 +1250,7 @@
         background: #f8f9fa;
     }
     
-    /* Ensure chat main is properly sized */
-    .chat-main {
-        min-height: 100vh;
-        background: #f8f9fa;
-    }
     
-    /* Fix potential gray screen issues */
-    .chat-main.active {
-        background: #f8f9fa;
-    }
-    
-    /* Better mobile back button */
-    .mobile-back-btn {
-        position: fixed;
-        top: 1rem;
-        left: 1rem;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
     
     /* Ensure no invisible overlays block interaction */
     body {
@@ -1671,37 +1643,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (welcomeScreen) welcomeScreen.style.display = 'none';
     }
     
-    // Handle browser back/forward navigation
-    window.addEventListener('popstate', function(event) {
-        // Force refresh the page state
-        setTimeout(() => {
-            if (window.innerWidth <= 768) {
-                const chatMain = document.querySelector('.chat-main');
-                if (chatMain && chatMain.classList.contains('active')) {
-                    // If we're in chat view, go back to list
-                    showChatList();
-                }
-            }
-        }, 100);
-    });
-    
-    // Handle page visibility changes (mobile browser tab switching)
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            // Page became visible again, refresh state
-            setTimeout(() => {
-                if (window.innerWidth <= 768) {
-                    const chatMain = document.querySelector('.chat-main');
-                    const chatSidebar = document.querySelector('.chat-sidebar');
-                    
-                    if (chatMain && chatMain.classList.contains('active') && chatSidebar) {
-                        // Ensure proper mobile state
-                        chatSidebar.style.display = 'none';
-                    }
-                }
-            }, 200);
-        }
-    });
 });
 
 function selectTopic(topicId) {
@@ -1797,8 +1738,6 @@ function refreshPageState() {
     }
 }
 
-// Add periodic state check for mobile
-setInterval(refreshPageState, 2000);
 
 function loadTopicContent(topicId) {
     const chatMessages = document.getElementById('chat-messages');
