@@ -3704,24 +3704,29 @@ function initializeUnreadMessages() {
 // Function to fix hidden elements blocking interaction
 function fixHiddenElementsInteraction() {
     // Find all elements with display: none and disable pointer events
-    const hiddenElements = document.querySelectorAll('[style*="display: none"]');
+    const hiddenElements = document.querySelectorAll('[style*="display: none"]:not([data-fixed="true"])');
     hiddenElements.forEach(element => {
         element.style.pointerEvents = 'none';
         element.style.zIndex = '-1';
+        element.setAttribute('data-fixed', 'true');
     });
     
     // Also check for elements with class-based hiding
-    const classHiddenElements = document.querySelectorAll('.d-none, .hidden, [style*="visibility: hidden"]');
+    const classHiddenElements = document.querySelectorAll('.d-none:not([data-fixed="true"]), .hidden:not([data-fixed="true"]), [style*="visibility: hidden"]:not([data-fixed="true"])');
     classHiddenElements.forEach(element => {
         element.style.pointerEvents = 'none';
         element.style.zIndex = '-1';
+        element.setAttribute('data-fixed', 'true');
     });
     
-    console.log(`🔧 Fixed ${hiddenElements.length + classHiddenElements.length} hidden elements`);
+    const totalFixed = hiddenElements.length + classHiddenElements.length;
+    if (totalFixed > 0) {
+        console.log(`🔧 Fixed ${totalFixed} hidden elements`);
+    }
 }
 
 // Call the fix function periodically to catch dynamically hidden elements
-setInterval(fixHiddenElementsInteraction, 2000);
+setInterval(fixHiddenElementsInteraction, 5000);
 
 // Simple navigation - no complex fixes needed
 </script>
