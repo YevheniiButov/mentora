@@ -38,6 +38,12 @@ def profile():
         flash('Произошла ошибка при загрузке профиля', 'error')
         return redirect(url_for('index'))
 
+@profile_bp.route('/personal_info')
+@login_required
+def personal_info():
+    """Personal information page"""
+    return render_template('profile/personal_info.html', user=current_user)
+
 @profile_bp.route('/settings')
 @login_required
 def settings():
