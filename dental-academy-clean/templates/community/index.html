@@ -15,6 +15,24 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
+/* FORCE SCROLLING FIXES - MUST BE FIRST */
+.chat-messages, .chat-main {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+}
+
+.chat-messages {
+    max-height: calc(100vh - 200px) !important;
+    height: auto !important;
+}
+
+.chat-main {
+    height: 100vh !important;
+    overflow-y: auto !important;
+}
+
 /* AGGRESSIVE MOBILE FIXES - MUST BE FIRST */
 @media (max-width: 768px) {
     /* Force hide welcome screen on mobile */
@@ -1764,6 +1782,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (chatMessages && chatMessages.style.display === 'none') {
             chatMessages.style.display = 'block';
             console.log('🔧 Force-showed chat messages');
+        }
+        
+        // Force enable scrolling
+        if (chatMessages) {
+            chatMessages.style.overflowY = 'auto';
+            chatMessages.style.overflowX = 'hidden';
+            chatMessages.style.maxHeight = 'calc(100vh - 200px)';
+            chatMessages.style.height = 'auto';
+            console.log('🔧 Force-enabled scrolling for chat messages');
+        }
+        
+        // Also fix chat main container
+        const chatMain = document.querySelector('.chat-main');
+        if (chatMain) {
+            chatMain.style.overflowY = 'auto';
+            chatMain.style.overflowX = 'hidden';
+            chatMain.style.height = '100vh';
+            console.log('🔧 Force-enabled scrolling for chat main');
         }
     }, 1000);
     
