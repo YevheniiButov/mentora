@@ -23,6 +23,15 @@
     scroll-behavior: smooth !important;
 }
 
+/* PREVENT HIDDEN ELEMENTS FROM BLOCKING INTERACTION */
+[style*="display: none"], 
+.d-none, 
+.hidden, 
+[style*="visibility: hidden"] {
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
 .chat-messages {
     max-height: calc(100vh - 200px) !important;
     height: auto !important;
@@ -3725,8 +3734,8 @@ function fixHiddenElementsInteraction() {
     }
 }
 
-// Call the fix function periodically to catch dynamically hidden elements
-setInterval(fixHiddenElementsInteraction, 5000);
+// DISABLED: This function was causing page freezing
+// setInterval(fixHiddenElementsInteraction, 5000);
 
 // Simple navigation - no complex fixes needed
 </script>
