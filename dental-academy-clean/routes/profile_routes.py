@@ -42,7 +42,41 @@ def profile():
 @login_required
 def personal_info():
     """Personal information page"""
-    return render_template('profile/personal_info.html', user=current_user)
+    lang = g.get('lang', 'en')
+    return render_template('profile/personal_info.html', user=current_user, lang=lang)
+
+@profile_bp.route('/personal_info', methods=['POST'])
+@login_required
+def update_personal_info():
+    """Update personal information"""
+    try:
+        lang = g.get('lang', 'en')
+        
+        # Get form data
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        
+        # Update user data
+        if first_name:
+            current_user.first_name = first_name
+        if last_name:
+            current_user.last_name = last_name
+        if email and email != current_user.email:
+            current_user.email = email
+        if phone:
+            current_user.phone = phone
+            
+        db.session.commit()
+        flash('Personal information updated successfully!', 'success')
+        
+    except Exception as e:
+        current_app.logger.error(f"Error updating personal info: {e}", exc_info=True)
+        db.session.rollback()
+        flash('Error updating personal information', 'error')
+    
+    return redirect(url_for('profile.personal_info', lang=lang))
 
 @profile_bp.route('/settings')
 @login_required
