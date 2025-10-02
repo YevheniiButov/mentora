@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Карта участника Mentora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/membership.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="membership-container">
+    <div class="membership-header">
+        <h1>Ваша карта участника Mentora</h1>
+        <p class="membership-subtitle">Цифровая карта для медицинских специалистов-беженцев в Нидерландах</p>
+    </div>
+
+    <div class="card-wrapper" id="membership-card">
+        <!-- Membership Card -->
+        <div class="membership-card" id="card-content">
+            <!-- Top Section -->
+            <div class="card-top">
+                <div class="card-logo">
+                    <span class="logo-text">MENT</span>
+                    <span class="logo-dot-pattern">O</span>
+                    <span class="logo-text">RA</span>
+                </div>
+                <div class="premium-badge">
+                    <span>PREMIUM</span>
+                </div>
+            </div>
+
+            <!-- Separator Line -->
+            <div class="card-separator"></div>
+
+            <!-- Center Section -->
+            <div class="card-center">
+                <div class="member-info">
+                    <h2 class="member-name">{{ current_user.full_name or 'Dr. Ivan Petrov' }}</h2>
+                    <p class="member-profession">{{ current_user.profession or 'Dentist' }}</p>
+                </div>
+                <div class="qr-section">
+                    <div class="qr-code-container">
+                        {% if current_user.qr_code_path %}
+                            <img src="{{ url_for('static', filename=current_user.qr_code_path) }}" alt="QR Code" class="qr-code">
+                        {% else %}
+                            <div class="qr-placeholder">
+                                <div class="qr-pattern">
+                                    <!-- QR Code placeholder with teal corner markers -->
+                                    <div class="qr-corner qr-corner-tl"></div>
+                                    <div class="qr-corner qr-corner-tr"></div>
+                                    <div class="qr-corner qr-corner-bl"></div>
+                                    <div class="qr-center-dot"></div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="card-bottom">
+                <div class="member-details">
+                    <p class="member-id">ID: {{ current_user.member_id or 'MNT-AB2C8' }}</p>
+                    <p class="validity-date">Valid until: {{ current_user.membership_expires.strftime('%d/%m/%Y') if current_user.membership_expires else '01/11/2025' }}</p>
+                    <p class="website">mentora.nl</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Buttons -->
+    <div class="download-section">
+        <button class="download-btn" id="download-png" onclick="downloadPNG()">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7,10 12,15 17,10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Скачать PNG
+        </button>
+        <button class="download-btn" id="download-pdf" onclick="downloadPDF()">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14,2 14,8 20,8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10,9 9,9 8,9"></polyline>
+            </svg>
+            Скачать PDF
+        </button>
+    </div>
+
+    <!-- Testing Buttons (Hidden from regular users) -->
+    {% if current_user.role == 'admin' or current_user.membership_type == 'free' %}
+    <div class="download-section" style="margin-top: 1rem; border-top: 1px solid #e0e0e0; padding-top: 1rem;">
+        <h3 style="text-align: center; color: #666; margin-bottom: 1rem; font-size: 0.9rem;">Тестирование (скрыто от обычных пользователей)</h3>
+        {% if current_user.membership_type == 'free' %}
+        <a href="{{ url_for('membership.upgrade_to_premium') }}" class="download-btn" style="background: #28a745;">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+            Обновить до Premium
+        </a>
+        {% endif %}
+        {% if not current_user.qr_code_path %}
+        <a href="{{ url_for('membership.generate_qr') }}" class="download-btn" style="background: #17a2b8;">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="5" height="5"></rect>
+                <rect x="16" y="3" width="5" height="5"></rect>
+                <rect x="3" y="16" width="5" height="5"></rect>
+                <path d="M21 16h-3a2 2 0 0 0-2 2v3"></path>
+                <path d="M21 21v.01"></path>
+                <path d="M12 7v3a2 2 0 0 1-2 2H7"></path>
+                <path d="M3 12h.01"></path>
+                <path d="M12 3h.01"></path>
+                <path d="M12 16v.01"></path>
+                <path d="M16 12h1"></path>
+                <path d="M21 12v.01"></path>
+                <path d="M12 21v-1"></path>
+            </svg>
+            Сгенерировать QR
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Генерация файла...</p>
+    </div>
+</div>
+
+<!-- Include external libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/membership.js') }}"></script>
+{% endblock %}
+
+

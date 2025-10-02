@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Mentora Community Forum{% endblock %}
+
+{% if current_user.is_authenticated %}
+<meta name="user-id" content="{{ current_user.id }}">
+{% endif %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+/* SIMPLE MOBILE STYLES */
+@media (max-width: 768px) {
+    .welcome-screen { display: none !important; }
+    .chat-sidebar { display: flex !important; }
+    .chat-main { display: none; }
+    .chat-main.active { display: block; }
+    .mobile-back-btn { display: none; }
+    .mobile-back-btn.show { display: flex; }
+}
+
+/* SIMPLE BUTTON STYLES */
+.admin-link, .reply-btn, .pin-button {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0.5rem 0 0;
+    text-decoration: none;
+    color: inherit;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="community-container">
+    <!-- Header -->
+    <div class="community-header">
+        <h1>Community Forum</h1>
+        <button onclick="createNewTopic()" class="btn btn-primary">New Topic</button>
+    </div>
+
+    <!-- Mobile Back Button -->
+    <div class="mobile-back-btn" onclick="showChatList()">
+        <i class="fas fa-arrow-left"></i> Back
+    </div>
+
+    <!-- Chat Sidebar -->
+    <div class="chat-sidebar">
+        <div class="chat-list">
+            {% for topic in topics %}
+            <div class="chat-item" data-topic-id="{{ topic.id }}" onclick="selectTopic({{ topic.id }})">
+                <div class="chat-item-content">
+                    <h3>{{ topic.title }}</h3>
+                    <p>{{ topic.content[:100] }}...</p>
+                    <span class="chat-time">{{ topic.created_at.strftime('%H:%M') }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen">
+        <h2>Welcome to Community</h2>
+        <p>Select a topic to start chatting</p>
+    </div>
+
+    <!-- Chat Main -->
+    <div class="chat-main">
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be loaded here -->
+        </div>
+        
+        <!-- Reply Form -->
+        <div class="reply-form" id="reply-form">
+            <textarea placeholder="Type your message..."></textarea>
+            <button onclick="submitReply()">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// SIMPLE NAVIGATION
+function selectTopic(topicId) {
+    // Mark active
+    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+    document.querySelector(`[data-topic-id="${topicId}"]`).classList.add('active');
+    
+    // Show chat
+    if (window.innerWidth <= 768) {
+        document.querySelector('.chat-sidebar').style.display = 'none';
+        document.querySelector('.chat-main').classList.add('active');
+        document.querySelector('.mobile-back-btn').classList.add('show');
+    } else {
+        document.querySelector('.welcome-screen').style.display = 'none';
+        document.querySelector('.chat-main').classList.add('active');
+    }
+    
+    // Load content
+    loadTopicContent(topicId);
+}
+
+function showChatList() {
+    // Hide chat
+    if (window.innerWidth <= 768) {
+        document.querySelector('.chat-sidebar').style.display = 'flex';
+        document.querySelector('.chat-main').classList.remove('active');
+        document.querySelector('.mobile-back-btn').classList.remove('show');
+    } else {
+        document.querySelector('.welcome-screen').style.display = 'flex';
+        document.querySelector('.chat-main').classList.remove('active');
+    }
+    
+    // Clear selection
+    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+    
+    // Clear messages
+    document.getElementById('chat-messages').innerHTML = '';
+}
+
+function loadTopicContent(topicId) {
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.innerHTML = '<div style="text-align: center; padding: 2rem;">Loading...</div>';
+    
+    fetch(`/{{ lang }}/community/topic/${topicId}/content`)
+        .then(response => response.json())
+        .then(data => {
+            let html = '';
+            data.posts.forEach(post => {
+                html += `
+                    <div class="message">
+                        <div class="message-header">
+                            <span class="message-author">${post.author.first_name}</span>
+                            <span class="message-time">${post.created_at}</span>
+                        </div>
+                        <div class="message-content">${post.content}</div>
+                    </div>
+                `;
+            });
+            chatMessages.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            chatMessages.innerHTML = '<div style="text-align: center; padding: 2rem; color: red;">Error loading content</div>';
+        });
+}
+
+function createNewTopic() {
+    window.location.href = `/{{ lang }}/community/new-topic`;
+}
+
+function submitReply() {
+    // Simple reply functionality
+    console.log('Reply submitted');
+}
+</script>
+{% endblock %}

@@ -7,9 +7,12 @@ from utils.decorators import admin_required
 from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, CommunicationCampaign, SystemNotification, ForumTopic, ForumPost
 from datetime import datetime, timedelta, date
 import json
-from sqlalchemy import func, and_, or_
+from sqlalchemy import func, and_, or_, distinct
 from datetime import timezone
 import logging
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 def get_date_func():
     """Get database-specific date function"""
@@ -495,14 +498,14 @@ def system_settings():
     
     # Конфигурация
     current_config = {
-        'DIAGNOSTIC_MIN_QUESTIONS': app.config.get('DIAGNOSTIC_MIN_QUESTIONS', 20),
-        'DIAGNOSTIC_MAX_QUESTIONS': app.config.get('DIAGNOSTIC_MAX_QUESTIONS', 50),
-        'REASSESSMENT_DAYS': app.config.get('REASSESSMENT_DAYS', 14),
-        'MIN_LESSONS_PER_DAY': app.config.get('MIN_LESSONS_PER_DAY', 3),
-        'MAX_LESSONS_PER_DAY': app.config.get('MAX_LESSONS_PER_DAY', 10),
-        'IRT_CONVERGENCE_THRESHOLD': app.config.get('IRT_CONVERGENCE_THRESHOLD', 0.001),
-        'ENABLE_AI_ASSISTANT': app.config.get('ENABLE_AI_ASSISTANT', True),
-        'ENABLE_VIRTUAL_PATIENTS': app.config.get('ENABLE_VIRTUAL_PATIENTS', True)
+        'DIAGNOSTIC_MIN_QUESTIONS': current_app.config.get('DIAGNOSTIC_MIN_QUESTIONS', 20),
+        'DIAGNOSTIC_MAX_QUESTIONS': current_app.config.get('DIAGNOSTIC_MAX_QUESTIONS', 50),
+        'REASSESSMENT_DAYS': current_app.config.get('REASSESSMENT_DAYS', 14),
+        'MIN_LESSONS_PER_DAY': current_app.config.get('MIN_LESSONS_PER_DAY', 3),
+        'MAX_LESSONS_PER_DAY': current_app.config.get('MAX_LESSONS_PER_DAY', 10),
+        'IRT_CONVERGENCE_THRESHOLD': current_app.config.get('IRT_CONVERGENCE_THRESHOLD', 0.001),
+        'ENABLE_AI_ASSISTANT': current_app.config.get('ENABLE_AI_ASSISTANT', True),
+        'ENABLE_VIRTUAL_PATIENTS': current_app.config.get('ENABLE_VIRTUAL_PATIENTS', True)
     }
     
     # Задачи обслуживания
@@ -558,16 +561,16 @@ def update_settings():
         value = request.form.get(setting)
         if value:
             if setting in ['IRT_CONVERGENCE_THRESHOLD']:
-                app.config[setting] = float(value)
+                current_app.config[setting] = float(value)
             else:
-                app.config[setting] = int(value)
+                current_app.config[setting] = int(value)
     
     # Булевы настройки
-    app.config['ENABLE_AI_ASSISTANT'] = 'ENABLE_AI_ASSISTANT' in request.form
-    app.config['ENABLE_VIRTUAL_PATIENTS'] = 'ENABLE_VIRTUAL_PATIENTS' in request.form
+    current_app.config['ENABLE_AI_ASSISTANT'] = 'ENABLE_AI_ASSISTANT' in request.form
+    current_app.config['ENABLE_VIRTUAL_PATIENTS'] = 'ENABLE_VIRTUAL_PATIENTS' in request.form
     
     # Сохраняем в файл конфигурации
-    save_config_to_file(app.config)
+    save_config_to_file(current_app.config)
     
     flash('Настройки успешно обновлены', 'success')
     return redirect(url_for('admin.system_settings'))
@@ -623,7 +626,7 @@ def get_database_size():
 
 def count_uploaded_files():
     """Count uploaded files"""
-    upload_path = app.config.get('UPLOAD_FOLDER', 'static/uploads')
+    upload_path = current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
     try:
         import os
         total = sum(len(files) for _, _, files in os.walk(upload_path))
@@ -653,7 +656,7 @@ def backup_database():
     """Perform database backup"""
     # Implement actual backup logic
     import subprocess
-    db_url = app.config.get('SQLALCHEMY_DATABASE_URI')
+    db_url = current_app.config.get('SQLALCHEMY_DATABASE_URI')
     backup_file = f"backups/mentora_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.sql"
     # subprocess.run(['pg_dump', db_url, '-f', backup_file])
     pass
@@ -1863,7 +1866,9 @@ def validate_specific_data():
                 results['diagnostic_sessions'].extend(validator.validate_diagnostic_session(session))
         
         if 'study_sessions' in categories:
-            study_sessions = StudySession.query.limit(50).all()
+            # Note: StudySession model not imported, using alternative approach
+            # study_sessions = StudySession.query.limit(50).all()
+            study_sessions = []  # Placeholder until StudySession is properly imported
             results['study_sessions'] = []
             for session in study_sessions:
                 results['study_sessions'].extend(validator.validate_study_session(session))
@@ -5100,4 +5105,86 @@ def visitor_details(visitor_id):
         
     except Exception as e:
         current_app.logger.error(f"Error loading visitor details: {str(e)}")
-        return f"Error loading visitor details: {str(e)}", 500 
+        return f"Error loading visitor details: {str(e)}", 500
+
+@admin_bp.route('/membership-test')
+@login_required
+@admin_required
+def membership_test():
+    """Hidden testing panel for membership features"""
+    try:
+        # Get stats
+        total_users = User.query.count()
+        premium_users = User.query.filter_by(membership_type='premium').count()
+        users_with_qr = User.query.filter(User.qr_code_path.isnot(None)).count()
+        
+        # Get recent users for testing
+        recent_users = User.query.order_by(User.created_at.desc()).limit(20).all()
+        
+        return render_template('admin/membership_test.html',
+            total_users=total_users,
+            premium_users=premium_users,
+            users_with_qr=users_with_qr,
+            recent_users=recent_users
+        )
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading membership test panel: {str(e)}")
+        flash(f'Error loading membership test panel: {str(e)}', 'error')
+        return redirect(url_for('admin.dashboard'))
+
+@admin_bp.route('/membership-test/activate/<int:user_id>')
+@login_required
+@admin_required
+def test_activate_premium(user_id):
+    """Manually activate Premium for testing"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        from datetime import datetime, timedelta
+        user.membership_type = 'premium'
+        user.membership_expires = datetime.utcnow() + timedelta(days=30)
+        
+        # Generate member ID if not exists
+        if not user.member_id:
+            import hashlib
+            user_hash = hashlib.md5(str(user.id).encode()).hexdigest()[:5].upper()
+            user.member_id = f"MNT-{user_hash}"
+        
+        # Generate QR
+        from routes.membership_routes import generate_member_qr
+        generate_member_qr(user)
+        
+        db.session.commit()
+        
+        flash(f'Premium activated for {user.get_display_name()} (ID: {user.member_id})', 'success')
+        
+    except Exception as e:
+        current_app.logger.error(f"Error activating premium for user {user_id}: {str(e)}")
+        flash(f'Error activating premium: {str(e)}', 'error')
+        db.session.rollback()
+    
+    return redirect(url_for('admin.membership_test'))
+
+@admin_bp.route('/membership-test/deactivate/<int:user_id>')
+@login_required
+@admin_required
+def test_deactivate_premium(user_id):
+    """Manually deactivate Premium for testing"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        user.membership_type = 'free'
+        user.membership_expires = None
+        user.qr_code_path = None
+        
+        db.session.commit()
+        
+        flash(f'Premium deactivated for {user.get_display_name()}', 'info')
+        
+    except Exception as e:
+        current_app.logger.error(f"Error deactivating premium for user {user_id}: {str(e)}")
+        flash(f'Error deactivating premium: {str(e)}', 'error')
+        db.session.rollback()
+    
+    return redirect(url_for('admin.membership_test')) 

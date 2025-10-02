@@ -122,6 +122,12 @@ class User(db.Model, UserMixin):
     # Subscription
     has_subscription = db.Column(db.Boolean, default=False)
     
+    # Membership fields
+    member_id = db.Column(db.String(12), unique=True, nullable=True, index=True)
+    qr_code_path = db.Column(db.String(200), nullable=True)
+    membership_type = db.Column(db.String(20), default='free')  # free, premium
+    membership_expires = db.Column(db.DateTime, nullable=True)
+    
     # Consent fields (new simplified structure)
     required_consents = db.Column(db.Boolean, default=False)  # Terms, Privacy, Data Processing, Data Usage
     optional_consents = db.Column(db.Boolean, default=False)  # Marketing, Newsletter, Research
@@ -163,6 +169,16 @@ class User(db.Model, UserMixin):
     def is_admin(self):
         """Check if user has admin role"""
         return self.role == 'admin'
+    
+    @property
+    def is_premium_active(self):
+        """Check if Premium membership is active"""
+        from datetime import datetime
+        return (
+            self.membership_type == 'premium' and
+            self.membership_expires and
+            self.membership_expires > datetime.utcnow()
+        )
     
     @property
     def full_name(self):

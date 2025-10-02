@@ -1,5 +1,4 @@
-# app.py - Clean Mentora Application
-# Minimal Flask app with core functionality only
+# app.py - Mentora Application
 
 import os
 import logging
@@ -556,6 +555,16 @@ try:
     except ImportError as monitoring_error:
         logger.warning(f"Could not import Monitoring routes: {monitoring_error}")
     
+    # Membership System
+    try:
+        from routes.membership_routes import membership_bp
+        app.register_blueprint(membership_bp)
+        logger.info("✅ Membership blueprint registered successfully")
+    except Exception as membership_error:
+        logger.error(f"❌ ERROR importing Membership routes: {membership_error}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+    
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
         # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется
@@ -565,6 +574,39 @@ try:
     
     # Система контроля доступа отключена (модуль не существует)
     # logger.info("ℹ️ Access control system not implemented")
+    
+    # Membership card route
+    @app.route('/membership/card')
+    @login_required
+    def membership_card():
+        """Display digital membership card for authenticated users"""
+        if not current_user.is_authenticated:
+            return redirect(url_for('login'))
+        
+        # Generate member ID if not exists
+        if not hasattr(current_user, 'member_id') or not current_user.member_id:
+            # Generate a simple member ID based on user ID
+            import hashlib
+            user_hash = hashlib.md5(str(current_user.id).encode()).hexdigest()[:5].upper()
+            current_user.member_id = f"MNT-{user_hash}"
+            db.session.commit()
+        
+        # Set membership expiry date if not exists (1 year from now)
+        if not hasattr(current_user, 'membership_expires') or not current_user.membership_expires:
+            from datetime import datetime, timedelta
+            current_user.membership_expires = datetime.now() + timedelta(days=365)
+            db.session.commit()
+        
+        # Generate QR code if user is premium and doesn't have one
+        if (current_user.membership_type == 'premium' and 
+            (not hasattr(current_user, 'qr_code_path') or not current_user.qr_code_path)):
+            try:
+                from routes.membership_routes import generate_member_qr
+                generate_member_qr(current_user)
+            except Exception as e:
+                logger.warning(f"Could not generate QR code: {e}")
+        
+        return render_template('membership/card.html')
     
 except ImportError as e:
     logger.warning(f"Could not import routes: {e}")
@@ -602,6 +644,7 @@ except ImportError as e:
         if not current_user.is_authenticated:
             return redirect(url_for('login'))
         return render_template('dashboard.html')
+    
     
     @app.route('/login', methods=['GET', 'POST'])
     def login():

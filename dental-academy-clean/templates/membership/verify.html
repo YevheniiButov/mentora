@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Верификация участника Mentora{% endblock %}
+
+{% block extra_css %}
+<style>
+    .verification-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .verification-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .verification-header h1 {
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .verification-header .subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    
+    .member-card {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        border: 2px solid #00bfa5;
+        border-radius: 16px;
+        padding: 2rem;
+        color: #ffffff;
+        margin-bottom: 2rem;
+    }
+    
+    .member-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-label {
+        font-size: 0.9rem;
+        color: #cccccc;
+        margin-bottom: 0.3rem;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #ffffff;
+    }
+    
+    .status-section {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .status-valid {
+        background: linear-gradient(135deg, #00bfa5, #00897b);
+        color: #ffffff;
+    }
+    
+    .status-invalid {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: #ffffff;
+    }
+    
+    .status-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .status-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .status-description {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    
+    .member-since {
+        text-align: center;
+        color: #cccccc;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+    }
+    
+    .back-link {
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    .back-link a {
+        color: #00bfa5;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .back-link a:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+        .verification-container {
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+        
+        .member-info {
+            grid-template-columns: 1fr;
+        }
+        
+        .member-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="verification-container">
+    <div class="verification-header">
+        <h1>Верификация участника</h1>
+        <p class="subtitle">Mentora - Клуб медицинских специалистов-беженцев</p>
+    </div>
+    
+    <div class="member-card">
+        <div class="member-info">
+            <div class="info-item">
+                <span class="info-label">Имя</span>
+                <span class="info-value">{{ member.full_name or 'Не указано' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Профессия</span>
+                <span class="info-value">{{ member.profession or 'Не указано' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">ID участника</span>
+                <span class="info-value">{{ member.member_id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Тип членства</span>
+                <span class="info-value">{{ member.membership_type.title() }}</span>
+            </div>
+        </div>
+        
+        <div class="status-section {% if is_valid %}status-valid{% else %}status-invalid{% endif %}">
+            <div class="status-icon">
+                {% if is_valid %}
+                    ✓
+                {% else %}
+                    ✗
+                {% endif %}
+            </div>
+            <div class="status-title">
+                {% if is_valid %}
+                    Действительное членство
+                {% else %}
+                    Недействительное членство
+                {% endif %}
+            </div>
+            <div class="status-description">
+                {% if is_valid %}
+                    Участник имеет активное премиум членство
+                {% else %}
+                    {% if member.membership_type != 'premium' %}
+                        Участник не имеет премиум членства
+                    {% elif not member.membership_expires %}
+                        Срок членства не установлен
+                    {% else %}
+                        Срок членства истек
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if member.membership_expires %}
+        <div class="member-since">
+            Действительно до: {{ member.membership_expires.strftime('%d.%m.%Y') }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="back-link">
+        <a href="https://mentora.nl">← Вернуться на сайт Mentora</a>
+    </div>
+</div>
+{% endblock %}
+
+
+

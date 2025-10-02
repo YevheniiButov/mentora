@@ -48,6 +48,10 @@ class Config:
     
     # Server configuration for URL generation
     SERVER_NAME = os.environ.get('SERVER_NAME', 'bigmentor.nl')
+    
+    # Stripe Payment Configuration
+    STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', 'pk_test_your_key')
+    STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_your_key')
     APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
     PREFERRED_URL_SCHEME = os.environ.get('PREFERRED_URL_SCHEME', 'https')
     
