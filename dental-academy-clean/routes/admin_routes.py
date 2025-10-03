@@ -3,6 +3,7 @@
 """
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
+from extensions import csrf
 from utils.decorators import admin_required
 from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, CommunicationCampaign, SystemNotification, ForumTopic, ForumPost
 from datetime import datetime, timedelta, date
@@ -2828,6 +2829,7 @@ def toggle_user_status(user_id):
 @admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
 @login_required
 @admin_required
+@csrf.exempt
 def delete_user(user_id):
     """Delete user (admin only)"""
     user = User.query.get_or_404(user_id)
@@ -2860,6 +2862,7 @@ def delete_user(user_id):
 @admin_bp.route('/users/bulk-actions', methods=['POST'])
 @login_required
 @admin_required
+@csrf.exempt
 def bulk_user_actions():
     """Bulk actions on users"""
     print(f"=== BULK ACTIONS DEBUG ===")
