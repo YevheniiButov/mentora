@@ -1070,8 +1070,8 @@ def quick_register(lang=None):
             profession=data['profession'],
             required_consents=True,  # Terms and privacy consent
             optional_consents=data.get('marketingConsent', False),  # Marketing consent
-            is_active=True,  # Активируем сразу
-            email_confirmed=True  # Считаем email подтвержденным
+            is_active=False,  # Не активируем до подтверждения email
+            email_confirmed=False  # Требуем подтверждение email
         )
         
         # Установка пароля пользователя
@@ -1092,17 +1092,23 @@ def quick_register(lang=None):
             safe_log('log_database_error', 'quick_registration', 'create_user', str(e), data)
             raise
         
-        # Email подтверждение больше не требуется - аккаунт активирован сразу
-        
-        # Log successful registration
-        safe_log('log_registration_success', 'quick_registration', user.id, user.email, data)
+        # Отправляем welcome email с подтверждением
+        try:
+            from utils.email_service import send_welcome_email
+            email_sent = send_welcome_email(user)
+            if email_sent:
+                safe_log('log_registration_success', 'quick_registration', user.id, user.email, data)
+            else:
+                safe_log('log_unexpected_error', 'quick_registration', 'Failed to send welcome email', data)
+        except Exception as e:
+            safe_log('log_unexpected_error', 'quick_registration', f'Email service error: {str(e)}', data)
         
         # Отслеживаем завершение регистрации
         VisitorTracker.track_registration_completion('quick_register', user.id)
         
         return jsonify({
             'success': True,
-            'message': 'Registration successful! You can now log in with your email and password.',
+            'message': 'Registration successful! Please check your email and click the confirmation link to activate your account.',
             'redirect_url': url_for('auth.login')
         })
         
@@ -1121,6 +1127,110 @@ def quick_register(lang=None):
             'success': False,
             'error': 'Registration failed. Please try again.'
         }), 500
+
+@auth_bp.route('/confirm-email/<token>')
+def confirm_email(token):
+    """Confirm user email with token"""
+    try:
+        from utils.email_service import is_token_valid
+        
+        # Find user by token
+        user = User.query.filter_by(email_confirmation_token=token).first()
+        
+        if not user:
+            flash('Invalid confirmation token.', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Check if token is valid
+        if not is_token_valid(user, token, 'confirmation'):
+            flash('Confirmation token has expired. Please request a new one.', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Confirm email and activate account
+        user.email_confirmed = True
+        user.is_active = True
+        user.email_confirmation_token = None  # Clear token
+        user.email_confirmation_sent_at = None
+        
+        db.session.commit()
+        
+        flash('Email confirmed successfully! You can now log in.', 'success')
+        return redirect(url_for('auth.login'))
+        
+    except Exception as e:
+        current_app.logger.error(f"Error confirming email: {str(e)}")
+        flash('An error occurred while confirming your email.', 'error')
+        return redirect(url_for('auth.login'))
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Forgot password form"""
+    if request.method == 'GET':
+        return render_template('auth/forgot_password.html')
+    
+    email = request.form.get('email')
+    if not email:
+        flash('Please enter your email address.', 'error')
+        return render_template('auth/forgot_password.html')
+    
+    user = User.query.filter_by(email=email).first()
+    if user:
+        try:
+            from utils.email_service import send_password_reset_email
+            send_password_reset_email(user)
+        except Exception as e:
+            current_app.logger.error(f"Error sending password reset email: {str(e)}")
+    
+    # Always show success message for security (don't reveal if email exists)
+    flash('If an account with that email exists, we have sent you a password reset link.', 'info')
+    return redirect(url_for('auth.login'))
+
+@auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Reset password with token"""
+    try:
+        from utils.email_service import is_token_valid
+        
+        # Find user by token
+        user = User.query.filter_by(password_reset_token=token).first()
+        
+        if not user or not is_token_valid(user, token, 'reset'):
+            flash('Invalid or expired reset token.', 'error')
+            return redirect(url_for('auth.forgot_password'))
+        
+        if request.method == 'GET':
+            return render_template('auth/reset_password.html', token=token)
+        
+        # POST request - process password reset
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if not password or not confirm_password:
+            flash('Please fill in all fields.', 'error')
+            return render_template('auth/reset_password.html', token=token)
+        
+        if password != confirm_password:
+            flash('Passwords do not match.', 'error')
+            return render_template('auth/reset_password.html', token=token)
+        
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long.', 'error')
+            return render_template('auth/reset_password.html', token=token)
+        
+        # Set new password
+        user.set_password(password)
+        user.password_reset_token = None  # Clear token
+        user.password_reset_sent_at = None
+        
+        db.session.commit()
+        
+        flash('Password reset successfully! You can now log in with your new password.', 'success')
+        return redirect(url_for('auth.login'))
+        
+    except Exception as e:
+        current_app.logger.error(f"Error resetting password: {str(e)}")
+        flash('An error occurred while resetting your password.', 'error')
+        return redirect(url_for('auth.login'))
 
 
 # ========================================
