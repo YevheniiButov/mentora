@@ -4,7 +4,7 @@
   <nav class="navbar navbar-expand-lg">
     <div class="container">
       <!-- Logo -->
-      <a class="navbar-brand" href="{{ url_for('index', lang=lang) }}">
+      <a class="navbar-brand" href="{{ url_for('main.index', lang=lang) }}">
         <div class="logo-container">
           <img class="logo logo-light" src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Light" height="40">
           <img class="logo logo-dark" src="{{ url_for('static', filename='images/logo_black.png') }}" alt="Mentora Dark" height="40">
@@ -23,8 +23,8 @@
         <ul class="navbar-nav me-auto">
           <!-- Hoofdpagina - всегда видна -->
           <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'index' }}" 
-               href="{{ url_for('index', lang=lang) }}">
+            <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'main.index' }}" 
+               href="{{ url_for('main.index', lang=lang) }}">
               {{ t('home', lang)|default('Home') }}
             </a>
           </li>
