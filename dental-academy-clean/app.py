@@ -32,6 +32,7 @@ except ImportError:
 
 # Import extensions and models
 from extensions import init_extensions, db, login_manager, babel, csrf
+from flask_wtf.csrf import CSRFProtect
 from utils.analytics_middleware import init_analytics_middleware
 from models import User, LearningPath, Subject, Module, Lesson, create_sample_data, DigiDSession, UserProgress, Test, Question, QuestionCategory, WebsiteVisit, PageView, UserSession
 from translations import get_translation, get_available_languages, DEFAULT_LANGUAGE, LANGUAGE_NAMES, RTL_LANGUAGES, COUNTRY_CODES
