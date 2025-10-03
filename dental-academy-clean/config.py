@@ -54,13 +54,27 @@ class Config:
     STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_your_key')
     
     # Email Configuration
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'false').lower() in ['true', 'on', '1']
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@mentora.com.in')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Mentora <info@bigmentor.nl>')
+    
+    # Email Confirmation
+    EMAIL_CONFIRMATION_EXPIRES = 86400  # 24 hours
+    EMAIL_CONFIRMATION_SALT = os.environ.get('EMAIL_CONFIRMATION_SALT', 'email-confirmation-salt')
+    
+    # Development mode - suppress email sending
     MAIL_SUPPRESS_SEND = os.environ.get('MAIL_SUPPRESS_SEND', 'false').lower() in ['true', 'on', '1']
+    
+    # Email Provider Configuration
+    EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'smtp')
+    
+    # Resend API Configuration
+    RESEND_API_KEY = os.environ.get('RESEND_API_KEY', None)
+    RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'Mentora <info@bigmentor.nl>')
     
     # Base URL for email links
     BASE_URL = os.environ.get('BASE_URL', 'https://www.mentora.com.in')

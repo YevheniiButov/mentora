@@ -1094,8 +1094,16 @@ def quick_register(lang=None):
         
         # Отправляем welcome email с подтверждением
         try:
-            from utils.email_service import send_welcome_email
-            email_sent = send_welcome_email(user)
+            from utils.email_service import send_email_confirmation
+            # Generate confirmation token
+            import secrets
+            import string
+            token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
+            user.email_confirmation_token = token
+            user.email_confirmation_sent_at = datetime.now(timezone.utc)
+            db.session.commit()
+            
+            email_sent = send_email_confirmation(user, token)
             if email_sent:
                 safe_log('log_registration_success', 'quick_registration', user.id, user.email, data)
             else:
