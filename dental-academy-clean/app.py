@@ -744,19 +744,6 @@ def ai_test():
         'status': 'ok'
     })
 
-@app.route('/debug-stripe-config')
-def debug_stripe_config():
-    """Debug Stripe configuration"""
-    import os
-    from flask import current_app
-    return safe_jsonify({
-        'stripe_secret_env': os.environ.get('STRIPE_SECRET_KEY', 'NOT_FOUND')[:20] + '...',
-        'stripe_publishable_env': os.environ.get('STRIPE_PUBLISHABLE_KEY', 'NOT_FOUND')[:20] + '...',
-        'stripe_secret_config': current_app.config.get('STRIPE_SECRET_KEY', 'NOT_FOUND')[:20] + '...',
-        'stripe_publishable_config': current_app.config.get('STRIPE_PUBLISHABLE_KEY', 'NOT_FOUND')[:20] + '...',
-        'flask_env': os.environ.get('FLASK_ENV', 'NOT_FOUND'),
-        'config_class': str(type(current_app.config))
-    })
 
 # Удаляем дублирующий роут learning-map
 # @app.route('/learning-map/')
