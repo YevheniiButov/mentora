@@ -299,7 +299,10 @@ def route_by_domain():
 # MAIN ROUTES (always available)
 # ========================================
 
-# Главная страница теперь обрабатывается main_bp
+@app.route('/')
+def root_redirect():
+    """Redirect root to default language"""
+    return redirect(url_for('main.index', lang='nl'))
 
 @app.route('/debug-mentora-login', methods=['GET', 'POST'])
 def debug_mentora_login():
