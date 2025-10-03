@@ -299,34 +299,7 @@ def route_by_domain():
 # MAIN ROUTES (always available)
 # ========================================
 
-@app.route('/')
-@app.route('/<string:lang>/')
-def index(lang='nl'):
-    host = request.host.lower()
-    
-    # Для mentora.com.in показываем космический дизайн
-    if 'mentora.com.in' in host:
-        return render_template('mentora_landing.html')
-    
-    # Для bigmentor.nl показываем обычную главную
-    # Validate language
-    if lang not in SUPPORTED_LANGUAGES:
-        lang = DEFAULT_LANGUAGE
-    
-    # Set language in session and g
-    session['lang'] = lang
-    g.lang = lang
-    
-    stats = {
-        "overall_progress": 75,
-        "completed_lessons": 24,
-        "total_lessons": 156,
-        "average_score": 89,
-        "anatomy_progress": 92,
-        "physiology_progress": 78,
-        "radiology_progress": 65,
-    }
-    return render_template('index.html', stats=stats, lang=lang)
+# Главная страница теперь обрабатывается main_bp
 
 @app.route('/debug-mentora-login', methods=['GET', 'POST'])
 def debug_mentora_login():

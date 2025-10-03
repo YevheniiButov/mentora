@@ -42,6 +42,13 @@ def inject_lang_main():
 @main_bp.route('/')
 def index(lang):
     """Main landing page"""
+    from flask import request
+    
+    host = request.host.lower()
+    
+    # Для mentora.com.in показываем космический дизайн
+    if 'mentora.com.in' in host:
+        return render_template('mentora_landing.html')
     
     # Get some basic statistics for the homepage
     stats = {
