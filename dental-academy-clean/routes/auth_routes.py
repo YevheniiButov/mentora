@@ -1136,39 +1136,6 @@ def quick_register(lang=None):
             'error': 'Registration failed. Please try again.'
         }), 500
 
-@auth_bp.route('/confirm-email/<token>')
-def confirm_email(token):
-    """Confirm user email with token"""
-    try:
-        from utils.email_service import is_token_valid
-        
-        # Find user by token
-        user = User.query.filter_by(email_confirmation_token=token).first()
-        
-        if not user:
-            flash('Invalid confirmation token.', 'error')
-            return redirect(url_for('auth.login'))
-        
-        # Check if token is valid
-        if not is_token_valid(user, token, 'confirmation'):
-            flash('Confirmation token has expired. Please request a new one.', 'error')
-            return redirect(url_for('auth.login'))
-        
-        # Confirm email and activate account
-        user.email_confirmed = True
-        user.is_active = True
-        user.email_confirmation_token = None  # Clear token
-        user.email_confirmation_sent_at = None
-        
-        db.session.commit()
-        
-        flash('Email confirmed successfully! You can now log in.', 'success')
-        return redirect(url_for('auth.login'))
-        
-    except Exception as e:
-        current_app.logger.error(f"Error confirming email: {str(e)}")
-        flash('An error occurred while confirming your email.', 'error')
-        return redirect(url_for('auth.login'))
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
