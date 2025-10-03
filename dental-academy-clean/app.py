@@ -516,8 +516,14 @@ try:
     app.register_blueprint(irt_spaced_bp)
     
     # Регистрация Analytics blueprint
-    from routes.analytics_routes import analytics_bp
-    app.register_blueprint(analytics_bp)
+    try:
+        from routes.analytics_routes import analytics_bp
+        app.register_blueprint(analytics_bp)
+        logger.info("✅ Analytics blueprint registered successfully")
+    except Exception as analytics_error:
+        logger.error(f"❌ ERROR importing Analytics routes: {analytics_error}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
     
     # Tracking routes
     from routes.tracking_routes import tracking_bp
