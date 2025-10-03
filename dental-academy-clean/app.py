@@ -2184,4 +2184,71 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=port,
         debug=debug
-    ) 
+    )
+
+# Admin user deletion routes (bypass CSRF issues)
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@csrf.exempt
+def admin_delete_user(user_id):
+    """Delete user (admin only) - bypass CSRF"""
+    from utils.decorators import admin_required
+    from models import User
+    
+    if not current_user.is_admin:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent deleting yourself
+    if user.id == current_user.id:
+        return jsonify({'error': 'Cannot delete own account'}), 400
+    
+    try:
+        user_email = user.email
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'User {user_email} deleted'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error deleting user: {str(e)}'}), 500
+
+@app.route('/admin/users/bulk-actions', methods=['POST'])
+@login_required
+@csrf.exempt
+def admin_bulk_user_actions():
+    """Bulk actions on users - bypass CSRF"""
+    from models import User
+    
+    if not current_user.is_admin:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    action = request.form.get('action')
+    selected_items = request.form.getlist('selected_items')
+    
+    if not selected_items:
+        return jsonify({'error': 'No items selected'}), 400
+    
+    try:
+        if action == 'delete':
+            # Get user emails for logging before deletion
+            users_to_delete = User.query.filter(User.id.in_(selected_items)).all()
+            user_emails = [user.email for user in users_to_delete]
+            
+            # Prevent deleting admins
+            admin_users = [user for user in users_to_delete if user.is_admin]
+            if admin_users:
+                return jsonify({'error': 'Cannot delete admin users'}), 400
+            
+            # Delete users
+            User.query.filter(User.id.in_(selected_items)).delete()
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': f'Deleted {len(selected_items)} users'})
+        else:
+            return jsonify({'error': f'Unknown action: {action}'}), 400
+            
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error: {str(e)}'}), 500 

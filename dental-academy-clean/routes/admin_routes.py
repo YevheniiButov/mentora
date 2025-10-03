@@ -2829,7 +2829,6 @@ def toggle_user_status(user_id):
 @admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
 @login_required
 @admin_required
-@csrf.exempt
 def delete_user(user_id):
     """Delete user (admin only)"""
     user = User.query.get_or_404(user_id)
@@ -2862,7 +2861,6 @@ def delete_user(user_id):
 @admin_bp.route('/users/bulk-actions', methods=['POST'])
 @login_required
 @admin_required
-@csrf.exempt
 def bulk_user_actions():
     """Bulk actions on users"""
     print(f"=== BULK ACTIONS DEBUG ===")
