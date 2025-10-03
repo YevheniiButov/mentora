@@ -893,62 +893,66 @@
     <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}" data-cfasync="false"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/image-optimization.min.css') }}">
     
-    <!-- Admin Functions - Inline to avoid Rocket Loader issues -->
-    <script>
-        // Admin bulk action functions - inline to prevent Cloudflare issues
-        window.toggleSelectAll = function(checkbox) {
-            var checkboxes = document.querySelectorAll('input[name="selected_items"]');
-            for (var i = 0; i < checkboxes.length; i++) {
-                checkboxes[i].checked = checkbox.checked;
-            }
-        };
-        
-        window.bulkAction = function(action) {
-            var selectedItems = [];
-            var checkboxes = document.querySelectorAll('input[name="selected_items"]:checked');
-            for (var i = 0; i < checkboxes.length; i++) {
-                selectedItems.push(checkboxes[i].value);
-            }
+    <!-- Admin Functions - HTML data attributes to avoid Rocket Loader -->
+    <script type="text/rocketscript" data-rocketsrc="false" data-cfasync="false">
+        // Admin bulk action functions - protected from Rocket Loader
+        (function() {
+            'use strict';
             
-            if (selectedItems.length === 0) {
-                alert('Please select items first');
-                return;
-            }
+            window.toggleSelectAll = function(checkbox) {
+                var checkboxes = document.querySelectorAll('input[name="selected_items"]');
+                for (var i = 0; i < checkboxes.length; i++) {
+                    checkboxes[i].checked = checkbox.checked;
+                }
+            };
             
-            if (confirm('Are you sure you want to ' + action + ' ' + selectedItems.length + ' item(s)?')) {
-                // Create form and submit
-                var form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/admin/bulk-action';
-                
-                var actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = action;
-                form.appendChild(actionInput);
-                
-                for (var j = 0; j < selectedItems.length; j++) {
-                    var input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'selected_items';
-                    input.value = selectedItems[j];
-                    form.appendChild(input);
+            window.bulkAction = function(action) {
+                var selectedItems = [];
+                var checkboxes = document.querySelectorAll('input[name="selected_items"]:checked');
+                for (var i = 0; i < checkboxes.length; i++) {
+                    selectedItems.push(checkboxes[i].value);
                 }
                 
-                document.body.appendChild(form);
-                form.submit();
-            }
-        };
-        
-        // Alternative bulk delete function
-        window.bulkDelete = function() {
-            window.bulkAction('delete');
-        };
-        
-        // Make functions global
-        window.toggleSelectAll = window.toggleSelectAll;
-        window.bulkAction = window.bulkAction;
-        window.bulkDelete = window.bulkDelete;
+                if (selectedItems.length === 0) {
+                    alert('Please select items first');
+                    return;
+                }
+                
+                if (confirm('Are you sure you want to ' + action + ' ' + selectedItems.length + ' item(s)?')) {
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/admin/bulk-action';
+                    
+                    var actionInput = document.createElement('input');
+                    actionInput.type = 'hidden';
+                    actionInput.name = 'action';
+                    actionInput.value = action;
+                    form.appendChild(actionInput);
+                    
+                    for (var j = 0; j < selectedItems.length; j++) {
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'selected_items';
+                        input.value = selectedItems[j];
+                        form.appendChild(input);
+                    }
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            };
+            
+            window.bulkDelete = function() {
+                window.bulkAction('delete');
+            };
+            
+            // Ensure functions are available
+            console.log('Admin functions loaded:', {
+                toggleSelectAll: typeof window.toggleSelectAll,
+                bulkAction: typeof window.bulkAction,
+                bulkDelete: typeof window.bulkDelete
+            });
+        })();
     </script>
     
     <!-- Cookie Notice -->
