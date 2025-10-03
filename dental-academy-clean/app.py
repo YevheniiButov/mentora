@@ -35,7 +35,7 @@ from extensions import init_extensions, db, login_manager, babel
 from utils.analytics_middleware import init_analytics_middleware
 from models import User, LearningPath, Subject, Module, Lesson, create_sample_data, DigiDSession, UserProgress, Test, Question, QuestionCategory, WebsiteVisit, PageView, UserSession
 from translations import get_translation, get_available_languages, DEFAULT_LANGUAGE, LANGUAGE_NAMES, RTL_LANGUAGES, COUNTRY_CODES
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import csrf
 from utils.serializers import setup_json_serialization
 
 import os
@@ -2050,6 +2050,7 @@ def create_admin_if_not_exists():
 # ========================================
 
 @app.route('/track-registration-visit', methods=['POST'])
+@csrf.exempt
 def track_registration_visit():
     """Track registration page visits"""
     try:
@@ -2061,6 +2062,7 @@ def track_registration_visit():
         return safe_jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/track-form-start', methods=['POST'])
+@csrf.exempt
 def track_form_start():
     """Track form start events"""
     try:
@@ -2072,6 +2074,7 @@ def track_form_start():
         return safe_jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/track-form-submit', methods=['POST'])
+@csrf.exempt
 def track_form_submit():
     """Track form submission events"""
     try:
@@ -2083,6 +2086,7 @@ def track_form_submit():
         return safe_jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/track-page-exit', methods=['POST'])
+@csrf.exempt
 def track_page_exit():
     """Track page exit events"""
     try:
@@ -2094,6 +2098,7 @@ def track_page_exit():
         return safe_jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route("/track-email-entry", methods=["POST"])
+@csrf.exempt
 def track_email_entry():
     """Track email entry events"""
     try:
@@ -2121,6 +2126,7 @@ def track_email_entry():
 # ========================================
 
 @app.route("/track-name-entry", methods=["POST"])
+@csrf.exempt
 def track_name_entry():
     """Track name entry events"""
     try:
