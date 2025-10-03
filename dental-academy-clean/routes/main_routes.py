@@ -52,14 +52,14 @@ def index(lang):
     
     # Get some basic statistics for the homepage
     stats = {
-        'total_paths': LearningPath.query.filter_by(is_active=True).count(),
+        'total_paths': LearningPath.query.count(),
         'total_subjects': Subject.query.count(),
         'total_modules': Module.query.count(),
         'total_lessons': Lesson.query.count()
     }
     
     # Get featured learning paths
-    featured_paths = LearningPath.query.filter_by(is_active=True).order_by(LearningPath.order).limit(3).all()
+    featured_paths = LearningPath.query.limit(3).all()
     
     # Get user progress if authenticated
     user_progress = None
