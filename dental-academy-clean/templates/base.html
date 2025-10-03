@@ -589,13 +589,13 @@
     <script src="{{ url_for('static', filename='js/universal-scripts.js') }}"></script>
 
     <!-- Main JS -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" data-cfasync="false"></script>
     
     <!-- Registration Tracking -->
-    <script src="{{ url_for('static', filename='js/registration_tracker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/registration_tracker.js') }}" data-cfasync="false"></script>
     
     <!-- Analytics JavaScript -->
-    <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/analytics.js') }}" data-cfasync="false"></script>
 
     <!-- Global Application Scripts -->
     <script>
@@ -890,8 +890,51 @@
     
 
     <!-- Image Optimization -->
-    <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}" data-cfasync="false"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/image-optimization.min.css') }}">
+    
+    <!-- Admin Functions -->
+    <script data-cfasync="false">
+        // Admin bulk action functions
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('input[name="selected_items"]');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+        }
+        
+        function bulkAction(action) {
+            const selectedItems = Array.from(document.querySelectorAll('input[name="selected_items"]:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedItems.length === 0) {
+                alert('Please select items first');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to ${action} ${selectedItems.length} item(s)?`)) {
+                // Create form and submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/bulk-action';
+                
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = action;
+                form.appendChild(actionInput);
+                
+                selectedItems.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'selected_items';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
     
     <!-- Cookie Notice -->
     <div id="cookie-notice" class="cookie-notice">
