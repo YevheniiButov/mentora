@@ -608,79 +608,12 @@ except ImportError as e:
     # Diagnostic blueprint already registered above
     
 
-    
-    @app.route('/contact')
-    def contact():
-        return render_template('contact.html')
-    
-    @app.route('/privacy')
-    def privacy():
-        return render_template('privacy.html')
-    
-    @app.route('/terms')
-    def terms():
-        return render_template('terms.html')
-    
-    @app.route('/dashboard')
-    def dashboard():
-        if not current_user.is_authenticated:
-            return redirect(url_for('login'))
-        return render_template('dashboard.html')
+    # Legacy routes removed - handled by blueprints
     
     
-    @app.route('/login', methods=['GET', 'POST'])
-    def login():
-        return redirect(url_for('auth.login'))
+    # Legacy auth routes removed - handled by auth_bp
     
-    @app.route('/register', methods=['GET', 'POST'])
-    def register():
-        if request.method == 'POST':
-            username = request.form.get('username')
-            email = request.form.get('email')
-            password = request.form.get('password')
-            
-            if User.query.filter_by(username=username).first():
-                from flask import flash
-                flash('Пользователь с таким именем уже существует', 'error')
-            elif User.query.filter_by(email=email).first():
-                from flask import flash
-                flash('Пользователь с таким email уже существует', 'error')
-            else:
-                user = User(username=username, email=email)
-                user.set_password(password)
-                user.requires_diagnostic = True  # Устанавливаем флаг диагностики для новых пользователей
-                db.session.add(user)
-                db.session.commit()
-                
-                login_user(user)
-                
-                # Проверяем необходимость диагностики после входа
-                if user.requires_diagnostic:
-                    return redirect(url_for('diagnostic.choose_diagnostic_type'))
-                
-                return redirect(url_for('index'))
-        
-        return render_template('auth/register.html')
-    
-    @app.route('/logout')
-    def logout():
-        logout_user()
-        return redirect(url_for('index'))
-    
-    # Profile route moved to profile_routes.py blueprint
-    
-    @app.route('/community')
-    @app.route('/community/')
-    @login_required
-    def community_redirect():
-        """Redirect /community to /nl/community"""
-        from flask import session, redirect, url_for
-        lang = session.get('lang', 'nl')
-        return redirect(url_for('main.community', lang=lang))
-    
-    @app.route('/edit_profile')
-    def edit_profile():
-        return render_template('auth/edit_profile.html')
+    # Profile and community routes removed - handled by blueprints
     
     # Removed conflicting route - using blueprint instead
 

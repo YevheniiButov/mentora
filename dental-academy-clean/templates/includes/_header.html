@@ -4,7 +4,7 @@
   <nav class="navbar navbar-expand-lg">
     <div class="container">
       <!-- Logo -->
-      <a class="navbar-brand" href="{{ url_for('main.index', lang=lang) }}">
+      <a class="navbar-brand" href="/{{ lang }}/">
         <div class="logo-container">
           <img class="logo logo-light" src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Light" height="40">
           <img class="logo logo-dark" src="{{ url_for('static', filename='images/logo_black.png') }}" alt="Mentora Dark" height="40">
@@ -24,7 +24,7 @@
           <!-- Hoofdpagina - всегда видна -->
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'main.index' }}" 
-               href="{{ url_for('main.index', lang=lang) }}">
+               href="/{{ lang }}/">
               {{ t('home', lang)|default('Home') }}
             </a>
           </li>
@@ -33,13 +33,13 @@
           {% if current_user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'daily_learning.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
-               href="{{ url_for('daily_learning.learning_map', lang=lang|default('en')) }}">
+               href="/{{ lang|default('en') }}/learning-map">
               {{ t('learning_map', lang|default('en'))|default('Learning Map') }}
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'daily_learning.knowledge_base' }}" 
-               href="{{ url_for('daily_learning.knowledge_base', lang=lang|default('en')) }}">
+               href="/{{ lang|default('en') }}/knowledge-base">
               {{ t('knowledge_base', lang|default('en'))|default('Knowledge Base') }}
             </a>
           </li>
@@ -55,7 +55,7 @@
           
           <!-- Over BIG - всегда видна -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('main.big_info', lang=lang|default('en')) }}">
+            <a class="nav-link" href="/{{ lang|default('en') }}/big-info">
               {{ t('about_big', lang|default('en'))|default('About BIG') }}
             </a>
           </li>
@@ -138,25 +138,25 @@
               <li><hr class="dropdown-divider"></li>
               
               <!-- Gamification -->
-              <li><a class="dropdown-item" href="{{ url_for('dashboard.achievements') }}">
+              <li><a class="dropdown-item" href="/{{ lang }}/dashboard/achievements">
                 <i class="bi bi-trophy fs-5 me-2"></i>
                 {{ t('gamification', lang)|default('Gamification') }}
               </a></li>
               
               <!-- Progress -->
-              <li><a class="dropdown-item" href="{{ url_for('dashboard.activity') }}">
+              <li><a class="dropdown-item" href="/{{ lang }}/dashboard/activity">
                 <i class="bi bi-graph-up fs-5 me-2"></i>
                 {{ t('progress', lang)|default('Progress') }}
               </a></li>
               
               <!-- Learning Planner -->
-              <li><a class="dropdown-item" href="{{ url_for('dashboard.learning_planner_redirect') }}">
+              <li><a class="dropdown-item" href="/{{ lang }}/dashboard/learning-planner">
                 <i class="bi bi-calendar-check fs-5 me-2"></i>
                 {{ t('learning_planner', lang)|default('Learning Planner') }}
               </a></li>
               
               <!-- Profile -->
-              <li><a class="dropdown-item" href="{{ url_for('profile.profile', lang=lang) if lang != 'en' else url_for('profile.profile') }}">
+              <li><a class="dropdown-item" href="/{{ lang }}/profile">
                 <i class="bi bi-person-gear fs-5 me-2"></i>
                 {{ t('edit_profile', lang)|default('Edit profile') }}
               </a></li>
@@ -167,12 +167,12 @@
               
               <!-- Logout -->
               {% if current_user.is_digid_user() %}
-              <li><a class="dropdown-item text-danger" href="{{ url_for('digid.logout') }}">
+              <li><a class="dropdown-item text-danger" href="/digid/logout">
                 <i class="bi bi-box-arrow-right fs-5 me-2"></i> DigiD 
                 {{ t('logout', lang)|default('Logout') }}
               </a></li>
               {% else %}
-              <li><a class="dropdown-item text-danger" href="{{ url_for('auth.digid_logout') }}">
+              <li><a class="dropdown-item text-danger" href="/{{ lang }}/auth/logout">
                 <i class="bi bi-box-arrow-right fs-5 me-2"></i>
                 {{ t('logout', lang)|default('Logout') }}
               </a></li>
@@ -213,12 +213,12 @@
               <li><hr class="dropdown-divider"></li>
               
               <!-- Login -->
-              <li><a class="dropdown-item" href="{{ url_for('auth.login', lang=lang) }}">
+              <li><a class="dropdown-item" href="/{{ lang }}/auth/login">
                 <i class="bi bi-box-arrow-in-right fs-5 me-2"></i>
                 {{ t('login', lang)|default('Login') }}
               </a></li>
               <!-- Register -->
-              <li><a class="dropdown-item" href="{{ url_for('auth.register', lang=lang) }}">
+              <li><a class="dropdown-item" href="/{{ lang }}/auth/register">
                 <i class="bi bi-person-plus fs-5 me-2"></i>
                 {{ t('register', lang)|default('Register') }}
               </a></li>
