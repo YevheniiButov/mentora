@@ -183,14 +183,22 @@ class AnalyticsTracker {
         
         if (useBeacon && navigator.sendBeacon) {
             // Use sendBeacon for reliable delivery on page unload
+            // Note: sendBeacon doesn't support custom headers, so CSRF is handled server-side for beacons
             navigator.sendBeacon('/analytics/track-event', JSON.stringify(payload));
         } else {
             // Use fetch for normal events
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (csrfToken) {
+                headers['X-CSRFToken'] = csrfToken.getAttribute('content');
+            }
+            
             fetch('/analytics/track-event', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
                 body: JSON.stringify(payload)
             }).catch(error => {
                 console.warn('Analytics tracking error:', error);
