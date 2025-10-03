@@ -31,11 +31,10 @@ except ImportError:
         return 'en'
 
 # Import extensions and models
-from extensions import init_extensions, db, login_manager, babel
+from extensions import init_extensions, db, login_manager, babel, csrf
 from utils.analytics_middleware import init_analytics_middleware
 from models import User, LearningPath, Subject, Module, Lesson, create_sample_data, DigiDSession, UserProgress, Test, Question, QuestionCategory, WebsiteVisit, PageView, UserSession
 from translations import get_translation, get_available_languages, DEFAULT_LANGUAGE, LANGUAGE_NAMES, RTL_LANGUAGES, COUNTRY_CODES
-from flask_wtf.csrf import csrf
 from utils.serializers import setup_json_serialization
 
 import os
