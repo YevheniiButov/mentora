@@ -107,6 +107,11 @@ def faq(lang):
     """FAQ page"""
     return render_template('faq.html', lang=lang)
 
+@main_bp.route('/auth/login')
+def auth_login_redirect(lang):
+    """Redirect to auth login page"""
+    return redirect(url_for('auth.login', lang=lang))
+
 @main_bp.route('/coming-soon')
 def coming_soon(lang):
     """Coming Soon page"""
