@@ -109,8 +109,19 @@ def faq(lang):
 
 @main_bp.route('/auth/login')
 def auth_login_redirect(lang):
-    """Redirect to auth login page"""
-    return redirect(url_for('auth.login', lang=lang))
+    """Handle auth login page directly"""
+    from flask import g, session
+    
+    # Set language
+    g.lang = lang
+    session['lang'] = lang
+    
+    return render_template('auth/login.html', lang=lang)
+
+@main_bp.route('/auth/register')
+def auth_register_redirect(lang):
+    """Redirect to auth register page"""
+    return redirect(url_for('auth.register', lang=lang))
 
 @main_bp.route('/coming-soon')
 def coming_soon(lang):
