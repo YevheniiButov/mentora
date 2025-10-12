@@ -1481,6 +1481,14 @@
                             <span class="stats-label">Avg Score</span>
                             <span class="stats-value" x-text="userStats.avgScore + '%'"></span>
                         </div>
+                        <div class="stats-row">
+                            <span class="stats-label">IRT Tests</span>
+                            <span class="stats-value" x-text="userStats.irtTestsCompleted"></span>
+                        </div>
+                        <div class="stats-row">
+                            <span class="stats-label">Lessons</span>
+                            <span class="stats-value" x-text="userStats.totalLessonsCompleted"></span>
+                        </div>
                     </div>
 
                     <template x-for="module in displayModules.slice(0, 3)" :key="module.id">
@@ -1594,7 +1602,11 @@
                     totalLearningTime: '0h',
                     avgScore: 0,
                     irtTestsCompleted: 0,
-                    totalLessonsCompleted: 0
+                    totalLessonsCompleted: 0,
+                    totalLessonsStarted: 0,
+                    avgIrtScore: 0,
+                    testAttempts: 0,
+                    lastActivity: null
                 },
                 statsLoaded: false,
                 async loadUserStats() {
@@ -1609,7 +1621,11 @@
                                 totalLearningTime: data.statistics.total_learning_time || '0h',
                                 avgScore: data.statistics.avg_score || 0,
                                 irtTestsCompleted: data.statistics.irt_tests_completed || 0,
-                                totalLessonsCompleted: data.statistics.total_lessons_completed || 0
+                                totalLessonsCompleted: data.statistics.total_lessons_completed || 0,
+                                totalLessonsStarted: data.statistics.total_lessons_started || 0,
+                                avgIrtScore: data.statistics.avg_irt_score || 0,
+                                testAttempts: data.statistics.test_attempts || 0,
+                                lastActivity: data.statistics.last_activity || null
                             };
                             this.statsLoaded = true;
                         }

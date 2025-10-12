@@ -16,7 +16,7 @@ statistics_bp = Blueprint(
 
 @statistics_bp.route('/user-statistics')
 @login_required
-def get_user_statistics():
+def get_user_statistics(lang):
     """
     API endpoint для получения реальной статистики пользователя
     """
