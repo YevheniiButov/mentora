@@ -337,7 +337,7 @@ translations = {
     
     # IRT Test Announcement
     'irt_test_title': 'Teste IRT',
-    'irt_test_announcement': 'Em breve disponível: teste diagnóstico IRT em modo beta!',
+    'irt_test_announcement': 'Sistema de diagnóstico IRT está ao vivo!',
     'irt_test_note': 'Para todos os usuários registrados',
     'comprehensive_program_subtitle': 'Registre-se agora para participar do programa abrangente de preparação para o exame BIG com estágios práticos',
     'what_you_get': 'O que te espera:',

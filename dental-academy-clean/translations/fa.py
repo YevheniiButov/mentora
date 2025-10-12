@@ -286,7 +286,7 @@ translations = {
     
     # IRT Test Announcement
     'irt_test_title': 'آزمون IRT',
-    'irt_test_announcement': 'به زودی در دسترس: آزمون تشخیصی IRT در حالت بتا!',
+    'irt_test_announcement': 'سیستم تشخیصی IRT اکنون زنده است!',
     'irt_test_note': 'برای همه کاربران ثبت‌نام شده',
     'comprehensive_program_subtitle': 'الان ثبت‌نام کنید تا در برنامه جامع آمادگی آزمون BIG با کارآموزی عملی شرکت کنید',
     'what_you_get': 'آنچه در انتظار شماست:',

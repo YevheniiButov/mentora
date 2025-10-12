@@ -760,7 +760,7 @@ translations = {
     
     # IRT Test Announcement
     'irt_test_title': 'IRT Test',
-    'irt_test_announcement': 'Soon available: diagnostic IRT test in beta mode!',
+    'irt_test_announcement': 'IRT diagnostic system is now live!',
     'irt_test_note': 'For all registered users',
     'comprehensive_program_subtitle': 'Register now to participate in the comprehensive BIG exam preparation program with practical internships',
     'what_you_get': 'What awaits you:',

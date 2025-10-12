@@ -400,7 +400,7 @@ translations = {
     
     # IRT Test Announcement
     'irt_test_title': 'IRT Test',
-    'irt_test_announcement': 'Binnenkort beschikbaar: diagnostische IRT test in bètamodus!',
+    'irt_test_announcement': 'IRT diagnostisch systeem is nu live!',
     'irt_test_note': 'Voor alle geregistreerde gebruikers',
     'comprehensive_program_subtitle': 'Registreer nu om deel te nemen aan het uitgebreide BIG examen voorbereidingsprogramma met praktische stages',
     'what_you_get': 'Wat je te wachten staat:',

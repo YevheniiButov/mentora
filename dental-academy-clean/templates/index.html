@@ -274,14 +274,16 @@ body .hero-section {
   top: 120px;
   right: 20px;
   z-index: 1001;
-  max-width: 320px;
-  background: linear-gradient(135deg, #3ECDC1 0%, #2dd4bf 100%);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 380px;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4), 0 10px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   display: none;
   transform: translateX(100%);
   animation: none;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .irt-sticker-content {
@@ -292,75 +294,88 @@ body .hero-section {
 
 .irt-sticker-icon {
   position: absolute;
-  top: -10px;
+  top: -15px;
   left: 20px;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+  border-radius: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  backdrop-filter: blur(10px);
+  font-size: 1.5rem;
+  backdrop-filter: blur(15px);
   border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+  animation: float 3s ease-in-out infinite;
 }
 
 .irt-sticker-text {
-  margin-left: 50px;
-  margin-bottom: 10px;
+  margin-left: 60px;
+  margin-bottom: 15px;
+  animation: fadeIn 0.8s ease-out 0.2s both;
 }
 
 .irt-sticker-text h4 {
-  margin: 0 0 5px 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
 }
 
 .irt-sticker-text p {
-  margin: 0 0 8px 0;
-  font-size: 0.9rem;
-  font-weight: 500;
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  font-weight: 600;
   opacity: 0.95;
-  line-height: 1.4;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .irt-sticker-note {
   display: block;
-  font-size: 0.75rem;
-  font-weight: 500;
-  opacity: 0.85;
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.9;
   font-style: italic;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
 }
 
 .irt-sticker-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 255, 0.2);
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.15);
   border: none;
   color: white;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .irt-sticker-close:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .irt-sticker-ribbon {
@@ -368,10 +383,10 @@ body .hero-section {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+  height: 3px;
+  background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b, #10b981);
   background-size: 300% 100%;
-  animation: ribbonFlow 3s ease-in-out infinite;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 @keyframes slideInRight {
@@ -396,15 +411,32 @@ body .hero-section {
   }
 }
 
-@keyframes ribbonFlow {
-  0% {
+@keyframes shimmer {
+  0%, 100% {
     background-position: 0% 50%;
   }
   50% {
     background-position: 100% 50%;
   }
-  100% {
-    background-position: 0% 50%;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -414,7 +446,26 @@ body .hero-section {
     right: 10px;
     left: 10px;
     max-width: none;
-    top: 100px;
+    top: 80px;
+    max-width: 320px;
+  }
+  
+  .irt-sticker-text {
+    margin-left: 55px;
+  }
+  
+  .irt-sticker-text h4 {
+    font-size: 1.1rem;
+  }
+  
+  .irt-sticker-text p {
+    font-size: 0.9rem;
+  }
+  
+  .irt-sticker-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
   }
 }
 </style>
@@ -1070,10 +1121,10 @@ body .hero-section {
 <div id="irt-announcement" class="irt-announcement-sticker">
   <div class="irt-sticker-content">
     <div class="irt-sticker-icon">
-      <i class="fas fa-flask"></i>
+      🧠
     </div>
     <div class="irt-sticker-text">
-      <h4>🧪 {{ t('irt_test_title', g.lang) | default('IRT Test') }}</h4>
+      <h4>🧠 {{ t('irt_test_title', g.lang) | default('IRT Test') }}</h4>
       <p>{{ t('irt_test_announcement', g.lang) | default('Soon available: diagnostic IRT test in beta mode!') }}</p>
       <small class="irt-sticker-note">* {{ t('irt_test_note', g.lang) | default('For all registered users') }}</small>
     </div>

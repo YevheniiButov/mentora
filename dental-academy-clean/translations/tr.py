@@ -265,7 +265,7 @@ translations = {
     
     # IRT Test Announcement
     'irt_test_title': 'IRT Testi',
-    'irt_test_announcement': 'Yakında mevcut: beta modunda tanısal IRT testi!',
+    'irt_test_announcement': 'IRT tanı sistemi şimdi canlı!',
     'irt_test_note': 'Tüm kayıtlı kullanıcılar için',
     'comprehensive_program_subtitle': 'Pratik stajlarla kapsamlı BIG sınav hazırlık programına katılmak için şimdi kayıt olun',
     'what_you_get': 'Sizi bekleyenler:',
