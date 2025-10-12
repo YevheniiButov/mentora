@@ -1471,15 +1471,15 @@
                         </div>
                         <div class="stats-row">
                             <span class="stats-label">Active</span>
-                            <span class="stats-value" x-text="activeModules"></span>
+                            <span class="stats-value" x-text="userStats.activeModules"></span>
                         </div>
                         <div class="stats-row">
                             <span class="stats-label">Time</span>
-                            <span class="stats-value">12.5h</span>
+                            <span class="stats-value" x-text="userStats.totalLearningTime"></span>
                         </div>
                         <div class="stats-row">
                             <span class="stats-label">Avg Score</span>
-                            <span class="stats-value">85%</span>
+                            <span class="stats-value" x-text="userStats.avgScore + '%'"></span>
                         </div>
                     </div>
 
@@ -1588,6 +1588,38 @@
                 launchDate: launchDate,
                 // Enabled tabs (only IRT and Games before launch)
                 enabledTabs: ['irt', 'games'], // Только IRT и Games всегда доступны
+                // Real user statistics
+                userStats: {
+                    activeModules: 0,
+                    totalLearningTime: '0h',
+                    avgScore: 0,
+                    irtTestsCompleted: 0,
+                    totalLessonsCompleted: 0
+                },
+                statsLoaded: false,
+                async loadUserStats() {
+                    try {
+                        const currentLang = document.querySelector('html').getAttribute('lang') || 'en';
+                        const response = await fetch(`/${currentLang}/api/user-statistics`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.userStats = {
+                                activeModules: data.statistics.active_modules || 0,
+                                totalLearningTime: data.statistics.total_learning_time || '0h',
+                                avgScore: data.statistics.avg_score || 0,
+                                irtTestsCompleted: data.statistics.irt_tests_completed || 0,
+                                totalLessonsCompleted: data.statistics.total_lessons_completed || 0
+                            };
+                            this.statsLoaded = true;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load user statistics:', error);
+                    }
+                },
+                init() {
+                    this.loadUserStats();
+                },
                 selectTab(tab) {
                     if (!this.enabledTabs.includes(tab)) {
                         this.showComingSoonModal(tab);

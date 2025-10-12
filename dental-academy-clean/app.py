@@ -427,6 +427,9 @@ try:
     # Импорт Testing роутов
     from routes.testing_routes import testing_bp
     
+    # User statistics API
+    from routes.user_statistics_api import statistics_bp
+    
     # Импорт Learning Planner роутов
     from routes.learning_planner_routes import learning_planner_bp
     
@@ -483,6 +486,10 @@ try:
     
     # Регистрация Testing blueprint (ВКЛЮЧЕНО с декораторами блокировки)
     app.register_blueprint(testing_bp, url_prefix='/testing')
+    
+    # Регистрация Statistics API blueprint
+    app.register_blueprint(statistics_bp)
+    logger.info("✅ Statistics API blueprint registered successfully")
     
     # Регистрация Learning Planner blueprint
     app.register_blueprint(learning_planner_bp, url_prefix='/dashboard')
