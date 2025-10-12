@@ -356,8 +356,12 @@ def get_next_question():
                 'error': 'Failed to load question'
             }), 500
         
+        # КРИТИЧЕСКИ ВАЖНО: Обновляем current_question_id перед commit
+        old_question_id = diagnostic_session.current_question_id
         diagnostic_session.current_question_id = next_question.id
         db.session.commit()
+        
+        logger.info(f"✅ Updated current_question_id: {old_question_id} → {next_question.id}")
         
         # Calculate session info
         session_info = {
@@ -687,11 +691,67 @@ def submit_answer(session_id):
         db.session.rollback()
         return jsonify({'success': False, 'error': 'Internal server error', 'details': str(e)}), 500
 
+def show_simple_test_results(diagnostic_session, lang='nl'):
+    """Show simple test results (not full diagnostic)"""
+    try:
+        # Calculate simple statistics
+        total_questions = diagnostic_session.questions_answered
+        correct_answers = diagnostic_session.correct_answers
+        score_percentage = int((correct_answers / total_questions * 100)) if total_questions > 0 else 0
+        
+        # Calculate time taken
+        time_taken_seconds = 0
+        if diagnostic_session.started_at and diagnostic_session.completed_at:
+            started = diagnostic_session.started_at
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=timezone.utc)
+            completed = diagnostic_session.completed_at
+            if completed.tzinfo is None:
+                completed = completed.replace(tzinfo=timezone.utc)
+            time_taken_seconds = int((completed - started).total_seconds())
+        
+        time_minutes = time_taken_seconds // 60
+        time_seconds = time_taken_seconds % 60
+        
+        # Get performance level
+        if score_percentage >= 90:
+            performance_level = 'excellent'
+            performance_message = 'Uitstekend!'
+            performance_emoji = '🏆'
+        elif score_percentage >= 75:
+            performance_level = 'good'
+            performance_message = 'Goed gedaan!'
+            performance_emoji = '⭐'
+        elif score_percentage >= 60:
+            performance_level = 'pass'
+            performance_message = 'Geslaagd!'
+            performance_emoji = '👍'
+        else:
+            performance_level = 'needs_work'
+            performance_message = 'Meer oefening nodig'
+            performance_emoji = '📚'
+        
+        return render_template('assessment/test_results_simple.html',
+                             session=diagnostic_session,
+                             total_questions=total_questions,
+                             correct_answers=correct_answers,
+                             score_percentage=score_percentage,
+                             time_minutes=time_minutes,
+                             time_seconds=time_seconds,
+                             performance_level=performance_level,
+                             performance_message=performance_message,
+                             performance_emoji=performance_emoji,
+                             lang=lang)
+    except Exception as e:
+        logger.error(f"Error showing simple test results: {e}")
+        flash('Error loading test results', 'error')
+        return redirect(url_for('main.index', lang=lang))
+
 @diagnostic_bp.route('/results/<int:session_id>')
 @login_required
 @validate_session
 def show_results(session_id):
-    """Show diagnostic results with modern UI"""
+    """Show diagnostic/test results with appropriate UI"""
     print(f"🔍 ОТЛАДКА: show_results вызвана для session_id = {session_id}")
     current_app.logger.info(f"Showing results for session {session_id}")
     
@@ -705,11 +765,18 @@ def show_results(session_id):
         print(f"🔍 ОТЛАДКА: diagnostic_session.questions_answered = {diagnostic_session.questions_answered}")
         
         if diagnostic_session.status != 'completed':
-            print(f"🔍 ОТЛАДКА: сессия не завершена, возвращаем ошибку 400")
-            return safe_jsonify({
-                'success': False,
-                'error': 'Session not completed'
-            }), 400
+            print(f"🔍 ОТЛАДКА: сессия не завершена, возвращаем HTML страницу с ошибкой")
+            flash('Тестирование еще не завершено. Пожалуйста, завершите все вопросы.', 'warning')
+            return redirect(url_for('diagnostic.show_question', session_id=session_id))
+        
+        # Определяем тип сессии - это диагностика или простое тестирование
+        session_data = diagnostic_session.get_session_data()
+        diagnostic_type = session_data.get('diagnostic_type', 'express')
+        is_simple_test = diagnostic_type in ['express', 'preliminary']  # Простое тестирование
+        
+        # Для простого тестирования показываем упрощенный шаблон
+        if is_simple_test:
+            return show_simple_test_results(diagnostic_session, lang)
         
         print(f"🔍 ОТЛАДКА: сессия завершена, генерируем результаты")
         
@@ -986,10 +1053,8 @@ def show_results(session_id):
         print(f"❌ Ошибка в show_results: {e}")
         import traceback
         traceback.print_exc()
-        return safe_jsonify({
-            'success': False,
-            'error': f'Error generating results: {str(e)}'
-        }), 500
+        flash(f'Ошибка при генерации результатов: {str(e)}', 'error')
+        return redirect(url_for('dashboard.index'))
 
 @diagnostic_bp.route('/session/<int:session_id>/status')
 @login_required
@@ -1939,7 +2004,11 @@ def choose_diagnostic_type():
 @login_required
 def show_question(session_id):
     try:
+        # ВАЖНО: Принудительно обновляем сессию из БД чтобы получить актуальный current_question_id
+        db.session.expire_all()  # Очищаем кэш
         diagnostic_session = DiagnosticSession.query.get_or_404(session_id)
+        
+        logger.info(f"📖 show_question called: session_id={session_id}, current_question_id={diagnostic_session.current_question_id}")
         
         # Проверяем, что сессия активна
         if diagnostic_session.status != 'active':
@@ -1947,10 +2016,14 @@ def show_question(session_id):
             return redirect(url_for('diagnostic.choose_diagnostic_type'))
         
         # Получить текущий вопрос для пользователя
+        # NOTE: current_question_id должен быть уже установлен через get_next_question API
+        # Здесь мы только проверяем, что он существует
         if not diagnostic_session.current_question_id:
-            # Если нет текущего вопроса, выбираем первый
+            # Если нет текущего вопроса, это первый вопрос сессии
             from utils.irt_engine import IRTEngine
-            irt = IRTEngine()
+            session_data = diagnostic_session.get_session_data()
+            diagnostic_type = session_data.get('diagnostic_type', 'express')
+            irt = IRTEngine(diagnostic_session, diagnostic_type=diagnostic_type)
             first_question = irt.select_initial_question()
             if not first_question:
                 flash('Нет доступных вопросов', 'error')

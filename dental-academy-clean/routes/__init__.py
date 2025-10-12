@@ -12,6 +12,7 @@ from .ai_assistant_routes import ai_assistant_bp
 # Импорт роутов аутентификации
 from .auth_routes import auth_bp
 from .digid_routes import digid_bp
+from .profile_routes import profile_bp
 
 # Импорт административных роутов
 from .admin_routes import admin_bp
@@ -45,6 +46,7 @@ def register_blueprints(app):
     # Аутентификация
     app.register_blueprint(auth_bp)
     app.register_blueprint(digid_bp)
+    app.register_blueprint(profile_bp)
     
     # Административные функции
     app.register_blueprint(admin_bp)

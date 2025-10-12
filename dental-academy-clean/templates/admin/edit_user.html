@@ -27,6 +27,7 @@
             </div>
             <div class="card-body">
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="row">
                         <!-- Basic Information -->
                         <div class="col-md-6">
@@ -211,6 +212,7 @@
                                 {% if not user.created_via_digid %}
                                 <li>
                                     <form method="POST" action="{{ url_for('admin.reset_user_password', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="dropdown-item" 
                                                 onclick="return confirm('Сбросить пароль пользователя?')">
                                             <i class="bi bi-key"></i> Сбросить пароль
@@ -221,6 +223,7 @@
                                 {% if not user.email_confirmed %}
                                 <li>
                                     <form method="POST" action="{{ url_for('admin.force_verify_email', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="dropdown-item"
                                                 onclick="return confirm('Принудительно подтвердить email?')">
                                             <i class="bi bi-envelope-check"></i> Подтвердить email
@@ -229,6 +232,7 @@
                                 </li>
                                 <li>
                                     <form method="POST" action="{{ url_for('admin.resend_verification_email', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="dropdown-item">
                                             <i class="bi bi-envelope"></i> Отправить письмо подтверждения
                                         </button>

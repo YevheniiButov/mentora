@@ -1,0 +1,1252 @@
+{% extends "games/base_game.html" %}
+
+{% block title %}Quick Quiz{% endblock %}
+
+{% block game_title %}
+    <i class="bi bi-lightning-charge-fill"></i> Quick Quiz
+{% endblock %}
+
+{% block game_subtitle %}
+    Test your medical knowledge with rapid-fire questions
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Quiz Game Colors - Green/Emerald */
+    :root {
+        --game-primary: #10b981;
+        --game-secondary: #059669;
+        --game-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --game-light: #d1fae5;
+        --game-shadow: rgba(16, 185, 129, 0.4);
+    }
+    
+    .quiz-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .question-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--card-shadow);
+        animation: slideIn 0.5s ease;
+    }
+    
+    @media (max-width: 767px) {
+        .question-card {
+            padding: 1.5rem;
+            border-radius: 15px;
+        }
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .question-number {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: var(--game-gradient);
+        color: white;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .question-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: #1e293b;
+        line-height: 1.5;
+    }
+    
+    @media (max-width: 767px) {
+        .question-text {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+    }
+    
+    .answers-grid {
+        display: grid;
+        gap: 1rem;
+    }
+    
+    .answer-btn {
+        padding: 1.5rem;
+        border: 2px solid #e2e8f0;
+        background: white;
+        border-radius: 16px;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    @media (max-width: 767px) {
+        .answer-btn {
+            padding: 1.25rem;
+            font-size: 1rem;
+        }
+    }
+    
+    .answer-btn::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: var(--game-gradient);
+        transform: scaleY(0);
+        transition: transform 0.3s;
+    }
+    
+    .answer-btn:hover:not(:disabled) {
+        border-color: var(--game-primary);
+        background: var(--game-light);
+        transform: translateX(10px);
+        box-shadow: 0 4px 20px var(--game-shadow);
+    }
+    
+    .answer-btn:hover:not(:disabled)::before {
+        transform: scaleY(1);
+    }
+    
+    .answer-btn.selected {
+        border-color: var(--game-primary);
+        background: var(--game-gradient);
+        color: white;
+        transform: translateX(10px);
+        box-shadow: 0 8px 25px var(--game-shadow);
+    }
+    
+    .answer-btn.correct {
+        border-color: #10b981;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #047857;
+        animation: correct 0.6s;
+    }
+    
+    @keyframes correct {
+        0%, 100% { transform: translateX(0) scale(1); }
+        50% { transform: translateX(10px) scale(1.02); }
+    }
+    
+    .answer-btn.incorrect {
+        border-color: #ef4444;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #dc2626;
+        animation: shake 0.5s;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+    
+    .answer-btn:disabled {
+        cursor: not-allowed;
+    }
+    
+    .progress-bar-container {
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background: var(--game-gradient);
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 10px var(--game-shadow);
+    }
+    
+    .category-selector {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .category-selector h5 {
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+    }
+    
+    .category-btn {
+        padding: 0.875rem 1.75rem;
+        border: 2px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        border-radius: 12px;
+        margin: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    @media (max-width: 767px) {
+        .category-btn {
+            display: block;
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    .category-btn.active {
+        background: var(--game-gradient);
+        color: white;
+        border-color: var(--game-primary);
+        box-shadow: 0 4px 15px var(--game-shadow);
+    }
+    
+    .category-btn:hover:not(.active) {
+        border-color: var(--game-primary);
+        color: var(--game-primary);
+        transform: translateY(-2px);
+    }
+    
+    .feedback-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 2rem;
+        display: none;
+        box-shadow: var(--card-shadow);
+    }
+    
+    @media (max-width: 767px) {
+        .feedback-card {
+            padding: 1.5rem;
+        }
+    }
+    
+    .feedback-card.show {
+        display: block;
+        animation: slideUp 0.4s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .explanation {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-left: 4px solid var(--game-primary);
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin-top: 1rem;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    @media (max-width: 767px) {
+        .explanation {
+            font-size: 0.95rem;
+        }
+    }
+    
+    .results-card {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+    
+    @media (max-width: 767px) {
+        .results-card {
+            padding: 2rem 1rem;
+        }
+    }
+    
+    .score-circle {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: var(--game-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 900;
+        margin: 2rem auto;
+        box-shadow: 0 20px 60px var(--game-shadow);
+        animation: scaleIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    @media (max-width: 767px) {
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            font-size: 2.5rem;
+        }
+    }
+    
+    @keyframes scaleIn {
+        from { transform: scale(0); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    
+    .performance-badge {
+        display: inline-block;
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        margin: 1rem 0;
+        font-size: 1.2rem;
+    }
+    
+    .badge-excellent {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    
+    .badge-good {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+    
+    .badge-average {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .badge-needs-work {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-container">
+    <!-- Category Selector -->
+    <div class="category-selector" id="categorySelector">
+        <h5>Select Category:</h5>
+        <div class="d-flex flex-column flex-md-row justify-content-center flex-wrap gap-2">
+            <button class="category-btn active" data-category="dental">
+                <i class="bi bi-heart-pulse-fill"></i> Dental
+            </button>
+            <button class="category-btn" data-category="pharmacy">
+                <i class="bi bi-capsule-pill"></i> Pharmacy
+            </button>
+            <button class="category-btn" data-category="general">
+                <i class="bi bi-hospital-fill"></i> General Practice
+            </button>
+            <button class="category-btn" data-category="nursing">
+                <i class="bi bi-bandaid-fill"></i> Nursing
+            </button>
+        </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="game-stats mb-4">
+        <div class="stats-box">
+            <div class="stats-value" id="timer">0:00</div>
+            <div class="stats-label">Time</div>
+        </div>
+        <div class="stats-box">
+            <div class="stats-value" id="score">0/10</div>
+            <div class="stats-label">Score</div>
+        </div>
+        <div class="stats-box">
+            <div class="stats-value" id="streak">0</div>
+            <div class="stats-label">Streak</div>
+        </div>
+    </div>
+    
+    <!-- Start Screen -->
+    <div class="game-card text-center" id="startScreen">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">⚡</div>
+        <h3 class="mb-4">Ready to test your knowledge?</h3>
+        <p class="lead mb-4">Answer 10 questions as quickly and accurately as you can!</p>
+        <button class="btn btn-game btn-lg" id="startBtn">
+            <i class="bi bi-play-fill"></i> Start Quiz
+        </button>
+    </div>
+    
+    <!-- Quiz Screen -->
+    <div id="quizScreen" style="display: none;">
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+        
+        <!-- Question Card -->
+        <div class="question-card">
+            <span class="question-number" id="questionNumber">Question 1 of 10</span>
+            <div class="question-text" id="questionText"></div>
+            <div class="answers-grid" id="answersGrid"></div>
+        </div>
+        
+        <!-- Feedback Card -->
+        <div class="feedback-card" id="feedbackCard">
+            <h4 id="feedbackTitle" class="mb-3"></h4>
+            <div class="explanation" id="explanation"></div>
+            <button class="btn btn-game w-100 mt-4" id="nextBtn">
+                Next Question <i class="bi bi-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Results Screen -->
+    <div class="game-card results-card" id="resultsScreen" style="display: none;">
+        <h2 class="mb-3">Quiz Complete!</h2>
+        <div class="score-circle" id="finalScore">0/10</div>
+        <div class="performance-badge" id="performanceBadge">Great job!</div>
+        <p class="lead mt-3" id="performanceText"></p>
+        <div class="row g-3 mt-4">
+            <div class="col-md-4">
+                <div class="stats-box">
+                    <div class="stats-value" id="finalTime">0:00</div>
+                    <div class="stats-label">Total Time</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-box">
+                    <div class="stats-value" id="finalAccuracy">0%</div>
+                    <div class="stats-label">Accuracy</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-box">
+                    <div class="stats-value" id="maxStreak">0</div>
+                    <div class="stats-label">Best Streak</div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-game btn-lg w-100 mt-5" onclick="resetQuiz()">
+            <i class="bi bi-arrow-clockwise"></i> Play Again
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Question Database
+const questions = {
+    dental: [
+        {
+            question: "Wat is de Nederlandse term voor 'cavity'?",
+            answers: ["Cariës", "Kroon", "Wortelkanaal", "Tandvlees"],
+            correct: 0,
+            explanation: "Cariës is het Nederlandse woord voor cavity (tandholte/gaatje)."
+        },
+        {
+            question: "Welke behandeling wordt uitgevoerd bij pulpitis?",
+            answers: ["Extractie", "Wortelkanaalbehandeling", "Kroonplaatsing", "Orthodontie"],
+            correct: 1,
+            explanation: "Bij pulpitis (ontsteking van de tandpulp) wordt vaak een wortelkanaalbehandeling uitgevoerd."
+        },
+        {
+            question: "Wat is parodontitis?",
+            answers: ["Kaakontsteking", "Tandvleesziekte", "Tanderosie", "Wortelabces"],
+            correct: 1,
+            explanation: "Parodontitis is een ontstekingsziekte van het tandvlees en ondersteunende weefsels."
+        },
+        {
+            question: "Welk instrument wordt gebruikt voor het verwijderen van tandsteen?",
+            answers: ["Scaler", "Excavator", "Elevator", "Forceps"],
+            correct: 0,
+            explanation: "Een scaler wordt gebruikt om tandsteen (calculus) te verwijderen."
+        },
+        {
+            question: "Wat is het doel van een kroon?",
+            answers: ["Tand verwijderen", "Tand beschermen", "Tanden rechtzetten", "Gebit reinigen"],
+            correct: 1,
+            explanation: "Een kroon beschermt en versterkt een beschadigde tand."
+        },
+        {
+            question: "Wat betekent 'occlusie' in de tandheelkunde?",
+            answers: ["Tandkleur", "Beet/bijtkracht", "Kaakgewricht", "Tandwortel"],
+            correct: 1,
+            explanation: "Occlusie verwijst naar de manier waarop de tanden op elkaar sluiten (de beet)."
+        },
+        {
+            question: "Wat is alveolitis?",
+            answers: ["Droge socket", "Kaakbreuk", "Tandabces", "Gingivitis"],
+            correct: 0,
+            explanation: "Alveolitis, ook wel 'droge socket' genoemd, is een complicatie na extractie."
+        },
+        {
+            question: "Welke fluorideconcentratie wordt aanbevolen in tandpasta voor volwassenen?",
+            answers: ["500 ppm", "1000 ppm", "1450 ppm", "2000 ppm"],
+            correct: 2,
+            explanation: "1450 ppm fluoride is de aanbevolen concentratie voor volwassenen in Nederland."
+        },
+        {
+            question: "Wat is endodontie?",
+            answers: ["Orthodontie", "Wortelkanaalbehandeling", "Tandextractie", "Implantologie"],
+            correct: 1,
+            explanation: "Endodontie is het vakgebied dat zich bezighoudt met wortelkanaalbehandelingen."
+        },
+        {
+            question: "Wat is de functie van tandcement?",
+            answers: ["Tand bevestigen", "Kroon vastmaken", "Vulling plaatsen", "Brug aanbrengen"],
+            correct: 1,
+            explanation: "Tandcement wordt gebruikt om kronen, bruggen en andere protheses vast te zetten."
+        },
+        {
+            question: "Wat is xerostomie?",
+            answers: ["Droge mond", "Tandpijn", "Slechte adem", "Kaakontsteking"],
+            correct: 0,
+            explanation: "Xerostomie is de medische term voor een droge mond, veroorzaakt door verminderde speekselproductie."
+        },
+        {
+            question: "Hoeveel melktanden heeft een kind?",
+            answers: ["16", "20", "24", "28"],
+            correct: 1,
+            explanation: "Een kind heeft in totaal 20 melktanden (deciduale dentitie)."
+        },
+        {
+            question: "Wat is een amalgaamvulling?",
+            answers: ["Keramische vulling", "Metaallegering vulling", "Kunststof vulling", "Gouden vulling"],
+            correct: 1,
+            explanation: "Amalgaam is een metaallegering van zilver, tin, koper en kwik."
+        },
+        {
+            question: "Wat is bruxisme?",
+            answers: ["Tandenknarsen", "Tandvleesontsteking", "Wortelkanaalinfectie", "Tandholte"],
+            correct: 0,
+            explanation: "Bruxisme is het onbewust op elkaar klemmen of knarsen van de tanden."
+        },
+        {
+            question: "Wat betekent 'impactie' van een tand?",
+            answers: [
+                "Tand is gebroken",
+                "Tand komt niet door",
+                "Tand is ontstoken",
+                "Tand is verkleurd"
+            ],
+            correct: 1,
+            explanation: "Een geïmpacteerde tand is een tand die niet volledig doorkomt in de mond."
+        },
+        {
+            question: "Hoeveel permanente tanden heeft een volwassene (inclusief verstandskiezen)?",
+            answers: ["28", "30", "32", "34"],
+            correct: 2,
+            explanation: "Een volwassene heeft normaal 32 permanente tanden, inclusief 4 verstandskiezen."
+        }
+    ],
+    pharmacy: [
+        {
+            question: "Wat is het verschil tussen een geneesmiddel en een hulpstof?",
+            answers: [
+                "Er is geen verschil",
+                "Geneesmiddel is werkzaam, hulpstof ondersteunt",
+                "Hulpstof is werkzaam, geneesmiddel ondersteunt",
+                "Beide zijn even werkzaam"
+            ],
+            correct: 1,
+            explanation: "Een geneesmiddel bevat de werkzame stof, terwijl hulpstoffen de formulering ondersteunen."
+        },
+        {
+            question: "Wat betekent 'contraindicatie'?",
+            answers: [
+                "Bijwerking",
+                "Reden om niet te gebruiken",
+                "Dosering",
+                "Werkingsmechanisme"
+            ],
+            correct: 1,
+            explanation: "Een contraindicatie is een reden waarom een geneesmiddel niet gebruikt mag worden."
+        },
+        {
+            question: "Wat is farmacodynamiek?",
+            answers: [
+                "Effect van medicijn op lichaam",
+                "Effect van lichaam op medicijn",
+                "Medicijn productie",
+                "Medicijn opslag"
+            ],
+            correct: 0,
+            explanation: "Farmacodynamiek beschrijft het effect van een medicijn op het lichaam."
+        },
+        {
+            question: "Wat is farmacokinetiek?",
+            answers: [
+                "Effect van medicijn op lichaam",
+                "Effect van lichaam op medicijn",
+                "Medicijn interacties",
+                "Medicijn dosering"
+            ],
+            correct: 1,
+            explanation: "Farmacokinetiek beschrijft wat het lichaam doet met een medicijn (absorptie, distributie, metabolisme, excretie)."
+        },
+        {
+            question: "Wat betekent 'bijwerking'?",
+            answers: [
+                "Gewenst effect van medicijn",
+                "Ongewenst effect van medicijn",
+                "Dosering van medicijn",
+                "Werkzame stof"
+            ],
+            correct: 1,
+            explanation: "Een bijwerking is een ongewenst of onbedoeld effect van een geneesmiddel."
+        },
+        {
+            question: "Wat is een generiek geneesmiddel?",
+            answers: [
+                "Merkgeneesmiddel",
+                "Geneesmiddel zonder patent",
+                "Experimenteel geneesmiddel",
+                "Natuurlijk geneesmiddel"
+            ],
+            correct: 1,
+            explanation: "Een generiek geneesmiddel is een kopie van een merkgeneesmiddel waarvan het patent is verlopen."
+        },
+        {
+            question: "Wat is de therapeutische index?",
+            answers: [
+                "Werkzaamheid van medicijn",
+                "Veiligheidsmarges tussen werkzame en toxische dosis",
+                "Prijs van medicijn",
+                "Houdbaarheid van medicijn"
+            ],
+            correct: 1,
+            explanation: "De therapeutische index is de verhouding tussen de toxische en therapeutische dosis."
+        },
+        {
+            question: "Wat betekent 'oraal' toedienen?",
+            answers: [
+                "Via de mond",
+                "Via injectie",
+                "Via de huid",
+                "Via inademing"
+            ],
+            correct: 0,
+            explanation: "Orale toediening betekent dat het medicijn via de mond wordt ingenomen."
+        },
+        {
+            question: "Wat is een antibioticum?",
+            answers: [
+                "Pijnstiller",
+                "Bacteriedodend medicijn",
+                "Ontstekingsremmer",
+                "Vitamine"
+            ],
+            correct: 1,
+            explanation: "Antibiotica zijn medicijnen die bacteriën doden of hun groei remmen."
+        },
+        {
+            question: "Wat betekent BID in medicijnvoorschrift?",
+            answers: [
+                "Eenmaal daags",
+                "Tweemaal daags",
+                "Driemaal daags",
+                "Viermaal daags"
+            ],
+            correct: 1,
+            explanation: "BID (bis in die) betekent tweemaal per dag."
+        },
+        {
+            question: "Wat is een placebo?",
+            answers: [
+                "Sterk medicijn",
+                "Medicijn zonder werkzame stof",
+                "Antibioticum",
+                "Pijnstiller"
+            ],
+            correct: 1,
+            explanation: "Een placebo is een preparaat zonder werkzame stof, gebruikt voor onderzoek of psychologisch effect."
+        },
+        {
+            question: "Wat zijn NSAID's?",
+            answers: [
+                "Antibiotica",
+                "Niet-steroïdale ontstekingsremmers",
+                "Bloeddrukverlagers",
+                "Antidepressiva"
+            ],
+            correct: 1,
+            explanation: "NSAID's (Non-Steroidal Anti-Inflammatory Drugs) zijn ontstekingsremmende pijnstillers zoals ibuprofen."
+        },
+        {
+            question: "Wat is een capsule?",
+            answers: [
+                "Vloeibaar medicijn",
+                "Injecteerbaar medicijn",
+                "Gelatine omhulsel met medicijn",
+                "Zetpil"
+            ],
+            correct: 2,
+            explanation: "Een capsule is een gelatine-omhulsel gevuld met poeder of vloeistof medicijn."
+        },
+        {
+            question: "Wat betekent QID in receptuur?",
+            answers: [
+                "Eenmaal daags",
+                "Tweemaal daags",
+                "Driemaal daags",
+                "Viermaal daags"
+            ],
+            correct: 3,
+            explanation: "QID (quater in die) betekent viermaal per dag."
+        },
+        {
+            question: "Wat is anafylaxie?",
+            answers: [
+                "Lichte bijwerking",
+                "Ernstige allergische reactie",
+                "Maagklacht",
+                "Hoofdpijn"
+            ],
+            correct: 1,
+            explanation: "Anafylaxie is een levensbedreigende allergische reactie die onmiddellijke behandeling vereist."
+        }
+    ],
+    general: [
+        {
+            question: "Wat is de normale bloeddruk voor een volwassene?",
+            answers: ["90/60 mmHg", "120/80 mmHg", "140/90 mmHg", "160/100 mmHg"],
+            correct: 1,
+            explanation: "120/80 mmHg wordt beschouwd als normale bloeddruk voor volwassenen."
+        },
+        {
+            question: "Wat is hypertensie?",
+            answers: [
+                "Lage bloeddruk",
+                "Hoge bloeddruk",
+                "Normale bloeddruk",
+                "Fluctuerende bloeddruk"
+            ],
+            correct: 1,
+            explanation: "Hypertensie is de medische term voor hoge bloeddruk."
+        },
+        {
+            question: "Wat is diabetes mellitus?",
+            answers: [
+                "Hoge bloedsuiker",
+                "Lage bloedsuiker",
+                "Hoge bloeddruk",
+                "Lage bloeddruk"
+            ],
+            correct: 0,
+            explanation: "Diabetes mellitus is een stofwisselingsziekte waarbij de bloedsuikerspiegel te hoog is."
+        },
+        {
+            question: "Wat is de normale lichaamstemperatuur?",
+            answers: ["35°C", "36°C", "37°C", "38°C"],
+            correct: 2,
+            explanation: "De normale lichaamstemperatuur is ongeveer 37°C (36,5-37,5°C)."
+        },
+        {
+            question: "Wat is een myocardinfarct?",
+            answers: [
+                "Hersenbloeding",
+                "Hartinfarct",
+                "Longembolie",
+                "Nierfalen"
+            ],
+            correct: 1,
+            explanation: "Myocardinfarct is de medische term voor een hartinfarct."
+        },
+        {
+            question: "Wat is COPD?",
+            answers: [
+                "Hartziekte",
+                "Chronische longziekte",
+                "Leverziekte",
+                "Nierziekte"
+            ],
+            correct: 1,
+            explanation: "COPD (Chronic Obstructive Pulmonary Disease) is een chronische longziekte."
+        },
+        {
+            question: "Wat is een CVA?",
+            answers: [
+                "Hartaanval",
+                "Beroerte",
+                "Astma-aanval",
+                "Epileptische aanval"
+            ],
+            correct: 1,
+            explanation: "CVA (Cerebro Vasculair Accident) is de medische term voor een beroerte."
+        },
+        {
+            question: "Wat is de functie van rode bloedcellen?",
+            answers: [
+                "Infecties bestrijden",
+                "Zuurstoftransport",
+                "Bloedstolling",
+                "Hormoonproductie"
+            ],
+            correct: 1,
+            explanation: "Rode bloedcellen (erythrocyten) transporteren zuurstof door het lichaam."
+        },
+        {
+            question: "Wat is aritmie?",
+            answers: [
+                "Hoge bloeddruk",
+                "Onregelmatig hartritme",
+                "Lage bloedsuiker",
+                "Hoge cholesterol"
+            ],
+            correct: 1,
+            explanation: "Aritmie is een onregelmatig hartritme."
+        },
+        {
+            question: "Wat betekent acute zorg?",
+            answers: [
+                "Langdurige zorg",
+                "Spoedzorg",
+                "Preventieve zorg",
+                "Thuiszorg"
+            ],
+            correct: 1,
+            explanation: "Acute zorg is directe, spoedeisende medische hulp."
+        },
+        {
+            question: "Wat is een ECG?",
+            answers: [
+                "Hersenscan",
+                "Hartfilmpje",
+                "Bloedonderzoek",
+                "Longfoto"
+            ],
+            correct: 1,
+            explanation: "Een ECG (elektrocardiogram) registreert de elektrische activiteit van het hart."
+        },
+        {
+            question: "Wat is osteoporose?",
+            answers: [
+                "Gewrichtsontsteking",
+                "Botontkalking",
+                "Spierziekte",
+                "Zenuwziekte"
+            ],
+            correct: 1,
+            explanation: "Osteoporose is botontkalking waarbij botten zwak en brozer worden."
+        },
+        {
+            question: "Wat is de functie van de nieren?",
+            answers: [
+                "Bloed pompen",
+                "Voedsel verteren",
+                "Afvalstoffen filteren",
+                "Hormonen produceren"
+            ],
+            correct: 2,
+            explanation: "De nieren filteren afvalstoffen uit het bloed en produceren urine."
+        },
+        {
+            question: "Wat is astma?",
+            answers: [
+                "Hartziekte",
+                "Chronische luchtwegaandoening",
+                "Maagziekte",
+                "Huidziekte"
+            ],
+            correct: 1,
+            explanation: "Astma is een chronische ontstekingsziekte van de luchtwegen."
+        },
+        {
+            question: "Wat is BMI?",
+            answers: [
+                "Bloeddruk meting",
+                "Body Mass Index",
+                "Bloed monster index",
+                "Basis medicijn indicator"
+            ],
+            correct: 1,
+            explanation: "BMI (Body Mass Index) is een maat voor het lichaamsgewicht ten opzichte van de lengte."
+        }
+    ],
+    nursing: [
+        {
+            question: "Wat is de eerste stap bij een spoedopname?",
+            answers: [
+                "Medicatie toedienen",
+                "ABCDE-beoordeling",
+                "Patiënt registreren",
+                "Familie informeren"
+            ],
+            correct: 1,
+            explanation: "De ABCDE-beoordeling (Airway, Breathing, Circulation, Disability, Exposure) is de eerste stap."
+        },
+        {
+            question: "Wat betekent ABCDE?",
+            answers: [
+                "Algemene Behandeling Controle Data Evaluatie",
+                "Airway Breathing Circulation Disability Exposure",
+                "Acute Behandeling Cardio Diagnostiek Eerste hulp",
+                "Ambulance BehandelingCare Diagnose Emergency"
+            ],
+            correct: 1,
+            explanation: "ABCDE staat voor Airway, Breathing, Circulation, Disability, Exposure - een systematische beoordeling."
+        },
+        {
+            question: "Wat is de normale hartslag voor een volwassene?",
+            answers: [
+                "40-60 bpm",
+                "60-100 bpm",
+                "100-120 bpm",
+                "120-140 bpm"
+            ],
+            correct: 1,
+            explanation: "De normale hartslag voor een volwassene in rust is 60-100 slagen per minuut."
+        },
+        {
+            question: "Wat is decubitus?",
+            answers: [
+                "Wondinfectie",
+                "Doorligwond",
+                "Brandwond",
+                "Operatiewond"
+            ],
+            correct: 1,
+            explanation: "Decubitus is een doorligwond die ontstaat door langdurige druk op de huid."
+        },
+        {
+            question: "Wat betekent NPO (nihil per os)?",
+            answers: [
+                "Niets via de mond",
+                "Geen pijnstillers",
+                "Niet opstaan",
+                "Normale procedure operatie"
+            ],
+            correct: 0,
+            explanation: "NPO betekent dat een patiënt niets via de mond mag innemen (eten en drinken)."
+        },
+        {
+            question: "Wat is een catheter?",
+            answers: [
+                "Medicijn",
+                "Slangetje voor lichaamsvocht",
+                "Verband",
+                "Naald"
+            ],
+            correct: 1,
+            explanation: "Een catheter is een dun buisje om vloeistoffen toe te dienen of af te voeren."
+        },
+        {
+            question: "Wat is de Glasgow Coma Scale?",
+            answers: [
+                "Pijnschaal",
+                "Bewustzijnsmeting",
+                "Bloeddruk meting",
+                "Temperatuurmeting"
+            ],
+            correct: 1,
+            explanation: "De Glasgow Coma Scale meet het bewustzijnsniveau van een patiënt."
+        },
+        {
+            question: "Wat is hygiënische handhygiëne?",
+            answers: [
+                "Handen wassen met water",
+                "Handen desinfecteren",
+                "Handschoenen dragen",
+                "Handen afdrogen"
+            ],
+            correct: 1,
+            explanation: "Hygiënische handhygiëne is het desinfecteren van handen om micro-organismen te verwijderen."
+        },
+        {
+            question: "Wat is de juiste volgorde bij wondverzorging?",
+            answers: [
+                "Reinigen, desinfecteren, verbinden",
+                "Verbinden, reinigen, desinfecteren",
+                "Desinfecteren, verbinden, reinigen",
+                "Reinigen, verbinden, desinfecteren"
+            ],
+            correct: 0,
+            explanation: "De juiste volgorde is: reinigen, desinfecteren, en dan verbinden."
+        },
+        {
+            question: "Wat is triage?",
+            answers: [
+                "Medicatie toedienen",
+                "Prioritering van patiënten",
+                "Wond verzorgen",
+                "Bloeddruk meten"
+            ],
+            correct: 1,
+            explanation: "Triage is het proces van prioritering van patiënten op basis van de ernst van hun toestand."
+        },
+        {
+            question: "Wat is aspiratie?",
+            answers: [
+                "Inademen van vreemd materiaal",
+                "Uitademen van lucht",
+                "Bloeding",
+                "Zwelling"
+            ],
+            correct: 0,
+            explanation: "Aspiratie is het inademen van vreemd materiaal (zoals voedsel of braaksel) in de luchtwegen."
+        },
+        {
+            question: "Wat betekent isolatie in de zorg?",
+            answers: [
+                "Patiënt alleen laten",
+                "Scheiden van andere patiënten om besmetting te voorkomen",
+                "Medicatie stoppen",
+                "Bezoek verbieden"
+            ],
+            correct: 1,
+            explanation: "Isolatie betekent het scheiden van een patiënt om verspreiding van infecties te voorkomen."
+        },
+        {
+            question: "Wat is een infuus?",
+            answers: [
+                "Medicijn via de mond",
+                "Vloeistof via een ader",
+                "Medicijn via injectie",
+                "Vloeistof via de mond"
+            ],
+            correct: 1,
+            explanation: "Een infuus is toediening van vloeistof of medicatie rechtstreeks in een ader."
+        },
+        {
+            question: "Wat is mobilisatie?",
+            answers: [
+                "Medicatie geven",
+                "Patiënt in beweging brengen",
+                "Wond verzorgen",
+                "Bloedonderzoek doen"
+            ],
+            correct: 1,
+            explanation: "Mobilisatie is het helpen van een patiënt om weer in beweging te komen na ziekte of operatie."
+        },
+        {
+            question: "Wat is observatie in de verpleegkunde?",
+            answers: [
+                "Alleen kijken naar patiënt",
+                "Systematisch waarnemen en vastleggen van patiënt gegevens",
+                "Medicatie geven",
+                "Patiënt wassen"
+            ],
+            correct: 1,
+            explanation: "Observatie is het systematisch waarnemen, beoordelen en vastleggen van de toestand van een patiënt."
+        }
+    ]
+};
+
+// Game State
+let gameState = {
+    category: 'dental',
+    currentQuestion: 0,
+    score: 0,
+    streak: 0,
+    maxStreak: 0,
+    startTime: null,
+    timerInterval: null,
+    selectedAnswer: null,
+    questions: []
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    setupCategoryButtons();
+    
+    document.getElementById('startBtn').addEventListener('click', startQuiz);
+    document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+});
+
+function setupCategoryButtons() {
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            gameState.category = this.dataset.category;
+        });
+    });
+}
+
+function startQuiz() {
+    const categoryQuestions = questions[gameState.category] || questions.dental;
+    gameState.questions = shuffle([...categoryQuestions]).slice(0, 10);
+    
+    gameState.currentQuestion = 0;
+    gameState.score = 0;
+    gameState.streak = 0;
+    gameState.maxStreak = 0;
+    gameState.selectedAnswer = null;
+    
+    gameState.startTime = Date.now();
+    gameState.timerInterval = setInterval(updateTimer, 1000);
+    
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('categorySelector').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'block';
+    
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const question = gameState.questions[gameState.currentQuestion];
+    
+    document.getElementById('questionNumber').textContent = 
+        `Question ${gameState.currentQuestion + 1} of ${gameState.questions.length}`;
+    document.getElementById('questionText').textContent = question.question;
+    
+    const progress = ((gameState.currentQuestion) / gameState.questions.length) * 100;
+    document.getElementById('progressBar').style.width = `${progress}%`;
+    
+    const answersGrid = document.getElementById('answersGrid');
+    answersGrid.innerHTML = '';
+    
+    question.answers.forEach((answer, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = answer;
+        btn.addEventListener('click', () => selectAnswer(index));
+        answersGrid.appendChild(btn);
+    });
+    
+    document.getElementById('feedbackCard').classList.remove('show');
+    gameState.selectedAnswer = null;
+}
+
+function selectAnswer(index) {
+    if (gameState.selectedAnswer !== null) return;
+    
+    gameState.selectedAnswer = index;
+    const question = gameState.questions[gameState.currentQuestion];
+    const isCorrect = index === question.correct;
+    
+    if (isCorrect) {
+        gameState.score++;
+        gameState.streak++;
+        if (gameState.streak > gameState.maxStreak) {
+            gameState.maxStreak = gameState.streak;
+        }
+    } else {
+        gameState.streak = 0;
+    }
+    
+    const buttons = document.querySelectorAll('.answer-btn');
+    buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === question.correct) {
+            btn.classList.add('correct');
+        } else if (i === index && !isCorrect) {
+            btn.classList.add('incorrect');
+        }
+    });
+    
+    document.getElementById('feedbackTitle').textContent = 
+        isCorrect ? '✅ Correct!' : '❌ Incorrect';
+    document.getElementById('feedbackTitle').style.color = 
+        isCorrect ? '#10b981' : '#ef4444';
+    document.getElementById('explanation').textContent = question.explanation;
+    document.getElementById('feedbackCard').classList.add('show');
+    
+    updateStats();
+}
+
+function nextQuestion() {
+    gameState.currentQuestion++;
+    
+    if (gameState.currentQuestion >= gameState.questions.length) {
+        showResults();
+    } else {
+        loadQuestion();
+    }
+}
+
+function showResults() {
+    clearInterval(gameState.timerInterval);
+    
+    document.getElementById('quizScreen').style.display = 'none';
+    document.getElementById('resultsScreen').style.display = 'block';
+    
+    const score = gameState.score;
+    const total = gameState.questions.length;
+    const accuracy = Math.round((score / total) * 100);
+    
+    document.getElementById('finalScore').textContent = `${score}/${total}`;
+    document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
+    document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+    document.getElementById('maxStreak').textContent = gameState.maxStreak;
+    
+    const badge = document.getElementById('performanceBadge');
+    let message = '';
+    
+    if (accuracy >= 90) {
+        badge.className = 'performance-badge badge-excellent';
+        badge.innerHTML = '<i class="bi bi-trophy-fill"></i> Outstanding!';
+        message = '🌟 You\'re a medical expert! Excellent performance!';
+    } else if (accuracy >= 70) {
+        badge.className = 'performance-badge badge-good';
+        badge.innerHTML = '<i class="bi bi-star-fill"></i> Great Job!';
+        message = '👍 Very well done! Keep up the good work!';
+    } else if (accuracy >= 50) {
+        badge.className = 'performance-badge badge-average';
+        badge.innerHTML = '<i class="bi bi-hand-thumbs-up"></i> Good Effort!';
+        message = '💪 Nice try! Practice makes perfect!';
+    } else {
+        badge.className = 'performance-badge badge-needs-work';
+        badge.innerHTML = '<i class="bi bi-book"></i> Keep Learning!';
+        message = '📚 Don\'t give up! Review the material and try again!';
+    }
+    
+    document.getElementById('performanceText').textContent = message;
+}
+
+function updateStats() {
+    document.getElementById('score').textContent = `${gameState.score}/${gameState.questions.length}`;
+    document.getElementById('streak').textContent = gameState.streak;
+}
+
+function updateTimer() {
+    if (!gameState.startTime) return;
+    
+    const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function resetQuiz() {
+    clearInterval(gameState.timerInterval);
+    
+    document.getElementById('resultsScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'block';
+    document.getElementById('categorySelector').style.display = 'block';
+    
+    document.getElementById('timer').textContent = '0:00';
+    document.getElementById('score').textContent = '0/10';
+    document.getElementById('streak').textContent = '0';
+}
+
+function shuffle(array) {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+}
+</script>
+{% endblock %}

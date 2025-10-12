@@ -638,10 +638,26 @@ class IRTEngine:
             answered_question_ids = {q[0] for q in answered_questions}
             logger.info(f"Session {self.session.id} already answered questions: {answered_question_ids}")
             
+            # ИСПРАВЛЕНИЕ: Также добавим текущий вопрос в список отвеченных, если он есть
+            if self.session.current_question_id:
+                answered_question_ids.add(self.session.current_question_id)
+                logger.info(f"Added current question {self.session.current_question_id} to answered questions")
+            
             # Проверить, есть ли еще доступные вопросы
             total_questions = Question.query.count()
             if len(answered_question_ids) >= total_questions:
                 logger.warning(f"All {total_questions} questions have been answered")
+                self._recursion_counter = 0
+                return None
+            
+            # Дополнительная проверка: убедимся, что у нас есть вопросы для выбора
+            available_questions_count = Question.query.filter(
+                ~Question.id.in_(answered_question_ids)
+            ).count()
+            
+            if available_questions_count == 0:
+                logger.warning(f"No available questions found. Total: {total_questions}, Answered: {len(answered_question_ids)}")
+                self._recursion_counter = 0
                 return None
             
             # Получить историю ответов для анализа покрытия доменов

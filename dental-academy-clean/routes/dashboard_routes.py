@@ -109,45 +109,18 @@ def index():
 @dashboard_bp.route('/achievements')
 @login_required
 def achievements():
-    """Enhanced achievements page with detailed badges and progress"""
-    
-    # Get all achievements
-    all_achievements = Achievement.query.filter_by(is_active=True).order_by(Achievement.sort_order).all()
-    
-    # Get user's earned achievements
-    earned_achievements = {ua.achievement_id: ua for ua in current_user.achievements}
-    
-    # Group achievements by category
-    achievements_by_category = {}
-    for achievement in all_achievements:
-        if achievement.category not in achievements_by_category:
-            achievements_by_category[achievement.category] = []
-        
-        progress_data = calculate_achievement_progress(current_user, achievement)
-        achievement_data = {
-            'achievement': achievement,
-            'earned': achievement.id in earned_achievements,
-            'earned_at': earned_achievements[achievement.id].earned_at if achievement.id in earned_achievements else None,
-            'progress': progress_data['progress_percent']
-        }
-        achievements_by_category[achievement.category].append(achievement_data)
-    
-    # Get achievement statistics
-    total_achievements = len(all_achievements)
-    earned_count = len(earned_achievements)
-    completion_rate = int((earned_count / total_achievements * 100)) if total_achievements > 0 else 0
-    
-    return render_template('dashboard/achievements.html',
-                         achievements_by_category=achievements_by_category,
-                         total_achievements=total_achievements,
-                         earned_count=earned_count,
-                         completion_rate=completion_rate)
+    """Redirect to learning map with gamification tab"""
+    lang = g.get('lang', 'en')
+    # Редирект на карту обучения с параметром для открытия таба gamification
+    return redirect(url_for('daily_learning.learning_map', lang=lang) + '?tab=games')
 
 @dashboard_bp.route('/activity')
 @login_required
 def activity():
-    """Redirect to coming soon page"""
-    return redirect(url_for('main.coming_soon', lang=g.get('lang', 'nl')))
+    """Redirect to learning map with progress tab"""
+    lang = g.get('lang', 'en')
+    # Редирект на карту обучения с параметром для открытия таба progress
+    return redirect(url_for('daily_learning.learning_map', lang=lang) + '?tab=progress')
 
 @dashboard_bp.route('/reminders')
 @login_required
@@ -439,20 +412,10 @@ def check_session():
 @dashboard_bp.route('/learning-planner')
 @login_required
 def learning_planner_redirect():
-    """Перенаправляет на существующий план обучения или создает новый"""
-    
-    # Ищем активный план пользователя
-    active_plan = PersonalLearningPlan.query.filter_by(
-        user_id=current_user.id,
-        status='active'
-    ).order_by(PersonalLearningPlan.last_updated.desc()).first()
-    
-    if active_plan:
-        # Если есть активный план, перенаправляем на него
-        return redirect(url_for('learning_planner.learning_planner', plan_id=active_plan.id))
-    else:
-        # Если нет активного плана, перенаправляем на создание
-        return redirect(url_for('dashboard.create_learning_plan'))
+    """Redirect to learning map with planner tab"""
+    lang = g.get('lang', 'en')
+    # Редирект на карту обучения с параметром для открытия таба planner
+    return redirect(url_for('daily_learning.learning_map', lang=lang) + '?tab=planner')
 
 @dashboard_bp.route('/create-learning-plan', methods=['GET', 'POST'])
 @login_required

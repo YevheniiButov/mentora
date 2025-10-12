@@ -1,0 +1,768 @@
+{% extends "games/base_game.html" %}
+
+{% block title %}Medical Memory Game{% endblock %}
+
+{% block game_title %}
+    <i class="bi bi-bullseye"></i> Medical Memory
+{% endblock %}
+
+{% block game_subtitle %}
+    Match Dutch medical terms with their meanings
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Memory Game Colors - Pink/Red */
+    :root {
+        --game-primary: #ec4899;
+        --game-secondary: #f43f5e;
+        --game-gradient: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+        --game-light: #fce7f3;
+        --game-shadow: rgba(236, 72, 153, 0.4);
+    }
+    
+    .memory-board {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+        margin: 1.5rem auto 1rem;
+        max-width: 600px;
+    }
+    
+    @media (max-width: 767px) {
+        .memory-board {
+            gap: 0.5rem;
+            margin: 1rem auto 0.5rem;
+        }
+    }
+    
+    .memory-card {
+        aspect-ratio: 1;
+        background: var(--game-gradient);
+        border-radius: 16px;
+        cursor: pointer;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .memory-card:hover:not(.flipped):not(.matched) {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px var(--game-shadow);
+    }
+    
+    .memory-card.flipped {
+        transform: rotateY(180deg);
+    }
+    
+    .memory-card.matched {
+        animation: match 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        opacity: 0.7;
+        cursor: default;
+    }
+    
+    @keyframes match {
+        0%, 100% { transform: scale(1); }
+        25% { transform: scale(1.1) rotate(5deg); }
+        50% { transform: scale(1.15); }
+        75% { transform: scale(1.1) rotate(-5deg); }
+    }
+    
+    .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem;
+        border-radius: 16px;
+        font-weight: 700;
+    }
+    
+    @media (max-width: 767px) {
+        .card-front, .card-back {
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+    }
+    
+    .card-front {
+        background: var(--game-gradient);
+        color: white;
+        font-size: 2.5rem;
+    }
+    
+    @media (max-width: 767px) {
+        .card-front {
+            font-size: 1.75rem;
+        }
+    }
+    
+    .card-back {
+        background: white;
+        color: #1e293b;
+        transform: rotateY(180deg);
+        font-size: 0.95rem;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        line-height: 1.3;
+    }
+    
+    @media (max-width: 767px) {
+        .card-back {
+            font-size: 0.75rem;
+        }
+    }
+    
+    .game-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    @media (max-width: 767px) {
+        .game-stats {
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+    }
+    
+    .victory-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+    }
+    
+    .victory-modal.show {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .victory-content {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 24px;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        animation: victory 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    @media (max-width: 767px) {
+        .victory-content {
+            padding: 2rem 1.5rem;
+        }
+    }
+    
+    @keyframes victory {
+        0% { 
+            transform: scale(0.5) rotate(-10deg); 
+            opacity: 0; 
+        }
+        100% { 
+            transform: scale(1) rotate(0deg); 
+            opacity: 1; 
+        }
+    }
+    
+    .victory-title {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: bounce 1s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .difficulty-selector {
+        margin-bottom: 1.25rem;
+        text-align: center;
+    }
+    
+    .difficulty-selector h5 {
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+    }
+    
+    .difficulty-btn {
+        padding: 0.75rem 1.75rem;
+        border: 2px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        border-radius: 12px;
+        margin: 0.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+    
+    @media (max-width: 767px) {
+        .difficulty-btn {
+            padding: 0.625rem 1.25rem;
+            font-size: 0.85rem;
+            display: block;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+    }
+    
+    .difficulty-btn.active {
+        background: var(--game-gradient);
+        color: white;
+        border-color: var(--game-primary);
+        box-shadow: 0 4px 15px var(--game-shadow);
+    }
+    
+    .difficulty-btn:hover:not(.active) {
+        border-color: var(--game-primary);
+        color: var(--game-primary);
+        transform: translateY(-2px);
+    }
+    
+    .control-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    @media (max-width: 767px) {
+        .control-buttons {
+            flex-direction: column;
+        }
+    }
+    
+    .performance-badge {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 700;
+        margin-top: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .badge-excellent {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    
+    .badge-good {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+    
+    .badge-average {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-card">
+    <!-- Difficulty Selector -->
+    <div class="difficulty-selector">
+        <h5>Select Difficulty:</h5>
+        <div class="d-flex flex-column flex-md-row justify-content-center gap-2">
+            <button class="difficulty-btn active" data-difficulty="easy">
+                <i class="bi bi-star"></i> Easy (8 cards)
+            </button>
+            <button class="difficulty-btn" data-difficulty="medium">
+                <i class="bi bi-star-fill"></i> Medium (12 cards)
+            </button>
+            <button class="difficulty-btn" data-difficulty="hard">
+                <i class="bi bi-stars"></i> Hard (16 cards)
+            </button>
+        </div>
+    </div>
+    
+    <!-- Game Stats -->
+    <div class="game-stats">
+        <div class="stats-box">
+            <div class="stats-value" id="moves">0</div>
+            <div class="stats-label">Moves</div>
+        </div>
+        <div class="stats-box">
+            <div class="stats-value" id="matches">0/<span id="totalPairs">4</span></div>
+            <div class="stats-label">Matches</div>
+        </div>
+        <div class="stats-box">
+            <div class="stats-value" id="timer">0:00</div>
+            <div class="stats-label">Time</div>
+        </div>
+    </div>
+    
+    <!-- Control Buttons -->
+    <div class="control-buttons mb-4">
+        <button class="btn btn-game" id="startBtn">
+            <i class="bi bi-play-fill"></i> Start Game
+        </button>
+        <button class="btn btn-game" id="resetBtn" style="display: none;">
+            <i class="bi bi-arrow-clockwise"></i> Reset
+        </button>
+    </div>
+    
+    <!-- Memory Board -->
+    <div class="memory-board" id="memoryBoard"></div>
+</div>
+
+<!-- Victory Modal -->
+<div class="victory-modal" id="victoryModal">
+    <div class="victory-content">
+        <div class="victory-title">🎉</div>
+        <h2 class="mb-3">Congratulations!</h2>
+        <p class="lead mb-3">You've matched all the terms!</p>
+        <div class="performance-badge" id="performanceBadge">
+            Great job!
+        </div>
+        <div class="row g-3 my-4">
+            <div class="col-4">
+                <div class="stats-box">
+                    <div class="stats-value" id="finalMoves">0</div>
+                    <div class="stats-label">Moves</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stats-box">
+                    <div class="stats-value" id="finalTime">0:00</div>
+                    <div class="stats-label">Time</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stats-box">
+                    <div class="stats-value" id="finalAccuracy">100%</div>
+                    <div class="stats-label">Accuracy</div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-game w-100" onclick="resetGame()">
+            <i class="bi bi-arrow-clockwise"></i> Play Again
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dutch Medical Terms Database - Большая база разнообразных медицинских терминов
+const allMedicalTerms = [
+    // Органы
+    { term: 'Hart', meaning: 'Heart', difficulty: 'easy' },
+    { term: 'Longen', meaning: 'Lungs', difficulty: 'easy' },
+    { term: 'Lever', meaning: 'Liver', difficulty: 'easy' },
+    { term: 'Nieren', meaning: 'Kidneys', difficulty: 'easy' },
+    { term: 'Hersenen', meaning: 'Brain', difficulty: 'easy' },
+    { term: 'Maag', meaning: 'Stomach', difficulty: 'easy' },
+    { term: 'Darmen', meaning: 'Intestines', difficulty: 'easy' },
+    { term: 'Blaas', meaning: 'Bladder', difficulty: 'easy' },
+    
+    // Средняя сложность - системы и органы
+    { term: 'Bloedvaten', meaning: 'Blood vessels', difficulty: 'medium' },
+    { term: 'Zenuwstelsel', meaning: 'Nervous system', difficulty: 'medium' },
+    { term: 'Luchtwegen', meaning: 'Airways', difficulty: 'medium' },
+    { term: 'Gewrichten', meaning: 'Joints', difficulty: 'medium' },
+    { term: 'Spieren', meaning: 'Muscles', difficulty: 'medium' },
+    { term: 'Botten', meaning: 'Bones', difficulty: 'medium' },
+    { term: 'Huid', meaning: 'Skin', difficulty: 'medium' },
+    { term: 'Ogen', meaning: 'Eyes', difficulty: 'medium' },
+    { term: 'Oren', meaning: 'Ears', difficulty: 'medium' },
+    { term: 'Keel', meaning: 'Throat', difficulty: 'medium' },
+    { term: 'Tong', meaning: 'Tongue', difficulty: 'medium' },
+    { term: 'Neus', meaning: 'Nose', difficulty: 'medium' },
+    
+    // Сложные термины
+    { term: 'Alvleesklier', meaning: 'Pancreas', difficulty: 'hard' },
+    { term: 'Milt', meaning: 'Spleen', difficulty: 'hard' },
+    { term: 'Schildklier', meaning: 'Thyroid gland', difficulty: 'hard' },
+    { term: 'Luchtpijp', meaning: 'Trachea', difficulty: 'hard' },
+    { term: 'Slokdarm', meaning: 'Esophagus', difficulty: 'hard' },
+    { term: 'Middenrif', meaning: 'Diaphragm', difficulty: 'hard' },
+    { term: 'Bijnieren', meaning: 'Adrenal glands', difficulty: 'hard' },
+    { term: 'Ruggenmerg', meaning: 'Spinal cord', difficulty: 'hard' },
+    { term: 'Borstbeen', meaning: 'Sternum', difficulty: 'hard' },
+    { term: 'Kraakbeen', meaning: 'Cartilage', difficulty: 'hard' },
+    { term: 'Beenmerg', meaning: 'Bone marrow', difficulty: 'hard' },
+    { term: 'Hypofyse', meaning: 'Pituitary gland', difficulty: 'hard' },
+    { term: 'Galblaas', meaning: 'Gallbladder', difficulty: 'hard' },
+    { term: 'Twaalfvingerige darm', meaning: 'Duodenum', difficulty: 'hard' },
+    { term: 'Strotklepje', meaning: 'Epiglottis', difficulty: 'hard' },
+    { term: 'Bijschildklier', meaning: 'Parathyroid', difficulty: 'hard' },
+    
+    // Стоматология
+    { term: 'Tandarts', meaning: 'Dentist', difficulty: 'easy' },
+    { term: 'Tanden', meaning: 'Teeth', difficulty: 'easy' },
+    { term: 'Tandvlees', meaning: 'Gums', difficulty: 'easy' },
+    { term: 'Kies', meaning: 'Molar', difficulty: 'medium' },
+    { term: 'Wortelkanaal', meaning: 'Root canal', difficulty: 'medium' },
+    { term: 'Kroon', meaning: 'Crown', difficulty: 'medium' },
+    { term: 'Cariës', meaning: 'Cavity', difficulty: 'medium' },
+    { term: 'Kaak', meaning: 'Jaw', difficulty: 'easy' },
+    
+    // Медицинские состояния и процедуры
+    { term: 'Bloeddruk', meaning: 'Blood pressure', difficulty: 'easy' },
+    { term: 'Hartslag', meaning: 'Heart rate', difficulty: 'easy' },
+    { term: 'Temperatuur', meaning: 'Temperature', difficulty: 'easy' },
+    { term: 'Infectie', meaning: 'Infection', difficulty: 'easy' },
+    { term: 'Ontsteking', meaning: 'Inflammation', difficulty: 'medium' },
+    { term: 'Wond', meaning: 'Wound', difficulty: 'easy' },
+    { term: 'Zwelling', meaning: 'Swelling', difficulty: 'medium' },
+    { term: 'Bloeding', meaning: 'Bleeding', difficulty: 'easy' },
+    { term: 'Pijn', meaning: 'Pain', difficulty: 'easy' },
+    { term: 'Koorts', meaning: 'Fever', difficulty: 'easy' },
+    { term: 'Hoesten', meaning: 'Cough', difficulty: 'easy' },
+    { term: 'Verkoudheid', meaning: 'Cold', difficulty: 'easy' },
+    { term: 'Griep', meaning: 'Flu', difficulty: 'easy' },
+    { term: 'Allergie', meaning: 'Allergy', difficulty: 'medium' },
+    { term: 'Astma', meaning: 'Asthma', difficulty: 'medium' },
+    { term: 'Diabetes', meaning: 'Diabetes', difficulty: 'medium' },
+    { term: 'Hartinfarct', meaning: 'Heart attack', difficulty: 'hard' },
+    { term: 'Beroerte', meaning: 'Stroke', difficulty: 'hard' },
+    
+    // Медицинские специалисты
+    { term: 'Arts', meaning: 'Doctor', difficulty: 'easy' },
+    { term: 'Verpleegkundige', meaning: 'Nurse', difficulty: 'easy' },
+    { term: 'Apotheker', meaning: 'Pharmacist', difficulty: 'medium' },
+    { term: 'Chirurg', meaning: 'Surgeon', difficulty: 'medium' },
+    { term: 'Specialist', meaning: 'Specialist', difficulty: 'easy' },
+    { term: 'Huisarts', meaning: 'General practitioner', difficulty: 'easy' },
+    { term: 'Radioloog', meaning: 'Radiologist', difficulty: 'medium' },
+    { term: 'Anesthesist', meaning: 'Anesthesiologist', difficulty: 'hard' },
+    
+    // Скелет и кости
+    { term: 'Schedel', meaning: 'Skull', difficulty: 'easy' },
+    { term: 'Wervelkolom', meaning: 'Spine', difficulty: 'medium' },
+    { term: 'Ribbenkast', meaning: 'Rib cage', difficulty: 'medium' },
+    { term: 'Bekken', meaning: 'Pelvis', difficulty: 'medium' },
+    { term: 'Schouderblad', meaning: 'Shoulder blade', difficulty: 'medium' },
+    { term: 'Sleutelbeen', meaning: 'Collarbone', difficulty: 'hard' },
+    { term: 'Opperarmbeen', meaning: 'Humerus', difficulty: 'hard' },
+    { term: 'Dijbeen', meaning: 'Femur', difficulty: 'hard' },
+    { term: 'Knieschijf', meaning: 'Kneecap/Patella', difficulty: 'medium' },
+    
+    // Мышцы и ткани
+    { term: 'Hartspier', meaning: 'Cardiac muscle', difficulty: 'medium' },
+    { term: 'Pees', meaning: 'Tendon', difficulty: 'medium' },
+    { term: 'Bindweefsel', meaning: 'Connective tissue', difficulty: 'hard' },
+    { term: 'Slagader', meaning: 'Artery', difficulty: 'medium' },
+    { term: 'Ader', meaning: 'Vein', difficulty: 'easy' },
+    { term: 'Haarvaten', meaning: 'Capillaries', difficulty: 'hard' },
+    
+    // Дыхательная система
+    { term: 'Strottenhoofd', meaning: 'Larynx', difficulty: 'hard' },
+    { term: 'Bronchiën', meaning: 'Bronchi', difficulty: 'medium' },
+    { term: 'Longblaasjes', meaning: 'Alveoli', difficulty: 'hard' },
+    { term: 'Neusholte', meaning: 'Nasal cavity', difficulty: 'medium' },
+    { term: 'Luchtbuis', meaning: 'Windpipe', difficulty: 'medium' },
+    
+    // Пищеварительная система
+    { term: 'Dikke darm', meaning: 'Large intestine', difficulty: 'medium' },
+    { term: 'Dunne darm', meaning: 'Small intestine', difficulty: 'medium' },
+    { term: 'Blindedarm', meaning: 'Appendix', difficulty: 'medium' },
+    { term: 'Endeldarm', meaning: 'Rectum', difficulty: 'hard' },
+    { term: 'Speekselklieren', meaning: 'Salivary glands', difficulty: 'hard' },
+    
+    // Кровообращение и лимфа
+    { term: 'Rode bloedcellen', meaning: 'Red blood cells', difficulty: 'medium' },
+    { term: 'Witte bloedcellen', meaning: 'White blood cells', difficulty: 'medium' },
+    { term: 'Bloedplaatjes', meaning: 'Platelets', difficulty: 'hard' },
+    { term: 'Lymfeklieren', meaning: 'Lymph nodes', difficulty: 'medium' },
+    { term: 'Lymfevaten', meaning: 'Lymph vessels', difficulty: 'hard' },
+    
+    // Эндокринная система
+    { term: 'Hormonen', meaning: 'Hormones', difficulty: 'medium' },
+    { term: 'Insuline', meaning: 'Insulin', difficulty: 'medium' },
+    { term: 'Adrenaline', meaning: 'Adrenaline', difficulty: 'medium' },
+    
+    // Нервная система
+    { term: 'Zenuwen', meaning: 'Nerves', difficulty: 'easy' },
+    { term: 'Hersenstam', meaning: 'Brain stem', difficulty: 'hard' },
+    { term: 'Kleine hersenen', meaning: 'Cerebellum', difficulty: 'hard' },
+    { term: 'Grote hersenen', meaning: 'Cerebrum', difficulty: 'hard' },
+    
+    // Органы чувств
+    { term: 'Netvlies', meaning: 'Retina', difficulty: 'medium' },
+    { term: 'Hoornvlies', meaning: 'Cornea', difficulty: 'hard' },
+    { term: 'Trommelvlies', meaning: 'Eardrum', difficulty: 'medium' },
+    { term: 'Oogbol', meaning: 'Eyeball', difficulty: 'easy' },
+    
+    // Репродуктивная система
+    { term: 'Baarmoeder', meaning: 'Uterus', difficulty: 'medium' },
+    { term: 'Eierstokken', meaning: 'Ovaries', difficulty: 'medium' },
+    { term: 'Prostaat', meaning: 'Prostate', difficulty: 'medium' },
+    
+    // Мочевыделительная система
+    { term: 'Urineleider', meaning: 'Ureter', difficulty: 'hard' },
+    { term: 'Plasbuis', meaning: 'Urethra', difficulty: 'hard' },
+    
+    // Другие важные термины
+    { term: 'Weefsel', meaning: 'Tissue', difficulty: 'medium' },
+    { term: 'Orgaan', meaning: 'Organ', difficulty: 'easy' },
+    { term: 'Cel', meaning: 'Cell', difficulty: 'easy' },
+    { term: 'DNA', meaning: 'DNA', difficulty: 'medium' },
+    { term: 'Immuunsysteem', meaning: 'Immune system', difficulty: 'medium' },
+    { term: 'Stofwisseling', meaning: 'Metabolism', difficulty: 'hard' },
+];
+
+// Функция перемешивания массива
+function shuffle(array) {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+}
+
+// Функция для получения случайных терминов по уровню сложности
+function getTermsByDifficulty(difficulty, count) {
+    const easyTerms = allMedicalTerms.filter(t => t.difficulty === 'easy');
+    const mediumTerms = allMedicalTerms.filter(t => t.difficulty === 'medium');
+    const hardTerms = allMedicalTerms.filter(t => t.difficulty === 'hard');
+    
+    let selectedTerms = [];
+    
+    if (difficulty === 'easy') {
+        selectedTerms = shuffle([...easyTerms]).slice(0, count);
+    } else if (difficulty === 'medium') {
+        selectedTerms = shuffle([...easyTerms, ...mediumTerms]).slice(0, count);
+    } else if (difficulty === 'hard') {
+        selectedTerms = shuffle([...mediumTerms, ...hardTerms]).slice(0, count);
+    }
+    
+    // Добавляем id для каждого термина
+    return selectedTerms.map((term, index) => ({
+        id: index + 1,
+        term: term.term,
+        meaning: term.meaning
+    }));
+}
+
+// Game State
+let gameState = {
+    difficulty: 'easy',
+    cards: [],
+    flippedCards: [],
+    matchedPairs: 0,
+    totalPairs: 0,
+    moves: 0,
+    startTime: null,
+    timerInterval: null,
+    gameStarted: false
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    setupDifficultyButtons();
+    
+    document.getElementById('startBtn').addEventListener('click', startGame);
+    document.getElementById('resetBtn').addEventListener('click', resetGame);
+});
+
+function setupDifficultyButtons() {
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (gameState.gameStarted) {
+                if (!confirm('This will reset your current game. Continue?')) {
+                    return;
+                }
+            }
+            
+            document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            gameState.difficulty = this.dataset.difficulty;
+            
+            if (gameState.gameStarted) {
+                resetGame();
+                startGame();
+            }
+        });
+    });
+}
+
+function startGame() {
+    gameState.gameStarted = true;
+    gameState.matchedPairs = 0;
+    gameState.moves = 0;
+    gameState.flippedCards = [];
+    
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'inline-block';
+    
+    createCards();
+    
+    gameState.startTime = Date.now();
+    gameState.timerInterval = setInterval(updateTimer, 1000);
+    
+    updateStats();
+}
+
+function createCards() {
+    // Генерируем новый набор терминов для каждой игры
+    const counts = { easy: 4, medium: 6, hard: 8 };
+    const terms = getTermsByDifficulty(gameState.difficulty, counts[gameState.difficulty]);
+    const board = document.getElementById('memoryBoard');
+    
+    // Сохраняем количество пар в состоянии
+    gameState.totalPairs = terms.length;
+    
+    const columns = gameState.difficulty === 'easy' ? 4 : 4;
+    board.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+    
+    document.getElementById('totalPairs').textContent = gameState.totalPairs;
+    
+    const cards = [];
+    terms.forEach(term => {
+        cards.push({ id: term.id, content: term.term, type: 'term', pairId: term.id });
+        cards.push({ id: term.id + 100, content: term.meaning, type: 'meaning', pairId: term.id });
+    });
+    
+    cards.sort(() => Math.random() - 0.5);
+    gameState.cards = cards;
+    
+    board.innerHTML = '';
+    cards.forEach((card, index) => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'memory-card';
+        cardElement.dataset.index = index;
+        cardElement.dataset.pairId = card.pairId;
+        
+        cardElement.innerHTML = `
+            <div class="card-front">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <div class="card-back">
+                ${card.content}
+            </div>
+        `;
+        
+        cardElement.addEventListener('click', () => flipCard(index));
+        board.appendChild(cardElement);
+    });
+}
+
+function flipCard(index) {
+    const card = document.querySelector(`[data-index="${index}"]`);
+    
+    if (card.classList.contains('flipped') || card.classList.contains('matched')) {
+        return;
+    }
+    
+    if (gameState.flippedCards.length >= 2) {
+        return;
+    }
+    
+    card.classList.add('flipped');
+    gameState.flippedCards.push({ index, pairId: card.dataset.pairId });
+    
+    if (gameState.flippedCards.length === 2) {
+        gameState.moves++;
+        updateStats();
+        
+        setTimeout(checkMatch, 1000);
+    }
+}
+
+function checkMatch() {
+    const [card1, card2] = gameState.flippedCards;
+    const element1 = document.querySelector(`[data-index="${card1.index}"]`);
+    const element2 = document.querySelector(`[data-index="${card2.index}"]`);
+    
+    if (card1.pairId === card2.pairId) {
+        element1.classList.add('matched');
+        element2.classList.add('matched');
+        gameState.matchedPairs++;
+        updateStats();
+        
+        if (gameState.matchedPairs === gameState.totalPairs) {
+            setTimeout(showVictory, 500);
+        }
+    } else {
+        element1.classList.remove('flipped');
+        element2.classList.remove('flipped');
+    }
+    
+    gameState.flippedCards = [];
+}
+
+function updateStats() {
+    document.getElementById('moves').textContent = gameState.moves;
+    document.getElementById('matches').textContent = gameState.matchedPairs;
+}
+
+function updateTimer() {
+    if (!gameState.startTime) return;
+    
+    const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function showVictory() {
+    clearInterval(gameState.timerInterval);
+    
+    const perfectMoves = gameState.totalPairs * 2;
+    const accuracy = Math.round((perfectMoves / gameState.moves) * 100);
+    
+    document.getElementById('finalMoves').textContent = gameState.moves;
+    document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
+    document.getElementById('finalAccuracy').textContent = accuracy + '%';
+    
+    const badge = document.getElementById('performanceBadge');
+    if (accuracy >= 90) {
+        badge.className = 'performance-badge badge-excellent';
+        badge.innerHTML = '<i class="bi bi-trophy-fill"></i> Excellent!';
+    } else if (accuracy >= 70) {
+        badge.className = 'performance-badge badge-good';
+        badge.innerHTML = '<i class="bi bi-star-fill"></i> Great Job!';
+    } else {
+        badge.className = 'performance-badge badge-average';
+        badge.innerHTML = '<i class="bi bi-hand-thumbs-up-fill"></i> Good Effort!';
+    }
+    
+    document.getElementById('victoryModal').classList.add('show');
+}
+
+function resetGame() {
+    clearInterval(gameState.timerInterval);
+    
+    gameState = {
+        difficulty: gameState.difficulty,
+        cards: [],
+        flippedCards: [],
+        matchedPairs: 0,
+        totalPairs: 0,
+        moves: 0,
+        startTime: null,
+        timerInterval: null,
+        gameStarted: false
+    };
+    
+    document.getElementById('memoryBoard').innerHTML = '';
+    document.getElementById('moves').textContent = '0';
+    document.getElementById('matches').textContent = '0';
+    document.getElementById('timer').textContent = '0:00';
+    document.getElementById('startBtn').style.display = 'inline-block';
+    document.getElementById('resetBtn').style.display = 'none';
+    document.getElementById('victoryModal').classList.remove('show');
+}
+</script>
+{% endblock %}

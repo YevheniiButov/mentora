@@ -171,6 +171,10 @@ class DevelopmentConfig(Config):
     if not SQLALCHEMY_DATABASE_URI:
         SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI') or 'sqlite:///dental_academy_clean.db'
     
+    # Локальные настройки URL для разработки
+    BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:5002')
+    SERVER_NAME = os.environ.get('SERVER_NAME', '127.0.0.1:5002')
+    
     # DigiD для разработки (mock mode)
     DIGID_MOCK_MODE = True
     DIGID_ENABLED = True

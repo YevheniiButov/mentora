@@ -111,6 +111,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeQuestionPage() {
+    // Log current question for debugging
+    console.log('🎯 Initializing question page:', {
+        sessionId: {{ session_id }},
+        questionId: {{ question.id }},
+        questionNum: {{ question_num }},
+        totalQuestions: {{ total_questions }},
+        currentQuestionId: {{ diagnostic_session.current_question_id }}
+    });
+    
     // Timer initialization
     initTimer();
     
@@ -330,17 +339,51 @@ function previousQuestion() {
     window.history.back();
 }
 
-function nextQuestion() {
+async function nextQuestion() {
     if (selectedOption === null) return;
     
-    submitAnswer().then((result) => {
-        if (result && result.success) {
-            // Go to next question
-            window.location.href = '{{ url_for("diagnostic.show_question", session_id=session_id) }}';
+    console.log('🚀 nextQuestion called for question {{ question.id }}');
+    
+    try {
+        const submitResult = await submitAnswer();
+        console.log('✅ submitAnswer result:', submitResult);
+        
+        if (submitResult && submitResult.success) {
+            // Get next question via API instead of reloading the page
+            console.log('📡 Fetching next question...');
+            const nextResponse = await fetch('{{ url_for("diagnostic.get_next_question") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    session_id: {{ session_id }}
+                })
+            });
+            
+            const nextData = await nextResponse.json();
+            console.log('📥 Next question data:', nextData);
+            
+            if (nextData.session_completed) {
+                // Test is complete, go to results
+                console.log('✅ Test completed, redirecting to results');
+                window.location.href = '{{ url_for("diagnostic.show_results", session_id=session_id) }}';
+            } else if (nextData.success && nextData.question) {
+                // Reload page with new question (force refresh without cache)
+                console.log(`🔄 Loading next question ID: ${nextData.question.id}`);
+                const url = '{{ url_for("diagnostic.show_question", session_id=session_id) }}' + '?t=' + Date.now();
+                // Use replace to avoid back button issues
+                window.location.replace(url);
+            } else {
+                console.error('❌ Failed to get next question:', nextData);
+                showModal('Error', 'Failed to load next question', [{text: 'OK', class: 'btn-primary', onclick: hideModal}]);
+            }
         }
-    }).catch((error) => {
+    } catch (error) {
         console.error('Error in nextQuestion:', error);
-    });
+        showModal('Error', 'An error occurred', [{text: 'OK', class: 'btn-primary', onclick: hideModal}]);
+    }
 }
 
 async function finishAssessment() {

@@ -40,6 +40,7 @@
             </a>
             {% if not user.created_via_digid %}
             <form method="POST" action="{{ url_for('admin.reset_user_password', user_id=user.id) }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm btn-outline-warning" 
                         onclick="return confirm('Сбросить пароль пользователя?')">
                     <i class="bi bi-key"></i> Сбросить пароль
@@ -48,6 +49,7 @@
             {% endif %}
             {% if user.id != current_user.id %}
             <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm btn-outline-{% if user.is_active %}warning{% else %}success{% endif %}"
                         onclick="return confirm('{% if user.is_active %}Деактивировать{% else %}Активировать{% endif %} пользователя?')">
                     <i class="bi bi-{% if user.is_active %}pause{% else %}play{% endif %}"></i> 
@@ -64,6 +66,7 @@
             <ul class="dropdown-menu">
                 <li>
                     <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         {% if user.is_admin %}
                         <input type="hidden" name="confirm_admin_delete" value="1">
                         {% endif %}
@@ -91,9 +94,11 @@
     <i class="bi bi-envelope"></i> Email не подтвержден
     <div class="mt-2">
         <form method="POST" action="{{ url_for('admin.resend_verification_email', user_id=user.id) }}" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-sm btn-outline-primary">Отправить письмо</button>
         </form>
         <form method="POST" action="{{ url_for('admin.force_verify_email', user_id=user.id) }}" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Принудительно подтвердить email?')">
                 Подтвердить принудительно
             </button>

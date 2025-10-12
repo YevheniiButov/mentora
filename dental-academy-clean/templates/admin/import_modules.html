@@ -28,6 +28,7 @@
             <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_bp.modules', lang=lang) }}"> {# Указываем action явно #}
               {# Скрытое поле для идентификации формы на бэкенде #}
               <input type="hidden" name="import_form" value="true">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <div class="mb-3">
                 {# Меняем name="json" на name="json_file" #}
                 <input class="form-control" type="file" name="json_file" accept="application/json" required>
@@ -54,6 +55,7 @@
                               action="{{ url_for('admin_bp.delete_module', lang=lang, module_id=mod.id) }}" {# Добавлен lang=lang #}
                               style="display: inline;"
                               onsubmit="return confirm('{% if lang == 'ru' %}Вы уверены, что хотите удалить модуль \'{{ mod.title }}\' и все его уроки?{% else %}Are you sure you want to delete module \'{{ mod.title }}\' and all its lessons?{% endif %}');">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                           <button type="submit" class="btn btn-danger btn-sm">
                               <i class="bi bi-trash"></i> {% if lang == 'ru' %}Удалить{% else %}Delete{% endif %}
                           </button>

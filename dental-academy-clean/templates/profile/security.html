@@ -422,7 +422,7 @@
                     {{ t('change_email', lang) | default('Смена email') }}
                 </h2>
                 
-                <form method="POST" action="{{ url_for('profile.security') }}">
+                <form method="POST" action="{{ url_for('profile.security', lang=lang) }}">
                     <input type="hidden" name="action" value="change_email">
                     <div class="form-group">
                         <label class="form-label">
@@ -468,7 +468,7 @@
                     {{ t('change_password', lang) | default('Смена пароля') }}
                 </h2>
                 
-                <form method="POST" action="{{ url_for('profile.security') }}">
+                <form method="POST" action="{{ url_for('profile.security', lang=lang) }}">
                     <input type="hidden" name="action" value="change_password">
                     <div class="form-group">
                         <label class="form-label">
@@ -493,7 +493,7 @@
                     </div>
                     
                     <div style="display: flex; gap: 1rem; align-items: center;">
-                        <a href="{{ url_for('profile.profile') }}" class="btn-back">
+                        <a href="{{ url_for('profile.profile', lang=lang) }}" class="btn-back">
                             <i class="fas fa-arrow-left"></i>
                             {{ t('back_to_profile', lang) | default('Назад к профилю') }}
                         </a>

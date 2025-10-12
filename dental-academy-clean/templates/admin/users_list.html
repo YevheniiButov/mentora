@@ -302,6 +302,7 @@
                                     {% if user.id != current_user.id %}
                                     <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" 
                                           style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-outline-warning btn-sm" 
                                                 title="{% if user.is_active %}Деактивировать{% else %}Активировать{% endif %}">
                                             <i class="bi bi-{% if user.is_active %}pause{% else %}play{% endif %}"></i>
@@ -392,6 +393,7 @@
             </div>
             <div class="modal-body">
                 <form id="addUserForm" method="POST" action="{{ url_for('admin.users_list') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="first_name" class="form-label">Имя</label>
                         <input type="text" class="form-control" id="first_name" name="first_name" required>

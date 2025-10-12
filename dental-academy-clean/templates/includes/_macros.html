@@ -51,7 +51,7 @@
     {% if request.endpoint.startswith('profile.') %}
       {# Для страниц профиля используем прямые URL с параметром lang #}
       {% if request.endpoint == 'profile.profile' %}
-        {{ url_for('profile.profile', lang=language) if language != 'en' else url_for('profile.profile') }}
+        {{ url_for('profile.profile', lang=language) }}
       {% elif request.endpoint == 'profile.personal_info' %}
         {{ url_for('profile.personal_info', lang=language) }}
       {% elif request.endpoint == 'profile.documents' %}
@@ -69,6 +69,6 @@
       {{ url_for(request.endpoint, **args) }}
     {% endif %}
   {% else %}
-    {{ url_for('main.index', lang=language) }}
+    /{{ language }}/
   {% endif %}
 {% endmacro %}

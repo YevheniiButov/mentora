@@ -758,8 +758,9 @@ def profession_learning_map(lang, profession):
         print(f"🔍 DEBUG: profession_learning_map - learning_state = {learning_state}")
         
         return render_template(
-            "learning/subject_view.html",
+            "learning/learning_map_modern_style.html",
             title=f'Leerkaart - {PROFESSION_NAMES[profession]}',
+            lang=lang,
             learning_paths=profession_data['learning_paths'],
             current_path=profession_data['learning_paths'][0] if profession_data['learning_paths'] else None,
             subjects=profession_data['subjects'],
@@ -1041,17 +1042,18 @@ def learning_map(lang, path_id=None):
 
         
         return render_template(
-                    "learning/subject_view.html",  # Изменено с map.html на subject_view.html
+                    "learning/learning_map_modern_style.html",  # Новая современная карта обучения
                     title='Learning Map',
+                    lang=lang,
                     learning_paths=learning_paths,
                     current_path=current_path,
                     subjects=all_subjects,
-                    selected_subject=selected_subject,  # Обновлен этот параметр
-                    subject_modules=subject_modules,  # Добавлен этот параметр
+                    selected_subject=selected_subject,
+                    subject_modules=subject_modules,
                     user=current_user,
                     has_subscription=current_user.has_subscription,
                     stats=stats,
-                    recommendations=get_user_recommendations(current_user.id),  # Добавляем рекомендации
+                    recommendations=get_user_recommendations(current_user.id),
                     content_categories=processed_categories
 
         )
@@ -1742,7 +1744,8 @@ def view_path(lang, path_id):
         """ % path_id
         
         return render_template(
-            'learning/subject_view.html',
+            'learning/learning_map_modern_style.html',
+            lang=lang,
             learning_paths=learning_paths,
             subjects=subjects,
             selected_path=path,
@@ -1751,7 +1754,6 @@ def view_path(lang, path_id):
             stats=stats,
             recommendations=recommendations,
             content_categories=content_categories,
-            lang=lang,
             extra_scripts=extra_scripts  # Передаем скрипт в шаблон
         )
     except Exception as e:

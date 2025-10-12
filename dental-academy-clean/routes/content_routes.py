@@ -59,7 +59,7 @@ def content_home(lang):
     except Exception as e:
         current_app.logger.error(f"Ошибка в content_home: {e}", exc_info=True)
         flash(t("error_loading_content", lang), "danger")
-        return redirect(url_for('main.index', lang=lang))
+        return redirect(f'/{lang}/')
 
 @content_bp.route("/category/<category_slug>")
 @login_required

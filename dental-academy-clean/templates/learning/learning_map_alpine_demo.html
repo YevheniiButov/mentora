@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Map - Alpine.js Demo</title>
+    
+    <!-- Bootstrap Icons (замена Lucide) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Alpine.js - всего 15KB! -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        /* Точно такие же стили как в React компоненте */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .learning-map-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #a5b4fc;
+            font-size: 1.1rem;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Path Canvas */
+        .path-canvas {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            min-height: 700px;
+        }
+
+        /* Node styling - точно как в React */
+        .node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .node.hovered {
+            z-index: 50;
+        }
+
+        .node-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            padding: 4px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .node:hover .node-circle {
+            transform: scale(1.1);
+        }
+
+        /* Градиенты для разных типов узлов */
+        .node-diagnostic { background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); }
+        .node-theory { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); }
+        .node-practice { background: linear-gradient(135deg, #f97316 0%, #dc2626 100%); }
+        .node-test { background: linear-gradient(135deg, #eab308 0%, #f97316 100%); }
+        .node-game { background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%); }
+        .node-exam { background: linear-gradient(135deg, #ca8a04 0%, #d97706 100%); }
+
+        .node-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .node-icon {
+            font-size: 2rem;
+            color: white;
+        }
+
+        /* Status badge */
+        .status-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #0f172a;
+            font-size: 0.75rem;
+            color: white;
+        }
+
+        .status-completed { background: #22c55e; }
+        .status-active { background: #3b82f6; }
+        .status-available { background: #8b5cf6; }
+        .status-locked { background: #94a3b8; }
+
+        /* Glow effect для активных узлов */
+        .node-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            opacity: 0.5;
+            filter: blur(20px);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Node title */
+        .node-title {
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .node-title-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .node-progress {
+            font-size: 0.75rem;
+            color: #c4b5fd;
+        }
+
+        /* Side Panel */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-card h3 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .panel-card p {
+            color: #a5b4fc;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        .btn-start {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-start:not(:disabled) {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            color: white;
+        }
+
+        .btn-start:not(:disabled):hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-start:disabled {
+            background: #4b5563;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* SVG connection lines */
+        .connection-line {
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .connection-active {
+            stroke: #8b5cf6;
+            stroke-dasharray: 0;
+        }
+
+        .connection-locked {
+            stroke: #475569;
+            stroke-dasharray: 5,5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Alpine.js компонент - практически как React! -->
+    <div x-data="learningMapApp()" class="learning-map-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Learning Path</h1>
+            <p>Your personalized journey to mastery</p>
+        </div>
+
+        <div class="grid-layout">
+            <!-- Path Canvas -->
+            <div class="path-canvas">
+                <!-- SVG для соединительных линий -->
+                <svg style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;">
+                    <template x-for="conn in connections" :key="conn.id">
+                        <line 
+                            :x1="conn.from.x + '%'" 
+                            :y1="conn.from.y + 5 + '%'"
+                            :x2="conn.to.x + '%'" 
+                            :y2="conn.to.y - 5 + '%'"
+                            :class="conn.isActive ? 'connection-active' : 'connection-locked'"
+                            class="connection-line"
+                        />
+                    </template>
+                </svg>
+
+                <!-- Узлы (Nodes) -->
+                <template x-for="node in pathNodes" :key="node.id">
+                    <div 
+                        class="node"
+                        :class="{ 'hovered': hoveredNode === node.id }"
+                        :style="`left: ${node.position.x}%; top: ${node.position.y}%;`"
+                        @mouseenter="hoveredNode = node.id"
+                        @mouseleave="hoveredNode = null"
+                        @click="selectNode(node)"
+                    >
+                        <!-- Glow effect для активных узлов -->
+                        <div 
+                            x-show="node.status === 'active' || node.status === 'available'"
+                            class="node-glow"
+                            :class="`node-${node.type}`"
+                        ></div>
+
+                        <!-- Круг узла -->
+                        <div class="node-circle" :class="`node-${node.type}`">
+                            <div class="node-inner">
+                                <i :class="`bi bi-${node.iconName} node-icon`"></i>
+                            </div>
+                            
+                            <!-- Status badge -->
+                            <div class="status-badge" :class="`status-${node.status}`">
+                                <i :class="`bi bi-${getStatusIcon(node.status)}`"></i>
+                            </div>
+                        </div>
+
+                        <!-- Название узла -->
+                        <div class="node-title">
+                            <div class="node-title-text" x-text="node.title"></div>
+                            <div x-show="node.progress > 0" class="node-progress" x-text="node.progress + '%'"></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="side-panel">
+                <!-- Детали выбранного узла -->
+                <div class="panel-card" x-show="selectedNode" x-transition>
+                    <div 
+                        class="node-circle" 
+                        :class="`node-${selectedNode?.type}`"
+                        style="width: 64px; height: 64px; margin-bottom: 1rem;"
+                    >
+                        <div class="node-inner">
+                            <i :class="`bi bi-${selectedNode?.iconName}`" style="font-size: 2rem; color: white;"></i>
+                        </div>
+                    </div>
+
+                    <h3 x-text="selectedNode?.title"></h3>
+                    <p x-text="selectedNode?.description"></p>
+
+                    <!-- Progress bar -->
+                    <div x-show="selectedNode?.progress > 0">
+                        <div style="display: flex; justify-content: space-between; color: #a5b4fc; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <span>Progress</span>
+                            <span x-text="selectedNode?.progress + '%'"></span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div 
+                                class="progress-bar" 
+                                :class="`node-${selectedNode?.type}`"
+                                :style="`width: ${selectedNode?.progress}%`"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- Start button -->
+                    <button 
+                        class="btn-start"
+                        :disabled="selectedNode?.status === 'locked'"
+                    >
+                        <span x-text="selectedNode?.status === 'locked' ? 'Locked' : 
+                                      selectedNode?.status === 'completed' ? 'Review' : 'Start'"></span>
+                    </button>
+                </div>
+
+                <!-- Empty state -->
+                <div class="panel-card" x-show="!selectedNode" style="text-align: center;">
+                    <i class="bi bi-brain" style="font-size: 3rem; color: #a78bfa; opacity: 0.5;"></i>
+                    <p style="margin-top: 1rem;">Click on any node to see details</p>
+                </div>
+
+                <!-- Legend -->
+                <div class="panel-card">
+                    <h4 style="color: white; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">Legend</h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; color: #a5b4fc;">
+                            <i class="bi bi-check-circle-fill" style="color: #22c55e; margin-right: 0.5rem;"></i>
+                            Completed
+                        </div>
+                        <div style="display: flex; align-items: center; color: #a5b4fc;">
+                            <i class="bi bi-play-fill" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                            In Progress
+                        </div>
+                        <div style="display: flex; align-items: center; color: #a5b4fc;">
+                            <i class="bi bi-lightning-fill" style="color: #8b5cf6; margin-right: 0.5rem;"></i>
+                            Available
+                        </div>
+                        <div style="display: flex; align-items: center; color: #a5b4fc;">
+                            <i class="bi bi-lock-fill" style="color: #94a3b8; margin-right: 0.5rem;"></i>
+                            Locked
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function learningMapApp() {
+            return {
+                // State - как в React useState
+                selectedNode: null,
+                hoveredNode: null,
+
+                // Data - как в React компоненте
+                pathNodes: [
+                    {
+                        id: 1,
+                        title: 'IRT Diagnostic',
+                        type: 'diagnostic',
+                        iconName: 'lightning',
+                        status: 'completed',
+                        position: { x: 50, y: 10 },
+                        description: 'Adaptive diagnostic test',
+                        progress: 100,
+                        unlocks: [2, 3]
+                    },
+                    {
+                        id: 2,
+                        title: 'Basic Medical Terms',
+                        type: 'theory',
+                        iconName: 'book',
+                        status: 'active',
+                        position: { x: 30, y: 25 },
+                        description: 'Essential Dutch medical vocabulary',
+                        progress: 65,
+                        unlocks: [4, 5]
+                    },
+                    {
+                        id: 3,
+                        title: 'Anatomy Basics',
+                        type: 'theory',
+                        iconName: 'heart-pulse',
+                        status: 'available',
+                        position: { x: 70, y: 25 },
+                        description: 'Human anatomy fundamentals',
+                        progress: 0,
+                        unlocks: [6]
+                    },
+                    {
+                        id: 4,
+                        title: 'Virtual Patient #1',
+                        type: 'practice',
+                        iconName: 'people',
+                        status: 'locked',
+                        position: { x: 20, y: 45 },
+                        description: 'Interactive patient scenario',
+                        progress: 0,
+                        unlocks: [7]
+                    }
+                ],
+
+                // Computed - connections между узлами
+                get connections() {
+                    const conns = [];
+                    this.pathNodes.forEach(node => {
+                        node.unlocks.forEach(targetId => {
+                            const target = this.pathNodes.find(n => n.id === targetId);
+                            if (target) {
+                                conns.push({
+                                    id: `${node.id}-${targetId}`,
+                                    from: node.position,
+                                    to: target.position,
+                                    isActive: node.status === 'completed' || node.status === 'active'
+                                });
+                            }
+                        });
+                    });
+                    return conns;
+                },
+
+                // Methods - как в React
+                selectNode(node) {
+                    this.selectedNode = node;
+                },
+
+                getStatusIcon(status) {
+                    const icons = {
+                        'completed': 'check-circle-fill',
+                        'active': 'play-fill',
+                        'available': 'lightning-fill',
+                        'locked': 'lock-fill'
+                    };
+                    return icons[status] || 'lock-fill';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

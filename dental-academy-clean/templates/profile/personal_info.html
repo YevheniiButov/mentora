@@ -858,7 +858,7 @@
 
         <!-- Submit Section -->
         <div class="submit-section">
-            <a href="{{ url_for('profile.profile', lang=lang) if lang != 'en' else url_for('profile.profile') }}" class="btn-back">
+            <a href="{{ url_for('profile.profile', lang=lang) }}" class="btn-back">
                 <i class="fas fa-arrow-left"></i>
                 {{ t('back_to_profile', lang) | default('Back to Profile') }}
             </a>
@@ -1429,49 +1429,34 @@ function setupProgressIndicator() {
 }
 
 async function submitForm() {
-    const form = document.getElementById('registrationForm');
+    const form = document.getElementById('personalInfoForm');
     const submitBtn = document.getElementById('submitBtn');
     const formData = new FormData(form);
-    
-    // Validate reCAPTCHA
-    if (!validateRecaptcha()) {
-        return;
-    }
     
     // Disable submit button
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ t("processing", lang) | default("Processing...") }}';
     
     try {
-        const response = await fetch('{{ url_for("auth.register") }}', {
+        const response = await fetch('{{ url_for("profile.update_personal_info", lang=lang) }}', {
             method: 'POST',
             body: formData
         });
         
-        const result = await response.json();
-        
-        if (result.success) {
-            // Show success message with spam folder warning
-            const successMessage = '{{ t("registration_success", lang) | default("Registration completed successfully!") }}' + 
-                '<br><br><strong>📧 {{ t("check_spam_folder", lang) | default("Important: Please check your spam folder!") }}</strong><br>' +
-                '{{ t("spam_folder_warning", lang) | default("Confirmation email might be in your spam/junk folder. Please check and mark as not spam if found.") }}';
-            showSuccessMessage(successMessage);
-            
-            // Redirect to login or dashboard
-            setTimeout(() => {
-                window.location.href = '{{ url_for("auth.login") }}';
-            }, 5000); // Increased timeout to give time to read the message
+        if (response.ok) {
+            // Success - redirect to the same page to show updated data
+            window.location.reload();
         } else {
             // Show error message
-            showErrorMessage(result.error || '{{ t("registration_error", lang) | default("Registration failed. Please try again.") }}');
+            showErrorMessage('{{ t("update_error", lang) | default("Failed to update personal information. Please try again.") }}');
         }
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('Update error:', error);
         showErrorMessage('{{ t("network_error", lang) | default("Network error. Please check your connection and try again.") }}');
     } finally {
         // Re-enable submit button
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> {{ t("complete_registration", lang) | default("Complete Registration") }}';
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> {{ t("save_changes", lang) | default("Save Changes") }}';
     }
 }
 

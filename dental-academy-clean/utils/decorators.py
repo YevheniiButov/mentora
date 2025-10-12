@@ -13,7 +13,7 @@ def admin_required(f):
         
         if not current_user.is_admin:
             flash('Доступ запрещен. Требуются права администратора', 'danger')
-            return redirect(url_for('main.index', lang='en'))
+            return redirect('/en/')
         
         return f(*args, **kwargs)
     return decorated_function

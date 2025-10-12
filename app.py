@@ -299,6 +299,9 @@ try:
     # Импорт Learning Planner роутов
     from routes.learning_planner_routes import learning_planner_bp
     
+    # Импорт SEO роутов
+    from routes.seo_routes import seo_bp
+    
     # Register blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -331,6 +334,9 @@ try:
     
     # Регистрация Learning Planner blueprint
     app.register_blueprint(learning_planner_bp, url_prefix='/dashboard')
+    
+    # Регистрация SEO blueprint
+    app.register_blueprint(seo_bp)
     
     # Отключить CSRF для DigiD API роутов
     csrf.exempt(digid_bp)

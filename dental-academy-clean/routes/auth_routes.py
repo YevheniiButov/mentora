@@ -137,7 +137,8 @@ def get_file_size(file):
 def logout():
     """Logout user"""
     logout_user()
-    return redirect(url_for('main.index', lang=g.get('lang', 'en')))
+    lang = g.get('lang', 'en')
+    return redirect(f'/{lang}/')
 
 # Keeping only DigiD:
 @auth_bp.route('/digid/login')
@@ -157,7 +158,8 @@ def digid_logout():
     from flask_login import logout_user
     logout_user()
     # Can add session cleanup if needed: session.clear()
-    return redirect(url_for('main.index', lang=g.get('lang', 'en')))
+    lang = g.get('lang', 'en')
+    return redirect(f'/{lang}/')
 
 
 @auth_bp.route('/profile/edit', methods=['GET', 'POST'])
@@ -724,7 +726,8 @@ def unsubscribe(user_id):
         current_app.logger.error(f"Unsubscribe error: {e}")
         flash('An error occurred while processing your unsubscribe request.', 'error')
     
-    return redirect(url_for('main.index', lang=g.get('lang', 'en')))
+    lang = g.get('lang', 'en')
+    return redirect(f'/{lang}/')
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

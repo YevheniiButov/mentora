@@ -275,7 +275,7 @@ def view_subject(lang, subject_id):
     except Exception as e:
         current_app.logger.error(f"Ошибка в view_subject (ID: {subject_id}): {e}", exc_info=True)
         flash(t("error_occurred_loading_data") + ": " + str(e), "danger")
-        return redirect(url_for('main.index', lang=current_lang))
+        return redirect(f'/{current_lang}/')
 
 # НОВЫЙ РОУТ ИЗ ФРАГМЕНТА 1
 @subject_view_bp.route("/virtual-patients") # Будет доступен по /<lang>/learning-map/subject/virtual-patients
@@ -673,7 +673,7 @@ def force_mobile_subject(lang, subject_id):
     except Exception as e:
         current_app.logger.error(f"Ошибка в force_mobile_subject (ID: {subject_id}): {e}", exc_info=True)
         flash(t("error_occurred_loading_data") + ": " + str(e), "danger")
-        return redirect(url_for('main.index', lang=current_lang))
+        return redirect(f'/{current_lang}/')
 
 # Добавьте этот отладочный маршрут в subject_view_routes.py
 

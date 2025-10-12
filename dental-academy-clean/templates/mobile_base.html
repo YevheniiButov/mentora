@@ -78,7 +78,7 @@
     <!-- Mobile Navigation -->
     <nav class="mobile-nav navbar navbar-expand-lg fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('main.index', lang=lang) if lang != 'en' else url_for('main.index', lang='en') }}">
+            <a class="navbar-brand" href="{{ main_index_url(lang) }}">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora" height="30">
             </a>
             
@@ -89,7 +89,7 @@
             <div class="collapse navbar-collapse" id="mobileNavbar">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index', lang=lang) if lang != 'en' else url_for('main.index', lang='en') }}">
+                        <a class="nav-link" href="{{ main_index_url(lang) }}">
                             <i class="fas fa-home"></i> {{ t('home', lang) | default('Home') }}
                         </a>
                     </li>
