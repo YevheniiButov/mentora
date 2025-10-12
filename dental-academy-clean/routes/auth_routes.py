@@ -585,6 +585,18 @@ def login(lang=None):
             user.last_login = datetime.now(timezone.utc)
             db.session.commit()
             
+            # Check if profile is complete
+            if not user.registration_completed:
+                # Force profile completion for new users
+                user_lang = user.language or session.get('lang', 'nl')
+                redirect_url = f'/{user_lang}/profile?complete=true'
+                return jsonify({
+                    'success': True,
+                    'message': 'Please complete your profile',
+                    'redirect_url': redirect_url,
+                    'profile_incomplete': True
+                })
+            
             # Determine redirect URL
             from flask import session
             next_url = session.pop('next', None)

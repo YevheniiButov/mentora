@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ feature_name or 'IRT Diagnostic' }} - Coming Soon</title>
+    <title>{{ feature_name or 'Feature' }} - Coming Soon</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -336,12 +336,16 @@
             </div>
 
             <!-- Title -->
-            <h1 id="title">IRT Diagnostic<br>Launching Soon</h1>
+            <h1 id="title">{{ feature_name or 'Feature' }}<br>Launching Soon</h1>
 
             <!-- Description -->
             <p id="description">
-                Adaptive assessment powered by Item Response Theory. 
-                Get your personalized learning path based on your exact knowledge level.
+                {% if feature_type == 'knowledge_base' %}
+                    Comprehensive medical knowledge repository with interactive learning materials, case studies, and expert insights. Access evidence-based information across all medical specialties.
+                {% else %}
+                    Adaptive assessment powered by Item Response Theory. 
+                    Get your personalized learning path based on your exact knowledge level.
+                {% endif %}
             </p>
 
             <!-- Countdown Timer -->
@@ -389,38 +393,39 @@
         const translations = {
             en: {
                 badgeText: 'Coming Soon',
-                title: 'IRT Diagnostic<br>Launching Soon',
+                title: 'Virtual patients<br>Launching Soon',
                 description: 'Adaptive assessment powered by Item Response Theory. Get your personalized learning path based on your exact knowledge level.',
                 daysLabel: 'Days',
                 hoursLabel: 'Hours',
                 minutesLabel: 'Minutes',
                 secondsLabel: 'Seconds',
-                launchText: 'Launch Date: October 13, 2025',
+                launchText: 'Launch Date: November 13, 2025',
                 homeBtn: 'Back to Home',
                 communityBtn: 'Join Community',
-                launchedTitle: 'IRT Diagnostic<br>Now Available!',
-                launchedDescription: 'Start your adaptive assessment now and get your personalized learning path.',
-                launchedBtn: 'Start Diagnostic'
+                launchedTitle: '{{ feature_name or "Feature" }}<br>Now Available!',
+                launchedDescription: '{% if feature_type == "knowledge_base" %}Explore our comprehensive knowledge base and enhance your medical expertise.{% else %}Start your adaptive assessment now and get your personalized learning path.{% endif %}',
+                launchedBtn: '{% if feature_type == "knowledge_base" %}Explore Knowledge Base{% else %}Start Diagnostic{% endif %}'
             },
             nl: {
                 badgeText: 'Binnenkort',
-                title: 'IRT Diagnostiek<br>Komt Binnenkort',
+                title: 'Virtual patients<br>Komt Binnenkort',
                 description: 'Adaptieve beoordeling aangedreven door Item Response Theory. Krijg je persoonlijke leerpad op basis van je exacte kennisniveau.',
                 daysLabel: 'Dagen',
                 hoursLabel: 'Uren',
                 minutesLabel: 'Minuten',
                 secondsLabel: 'Seconden',
-                launchText: 'Lanceringsdatum: 13 oktober 2025',
+                launchText: 'Lanceringsdatum: 13 november 2025',
                 homeBtn: 'Terug naar Home',
                 communityBtn: 'Word lid van Community',
-                launchedTitle: 'IRT Diagnostiek<br>Nu Beschikbaar!',
-                launchedDescription: 'Start nu je adaptieve beoordeling en krijg je persoonlijke leerpad.',
-                launchedBtn: 'Start Diagnostiek'
+                launchedTitle: '{{ feature_name or "Functie" }}<br>Nu Beschikbaar!',
+                launchedDescription: '{% if feature_type == "knowledge_base" %}Verken onze uitgebreide kennisbank en verbeter je medische expertise.{% else %}Start nu je adaptieve beoordeling en krijg je persoonlijke leerpad.{% endif %}',
+                launchedBtn: '{% if feature_type == "knowledge_base" %}Verken Kennisbank{% else %}Start Diagnostiek{% endif %}'
             }
         };
 
-        // Get current language
+        // Get current language and feature type
         const lang = document.documentElement.lang || 'en';
+        const featureType = '{{ feature_type or "" }}';
         const t = translations[lang] || translations.en;
 
         // Apply translations
@@ -436,7 +441,7 @@
         document.getElementById('community-btn').textContent = t.communityBtn;
 
         // Countdown Timer
-        const launchDate = new Date('2025-10-13T00:00:00').getTime();
+        const launchDate = new Date('2025-11-13T00:00:00').getTime();
 
         function updateCountdown() {
             const now = new Date().getTime();
@@ -450,9 +455,13 @@
                 document.querySelector('.countdown').style.display = 'none';
                 document.querySelector('.launch-date').style.display = 'none';
                 
-                // Change button to "Start Diagnostic"
+                // Change button based on feature type
                 const primaryBtn = document.querySelector('.btn-primary');
-                primaryBtn.href = '/big-diagnostic?lang=' + lang;
+                if (featureType === 'knowledge_base') {
+                    primaryBtn.href = '/' + lang + '/knowledge-base';
+                } else {
+                    primaryBtn.href = '/big-diagnostic?lang=' + lang;
+                }
                 primaryBtn.innerHTML = '<span>🚀</span><span>' + t.launchedBtn + '</span>';
                 
                 return;

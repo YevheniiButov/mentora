@@ -2723,7 +2723,19 @@ def edit_user(user_id):
             user.profile_updated_at = datetime.now(timezone.utc)
             db.session.commit()
             
-            flash('Профиль пользователя успешно обновлен', 'success')
+            # Send welcome email if user was activated
+            if user.is_active and not old_values.get('is_active', False):
+                try:
+                    from utils.email_service import send_welcome_email
+                    send_welcome_email(user)
+                    current_app.logger.info(f"Welcome email sent to activated user: {user.email}")
+                    flash('Профиль пользователя успешно обновлен. Welcome email отправлен.', 'success')
+                except Exception as email_error:
+                    current_app.logger.warning(f"Failed to send welcome email to {user.email}: {str(email_error)}")
+                    flash(f'Профиль пользователя успешно обновлен. Ошибка отправки welcome email: {str(email_error)}', 'warning')
+            else:
+                flash('Профиль пользователя успешно обновлен', 'success')
+            
             return redirect(url_for('admin.user_detail', user_id=user_id))
             
         except Exception as e:
@@ -2818,7 +2830,19 @@ def toggle_user_status(user_id):
         db.session.commit()
         
         status_text = 'активирован' if user.is_active else 'деактивирован'
-        flash(f'Пользователь {status_text}', 'success')
+        
+        # Send welcome email if user was activated
+        if user.is_active and not old_status:
+            try:
+                from utils.email_service import send_welcome_email
+                send_welcome_email(user)
+                current_app.logger.info(f"Welcome email sent to activated user: {user.email}")
+                flash(f'Пользователь {status_text}. Welcome email отправлен.', 'success')
+            except Exception as email_error:
+                current_app.logger.warning(f"Failed to send welcome email to {user.email}: {str(email_error)}")
+                flash(f'Пользователь {status_text}. Ошибка отправки welcome email: {str(email_error)}', 'warning')
+        else:
+            flash(f'Пользователь {status_text}', 'success')
         
     except Exception as e:
         db.session.rollback()
@@ -2888,8 +2912,25 @@ def bulk_user_actions():
     
     try:
         if action == 'activate':
+            # Get users before activation for email sending
+            users_to_activate = User.query.filter(User.id.in_(user_ids)).all()
+            
+            # Activate users
             User.query.filter(User.id.in_(user_ids)).update({'is_active': True})
-            flash(f'Активировано пользователей: {len(user_ids)}', 'success')
+            db.session.commit()
+            
+            # Send welcome emails to activated users
+            welcome_emails_sent = 0
+            for user in users_to_activate:
+                try:
+                    from utils.email_service import send_welcome_email
+                    send_welcome_email(user)
+                    welcome_emails_sent += 1
+                    current_app.logger.info(f"Welcome email sent to activated user: {user.email}")
+                except Exception as email_error:
+                    current_app.logger.warning(f"Failed to send welcome email to {user.email}: {str(email_error)}")
+            
+            flash(f'Активировано пользователей: {len(user_ids)}. Отправлено welcome emails: {welcome_emails_sent}', 'success')
             
         elif action == 'deactivate':
             User.query.filter(User.id.in_(user_ids)).update({'is_active': False})

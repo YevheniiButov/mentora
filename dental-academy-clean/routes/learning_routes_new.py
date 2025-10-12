@@ -126,9 +126,13 @@ def learning_map(lang='en'):
 @daily_learning_bp.route('/<string:lang>/knowledge-base')
 @login_required  
 def knowledge_base(lang='en'):
-    """Redirect to coming soon page"""
-    from flask import redirect, url_for, g
-    return redirect(url_for('main.coming_soon', lang=lang))
+    """Knowledge Base coming soon page"""
+    from flask import render_template, g
+    return render_template('coming_soon.html', 
+                         lang=lang,
+                         feature_name='Knowledge Base',
+                         feature_description='Our comprehensive knowledge base is being developed and will be available soon.',
+                         feature_type='knowledge_base')
 
 # API Endpoints for Knowledge Base
 @daily_learning_bp.route('/api/subject/<int:subject_id>/stats')

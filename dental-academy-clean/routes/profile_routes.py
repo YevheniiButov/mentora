@@ -35,7 +35,15 @@ def profile(lang):
     """Profile page"""
     try:
         current_app.logger.info(f"Profile page accessed by user: {current_user.id}")
-        return render_template('profile/index.html', user=current_user)
+        
+        # Check if user needs to complete profile
+        force_completion = request.args.get('complete') == 'true'
+        profile_incomplete = not current_user.registration_completed
+        
+        return render_template('profile/index.html', 
+                             user=current_user, 
+                             force_completion=force_completion,
+                             profile_incomplete=profile_incomplete)
     except Exception as e:
         current_app.logger.error(f"Error in profile route: {e}", exc_info=True)
         flash('Произошла ошибка при загрузке профиля', 'error')
@@ -144,8 +152,28 @@ def update_personal_info(lang):
         if additional_qualifications:
             current_user.additional_qualifications = additional_qualifications
             
+        # Check if profile is complete and mark registration as completed
+        if not current_user.registration_completed:
+            # Check if essential fields are filled
+            essential_fields = [
+                current_user.first_name,
+                current_user.last_name,
+                current_user.profession,
+                current_user.legal_status
+            ]
+            
+            if all(essential_fields):
+                current_user.registration_completed = True
+                current_app.logger.info(f"Registration completed for user: {current_user.email}")
+            
         db.session.commit()
-        flash('Personal information updated successfully!', 'success')
+        
+        # Check if this was a forced completion
+        if request.form.get('force_completion') == 'true':
+            flash('Profile completed successfully! Welcome to Mentora!', 'success')
+            return redirect(url_for('main.index', lang=lang))
+        else:
+            flash('Personal information updated successfully!', 'success')
         
     except Exception as e:
         current_app.logger.error(f"Error updating personal info: {e}", exc_info=True)
