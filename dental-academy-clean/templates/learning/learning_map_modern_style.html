@@ -1584,10 +1584,10 @@
             return {
                 activeTab: initialTab,
                 isStartingDiagnostic: false,
-                isLaunched: isLaunched,
+                isLaunched: false, // ВСЕГДА false - блокируем все кроме IRT и Games
                 launchDate: launchDate,
                 // Enabled tabs (only IRT and Games before launch)
-                enabledTabs: isLaunched ? validTabs : ['irt', 'games'],
+                enabledTabs: ['irt', 'games'], // Только IRT и Games всегда доступны
                 selectTab(tab) {
                     if (!this.enabledTabs.includes(tab)) {
                         this.showComingSoonModal(tab);
@@ -1604,7 +1604,7 @@
                     };
                     
                     this.showNotification(
-                        `${tabNames[tab]} will be available after October 13, 2025 00:00`,
+                        `${tabNames[tab]} is coming soon!`,
                         'info'
                     );
                 },
@@ -1681,7 +1681,7 @@
                     };
                     
                     if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
-                        return `This feature will be available after October 13, 2025 00:00. ${descriptions[tab] || ''}`;
+                        return `This feature is coming soon! ${descriptions[tab] || ''}`;
                     }
                     
                     return descriptions[tab] || '';
@@ -1697,7 +1697,7 @@
                     };
                     
                     if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
-                        return ['This feature is coming soon', 'Will be available after launch', 'Check back on October 13, 2025'];
+                        return ['This feature is coming soon', 'Stay tuned for updates', 'Check back later'];
                     }
                     
                     return tips[tab] || [];
