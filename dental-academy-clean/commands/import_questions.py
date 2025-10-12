@@ -48,9 +48,13 @@ def import_questions(json_file):
         
         for q_data in questions_data:
             try:
-                # Проверка обязательных полей
-                required_fields = ['text', 'options', 'correct_answer_text', 'domain', 'irt_parameters']
+                # Проверка обязательных полей (поддерживаем оба формата IRT)
+                required_fields = ['text', 'options', 'correct_answer_text', 'domain']
                 missing_fields = [field for field in required_fields if field not in q_data]
+                
+                # Проверяем наличие IRT параметров в любом формате
+                if 'irt_parameters' not in q_data and 'irt_params' not in q_data:
+                    missing_fields.append('irt_parameters or irt_params')
                 
                 if missing_fields:
                     print(f"⚠️ Skipping question {q_data.get('id', 'unknown')}: missing {missing_fields}")
@@ -89,13 +93,19 @@ def import_questions(json_file):
                 db.session.add(question)
                 db.session.flush()  # Получаем ID вопроса
                 
-                # Создаем IRT параметры
+                # Создаем IRT параметры (поддерживаем оба формата)
                 from models import IRTParameters
+                irt_data = q_data.get('irt_parameters') or q_data.get('irt_params')
+                if not irt_data:
+                    print(f"⚠️ Skipping question {q_data.get('id', 'unknown')}: no IRT parameters found")
+                    skipped_count += 1
+                    continue
+                    
                 irt_params = IRTParameters(
                     question_id=question.id,
-                    difficulty=q_data['irt_parameters']['difficulty'],
-                    discrimination=q_data['irt_parameters']['discrimination'],
-                    guessing=q_data['irt_parameters']['guessing']
+                    difficulty=irt_data['difficulty'],
+                    discrimination=irt_data['discrimination'],
+                    guessing=irt_data['guessing']
                 )
                 
                 # Валидация IRT параметров
