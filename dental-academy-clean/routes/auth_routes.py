@@ -622,39 +622,59 @@ def login(lang=None):
 def confirm_email(token):
     """Confirm user's email with token"""
     try:
-        # Find user by hashed token (tokens are stored as hashes)
+        current_app.logger.info(f"=== EMAIL CONFIRMATION ATTEMPT ===")
+        current_app.logger.info(f"Token received: {token[:10]}...")
+        
+        # Find user by token - try both hashed and plain token for backward compatibility
         import hashlib
         token_hash = hashlib.sha256(token.encode()).hexdigest()
+        
+        # First try to find by hashed token (new format)
         user = User.query.filter_by(email_confirmation_token=token_hash).first()
         
+        # If not found, try to find by plain token (old format for backward compatibility)
         if not user:
+            current_app.logger.info("Token not found as hash, trying plain token...")
+            user = User.query.filter_by(email_confirmation_token=token).first()
+        
+        if not user:
+            current_app.logger.warning(f"User not found for token: {token[:10]}...")
             flash('Invalid or expired confirmation link', 'error')
             return redirect(url_for('auth.login'))
         
+        current_app.logger.info(f"User found: {user.email}")
+        current_app.logger.info(f"User current status - is_active: {user.is_active}, email_confirmed: {user.email_confirmed}")
+        
         # Verify token
         if not user.verify_email_confirmation_token(token):
+            current_app.logger.warning(f"Token verification failed for user: {user.email}")
             flash('Confirmation link has expired. Please request a new one.', 'error')
             return redirect(url_for('auth.login'))
+        
+        current_app.logger.info(f"Token verified successfully for user: {user.email}")
         
         # Confirm email and activate user
         user.confirm_email()
         user.is_active = True  # Activate user after email confirmation
         db.session.commit()
         
+        current_app.logger.info(f"User activated successfully: {user.email} - is_active: {user.is_active}, email_confirmed: {user.email_confirmed}")
+        
         # Send welcome email (with error handling)
         try:
             from utils.email_service import send_welcome_email
             send_welcome_email(user)
+            current_app.logger.info(f"Welcome email sent to: {user.email}")
         except Exception as welcome_error:
-            print(f"=== WELCOME EMAIL ERROR (non-critical): {str(welcome_error)} ===")
             current_app.logger.warning(f"Failed to send welcome email to {user.email}: {str(welcome_error)}")
         
         flash('Email successfully confirmed! Welcome to Mentora!', 'success')
+        current_app.logger.info(f"=== EMAIL CONFIRMATION SUCCESS ===")
         return redirect(url_for('auth.login'))
         
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Email confirmation error: {str(e)}")
+        current_app.logger.error(f"Email confirmation error: {str(e)}", exc_info=True)
         flash('An error occurred while confirming email', 'error')
         return redirect(url_for('auth.login'))
 
@@ -1098,12 +1118,8 @@ def quick_register(lang=None):
         # Отправляем welcome email с подтверждением
         try:
             from utils.email_service import send_email_confirmation
-            # Generate confirmation token
-            import secrets
-            import string
-            token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
-            user.email_confirmation_token = token
-            user.email_confirmation_sent_at = datetime.now(timezone.utc)
+            # Generate confirmation token using the proper method
+            token = user.generate_email_confirmation_token()
             db.session.commit()
             
             email_sent = send_email_confirmation(user, token)
