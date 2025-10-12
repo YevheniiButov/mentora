@@ -565,12 +565,16 @@ let gameState = {
     moves: 0,
     startTime: null,
     timerInterval: null,
-    gameStarted: false
+    gameStarted: false,
+    isPaused: false,
+    pauseStartTime: null,
+    totalPauseTime: 0
 };
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     setupDifficultyButtons();
+    setupAutoPause();
     
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('resetBtn').addEventListener('click', resetGame);
@@ -753,7 +757,10 @@ function resetGame() {
         moves: 0,
         startTime: null,
         timerInterval: null,
-        gameStarted: false
+        gameStarted: false,
+        isPaused: false,
+        pauseStartTime: null,
+        totalPauseTime: 0
     };
     
     document.getElementById('memoryBoard').innerHTML = '';
@@ -763,6 +770,155 @@ function resetGame() {
     document.getElementById('startBtn').style.display = 'inline-block';
     document.getElementById('resetBtn').style.display = 'none';
     document.getElementById('victoryModal').classList.remove('show');
+}
+
+// Auto-pause functionality
+function setupAutoPause() {
+    // Pause when page becomes hidden (tab switch, minimize, etc.)
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            pauseGame();
+        } else {
+            resumeGame();
+        }
+    });
+    
+    // Pause when page is about to unload (refresh, close, navigation)
+    window.addEventListener('beforeunload', function() {
+        pauseGame();
+        // Save game state to localStorage
+        saveGameState();
+    });
+    
+    // Resume when page loads (if there's saved state)
+    window.addEventListener('load', function() {
+        loadGameState();
+    });
+}
+
+function pauseGame() {
+    if (gameState.timerInterval && !gameState.isPaused && gameState.gameStarted) {
+        gameState.isPaused = true;
+        gameState.pauseStartTime = Date.now();
+        clearInterval(gameState.timerInterval);
+        
+        // Show pause indicator
+        showPauseIndicator();
+    }
+}
+
+function resumeGame() {
+    if (gameState.isPaused && gameState.pauseStartTime && gameState.gameStarted) {
+        gameState.isPaused = false;
+        gameState.totalPauseTime += Date.now() - gameState.pauseStartTime;
+        gameState.pauseStartTime = null;
+        
+        // Resume timer
+        gameState.timerInterval = setInterval(updateTimer, 1000);
+        
+        // Hide pause indicator
+        hidePauseIndicator();
+    }
+}
+
+function showPauseIndicator() {
+    // Create or show pause indicator
+    let indicator = document.getElementById('pauseIndicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'pauseIndicator';
+        indicator.className = 'pause-indicator';
+        indicator.innerHTML = '⏸️ Game Paused';
+        document.body.appendChild(indicator);
+    }
+    indicator.style.display = 'block';
+}
+
+function hidePauseIndicator() {
+    const indicator = document.getElementById('pauseIndicator');
+    if (indicator) {
+        indicator.style.display = 'none';
+    }
+}
+
+function saveGameState() {
+    if (!gameState.gameStarted) return;
+    
+    const gameData = {
+        difficulty: gameState.difficulty,
+        cards: gameState.cards,
+        flippedCards: gameState.flippedCards,
+        matchedPairs: gameState.matchedPairs,
+        totalPairs: gameState.totalPairs,
+        moves: gameState.moves,
+        startTime: gameState.startTime,
+        totalPauseTime: gameState.totalPauseTime,
+        gameStarted: gameState.gameStarted,
+        timestamp: Date.now()
+    };
+    
+    localStorage.setItem('memory_game_state', JSON.stringify(gameData));
+}
+
+function loadGameState() {
+    const savedData = localStorage.getItem('memory_game_state');
+    if (savedData) {
+        try {
+            const gameData = JSON.parse(savedData);
+            
+            // Check if saved game is recent (within 1 hour)
+            const timeDiff = Date.now() - gameData.timestamp;
+            if (timeDiff < 3600000 && gameData.gameStarted) { // 1 hour
+                // Restore game state
+                gameState.difficulty = gameData.difficulty;
+                gameState.cards = gameData.cards;
+                gameState.flippedCards = gameData.flippedCards;
+                gameState.matchedPairs = gameData.matchedPairs;
+                gameState.totalPairs = gameData.totalPairs;
+                gameState.moves = gameData.moves;
+                gameState.startTime = gameData.startTime;
+                gameState.totalPauseTime = gameData.totalPauseTime;
+                gameState.gameStarted = gameData.gameStarted;
+                
+                // Restore UI
+                renderCards();
+                updateStats();
+                
+                // Update button states
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('resetBtn').style.display = 'inline-block';
+                
+                // Resume timer
+                gameState.timerInterval = setInterval(updateTimer, 1000);
+                
+                // Show restore notification
+                showRestoreNotification();
+            }
+        } catch (e) {
+            console.log('Could not restore game state:', e);
+        }
+    }
+}
+
+function showRestoreNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'restore-notification';
+    notification.innerHTML = '🔄 Game Restored';
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Update timer to account for pause time
+function updateTimer() {
+    if (!gameState.startTime || !gameState.gameStarted) return;
+    
+    const elapsed = Math.floor((Date.now() - gameState.startTime - gameState.totalPauseTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 </script>
 {% endblock %}

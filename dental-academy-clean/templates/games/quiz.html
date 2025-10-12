@@ -1062,12 +1062,17 @@ let gameState = {
     startTime: null,
     timerInterval: null,
     selectedAnswer: null,
-    questions: []
+    questions: [],
+    isPaused: false,
+    pauseStartTime: null,
+    totalPauseTime: 0,
+    gameStarted: false
 };
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     setupCategoryButtons();
+    setupAutoPause();
     
     document.getElementById('startBtn').addEventListener('click', startQuiz);
     document.getElementById('nextBtn').addEventListener('click', nextQuestion);
@@ -1092,6 +1097,7 @@ function startQuiz() {
     gameState.streak = 0;
     gameState.maxStreak = 0;
     gameState.selectedAnswer = null;
+    gameState.gameStarted = true;
     
     gameState.startTime = Date.now();
     gameState.timerInterval = setInterval(updateTimer, 1000);
@@ -1231,6 +1237,9 @@ function updateTimer() {
 function resetQuiz() {
     clearInterval(gameState.timerInterval);
     
+    gameState.gameStarted = false;
+    gameState.totalPauseTime = 0;
+    
     document.getElementById('resultsScreen').style.display = 'none';
     document.getElementById('startScreen').style.display = 'block';
     document.getElementById('categorySelector').style.display = 'block';
@@ -1247,6 +1256,154 @@ function shuffle(array) {
         [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
     }
     return newArray;
+}
+
+// Auto-pause functionality
+function setupAutoPause() {
+    // Pause when page becomes hidden (tab switch, minimize, etc.)
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            pauseGame();
+        } else {
+            resumeGame();
+        }
+    });
+    
+    // Pause when page is about to unload (refresh, close, navigation)
+    window.addEventListener('beforeunload', function() {
+        pauseGame();
+        // Save game state to localStorage
+        saveGameState();
+    });
+    
+    // Resume when page loads (if there's saved state)
+    window.addEventListener('load', function() {
+        loadGameState();
+    });
+}
+
+function pauseGame() {
+    if (gameState.timerInterval && !gameState.isPaused && gameState.gameStarted) {
+        gameState.isPaused = true;
+        gameState.pauseStartTime = Date.now();
+        clearInterval(gameState.timerInterval);
+        
+        // Show pause indicator
+        showPauseIndicator();
+    }
+}
+
+function resumeGame() {
+    if (gameState.isPaused && gameState.pauseStartTime && gameState.gameStarted) {
+        gameState.isPaused = false;
+        gameState.totalPauseTime += Date.now() - gameState.pauseStartTime;
+        gameState.pauseStartTime = null;
+        
+        // Resume timer
+        gameState.timerInterval = setInterval(updateTimer, 1000);
+        
+        // Hide pause indicator
+        hidePauseIndicator();
+    }
+}
+
+function showPauseIndicator() {
+    // Create or show pause indicator
+    let indicator = document.getElementById('pauseIndicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'pauseIndicator';
+        indicator.className = 'pause-indicator';
+        indicator.innerHTML = '⏸️ Quiz Paused';
+        document.body.appendChild(indicator);
+    }
+    indicator.style.display = 'block';
+}
+
+function hidePauseIndicator() {
+    const indicator = document.getElementById('pauseIndicator');
+    if (indicator) {
+        indicator.style.display = 'none';
+    }
+}
+
+function saveGameState() {
+    if (!gameState.gameStarted) return;
+    
+    const gameData = {
+        category: gameState.category,
+        currentQuestion: gameState.currentQuestion,
+        score: gameState.score,
+        streak: gameState.streak,
+        maxStreak: gameState.maxStreak,
+        startTime: gameState.startTime,
+        totalPauseTime: gameState.totalPauseTime,
+        selectedAnswer: gameState.selectedAnswer,
+        questions: gameState.questions,
+        gameStarted: gameState.gameStarted,
+        timestamp: Date.now()
+    };
+    
+    localStorage.setItem('quiz_game_state', JSON.stringify(gameData));
+}
+
+function loadGameState() {
+    const savedData = localStorage.getItem('quiz_game_state');
+    if (savedData) {
+        try {
+            const gameData = JSON.parse(savedData);
+            
+            // Check if saved game is recent (within 1 hour)
+            const timeDiff = Date.now() - gameData.timestamp;
+            if (timeDiff < 3600000 && gameData.gameStarted) { // 1 hour
+                // Restore game state
+                gameState.category = gameData.category;
+                gameState.currentQuestion = gameData.currentQuestion;
+                gameState.score = gameData.score;
+                gameState.streak = gameData.streak;
+                gameState.maxStreak = gameData.maxStreak;
+                gameState.startTime = gameData.startTime;
+                gameState.totalPauseTime = gameData.totalPauseTime;
+                gameState.selectedAnswer = gameData.selectedAnswer;
+                gameState.questions = gameData.questions;
+                gameState.gameStarted = gameData.gameStarted;
+                
+                // Restore UI
+                showQuestion();
+                updateProgress();
+                updateStats();
+                
+                // Resume timer
+                gameState.timerInterval = setInterval(updateTimer, 1000);
+                
+                // Show restore notification
+                showRestoreNotification();
+            }
+        } catch (e) {
+            console.log('Could not restore game state:', e);
+        }
+    }
+}
+
+function showRestoreNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'restore-notification';
+    notification.innerHTML = '🔄 Quiz Restored';
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Update timer to account for pause time
+function updateTimer() {
+    if (!gameState.startTime || !gameState.gameStarted) return;
+    
+    const elapsed = Math.floor((Date.now() - gameState.startTime - gameState.totalPauseTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 </script>
 {% endblock %}
