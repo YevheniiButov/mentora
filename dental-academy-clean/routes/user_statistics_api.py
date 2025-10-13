@@ -56,16 +56,16 @@ def get_user_statistics(lang):
         # 3. Получаем статистику по времени обучения (последние 30 дней)
         thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
         
-        # Суммируем время из UserActivity
-        total_learning_seconds = db.session.query(
-            db.func.sum(UserActivity.time_spent_seconds)
+        # Суммируем время из UserActivity (в минутах)
+        total_learning_minutes = db.session.query(
+            db.func.sum(UserActivity.time_spent)
         ).filter(
             UserActivity.user_id == user_id,
             UserActivity.activity_date >= thirty_days_ago.date()
         ).scalar() or 0
         
         # Конвертируем в часы
-        total_hours = round(total_learning_seconds / 3600, 1)
+        total_hours = round(total_learning_minutes / 60, 1)
         
         # 4. Получаем статистику по тестам (для среднего балла)
         test_attempts = TestAttempt.query.filter_by(
@@ -102,7 +102,7 @@ def get_user_statistics(lang):
             'total_lessons_completed': total_lessons_completed,
             'total_lessons_started': total_lessons_started,
             'total_learning_time': f'{total_hours}h' if total_hours > 0 else '0h',
-            'total_learning_seconds': total_learning_seconds,
+            'total_learning_minutes': total_learning_minutes,
             'avg_score': combined_avg_score,
             'irt_tests_completed': irt_tests_completed,
             'avg_irt_score': avg_irt_score,
