@@ -1661,21 +1661,9 @@
                         console.error('Failed to load games statistics:', error);
                     }
                 },
-                calculateGameProgress(gameType) {
-                    const stats = this.gamesStats[gameType];
-                    if (!stats) return 0;
-                    
-                    if (gameType === 'quiz') {
-                        return Math.min(100, (stats.games_played / 10) * 100);
-                    } else {
-                        // For sudoku and memory, calculate based on games played and difficulties completed
-                        const difficultiesCompleted = Object.values(stats.difficulty_completed).filter(Boolean).length;
-                        return Math.min(100, ((stats.games_played * 10) + (difficultiesCompleted * 30)));
-                    }
-                },
                 init() {
                     this.loadUserStats();
-                    this.loadGamesStats();
+                    // Games statistics не загружаем, так как не показываем статистику игр
                 },
                 selectTab(tab) {
                     if (!this.enabledTabs.includes(tab)) {
@@ -1739,9 +1727,6 @@
                             title: 'Sudoku', 
                             subtitle: 'Classic', 
                             icon: 'grid-3x3-gap-fill', 
-                            progress: () => this.calculateGameProgress('sudoku'),
-                            completed: () => this.gamesStats.sudoku.games_played,
-                            total: () => this.gamesStats.sudoku.games_played + 1,
                             url: '/games/sudoku' 
                         },
                         { 
@@ -1749,9 +1734,6 @@
                             title: 'Medical Memory', 
                             subtitle: 'Match Terms', 
                             icon: 'bullseye', 
-                            progress: () => this.calculateGameProgress('memory'),
-                            completed: () => this.gamesStats.memory.games_played,
-                            total: () => this.gamesStats.memory.games_played + 1,
                             url: '/games/memory' 
                         },
                         { 
@@ -1759,28 +1741,7 @@
                             title: 'Quick Quiz', 
                             subtitle: 'Fast Questions', 
                             icon: 'lightning-charge-fill', 
-                            progress: () => this.calculateGameProgress('quiz'),
-                            completed: () => this.gamesStats.quiz.games_played,
-                            total: () => this.gamesStats.quiz.games_played + 1,
                             url: '/games/quiz' 
-                        },
-                        { 
-                            id: 10, 
-                            title: 'Achievements', 
-                            subtitle: 'Badges', 
-                            icon: 'trophy-fill', 
-                            progress: () => this.gamesStats.achievements.progress,
-                            completed: () => this.gamesStats.achievements.completed,
-                            total: () => this.gamesStats.achievements.total || 20
-                        },
-                        { 
-                            id: 11, 
-                            title: 'Leaderboard', 
-                            subtitle: 'Ranking', 
-                            icon: 'bar-chart-fill', 
-                            progress: () => this.gamesStats.leaderboard.user_rank ? 100 : 0,
-                            completed: () => this.gamesStats.leaderboard.user_rank || 0,
-                            total: () => this.gamesStats.leaderboard.total_users || 1
                         }
                     ],
                     'progress': [
@@ -1800,12 +1761,8 @@
                         // Для IRT используем реальные данные пользователя
                         return Math.min(100, Math.round((this.userStats.irtTestsCompleted / 3) * 100));
                     } else if (this.activeTab === 'games') {
-                        // Для игр используем реальные данные
-                        const totalGames = 3; // sudoku, memory, quiz
-                        const completedGames = Object.values(this.gamesStats).filter(stats => 
-                            stats.games_played > 0
-                        ).length;
-                        return Math.min(100, Math.round((completedGames / totalGames) * 100));
+                        // Для игр не показываем прогресс
+                        return 0;
                     } else {
                         // Для остальных табов используем статические данные
                         const mods = this.displayModules;
@@ -1816,7 +1773,7 @@
                     if (this.activeTab === 'irt') {
                         return this.userStats.irtTestsCompleted;
                     } else if (this.activeTab === 'games') {
-                        return Object.values(this.gamesStats).filter(stats => stats.games_played > 0).length;
+                        return 0; // Не показываем статистику для игр
                     } else {
                         return this.displayModules.filter(m => (typeof m.progress === 'function' ? m.progress() : m.progress) === 100).length;
                     }
@@ -1825,7 +1782,7 @@
                     if (this.activeTab === 'irt') {
                         return 3; // diagnostic, path, advanced
                     } else if (this.activeTab === 'games') {
-                        return 3; // sudoku, memory, quiz (не считаем achievements и leaderboard)
+                        return 3; // sudoku, memory, quiz
                     } else {
                         return this.displayModules.length;
                     }
