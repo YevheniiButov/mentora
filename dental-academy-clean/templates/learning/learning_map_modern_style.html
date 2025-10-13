@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1371,7 +1371,7 @@
     </header>
 
     <!-- Main -->
-    <div x-data="learningMapApp()" class="learning-map-container">
+    <div x-data="learningMapApp()" x-init="init()" class="learning-map-container">
         
         <div class="main-layout">
             
@@ -1648,8 +1648,17 @@
                 async loadUserStats() {
                     try {
                         const currentLang = document.querySelector('html').getAttribute('lang') || 'en';
+                        console.log('Loading user statistics for language:', currentLang);
                         const response = await fetch(`/${currentLang}/api/user-statistics`);
+                        
+                        if (!response.ok) {
+                            console.error('Failed to fetch statistics:', response.status, response.statusText);
+                            this.statsLoaded = true; // Mark as loaded to prevent UI issues
+                            return;
+                        }
+                        
                         const data = await response.json();
+                        console.log('User statistics loaded:', data);
                         
                         if (data.success) {
                             this.userStats = {
@@ -1667,6 +1676,7 @@
                         }
                     } catch (error) {
                         console.error('Failed to load user statistics:', error);
+                        this.statsLoaded = true; // Mark as loaded to prevent UI issues
                     }
                 },
                 async loadGamesStats() {
@@ -1882,19 +1892,26 @@
                         // Показываем уведомление о начале
                         const notification = this.showNotification(`Starting ${diagnosticType} diagnostic...`, 'info');
                         
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                        console.log('CSRF Token:', csrfToken ? 'Found' : 'Missing');
+                        console.log('Diagnostic Type:', diagnosticType);
+                        
                         // Отправляем запрос на сервер
                         const response = await fetch('/big-diagnostic/start', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                                'X-CSRFToken': csrfToken || ''
                             },
                             body: JSON.stringify({
                                 diagnostic_type: diagnosticType
                             })
                         });
                         
+                        console.log('Response status:', response.status);
+                        
                         const data = await response.json();
+                        console.log('Response data:', data);
                         
                         if (data.success) {
                             // Успешно запустили диагностику - перенаправляем
@@ -1907,6 +1924,7 @@
                             }
                         } else {
                             // Ошибка
+                            console.error('Diagnostic error:', data.error, data);
                             this.showNotification(data.error || 'Failed to start diagnostic', 'error');
                         }
                     } catch (error) {
