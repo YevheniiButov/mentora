@@ -68,16 +68,14 @@ def get_user_statistics(lang):
         total_hours = round(total_learning_minutes / 60, 1)
         
         # 4. Получаем статистику по тестам (для среднего балла)
-        test_attempts = TestAttempt.query.filter_by(
-            user_id=user_id,
-            status='completed'
-        ).all()
+        test_attempts = TestAttempt.query.filter_by(user_id=user_id).all()
         
         avg_test_score = 0
         if test_attempts:
-            scores = [attempt.score for attempt in test_attempts if attempt.score is not None]
-            if scores:
-                avg_test_score = int(sum(scores) / len(scores))
+            # Рассчитываем процент правильных ответов
+            correct_attempts = [attempt for attempt in test_attempts if attempt.is_correct is True]
+            if correct_attempts:
+                avg_test_score = int((len(correct_attempts) / len(test_attempts)) * 100)
         
         # Комбинированный средний балл (IRT + обычные тесты)
         if avg_irt_score and avg_test_score:
