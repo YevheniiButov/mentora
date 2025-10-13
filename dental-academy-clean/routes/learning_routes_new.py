@@ -115,9 +115,8 @@ def _adapt_daily_plan_for_template(daily_plan_result):
     return daily_plan_result
 
 @daily_learning_bp.route('/learning-map')
-@daily_learning_bp.route('/<string:lang>/learning-map')
 @login_required
-def learning_map(lang='en'):
+def learning_map(lang):
     """Redirect to coming soon page"""
     from flask import redirect, url_for, g
     return redirect(url_for('main.coming_soon', lang=lang))
@@ -612,9 +611,8 @@ def get_session_feedback_status(session_id):
 
 
 @daily_learning_bp.route('/reassessment-required')
-@daily_learning_bp.route('/<string:lang>/reassessment-required')
 @login_required
-def reassessment_required(lang='en'):
+def reassessment_required(lang):
     """Показывает страницу с требованием переоценки и прямой ссылкой на диагностику"""
     from datetime import date
     from models import PersonalLearningPlan
