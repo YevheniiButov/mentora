@@ -787,6 +787,30 @@
             font-weight: 700;
             color: #64748b;
             text-align: center;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .beta-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.4rem;
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            border-radius: 8px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+            animation: betaPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes betaPulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
         }
 
         .tab-circle.active .tab-label {
@@ -1363,7 +1387,10 @@
                                 <div class="circle-inner"><i class="bi bi-cpu-fill"></i></div>
                                 <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
                             </div>
-                            <div class="tab-label">IRT</div>
+                            <div class="tab-label">
+                                IRT
+                                <span class="beta-badge">BETA</span>
+                            </div>
                         </div>
 
                         <!-- Virtual Tab - Disabled until launch -->
@@ -1805,7 +1832,7 @@
                 },
                 getTabTitle(tab) {
                     return { 
-                        'irt': 'IRT Adaptive Learning', 
+                        'irt': 'IRT Adaptive Learning (Beta)', 
                         'virtual': 'Virtual Patients', 
                         'individual': 'Individual Learning',
                         'games': 'Gamification & Achievements',
@@ -1815,7 +1842,7 @@
                 },
                 getTabDescription(tab) {
                     const descriptions = { 
-                        'irt': 'Item Response Theory (IRT) provides adaptive testing that adjusts to your skill level in real-time. Complete diagnostic tests to unlock personalized learning paths.',
+                        'irt': '🧪 BETA: Item Response Theory (IRT) provides adaptive testing that adjusts to your skill level in real-time. This feature is in beta testing - your feedback helps us improve! Complete diagnostic tests to unlock personalized learning paths.',
                         'virtual': 'Practice with realistic virtual patient cases. Apply your knowledge in simulated clinical scenarios and improve your decision-making skills.',
                         'individual': 'Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises.',
                         'games': 'Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!',
