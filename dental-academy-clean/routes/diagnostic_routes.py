@@ -12,7 +12,7 @@ import logging
 import json
 from datetime import datetime, timedelta, timezone, date
 
-from models import db, DiagnosticSession, Question, IRTParameters, User, PersonalLearningPlan, StudySession, BIGDomain, DiagnosticResponse
+from models import db, DiagnosticSession, Question, IRTParameters, User, PersonalLearningPlan, StudySession, BIGDomain, DiagnosticResponse, TestAttempt
 from utils.serializers import safe_jsonify
 from utils.irt_engine import IRTEngine
 from utils.rate_limiter import RateLimiter

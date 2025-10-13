@@ -1,8 +1,8 @@
 {% extends "assessment/base_diagnostic.html" %}
 
-{% block title %}Learning Mode - Question {{ question_num }}{% endblock %}
+{% block title %}Learning Mode - Question {{ session.questions_answered + 1 }}{% endblock %}
 
-{% block description %}Learning Mode - Question {{ question_num }} with explanations{% endblock %}
+{% block description %}Learning Mode with Explanations{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/compact-diagnostic.css') }}">
@@ -12,6 +12,7 @@
     padding: 1rem;
     border-radius: 8px;
     display: none;
+    animation: fadeIn 0.3s ease;
 }
 
 .feedback-correct {
@@ -24,12 +25,24 @@
     color: white;
 }
 
+.feedback-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.feedback-answer {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.95;
+}
+
 .feedback-explanation {
     margin-top: 0.5rem;
     padding: 0.75rem;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     line-height: 1.4;
 }
 
@@ -45,28 +58,9 @@
     border: 2px solid #dc2626 !important;
 }
 
-.next-question-btn {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 0.5rem;
-}
-
-.next-question-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-}
-
-.next-question-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 {% endblock %}
@@ -77,15 +71,17 @@
   <!-- Compact header -->
   <header class="compact-header">
     <div class="progress-mini">
-      <span class="counter">{{ session.questions_answered + 1 }}/30</span>
+      <span class="counter">{{ session.questions_answered + 1 }}/{{ session.get_session_data().get('estimated_total_questions', 30) }}</span>
       <div class="progress-line">
-        <div class="fill" style="width: {{ ((session.questions_answered + 1)/30*100)|round }}%"></div>
+        <div class="fill" style="width: {{ ((session.questions_answered + 1) / session.get_session_data().get('estimated_total_questions', 30) * 100)|round }}%"></div>
       </div>
-      <span class="learning-mode-badge">📚 Learning Mode</span>
+      <span class="timer" id="timer">
+        <span id="minutes">--</span>:<span id="seconds">--</span>
+      </span>
     </div>
   </header>
   
-  <!-- Scrollable content -->
+  <!-- Question content -->
   <main class="question-main" id="question-main">
     <div class="question-card">
       <h2 class="question-text" id="question-text">
@@ -103,162 +99,220 @@
         </label>
         {% endfor %}
       </div>
-      
-      <!-- Learning Feedback -->
-      <div class="learning-feedback" id="learning-feedback">
-        <div class="feedback-content">
-          <h3 id="feedback-title">Your Answer</h3>
-          <div class="feedback-explanation" id="feedback-explanation">
-            <!-- Explanation will be loaded here -->
-          </div>
-        </div>
-        <button class="next-question-btn" id="next-question-btn" onclick="nextQuestion()">
-          Next Question →
-        </button>
+
+      <!-- Learning feedback area -->
+      <div id="learning-feedback" class="learning-feedback">
+        <div class="feedback-title" id="feedback-title"></div>
+        <div class="feedback-answer" id="feedback-answer"></div>
+        <div class="feedback-explanation" id="feedback-explanation"></div>
       </div>
     </div>
   </main>
         
   <!-- Fixed navigation -->
   <footer class="nav-footer">
-    <button class="nav-btn secondary" onclick="goBack()">
-      <i class="bi bi-arrow-left"></i>
-      Back
+    <button class="btn-exit" onclick="exitDiagnostic()">
+      <i class="fas fa-times"></i>
+      <span>Exit</span>
     </button>
     
-    <button class="nav-btn primary" id="submit-btn" onclick="submitAnswer()" disabled>
-      Submit Answer
-      <i class="bi bi-arrow-right"></i>
+    <button class="btn-next" id="submit-btn" disabled onclick="submitAnswer()">
+      <span>Submit</span>
+      <i class="fas fa-arrow-right"></i>
+    </button>
+    
+    <button class="btn-next" id="next-btn" style="display: none;" onclick="nextQuestion()">
+      <span id="next-btn-text">Next</span>
+      <i class="fas fa-arrow-right"></i>
     </button>
   </footer>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-let currentQuestionId = {{ question.id }};
-let sessionId = {{ session.id }};
-let answerSubmitted = false;
+// Global variables
+let selectedOption = null;
+let timerInterval = null;
+let startTime = Date.now();
+let isAnswered = false;
 
-// Enable submit button when answer is selected
-document.querySelectorAll('input[name="answer"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        if (!answerSubmitted) {
-            document.getElementById('submit-btn').disabled = false;
-        }
-    });
+// Page initialization
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        initializeQuestionPage();
+        console.log('Learning question page initialized');
+    } catch (error) {
+        console.error('Error initializing page:', error);
+    }
 });
 
-function submitAnswer() {
-    if (answerSubmitted) return;
+function initializeQuestionPage() {
+    // Initialize option selection
+    initializeOptions();
     
-    const selectedAnswer = document.querySelector('input[name="answer"]:checked');
-    if (!selectedAnswer) {
-        alert('Please select an answer');
-        return;
-    }
+    // Start timer
+    startTimer();
     
-    answerSubmitted = true;
-    document.getElementById('submit-btn').disabled = true;
+    console.log('Learning mode initialized for session {{ session.id }}');
+}
+
+function initializeOptions() {
+    const options = document.querySelectorAll('.option-compact');
+    const submitBtn = document.getElementById('submit-btn');
     
-    // Disable all options
-    document.querySelectorAll('input[name="answer"]').forEach(radio => {
-        radio.disabled = true;
-    });
-    
-    // Show loading
-    document.getElementById('submit-btn').innerHTML = '<i class="bi bi-hourglass-split"></i> Checking...';
-    
-    // Submit answer
-    fetch(`/big-diagnostic/learning-answer/${sessionId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            answer_id: selectedAnswer.value
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showFeedback(data);
-        } else {
-            alert('Error: ' + (data.error || 'Unknown error'));
-            answerSubmitted = false;
-            document.getElementById('submit-btn').disabled = false;
-            document.getElementById('submit-btn').innerHTML = 'Submit Answer <i class="bi bi-arrow-right"></i>';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Network error occurred');
-        answerSubmitted = false;
-        document.getElementById('submit-btn').disabled = false;
-        document.getElementById('submit-btn').innerHTML = 'Submit Answer <i class="bi bi-arrow-right"></i>';
+    options.forEach(option => {
+        option.addEventListener('click', function() {
+            if (isAnswered) return; // Don't allow changes after answering
+            
+            // Remove selection from all options
+            options.forEach(opt => opt.classList.remove('selected'));
+            
+            // Select this option
+            this.classList.add('selected');
+            const input = this.querySelector('input[type="radio"]');
+            input.checked = true;
+            selectedOption = input.value;
+            
+            // Enable submit button
+            submitBtn.disabled = false;
+            
+            console.log('Selected option:', selectedOption);
+        });
     });
 }
 
+function startTimer() {
+    const timerEl = document.getElementById('timer');
+    if (!timerEl) return;
+    
+    const minutes = timerEl.querySelector('#minutes');
+    const seconds = timerEl.querySelector('#seconds');
+    
+    timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        
+        minutes.textContent = String(mins).padStart(2, '0');
+        seconds.textContent = String(secs).padStart(2, '0');
+    }, 1000);
+}
+
+async function submitAnswer() {
+    if (selectedOption === null || isAnswered) {
+        alert('Please select an answer.');
+        return;
+    }
+    
+    isAnswered = true;
+    const submitBtn = document.getElementById('submit-btn');
+    const nextBtn = document.getElementById('next-btn');
+    submitBtn.disabled = true;
+    
+    const sessionId = {{ session.id }};
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    
+    try {
+        console.log('Submitting answer:', selectedOption);
+        
+        const response = await fetch(`/big-diagnostic/learning-answer/${sessionId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ answer_id: parseInt(selectedOption) })
+        });
+        
+        const data = await response.json();
+        console.log('Server response:', data);
+        
+        if (data.success) {
+            // Show feedback
+            showFeedback(data);
+            
+            // Disable all options
+            const options = document.querySelectorAll('.option-compact input');
+            options.forEach(opt => opt.disabled = true);
+            
+            // Hide submit, show next
+            submitBtn.style.display = 'none';
+            nextBtn.style.display = 'block';
+            
+            // Set next button behavior
+            if (data.completed) {
+                document.getElementById('next-btn-text').textContent = 'View Results';
+                nextBtn.onclick = () => window.location.href = data.results_url;
+            } else {
+                document.getElementById('next-btn-text').textContent = 'Next';
+                nextBtn.onclick = () => window.location.href = data.next_question_url;
+            }
+        } else {
+            alert(data.error || 'An error occurred.');
+            isAnswered = false;
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error submitting answer:', error);
+        alert('An error occurred while submitting your answer.');
+        isAnswered = false;
+        submitBtn.disabled = false;
+    }
+}
+
 function showFeedback(data) {
-    const feedback = document.getElementById('learning-feedback');
+    const feedbackBox = document.getElementById('learning-feedback');
     const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackAnswer = document.getElementById('feedback-answer');
     const feedbackExplanation = document.getElementById('feedback-explanation');
     
-    // Update option styling
-    document.querySelectorAll('.option-compact').forEach((option, index) => {
-        const radio = option.querySelector('input');
-        if (radio.value == data.correct_answer) {
+    // Set title and class
+    if (data.is_correct) {
+        feedbackBox.className = 'learning-feedback feedback-correct';
+        feedbackTitle.innerHTML = '<i class="fas fa-check-circle"></i> Correct!';
+    } else {
+        feedbackBox.className = 'learning-feedback feedback-incorrect';
+        feedbackTitle.innerHTML = '<i class="fas fa-times-circle"></i> Incorrect!';
+    }
+    
+    // Set correct answer
+    feedbackAnswer.textContent = `Correct answer: ${['A','B','C','D','E'][data.correct_answer]}`;
+    
+    // Set explanation
+    feedbackExplanation.textContent = data.explanation || 'No explanation available.';
+    
+    // Highlight options
+    const options = document.querySelectorAll('.option-compact');
+    options.forEach((option, index) => {
+        if (index === data.correct_answer) {
             option.classList.add('option-correct');
-        } else if (radio.checked && !data.is_correct) {
+        }
+        if (String(selectedOption) === String(index) && !data.is_correct) {
             option.classList.add('option-incorrect');
         }
     });
     
     // Show feedback
-    feedback.style.display = 'block';
-    feedback.className = `learning-feedback ${data.is_correct ? 'feedback-correct' : 'feedback-incorrect'}`;
-    
-    feedbackTitle.textContent = data.is_correct ? '✅ Correct!' : '❌ Incorrect';
-    feedbackExplanation.textContent = data.explanation;
-    
-    // Scroll to feedback
-    feedback.scrollIntoView({ behavior: 'smooth' });
+    feedbackBox.style.display = 'block';
 }
 
 function nextQuestion() {
-    if (answerSubmitted) {
-        // Check if test is completed
-        fetch(`/big-diagnostic/learning-answer/${sessionId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                answer_id: document.querySelector('input[name="answer"]:checked').value
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.completed) {
-                window.location.href = data.results_url;
-            } else {
-                window.location.href = data.next_question_url;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Fallback: reload page
-            window.location.reload();
-        });
+    // This will be set by the submitAnswer function
+}
+
+function exitDiagnostic() {
+    if (confirm('Are you sure you want to exit? Your progress will be saved.')) {
+        window.location.href = '/{{ lang }}/learning-map';
     }
 }
 
-function goBack() {
-    if (confirm('Are you sure you want to go back? Your progress will be lost.')) {
-        window.history.back();
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
     }
-}
+});
 </script>
 {% endblock %}
