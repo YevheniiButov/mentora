@@ -170,8 +170,14 @@ function initializeOptions() {
     const submitBtn = document.getElementById('submit-btn');
     
     options.forEach(option => {
-        option.addEventListener('click', function() {
-            if (isAnswered) return; // Don't allow changes after answering
+        option.addEventListener('click', function(e) {
+            // Prevent interaction if already answered
+            if (isAnswered) {
+                console.log('Already answered, blocking selection');
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
             
             // Remove selection from all options
             options.forEach(opt => opt.classList.remove('selected'));
@@ -208,11 +214,19 @@ function startTimer() {
 }
 
 async function submitAnswer() {
-    if (selectedOption === null || isAnswered) {
+    // Don't allow if already answered
+    if (isAnswered) {
+        console.log('Answer already submitted, ignoring');
+        return;
+    }
+    
+    // Check if an option is selected
+    if (selectedOption === null || selectedOption === undefined) {
         alert('Please select an answer.');
         return;
     }
     
+    // Mark as answered immediately to prevent double submission
     isAnswered = true;
     const submitBtn = document.getElementById('submit-btn');
     const nextBtn = document.getElementById('next-btn');
@@ -240,9 +254,15 @@ async function submitAnswer() {
             // Show feedback
             showFeedback(data);
             
-            // Disable all options
-            const options = document.querySelectorAll('.option-compact input');
-            options.forEach(opt => opt.disabled = true);
+            // Disable all options - both input and container
+            const optionInputs = document.querySelectorAll('.option-compact input');
+            optionInputs.forEach(opt => opt.disabled = true);
+            
+            const optionContainers = document.querySelectorAll('.option-compact');
+            optionContainers.forEach(opt => {
+                opt.style.pointerEvents = 'none';
+                opt.style.opacity = '0.8';
+            });
             
             // Hide submit, show next
             submitBtn.style.display = 'none';
