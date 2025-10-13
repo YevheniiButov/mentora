@@ -96,8 +96,9 @@ def start_diagnostic():
                 diagnostic_type = request.form.get('diagnostic_type', 'express')
             
             # Валидация типа диагностики
-            if diagnostic_type not in ['express', 'preliminary', 'readiness']:
-                diagnostic_type = 'express'
+            valid_types = ['quick_30', 'full_60', 'learning_30', 'express', 'preliminary', 'readiness']
+            if diagnostic_type not in valid_types:
+                diagnostic_type = 'quick_30'
             
             # Check for existing active session
             active_session = DiagnosticSession.query.filter_by(
@@ -171,25 +172,41 @@ def start_diagnostic():
             )
             
             # Определяем правильный session_type и diagnostic_type на основе выбора пользователя
-            if diagnostic_type == 'express':
+            if diagnostic_type == 'quick_30':
                 session_type = 'preliminary'
-                diagnostic_type = 'preliminary'  # Оставляем как есть
-                estimated_questions = 25
+                diagnostic_type = 'preliminary'
+                estimated_questions = 30
+                questions_per_domain = 1
+            elif diagnostic_type == 'full_60':
+                session_type = 'full'
+                diagnostic_type = 'full'
+                estimated_questions = 60
+                questions_per_domain = 2
+            elif diagnostic_type == 'learning_30':
+                session_type = 'learning'
+                diagnostic_type = 'learning'
+                estimated_questions = 30
+                questions_per_domain = 1
+            # Legacy support
+            elif diagnostic_type == 'express':
+                session_type = 'preliminary'
+                diagnostic_type = 'preliminary'
+                estimated_questions = 30
                 questions_per_domain = 1
             elif diagnostic_type == 'preliminary':
                 session_type = 'full'
-                diagnostic_type = 'full'  # ИСПРАВЛЕНИЕ: меняем на 'full' для 75 вопросов
-                estimated_questions = 75
-                questions_per_domain = 3
+                diagnostic_type = 'full'
+                estimated_questions = 60
+                questions_per_domain = 2
             elif diagnostic_type == 'readiness':
                 session_type = 'comprehensive'
-                diagnostic_type = 'comprehensive'  # ИСПРАВЛЕНИЕ: меняем на 'comprehensive' для 130 вопросов
+                diagnostic_type = 'comprehensive'
                 estimated_questions = 130
                 questions_per_domain = 6
             else:
                 session_type = 'preliminary'
                 diagnostic_type = 'preliminary'
-                estimated_questions = 25
+                estimated_questions = 30
                 questions_per_domain = 1
             
             logger.info(f"Creating session: type={session_type}, diagnostic_type={diagnostic_type}, questions={estimated_questions}")

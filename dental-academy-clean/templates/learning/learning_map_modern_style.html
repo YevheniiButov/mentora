@@ -1492,12 +1492,12 @@
                             <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-lightning-charge-fill"></i></div>
                             <div>
                                 <div class="card-title" style="color: white;">Quick Test</div>
-                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 вопросов</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 questions</div>
                             </div>
                         </div>
                         <div style="padding: 1rem 0;">
                             <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
-                                Быстрый тест для проверки знаний. Без объяснений, только результат в конце.
+                                Fast knowledge check. Results shown at the end.
                             </p>
                         </div>
                         <div class="play-badge" style="background: rgba(255,255,255,0.3);">
@@ -1510,12 +1510,12 @@
                             <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-speedometer2"></i></div>
                             <div>
                                 <div class="card-title" style="color: white;">Full Test</div>
-                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">60 вопросов</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">60 questions</div>
                             </div>
                         </div>
                         <div style="padding: 1rem 0;">
                             <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
-                                Полный тест для глубокой оценки. Охватывает все домены знаний.
+                                Comprehensive assessment covering all domains.
                             </p>
                         </div>
                         <div class="play-badge" style="background: rgba(255,255,255,0.3);">
@@ -1528,12 +1528,12 @@
                             <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-book-fill"></i></div>
                             <div>
                                 <div class="card-title" style="color: white;">Learning Mode</div>
-                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 вопросов с объяснениями</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 questions with explanations</div>
                             </div>
                         </div>
                         <div style="padding: 1rem 0;">
                             <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
-                                Обучающий режим: после каждого ответа показывается правильное решение и объяснение.
+                                Study mode: see correct answer and explanation after each question.
                             </p>
                         </div>
                         <div class="play-badge" style="background: rgba(255,255,255,0.3);">
@@ -1753,7 +1753,7 @@
                 get currentProgress() {
                     if (this.activeTab === 'irt') {
                         // Для IRT считаем прогресс на основе модулей
-                        const mods = this.displayModules;
+                    const mods = this.displayModules;
                         return mods.length ? Math.round(mods.reduce((s, m) => s + (typeof m.progress === 'function' ? m.progress() : m.progress), 0) / mods.length) : 0;
                     } else if (this.activeTab === 'games') {
                         // Для игр не показываем прогресс
@@ -1916,9 +1916,9 @@
                     console.log(`Starting IRT test with ${questionCount} questions`);
                     
                     // Определяем тип теста на основе количества вопросов
-                    let diagnosticType = 'express'; // 30 вопросов
+                    let diagnosticType = 'quick_30';
                     if (questionCount === 60) {
-                        diagnosticType = 'preliminary'; // 60 вопросов
+                        diagnosticType = 'full_60';
                     }
                     
                     // Запускаем тест
@@ -1927,11 +1927,7 @@
                 startLearningMode() {
                     // Запуск обучающего режима (30 вопросов с объяснениями)
                     console.log('Starting learning mode with explanations');
-                    
-                    // TODO: Создать отдельный роут для обучающего режима
-                    // Пока используем express тест
-                    this.showNotification('Learning mode coming soon! For now, use Express test.', 'info');
-                    // this.startDiagnostic('learning');
+                    this.startDiagnostic('learning_30');
                 }
             }
         }

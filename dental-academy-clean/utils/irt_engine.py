@@ -221,31 +221,39 @@ class IRTEngine:
         # Настройки в зависимости от типа диагностики
         self.diagnostic_type = diagnostic_type
         
-        if diagnostic_type == 'express':
-            # Экспресс диагностика: 1 вопрос на домен
+        if diagnostic_type == 'quick_30':
+            # Quick Test: 30 вопросов
             self.questions_per_domain = 1
-            self.max_questions = 25  # Максимум 25 вопросов
+            self.max_questions = 30
+        elif diagnostic_type == 'full_60':
+            # Full Test: 60 вопросов
+            self.questions_per_domain = 2
+            self.max_questions = 60
+        elif diagnostic_type == 'learning_30' or diagnostic_type == 'learning':
+            # Learning Mode: 30 вопросов с объяснениями
+            self.questions_per_domain = 1
+            self.max_questions = 30
+        # Legacy support
+        elif diagnostic_type == 'express':
+            self.questions_per_domain = 1
+            self.max_questions = 30
         elif diagnostic_type == 'preliminary':
-            # Предварительная диагностика: 3 вопроса на домен
-            self.questions_per_domain = 3
-            self.max_questions = 75  # Максимум 75 вопросов
+            self.questions_per_domain = 2
+            self.max_questions = 60
         elif diagnostic_type == 'full':
-            # Полная диагностика: 3 вопроса на домен
-            self.questions_per_domain = 3
-            self.max_questions = 75  # Максимум 75 вопросов
+            self.questions_per_domain = 2
+            self.max_questions = 60
         elif diagnostic_type == 'readiness':
-            # Диагностика готовности: 6 вопросов на домен
             self.questions_per_domain = 6
-            self.max_questions = 130  # Максимум 130 вопросов
+            self.max_questions = 130
         elif diagnostic_type == 'comprehensive':
-            # Комплексная диагностика: 6 вопросов на домен
             self.questions_per_domain = 6
-            self.max_questions = 130  # Максимум 130 вопросов
+            self.max_questions = 130
         else:
-            # По умолчанию экспресс
-            self.diagnostic_type = 'express'
+            # По умолчанию quick_30
+            self.diagnostic_type = 'quick_30'
             self.questions_per_domain = 1
-            self.max_questions = 25
+            self.max_questions = 30
         
         # Ленивая загрузка доменов
         self._all_domains = None
@@ -280,14 +288,14 @@ class IRTEngine:
             
             # ИСПРАВЛЕНИЕ: Если доменов нет, используем фиксированные минимумы
             if calculated_min == 0:
-                if self.diagnostic_type == 'express':
-                    calculated_min = 20  # Минимум 20 вопросов для express
-                elif self.diagnostic_type == 'preliminary':
-                    calculated_min = 50  # Минимум 50 вопросов для preliminary
-                elif self.diagnostic_type == 'readiness':
-                    calculated_min = 100  # Минимум 100 вопросов для readiness
+                if self.diagnostic_type in ['quick_30', 'express', 'learning_30', 'learning']:
+                    calculated_min = 25  # Минимум 25 для быстрых тестов (target 30)
+                elif self.diagnostic_type in ['full_60', 'preliminary', 'full']:
+                    calculated_min = 50  # Минимум 50 для полных тестов (target 60)
+                elif self.diagnostic_type in ['readiness', 'comprehensive']:
+                    calculated_min = 100  # Минимум 100 для readiness (target 130)
                 else:
-                    calculated_min = 20  # По умолчанию 20
+                    calculated_min = 25  # По умолчанию 25
                 logger.warning(f"No domains found, using default min questions: {calculated_min}")
             
             # Но не больше максимального количества вопросов
@@ -1149,8 +1157,25 @@ class IRTEngine:
         
         logger.info(f"Session type: {session_type}, Diagnostic type: {diagnostic_type}")
         
+        # For learning sessions: Always complete all questions (no early termination)
+        if session_type == 'learning':
+            max_questions = session_data.get('estimated_total_questions', 30)
+            if session.questions_answered >= max_questions:
+                logger.info(f"TERMINATE: Learning session completed ({session.questions_answered} >= {max_questions})")
+                return {
+                    'should_terminate': True,
+                    'reason': 'max_questions_learning',
+                    'message': f'Learning session completed ({max_questions} questions)'
+                }
+            # Never terminate early for learning mode
+            return {
+                'should_terminate': False,
+                'reason': 'learning_mode',
+                'message': 'Learning mode continues until target questions reached'
+            }
+        
         # For preliminary sessions (≤40 questions): Use SE threshold
-        if session_type == 'preliminary':
+        elif session_type == 'preliminary':
             if session.questions_answered >= self.min_questions and session.ability_se <= self.min_se_threshold:
                 logger.info(f"TERMINATE: Sufficient precision achieved for preliminary (SE: {session.ability_se} <= {self.min_se_threshold})")
                 return {
@@ -1159,7 +1184,7 @@ class IRTEngine:
                     'message': 'Sufficient precision achieved for preliminary test'
                 }
         
-        # For full sessions (75 questions): Use question count primarily, SE threshold only if very confident
+        # For full sessions (60 questions): Use question count primarily, SE threshold only if very confident
         elif session_type == 'full':
             min_questions = max(50, session_data.get('estimated_total_questions', 75) * 0.7)
             max_questions = session_data.get('estimated_total_questions', 75)
