@@ -1186,7 +1186,7 @@ class IRTEngine:
         
         # For full sessions (60 questions): Use question count primarily, SE threshold only if very confident
         elif session_type == 'full':
-            min_questions = max(40, session_data.get('estimated_total_questions', 60) * 0.7)
+            min_questions = max(55, session_data.get('estimated_total_questions', 60) * 0.9)  # Минимум 55 из 60
             max_questions = session_data.get('estimated_total_questions', 60)
             
             logger.info(f"Full session: min_questions={min_questions}, max_questions={max_questions}")

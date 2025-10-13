@@ -454,7 +454,9 @@ def submit_learning_answer(session_id):
         
         # Check if this is a learning session
         session_data = diagnostic_session.get_session_data()
-        if session_data.get('diagnostic_type') not in ['learning_30', 'learning']:
+        diagnostic_type = session_data.get('diagnostic_type')
+        if diagnostic_type not in ['learning_30', 'learning']:
+            current_app.logger.info(f"Not a learning session: diagnostic_type={diagnostic_type}, redirecting to regular answer")
             return redirect(url_for('diagnostic.submit_answer', session_id=session_id))
         
         # Get answer data
@@ -2116,7 +2118,9 @@ def show_learning_question(session_id):
         
         # Check if this is a learning session
         session_data = diagnostic_session.get_session_data()
-        if session_data.get('diagnostic_type') not in ['learning_30', 'learning']:
+        diagnostic_type = session_data.get('diagnostic_type')
+        if diagnostic_type not in ['learning_30', 'learning']:
+            current_app.logger.info(f"Not a learning session: diagnostic_type={diagnostic_type}, redirecting to regular question")
             return redirect(url_for('diagnostic.show_question', session_id=session_id))
         
         # Get current question
