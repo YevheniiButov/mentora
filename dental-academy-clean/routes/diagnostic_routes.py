@@ -490,16 +490,15 @@ def submit_learning_answer(session_id):
         is_correct = question.check_answer(answer_id)
         correct_answer = question.correct_answer_index
         
-        # Record answer
-        test_attempt = TestAttempt(
-            user_id=current_user.id,
+        # Record answer using DiagnosticResponse
+        response = DiagnosticResponse(
+            session_id=session_id,
             question_id=question.id,
             selected_answer=answer_id,
             is_correct=is_correct,
-            session_id=session_id,
-            time_spent=0  # Learning mode doesn't track time per question
+            responded_at=datetime.now(timezone.utc)
         )
-        db.session.add(test_attempt)
+        db.session.add(response)
         
         # Update session
         diagnostic_session.questions_answered += 1
