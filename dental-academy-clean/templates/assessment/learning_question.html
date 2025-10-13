@@ -1,0 +1,269 @@
+{% extends "assessment/base_diagnostic.html" %}
+
+{% block title %}Learning Mode - Question {{ question_num }}{% endblock %}
+
+{% block description %}Learning Mode - Question {{ question_num }} with explanations{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/compact-diagnostic.css') }}">
+<style>
+.learning-feedback {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: none;
+}
+
+.feedback-correct {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.feedback-incorrect {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.feedback-explanation {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.option-selected {
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+.option-correct {
+    background: #10b981 !important;
+    color: white !important;
+    border: 2px solid #059669 !important;
+}
+
+.option-incorrect {
+    background: #ef4444 !important;
+    color: white !important;
+    border: 2px solid #dc2626 !important;
+}
+
+.next-question-btn {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.next-question-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.next-question-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="diagnostic-container">
+  
+  <!-- Compact header -->
+  <header class="compact-header">
+    <div class="progress-mini">
+      <span class="counter">{{ session.questions_answered + 1 }}/30</span>
+      <div class="progress-line">
+        <div class="fill" style="width: {{ ((session.questions_answered + 1)/30*100)|round }}%"></div>
+      </div>
+      <span class="learning-mode-badge">📚 Learning Mode</span>
+    </div>
+  </header>
+  
+  <!-- Scrollable content -->
+  <main class="question-main" id="question-main">
+    <div class="question-card">
+      <h2 class="question-text" id="question-text">
+        {{ question.text }}
+      </h2>
+      
+      <div class="options-container" id="options-container">
+        {% for option in question.options %}
+        <label class="option-compact" data-option-index="{{ loop.index0 }}">
+          <input type="radio" name="answer" value="{{ loop.index0 }}" data-option-letter="{{ ['A','B','C','D','E'][loop.index0] }}">
+          <span class="option-ui">
+            <span class="letter">{{ ['A','B','C','D','E'][loop.index0] }}</span>
+            <span class="text">{{ option }}</span>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+      
+      <!-- Learning Feedback -->
+      <div class="learning-feedback" id="learning-feedback">
+        <div class="feedback-content">
+          <h3 id="feedback-title">Your Answer</h3>
+          <div class="feedback-explanation" id="feedback-explanation">
+            <!-- Explanation will be loaded here -->
+          </div>
+        </div>
+        <button class="next-question-btn" id="next-question-btn" onclick="nextQuestion()">
+          Next Question →
+        </button>
+      </div>
+    </div>
+  </main>
+        
+  <!-- Fixed navigation -->
+  <footer class="nav-footer">
+    <button class="nav-btn secondary" onclick="goBack()">
+      <i class="bi bi-arrow-left"></i>
+      Back
+    </button>
+    
+    <button class="nav-btn primary" id="submit-btn" onclick="submitAnswer()" disabled>
+      Submit Answer
+      <i class="bi bi-arrow-right"></i>
+    </button>
+  </footer>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentQuestionId = {{ question.id }};
+let sessionId = {{ session.id }};
+let answerSubmitted = false;
+
+// Enable submit button when answer is selected
+document.querySelectorAll('input[name="answer"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        if (!answerSubmitted) {
+            document.getElementById('submit-btn').disabled = false;
+        }
+    });
+});
+
+function submitAnswer() {
+    if (answerSubmitted) return;
+    
+    const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+    if (!selectedAnswer) {
+        alert('Please select an answer');
+        return;
+    }
+    
+    answerSubmitted = true;
+    document.getElementById('submit-btn').disabled = true;
+    
+    // Disable all options
+    document.querySelectorAll('input[name="answer"]').forEach(radio => {
+        radio.disabled = true;
+    });
+    
+    // Show loading
+    document.getElementById('submit-btn').innerHTML = '<i class="bi bi-hourglass-split"></i> Checking...';
+    
+    // Submit answer
+    fetch(`/big-diagnostic/learning-answer/${sessionId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            answer_id: selectedAnswer.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showFeedback(data);
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+            answerSubmitted = false;
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('submit-btn').innerHTML = 'Submit Answer <i class="bi bi-arrow-right"></i>';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Network error occurred');
+        answerSubmitted = false;
+        document.getElementById('submit-btn').disabled = false;
+        document.getElementById('submit-btn').innerHTML = 'Submit Answer <i class="bi bi-arrow-right"></i>';
+    });
+}
+
+function showFeedback(data) {
+    const feedback = document.getElementById('learning-feedback');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackExplanation = document.getElementById('feedback-explanation');
+    
+    // Update option styling
+    document.querySelectorAll('.option-compact').forEach((option, index) => {
+        const radio = option.querySelector('input');
+        if (radio.value == data.correct_answer) {
+            option.classList.add('option-correct');
+        } else if (radio.checked && !data.is_correct) {
+            option.classList.add('option-incorrect');
+        }
+    });
+    
+    // Show feedback
+    feedback.style.display = 'block';
+    feedback.className = `learning-feedback ${data.is_correct ? 'feedback-correct' : 'feedback-incorrect'}`;
+    
+    feedbackTitle.textContent = data.is_correct ? '✅ Correct!' : '❌ Incorrect';
+    feedbackExplanation.textContent = data.explanation;
+    
+    // Scroll to feedback
+    feedback.scrollIntoView({ behavior: 'smooth' });
+}
+
+function nextQuestion() {
+    if (answerSubmitted) {
+        // Check if test is completed
+        fetch(`/big-diagnostic/learning-answer/${sessionId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                answer_id: document.querySelector('input[name="answer"]:checked').value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.completed) {
+                window.location.href = data.results_url;
+            } else {
+                window.location.href = data.next_question_url;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Fallback: reload page
+            window.location.reload();
+        });
+    }
+}
+
+function goBack() {
+    if (confirm('Are you sure you want to go back? Your progress will be lost.')) {
+        window.history.back();
+    }
+}
+</script>
+{% endblock %}

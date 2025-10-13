@@ -235,8 +235,11 @@ def start_diagnostic():
                     'redirect_url': url_for('diagnostic.show_question', session_id=diagnostic_session.id)
                 })
             else:
-                # Redirect to diagnostic question page
-                return redirect(url_for('diagnostic.show_question', session_id=diagnostic_session.id))
+                # Redirect to appropriate question route based on type
+                if diagnostic_type in ['learning_30', 'learning']:
+                    return redirect(url_for('diagnostic.show_learning_question', session_id=diagnostic_session.id))
+                else:
+                    return redirect(url_for('diagnostic.show_question', session_id=diagnostic_session.id))
         
         # GET request - redirect to diagnostic type selector
         return redirect(url_for('diagnostic.choose_diagnostic_type'))
@@ -441,6 +444,88 @@ def get_next_question():
             'success': False,
             'error': 'Failed to get next question'
         }), 500
+
+@diagnostic_bp.route('/learning-answer/<int:session_id>', methods=['POST'])
+@login_required
+def submit_learning_answer(session_id):
+    """Submit answer in learning mode with immediate feedback"""
+    try:
+        diagnostic_session = DiagnosticSession.query.get_or_404(session_id)
+        
+        # Check if this is a learning session
+        session_data = diagnostic_session.get_session_data()
+        if session_data.get('diagnostic_type') not in ['learning_30', 'learning']:
+            return redirect(url_for('diagnostic.submit_answer', session_id=session_id))
+        
+        # Get answer data
+        if request.is_json:
+            data = request.get_json()
+            answer_id = data.get('answer_id')
+        else:
+            answer_id = request.form.get('answer_id')
+        
+        if not answer_id:
+            return jsonify({'error': 'No answer provided'}), 400
+        
+        # Get question and check answer
+        question = Question.query.get(diagnostic_session.current_question_id)
+        if not question:
+            return jsonify({'error': 'Question not found'}), 404
+        
+        # Check if answer is correct
+        correct_answer = question.correct_answer
+        is_correct = str(answer_id) == str(correct_answer)
+        
+        # Record answer
+        test_attempt = TestAttempt(
+            user_id=current_user.id,
+            question_id=question.id,
+            selected_answer=answer_id,
+            is_correct=is_correct,
+            session_id=session_id,
+            time_spent=0  # Learning mode doesn't track time per question
+        )
+        db.session.add(test_attempt)
+        
+        # Update session
+        diagnostic_session.questions_answered += 1
+        if is_correct:
+            diagnostic_session.correct_answers += 1
+        
+        # Get next question or complete session
+        irt_engine = IRTEngine(diagnostic_session)
+        next_question = irt_engine.select_next_question()
+        
+        if next_question:
+            diagnostic_session.current_question_id = next_question.id
+            db.session.commit()
+            
+            # Return feedback and next question
+            return jsonify({
+                'success': True,
+                'is_correct': is_correct,
+                'correct_answer': correct_answer,
+                'explanation': question.explanation or 'No explanation available.',
+                'next_question_url': url_for('diagnostic.show_learning_question', session_id=session_id)
+            })
+        else:
+            # Complete session
+            diagnostic_session.status = 'completed'
+            diagnostic_session.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'is_correct': is_correct,
+                'correct_answer': correct_answer,
+                'explanation': question.explanation or 'No explanation available.',
+                'completed': True,
+                'results_url': url_for('diagnostic.show_results', session_id=session_id)
+            })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in submit_learning_answer: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Internal server error'}), 500
 
 @diagnostic_bp.route('/submit-answer/<int:session_id>', methods=['POST'])
 @login_required
@@ -726,6 +811,11 @@ def show_simple_test_results(diagnostic_session, lang='nl'):
             if completed.tzinfo is None:
                 completed = completed.replace(tzinfo=timezone.utc)
             time_taken_seconds = int((completed - started).total_seconds())
+            
+            # Debug logging
+            current_app.logger.info(f"Time calculation: started={started}, completed={completed}, seconds={time_taken_seconds}")
+        else:
+            current_app.logger.warning(f"Missing time data: started_at={diagnostic_session.started_at}, completed_at={diagnostic_session.completed_at}")
         
         time_minutes = time_taken_seconds // 60
         time_seconds = time_taken_seconds % 60
@@ -789,7 +879,7 @@ def show_results(session_id):
         # Определяем тип сессии - это диагностика или простое тестирование
         session_data = diagnostic_session.get_session_data()
         diagnostic_type = session_data.get('diagnostic_type', 'express')
-        is_simple_test = diagnostic_type in ['express', 'preliminary']  # Простое тестирование
+        is_simple_test = diagnostic_type in ['express', 'preliminary', 'quick_30', 'full_60', 'learning_30', 'learning']  # Простое тестирование
         
         # Для простого тестирования показываем упрощенный шаблон
         if is_simple_test:
@@ -2016,6 +2106,45 @@ def choose_diagnostic_type():
                          lang=lang,
                          feature_name='BIG Diagnostic',
                          feature_description='Deze functie wordt momenteel ontwikkeld en zal binnenkort beschikbaar zijn.')
+
+@diagnostic_bp.route('/learning-question/<int:session_id>', methods=['GET'])
+@login_required
+def show_learning_question(session_id):
+    """Show question in learning mode with immediate feedback"""
+    try:
+        diagnostic_session = DiagnosticSession.query.get_or_404(session_id)
+        
+        # Check if this is a learning session
+        session_data = diagnostic_session.get_session_data()
+        if session_data.get('diagnostic_type') not in ['learning_30', 'learning']:
+            return redirect(url_for('diagnostic.show_question', session_id=session_id))
+        
+        # Get current question
+        if not diagnostic_session.current_question_id:
+            # Start learning session
+            irt_engine = IRTEngine(diagnostic_session)
+            question = irt_engine.select_next_question()
+            if not question:
+                return redirect(url_for('diagnostic.show_results', session_id=session_id))
+            diagnostic_session.current_question_id = question.id
+            db.session.commit()
+        else:
+            question = Question.query.get(diagnostic_session.current_question_id)
+            if not question:
+                return redirect(url_for('diagnostic.show_results', session_id=session_id))
+        
+        # Get language
+        lang = session.get('lang', 'nl')
+        
+        return render_template('assessment/learning_question.html', 
+                             question=question, 
+                             session=diagnostic_session,
+                             lang=lang)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in show_learning_question: {str(e)}", exc_info=True)
+        flash('Er is een fout opgetreden bij het laden van de vraag.', 'error')
+        return redirect(url_for('main.index', lang=session.get('lang', 'nl')))
 
 @diagnostic_bp.route('/question/<int:session_id>', methods=['GET'])
 @login_required
