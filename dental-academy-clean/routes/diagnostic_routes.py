@@ -512,7 +512,28 @@ def submit_learning_answer(session_id):
         if is_correct:
             diagnostic_session.correct_answers += 1
         
-        # Get next question or complete session
+        # Check if we've reached the maximum number of questions
+        max_questions = session_data.get('estimated_total_questions', 30)
+        current_app.logger.info(f"Learning Mode: {diagnostic_session.questions_answered}/{max_questions} questions answered")
+        
+        if diagnostic_session.questions_answered >= max_questions:
+            # Complete session - reached max questions
+            diagnostic_session.status = 'completed'
+            diagnostic_session.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            
+            current_app.logger.info(f"Learning Mode completed: {diagnostic_session.questions_answered} questions")
+            
+            return jsonify({
+                'success': True,
+                'is_correct': is_correct,
+                'correct_answer': correct_answer,
+                'explanation': question.explanation or 'No explanation available.',
+                'completed': True,
+                'results_url': url_for('diagnostic.show_results', session_id=session_id)
+            })
+        
+        # Get next question
         irt_engine = IRTEngine(diagnostic_session)
         next_question = irt_engine.select_next_question()
         
