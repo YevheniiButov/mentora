@@ -50,8 +50,13 @@ def get_user_statistics(lang):
         if irt_sessions:
             scores = [session.current_ability for session in irt_sessions if session.current_ability is not None]
             if scores:
+                avg_ability = sum(scores) / len(scores)
+                current_app.logger.info(f"IRT ability scores: {scores}, avg: {avg_ability}")
                 # Конвертируем ability в проценты (примерно от -3 до +3 -> 0% до 100%)
-                avg_irt_score = int(((sum(scores) / len(scores)) + 3) / 6 * 100)
+                # Ограничиваем диапазон и убеждаемся, что результат не отрицательный
+                normalized_score = max(0, min(100, int(((avg_ability + 3) / 6) * 100)))
+                avg_irt_score = normalized_score
+                current_app.logger.info(f"Normalized IRT score: {normalized_score}")
         
         # 3. Получаем статистику по времени обучения (последние 30 дней)
         thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
