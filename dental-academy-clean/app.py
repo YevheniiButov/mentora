@@ -737,6 +737,20 @@ def internal_error(error):
 from commands.import_questions import import_questions
 app.cli.add_command(import_questions)
 
+# Create BIG domains command
+@app.cli.command('create-domains')
+def create_domains_command():
+    """Create BIG domains in database"""
+    from scripts.create_big_domains import create_big_domains
+    create_big_domains()
+
+# Update questions domains command
+@app.cli.command('update-domains')
+def update_domains_command():
+    """Update existing questions to link them with BIG domains"""
+    from scripts.update_questions_domains import update_questions_domains
+    update_questions_domains()
+
 # ========================================
 # DEVELOPMENT ROUTES
 # ========================================
