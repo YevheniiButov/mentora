@@ -14,29 +14,59 @@ from app import app
 from models import db, Question, BIGDomain
 
 def get_big_domain_id_by_code(domain_code):
-    """Получить ID домена BIG по коду"""
-    domain_mapping = {
-        'THER': 'Therapeutische stomatologie',
-        'SURG': 'Chirurgische stomatologie', 
-        'PROTH': 'Prothetische stomatologie',
-        'PEDI': 'Pediatrische stomatologie',
-        'PARO': 'Parodontologie',
-        'ORTHO': 'Orthodontie',
-        'PREV': 'Preventie',
-        'ETHIEK': 'Ethiek en recht',
-        'ANATOMIE': 'Anatomie',
-        'FYSIOLOGIE': 'Fysiologie',
-        'PATHOLOGIE': 'Pathologie',
-        'MICROBIOLOGIE': 'Microbiologie',
-        'MATERIAALKUNDE': 'Materiaalkunde',
-        'RADIOLOGIE': 'Radiologie',
-        'ALGEMENE_GENEESKUNDE': 'Algemene geneeskunde'
+    """Получить ID домена BIG по коду - ищет напрямую в БД"""
+    # Сначала пробуем найти по точному коду
+    domain = BIGDomain.query.filter_by(code=domain_code).first()
+    if domain:
+        return domain.id
+    
+    # Fallback: старые коды могут отличаться, пробуем маппинг
+    legacy_mapping = {
+        # Основные стоматологические домены
+        'THER': 'THERAPEUTIC_DENTISTRY',
+        'SURG': 'SURGICAL_DENTISTRY',
+        'PROTH': 'PROSTHODONTICS',
+        'PEDI': 'PEDIATRIC_DENTISTRY',
+        'PARO': 'PERIODONTOLOGY',
+        'ORTHO': 'ORTHODONTICS',
+        'PREV': 'PREVENTIVE_DENTISTRY',
+        
+        # Базовые науки
+        'ANATOMIE': 'ANATOMY',
+        'FYSIOLOGIE': 'PHYSIOLOGY',
+        'PATHOLOGIE': 'PATHOLOGY',
+        'MICROBIOLOGIE': 'MICROBIOLOGY',
+        'MATERIAALKUNDE': 'MATERIALS_SCIENCE',
+        'RADIOLOGIE': 'RADIOLOGY',
+        
+        # Фармакология и медицина
+        'FARMACOLOGIE': 'PHARMACOLOGY',
+        'PHARMA': 'PHARMACOLOGY',
+        'ALGEMENE_GENEESKUNDE': 'GENERAL_MEDICINE',
+        'EMERGENCY': 'EMERGENCY_MEDICINE',
+        
+        # Системные заболевания и инфекции
+        'SYSTEMIC': 'SYSTEMIC_DISEASES',
+        'INFECTION': 'INFECTIOUS_DISEASES',
+        'INFECTIOUS': 'INFECTIOUS_DISEASES',
+        
+        # Специальные случаи и диагностика
+        'SPECIAL': 'SPECIAL_CASES',
+        'DIAGNOSIS': 'DIAGNOSTICS',
+        'DIAGNOSIS_SPECIAL': 'SPECIAL_DIAGNOSTICS',
+        
+        # Голландское законодательство и этика
+        'DUTCH': 'DUTCH_DENTISTRY',
+        'ETHIEK': 'ETHICS_NL',
+        'PROFESSIONAL': 'PROFESSIONAL_ETHICS',
+        'PROFESSIONAL_ETHIEK': 'PROFESSIONAL_ETHICS'
     }
     
-    domain_name = domain_mapping.get(domain_code)
-    if domain_name:
-        domain = BIGDomain.query.filter_by(name=domain_name).first()
+    new_code = legacy_mapping.get(domain_code)
+    if new_code:
+        domain = BIGDomain.query.filter_by(code=new_code).first()
         return domain.id if domain else None
+    
     return None
 
 def update_questions_domains():
