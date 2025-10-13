@@ -311,7 +311,7 @@ def route_by_domain():
 @app.route('/')
 def root_redirect():
     """Redirect root to default language"""
-    return redirect('/nl/')
+    return redirect('/nl')
 
 @app.route('/debug-mentora-login', methods=['GET', 'POST'])
 def debug_mentora_login():
