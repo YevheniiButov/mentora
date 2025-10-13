@@ -478,8 +478,15 @@ def submit_learning_answer(session_id):
         else:
             answer_id = request.form.get('answer_id')
         
-        if not answer_id:
+        # Check for None or empty string, but 0 is valid!
+        if answer_id is None or answer_id == '':
             return jsonify({'error': 'No answer provided'}), 400
+        
+        # Convert to int
+        try:
+            answer_id = int(answer_id)
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Invalid answer format'}), 400
         
         # Get question and check answer
         question = Question.query.get(diagnostic_session.current_question_id)

@@ -220,8 +220,11 @@ async function submitAnswer() {
         return;
     }
     
-    // Check if an option is selected
-    if (selectedOption === null || selectedOption === undefined) {
+    // Check if an option is selected (must check for null/undefined, not falsy, because 0 is valid!)
+    console.log('submitAnswer called, selectedOption:', selectedOption, 'type:', typeof selectedOption);
+    
+    if (selectedOption === null || selectedOption === undefined || selectedOption === '') {
+        console.log('No answer selected, showing alert');
         alert('Please select an answer.');
         return;
     }
@@ -236,7 +239,7 @@ async function submitAnswer() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
     
     try {
-        console.log('Submitting answer:', selectedOption);
+        console.log('Submitting answer:', selectedOption, 'as integer:', parseInt(selectedOption));
         
         const response = await fetch(`/big-diagnostic/learning-answer/${sessionId}`, {
             method: 'POST',
