@@ -1758,8 +1758,9 @@
                 get displayModules() { return this.modules[this.activeTab] || []; },
                 get currentProgress() {
                     if (this.activeTab === 'irt') {
-                        // Для IRT используем реальные данные пользователя
-                        return Math.min(100, Math.round((this.userStats.irtTestsCompleted / 3) * 100));
+                        // Для IRT считаем прогресс на основе модулей
+                        const mods = this.displayModules;
+                        return mods.length ? Math.round(mods.reduce((s, m) => s + (typeof m.progress === 'function' ? m.progress() : m.progress), 0) / mods.length) : 0;
                     } else if (this.activeTab === 'games') {
                         // Для игр не показываем прогресс
                         return 0;
@@ -1771,7 +1772,7 @@
                 },
                 get completedModules() { 
                     if (this.activeTab === 'irt') {
-                        return this.userStats.irtTestsCompleted;
+                        return this.displayModules.filter(m => (typeof m.progress === 'function' ? m.progress() : m.progress) === 100).length;
                     } else if (this.activeTab === 'games') {
                         return 0; // Не показываем статистику для игр
                     } else {
@@ -1780,7 +1781,7 @@
                 },
                 get totalModules() { 
                     if (this.activeTab === 'irt') {
-                        return 3; // diagnostic, path, advanced
+                        return this.displayModules.length; // Все IRT модули
                     } else if (this.activeTab === 'games') {
                         return 3; // sudoku, memory, quiz
                     } else {
