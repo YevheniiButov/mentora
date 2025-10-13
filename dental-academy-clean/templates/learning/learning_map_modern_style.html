@@ -853,6 +853,43 @@
             min-height: 180px;
         }
 
+        .test-card {
+            position: relative;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .test-card .card-icon {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+        }
+
+        .test-card .play-badge {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            animation: playPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes playPulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
         .info-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
@@ -1449,77 +1486,63 @@
                 <!-- Карточки -->
                 <div class="cards-area">
                     
-                    <div class="info-card" x-show="activeTab === 'irt'">
-                        <div class="card-header">
-                            <div class="card-icon progress"><i class="bi bi-graph-up"></i></div>
+                    <!-- IRT Test Cards -->
+                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(30)" style="cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-lightning-charge-fill"></i></div>
                             <div>
-                                <div class="card-title">Progress</div>
-                                <div class="card-subtitle" x-text="getTabTitle(activeTab)"></div>
+                                <div class="card-title" style="color: white;">Quick Test</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 вопросов</div>
                             </div>
                         </div>
-                        <div class="progress-percentage" x-text="currentProgress + '%'"></div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" :style="`width: ${currentProgress}%`"></div>
+                        <div style="padding: 1rem 0;">
+                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
+                                Быстрый тест для проверки знаний. Без объяснений, только результат в конце.
+                            </p>
                         </div>
-                        <div class="progress-text">
-                            <span>Completed</span>
-                            <span><strong x-text="completedModules"></strong>/<span x-text="totalModules"></span></span>
+                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
+                            <i class="bi bi-play-circle-fill"></i>
                         </div>
                     </div>
 
-                    <div class="info-card" x-show="activeTab === 'irt'">
-                        <div class="card-header">
-                            <div class="card-icon legend"><i class="bi bi-info-circle-fill"></i></div>
+                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(60)" style="cursor: pointer; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-speedometer2"></i></div>
                             <div>
-                                <div class="card-title">Legend</div>
-                                <div class="card-subtitle">Status Guide</div>
+                                <div class="card-title" style="color: white;">Full Test</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">60 вопросов</div>
                             </div>
                         </div>
-                        <div class="legend-item">
-                            <i class="bi bi-check-circle-fill" style="color: #22c55e;"></i>
-                            <span>Completed</span>
+                        <div style="padding: 1rem 0;">
+                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
+                                Полный тест для глубокой оценки. Охватывает все домены знаний.
+                            </p>
                         </div>
-                        <div class="legend-item">
-                            <i class="bi bi-play-circle-fill" style="color: #3b82f6;"></i>
-                            <span>In Progress</span>
-                        </div>
-                        <div class="legend-item">
-                            <i class="bi bi-lock-fill" style="color: #94a3b8;"></i>
-                            <span>Locked</span>
+                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
+                            <i class="bi bi-play-circle-fill"></i>
                         </div>
                     </div>
 
-                    <div class="info-card" x-show="activeTab === 'irt'">
-                        <div class="card-header">
-                            <div class="card-icon stats"><i class="bi bi-bar-chart-fill"></i></div>
+                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startLearningMode()" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-book-fill"></i></div>
                             <div>
-                                <div class="card-title">Statistics</div>
-                                <div class="card-subtitle">Performance</div>
+                                <div class="card-title" style="color: white;">Learning Mode</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 вопросов с объяснениями</div>
                             </div>
                         </div>
-                        <div class="stats-row">
-                            <span class="stats-label">Active</span>
-                            <span class="stats-value" x-text="userStats.activeModules"></span>
+                        <div style="padding: 1rem 0;">
+                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
+                                Обучающий режим: после каждого ответа показывается правильное решение и объяснение.
+                            </p>
                         </div>
-                        <div class="stats-row">
-                            <span class="stats-label">Time</span>
-                            <span class="stats-value" x-text="userStats.totalLearningTime"></span>
-                        </div>
-                        <div class="stats-row">
-                            <span class="stats-label">Avg Score</span>
-                            <span class="stats-value" x-text="userStats.avgScore + '%'"></span>
-                        </div>
-                        <div class="stats-row">
-                            <span class="stats-label">IRT Tests</span>
-                            <span class="stats-value" x-text="userStats.irtTestsCompleted"></span>
-                        </div>
-                        <div class="stats-row">
-                            <span class="stats-label">Lessons</span>
-                            <span class="stats-value" x-text="userStats.totalLessonsCompleted"></span>
+                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
+                            <i class="bi bi-play-circle-fill"></i>
                         </div>
                     </div>
 
-                    <template x-for="module in displayModules.slice(0, 3)" :key="module.id">
+                    <!-- Games Cards (for games tab) -->
+                    <template x-for="module in displayModules.slice(0, 3)" :key="module.id" x-show="activeTab === 'games'">
                         <div class="info-card" 
                              :class="{ 'clickable-card': module.url }" 
                              @click="module.url ? window.location.href = module.url : null"
@@ -1529,15 +1552,6 @@
                                 <div>
                                     <div class="card-title" x-text="module.title"></div>
                                     <div class="card-subtitle" x-text="module.subtitle"></div>
-                                </div>
-                            </div>
-                            <div x-show="(typeof module.progress === 'function' ? module.progress() : module.progress) > 0">
-                                <div class="progress-bar-container">
-                                    <div class="progress-bar" :style="`width: ${typeof module.progress === 'function' ? module.progress() : module.progress}%`"></div>
-                                </div>
-                                <div class="progress-text">
-                                    <span x-text="`${typeof module.completed === 'function' ? module.completed() : module.completed}/${typeof module.total === 'function' ? module.total() : module.total}`"></span>
-                                    <span x-text="`${typeof module.progress === 'function' ? module.progress() : module.progress}%`"></span>
                                 </div>
                             </div>
                             <div x-show="module.url" class="play-badge">
@@ -1558,38 +1572,6 @@
                         <span x-text="getTabTitle(activeTab)"></span>
                     </h3>
                     <p x-text="getTabDescription(activeTab)"></p>
-                    
-                    <!-- IRT Diagnostic Button -->
-                    <div x-show="activeTab === 'irt'" class="irt-actions mt-4">
-                        <button class="btn btn-primary btn-lg w-100 mb-3" @click="startDiagnostic('express')" :disabled="isStartingDiagnostic">
-                            <i class="bi bi-lightning-charge-fill me-2"></i>
-                            <span x-text="isStartingDiagnostic ? 'Starting...' : 'Start Express Diagnostic'"></span>
-                        </button>
-                        
-                        <div class="diagnostic-options">
-                            <h5 class="mb-3">Choose Diagnostic Type:</h5>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <button class="btn btn-outline-primary btn-sm w-100" @click="startDiagnostic('express')" :disabled="isStartingDiagnostic">
-                                        <i class="bi bi-zap me-1"></i> Express
-                                        <small class="d-block text-muted">~25 questions</small>
-                                    </button>
-                                </div>
-                                <div class="col-6">
-                                    <button class="btn btn-outline-primary btn-sm w-100" @click="startDiagnostic('preliminary')" :disabled="isStartingDiagnostic">
-                                        <i class="bi bi-search me-1"></i> Preliminary
-                                        <small class="d-block text-muted">~75 questions</small>
-                                    </button>
-                                </div>
-                                <div class="col-12 mt-2">
-                                    <button class="btn btn-outline-primary btn-sm w-100" @click="startDiagnostic('readiness')" :disabled="isStartingDiagnostic">
-                                        <i class="bi bi-check-circle me-1"></i> Readiness Assessment
-                                        <small class="d-block text-muted">~130 questions</small>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     
                     <h4>💡 How to use</h4>
                     <ul>
@@ -1725,33 +1707,7 @@
                 },
                 modules: {
                     'irt': [
-                        { 
-                            id: 1, 
-                            title: 'Diagnostic', 
-                            subtitle: 'Test', 
-                            icon: 'lightning-charge-fill', 
-                            progress: () => this.userStats.irtTestsCompleted > 0 ? 100 : 0,
-                            completed: () => this.userStats.irtTestsCompleted,
-                            total: () => this.userStats.irtTestsCompleted + 1
-                        },
-                        { 
-                            id: 2, 
-                            title: 'Path', 
-                            subtitle: 'Learn', 
-                            icon: 'diagram-3-fill', 
-                            progress: () => Math.min(100, Math.round((this.userStats.totalLessonsCompleted / 12) * 100)),
-                            completed: () => this.userStats.totalLessonsCompleted,
-                            total: () => Math.max(12, this.userStats.totalLessonsCompleted + 1)
-                        },
-                        { 
-                            id: 3, 
-                            title: 'Advanced', 
-                            subtitle: 'Final', 
-                            icon: 'trophy-fill', 
-                            progress: () => this.userStats.irtTestsCompleted >= 3 ? 100 : 0,
-                            completed: () => this.userStats.irtTestsCompleted >= 3 ? 1 : 0,
-                            total: () => 20
-                        }
+                        // Модули скрыты - используем карточки тестов вместо них
                     ],
                     'virtual': [
                         { id: 4, title: 'Case #1', subtitle: 'Emergency', icon: 'heart-pulse-fill', progress: 100, completed: 5, total: 5 }
@@ -1853,7 +1809,7 @@
                 },
                 getTabDescription(tab) {
                     const descriptions = { 
-                        'irt': '🧪 BETA: Item Response Theory (IRT) provides adaptive testing that adjusts to your skill level in real-time. This feature is in beta testing - your feedback helps us improve! Complete diagnostic tests to unlock personalized learning paths.',
+                        'irt': '🧪 BETA: Choose your test format - Quick Test (30 questions) for rapid assessment, Full Test (60 questions) for comprehensive evaluation, or Learning Mode (30 questions with explanations) to study while testing. All tests use adaptive IRT technology.',
                         'virtual': 'Practice with realistic virtual patient cases. Apply your knowledge in simulated clinical scenarios and improve your decision-making skills.',
                         'individual': 'Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises.',
                         'games': 'Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!',
@@ -1869,7 +1825,7 @@
                 },
                 getTabTips(tab) {
                     const tips = { 
-                        'irt': ['Start with the diagnostic test to assess your current level', 'Questions adapt to your performance in real-time', 'Complete all modules to unlock advanced assessments'],
+                        'irt': ['Click on any test card to start', 'Quick Test (30q) - fast knowledge check', 'Full Test (60q) - comprehensive assessment', 'Learning Mode (30q) - study with instant feedback'],
                         'virtual': ['Read patient history carefully before making decisions', 'Each case has multiple scenarios and outcomes', 'Review feedback to improve your clinical reasoning'],
                         'individual': ['Choose modules based on your learning goals', 'Complete quizzes to reinforce your knowledge', 'Unlock new modules by progressing through the curriculum'],
                         'games': ['Play Sudoku to improve logical thinking', 'Medical Memory helps learn terminology quickly', 'Quick Quiz tests your knowledge in seconds', 'Earn achievements and climb the leaderboard', 'Take breaks with games to refresh your mind'],
@@ -1954,6 +1910,28 @@
                     }, 5000);
                     
                     return notification;
+                },
+                startIRTTest(questionCount) {
+                    // Запуск IRT теста с заданным количеством вопросов
+                    console.log(`Starting IRT test with ${questionCount} questions`);
+                    
+                    // Определяем тип теста на основе количества вопросов
+                    let diagnosticType = 'express'; // 30 вопросов
+                    if (questionCount === 60) {
+                        diagnosticType = 'preliminary'; // 60 вопросов
+                    }
+                    
+                    // Запускаем тест
+                    this.startDiagnostic(diagnosticType);
+                },
+                startLearningMode() {
+                    // Запуск обучающего режима (30 вопросов с объяснениями)
+                    console.log('Starting learning mode with explanations');
+                    
+                    // TODO: Создать отдельный роут для обучающего режима
+                    // Пока используем express тест
+                    this.showNotification('Learning mode coming soon! For now, use Express test.', 'info');
+                    // this.startDiagnostic('learning');
                 }
             }
         }
@@ -2017,5 +1995,7 @@
             }
         });
     </script>
+</body>
+</html>
 </body>
 </html>

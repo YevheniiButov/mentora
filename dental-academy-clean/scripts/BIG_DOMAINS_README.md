@@ -13,22 +13,46 @@
 flask create-domains
 ```
 
-Это создаст 15 доменов BIG:
-- THER - Therapeutische stomatologie
-- SURG - Chirurgische stomatologie
-- PROTH - Prothetische stomatologie
-- PEDI - Pediatrische stomatologie
-- PARO - Parodontologie
-- ORTHO - Orthodontie
-- PREV - Preventie
-- ETHIEK - Ethiek en recht
-- ANATOMIE - Anatomie
-- FYSIOLOGIE - Fysiologie
-- PATHOLOGIE - Pathologie
-- MICROBIOLOGIE - Microbiologie
-- MATERIAALKUNDE - Materiaalkunde
-- RADIOLOGIE - Radiologie
-- ALGEMENE_GENEESKUNDE - Algemene geneeskunde
+Это создаст **30 доменов BIG** на основе файла `scripts/unified_system/domains_config.json`:
+
+**Теоретические домены (22):**
+- PHARMACOLOGY - Farmacologie
+- THERAPEUTIC_DENTISTRY - Therapeutische Tandheelkunde
+- SURGICAL_DENTISTRY - Chirurgische Tandheelkunde
+- PROSTHODONTICS - Prothetische Tandheelkunde
+- PEDIATRIC_DENTISTRY - Kindertandheelkunde
+- PERIODONTOLOGY - Parodontologie
+- ORTHODONTICS - Orthodontie
+- PREVENTIVE_DENTISTRY - Preventieve Tandheelkunde
+- ANATOMY - Anatomie
+- PHYSIOLOGY - Fysiologie
+- PATHOLOGY - Pathologie
+- RADIOLOGY - Radiologie
+- MICROBIOLOGY - Microbiologie
+- MATERIALS_SCIENCE - Materiaalkunde
+- GENERAL_MEDICINE - Algemene Geneeskunde
+- EMERGENCY_MEDICINE - Spoedeisende Geneeskunde
+- SYSTEMIC_DISEASES - Systemische Ziekten
+- INFECTIOUS_DISEASES - Infectieziekten
+- SPECIAL_CASES - Bijzondere Gevallen
+- DUTCH_DENTISTRY - Nederlandse Tandheelkunde
+- DIAGNOSTICS - Diagnostiek
+- ETHICS_NL - Ethiek
+
+**Методологические домены (2):**
+- PROFESSIONAL_ETHICS - Professionele Ethiek
+- STATISTICS - Statistiek
+- RESEARCH_METHOD - Onderzoeksmethoden
+
+**Практические домены (3):**
+- TREATMENT_PLANNING - Behandelplanning
+- COMMUNICATION - Communicatie
+- PRACTICAL_THEORY - Praktische Theorie
+
+**Клинические домены (3):**
+- SPECIAL_DIAGNOSTICS - Bijzondere Diagnostiek
+- CLINICAL_SKILLS - Klinische Vaardigheden
+- PATIENT_MANAGEMENT - Patiëntmanagement
 
 ### Шаг 2: Привязать существующие вопросы к доменам
 ```bash
@@ -44,7 +68,7 @@ flask update-domains
 1. **Все домены созданы:**
    ```python
    from models import BIGDomain
-   BIGDomain.query.count()  # Должно быть 15
+   BIGDomain.query.count()  # Должно быть 30
    ```
 
 2. **Вопросы привязаны к доменам:**
