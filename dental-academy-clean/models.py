@@ -2452,7 +2452,7 @@ class BIGDomain(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
-    code = db.Column(db.String(20), nullable=False, unique=True)  # e.g., 'THER', 'SURG', 'EMERGENCY'
+    code = db.Column(db.String(50), nullable=False, unique=True)  # e.g., 'THERAPEUTIC_DENTISTRY', 'SURGICAL_DENTISTRY'
     description = db.Column(db.Text, nullable=True)
     weight_percentage = db.Column(db.Float, nullable=False)  # ACTA weight
     order = db.Column(db.Integer, default=0)
