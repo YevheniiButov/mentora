@@ -48,7 +48,7 @@ def get_user_statistics(lang):
         
         avg_irt_score = 0
         if irt_sessions:
-            scores = [session.user_ability for session in irt_sessions if session.user_ability is not None]
+            scores = [session.current_ability for session in irt_sessions if session.current_ability is not None]
             if scores:
                 # Конвертируем ability в проценты (примерно от -3 до +3 -> 0% до 100%)
                 avg_irt_score = int(((sum(scores) / len(scores)) + 3) / 6 * 100)
@@ -120,6 +120,75 @@ def get_user_statistics(lang):
         
     except Exception as e:
         current_app.logger.error(f"Ошибка при получении статистики пользователя: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@statistics_bp.route('/games-statistics')
+@login_required
+def get_games_statistics(lang):
+    """
+    API endpoint для получения статистики по играм
+    """
+    try:
+        user_id = current_user.id
+        current_app.logger.info(f"Fetching games statistics for user {user_id}")
+        
+        # Получаем статистику по играм из localStorage или создаем базовую
+        # В реальном приложении это может быть отдельная таблица GameStats
+        games_stats = {
+            'sudoku': {
+                'games_played': 0,
+                'best_time': None,
+                'difficulty_completed': {'easy': False, 'medium': False, 'hard': False},
+                'total_games': 0
+            },
+            'memory': {
+                'games_played': 0,
+                'best_time': None,
+                'difficulty_completed': {'easy': False, 'medium': False, 'hard': False},
+                'total_games': 0
+            },
+            'quiz': {
+                'games_played': 0,
+                'best_score': 0,
+                'categories_completed': [],
+                'total_games': 0
+            }
+        }
+        
+        # Получаем достижения (заглушка - в реальном приложении отдельная таблица)
+        achievements = {
+            'total_achievements': 0,
+            'completed_achievements': [],
+            'progress_percentage': 0
+        }
+        
+        # Получаем рейтинг (заглушка - в реальном приложении отдельная таблица)
+        leaderboard = {
+            'user_rank': None,
+            'total_users': 0,
+            'user_score': 0,
+            'top_users': []
+        }
+        
+        statistics = {
+            'games': games_stats,
+            'achievements': achievements,
+            'leaderboard': leaderboard
+        }
+        
+        current_app.logger.info(f"Games statistics for user {user_id}: {statistics}")
+        
+        return jsonify({
+            'success': True,
+            'statistics': statistics
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при получении статистики игр: {str(e)}", exc_info=True)
         return jsonify({
             'success': False,
             'error': str(e)

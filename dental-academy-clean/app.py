@@ -504,7 +504,7 @@ try:
     app.register_blueprint(api_bp)
     
     # Регистрация новых Learning blueprint
-    app.register_blueprint(daily_learning_bp, url_prefix='/daily-learning')
+    app.register_blueprint(daily_learning_bp)
     
     # Регистрация Calendar Plan API blueprint
     app.register_blueprint(calendar_plan_bp)

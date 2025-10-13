@@ -1503,13 +1503,13 @@
                                     <div class="card-subtitle" x-text="module.subtitle"></div>
                                 </div>
                             </div>
-                            <div x-show="module.progress > 0">
+                            <div x-show="(typeof module.progress === 'function' ? module.progress() : module.progress) > 0">
                                 <div class="progress-bar-container">
-                                    <div class="progress-bar" :style="`width: ${module.progress}%`"></div>
+                                    <div class="progress-bar" :style="`width: ${typeof module.progress === 'function' ? module.progress() : module.progress}%`"></div>
                                 </div>
                                 <div class="progress-text">
-                                    <span x-text="`${module.completed}/${module.total}`"></span>
-                                    <span x-text="`${module.progress}%`"></span>
+                                    <span x-text="`${typeof module.completed === 'function' ? module.completed() : module.completed}/${typeof module.total === 'function' ? module.total() : module.total}`"></span>
+                                    <span x-text="`${typeof module.progress === 'function' ? module.progress() : module.progress}%`"></span>
                                 </div>
                             </div>
                             <div x-show="module.url" class="play-badge">
@@ -1608,7 +1608,15 @@
                     testAttempts: 0,
                     lastActivity: null
                 },
+                gamesStats: {
+                    sudoku: { games_played: 0, best_time: null, difficulty_completed: {easy: false, medium: false, hard: false} },
+                    memory: { games_played: 0, best_time: null, difficulty_completed: {easy: false, medium: false, hard: false} },
+                    quiz: { games_played: 0, best_score: 0, categories_completed: [] },
+                    achievements: { total: 0, completed: 0, progress: 0 },
+                    leaderboard: { user_rank: null, total_users: 0, user_score: 0 }
+                },
                 statsLoaded: false,
+                gamesStatsLoaded: false,
                 async loadUserStats() {
                     try {
                         const currentLang = document.querySelector('html').getAttribute('lang') || 'en';
@@ -1633,8 +1641,41 @@
                         console.error('Failed to load user statistics:', error);
                     }
                 },
+                async loadGamesStats() {
+                    try {
+                        const currentLang = document.querySelector('html').getAttribute('lang') || 'en';
+                        const response = await fetch(`/${currentLang}/api/games-statistics`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.gamesStats = {
+                                sudoku: data.statistics.games.sudoku,
+                                memory: data.statistics.games.memory,
+                                quiz: data.statistics.games.quiz,
+                                achievements: data.statistics.achievements,
+                                leaderboard: data.statistics.leaderboard
+                            };
+                            this.gamesStatsLoaded = true;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load games statistics:', error);
+                    }
+                },
+                calculateGameProgress(gameType) {
+                    const stats = this.gamesStats[gameType];
+                    if (!stats) return 0;
+                    
+                    if (gameType === 'quiz') {
+                        return Math.min(100, (stats.games_played / 10) * 100);
+                    } else {
+                        // For sudoku and memory, calculate based on games played and difficulties completed
+                        const difficultiesCompleted = Object.values(stats.difficulty_completed).filter(Boolean).length;
+                        return Math.min(100, ((stats.games_played * 10) + (difficultiesCompleted * 30)));
+                    }
+                },
                 init() {
                     this.loadUserStats();
+                    this.loadGamesStats();
                 },
                 selectTab(tab) {
                     if (!this.enabledTabs.includes(tab)) {
@@ -1658,9 +1699,33 @@
                 },
                 modules: {
                     'irt': [
-                        { id: 1, title: 'Diagnostic', subtitle: 'Test', icon: 'lightning-charge-fill', progress: 100, completed: 15, total: 15 },
-                        { id: 2, title: 'Path', subtitle: 'Learn', icon: 'diagram-3-fill', progress: 65, completed: 8, total: 12 },
-                        { id: 3, title: 'Advanced', subtitle: 'Final', icon: 'trophy-fill', progress: 0, completed: 0, total: 20 }
+                        { 
+                            id: 1, 
+                            title: 'Diagnostic', 
+                            subtitle: 'Test', 
+                            icon: 'lightning-charge-fill', 
+                            progress: () => this.userStats.irtTestsCompleted > 0 ? 100 : 0,
+                            completed: () => this.userStats.irtTestsCompleted,
+                            total: () => this.userStats.irtTestsCompleted + 1
+                        },
+                        { 
+                            id: 2, 
+                            title: 'Path', 
+                            subtitle: 'Learn', 
+                            icon: 'diagram-3-fill', 
+                            progress: () => Math.min(100, Math.round((this.userStats.totalLessonsCompleted / 12) * 100)),
+                            completed: () => this.userStats.totalLessonsCompleted,
+                            total: () => Math.max(12, this.userStats.totalLessonsCompleted + 1)
+                        },
+                        { 
+                            id: 3, 
+                            title: 'Advanced', 
+                            subtitle: 'Final', 
+                            icon: 'trophy-fill', 
+                            progress: () => this.userStats.irtTestsCompleted >= 3 ? 100 : 0,
+                            completed: () => this.userStats.irtTestsCompleted >= 3 ? 1 : 0,
+                            total: () => 20
+                        }
                     ],
                     'virtual': [
                         { id: 4, title: 'Case #1', subtitle: 'Emergency', icon: 'heart-pulse-fill', progress: 100, completed: 5, total: 5 }
@@ -1669,11 +1734,54 @@
                         { id: 6, title: 'My Topics', subtitle: 'Custom', icon: 'book-fill', progress: 45, completed: 9, total: 20 }
                     ],
                     'games': [
-                        { id: 7, title: 'Sudoku', subtitle: 'Classic', icon: 'grid-3x3-gap-fill', progress: 0, completed: 0, total: 1, url: '/games/sudoku' },
-                        { id: 8, title: 'Medical Memory', subtitle: 'Match Terms', icon: 'bullseye', progress: 0, completed: 0, total: 1, url: '/games/memory' },
-                        { id: 9, title: 'Quick Quiz', subtitle: 'Fast Questions', icon: 'lightning-charge-fill', progress: 0, completed: 0, total: 1, url: '/games/quiz' },
-                        { id: 10, title: 'Achievements', subtitle: 'Badges', icon: 'trophy-fill', progress: 60, completed: 12, total: 20 },
-                        { id: 11, title: 'Leaderboard', subtitle: 'Ranking', icon: 'bar-chart-fill', progress: 0, completed: 0, total: 1 }
+                        { 
+                            id: 7, 
+                            title: 'Sudoku', 
+                            subtitle: 'Classic', 
+                            icon: 'grid-3x3-gap-fill', 
+                            progress: () => this.calculateGameProgress('sudoku'),
+                            completed: () => this.gamesStats.sudoku.games_played,
+                            total: () => this.gamesStats.sudoku.games_played + 1,
+                            url: '/games/sudoku' 
+                        },
+                        { 
+                            id: 8, 
+                            title: 'Medical Memory', 
+                            subtitle: 'Match Terms', 
+                            icon: 'bullseye', 
+                            progress: () => this.calculateGameProgress('memory'),
+                            completed: () => this.gamesStats.memory.games_played,
+                            total: () => this.gamesStats.memory.games_played + 1,
+                            url: '/games/memory' 
+                        },
+                        { 
+                            id: 9, 
+                            title: 'Quick Quiz', 
+                            subtitle: 'Fast Questions', 
+                            icon: 'lightning-charge-fill', 
+                            progress: () => this.calculateGameProgress('quiz'),
+                            completed: () => this.gamesStats.quiz.games_played,
+                            total: () => this.gamesStats.quiz.games_played + 1,
+                            url: '/games/quiz' 
+                        },
+                        { 
+                            id: 10, 
+                            title: 'Achievements', 
+                            subtitle: 'Badges', 
+                            icon: 'trophy-fill', 
+                            progress: () => this.gamesStats.achievements.progress,
+                            completed: () => this.gamesStats.achievements.completed,
+                            total: () => this.gamesStats.achievements.total || 20
+                        },
+                        { 
+                            id: 11, 
+                            title: 'Leaderboard', 
+                            subtitle: 'Ranking', 
+                            icon: 'bar-chart-fill', 
+                            progress: () => this.gamesStats.leaderboard.user_rank ? 100 : 0,
+                            completed: () => this.gamesStats.leaderboard.user_rank || 0,
+                            total: () => this.gamesStats.leaderboard.total_users || 1
+                        }
                     ],
                     'progress': [
                         { id: 10, title: 'Overall', subtitle: 'All modules', icon: 'graph-up', progress: 68, completed: 68, total: 100 },
@@ -1688,11 +1796,40 @@
                 },
                 get displayModules() { return this.modules[this.activeTab] || []; },
                 get currentProgress() {
-                    const mods = this.displayModules;
-                    return mods.length ? Math.round(mods.reduce((s, m) => s + m.progress, 0) / mods.length) : 0;
+                    if (this.activeTab === 'irt') {
+                        // Для IRT используем реальные данные пользователя
+                        return Math.min(100, Math.round((this.userStats.irtTestsCompleted / 3) * 100));
+                    } else if (this.activeTab === 'games') {
+                        // Для игр используем реальные данные
+                        const totalGames = 3; // sudoku, memory, quiz
+                        const completedGames = Object.values(this.gamesStats).filter(stats => 
+                            stats.games_played > 0
+                        ).length;
+                        return Math.min(100, Math.round((completedGames / totalGames) * 100));
+                    } else {
+                        // Для остальных табов используем статические данные
+                        const mods = this.displayModules;
+                        return mods.length ? Math.round(mods.reduce((s, m) => s + (typeof m.progress === 'function' ? m.progress() : m.progress), 0) / mods.length) : 0;
+                    }
                 },
-                get completedModules() { return this.displayModules.filter(m => m.progress === 100).length; },
-                get totalModules() { return this.displayModules.length; },
+                get completedModules() { 
+                    if (this.activeTab === 'irt') {
+                        return this.userStats.irtTestsCompleted;
+                    } else if (this.activeTab === 'games') {
+                        return Object.values(this.gamesStats).filter(stats => stats.games_played > 0).length;
+                    } else {
+                        return this.displayModules.filter(m => (typeof m.progress === 'function' ? m.progress() : m.progress) === 100).length;
+                    }
+                },
+                get totalModules() { 
+                    if (this.activeTab === 'irt') {
+                        return 3; // diagnostic, path, advanced
+                    } else if (this.activeTab === 'games') {
+                        return 3; // sudoku, memory, quiz (не считаем achievements и leaderboard)
+                    } else {
+                        return this.displayModules.length;
+                    }
+                },
                 get activeModules() { return this.displayModules.filter(m => m.progress > 0 && m.progress < 100).length; },
                 get completedTabs() {
                     // Для примера: 2 таба завершено (IRT, Virtual)

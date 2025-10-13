@@ -11,7 +11,7 @@ import os
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
-daily_learning_bp = Blueprint('daily_learning', __name__)
+daily_learning_bp = Blueprint('daily_learning', __name__, url_prefix='/<string:lang>')
 
 # Поддерживаемые языки
 SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
@@ -123,9 +123,8 @@ def learning_map(lang='en'):
     return redirect(url_for('main.coming_soon', lang=lang))
 
 @daily_learning_bp.route('/knowledge-base')
-@daily_learning_bp.route('/<string:lang>/knowledge-base')
 @login_required  
-def knowledge_base(lang='en'):
+def knowledge_base(lang):
     """Knowledge Base coming soon page"""
     from flask import render_template, g
     return render_template('coming_soon.html', 
