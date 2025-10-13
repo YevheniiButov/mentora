@@ -297,11 +297,20 @@ def from_json_filter(value):
 def route_by_domain():
     host = request.host.lower()
     
-    # Для mentora.com.in - показываем только главную страницу
+    # Для mentora.com.in - разрешаем главную страницу и языковые роуты
     if 'mentora.com.in' in host:
-        # Исключаем админ панель, API и analytics из редиректа
-        if request.path != '/' and not request.path.startswith('/admin') and not request.path.startswith('/api') and not request.path.startswith('/analytics'):
-            # Все остальные пути редиректим на главную
+        # Разрешенные пути
+        allowed_paths = ['/', '/nl', '/en', '/ru', '/uk', '/es', '/pt', '/tr', '/fa', '/mentora-login']
+        allowed_prefixes = ['/admin', '/api', '/analytics', '/static']
+        
+        # Проверяем, разрешен ли текущий путь
+        path_allowed = (
+            request.path in allowed_paths or 
+            any(request.path.startswith(prefix) for prefix in allowed_prefixes)
+        )
+        
+        # Если путь не разрешен - редирект на главную
+        if not path_allowed:
             return redirect('/')
 
 # ========================================

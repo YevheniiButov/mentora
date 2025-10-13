@@ -32,3 +32,9 @@ def memory():
 def quiz():
     """Quick Quiz game page"""
     return render_template('games/quiz.html', lang=g.lang)
+
+@games_bp.route('/dentist-dash')
+@login_required
+def dentist_dash():
+    """Dentist Dash - 8-bit platformer game"""
+    return render_template('games/dentist_dash.html', lang=g.lang)
