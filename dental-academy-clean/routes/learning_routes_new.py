@@ -117,9 +117,9 @@ def _adapt_daily_plan_for_template(daily_plan_result):
 @daily_learning_bp.route('/learning-map')
 @login_required
 def learning_map(lang):
-    """Redirect to coming soon page"""
+    """Redirect to real learning map"""
     from flask import redirect, url_for, g
-    return redirect(url_for('main.coming_soon', lang=lang))
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
 @daily_learning_bp.route('/knowledge-base')
 @login_required  
