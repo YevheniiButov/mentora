@@ -277,6 +277,19 @@ class IRTEngine:
         if self._min_questions is None:
             # Рассчитываем минимальное количество вопросов
             calculated_min = len(self.all_domains) * self.questions_per_domain
+            
+            # ИСПРАВЛЕНИЕ: Если доменов нет, используем фиксированные минимумы
+            if calculated_min == 0:
+                if self.diagnostic_type == 'express':
+                    calculated_min = 20  # Минимум 20 вопросов для express
+                elif self.diagnostic_type == 'preliminary':
+                    calculated_min = 50  # Минимум 50 вопросов для preliminary
+                elif self.diagnostic_type == 'readiness':
+                    calculated_min = 100  # Минимум 100 вопросов для readiness
+                else:
+                    calculated_min = 20  # По умолчанию 20
+                logger.warning(f"No domains found, using default min questions: {calculated_min}")
+            
             # Но не больше максимального количества вопросов
             self._min_questions = min(calculated_min, self.max_questions)
             logger.info(f"Min questions calculated: {calculated_min}, but limited to max_questions: {self._min_questions}")
