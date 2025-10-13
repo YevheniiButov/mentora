@@ -220,6 +220,10 @@ def start_diagnostic():
             }
             diagnostic_session.set_session_data(session_data)
             
+            # DEBUG: Проверим, что сохранилось
+            saved_data = diagnostic_session.get_session_data()
+            logger.info(f"DEBUG: Saved session_data: {saved_data}")
+            
             # Update session with first question
             diagnostic_session.current_question_id = first_question.id
             diagnostic_session.started_at = datetime.now(timezone.utc)
@@ -228,17 +232,25 @@ def start_diagnostic():
             logger.info(f"Started {diagnostic_type} diagnostic session {diagnostic_session.id} for user {current_user.id}")
             
             if request.is_json:
+                # Determine correct redirect URL based on type
+                if diagnostic_type in ['learning_30', 'learning']:
+                    redirect_url = url_for('diagnostic.show_learning_question', session_id=diagnostic_session.id)
+                else:
+                    redirect_url = url_for('diagnostic.show_question', session_id=diagnostic_session.id)
+                
                 return safe_jsonify({
                     'success': True,
                     'session_id': diagnostic_session.id,
                     'diagnostic_type': diagnostic_type,
-                    'redirect_url': url_for('diagnostic.show_question', session_id=diagnostic_session.id)
+                    'redirect_url': redirect_url
                 })
             else:
                 # Redirect to appropriate question route based on type
                 if diagnostic_type in ['learning_30', 'learning']:
+                    logger.info(f"DEBUG: Redirecting to learning question for session {diagnostic_session.id}")
                     return redirect(url_for('diagnostic.show_learning_question', session_id=diagnostic_session.id))
                 else:
+                    logger.info(f"DEBUG: Redirecting to regular question for session {diagnostic_session.id}")
                     return redirect(url_for('diagnostic.show_question', session_id=diagnostic_session.id))
         
         # GET request - redirect to diagnostic type selector
@@ -475,8 +487,8 @@ def submit_learning_answer(session_id):
             return jsonify({'error': 'Question not found'}), 404
         
         # Check if answer is correct
-        correct_answer = question.correct_answer
-        is_correct = str(answer_id) == str(correct_answer)
+        is_correct = question.check_answer(answer_id)
+        correct_answer = question.correct_answer_index
         
         # Record answer
         test_attempt = TestAttempt(
@@ -2119,6 +2131,9 @@ def show_learning_question(session_id):
         # Check if this is a learning session
         session_data = diagnostic_session.get_session_data()
         diagnostic_type = session_data.get('diagnostic_type')
+        current_app.logger.info(f"DEBUG: show_learning_question called for session {session_id}, diagnostic_type={diagnostic_type}")
+        current_app.logger.info(f"DEBUG: Full session_data: {session_data}")
+        
         if diagnostic_type not in ['learning_30', 'learning']:
             current_app.logger.info(f"Not a learning session: diagnostic_type={diagnostic_type}, redirecting to regular question")
             return redirect(url_for('diagnostic.show_question', session_id=session_id))
