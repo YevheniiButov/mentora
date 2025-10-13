@@ -174,17 +174,17 @@ def start_diagnostic():
             # Определяем правильный session_type и diagnostic_type на основе выбора пользователя
             if diagnostic_type == 'quick_30':
                 session_type = 'preliminary'
-                diagnostic_type = 'preliminary'
+                diagnostic_type = 'quick_30'  # Сохраняем оригинальный тип для IRT engine
                 estimated_questions = 30
                 questions_per_domain = 1
             elif diagnostic_type == 'full_60':
                 session_type = 'full'
-                diagnostic_type = 'full'
+                diagnostic_type = 'full_60'  # Сохраняем оригинальный тип для IRT engine
                 estimated_questions = 60
                 questions_per_domain = 2
             elif diagnostic_type == 'learning_30':
                 session_type = 'learning'
-                diagnostic_type = 'learning'
+                diagnostic_type = 'learning_30'  # Сохраняем оригинальный тип для IRT engine
                 estimated_questions = 30
                 questions_per_domain = 1
             # Legacy support

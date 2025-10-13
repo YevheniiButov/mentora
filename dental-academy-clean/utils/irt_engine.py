@@ -1150,7 +1150,7 @@ class IRTEngine:
                 'message': f'Maximum {self.max_questions} questions reached'
             }
         
-        # Check precision threshold based on session type (ИСПРАВЛЕНИЕ: используем session_type вместо diagnostic_type)
+        # Check precision threshold based on diagnostic type
         session_data = session.get_session_data()
         session_type = session_data.get('session_type', 'preliminary')
         diagnostic_type = session_data.get('diagnostic_type', 'preliminary')
@@ -1158,7 +1158,7 @@ class IRTEngine:
         logger.info(f"Session type: {session_type}, Diagnostic type: {diagnostic_type}")
         
         # For learning sessions: Always complete all questions (no early termination)
-        if session_type == 'learning':
+        if diagnostic_type in ['learning_30', 'learning']:
             max_questions = session_data.get('estimated_total_questions', 30)
             if session.questions_answered >= max_questions:
                 logger.info(f"TERMINATE: Learning session completed ({session.questions_answered} >= {max_questions})")
@@ -1174,8 +1174,8 @@ class IRTEngine:
                 'message': 'Learning mode continues until target questions reached'
             }
         
-        # For preliminary sessions (≤40 questions): Use SE threshold
-        elif session_type == 'preliminary':
+        # For quick_30 sessions (30 questions): Use SE threshold
+        elif diagnostic_type in ['quick_30', 'express']:
             if session.questions_answered >= self.min_questions and session.ability_se <= self.min_se_threshold:
                 logger.info(f"TERMINATE: Sufficient precision achieved for preliminary (SE: {session.ability_se} <= {self.min_se_threshold})")
                 return {
@@ -1184,8 +1184,8 @@ class IRTEngine:
                     'message': 'Sufficient precision achieved for preliminary test'
                 }
         
-        # For full sessions (60 questions): Use question count primarily, SE threshold only if very confident
-        elif session_type == 'full':
+        # For full_60 sessions (60 questions): Use question count primarily, SE threshold only if very confident
+        elif diagnostic_type in ['full_60', 'preliminary', 'full']:
             min_questions = max(55, session_data.get('estimated_total_questions', 60) * 0.9)  # Минимум 55 из 60
             max_questions = session_data.get('estimated_total_questions', 60)
             
@@ -1217,7 +1217,7 @@ class IRTEngine:
                     }
         
         # For comprehensive sessions (130 questions): Use question count only
-        elif session_type == 'comprehensive':
+        elif diagnostic_type in ['readiness', 'comprehensive']:
             max_questions = session_data.get('estimated_total_questions', 130)
             if session.questions_answered >= max_questions:
                 logger.info(f"TERMINATE: Comprehensive session completed ({session.questions_answered} >= {max_questions})")
