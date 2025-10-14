@@ -340,6 +340,54 @@ document.addEventListener('keyup', (e) => {
     keyCodes[e.code] = false;
 });
 
+// 🖱️ MOUSE CONTROLS FOR DOOM MODE!
+document.addEventListener('mousemove', (e) => {
+    if (gameMode === 'doom' && mouseEnabled && document.pointerLockElement === canvas) {
+        // Get mouse movement
+        const movementX = e.movementX || e.mozMovementX || 0;
+        
+        // Rotate player based on mouse movement
+        doomPlayer.angle += movementX * mouseSensitivity;
+        
+        // Keep angle in range [0, 2PI]
+        if (doomPlayer.angle < 0) doomPlayer.angle += Math.PI * 2;
+        if (doomPlayer.angle > Math.PI * 2) doomPlayer.angle -= Math.PI * 2;
+    }
+});
+
+// Handle pointer lock change
+document.addEventListener('pointerlockchange', () => {
+    if (document.pointerLockElement === canvas) {
+        mouseEnabled = true;
+        console.log('🖱️ MOUSE LOCKED! Move mouse to look around');
+    } else {
+        mouseEnabled = false;
+        console.log('🖱️ MOUSE UNLOCKED');
+    }
+});
+
+// Click to shoot in DOOM mode (also re-locks mouse if unlocked)
+canvas.addEventListener('click', () => {
+    if (gameMode === 'doom') {
+        // Re-lock mouse if unlocked
+        if (document.pointerLockElement !== canvas) {
+            canvas.requestPointerLock();
+        }
+        
+        // Shoot if mouse is locked and has ammo
+        if (mouseEnabled && doomPlayer.ammo > 0) {
+            doomPlayer.ammo--;
+            doomBullets.push({
+                x: doomPlayer.x,
+                y: doomPlayer.y,
+                angle: doomPlayer.angle,
+                distance: 0
+            });
+            playSound('shoot');
+        }
+    }
+});
+
 // Game objects
 let enemies = [];
 let powerUps = [];
@@ -3756,6 +3804,10 @@ let doomPlayer = {
     ammo: 50
 };
 
+// Mouse control variables
+let mouseEnabled = false;
+let mouseSensitivity = 0.002; // Радианы на пиксель движения мыши
+
 let doomMap = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -3889,6 +3941,13 @@ function checkDoomDoorCollision() {
         });
         
         doomBullets = [];
+        
+        // Request pointer lock for mouse control
+        canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+        canvas.requestPointerLock();
+        mouseEnabled = true;
+        
+        playSound('warp');
     }
 }
 
@@ -4019,6 +4078,12 @@ function updateDoom() {
     if (exitDistance < 1.5) { // Larger activation radius
         // Exit DOOM mode
         gameMode = '2d';
+        mouseEnabled = false;
+        
+        // Release pointer lock
+        document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
+        document.exitPointerLock();
+        
         playSound('warp'); // Sound effect for exit
         console.log('🚪 EXITING DOOM MODE! Distance:', exitDistance.toFixed(2));
         
@@ -4050,47 +4115,108 @@ function renderDoom() {
         const wallTop = (canvas.height - wallHeight) / 2;
         const wallBottom = wallTop + wallHeight;
         
-        // Wall color based on distance - IMPROVED COLORS!
+        // DETAILED TEXTURES WITH GRADIENT LIGHTING!
         const brightness = Math.max(0.3, 1 - distance / 8);
         
-        // Different wall types with better colors
-        let wallColor;
-        if (Math.floor(doomPlayer.x) % 2 === 0) {
-            // Stone walls
-            wallColor = `rgb(${Math.floor(120 * brightness)}, ${Math.floor(100 * brightness)}, ${Math.floor(80 * brightness)})`;
+        // Calculate texture coordinates based on hit position
+        const hitX = doomPlayer.x + Math.cos(rayAngle) * distance;
+        const hitY = doomPlayer.y + Math.sin(rayAngle) * distance;
+        const textureX = (hitX % 1) * 16; // 16 pixels per wall unit
+        const textureY = (hitY % 1) * 16;
+        
+        // Determine wall type based on position
+        const wallType = Math.floor(hitX + hitY) % 3;
+        
+        let baseColor, detailColor, crackColor;
+        
+        if (wallType === 0) {
+            // Stone brick walls with cracks
+            baseColor = [120, 100, 80];
+            detailColor = [100, 85, 65];
+            crackColor = [60, 50, 40];
+        } else if (wallType === 1) {
+            // Metal tech walls
+            baseColor = [100, 110, 120];
+            detailColor = [80, 90, 100];
+            crackColor = [60, 70, 80];
         } else {
-            // Metal walls
-            wallColor = `rgb(${Math.floor(100 * brightness)}, ${Math.floor(110 * brightness)}, ${Math.floor(120 * brightness)})`;
+            // Rusty metal walls
+            baseColor = [130, 90, 60];
+            detailColor = [110, 70, 40];
+            crackColor = [90, 50, 20];
         }
         
-        // Draw wall slice
-        ctx.fillStyle = wallColor;
+        // Apply gradient lighting (darker at edges, brighter in center)
+        const centerDist = Math.abs(i - canvas.width / 2) / (canvas.width / 2);
+        const gradientFactor = 1 - centerDist * 0.3; // 30% darker at edges
+        const finalBrightness = brightness * gradientFactor;
+        
+        // Draw base wall color
+        ctx.fillStyle = `rgb(${Math.floor(baseColor[0] * finalBrightness)}, ${Math.floor(baseColor[1] * finalBrightness)}, ${Math.floor(baseColor[2] * finalBrightness)})`;
         ctx.fillRect(i, wallTop, 1, wallHeight);
         
-        // Wall texture lines
-        if (i % 3 === 0) {
-            ctx.fillStyle = `rgb(${Math.floor(80 * brightness)}, ${Math.floor(70 * brightness)}, ${Math.floor(60 * brightness)})`;
+        // Draw detailed texture pattern
+        const pattern = Math.floor(textureX + i * 0.5) % 8;
+        
+        // Brick/panel lines (every 8 pixels)
+        if (pattern === 0 || pattern === 7) {
+            ctx.fillStyle = `rgb(${Math.floor(detailColor[0] * finalBrightness)}, ${Math.floor(detailColor[1] * finalBrightness)}, ${Math.floor(detailColor[2] * finalBrightness)})`;
             ctx.fillRect(i, wallTop, 1, wallHeight);
         }
         
-        // Floor - improved with texture
-        ctx.fillStyle = `rgb(${Math.floor(60 * brightness)}, ${Math.floor(40 * brightness)}, ${Math.floor(30 * brightness)})`;
-        ctx.fillRect(i, wallBottom, 1, canvas.height - wallBottom);
-        
-        // Floor texture lines
-        if (i % 4 === 0 && wallBottom < canvas.height - 10) {
-            ctx.fillStyle = `rgb(${Math.floor(40 * brightness)}, ${Math.floor(30 * brightness)}, ${Math.floor(20 * brightness)})`;
-            ctx.fillRect(i, wallBottom + 10, 1, 2);
+        // Horizontal panel lines
+        for (let h = wallTop; h < wallTop + wallHeight; h += 32) {
+            ctx.fillStyle = `rgb(${Math.floor(detailColor[0] * finalBrightness * 0.8)}, ${Math.floor(detailColor[1] * finalBrightness * 0.8)}, ${Math.floor(detailColor[2] * finalBrightness * 0.8)})`;
+            ctx.fillRect(i, h, 1, 2);
         }
         
-        // Ceiling - improved with texture
-        ctx.fillStyle = `rgb(${Math.floor(40 * brightness)}, ${Math.floor(40 * brightness)}, ${Math.floor(60 * brightness)})`;
-        ctx.fillRect(i, 0, 1, wallTop);
+        // Random cracks and details
+        const crackPattern = Math.floor((hitX * 100 + hitY * 50) % 100);
+        if (crackPattern < 5) {
+            ctx.fillStyle = `rgb(${Math.floor(crackColor[0] * finalBrightness)}, ${Math.floor(crackColor[1] * finalBrightness)}, ${Math.floor(crackColor[2] * finalBrightness)})`;
+            const crackY = wallTop + (crackPattern * 20) % wallHeight;
+            ctx.fillRect(i, crackY, 1, 3);
+        }
         
-        // Ceiling details
-        if (i % 3 === 0 && wallTop > 10) {
-            ctx.fillStyle = `rgb(${Math.floor(30 * brightness)}, ${Math.floor(30 * brightness)}, ${Math.floor(50 * brightness)})`;
-            ctx.fillRect(i, wallTop - 10, 1, 2);
+        // Highlight effect for metal walls (simulating reflection)
+        if (wallType === 1 && pattern === 4) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.1 * finalBrightness})`;
+            ctx.fillRect(i, wallTop + wallHeight * 0.2, 1, wallHeight * 0.3);
+        }
+        
+        // FLOOR with gradient lighting and texture
+        const floorHeight = canvas.height - wallBottom;
+        for (let f = 0; f < floorHeight; f += 2) {
+            // Calculate distance-based darkening
+            const floorDepth = f / floorHeight;
+            const floorBrightness = finalBrightness * (1 - floorDepth * 0.5);
+            
+            // Base floor color
+            ctx.fillStyle = `rgb(${Math.floor(60 * floorBrightness)}, ${Math.floor(40 * floorBrightness)}, ${Math.floor(30 * floorBrightness)})`;
+            ctx.fillRect(i, wallBottom + f, 1, 2);
+            
+            // Floor tiles pattern
+            if ((i + f) % 16 < 8) {
+                ctx.fillStyle = `rgb(${Math.floor(50 * floorBrightness)}, ${Math.floor(35 * floorBrightness)}, ${Math.floor(25 * floorBrightness)})`;
+                ctx.fillRect(i, wallBottom + f, 1, 1);
+            }
+        }
+        
+        // CEILING with gradient lighting
+        for (let c = 0; c < wallTop; c += 2) {
+            // Calculate distance-based darkening
+            const ceilingDepth = c / wallTop;
+            const ceilingBrightness = finalBrightness * (1 - ceilingDepth * 0.4);
+            
+            // Base ceiling color (darker than walls)
+            ctx.fillStyle = `rgb(${Math.floor(40 * ceilingBrightness)}, ${Math.floor(45 * ceilingBrightness)}, ${Math.floor(50 * ceilingBrightness)})`;
+            ctx.fillRect(i, c, 1, 2);
+            
+            // Ceiling panel lines
+            if (c % 32 === 0 && c > 0) {
+                ctx.fillStyle = `rgb(${Math.floor(30 * ceilingBrightness)}, ${Math.floor(35 * ceilingBrightness)}, ${Math.floor(40 * ceilingBrightness)})`;
+                ctx.fillRect(i, c, 1, 3);
+            }
         }
     }
     
@@ -4351,6 +4477,17 @@ function renderDoom() {
     ctx.fillStyle = exitDist < 2 ? '#00ff00' : '#00ffff';
     ctx.font = 'bold 10px Arial';
     ctx.fillText(`🚪 EXIT: ${exitDist.toFixed(1)}m - ${exitDist < 1.5 ? 'PRESS TO EXIT!' : 'Find cyan door!'}`, 10, 140);
+    
+    // Mouse control hint
+    if (!mouseEnabled) {
+        ctx.fillStyle = '#ffff00';
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('🖱️ CLICK TO ENABLE MOUSE LOOK!', canvas.width/2 - 130, canvas.height - 20);
+    } else {
+        ctx.fillStyle = '#00ff00';
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText('🖱️ Mouse: Look | Click: Shoot | ESC: Unlock', 10, 155);
+    }
     
     // Mini-map
     const mapSize = 120;
