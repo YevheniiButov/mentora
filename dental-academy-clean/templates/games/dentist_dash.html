@@ -1,11 +1,19 @@
 {% extends "games/base_game.html" %}
 
-{% block title %}Dentist Dash - 8-Bit Game{% endblock %}
+{% block title %}Super Mentora - 8-Bit Game{% endblock %}
 
-{% block game_content %}
+{% block game_title %}{% endblock %}
+{% block game_subtitle %}{% endblock %}
+
+{% block content %}
 <style>
     /* 8-BIT RETRO STYLING */
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    
+    /* Hide header completely */
+    .game-header {
+        display: none !important;
+    }
     
     * {
         image-rendering: pixelated;
@@ -13,16 +21,49 @@
         image-rendering: crisp-edges;
     }
     
-    body {
-        margin: 0;
-        overflow: hidden;
-        background: #000;
+    .game-container {
+        max-width: 900px !important;
+        position: relative;
+    }
+    
+    /* Back button positioned at top-left */
+    .pixel-back-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.9);
+        color: #fcfc00;
+        border: 4px solid #fff;
+        padding: 10px 18px;
         font-family: 'Press Start 2P', cursive;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s;
+        z-index: 10000;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+    
+    .pixel-back-btn:hover {
+        background: #fcfc00;
+        color: #000;
+        transform: scale(1.1) translateX(-5px);
+        box-shadow: 0 0 20px #fcfc00;
+    }
+    
+    @media (max-width: 768px) {
+        .pixel-back-btn {
+            top: 10px;
+            left: 10px;
+            padding: 8px 14px;
+            font-size: 9px;
+        }
     }
     
     #gameCanvas {
         display: block;
-        margin: 0 auto;
+        margin: 20px auto;
         background: #5c94fc;
         border: 8px solid #222;
         box-shadow: 
@@ -31,44 +72,33 @@
             inset 0 0 100px rgba(0,0,0,0.3);
     }
     
-    .game-container {
-        position: relative;
-        max-width: 800px;
-        margin: 20px auto;
-    }
-    
     .hud {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        color: #fff;
+        font-family: 'Press Start 2P', cursive;
         font-size: 12px;
+        color: #fff;
         text-shadow: 2px 2px 0 #000;
         display: flex;
         justify-content: space-between;
-        z-index: 10;
-        pointer-events: none;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: rgba(0,0,0,0.8);
+        border-radius: 8px;
     }
     
-    .game-over-screen,
-    .start-screen {
+    .start-screen, .game-over-screen, .victory-screen {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.9);
+        background: rgba(0, 0, 0, 0.95);
         padding: 30px;
         border: 4px solid #fff;
         text-align: center;
         color: #fff;
+        font-family: 'Press Start 2P', cursive;
         font-size: 14px;
-        display: none;
         z-index: 100;
-    }
-    
-    .start-screen {
-        display: block;
+        max-width: 500px;
     }
     
     .start-screen h1 {
@@ -96,95 +126,84 @@
         transform: scale(1.05);
     }
     
-    .pixel-btn:active {
-        transform: scale(0.95);
-    }
-    
     .instructions {
         margin: 20px 0;
         font-size: 10px;
-        line-height: 1.8;
+        line-height: 2;
         color: #aaa;
-    }
-    
-    .lives {
-        color: #fc0000;
-    }
-    
-    .score {
-        color: #fcfc00;
-    }
-    
-    .level {
-        color: #00fc00;
-    }
-    
-    /* CRT Effect */
-    #gameCanvas::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-            rgba(18, 16, 16, 0) 50%, 
-            rgba(0, 0, 0, 0.25) 50%
-        );
-        background-size: 100% 4px;
-        pointer-events: none;
     }
 </style>
 
-<div class="game-container">
-    <!-- HUD -->
-    <div class="hud">
-        <div class="score">SCORE: <span id="scoreDisplay">0</span></div>
-        <div class="level">LEVEL: <span id="levelDisplay">1</span></div>
-        <div class="lives">LIVES: <span id="livesDisplay">3</span></div>
-    </div>
-    
-    <!-- Start Screen -->
+<!-- Back Button -->
+<a href="/learning-map" class="pixel-back-btn">
+    ← BACK
+</a>
+
+<div class="hud">
+    <div>❤️ <span id="livesDisplay">3</span></div>
+    <div>⭐ <span id="scoreDisplay">0</span></div>
+    <div>🏆 LV <span id="levelDisplay">1</span></div>
+    <div id="dashDisplay">⚡ <span id="dashStatus">READY</span></div>
+    <div id="weaponDisplay" style="display: none;">🔫 <span id="weaponType">NORMAL</span></div>
+</div>
+
+<div style="position: relative;">
     <div class="start-screen" id="startScreen">
-        <h1>🦷 DENTIST DASH 🦷</h1>
-        <p style="color: #00fc00; margin: 20px 0;">A RETRO 8-BIT ADVENTURE</p>
+        <h1>⭐ SUPER MENTORA ⭐</h1>
+        <p style="color: #00fc00; margin: 20px 0;">RETRO 8-BIT ACTION!</p>
+        <p style="color: #fc8000; font-size: 10px; margin: 10px 0;">Featuring RAMBO in Jungle Mode! 💪</p>
         <div class="instructions">
             ⬅️ ➡️ MOVE<br>
-            ⬆️ JUMP<br>
-            🦠 AVOID BACTERIA<br>
-            💊 COLLECT POWER-UPS<br>
-            🔑 FIND SECRET KEYS<br>
+            ⬆️ / SPACE JUMP<br>
+            ⬆️ x2 DOUBLE JUMP!<br>
+            <span style="color: #00fcfc;">Z DASH ATTACK! ⚡</span><br>
+            <span style="color: #fcfc00;">COMBO = MORE POINTS!</span><br>
+            ⬇️ ENTER PIPES<br>
+            X SHOOT (Contra mode)<br>
+            C CHANGE WEAPON<br>
+            🦠 STOMP ENEMIES<br>
+            💎 HIT BLOCKS<br>
+            🟢 GREEN = COINS<br>
+            ⚫ BLACK = JUNGLE WAR!<br>
+            ⭐ STARS = POWER<br>
+            🚩 REACH THE FLAG<br>
         </div>
         <button class="pixel-btn" onclick="startGame()">START GAME</button>
-        <p style="font-size: 8px; color: #555; margin-top: 20px;">
-            © 2025 MENTORA GAMES
-        </p>
+        <button class="pixel-btn" onclick="window.location.href='/learning-map'" style="background: #555; border-color: #777;">BACK TO MENU</button>
+        <p style="font-size: 8px; color: #555; margin-top: 20px;">© 2025 MENTORA</p>
     </div>
     
-    <!-- Game Over Screen -->
-    <div class="game-over-screen" id="gameOverScreen">
+    <div class="game-over-screen" id="gameOverScreen" style="display: none;">
         <h2 style="color: #fc0000; font-size: 20px;">GAME OVER</h2>
-        <p style="margin: 20px 0;">FINAL SCORE: <span id="finalScore">0</span></p>
+        <p style="margin: 20px 0;">SCORE: <span id="finalScore">0</span></p>
         <button class="pixel-btn" onclick="restartGame()">TRY AGAIN</button>
-        <button class="pixel-btn" onclick="backToMenu()">MAIN MENU</button>
+        <button class="pixel-btn" onclick="window.location.href='/learning-map'" style="background: #555; border-color: #777;">BACK TO MENU</button>
     </div>
     
-    <!-- Game Canvas -->
+    <div class="victory-screen" id="victoryScreen" style="display: none;">
+        <h2 style="color: #00fc00; font-size: 20px;">YOU WIN!</h2>
+        <p style="margin: 20px 0;">SCORE: <span id="victoryScore">0</span></p>
+        <button class="pixel-btn" onclick="nextLevel()">NEXT LEVEL</button>
+        <button class="pixel-btn" onclick="backToMenu()">MENU</button>
+    </div>
+    
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 </div>
 
 <script>
-// ===== 8-BIT GAME ENGINE =====
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = false; // Pixel-perfect rendering
+ctx.imageSmoothingEnabled = false;
 
-// Game State
 let gameRunning = false;
 let score = 0;
 let level = 1;
 let lives = 3;
-let secretKeysCollected = 0;
+let cameraX = 0;
+let inUnderground = false; // Are we in underground level?
+let gameMode = '2d'; // '2d' or 'doom'
+const LEVEL_WIDTH = 4800; // Bigger levels!
+let bgMusicInterval = null; // Background music
 
 // Player
 const player = {
@@ -194,153 +213,1233 @@ const player = {
     height: 32,
     velX: 0,
     velY: 0,
-    speed: 4,
+    speed: 5,
     jumping: false,
-    jumpPower: 12,
-    gravity: 0.5,
-    color: '#fcfc00',
-    direction: 1 // 1 = right, -1 = left
+    jumpPower: 13,
+    gravity: 0.6,
+    onGround: false,
+    doubleJumpAvailable: false,
+    hasDoubleJumped: false,
+    weapon: 'normal', // normal, spread, laser
+    weaponTimer: 0,
+    // Animation properties
+    animFrame: 0,
+    animTimer: 0,
+    direction: 1, // 1 = right, -1 = left
+    wasOnGround: false, // Track landing
+    // Advanced mechanics
+    coyoteTime: 0, // Frames after leaving ground
+    jumpBuffer: 0, // Frames to remember jump input
+    dashing: false,
+    dashTime: 0,
+    dashCooldown: 0,
+    dashDirection: 0,
+    // Power-ups
+    hasFireball: false,
+    fireballTimer: 0,
+    hasShield: false,
+    shieldTimer: 0,
+    hasSuperJump: false,
+    superJumpTimer: 0,
+    hasSpeedBoots: false,
+    speedBootsTimer: 0,
+    shootCooldown: 0,
+    canShoot: false,
+    bullets: []
+};
+
+// Combo system
+let combo = 0;
+let comboTimer = 0;
+const COMBO_WINDOW = 120; // 2 seconds at 60fps
+
+// Boss system
+let currentBoss = null;
+let bossActive = false;
+let bossHealthBar = 0;
+
+// Checkpoints
+let checkpoints = [];
+let lastCheckpoint = { x: 100, y: 400 };
+
+// Power-ups types
+const POWERUP_TYPES = {
+    FIREBALL: 'fireball',
+    SHIELD: 'shield',
+    SUPERJUMP: 'superjump',
+    SPEEDBOOTS: 'speedboots'
 };
 
 // Input
 const keys = {};
+const keyCodes = {}; // 🎮 Physical keys (works with any keyboard layout!)
 document.addEventListener('keydown', (e) => {
     keys[e.key] = true;
-    if (e.key === 'ArrowUp' && !player.jumping) {
-        player.velY = -player.jumpPower;
-        player.jumping = true;
-        playSound('jump');
+    keyCodes[e.code] = true;
+    
+    
+    // Jump with Coyote Time and Input Buffer!
+    if (e.key === 'ArrowUp' || e.key === ' ') {
+        player.jumpBuffer = 10; // Remember jump input for 10 frames
+        
+        const currentJumpPower = player.hasSuperJump ? player.jumpPower * 1.4 : player.jumpPower;
+        
+        if (player.onGround || player.coyoteTime > 0) {
+            // First jump (works on ground OR during coyote time!)
+            player.velY = -currentJumpPower;
+            player.jumping = true;
+            player.onGround = false;
+            player.coyoteTime = 0; // Used coyote time
+            player.doubleJumpAvailable = true;
+            player.hasDoubleJumped = false;
+            player.jumpBuffer = 0;
+            playSound('jump');
+        } else if (player.doubleJumpAvailable && !player.hasDoubleJumped) {
+            // Double jump!
+            player.velY = -currentJumpPower * 0.9;
+            player.hasDoubleJumped = true;
+            player.doubleJumpAvailable = false;
+            player.jumpBuffer = 0;
+            playSound('doublejump');
+            createParticles(player.x, player.y + player.height, '#fff');
+        }
+    }
+    
+    // Dash (Z key) - ✅ РАБОТАЕТ ВЕЗДЕ! Используем e.code для любой раскладки
+    if (e.code === 'KeyZ') {
+        if (!player.dashing && player.dashCooldown === 0) {
+            player.dashing = true;
+            player.dashTime = 15; // 0.25 seconds
+            player.dashCooldown = 60; // 1 second cooldown
+            // Ensure direction is not 0
+            player.dashDirection = player.direction !== 0 ? player.direction : 1;
+            playSound('dash');
+            // Invincible during dash!
+            const wasInvincible = player.invincible;
+            player.invincible = true;
+            setTimeout(() => {
+                if (!wasInvincible) player.invincible = false;
+            }, 250);
+        }
+    }
+    
+    // Shoot (only in Contra mode!)
+    // Shoot now handled in update() for continuous shooting
+    
+    // Change weapon (C key) - используем e.code для любой раскладки
+    if (e.code === 'KeyC') {
+        if (!player.canShoot) return;
+        const weapons = ['normal', 'spread', 'laser'];
+        const currentIndex = weapons.indexOf(player.weapon);
+        player.weapon = weapons[(currentIndex + 1) % weapons.length];
+        playSound('powerup');
     }
 });
 document.addEventListener('keyup', (e) => {
     keys[e.key] = false;
+    keyCodes[e.code] = false;
 });
 
-// Enemies
+// Game objects
 let enemies = [];
 let powerUps = [];
-let secretKeys = [];
+let blocks = [];
 let particles = [];
+let coins = [];
+let goal = null;
+let pipes = []; // New: Warp pipes!
+let stars = []; // New: Star power-ups
 
-// Level Design
-const platforms = [
-    { x: 0, y: 550, width: 800, height: 50 }, // Ground
-    { x: 200, y: 450, width: 150, height: 20 },
-    { x: 400, y: 350, width: 150, height: 20 },
-    { x: 100, y: 250, width: 100, height: 20 },
-    { x: 600, y: 450, width: 150, height: 20 },
-    { x: 500, y: 200, width: 200, height: 20 }
-];
+// Level platforms
+const platforms = [];
 
-// Initialize Level
+// Level configurations
+const LEVELS = {
+    1: { enemies: 8, pipes: 2, underground: true, bg: '#5c94fc' },
+    2: { enemies: 12, pipes: 3, underground: true, bg: '#4080e0' },
+    3: { enemies: 15, pipes: 4, underground: true, bg: '#3070d0' },
+    4: { enemies: 18, pipes: 5, underground: true, bg: '#2060c0' },
+    5: { enemies: 20, pipes: 6, underground: true, bg: '#1050b0' }
+};
+
 function initLevel() {
     enemies = [];
     powerUps = [];
-    secretKeys = [];
+    blocks = [];
+    coins = [];
+    particles = [];
+    pipes = [];
+    stars = [];
+    platforms.length = 0;
+    inUnderground = false;
+    checkpoints = [];
+    currentBoss = null;
+    bossActive = false;
     
-    // Spawn enemies (bacteria)
-    for (let i = 0; i < 3 + level; i++) {
+    // ✅ КРИТИЧЕСКИЙ ФИКС - очищаем специальных врагов!
+    if (window.turrets) window.turrets = [];
+    if (window.bats) window.bats = [];
+    if (window.fallingRocks) window.fallingRocks = [];
+    if (window.enemyBullets) window.enemyBullets = [];
+    if (window.bossProjectiles) window.bossProjectiles = [];
+    if (window.breakableWalls) window.breakableWalls = [];
+    if (window.secretRooms) window.secretRooms = [];
+    if (window.torches) window.torches = [];
+    
+    // ✅ Отключаем стрельбу при возврате
+    player.canShoot = false;
+    player.bullets = [];
+    
+    const levelConfig = LEVELS[level] || LEVELS[1];
+    
+    // Ground with GAPS (pits!) - теперь можно упасть! 💀
+    // Разбиваем на части с пропастями
+    let groundX = 0;
+    const gapPositions = [800, 1600, 2400, 3200, 4000]; // Позиции пропастей
+    const gapWidth = 150; // Ширина пропасти
+    
+    gapPositions.forEach((gapX, idx) => {
+        // Платформа до пропасти
+        if (gapX > groundX) {
+            platforms.push({ 
+                x: groundX, 
+                y: 550, 
+                width: gapX - groundX, 
+                height: 50 
+            });
+        }
+        // Следующий участок начинается после пропасти
+        groundX = gapX + gapWidth;
+    });
+    
+    // Последний кусок до конца уровня
+    if (groundX < LEVEL_WIDTH) {
+        platforms.push({ 
+            x: groundX, 
+            y: 550, 
+            width: LEVEL_WIDTH - groundX, 
+            height: 50 
+        });
+    }
+    
+    // === НОВОЕ: ГОРЫ ДЛЯ ЛАЗАНИЯ! ===
+    const mountains = [];
+    for (let i = 0; i < 5; i++) {
+        const mountainX = 800 + i * 900;
+        const mountainHeight = 200 + i * 30;
+        
+        // Mountain steps (лестница из платформ)
+        for (let step = 0; step < 8; step++) {
+            platforms.push({
+                x: mountainX + step * 35,
+                y: 550 - step * 28,
+                width: 40,
+                height: 15,
+                isMountain: true
+            });
+        }
+        
+        // Summit platform
+        platforms.push({
+            x: mountainX + 240,
+            y: 330,
+            width: 120,
+            height: 20,
+            isSummit: true
+        });
+        
+        mountains.push({
+            x: mountainX,
+            baseY: 550,
+            height: mountainHeight
+        });
+    }
+    
+    // Platforms - more complex pattern
+    for (let i = 0; i < 30; i++) {
+        const pattern = i % 5;
+        let y = 450;
+        let width = 100;
+        
+        switch(pattern) {
+            case 0: y = 380; width = 120; break;
+            case 1: y = 320; width = 80; break;
+            case 2: y = 420; width = 100; break;
+            case 3: y = 280; width = 60; break; // High platforms!
+            case 4: y = 480; width = 140; break;
+        }
+        
+        platforms.push({
+            x: 200 + i * 160,
+            y: y,
+            width: width,
+            height: 20
+        });
+    }
+    
+    // Add some floating platforms
+    for (let i = 0; i < 10; i++) {
+        platforms.push({
+            x: 300 + i * 450,
+            y: 200 + (i % 2) * 50,
+            width: 80,
+            height: 20
+        });
+    }
+    
+    // CHECKPOINTS!
+    for (let i = 0; i < 3; i++) {
+        checkpoints.push({
+            x: 1000 + i * 1200,
+            y: 450,
+            width: 40,
+            height: 100,
+            activated: false
+        });
+    }
+    
+    // === НОВОЕ: РАЗБИВАЕМЫЕ СТЕНЫ! ===
+    if (!window.breakableWalls) window.breakableWalls = [];
+    window.breakableWalls = [];
+    
+    for (let i = 0; i < 8; i++) {
+        window.breakableWalls.push({
+            x: 600 + i * 550,
+            y: 470,
+            width: 30,
+            height: 80,
+            broken: false,
+            hits: 0,
+            maxHits: 3,
+            hasSecret: i % 3 === 0
+        });
+    }
+    
+    // === НОВОЕ: СЕКРЕТНЫЕ КОМНАТЫ! ===
+    if (!window.secretRooms) window.secretRooms = [];
+    window.secretRooms = [];
+    
+    // Secret rooms with treasures
+    for (let i = 0; i < 3; i++) {
+        window.secretRooms.push({
+            x: 600 + i * 1650,
+            revealed: false,
+            entrance: { x: 600 + i * 1650, y: 470 },
+            platforms: [
+                { x: 550 + i * 1650, y: 350, width: 200, height: 20 },
+                { x: 520 + i * 1650, y: 280, width: 100, height: 20 },
+                { x: 650 + i * 1650, y: 280, width: 100, height: 20 },
+                { x: 580 + i * 1650, y: 210, width: 140, height: 20 }
+            ],
+            exit: { x: 700 + i * 1650, y: 350 }
+        });
+    }
+    
+    // Breakable blocks INTEGRATED into platforms (like Mario!)
+    for (let i = 0; i < 15; i++) {
+        const platformIndex = i % 30;
+        const platform = platforms[platformIndex + 1]; // Skip ground
+        if (platform) {
+            blocks.push({
+                x: platform.x + 30 + (i % 3) * 35,
+                y: platform.y - 30, // Integrated with platform
+                width: 30,
+                height: 30,
+                broken: false,
+                hasCoin: Math.random() < 0.8,
+                bouncing: false,
+                bounceOffset: 0
+            });
+        }
+    }
+    
+    // Warp pipes!
+    for (let i = 0; i < levelConfig.pipes; i++) {
+        const isContra = i === Math.floor(levelConfig.pipes / 2); // Middle pipe is CONTRA!
+        pipes.push({
+            x: 500 + i * 800,
+            y: 490,
+            width: 60,
+            height: 60,
+            canEnter: true,
+            isUnderground: i % 2 === 0 && !isContra,
+            isContra: isContra,
+            color: isContra ? '#000' : '#00fc00' // Black pipe for Contra!
+        });
+    }
+    
+    // Enemies
+    for (let i = 0; i < levelConfig.enemies; i++) {
         enemies.push({
-            x: Math.random() * 700 + 50,
-            y: 500,
+            x: 400 + i * 280,
+            y: 510,
+            width: 28,
+            height: 28,
+            velX: 1.5 + level * 0.3,
+            alive: true
+        });
+    }
+    
+    // NEW Power-ups with different types!
+    const powerUpTypes = [POWERUP_TYPES.FIREBALL, POWERUP_TYPES.SHIELD, POWERUP_TYPES.SUPERJUMP, POWERUP_TYPES.SPEEDBOOTS];
+    for (let i = 0; i < 6; i++) {
+        powerUps.push({
+            x: 700 + i * 700,
+            y: 400,
             width: 24,
             height: 24,
-            velX: (Math.random() - 0.5) * 2,
-            color: '#fc0000',
-            type: 'bacteria'
+            collected: false,
+            type: powerUpTypes[i % powerUpTypes.length]
         });
     }
     
-    // Spawn power-ups
-    for (let i = 0; i < 2; i++) {
-        powerUps.push({
-            x: Math.random() * 700 + 50,
-            y: Math.random() * 300 + 100,
-            width: 20,
-            height: 20,
-            color: '#00fc00',
-            type: 'health'
+    // BOSS at the end of level!
+    spawnBoss();
+    
+    // Stars (invincibility) - place on platforms
+    const starPlatforms = [5, 15, 25];
+    starPlatforms.forEach(idx => {
+        if (platforms[idx]) {
+            stars.push({
+                x: platforms[idx].x + platforms[idx].width / 2 - 14,
+                y: platforms[idx].y - 35,
+                width: 28,
+                height: 28,
+                collected: false
+            });
+        }
+    });
+    
+    // ✅ ИСПРАВЛЕНО: Платформы после босса к финишу!
+    // Босс на позиции LEVEL_WIDTH - 2000 (2800)
+    // Добавляем платформы от босса к флагу
+    
+    // 0. Платформа В зоне босса (для боя)
+    platforms.push({
+        x: LEVEL_WIDTH - 2100,
+        y: 480,
+        width: 200,
+        height: 20
+    });
+    
+    platforms.push({
+        x: LEVEL_WIDTH - 1850,
+        y: 400,
+        width: 120,
+        height: 20
+    });
+    
+    // 1. Платформа сразу после зоны босса
+    platforms.push({
+        x: LEVEL_WIDTH - 1700,
+        y: 450,
+        width: 150,
+        height: 20
+    });
+    
+    // 2. Прыжковые платформы к финишу
+    const goalPlatformsStart = LEVEL_WIDTH - 1500;
+    for (let i = 0; i < 5; i++) {
+        platforms.push({
+            x: goalPlatformsStart + i * 180,
+            y: 400 - Math.sin(i * 0.8) * 50, // Волнообразный путь
+            width: 120,
+            height: 20
         });
     }
     
-    // Secret key (random spawn)
-    if (Math.random() < 0.5) {
-        secretKeys.push({
-            x: Math.random() * 600 + 100,
-            y: 150,
-            width: 20,
-            height: 20,
+    // 3. Final platform at the flag
+    platforms.push({
+        x: LEVEL_WIDTH - 250,
+        y: 350,
+        width: 200,
+        height: 20
+    });
+    
+    // Goal flag - на финальной платформе
+    goal = {
+        x: LEVEL_WIDTH - 180,
+        y: 200, // На уровне новой платформы (350 - 150)
+        width: 40,
+        height: 150
+    };
+    
+    // 🔥 DOOM DOOR - добавляем секретную дверь!
+    addDoomDoorToLevel();
+}
+
+// BOSS SPAWNING!
+function spawnBoss() {
+    // Защита от повторного спавна
+    if (currentBoss && currentBoss.alive) {
+        console.log('⚠️ Boss already exists, skipping spawn');
+        return;
+    }
+    
+    // ✅ ФИКС: Босс намного ближе для видимости!
+    // Было: LEVEL_WIDTH - 1000 = 3800 (слишком далеко!)
+    // Стало: LEVEL_WIDTH - 2000 = 2800 (ближе!)
+    const bossX = LEVEL_WIDTH - 2000; // Намного ближе!
+    currentBoss = {
+        x: bossX,
+        y: 380, // Ниже, чтобы можно было прыгнуть
+        width: 80,
+        height: 80,
+        damageFlash: 0, // Для мигания при получении урона
+        velX: 0,
+        velY: 0,
+        health: 20 + level * 5, // Scales with level!
+        maxHealth: 20 + level * 5,
+        alive: true,
+        phase: 1, // Boss phases
+        attackTimer: 0,
+        moveTimer: 0,
+        animFrame: 0,
+        damageFlash: 0, // Эффект урона
+        type: 'bacteria' // Giant bacteria boss!
+    };
+    bossHealthBar = currentBoss.maxHealth;
+    console.log('👾 BOSS SPAWNED at x:', bossX, '| health:', currentBoss.health, '| Activate when player.x >', LEVEL_WIDTH - 2500);
+}
+
+function createContraLevel(pipeX) {
+    const returnX = pipeX;
+    
+    // Clear everything
+    platforms.length = 0;
+    enemies.length = 0;
+    blocks.length = 0;
+    coins.length = 0;
+    powerUps.length = 0;
+    stars.length = 0;
+    
+    // ✅ Очищаем подземных врагов
+    if (window.bats) window.bats = [];
+    if (window.fallingRocks) window.fallingRocks = [];
+    if (window.torches) window.torches = [];
+    if (window.breakableWalls) window.breakableWalls = [];
+    if (window.secretRooms) window.secretRooms = [];
+    
+    // === РАЗБИВАЕМЫЕ СТЕНЫ В CONTRA РЕЖИМЕ! ===
+    if (!window.breakableWalls) window.breakableWalls = [];
+    window.breakableWalls = [];
+    
+    for (let i = 0; i < 6; i++) {
+        window.breakableWalls.push({
+            x: 800 + i * 600,
+            y: 470,
+            width: 30,
+            height: 80,
+            broken: false,
+            hits: 0,
+            maxHits: 3,
+            hasSecret: i % 2 === 0
+        });
+    }
+    
+    inUnderground = 'contra'; // Special mode!
+    stopBackgroundMusic();
+    startContraMusic();
+    
+    // ✅ ИСПРАВЛЕНО: Больше платформ в Contra режиме!
+    // Contra ground - расширенная земля
+    platforms.push({ x: 0, y: 550, width: 4800, height: 50 }); // На всю ширину уровня!
+    
+    // Contra platforms (military bases) - БОЛЬШЕ ПЛАТФОРМ!
+    for (let i = 0; i < 20; i++) { // Увеличил с 10 до 20
+        platforms.push({
+            x: 150 + i * 220,
+            y: 450 - (i % 3) * 80,
+            width: 100,
+            height: 15
+        });
+    }
+    
+    // ✅ ДОПОЛНИТЕЛЬНЫЕ ПЛАТФОРМЫ для прохождения!
+    // Платформы в зоне босса
+    platforms.push({ x: 2700, y: 480, width: 200, height: 20 });
+    platforms.push({ x: 2950, y: 400, width: 120, height: 20 });
+    
+    // Платформы после босса к финишу
+    platforms.push({ x: 3100, y: 450, width: 150, height: 20 });
+    
+    // Прыжковые платформы к финишу
+    for (let i = 0; i < 5; i++) {
+        platforms.push({
+            x: 3300 + i * 180,
+            y: 400 - Math.sin(i * 0.8) * 50,
+            width: 120,
+            height: 20
+        });
+    }
+    
+    // Финальная платформа
+    platforms.push({ x: 4550, y: 350, width: 200, height: 20 });
+    
+    // ✅ ФЛАГ В CONTRA РЕЖИМЕ!
+    goal = {
+        x: 4630, // На финальной платформе
+        y: 200, // На уровне платформы (350 - 150)
+        width: 40,
+        height: 150
+    };
+    
+    // TURRETS! (like red mushrooms in original Contra)
+    if (!window.turrets) window.turrets = [];
+    window.turrets = [];
+    for (let i = 0; i < 4; i++) { // ✅ Уменьшил с 8 до 4 турелей
+        const platformIdx = i + 2;
+        const platform = platforms[platformIdx];
+        if (platform) {
+            window.turrets.push({
+                x: platform.x + platform.width / 2 - 12,
+                y: platform.y - 28,
+                width: 24,
+                height: 28,
+                alive: true,
+                shootTimer: Math.random() * 60,
+                health: 3 // Takes 3 hits!
+            });
+        }
+    }
+    
+    // Contra enemies (soldiers!) - MORE OF THEM!
+    for (let i = 0; i < 15; i++) {
+        enemies.push({
+            x: 300 + i * 150,
+            y: 510,
+            width: 28,
+            height: 36,
+            velX: 2.5,
+            alive: true,
+            isContra: true,
+            shootTimer: Math.random() * 100,
+            animFrame: 0
+        });
+    }
+    
+    // Exit pipe
+    pipes = [{
+        x: 2200,
+        y: 490,
+        width: 60,
+        height: 60,
+        canEnter: true,
+        isExit: true,
+        returnX: returnX,
+        color: '#000'
+    }];
+    
+    // ✅ КРИТИЧЕСКИЙ ФИКС - правильно включаем стрельбу!
+    player.canShoot = true;
+    if (!player.bullets) player.bullets = [];
+    player.weapon = 'normal'; // Reset weapon
+    
+    // 🔥 DOOM DOOR В CONTRA РЕЖИМЕ!
+    doomDoor = {
+        x: 4000, // Дальше в Contra режиме
+        y: 450,
+        width: 60,
+        height: 100,
+        canEnter: true
+    };
+    
+    player.x = 100;
+    player.y = 400;
+    cameraX = 0;
+}
+
+function createUndergroundLevel(pipeX) {
+    // Save overworld position
+    const returnX = pipeX;
+    
+    // Clear and create underground
+    platforms.length = 0;
+    enemies.length = 0;
+    blocks.length = 0;
+    coins.length = 0;
+    
+    // ✅ Очищаем специальных врагов
+    if (window.turrets) window.turrets = [];
+    if (window.enemyBullets) window.enemyBullets = [];
+    if (window.bossProjectiles) window.bossProjectiles = [];
+    if (window.breakableWalls) window.breakableWalls = [];
+    if (window.secretRooms) window.secretRooms = [];
+    
+    // === РАЗБИВАЕМЫЕ СТЕНЫ В ПОДЗЕМНОМ РЕЖИМЕ! ===
+    if (!window.breakableWalls) window.breakableWalls = [];
+    window.breakableWalls = [];
+    
+    for (let i = 0; i < 5; i++) {
+        window.breakableWalls.push({
+            x: 600 + i * 400,
+            y: 470,
+            width: 30,
+            height: 80,
+            broken: false,
+            hits: 0,
+            maxHits: 3,
+            hasSecret: i % 2 === 0
+        });
+    }
+    
+    inUnderground = true;
+    startUndergroundMusic(); // Start underground music!
+    
+    // Underground ground
+    platforms.push({ x: 0, y: 550, width: 2000, height: 50 });
+    
+    // Underground platforms
+    for (let i = 0; i < 8; i++) {
+        platforms.push({
+            x: 100 + i * 200,
+            y: 450 - i * 30,
+            width: 120,
+            height: 20
+        });
+    }
+    
+    // Lots of coins in underground!
+    for (let i = 0; i < 50; i++) {
+        coins.push({
+            x: 100 + (i % 10) * 80,
+            y: 100 + Math.floor(i / 10) * 60,
+            velY: 0,
             collected: false
         });
     }
+    
+    // Special blocks with guaranteed coins
+    for (let i = 0; i < 10; i++) {
+        blocks.push({
+            x: 200 + i * 150,
+            y: 200,
+            width: 30,
+            height: 30,
+            broken: false,
+            hasCoin: true
+        });
+    }
+    
+    // EPIC UNDERGROUND REDESIGN!
+    platforms.length = 0;
+    const UNDERGROUND_WIDTH = 3000;
+    
+    // Ground with lava pits!
+    platforms.push({ x: 0, y: 550, width: 400, height: 50 });
+    platforms.push({ x: 600, y: 550, width: 400, height: 50 });
+    platforms.push({ x: 1200, y: 550, width: 400, height: 50 });
+    platforms.push({ x: 1800, y: 550, width: 400, height: 50 });
+    platforms.push({ x: 2400, y: 550, width: 600, height: 50 });
+    
+    // Moving platforms!
+    for (let i = 0; i < 5; i++) {
+        platforms.push({
+            x: 300 + i * 500,
+            y: 400 - (i % 2) * 80,
+            width: 80,
+            height: 15,
+            isMoving: true,
+            moveSpeed: 2,
+            moveRange: 100,
+            moveDir: 1,
+            startX: 300 + i * 500
+        });
+    }
+    
+    // Static platforms
+    for (let i = 0; i < 12; i++) {
+        platforms.push({
+            x: 200 + i * 220,
+            y: 350 - (i % 4) * 60,
+            width: 60 + Math.random() * 40,
+            height: 15
+        });
+    }
+    
+    // === НОВОЕ: ФАКЕЛЫ для освещения! ===
+    if (!window.torches) window.torches = [];
+    window.torches = [];
+    
+    for (let i = 0; i < 15; i++) {
+        const platformIdx = 5 + i;
+        const platform = platforms[platformIdx];
+        if (platform) {
+            window.torches.push({
+                x: platform.x + platform.width / 2,
+                y: platform.y - 40,
+                lit: true,
+                flicker: 0
+            });
+        }
+    }
+    
+    // Crystals!
+    coins.length = 0;
+    for (let i = 0; i < 30; i++) {
+        coins.push({
+            x: 150 + i * 90,
+            y: 150 + (i % 3) * 80,
+            velY: 0,
+            collected: false,
+            isCrystal: true,
+            glowPhase: Math.random() * Math.PI * 2
+        });
+    }
+    
+    // Crystal blocks
+    blocks.length = 0;
+    for (let i = 0; i < 8; i++) {
+        blocks.push({
+            x: 250 + i * 300,
+            y: 250 - (i % 2) * 50,
+            width: 30,
+            height: 30,
+            broken: false,
+            hasCoin: true,
+            bouncing: false,
+            bounceOffset: 0
+        });
+    }
+    
+    // Bats!
+    if (!window.bats) window.bats = [];
+    window.bats = [];
+    for (let i = 0; i < 8; i++) {
+        window.bats.push({
+            x: 400 + i * 300,
+            y: 200 + Math.random() * 100,
+            velX: 1.5,
+            velY: Math.sin(i) * 0.5,
+            alive: true,
+            wingPhase: 0
+        });
+    }
+    
+    // Falling rocks!
+    if (!window.fallingRocks) window.fallingRocks = [];
+    window.fallingRocks = [];
+    for (let i = 0; i < 6; i++) {
+        window.fallingRocks.push({
+            x: 500 + i * 400,
+            y: 0,
+            velY: 0,
+            width: 24,
+            height: 24,
+            falling: false,
+            respawnTimer: Math.random() * 100
+        });
+    }
+    
+    // Lava pits!
+    if (!window.lavaPits) window.lavaPits = [];
+    window.lavaPits = [
+        { x: 400, width: 200 },
+        { x: 1000, width: 200 },
+        { x: 1600, width: 200 }
+    ];
+    
+    // Exit pipe
+    pipes = [{
+        x: 2800,
+        y: 490,
+        width: 60,
+        height: 60,
+        canEnter: true,
+        isExit: true,
+        returnX: returnX,
+        color: '#00fc00'
+    }];
+    
+    // 🔥 DOOM DOOR В ПОДЗЕМНОМ РЕЖИМЕ!
+    doomDoor = {
+        x: 2500, // В подземном режиме
+        y: 450,
+        width: 60,
+        height: 100,
+        canEnter: true
+    };
+    
+    player.x = 100;
+    player.y = 400;
+    cameraX = 0;
 }
 
-// Start Game
 function startGame() {
     document.getElementById('startScreen').style.display = 'none';
     gameRunning = true;
     score = 0;
     level = 1;
     lives = 3;
-    secretKeysCollected = 0;
     player.x = 100;
     player.y = 400;
+    cameraX = 0;
     initLevel();
     gameLoop();
 }
 
-// Restart Game
 function restartGame() {
     document.getElementById('gameOverScreen').style.display = 'none';
     startGame();
 }
 
-// Back to Menu
+function nextLevel() {
+    level++;
+    if (level > 5) {
+        // Game completed!
+        document.getElementById('victoryScreen').style.display = 'none';
+        document.getElementById('startScreen').style.display = 'block';
+        alert('🎉 CONGRATULATIONS! YOU BEAT ALL 5 LEVELS! 🎉\nFinal Score: ' + score);
+        gameRunning = false;
+        return;
+    }
+    document.getElementById('victoryScreen').style.display = 'none';
+    player.x = 100;
+    player.y = 400;
+    cameraX = 0;
+    gameRunning = true;
+    initLevel();
+    gameLoop();
+}
+
 function backToMenu() {
-    document.getElementById('gameOverScreen').style.display = 'none';
+    stopBackgroundMusic();
+    document.getElementById('victoryScreen').style.display = 'none';
     document.getElementById('startScreen').style.display = 'block';
     gameRunning = false;
 }
 
-// Game Loop
+// Функция открытия секретной комнаты
+function revealSecretRoom(wallX) {
+    if (!window.secretRooms) return;
+    
+    const room = window.secretRooms.find(r => Math.abs(r.x - wallX) < 100 && !r.revealed);
+    if (!room) return;
+    
+    room.revealed = true;
+    
+    // Добавляем платформы комнаты
+    room.platforms.forEach(p => {
+        platforms.push(p);
+    });
+    
+    // Заполняем комнату монетами!
+    for (let i = 0; i < 30; i++) {
+        coins.push({
+            x: room.entrance.x + 20 + (i % 6) * 30,
+            y: room.entrance.y - 50 - Math.floor(i / 6) * 40,
+            velY: 0,
+            collected: false
+        });
+    }
+    
+    // Бонусный power-up!
+    powerUps.push({
+        x: room.entrance.x + 80,
+        y: room.entrance.y - 150,
+        width: 24,
+        height: 24,
+        collected: false,
+        type: POWERUP_TYPES.SHIELD
+    });
+    
+    // Звук открытия
+    playSound('star');
+    
+    // Эффект частиц
+    createParticles(room.entrance.x, room.entrance.y, '#fcfc00', 30);
+}
+
+// Create path after boss death in underground
+function createUndergroundBossPath() {
+    if (!inUnderground) return;
+    
+    console.log('🛤️ CREATING UNDERGROUND BOSS PATH!');
+    
+    // Find boss position and create platforms leading to exit
+    const bossX = currentBoss ? currentBoss.x : 2800; // Default boss position
+    const startX = bossX + 200; // Start path after boss
+    
+    // Create platforms leading to the exit pipe
+    const pathPlatforms = [
+        // Main platform after boss
+        { x: startX, y: 450, width: 200, height: 30 },
+        
+        // Jumping platforms with wavy pattern
+        { x: startX + 250, y: 400, width: 100, height: 30 },
+        { x: startX + 400, y: 450, width: 100, height: 30 },
+        { x: startX + 550, y: 380, width: 100, height: 30 },
+        { x: startX + 700, y: 420, width: 100, height: 30 },
+        { x: startX + 850, y: 450, width: 150, height: 30 },
+        
+        // Final platform near exit
+        { x: startX + 1050, y: 450, width: 200, height: 30 }
+    ];
+    
+    // Add platforms to the game
+    pathPlatforms.forEach(platform => {
+        platforms.push(platform);
+    });
+    
+    // Add some crystals on the path
+    const crystals = [
+        { x: startX + 100, y: 420 },
+        { x: startX + 300, y: 370 },
+        { x: startX + 500, y: 350 },
+        { x: startX + 750, y: 390 },
+        { x: startX + 950, y: 420 }
+    ];
+    
+    crystals.forEach(crystal => {
+        coins.push({
+            x: crystal.x,
+            y: crystal.y,
+            width: 20,
+            height: 20,
+            type: 'crystal',
+            collected: false,
+            glow: 0
+        });
+    });
+    
+    console.log('✅ UNDERGROUND BOSS PATH CREATED!', pathPlatforms.length, 'platforms added');
+}
+
 function gameLoop() {
     if (!gameRunning) return;
-    
     update();
     render();
-    
     requestAnimationFrame(gameLoop);
 }
 
-// Update
 function update() {
-    // Player movement
-    if (keys['ArrowLeft']) {
-        player.velX = -player.speed;
-        player.direction = -1;
-    } else if (keys['ArrowRight']) {
-        player.velX = player.speed;
-        player.direction = 1;
+    // 🔥 DOOM MODE CHECK - в самое начало!
+    if (gameMode === 'doom') {
+        updateDoom();
+        return;
+    }
+    
+    // Check DOOM door collision
+    checkDoomDoorCollision();
+    
+    // Track previous ground state for landing detection
+    const prevOnGround = player.wasOnGround;
+    
+    // Update timers
+    if (player.coyoteTime > 0) player.coyoteTime--;
+    if (player.jumpBuffer > 0) player.jumpBuffer--;
+    if (player.dashCooldown > 0) player.dashCooldown--;
+    if (comboTimer > 0) {
+        comboTimer--;
+        if (comboTimer === 0) combo = 0; // Reset combo
+    }
+    
+    // Power-up timers
+    if (player.fireballTimer > 0) {
+        player.fireballTimer--;
+        if (player.fireballTimer === 0) player.hasFireball = false;
+    }
+    if (player.shieldTimer > 0) {
+        player.shieldTimer--;
+        if (player.shieldTimer === 0) player.hasShield = false;
+    }
+    if (player.superJumpTimer > 0) {
+        player.superJumpTimer--;
+        if (player.superJumpTimer === 0) player.hasSuperJump = false;
+    }
+    if (player.speedBootsTimer > 0) {
+        player.speedBootsTimer--;
+        if (player.speedBootsTimer === 0) player.hasSpeedBoots = false;
+    }
+    
+    // Dash movement (overrides normal movement!)
+    if (player.dashing) {
+        player.dashTime--;
+        player.velX = player.dashDirection * player.speed * 3; // 3x speed!
+        
+        // Dash trail effect
+        if (Math.random() < 0.5) {
+            particles.push({
+                x: player.x + player.width / 2,
+                y: player.y + player.height / 2,
+                velX: -player.dashDirection * 2,
+                velY: (Math.random() - 0.5) * 2,
+                color: '#00fcfc',
+                life: 20
+            });
+        }
+        
+        if (player.dashTime <= 0) {
+            player.dashing = false;
+        }
     } else {
-        player.velX *= 0.8; // Friction
+        // Normal movement
+        const currentSpeed = player.hasSpeedBoots ? player.speed * 1.8 : player.speed;
+        if (keys['ArrowLeft']) {
+            player.velX = -currentSpeed;
+            player.direction = -1; // Face left
+        } else if (keys['ArrowRight']) {
+            player.velX = currentSpeed;
+            player.direction = 1; // Face right
+        } else {
+            player.velX *= 0.8;
+        }
+    }
+    
+    // Continuous shooting (Contra mode + Fireball mode!) - 🎮 используем keyCodes для любой раскладки!
+    if ((player.canShoot || player.hasFireball) && keyCodes['KeyX']) {
+        if (!player.bullets) player.bullets = [];
+        
+        // Add shooting cooldown to prevent spam
+        if (!player.shootCooldown) player.shootCooldown = 0;
+        if (player.shootCooldown <= 0) {
+            
+            // FIREBALL MODE! 🔥
+            if (player.hasFireball) {
+                // Fireball - powerful explosive shot!
+                player.bullets.push({
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2,
+                    velX: 8,
+                    velY: 0,
+                    width: 16,
+                    height: 16,
+                    type: 'fireball',
+                    life: 120 // Longer life
+                });
+                player.shootCooldown = 15; // Slower fire rate
+                playSound('shoot');
+            } else
+            if (player.weapon === 'spread') {
+                // Spread gun - 3 bullets!
+                for (let i = -1; i <= 1; i++) {
+                    player.bullets.push({
+                        x: player.x + player.width,
+                        y: player.y + player.height / 2,
+                        velX: 10,
+                        velY: i * 3,
+                        width: 4,
+                        height: 4,
+                        type: 'spread'
+                    });
+                }
+                player.shootCooldown = 8; // Slower spread
+            } else if (player.weapon === 'laser') {
+                // Laser - fast single shot
+                player.bullets.push({
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2,
+                    velX: 15,
+                    velY: 0,
+                    width: 8,
+                    height: 2,
+                    type: 'laser'
+                });
+                player.shootCooldown = 3; // Very fast laser
+            } else {
+                // Normal gun
+                player.bullets.push({
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2,
+                    velX: 12,
+                    velY: 0,
+                    width: 6,
+                    height: 3,
+                    type: 'normal'
+                });
+                player.shootCooldown = 5; // Normal speed
+            }
+            playSound('shoot');
+        }
+        player.shootCooldown--;
+    } else {
+        player.shootCooldown = 0; // Reset cooldown when not shooting
+    }
+    
+    // Update animation
+    if (Math.abs(player.velX) > 0.5 && player.onGround) {
+        // Running animation
+        player.animTimer++;
+        if (player.animTimer > 8) {
+            player.animFrame = (player.animFrame + 1) % 3; // 3 frames
+            player.animTimer = 0;
+        }
+    } else {
+        // Idle
+        player.animFrame = 0;
+        player.animTimer = 0;
     }
     
     // Gravity
     player.velY += player.gravity;
-    
-    // Update position
     player.x += player.velX;
     player.y += player.velY;
     
-    // Ground collision
-    if (player.y + player.height > 550) {
-        player.y = 550 - player.height;
-        player.velY = 0;
-        player.jumping = false;
+    // Camera follow
+    if (player.x - cameraX > 400) {
+        cameraX = player.x - 400;
+    }
+    if (player.x - cameraX < 200) {
+        cameraX = player.x - 200;
+    }
+    cameraX = Math.max(0, Math.min(cameraX, LEVEL_WIDTH - canvas.width));
+    
+    // Ground collision & Death by falling! 💀
+    player.onGround = false;
+    
+    // Проверка падения в пропасть!
+    if (player.y + player.height > 600) {
+        // Упал в пропасть - смерть!
+        lives--;
+        playSound('hit');
+        createParticles(player.x, 550, '#fc0000', 20);
+        
+        if (lives <= 0) {
+            gameOver();
+        } else {
+            // Возврат на checkpoint
+            player.x = lastCheckpoint.x;
+            player.y = lastCheckpoint.y;
+            player.velY = 0;
+            player.velX = 0;
+            cameraX = Math.max(0, player.x - 400);
+        }
     }
     
-    // Platform collision
+    // Coyote Time: give grace period after leaving ground
+    if (prevOnGround && !player.onGround && !player.jumping && player.y < 600) {
+        player.coyoteTime = 6; // 0.1 second grace period
+    }
+    
+    // Landing particles effect
+    if (!prevOnGround && player.onGround && player.velY > 3) {
+        createParticles(player.x + player.width/2, player.y + player.height, '#aaa', 6);
+        playSound('land');
+    }
+    
+    // Input Buffer: if jump was pressed just before landing
+    if (player.onGround && player.jumpBuffer > 0 && !prevOnGround) {
+        player.velY = -player.jumpPower;
+        player.jumping = true;
+        player.onGround = false;
+        player.doubleJumpAvailable = true;
+        player.hasDoubleJumped = false;
+        player.jumpBuffer = 0;
+        playSound('jump');
+    }
+    
+    player.wasOnGround = player.onGround;
+    
+    // Platform collision (with moving platforms!)
     platforms.forEach(platform => {
+        // Update moving platforms
+        if (platform.isMoving) {
+            platform.x += platform.moveSpeed * platform.moveDir;
+            if (Math.abs(platform.x - platform.startX) > platform.moveRange) {
+                platform.moveDir *= -1;
+            }
+        }
+        
         if (player.x < platform.x + platform.width &&
             player.x + player.width > platform.x &&
             player.y + player.height > platform.y &&
@@ -348,62 +1447,654 @@ function update() {
             player.velY > 0) {
             player.y = platform.y - player.height;
             player.velY = 0;
-            player.jumping = false;
+            player.onGround = true;
+            // Move with platform!
+            if (platform.isMoving) {
+                player.x += platform.moveSpeed * platform.moveDir;
+            }
         }
     });
     
-    // Screen bounds
-    if (player.x < 0) player.x = 0;
-    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+    // Pipe collision - can stand on top!
+    pipes.forEach(pipe => {
+        if (player.x < pipe.x + pipe.width &&
+            player.x + player.width > pipe.x &&
+            player.y + player.height > pipe.y &&
+            player.y + player.height < pipe.y + 20 &&
+            player.velY > 0) {
+            player.y = pipe.y - player.height;
+            player.velY = 0;
+            player.onGround = true;
+        }
+    });
     
-    // Update enemies
-    enemies.forEach((enemy, index) => {
+    // Block collision (break from bottom) with BOUNCE effect!
+    blocks.forEach(block => {
+        // Update bounce animation
+        if (block.bouncing) {
+            block.bounceOffset = Math.max(0, block.bounceOffset - 1);
+            if (block.bounceOffset === 0) {
+                block.bouncing = false;
+            }
+        }
+        
+        if (!block.broken &&
+            player.x < block.x + block.width &&
+            player.x + player.width > block.x &&
+            player.y < block.y + block.height &&
+            player.y + player.height > block.y) {
+            
+            if (player.velY < 0 && player.y < block.y) {
+                // Hit from bottom - MARIO BOUNCE EFFECT!
+                block.bouncing = true;
+                block.bounceOffset = 8;
+                
+                if (block.hasCoin) {
+                    // Pop coin out
+                    coins.push({
+                        x: block.x,
+                        y: block.y - 40,
+                        velY: -10,
+                        collected: false
+                    });
+                    block.hasCoin = false;
+                    score += 100;
+                    playSound('coin');
+                } else {
+                    // Break block
+                    block.broken = true;
+                    score += 50;
+                    playSound('break');
+                    createParticles(block.x, block.y, '#fc8000');
+                }
+                
+                player.velY = 0;
+            } else if (player.velY > 0 && player.y + player.height > block.y) {
+                // Landing on top
+                player.y = block.y - player.height;
+                player.velY = 0;
+                player.onGround = true;
+            }
+        }
+    });
+    
+    // Coins
+    coins = coins.filter(coin => {
+        if (!coin.collected) {
+            coin.velY += 0.5;
+            coin.y += coin.velY;
+            
+            if (checkCollision(player, coin)) {
+                coin.collected = true;
+                score += 100;
+                playSound('coin');
+                createParticles(coin.x, coin.y, '#fcfc00');
+                return false;
+            }
+            return coin.y < 600;
+        }
+        return false;
+    });
+    
+    // Enemies
+    enemies = enemies.filter(enemy => {
+        if (!enemy.alive) return false;
+        
         enemy.x += enemy.velX;
         
-        // Bounce off walls
-        if (enemy.x < 0 || enemy.x + enemy.width > canvas.width) {
+        // Bounce off edges
+        if (enemy.x < 0 || enemy.x > LEVEL_WIDTH) {
             enemy.velX *= -1;
         }
         
         // Collision with player
         if (checkCollision(player, enemy)) {
-            lives--;
-            playSound('hit');
-            createParticles(player.x, player.y, '#fc0000');
-            
-            if (lives <= 0) {
-                gameOver();
+            if (player.invincible || player.dashing) {
+                // Kill enemy instantly if invincible or dashing!
+                enemy.alive = false;
+                combo++;
+                comboTimer = COMBO_WINDOW;
+                const comboBonus = 300 * combo;
+                score += comboBonus;
+                playSound('stomp');
+                createParticles(enemy.x, enemy.y, '#fcfc00');
+                return false;
+            } else if (player.velY > 0 && player.y < enemy.y) {
+                // Stomp enemy
+                enemy.alive = false;
+                combo++;
+                comboTimer = COMBO_WINDOW;
+                const comboBonus = 200 * combo;
+                score += comboBonus;
+                player.velY = -8;
+                playSound('stomp');
+                createParticles(enemy.x, enemy.y, '#00fc00');
+                return false;
             } else {
-                // Respawn player
-                player.x = 100;
-                player.y = 400;
+                // Hit enemy - but shield protects!
+                if (player.hasShield) {
+                    createParticles(player.x, player.y, '#00fcfc', 10);
+                    playSound('break');
+                    enemy.alive = false;
+                } else {
+                    lives--;
+                    playSound('hit');
+                    createParticles(player.x, player.y, '#fc0000');
+                    player.x = Math.max(lastCheckpoint.x, player.x - 50);
+                    player.velY = -10;
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+        }
+        return true;
+    });
+    
+    // Power-ups
+    powerUps.forEach(powerUp => {
+        if (!powerUp.collected && checkCollision(player, powerUp)) {
+            powerUp.collected = true;
+            score += 500;
+            playSound('powerup');
+            createParticles(powerUp.x, powerUp.y, '#fc00fc');
+            
+            // Apply power-up effect
+            switch(powerUp.type) {
+                case POWERUP_TYPES.FIREBALL:
+                    player.hasFireball = true;
+                    player.fireballTimer = 600; // 10 seconds
+                    break;
+                case POWERUP_TYPES.SHIELD:
+                    player.hasShield = true;
+                    player.shieldTimer = 900; // 15 seconds
+                    break;
+                case POWERUP_TYPES.SUPERJUMP:
+                    player.hasSuperJump = true;
+                    player.superJumpTimer = 600; // 10 seconds
+                    break;
+                case POWERUP_TYPES.SPEEDBOOTS:
+                    player.hasSpeedBoots = true;
+                    player.speedBootsTimer = 600; // 10 seconds
+                    break;
             }
         }
     });
     
-    // Update power-ups
-    powerUps.forEach((powerUp, index) => {
-        if (checkCollision(player, powerUp)) {
-            score += 100;
-            playSound('coin');
-            createParticles(powerUp.x, powerUp.y, '#00fc00');
-            powerUps.splice(index, 1);
-        }
-    });
-    
-    // Update secret keys
-    secretKeys.forEach((key, index) => {
-        if (!key.collected && checkCollision(player, key)) {
-            secretKeysCollected++;
-            key.collected = true;
+    // CHECKPOINTS!
+    checkpoints.forEach(checkpoint => {
+        if (!checkpoint.activated && checkCollision(player, checkpoint)) {
+            checkpoint.activated = true;
+            lastCheckpoint = { x: checkpoint.x, y: player.y };
             score += 500;
-            playSound('secret');
-            createParticles(key.x, key.y, '#fcfc00');
-            secretKeys.splice(index, 1);
+            playSound('powerup');
+            createParticles(checkpoint.x, checkpoint.y, '#00fc00', 20);
         }
     });
     
-    // Update particles
+    // Pipes - check for entry
+    pipes.forEach(pipe => {
+        if (checkCollision(player, pipe) && keys['ArrowDown'] && player.onGround) {
+            if (pipe.isExit) {
+                // Exit special level
+                stopBackgroundMusic();
+                player.canShoot = false;
+                player.bullets = [];
+                // Clean up Contra-specific objects
+                if (window.turrets) window.turrets = [];
+                if (window.enemyBullets) window.enemyBullets = [];
+                // Clean up DOOM door
+                doomDoor = null;
+                initLevel();
+                player.x = pipe.returnX || 100;
+                cameraX = Math.max(0, player.x - 400);
+                playSound('warp');
+            } else if (pipe.isContra) {
+                // Enter CONTRA level!
+                createContraLevel(pipe.x);
+                playSound('warp');
+            } else if (pipe.isUnderground) {
+                // Enter underground
+                createUndergroundLevel(pipe.x);
+                playSound('warp');
+            }
+        }
+    });
+    
+    // Stars (invincibility power-up)
+    stars = stars.filter(star => {
+        if (!star.collected && checkCollision(player, star)) {
+            star.collected = true;
+            score += 1000;
+            playSound('star');
+            createParticles(star.x, star.y, '#fcfc00');
+            player.invincible = true;
+            setTimeout(() => player.invincible = false, 10000);
+            return false;
+        }
+        return !star.collected;
+    });
+    
+    // === НОВОЕ: Разбиваемые стены ===
+    if (window.breakableWalls) {
+        window.breakableWalls.forEach(wall => {
+            if (!wall.broken && checkCollision(player, wall)) {
+                // Сломать дэшем!
+                if (player.dashing) {
+                    wall.hits++;
+                    createParticles(wall.x + wall.width/2, wall.y + wall.height/2, '#8b4513', 10);
+                    playSound('hit');
+                    
+                    if (wall.hits >= wall.maxHits) {
+                        wall.broken = true;
+                        score += 500;
+                        playSound('break');
+                        createParticles(wall.x + wall.width/2, wall.y + wall.height/2, '#fc8000', 20);
+                        
+                        // Открыть секретную комнату!
+                        if (wall.hasSecret) {
+                            revealSecretRoom(wall.x);
+                        }
+                    }
+                }
+            }
+            
+            // Пули тоже ломают стены (медленнее)
+            if (player.bullets && !wall.broken) {
+                player.bullets.forEach((bullet, idx) => {
+                    if (checkCollision(bullet, wall)) {
+                        wall.hits += 0.2; // Пули менее эффективны
+                        player.bullets.splice(idx, 1);
+                        createParticles(wall.x + wall.width/2, wall.y + wall.height/2, '#8b4513', 3);
+                        
+                        if (wall.hits >= wall.maxHits) {
+                            wall.broken = true;
+                            score += 500;
+                            playSound('break');
+                            if (wall.hasSecret) {
+                                revealSecretRoom(wall.x);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+    
+    // Bullets (Contra mode!)
+    if (player.bullets && player.bullets.length > 0) {
+        player.bullets = player.bullets.filter(bullet => {
+            bullet.x += bullet.velX;
+            if (bullet.velY) bullet.y += bullet.velY;
+            
+            // Check bullet hits enemies
+            let hit = false;
+            enemies.forEach(enemy => {
+                if (enemy.alive && checkCollision(bullet, enemy)) {
+                    enemy.alive = false;
+                    combo++;
+                    comboTimer = COMBO_WINDOW;
+                    
+                    // Bonus score for fireball!
+                    let bonusScore = 500;
+                    if (bullet.type === 'fireball') bonusScore = 800; // FIREBALL BONUS! 🔥
+                    
+                    const comboBonus = bonusScore * combo;
+                    score += comboBonus;
+                    playSound('explosion');
+                    
+                    // Fireball creates bigger explosion!
+                    const particleCount = bullet.type === 'fireball' ? 20 : 10;
+                    createParticles(enemy.x, enemy.y, '#fc0000', particleCount);
+                    hit = true;
+                }
+            });
+            
+            // Check bullet hits turrets
+            if (window.turrets) {
+                window.turrets.forEach(turret => {
+                    if (turret.alive && checkCollision(bullet, turret)) {
+                        turret.health--;
+                        hit = true;
+                        createParticles(turret.x, turret.y, '#fc8000');
+                        playSound('hit');
+                        
+                        if (turret.health <= 0) {
+                            turret.alive = false;
+                            combo++;
+                            comboTimer = COMBO_WINDOW;
+                            const comboBonus = 1000 * combo; // Turrets worth more!
+                            score += comboBonus;
+                            playSound('explosion');
+                            createParticles(turret.x + turret.width / 2, turret.y + turret.height / 2, '#fcfc00', 15);
+                        }
+                    }
+                });
+            }
+            
+            // Check bullet hits boss
+            if (currentBoss && currentBoss.alive && checkCollision(bullet, currentBoss)) {
+                // Damage boss with bullet!
+                let damage = 1;
+                if (bullet.type === 'laser') damage = 2; // Лазер делает больше урона!
+                if (bullet.type === 'fireball') damage = 3; // ФАЙРБОЛ СУПЕР СИЛЬНЫЙ! 🔥
+                currentBoss.health -= damage;
+                bossHealthBar = currentBoss.health;
+                createParticles(bullet.x, bullet.y, '#fc0000', 12); // Красные частицы урона
+                playSound('hit');
+                console.log('🎯 HIT BOSS! Health:', currentBoss.health, '/', currentBoss.maxHealth);
+                
+                // Flash effect - IMPROVED!
+                currentBoss.damageFlash = 15; // Longer flash for bullets
+                
+                if (currentBoss.health <= 0) {
+                    currentBoss.alive = false;
+                    bossActive = false;
+                    score += 5000;
+                    playSound('victory');
+                    createParticles(currentBoss.x + 40, currentBoss.y + 40, '#fcfc00', 30);
+                    console.log('☠️ BOSS DEFEATED!');
+                    
+                    // Create path after boss death in underground!
+                    if (inUnderground) {
+                        createUndergroundBossPath();
+                    }
+                }
+                hit = true;
+            }
+            
+            return !hit && bullet.x < cameraX + canvas.width + 100 && bullet.y > 0 && bullet.y < 600;
+        });
+    }
+    
+    // Turrets (Contra mode!)
+    if (window.turrets) {
+        window.turrets.forEach(turret => {
+            if (!turret.alive) return;
+            
+            turret.shootTimer++;
+            
+            // Shoot at player periodically
+            if (turret.shootTimer > 60 && Math.abs(turret.x - player.x) < 400) {
+                turret.shootTimer = 0;
+                
+                // Turret bullet - ✅ Замедлил с 5 до 3
+                if (!window.enemyBullets) window.enemyBullets = [];
+                window.enemyBullets.push({
+                    x: turret.x + turret.width / 2,
+                    y: turret.y + turret.height / 2,
+                    velX: player.x > turret.x ? 3 : -3,
+                    velY: (player.y - turret.y) / 40,
+                    width: 6,
+                    height: 6
+                });
+                playSound('shoot');
+            }
+        });
+    }
+    
+    // Enemy bullets
+    if (window.enemyBullets) {
+        window.enemyBullets = window.enemyBullets.filter(bullet => {
+            bullet.x += bullet.velX;
+            bullet.y += bullet.velY;
+            
+            // Check hit player
+            if (checkCollision(player, bullet) && !player.invincible && !player.dashing) {
+                lives--;
+                playSound('hit');
+                createParticles(player.x, player.y, '#fc0000');
+                if (lives <= 0) gameOver();
+                return false;
+            }
+            
+            return bullet.x > cameraX - 100 && bullet.x < cameraX + canvas.width + 100 && bullet.y > 0 && bullet.y < 600;
+        });
+    }
+    
+    // Goal
+    if (goal && checkCollision(player, goal)) {
+        // Check if boss is defeated
+        if (currentBoss && currentBoss.alive) {
+            // Boss is still alive - block passage!
+            // Show message and push player back
+            player.x = Math.max(100, goal.x - 100);
+            player.velY = -8;
+            createParticles(player.x, player.y, '#ff0000', 15);
+            playSound('hit');
+        } else {
+            // Boss defeated or no boss - level complete!
+            victory();
+        }
+    }
+    
+    // BOSS LOGIC! 👾
+    // ✅ ФИКС: Активируем босса намного раньше!
+    // Было: player.x > LEVEL_WIDTH - 1500 = 3300 (слишком поздно!)
+    // Стало: player.x > LEVEL_WIDTH - 2500 = 2300 (раньше!)
+    if (currentBoss && currentBoss.alive && player.x > LEVEL_WIDTH - 2500) {
+        if (!bossActive) {
+            bossActive = true;
+            console.log('⚠️ BOSS BATTLE STARTED! Player x:', player.x);
+        }
+        currentBoss.animFrame += 0.1;
+        currentBoss.attackTimer++;
+        currentBoss.moveTimer++;
+        
+        // Damage flash countdown
+        if (currentBoss.damageFlash > 0) {
+            currentBoss.damageFlash--;
+        }
+        
+        // Boss movement (floating pattern) - ИСПРАВЛЕНО!
+        currentBoss.moveTimer++;
+        if (currentBoss.moveTimer > 30) { // Чаще меняем направление
+            currentBoss.velX = Math.sin(Date.now() / 500) * 1.5;
+            currentBoss.velY = Math.cos(Date.now() / 700) * 1.0;
+            currentBoss.moveTimer = 0; // Сброс таймера
+        }
+        
+        // 🐛 DEBUG - проверяем движение
+        if (Math.random() < 0.01) {
+            console.log('💪 BOSS MOVING:', 
+                'velX:', currentBoss.velX.toFixed(2),
+                'velY:', currentBoss.velY.toFixed(2),
+                'x:', Math.floor(currentBoss.x),
+                'y:', Math.floor(currentBoss.y)
+            );
+        }
+        
+        currentBoss.x += currentBoss.velX;
+        currentBoss.y += currentBoss.velY;
+        
+        // Keep boss in bounds (исправлено для новой позиции!)
+        currentBoss.x = Math.max(LEVEL_WIDTH - 2200, Math.min(currentBoss.x, LEVEL_WIDTH - 1800));
+        currentBoss.y = Math.max(200, Math.min(currentBoss.y, 450));
+        
+        // Boss attacks every 1 second - УЛУЧШЕНО!
+        if (currentBoss.attackTimer > 60) {
+            currentBoss.attackTimer = 0;
+            // Spawn projectiles towards player
+            if (!window.bossProjectiles) window.bossProjectiles = [];
+            const angle = Math.atan2(player.y - currentBoss.y, player.x - currentBoss.x);
+            for (let i = 0; i < 3; i++) {
+                window.bossProjectiles.push({
+                    x: currentBoss.x + 40,
+                    y: currentBoss.y + 40,
+                    velX: Math.cos(angle + (i - 1) * 0.3) * 4,
+                    velY: Math.sin(angle + (i - 1) * 0.3) * 4,
+                    width: 12,
+                    height: 12
+                });
+            }
+            playSound('shoot');
+            if (bossActive) {
+                console.log('💥 BOSS ATTACK! Projectiles spawned:', 3, '| Boss pos:', Math.floor(currentBoss.x), Math.floor(currentBoss.y));
+            }
+        }
+        
+        // Bullets hitting boss now handled in main bullet logic above
+        
+        // Check player collision with boss
+        if (checkCollision(player, currentBoss)) {
+            if (player.invincible || player.dashing) {
+                // Damage boss with dash/star!
+                currentBoss.health -= 2;
+                bossHealthBar = currentBoss.health;
+                currentBoss.damageFlash = 10;
+                createParticles(currentBoss.x, currentBoss.y, '#fc0000', 10);
+                playSound('hit');
+                console.log('💥 DASH HIT BOSS! Health:', currentBoss.health);
+                
+                if (currentBoss.health <= 0) {
+                    currentBoss.alive = false;
+                    score += 5000;
+                    playSound('victory');
+                    createParticles(currentBoss.x + 40, currentBoss.y + 40, '#fcfc00', 30);
+                    
+                    // Create path after boss death in underground!
+                    if (inUnderground) {
+                        createUndergroundBossPath();
+                    }
+                }
+            } else if (!player.hasShield) {
+                lives--;
+                playSound('hit');
+                createParticles(player.x, player.y, '#fc0000');
+                player.x = Math.max(100, player.x - 100);
+                player.velY = -10;
+                if (lives <= 0) gameOver();
+            }
+        }
+    }
+    
+    // Boss projectiles
+    if (window.bossProjectiles) {
+        window.bossProjectiles = window.bossProjectiles.filter(proj => {
+            proj.x += proj.velX;
+            proj.y += proj.velY;
+            
+            // Check hit player
+            if (checkCollision(player, proj) && !player.invincible && !player.dashing && !player.hasShield) {
+                lives--;
+                playSound('hit');
+                createParticles(player.x, player.y, '#fc0000');
+                if (lives <= 0) gameOver();
+                return false;
+            }
+            
+            // Shield blocks projectiles
+            if (checkCollision(player, proj) && player.hasShield) {
+                createParticles(proj.x, proj.y, '#00fcfc', 8);
+                playSound('break');
+                return false;
+            }
+            
+            return proj.x > cameraX - 100 && proj.x < cameraX + canvas.width + 100 && proj.y > 0 && proj.y < 600;
+        });
+    }
+    
+    // Bats (underground enemies!)
+    if (window.bats) {
+        window.bats = window.bats.filter(bat => {
+            if (!bat.alive) return false;
+            
+            bat.x += bat.velX;
+            bat.y += bat.velY;
+            bat.wingPhase += 0.2;
+            
+            // Bounce off walls
+            if (bat.x < cameraX || bat.x > cameraX + canvas.width) {
+                bat.velX *= -1;
+            }
+            if (bat.y < 50 || bat.y > 400) {
+                bat.velY *= -1;
+            }
+            
+            // Collision with player
+            if (checkCollision(player, bat)) {
+                if (!player.invincible && !player.dashing) {
+                    lives--;
+                    playSound('hit');
+                    createParticles(player.x, player.y, '#fc0000');
+                    bat.alive = false;
+                    if (lives <= 0) gameOver();
+                } else {
+                    bat.alive = false;
+                    combo++;
+                    comboTimer = COMBO_WINDOW;
+                    const comboBonus = 300 * combo;
+                    score += comboBonus;
+                    playSound('stomp');
+                    createParticles(bat.x, bat.y, '#fcfc00');
+                }
+                return false;
+            }
+            return true;
+        });
+    }
+    
+    // Falling rocks!
+    if (window.fallingRocks) {
+        window.fallingRocks.forEach(rock => {
+            // Trigger fall when player is near
+            if (!rock.falling && Math.abs(player.x - rock.x) < 50) {
+                rock.falling = true;
+                rock.velY = 0;
+            }
+            
+            if (rock.falling) {
+                rock.velY += 0.5;
+                rock.y += rock.velY;
+                
+                // Check collision with player
+                if (checkCollision(player, rock)) {
+                    if (!player.invincible) {
+                        lives--;
+                        playSound('hit');
+                        createParticles(player.x, player.y, '#fc0000');
+                        rock.falling = false;
+                        rock.y = 0;
+                        rock.velY = 0;
+                        if (lives <= 0) gameOver();
+                    }
+                }
+                
+                // Reset if hit ground
+                if (rock.y > 550) {
+                    rock.falling = false;
+                    rock.y = 0;
+                    rock.velY = 0;
+                    rock.respawnTimer = 100;
+                }
+            }
+            
+            if (!rock.falling && rock.respawnTimer > 0) {
+                rock.respawnTimer--;
+            }
+        });
+    }
+    
+    // Lava pits (instant death!)
+    if (window.lavaPits && inUnderground) {
+        window.lavaPits.forEach(pit => {
+            if (player.x + player.width > pit.x &&
+                player.x < pit.x + pit.width &&
+                player.y + player.height > 550) {
+                // Fell in lava!
+                lives--;
+                playSound('hit');
+                createParticles(player.x, player.y, '#fc8000');
+                player.x = 100;
+                player.y = 400;
+                cameraX = 0;
+                if (lives <= 0) gameOver();
+            }
+        });
+    }
+    
+    // Particles
     particles = particles.filter(p => {
         p.x += p.velX;
         p.y += p.velY;
@@ -411,217 +2102,2370 @@ function update() {
         return p.life > 0;
     });
     
-    // Level complete
-    if (powerUps.length === 0 && enemies.length === 0) {
-        level++;
-        score += 1000;
-        playSound('levelup');
-        initLevel();
-    }
-    
     // Update HUD
     document.getElementById('scoreDisplay').textContent = score;
-    document.getElementById('levelDisplay').textContent = level;
     document.getElementById('livesDisplay').textContent = lives;
+    document.getElementById('levelDisplay').textContent = level;
+    
+    // Update dash display
+    const dashStatus = document.getElementById('dashStatus');
+    const dashDisplay = document.getElementById('dashDisplay');
+    if (player.dashing) {
+        dashStatus.textContent = 'DASHING!';
+        dashStatus.style.color = '#00fcfc';
+    } else if (player.dashCooldown > 0) {
+        const cooldownSec = Math.ceil(player.dashCooldown / 60);
+        dashStatus.textContent = cooldownSec + 's';
+        dashStatus.style.color = '#fc8000';
+    } else {
+        dashStatus.textContent = 'READY';
+        dashStatus.style.color = '#00fc00';
+    }
+    
+    // Update weapon display
+    if (player.canShoot) {
+        document.getElementById('weaponDisplay').style.display = 'block';
+        let weaponText = player.weapon.toUpperCase();
+        // Show turret count in Contra mode
+        if (window.turrets) {
+            const turretsAlive = window.turrets.filter(t => t.alive).length;
+            if (turretsAlive > 0) {
+                weaponText += ` | 🍄${turretsAlive}`;
+            }
+        }
+        document.getElementById('weaponType').textContent = weaponText;
+    } else {
+        document.getElementById('weaponDisplay').style.display = 'none';
+    }
 }
 
-// Render
 function render() {
-    // Clear screen
-    ctx.fillStyle = '#5c94fc'; // Sky blue
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // 🔥 DOOM RENDERING - в самое начало!
+    if (gameMode === 'doom') {
+        renderDoom();
+        return;
+    }
     
-    // Draw clouds (8-bit style)
-    drawClouds();
+    ctx.save();
+    ctx.translate(-cameraX, 0);
     
-    // Draw platforms
-    ctx.fillStyle = '#8b4513';
-    platforms.forEach(platform => {
-        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-        // Grass on top
-        ctx.fillStyle = '#00fc00';
-        ctx.fillRect(platform.x, platform.y - 4, platform.width, 4);
+    // Background - changes for special modes
+    if (inUnderground === 'contra') {
+        // CONTRA MODE - EPIC JUNGLE WARFARE!
+        // Sky gradient (deeper jungle feel)
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, '#0a3a2a');
+        gradient.addColorStop(0.5, '#1a4a3a');
+        gradient.addColorStop(1, '#2a5a4a');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(cameraX, 0, canvas.width, 400);
+        
+        // Ground gradient
+        const groundGrad = ctx.createLinearGradient(0, 400, 0, 600);
+        groundGrad.addColorStop(0, '#3a2a1a');
+        groundGrad.addColorStop(1, '#2a1a0a');
+        ctx.fillStyle = groundGrad;
+        ctx.fillRect(cameraX, 400, canvas.width, 200);
+        
+        // STARS in night sky
+        ctx.fillStyle = '#fcfcfc';
+        for (let i = 0; i < 30; i++) {
+            const starX = (i * 123) % 800 + cameraX;
+            const starY = (i * 79) % 150;
+            const twinkle = Math.sin(Date.now() / 300 + i) * 0.5 + 0.5;
+            ctx.globalAlpha = twinkle;
+            ctx.fillRect(starX, starY, 2, 2);
+        }
+        ctx.globalAlpha = 1;
+        
+        // BACKGROUND LAYER - Far trees
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#1a3a2a';
+        for (let i = 0; i < 20; i++) {
+            const x = cameraX + i * 120 - 50;
+            // Distant tree trunks
+            ctx.fillRect(x, 150, 15, 200);
+            // Distant leaves
+            ctx.fillRect(x - 10, 140, 35, 30);
+        }
+        ctx.globalAlpha = 1;
+        
+        // MIDDLE LAYER - Detailed palm trees
+        for (let i = 0; i < 15; i++) {
+            const treeX = i * 160 + 50;
+            
+            // Tree trunk with detailed texture
+            ctx.fillStyle = '#5a3a1a';
+            ctx.fillRect(treeX, 180, 24, 180);
+            
+            // Trunk texture - horizontal lines
+            ctx.fillStyle = '#4a2a0a';
+            for (let j = 0; j < 18; j++) {
+                ctx.fillRect(treeX + 2, 180 + j * 10, 20, 4);
+                ctx.fillRect(treeX + 4, 182 + j * 10, 16, 2);
+            }
+            
+            // Trunk highlights
+            ctx.fillStyle = '#6a4a2a';
+            ctx.fillRect(treeX + 2, 180, 3, 180);
+            
+            // Palm leaves - DETAILED!
+            ctx.fillStyle = '#2a6a2a';
+            
+            // Left leaves (multiple layers)
+            for (let j = 0; j < 6; j++) {
+                const leafY = 170 - j * 10;
+                const leafWidth = 50 - j * 6;
+                ctx.fillRect(treeX - 35 + j * 6, leafY, leafWidth, 10);
+                // Leaf segments
+                ctx.fillStyle = '#3a7a3a';
+                for (let k = 0; k < 5; k++) {
+                    ctx.fillRect(treeX - 35 + j * 6 + k * 8, leafY + 2, 6, 6);
+                }
+                ctx.fillStyle = '#2a6a2a';
+            }
+            
+            // Right leaves
+            for (let j = 0; j < 6; j++) {
+                const leafY = 170 - j * 10;
+                const leafWidth = 50 - j * 6;
+                ctx.fillRect(treeX + 10 - j * 3, leafY, leafWidth, 10);
+                // Leaf segments
+                ctx.fillStyle = '#3a7a3a';
+                for (let k = 0; k < 5; k++) {
+                    ctx.fillRect(treeX + 10 - j * 3 + k * 8, leafY + 2, 6, 6);
+                }
+                ctx.fillStyle = '#2a6a2a';
+            }
+            
+            // Center top leaves
+            for (let j = 0; j < 5; j++) {
+                const leafY = 150 - j * 12;
+                const leafWidth = 20 - j * 3;
+                ctx.fillRect(treeX + 4 + j * 2, leafY, leafWidth, 12);
+            }
+            
+            // Bright highlights on leaves
+            ctx.fillStyle = '#4a9a4a';
+            ctx.fillRect(treeX - 20, 175, 35, 3);
+            ctx.fillRect(treeX + 12, 175, 35, 3);
+            ctx.fillRect(treeX + 8, 158, 12, 3);
+        }
+        
+        // HANGING VINES!
+        ctx.fillStyle = '#2a5a2a';
+        for (let i = 0; i < 25; i++) {
+            const vineX = cameraX + i * 90 + 30;
+            const vineLength = 80 + (i % 3) * 40;
+            const swing = Math.sin(Date.now() / 500 + i) * 3;
+            
+            // Vine rope
+            for (let j = 0; j < vineLength / 8; j++) {
+                const y = j * 8;
+                const x = vineX + Math.sin(j * 0.3) * 2 + swing;
+                ctx.fillRect(x, y, 3, 8);
+                // Vine leaves
+                if (j % 3 === 0) {
+                    ctx.fillRect(x - 4, y, 8, 4);
+                }
+            }
+        }
+        
+        // FOREGROUND - Bushes and grass
+        ctx.fillStyle = '#1a5a1a';
+        for (let i = 0; i < 30; i++) {
+            const bushX = cameraX + i * 80 - 20;
+            // Big bush
+            ctx.fillRect(bushX, 360, 70, 40);
+            ctx.fillRect(bushX + 10, 350, 50, 15);
+            ctx.fillRect(bushX + 20, 345, 30, 8);
+            
+            // Bush highlights
+            ctx.fillStyle = '#2a7a2a';
+            ctx.fillRect(bushX + 15, 355, 40, 8);
+            ctx.fillRect(bushX + 25, 348, 20, 4);
+            ctx.fillStyle = '#1a5a1a';
+        }
+        
+        // Grass blades in foreground
+        ctx.fillStyle = '#3a8a3a';
+        for (let i = 0; i < 50; i++) {
+            const grassX = cameraX + i * 40;
+            ctx.fillRect(grassX, 390, 4, 10);
+            ctx.fillRect(grassX + 2, 385, 3, 10);
+        }
+        
+        // FIREFLIES/GLOWING PARTICLES for atmosphere!
+        const time = Date.now() / 200;
+        for (let i = 0; i < 15; i++) {
+            const flyX = cameraX + i * 150 + Math.sin(time + i) * 30;
+            const flyY = 100 + i * 30 + Math.cos(time * 0.5 + i) * 40;
+            const glow = 0.3 + Math.sin(time * 2 + i) * 0.7;
+            
+            ctx.globalAlpha = glow;
+            ctx.fillStyle = '#fcfc00';
+            ctx.fillRect(flyX, flyY, 3, 3);
+            // Glow effect
+            ctx.globalAlpha = glow * 0.3;
+            ctx.fillRect(flyX - 2, flyY - 2, 7, 7);
+            ctx.globalAlpha = 1;
+        }
+    } else if (inUnderground) {
+        // EPIC UNDERGROUND with LAVA!
+        // MUCH LIGHTER cave background for better visibility
+        const gradient = ctx.createLinearGradient(0, 0, 0, 600);
+        gradient.addColorStop(0, '#4a4a4a');  // Much lighter top
+        gradient.addColorStop(0.5, '#5a4a4a'); // Lighter middle
+        gradient.addColorStop(1, '#6a4a40');   // Lighter bottom
+        ctx.fillStyle = gradient;
+        ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+        
+        // Stalactites (hanging from ceiling)
+        ctx.fillStyle = '#3a3a3a';
+        for (let i = 0; i < 30; i++) {
+            const x = cameraX - 100 + i * 100;
+            const height = 40 + (i % 3) * 20;
+            // Main stalactite
+            ctx.fillRect(x, 0, 20, height);
+            ctx.fillRect(x + 3, 0, 14, height - 10);
+            ctx.fillRect(x + 6, 0, 8, height - 20);
+            // Tip
+            ctx.fillStyle = '#2a2a2a';
+            ctx.fillRect(x + 8, height - 5, 4, 5);
+            ctx.fillStyle = '#3a3a3a';
+        }
+        
+        // Stalagmites (rising from ground)
+        ctx.fillStyle = '#4a4a4a';
+        for (let i = 0; i < 25; i++) {
+            const x = cameraX - 50 + i * 120;
+            const height = 30 + (i % 4) * 15;
+            const y = 550 - height;
+            // Main stalagmite
+            ctx.fillRect(x, y, 18, height);
+            ctx.fillRect(x + 3, y + 10, 12, height - 10);
+            ctx.fillRect(x + 6, y + 20, 6, height - 20);
+            // Highlight
+            ctx.fillStyle = '#5a5a5a';
+            ctx.fillRect(x + 2, y + 5, 3, height - 10);
+            ctx.fillStyle = '#4a4a4a';
+        }
+        
+        // Lava pits with animation!
+        if (window.lavaPits) {
+            const lavaTime = Date.now() / 100;
+            window.lavaPits.forEach(pit => {
+                // Lava glow
+                ctx.fillStyle = '#fc4000';
+                ctx.fillRect(pit.x, 550, pit.width, 50);
+                
+                // Animated lava surface
+                ctx.fillStyle = '#fc8000';
+                for (let i = 0; i < pit.width / 20; i++) {
+                    const wave = Math.sin(lavaTime + i) * 3;
+                    ctx.fillRect(pit.x + i * 20, 550 + wave, 20, 10);
+                }
+                
+                // Bright spots
+                ctx.fillStyle = '#fcfc00';
+                for (let i = 0; i < pit.width / 40; i++) {
+                    const wave = Math.sin(lavaTime * 2 + i * 2) * 2;
+                    ctx.fillRect(pit.x + 20 + i * 40, 552 + wave, 8, 6);
+                }
+                
+                // Glow effect above lava
+                ctx.globalAlpha = 0.3;
+                ctx.fillStyle = '#fc6000';
+                ctx.fillRect(pit.x, 520, pit.width, 30);
+                ctx.globalAlpha = 1;
+            });
+        }
+        
+        // Cave crystals (glowing!)
+        const crystalTime = Date.now() / 200;
+        for (let i = 0; i < 15; i++) {
+            const x = cameraX + i * 200 + 50;
+            const y = 100 + (i % 3) * 150;
+            const glow = 0.5 + Math.sin(crystalTime + i) * 0.3;
+            
+            ctx.globalAlpha = glow;
+            ctx.fillStyle = '#00fcfc';
+            ctx.fillRect(x, y, 8, 16);
+            ctx.fillRect(x + 2, y - 4, 4, 20);
+            ctx.globalAlpha = 1;
+        }
+    } else {
+        // Sky with PARALLAX!
+        const levelConfig = LEVELS[level] || LEVELS[1];
+        ctx.fillStyle = levelConfig.bg;
+        ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+        
+        // PARALLAX LAYER 1 - Far mountains (slowest)
+        ctx.fillStyle = 'rgba(100, 100, 150, 0.3)';
+        const mountainOffset1 = cameraX * 0.1;
+        for (let i = 0; i < 20; i++) {
+            const x = i * 300 - mountainOffset1;
+            if (x + 200 > cameraX && x < cameraX + canvas.width) {
+                // Mountain peak
+                ctx.fillRect(x + 50, 350, 100, 10);
+                ctx.fillRect(x + 60, 340, 80, 10);
+                ctx.fillRect(x + 70, 330, 60, 10);
+                ctx.fillRect(x + 80, 320, 40, 10);
+                ctx.fillRect(x + 90, 310, 20, 10);
+            }
+        }
+        
+        // PARALLAX LAYER 2 - Clouds (medium speed)
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = 0.7;
+        const cloudOffset = cameraX * 0.3;
+        for (let i = 0; i < 25; i++) {
+            const x = i * 250 - cloudOffset;
+            const y = 50 + (i % 3) * 40;
+            if (x + 80 > cameraX && x < cameraX + canvas.width) {
+                ctx.fillRect(x, y, 60, 20);
+                ctx.fillRect(x + 15, y - 10, 30, 10);
+                ctx.fillRect(x + 40, y - 5, 25, 15);
+            }
+        }
+        ctx.globalAlpha = 1;
+        
+        // PARALLAX LAYER 3 - Bushes/Hills (fast)
+        ctx.fillStyle = '#2a7a2a';
+        const bushOffset = cameraX * 0.6;
+        for (let i = 0; i < 40; i++) {
+            const x = i * 150 - bushOffset;
+            if (x + 80 > cameraX && x < cameraX + canvas.width) {
+                ctx.fillRect(x, 500, 80, 50);
+                ctx.fillRect(x + 10, 490, 60, 10);
+                ctx.fillRect(x + 20, 485, 40, 5);
+            }
+        }
+    }
+    
+    // Platforms
+    if (inUnderground === 'contra') {
+        // DEBUG removed
+        // DETAILED Jungle platforms
+        // console.log('🎮 RENDERING CONTRA PLATFORMS:', platforms.length, 'platforms');
+        platforms.forEach(p => {
+            // Earth base with texture
+            ctx.fillStyle = '#5a3a1a';
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+            
+            // Dirt texture (random spots)
+            ctx.fillStyle = '#4a2a0a';
+            for (let i = 0; i < p.width / 12; i++) {
+                ctx.fillRect(p.x + i * 12 + 2, p.y + 2, 8, 4);
+                ctx.fillRect(p.x + i * 12 + 4, p.y + 8, 6, 3);
+            }
+            
+            // Rocks in dirt
+            ctx.fillStyle = '#6a4a2a';
+            for (let i = 0; i < p.width / 25; i++) {
+                const rockX = p.x + i * 25 + 5;
+                ctx.fillRect(rockX, p.y + 5, 6, 6);
+                ctx.fillRect(rockX + 1, p.y + 6, 4, 4);
+            }
+            
+            // Grass top - thick layer!
+            ctx.fillStyle = '#2a6a2a';
+            ctx.fillRect(p.x, p.y - 8, p.width, 8);
+            
+            // Grass texture (darker line in middle)
+            ctx.fillStyle = '#1a5a1a';
+            ctx.fillRect(p.x, p.y - 4, p.width, 2);
+            
+            // Grass blades on top
+            ctx.fillStyle = '#3a8a3a';
+            for (let i = 0; i < p.width / 6; i++) {
+                const bladeX = p.x + i * 6;
+                // Tall blade
+                ctx.fillRect(bladeX, p.y - 12, 3, 5);
+                ctx.fillRect(bladeX + 1, p.y - 14, 2, 3);
+                // Short blade
+                ctx.fillRect(bladeX + 3, p.y - 10, 2, 3);
+            }
+            
+            // Bright grass highlights
+            ctx.fillStyle = '#4a9a4a';
+            for (let i = 0; i < p.width / 15; i++) {
+                ctx.fillRect(p.x + i * 15 + 2, p.y - 11, 2, 4);
+            }
+            
+            // Platform edge highlights
+            ctx.fillStyle = '#6a4a2a';
+            ctx.fillRect(p.x, p.y, 2, p.height);
+            ctx.fillRect(p.x + p.width - 2, p.y, 2, p.height);
+        });
+    } else {
+        // Normal platforms
+        // DEBUG removed
         ctx.fillStyle = '#8b4513';
-    });
+        platforms.forEach(p => {
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+            ctx.fillStyle = '#00fc00';
+            ctx.fillRect(p.x, p.y - 4, p.width, 4);
+            ctx.fillStyle = '#8b4513';
+        });
+    }
     
-    // Draw player (pixelated tooth)
-    drawPlayer();
-    
-    // Draw enemies (bacteria)
-    enemies.forEach(enemy => {
-        drawBacteria(enemy.x, enemy.y, enemy.width);
-    });
-    
-    // Draw power-ups
-    powerUps.forEach(powerUp => {
-        drawPowerUp(powerUp.x, powerUp.y);
-    });
-    
-    // Draw secret keys
-    secretKeys.forEach(key => {
-        if (!key.collected) {
-            drawKey(key.x, key.y);
+    // Blocks with bounce effect!
+    blocks.forEach(block => {
+        if (!block.broken) {
+            const yOffset = block.bouncing ? -block.bounceOffset : 0;
+            
+            // Block looks like part of platform - ИСПРАВЛЕНО!
+            // Блоки рендерятся внутри ctx.translate(-cameraX, 0), поэтому НЕ вычитаем cameraX!
+            const blockX = block.x;
+            const blockY = block.y + yOffset;
+            
+            // DEBUG removed
+            
+            ctx.fillStyle = '#fc8000';
+            ctx.fillRect(blockX, blockY, block.width, block.height);
+            ctx.fillStyle = '#fca040';
+            ctx.fillRect(blockX + 2, blockY + 2, block.width - 4, block.height - 4);
+            
+            // Question mark if has coin
+            if (block.hasCoin) {
+                ctx.fillStyle = '#fcfc00';
+                ctx.fillRect(blockX + 10, blockY + 8, 10, 3);
+                ctx.fillRect(blockX + 13, blockY + 5, 4, 8);
+                ctx.fillRect(blockX + 13, blockY + 18, 4, 4);
+            }
         }
     });
     
-    // Draw particles
+    // === НОВОЕ: Разбиваемые стены ===
+    if (window.breakableWalls) {
+        window.breakableWalls.forEach(wall => {
+            if (!wall.broken) {
+                // Стена
+                ctx.fillStyle = '#8b4513';
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+                
+                // Трещины (зависят от повреждений)
+                const crackLevel = wall.hits / wall.maxHits;
+                ctx.fillStyle = '#3a2010';
+                if (crackLevel > 0.3) {
+                    ctx.fillRect(wall.x + 10, wall.y + 20, 10, 3);
+                    ctx.fillRect(wall.x + 5, wall.y + 40, 20, 2);
+                }
+                if (crackLevel > 0.6) {
+                    ctx.fillRect(wall.x + 15, wall.y + 10, 8, 3);
+                    ctx.fillRect(wall.x + 8, wall.y + 55, 15, 3);
+                }
+                
+                // Индикатор секретной комнаты
+                if (wall.hasSecret) {
+                    const time = Date.now() / 300;
+                    ctx.fillStyle = '#fcfc00';
+                    ctx.globalAlpha = 0.3 + Math.sin(time) * 0.2;
+                    ctx.fillRect(wall.x + 12, wall.y + 35, 6, 10);
+                    ctx.fillRect(wall.x + 9, wall.y + 38, 12, 4);
+                    ctx.globalAlpha = 1;
+                }
+            }
+        });
+    }
+    
+    // === НОВОЕ: Факелы (в пещере) ===
+    if (window.torches && inUnderground) {
+        window.torches.forEach(torch => {
+            if (torch.x < cameraX - 100 || torch.x > cameraX + canvas.width + 100) return;
+            
+            // Обновляем мерцание - еще более уменьшенная яркость
+            torch.flicker = Math.sin(Date.now() / 100 + torch.x * 0.01) * 0.15 + 0.4;
+            
+            // Основание факела
+            ctx.fillStyle = '#4a2a1a';
+            ctx.fillRect(torch.x - 3, torch.y, 6, 40);
+            
+            // Огонь - намного менее яркий
+            const fireColors = ['#aa5000', '#aa2000', '#aaaa00'];  // Darker colors
+            for (let i = 0; i < 3; i++) {
+                ctx.fillStyle = fireColors[i];
+                ctx.globalAlpha = (torch.flicker - i * 0.2) * 0.4;  // Reduced from 0.7 to 0.4
+                const offset = (2 - i) * 2;
+                ctx.fillRect(torch.x - 4 - offset, torch.y - 8 - i * 4, 8 + offset * 2, 8);
+            }
+            ctx.globalAlpha = 1;
+        });
+    }
+    
+    // === НОВОЕ: Горы (в фоне) ===
+    if (!inUnderground) {
+        platforms.forEach(p => {
+            if (p.isMountain) {
+                // Рисуем линию горы
+                ctx.fillStyle = 'rgba(139, 69, 19, 0.3)';
+                ctx.fillRect(p.x - 20, p.y + 20, 60, 2);
+            }
+            if (p.isSummit) {
+                // Флаг на вершине!
+                ctx.fillStyle = '#fcfc00';
+                ctx.fillRect(p.x + p.width/2 - 2, p.y - 40, 4, 40);
+                ctx.fillStyle = '#fc0000';
+                ctx.fillRect(p.x + p.width/2 + 2, p.y - 35, 15, 10);
+            }
+        });
+    }
+    
+    // Coins / Crystals
+    coins.forEach(coin => {
+        if (!coin.collected) {
+            if (coin.isCrystal) {
+                // Crystal with glow!
+                const glow = 0.6 + Math.sin(Date.now() / 150 + coin.glowPhase) * 0.4;
+                ctx.globalAlpha = glow;
+                ctx.fillStyle = '#00fcfc';
+                ctx.fillRect(coin.x + 8, coin.y, 8, 20);
+                ctx.fillRect(coin.x + 4, coin.y + 6, 16, 8);
+                ctx.fillStyle = '#fcfcfc';
+                ctx.fillRect(coin.x + 10, coin.y + 4, 4, 12);
+                ctx.globalAlpha = 1;
+            } else {
+                // Normal coin
+                ctx.fillStyle = '#fcfc00';
+                ctx.fillRect(coin.x + 4, coin.y, 16, 24);
+                ctx.fillRect(coin.x, coin.y + 8, 24, 8);
+            }
+        }
+    });
+    
+    // ✅ ANIMATED CHECKPOINTS!
+    drawCheckpointsAnimated();
+    
+    // ✅ ANIMATED POWER-UPS!
+    drawPowerUpsAnimated();
+    
+    // Pipes!
+    pipes.forEach(pipe => {
+        const pipeColor = pipe.color || '#00fc00';
+        const darkColor = pipe.isContra ? '#333' : '#00c000';
+        
+        // Pipe body
+        ctx.fillStyle = pipeColor;
+        ctx.fillRect(pipe.x, pipe.y, pipe.width, pipe.height);
+        ctx.fillStyle = darkColor;
+        ctx.fillRect(pipe.x + 5, pipe.y + 5, pipe.width - 10, pipe.height - 10);
+        // Pipe rim
+        ctx.fillStyle = pipeColor;
+        ctx.fillRect(pipe.x - 5, pipe.y - 5, pipe.width + 10, 10);
+        
+        // Special indicator for CONTRA pipe!
+        if (pipe.isContra) {
+            ctx.fillStyle = '#fc0000';
+            const time = Date.now() / 200;
+            ctx.fillRect(pipe.x + 15, pipe.y + 15 + Math.sin(time) * 3, 30, 8);
+            ctx.fillStyle = '#fff';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText('C', pipe.x + 22, pipe.y + 22);
+        } else if (pipe.isUnderground || pipe.isExit) {
+            ctx.fillStyle = '#fcfc00';
+            const time = Date.now() / 300;
+            ctx.fillRect(pipe.x + 20, pipe.y + 20 + Math.sin(time) * 5, 20, 5);
+        }
+        
+        // Show hint if player is near
+        if (checkCollision(player, pipe)) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px "Press Start 2P"';
+            ctx.fillText('↓', pipe.x + 23, pipe.y - 10);
+        }
+    });
+    
+    // Stars
+    stars.forEach(star => {
+        if (!star.collected) {
+            const time = Date.now() / 100;
+            ctx.fillStyle = '#fcfc00';
+            // Draw 8-bit star
+            ctx.fillRect(star.x + 12, star.y, 4, 28);
+            ctx.fillRect(star.x, star.y + 12, 28, 4);
+            ctx.fillRect(star.x + 6, star.y + 6, 16, 16);
+            // Glow effect
+            ctx.globalAlpha = 0.3 + Math.sin(time) * 0.2;
+            ctx.fillRect(star.x - 4, star.y - 4, 36, 36);
+            ctx.globalAlpha = 1;
+        }
+    });
+    
+    // Player
+    if (inUnderground === 'contra') {
+        // CONTRA HERO - детальный пиксель-арт! 💪
+        const px = player.x;
+        const py = player.y;
+        
+        // Base color or invincible rainbow
+        let skinColor = '#d4a574';
+        if (player.invincible) {
+            const time = Date.now() / 100;
+            const colors = ['#fc0000', '#fcfc00', '#00fc00', '#00fcfc', '#0000fc', '#fc00fc'];
+            skinColor = colors[Math.floor(time) % colors.length];
+        }
+        
+        // HEAD
+        // Face
+        ctx.fillStyle = skinColor;
+        ctx.fillRect(px + 12, py + 4, 8, 8);
+        
+        // Hair (short military cut)
+        ctx.fillStyle = '#3a2a1a';
+        ctx.fillRect(px + 12, py + 2, 8, 3);
+        ctx.fillRect(px + 11, py + 3, 2, 2);
+        ctx.fillRect(px + 19, py + 3, 2, 2);
+        
+        // RED BANDANA (iconic Rambo!)
+        ctx.fillStyle = '#fc0000';
+        ctx.fillRect(px + 12, py + 4, 8, 2);
+        // Bandana knot
+        ctx.fillRect(px + 20, py + 5, 3, 2);
+        ctx.fillRect(px + 21, py + 7, 2, 1);
+        
+        // Eyes (focused look)
+        ctx.fillStyle = '#000';
+        ctx.fillRect(px + 13, py + 7, 2, 1);
+        ctx.fillRect(px + 17, py + 7, 2, 1);
+        
+        // Nose
+        ctx.fillStyle = '#c49060';
+        ctx.fillRect(px + 15, py + 8, 2, 1);
+        
+        // Mouth (determined)
+        ctx.fillStyle = '#000';
+        ctx.fillRect(px + 14, py + 10, 3, 1);
+        
+        // BODY
+        // Muscular torso (tan, shirtless)
+        ctx.fillStyle = '#c49060';
+        ctx.fillRect(px + 10, py + 12, 12, 10);
+        
+        // Pecs definition
+        ctx.fillStyle = '#b48050';
+        ctx.fillRect(px + 11, py + 13, 4, 4);
+        ctx.fillRect(px + 17, py + 13, 4, 4);
+        
+        // Abs (6-pack!)
+        ctx.fillStyle = '#a87040';
+        ctx.fillRect(px + 14, py + 18, 2, 2);
+        ctx.fillRect(px + 14, py + 20, 2, 1);
+        
+        // Highlights on muscles
+        ctx.fillStyle = '#e8b080';
+        ctx.fillRect(px + 12, py + 13, 2, 1);
+        ctx.fillRect(px + 18, py + 13, 2, 1);
+        
+        // AMMO BELT (detailed!)
+        ctx.fillStyle = '#6a5a3a';
+        ctx.fillRect(px + 9, py + 18, 14, 3);
+        // Belt buckle
+        ctx.fillStyle = '#8a7a5a';
+        ctx.fillRect(px + 15, py + 18, 2, 3);
+        // Ammo bullets
+        ctx.fillStyle = '#fcfc00';
+        ctx.fillRect(px + 11, py + 18, 1, 3);
+        ctx.fillRect(px + 13, py + 18, 1, 3);
+        ctx.fillRect(px + 18, py + 18, 1, 3);
+        ctx.fillRect(px + 20, py + 18, 1, 3);
+        
+        // ARMS
+        // Right arm (holding gun)
+        ctx.fillStyle = '#c49060';
+        ctx.fillRect(px + 22, py + 13, 3, 7);
+        // Hand
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(px + 23, py + 15, 3, 3);
+        
+        // Left arm
+        ctx.fillStyle = '#c49060';
+        ctx.fillRect(px + 7, py + 14, 3, 6);
+        // Hand/fist
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(px + 7, py + 17, 3, 2);
+        
+        // LEGS
+        // Pants (camo green)
+        ctx.fillStyle = '#3a5a2a';
+        ctx.fillRect(px + 11, py + 22, 4, 8);
+        ctx.fillRect(px + 17, py + 22, 4, 8);
+        
+        // Camo pattern
+        ctx.fillStyle = '#2a4a1a';
+        ctx.fillRect(px + 12, py + 23, 2, 2);
+        ctx.fillRect(px + 18, py + 25, 2, 2);
+        ctx.fillRect(px + 12, py + 27, 1, 2);
+        ctx.fillRect(px + 19, py + 28, 1, 1);
+        
+        // Boots (black tactical)
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(px + 10, py + 30, 5, 2);
+        ctx.fillRect(px + 17, py + 30, 5, 2);
+        // Boot soles
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(px + 10, py + 31, 5, 1);
+        ctx.fillRect(px + 17, py + 31, 5, 1);
+        
+        // WEAPON - M60 Machine Gun (iconic!)
+        ctx.fillStyle = '#2a2a2a';
+        // Gun body
+        ctx.fillRect(px + 25, py + 15, 8, 4);
+        // Gun details
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(px + 25, py + 16, 2, 2);
+        // Barrel
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(px + 33, py + 16, 4, 2);
+        // Barrel tip
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(px + 37, py + 16, 1, 2);
+        // Gun handle
+        ctx.fillStyle = '#5a3a1a';
+        ctx.fillRect(px + 26, py + 19, 2, 2);
+        // Magazine
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(px + 28, py + 19, 3, 2);
+        
+        // Ammo belt feeding into gun
+        ctx.fillStyle = '#8a7a5a';
+        ctx.fillRect(px + 24, py + 17, 2, 1);
+        ctx.fillStyle = '#fcfc00';
+        ctx.fillRect(px + 23, py + 17, 1, 1);
+        
+        // Muzzle flash if shooting - 🎮 используем keyCodes
+        if (keyCodes['KeyX']) {
+            const flashPhase = Math.floor(Date.now() / 50) % 3;
+            if (flashPhase < 2) {
+                ctx.fillStyle = flashPhase === 0 ? '#fcfc00' : '#fc8000';
+                ctx.fillRect(px + 38, py + 15, 3, 4);
+                ctx.fillRect(px + 40, py + 16, 2, 2);
+            }
+        }
+        
+        // Sweat drops (intense action!)
+        if (Math.random() < 0.1) {
+            ctx.fillStyle = '#00fcfc';
+            ctx.fillRect(px + 19, py + 10, 1, 2);
+        }
+    } else {
+        // Normal tooth sprite with ANIMATION!
+        let baseColor = player.invincible ? 
+            ['#fc0000', '#fcfc00', '#00fc00', '#00fcfc', '#0000fc', '#fc00fc'][Math.floor(Date.now() / 100) % 6] : 
+            '#fff';
+        
+        // Dash effect - cyan glow!
+        if (player.dashing) {
+            baseColor = '#00fcfc';
+            // Dash aura
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = '#00fcfc';
+            ctx.fillRect(player.x - 4, player.y - 4, player.width + 8, player.height + 8);
+            ctx.globalAlpha = 1;
+        }
+        
+        // Flip sprite based on direction
+        const flipOffset = player.direction === -1 ? player.width : 0;
+        const dx = player.direction; // Direction multiplier
+        
+        if (!player.onGround) {
+            // JUMPING animation
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(player.x + 8 * dx + flipOffset - 8, player.y, 16, 24);
+            ctx.fillRect(player.x + 4 * dx + flipOffset - 4, player.y + 8, 24, 16);
+            // Eyes looking up
+            ctx.fillStyle = '#000';
+            ctx.fillRect(player.x + 14 * dx + flipOffset - 14, player.y + 6, 4, 4);
+            ctx.fillRect(player.x + 20 * dx + flipOffset - 20, player.y + 6, 4, 4);
+            // Excited mouth
+            ctx.fillRect(player.x + 12 * dx + flipOffset - 12, player.y + 14, 8, 4);
+        } else if (player.animFrame > 0) {
+            // RUNNING animation
+            ctx.fillStyle = baseColor;
+            // Body bounces up and down
+            const bounce = player.animFrame === 1 ? -2 : 0;
+            ctx.fillRect(player.x + 8 * dx + flipOffset - 8, player.y + bounce, 16, 24);
+            ctx.fillRect(player.x + 4 * dx + flipOffset - 4, player.y + 8 + bounce, 24, 16);
+            
+            // Animated eyes
+            ctx.fillStyle = '#000';
+            const eyeY = player.animFrame === 2 ? 9 : 8;
+            ctx.fillRect(player.x + 14 * dx + flipOffset - 14, player.y + eyeY + bounce, 4, 4);
+            ctx.fillRect(player.x + 20 * dx + flipOffset - 20, player.y + eyeY + bounce, 4, 4);
+            
+            // Smile
+            ctx.fillRect(player.x + 12 * dx + flipOffset - 12, player.y + 16 + bounce, 8, 2);
+            
+            // Running dust particles
+            if (player.animFrame === 1 && Math.random() < 0.3) {
+                particles.push({
+                    x: player.x - dx * 8,
+                    y: player.y + player.height - 4,
+                    velX: -dx * 2,
+                    velY: -1,
+                    color: '#ddd',
+                    life: 10
+                });
+            }
+        } else {
+            // IDLE animation
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(player.x + 8 * dx + flipOffset - 8, player.y, 16, 24);
+            ctx.fillRect(player.x + 4 * dx + flipOffset - 4, player.y + 8, 24, 16);
+            // Normal eyes
+            ctx.fillStyle = '#000';
+            ctx.fillRect(player.x + 14 * dx + flipOffset - 14, player.y + 8, 4, 4);
+            ctx.fillRect(player.x + 20 * dx + flipOffset - 20, player.y + 8, 4, 4);
+            // Smile
+            ctx.fillRect(player.x + 12 * dx + flipOffset - 12, player.y + 16, 8, 2);
+        }
+    }
+    
+    // Enemies
+    enemies.forEach(e => {
+        if (e.alive) {
+            if (e.isContra) {
+                // DETAILED Contra soldier!
+                e.animFrame = (e.animFrame || 0) + 0.1;
+                
+                // Body (red uniform with details)
+                ctx.fillStyle = '#d02020';
+                ctx.fillRect(e.x + 6, e.y + 12, e.width - 12, e.height - 16);
+                
+                // Vest/Armor
+                ctx.fillStyle = '#8b0000';
+                ctx.fillRect(e.x + 8, e.y + 14, e.width - 16, e.height - 22);
+                
+                // Belt
+                ctx.fillStyle = '#3a3a3a';
+                ctx.fillRect(e.x + 7, e.y + 24, e.width - 14, 3);
+                
+                // Belt buckle
+                ctx.fillStyle = '#fcfc00';
+                ctx.fillRect(e.x + e.width / 2 - 2, e.y + 24, 4, 3);
+                
+                // Head/Helmet
+                ctx.fillStyle = '#2a2a2a';
+                ctx.fillRect(e.x + 8, e.y + 2, e.width - 16, 10);
+                
+                // Helmet highlight
+                ctx.fillStyle = '#4a4a4a';
+                ctx.fillRect(e.x + 9, e.y + 3, e.width - 18, 4);
+                
+                // Visor
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(e.x + 10, e.y + 6, e.width - 20, 4);
+                
+                // Legs (animated!)
+                const legOffset = Math.floor(e.animFrame) % 2;
+                ctx.fillStyle = '#5a1a1a';
+                ctx.fillRect(e.x + 7, e.y + 28 + legOffset, 5, 8 - legOffset);
+                ctx.fillRect(e.x + e.width - 12, e.y + 28 + (1 - legOffset), 5, 8 - (1 - legOffset));
+                
+                // Boots
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(e.x + 7, e.y + 34, 6, 2);
+                ctx.fillRect(e.x + e.width - 13, e.y + 34, 6, 2);
+                
+                // Gun (M16 style)
+                ctx.fillStyle = '#2a2a2a';
+                ctx.fillRect(e.x + e.width - 4, e.y + 16, 12, 4);
+                
+                // Gun details
+                ctx.fillStyle = '#4a4a4a';
+                ctx.fillRect(e.x + e.width - 4, e.y + 17, 10, 2);
+                
+                // Gun barrel
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(e.x + e.width + 8, e.y + 17, 4, 2);
+                
+                // Arms
+                ctx.fillStyle = '#d02020';
+                ctx.fillRect(e.x + e.width - 6, e.y + 14, 4, 8);
+            } else {
+                // Regular bacteria enemy
+                ctx.fillStyle = '#00fc00';
+                ctx.fillRect(e.x + 4, e.y + 4, e.width - 8, e.height - 8);
+                ctx.fillStyle = '#fc0000';
+                ctx.fillRect(e.x + 8, e.y + 6, 3, 3);
+                ctx.fillRect(e.x + e.width - 11, e.y + 6, 3, 3);
+            }
+        }
+    });
+    
+    // Bats (underground!)
+    if (window.bats) {
+        window.bats.forEach(bat => {
+            if (bat.alive) {
+                const wingFrame = Math.floor(bat.wingPhase) % 2;
+                // Bat body
+                ctx.fillStyle = '#2a1a2a';
+                ctx.fillRect(bat.x + 8, bat.y + 4, 8, 8);
+                // Wings
+                if (wingFrame === 0) {
+                    ctx.fillRect(bat.x, bat.y + 6, 8, 4);
+                    ctx.fillRect(bat.x + 16, bat.y + 6, 8, 4);
+                } else {
+                    ctx.fillRect(bat.x + 2, bat.y + 4, 6, 6);
+                    ctx.fillRect(bat.x + 16, bat.y + 4, 6, 6);
+                }
+                // Eyes
+                ctx.fillStyle = '#fc0000';
+                ctx.fillRect(bat.x + 9, bat.y + 6, 2, 2);
+                ctx.fillRect(bat.x + 13, bat.y + 6, 2, 2);
+            }
+        });
+    }
+    
+    // TURRETS! (Contra mode)
+    if (window.turrets) {
+        window.turrets.forEach(turret => {
+            if (turret.alive) {
+                // Base (like red mushroom base)
+                ctx.fillStyle = '#d0a080';
+                ctx.fillRect(turret.x + 4, turret.y + 18, 16, 10);
+                
+                // Base texture
+                ctx.fillStyle = '#b08060';
+                ctx.fillRect(turret.x + 6, turret.y + 20, 12, 2);
+                ctx.fillRect(turret.x + 6, turret.y + 24, 12, 2);
+                
+                // Mushroom cap (RED!)
+                ctx.fillStyle = '#d02020';
+                ctx.fillRect(turret.x + 2, turret.y + 8, 20, 10);
+                ctx.fillRect(turret.x, turret.y + 12, 24, 6);
+                
+                // Mushroom spots (white)
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(turret.x + 6, turret.y + 10, 4, 4);
+                ctx.fillRect(turret.x + 14, turret.y + 10, 4, 4);
+                ctx.fillRect(turret.x + 4, turret.y + 14, 3, 3);
+                ctx.fillRect(turret.x + 17, turret.y + 14, 3, 3);
+                
+                // Cap highlight
+                ctx.fillStyle = '#fc4040';
+                ctx.fillRect(turret.x + 4, turret.y + 9, 16, 2);
+                
+                // Gun barrel (rotating towards player!)
+                const angle = Math.atan2(player.y - turret.y, player.x - turret.x);
+                const barrelLength = 10;
+                const barrelX = turret.x + 12 + Math.cos(angle) * barrelLength;
+                const barrelY = turret.y + 14 + Math.sin(angle) * barrelLength;
+                
+                ctx.fillStyle = '#2a2a2a';
+                ctx.fillRect(turret.x + 10, turret.y + 13, 4, 4);
+                
+                // Barrel pointing at player
+                ctx.strokeStyle = '#1a1a1a';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(turret.x + 12, turret.y + 15);
+                ctx.lineTo(barrelX, barrelY);
+                ctx.stroke();
+                
+                // Health indicator
+                if (turret.health < 3) {
+                    ctx.fillStyle = turret.health === 2 ? '#fcfc00' : '#fc0000';
+                    for (let i = 0; i < turret.health; i++) {
+                        ctx.fillRect(turret.x + 6 + i * 4, turret.y - 4, 3, 2);
+                    }
+                }
+            }
+        });
+    }
+    
+    // Enemy bullets
+    if (window.enemyBullets) {
+        window.enemyBullets.forEach(bullet => {
+            // Red enemy bullet
+            ctx.fillStyle = '#fc0000';
+            ctx.fillRect(bullet.x - 1, bullet.y - 1, bullet.width + 2, bullet.height + 2);
+            ctx.fillStyle = '#fc8000';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            ctx.fillStyle = '#fcfc00';
+            ctx.fillRect(bullet.x + 1, bullet.y + 1, bullet.width - 2, bullet.height - 2);
+        });
+    }
+    
+    // Boss projectiles - IMPROVED VISIBILITY!
+    if (window.bossProjectiles) {
+        window.bossProjectiles.forEach(proj => {
+            // Outer glow
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(proj.x - 3, proj.y - 3, proj.width + 6, proj.height + 6);
+            
+            // Main projectile
+            ctx.fillStyle = '#ff8000';
+            ctx.fillRect(proj.x - 1, proj.y - 1, proj.width + 2, proj.height + 2);
+            
+            // Inner core
+            ctx.fillStyle = '#ffff00';
+            ctx.fillRect(proj.x, proj.y, proj.width, proj.height);
+            
+            // Center dot
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(proj.x + 2, proj.y + 2, proj.width - 4, proj.height - 4);
+        });
+    }
+    
+    // Falling rocks!
+    if (window.fallingRocks) {
+        window.fallingRocks.forEach(rock => {
+            if (rock.y > 0 && rock.y < 600) {
+                // Rock
+                ctx.fillStyle = '#5a5a5a';
+                ctx.fillRect(rock.x, rock.y, rock.width, rock.height);
+                ctx.fillStyle = '#4a4a4a';
+                ctx.fillRect(rock.x + 2, rock.y + 2, rock.width - 4, rock.height - 4);
+                ctx.fillStyle = '#3a3a3a';
+                ctx.fillRect(rock.x + 4, rock.y + 4, rock.width - 8, rock.height - 8);
+                
+                // Warning indicator if about to fall
+                if (!rock.falling && Math.abs(player.x - rock.x) < 80) {
+                    ctx.fillStyle = '#fc0000';
+                    ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 100) * 0.3;
+                    ctx.fillRect(rock.x + 8, 10, 8, 20);
+                    ctx.globalAlpha = 1;
+                }
+            }
+        });
+    }
+    
+    // Bullets (Contra mode!)
+    if (player.bullets) {
+        player.bullets.forEach(bullet => {
+            if (bullet.type === 'fireball') {
+                // FIREBALL - EPIC EXPLOSIVE! 🔥
+                // Outer glow
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(bullet.x - 4, bullet.y - 4, bullet.width + 8, bullet.height + 8);
+                
+                // Main fireball
+                ctx.fillStyle = '#ff4500';
+                ctx.fillRect(bullet.x - 2, bullet.y - 2, bullet.width + 4, bullet.height + 4);
+                
+                // Inner core
+                ctx.fillStyle = '#ffa500';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                
+                // Center flame
+                ctx.fillStyle = '#ffff00';
+                ctx.fillRect(bullet.x + 2, bullet.y + 2, bullet.width - 4, bullet.height - 4);
+                
+                // White hot center
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(bullet.x + 4, bullet.y + 4, bullet.width - 8, bullet.height - 8);
+                
+            } else if (bullet.type === 'laser') {
+                // Laser beam - bright cyan
+                ctx.fillStyle = '#00fcfc';
+                ctx.fillRect(bullet.x, bullet.y - 1, bullet.width, bullet.height + 2);
+                ctx.fillStyle = '#fcfcfc';
+                ctx.fillRect(bullet.x + 2, bullet.y, bullet.width - 4, bullet.height);
+            } else if (bullet.type === 'spread') {
+                // Spread bullets - orange
+                ctx.fillStyle = '#fc8000';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                ctx.fillStyle = '#fcfc00';
+                ctx.fillRect(bullet.x + 1, bullet.y, bullet.width - 2, bullet.height);
+            } else {
+                // Normal bullets - yellow
+                ctx.fillStyle = '#fcfc00';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                ctx.fillStyle = '#fc8000';
+                ctx.fillRect(bullet.x + 2, bullet.y, bullet.width - 4, bullet.height);
+            }
+        });
+    }
+    
+    // Goal flag
+    if (goal) {
+        ctx.fillStyle = '#fcfc00';
+        ctx.fillRect(goal.x, goal.y, 8, goal.height);
+        ctx.fillStyle = '#fc0000';
+        ctx.fillRect(goal.x + 8, goal.y, 30, 40);
+    }
+    
+    // Particles
     particles.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, 4, 4);
     });
-}
-
-// Draw Player (8-bit tooth)
-function drawPlayer() {
-    ctx.fillStyle = '#ffffff';
-    // Body (tooth shape)
-    ctx.fillRect(player.x + 8, player.y, 16, 24);
-    ctx.fillRect(player.x + 4, player.y + 8, 24, 16);
     
-    // Eyes
-    ctx.fillStyle = '#000';
-    if (player.direction === 1) {
-        ctx.fillRect(player.x + 14, player.y + 8, 4, 4);
-        ctx.fillRect(player.x + 20, player.y + 8, 4, 4);
-    } else {
-        ctx.fillRect(player.x + 8, player.y + 8, 4, 4);
-        ctx.fillRect(player.x + 14, player.y + 8, 4, 4);
+    // ✅ BOSS RENDERING!
+    drawBoss();
+    
+    // COMBO DISPLAY!
+    if (combo > 1) {
+        ctx.save();
+        ctx.translate(cameraX, 0);
+        
+        const comboX = player.x;
+        const comboY = player.y - 40;
+        
+        // Combo background
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(comboX - 5, comboY - 20, 70, 30);
+        ctx.globalAlpha = 1;
+        
+        // Combo text with color based on combo level
+        let comboColor = '#fcfc00'; // Yellow
+        if (combo >= 10) comboColor = '#fc00fc'; // Purple - MEGA!
+        else if (combo >= 5) comboColor = '#fc8000'; // Orange - SUPER!
+        
+        ctx.fillStyle = comboColor;
+        ctx.font = '14px "Press Start 2P"';
+        ctx.fillText(`x${combo}`, comboX, comboY);
+        
+        // Combo label
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText('COMBO', comboX, comboY + 10);
+        
+        // Flash effect when combo timer is low
+        if (comboTimer < 30 && Math.floor(Date.now() / 100) % 2 === 0) {
+            ctx.fillStyle = '#fc0000';
+            ctx.fillText('!', comboX + 55, comboY);
+        }
+        
+        ctx.restore();
     }
     
-    // Smile
-    ctx.fillRect(player.x + 12, player.y + 16, 8, 2);
+    // ✅ CAVE LIGHTING EFFECT!
+    drawCaveLighting();
+    
+    // 🔥 DOOM DOOR RENDERING
+    renderDoomDoor();
+    
+    ctx.restore();
+    
+    // ✅ POWER-UP STATUS INDICATORS! - MOVED AFTER ctx.restore() FOR FIXED SCREEN POSITION!
+    drawPowerUpStatus();
 }
 
-// Draw Bacteria (8-bit enemy)
-function drawBacteria(x, y, size) {
+// Draw boss (if present)
+function drawBoss() {
+    if (!currentBoss || !currentBoss.alive) return;
+    
+    const boss = currentBoss;
+    
+    // 🐛 DEBUG - проверяем позицию босса
+    const screenX = boss.x - cameraX;
+    const onScreen = (screenX > -100 && screenX < canvas.width + 100);
+    
+    if (Math.random() < 0.01) { // Логируем редко
+        console.log('👾 BOSS:', 
+            'alive:', boss.alive, 
+            'x:', Math.floor(boss.x), 
+            'y:', Math.floor(boss.y),
+            'camera:', Math.floor(cameraX),
+            'onScreen:', onScreen,
+            'screenX:', Math.floor(screenX),
+            'bossActive:', bossActive
+        );
+    }
+    
+    // ✅ РИСУЕМ БОССА ВСЕГДА ЕСЛИ ОН ALIVE!
+    // Не проверяем onScreen чтобы видеть босса всегда
+    
+    // 📊 BOSS HEALTH BAR - всегда виден когда босс активен
+    if (bossActive) {
+        ctx.save();
+        
+        // Health bar привязан к экрану (HUD), не к миру - IMPROVED!
+        // Background
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillRect(50, 30, 320, 30);
+        
+        // Border
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(50, 30, 320, 30);
+        
+        // Health bar with damage flash effect
+        const healthPercent = boss.health / boss.maxHealth;
+        let healthColor = '#ff0000'; // Red
+        if (healthPercent > 0.6) healthColor = '#00ff00'; // Green
+        else if (healthPercent > 0.3) healthColor = '#ffff00'; // Yellow
+        
+        // Flash effect when taking damage
+        if (boss.damageFlash > 0) {
+            healthColor = '#ffffff'; // White flash
+        }
+        
+        ctx.fillStyle = healthColor;
+        ctx.fillRect(52, 32, 316 * healthPercent, 26);
+        
+        // Boss name and health text - IMPROVED!
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText('👾 BOSS HEALTH', 60, 50);
+        
+        // Health percentage
+        ctx.fillStyle = '#ffff00';
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText(`${Math.ceil(boss.health)}/${boss.maxHealth} (${Math.round(healthPercent * 100)}%)`, 200, 50);
+        
+        ctx.restore();
+    }
+    
+    // 👾 РИСУЕМ СПРАЙТ БОССА (с учетом камеры!)
+    // Флэш эффект при уроне
+    if (boss.damageFlash > 0) {
+        ctx.globalAlpha = 0.5 + (boss.damageFlash % 2) * 0.5;
+    }
+    
+    // GIANT BACTERIA BOSS - детальный спрайт (координаты относительно камеры)
+    // Босс рендерится внутри ctx.translate(-cameraX, 0), поэтому НЕ вычитаем cameraX!
+    const bx = boss.x;
+    const by = boss.y;
+    
+    // DEBUG removed
+    const pulse = Math.sin(boss.animFrame) * 5;
+    
+    // Основное тело
     ctx.fillStyle = '#00fc00';
-    // Body
-    ctx.fillRect(x + 4, y + 4, size - 8, size - 8);
-    ctx.fillRect(x + 8, y, size - 16, size);
+    ctx.fillRect(bx + 10, by + 10 + pulse, 60, 60);
+    ctx.fillRect(bx + 5, by + 20 + pulse, 70, 40);
     
-    // Eyes
+    // Глаза
     ctx.fillStyle = '#fc0000';
-    ctx.fillRect(x + 8, y + 6, 3, 3);
-    ctx.fillRect(x + size - 11, y + 6, 3, 3);
+    ctx.fillRect(bx + 20, by + 25 + pulse, 12, 12);
+    ctx.fillRect(bx + 48, by + 25 + pulse, 12, 12);
+    
+    // Зрачки
+    ctx.fillStyle = '#000';
+    ctx.fillRect(bx + 24, by + 29 + pulse, 4, 4);
+    ctx.fillRect(bx + 52, by + 29 + pulse, 4, 4);
+    
+    // Рот
+    ctx.fillStyle = '#000';
+    ctx.fillRect(bx + 30, by + 48 + pulse, 20, 4);
+    ctx.fillRect(bx + 28, by + 50 + pulse, 24, 3);
+    
+    // Щупальца (анимированные)
+    for (let i = 0; i < 6; i++) {
+        const angle = (boss.animFrame * 0.5 + i) * Math.PI / 3;
+        const tx = bx + 40 + Math.cos(angle) * 40;
+        const ty = by + 40 + Math.sin(angle) * 40;
+        
+        ctx.fillStyle = '#00fc00';
+        ctx.fillRect(tx, ty, 8, 16);
+        ctx.fillStyle = '#00c000';
+        ctx.fillRect(tx + 2, ty + 4, 4, 8);
+    }
+    
+    ctx.globalAlpha = 1;
+    
+    // 💥 DEBUG: Показываем hitbox (с учетом камеры!)
+    // Debug hitbox removed for better gameplay
 }
 
-// Draw Power-up (pill)
-function drawPowerUp(x, y) {
-    ctx.fillStyle = '#fc0000';
-    ctx.fillRect(x, y + 4, 20, 12);
-    ctx.fillStyle = '#fcfc00';
-    ctx.fillRect(x + 10, y + 4, 10, 12);
+// Draw checkpoints with animation
+function drawCheckpointsAnimated() {
+    checkpoints.forEach(cp => {
+        if (cp.x < cameraX - 100 || cp.x > cameraX + canvas.width + 100) return;
+        
+        const flagHeight = cp.activated ? 40 : 20;
+        const time = Date.now() / 1000;
+        const wave = Math.sin(time * 3 + cp.x * 0.01) * 5;
+        
+        // Flag pole
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(cp.x, cp.y - flagHeight, 5, flagHeight);
+        
+        // Flag
+        ctx.fillStyle = cp.activated ? '#00ff00' : '#ffaa00';
+        ctx.beginPath();
+        ctx.moveTo(cp.x + 5, cp.y - flagHeight);
+        ctx.lineTo(cp.x + 35, cp.y - flagHeight + 10 + wave);
+        ctx.lineTo(cp.x + 5, cp.y - flagHeight + 20);
+        ctx.fill();
+        
+        // Glow effect if activated
+        if (cp.activated) {
+            ctx.save();
+            ctx.globalAlpha = 0.3 + Math.sin(time * 5) * 0.2;
+            ctx.fillStyle = '#00ff00';
+            ctx.beginPath();
+            ctx.arc(cp.x + 20, cp.y - 20, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    });
 }
 
-// Draw Key
-function drawKey(x, y) {
-    ctx.fillStyle = '#fcfc00';
-    ctx.fillRect(x + 4, y, 12, 8);
-    ctx.fillRect(x, y + 8, 8, 4);
-    ctx.fillRect(x, y + 14, 8, 4);
+// Draw power-ups with fancy graphics
+function drawPowerUpsAnimated() {
+    powerUps.forEach(pu => {
+        if (pu.collected || pu.x < cameraX - 100 || pu.x > cameraX + canvas.width + 100) return;
+        
+        const time = Date.now() / 1000;
+        const bounce = Math.sin(time * 4 + pu.x * 0.05) * 5;
+        const pulse = 1 + Math.sin(time * 6) * 0.1;
+        
+        ctx.save();
+        ctx.translate(pu.x + pu.width/2, pu.y + bounce + pu.height/2);
+        ctx.scale(pulse, pulse);
+        ctx.translate(-(pu.x + pu.width/2), -(pu.y + bounce + pu.height/2));
+        
+        // Different visuals per type
+        switch(pu.type) {
+            case 'shield':
+                // Shield icon
+                ctx.fillStyle = '#4169E1';
+                ctx.beginPath();
+                ctx.moveTo(pu.x + pu.width/2, pu.y + bounce);
+                ctx.lineTo(pu.x, pu.y + bounce + pu.height/3);
+                ctx.lineTo(pu.x, pu.y + bounce + pu.height);
+                ctx.lineTo(pu.x + pu.width, pu.y + bounce + pu.height);
+                ctx.lineTo(pu.x + pu.width, pu.y + bounce + pu.height/3);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                break;
+                
+            case 'speedboots':
+                // Lightning bolt
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(pu.x + pu.width * 0.6, pu.y + bounce);
+                ctx.lineTo(pu.x + pu.width * 0.3, pu.y + bounce + pu.height * 0.5);
+                ctx.lineTo(pu.x + pu.width * 0.5, pu.y + bounce + pu.height * 0.5);
+                ctx.lineTo(pu.x + pu.width * 0.2, pu.y + bounce + pu.height);
+                ctx.lineTo(pu.x + pu.width * 0.5, pu.y + bounce + pu.height * 0.6);
+                ctx.lineTo(pu.x + pu.width * 0.4, pu.y + bounce + pu.height * 0.6);
+                ctx.closePath();
+                ctx.fill();
+                break;
+                
+            case 'fireball':
+                // Fireball
+                ctx.fillStyle = '#FF4500';
+                ctx.beginPath();
+                ctx.arc(pu.x + pu.width/2, pu.y + bounce + pu.height/2, pu.width/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(pu.x + pu.width/2, pu.y + bounce + pu.height/2, pu.width/3, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+                
+            case 'superjump':
+                // Spring/boots
+                ctx.fillStyle = '#32CD32';
+                ctx.fillRect(pu.x, pu.y + bounce + pu.height * 0.6, pu.width, pu.height * 0.4);
+                ctx.fillStyle = '#228B22';
+                for(let i = 0; i < 3; i++) {
+                    ctx.fillRect(pu.x + 5, pu.y + bounce + i * 8, pu.width - 10, 6);
+                }
+                break;
+        }
+        
+        // Outer glow
+        ctx.globalAlpha = 0.4;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(pu.x - 2, pu.y + bounce - 2, pu.width + 4, pu.height + 4);
+        
+        ctx.restore();
+    });
 }
 
-// Draw Clouds
-function drawClouds() {
-    ctx.fillStyle = '#ffffff';
-    const time = Date.now() * 0.0001;
-    for (let i = 0; i < 3; i++) {
-        const x = ((time * 20 + i * 250) % 900) - 100;
-        const y = 50 + i * 40;
-        ctx.fillRect(x, y, 60, 20);
-        ctx.fillRect(x + 15, y - 10, 30, 10);
+// Draw cave lighting effect
+function drawCaveLighting() {
+    if (!inUnderground || inUnderground === 'contra') return; // Only in cave
+    
+    ctx.save();
+    
+    // MUCH lighter overlay for better visibility
+    ctx.fillStyle = 'rgba(0, 0, 20, 0.2)';  // Reduced from 0.4 to 0.2
+    ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+    
+    // Light around player - much reduced brightness
+    const gradient = ctx.createRadialGradient(
+        player.x - cameraX + player.width/2, 
+        player.y + player.height/2, 
+        20,
+        player.x - cameraX + player.width/2, 
+        player.y + player.height/2, 
+        180
+    );
+    gradient.addColorStop(0, 'rgba(255, 220, 150, 0.3)');  // Reduced from 0.6 to 0.3
+    gradient.addColorStop(0.5, 'rgba(255, 200, 100, 0.1)'); // Reduced from 0.2 to 0.1
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = gradient;
+    ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+    
+    // Torch lights
+    if (window.torches) {
+        window.torches.forEach(torch => {
+            if (torch.x < cameraX - 200 || torch.x > cameraX + canvas.width + 200) return;
+            
+            const torchGradient = ctx.createRadialGradient(
+                torch.x, torch.y, 5,
+                torch.x, torch.y, 80
+            );
+            const flicker = 0.4 + Math.random() * 0.2;
+            torchGradient.addColorStop(0, `rgba(255, 150, 50, ${flicker})`);
+            torchGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctx.fillStyle = torchGradient;
+            ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+        });
+    }
+    
+    ctx.restore();
+}
+
+// Power-up status indicators
+function drawPowerUpStatus() {
+    let yOffset = 100;
+    
+    if (player.hasShield) {
+        ctx.save();
+        const pulse = 1 + Math.sin(Date.now() / 200) * 0.1;
+        ctx.globalAlpha = 0.7;
+        ctx.strokeStyle = '#4169E1';
+        ctx.lineWidth = 3 * pulse;
+        ctx.strokeRect(
+            player.x - cameraX - 5, 
+            player.y - 5, 
+            player.width + 10, 
+            player.height + 10
+        );
+        ctx.restore();
+        
+        // Shield timer UI - IMPROVED!
+        ctx.fillStyle = 'rgba(65, 105, 225, 0.9)';
+        ctx.fillRect(10, yOffset, 120, 25);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'left';
+        const shieldTime = Math.ceil(player.shieldTimer / 60);
+        ctx.fillText(`🛡️ SHIELD: ${shieldTime}s`, 15, yOffset + 17);
+        yOffset += 30;
+    }
+    
+    if (player.hasSpeedBoots) {
+        // Speed lines behind player
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+        ctx.lineWidth = 2;
+        for(let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(player.x - cameraX - 10 - i * 5, player.y + 10 + i * 5);
+            ctx.lineTo(player.x - cameraX - 20 - i * 5, player.y + 10 + i * 5);
+            ctx.stroke();
+        }
+        
+        // Speed timer UI - IMPROVED!
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+        ctx.fillRect(10, yOffset, 120, 25);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        const speedTime = Math.ceil(player.speedBootsTimer / 60);
+        ctx.fillText(`⚡ SPEED: ${speedTime}s`, 15, yOffset + 17);
+        yOffset += 30;
+    }
+    
+    if (player.hasFireball) {
+        // Fireball UI - IMPROVED!
+        ctx.fillStyle = 'rgba(255, 69, 0, 0.9)';
+        ctx.fillRect(10, yOffset, 120, 25);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        const fireballTime = Math.ceil(player.fireballTimer / 60);
+        ctx.fillText(`🔥 FIREBALL: ${fireballTime}s`, 15, yOffset + 17);
+        yOffset += 30;
+    }
+    
+    if (player.hasSuperJump) {
+        // Super Jump UI - IMPROVED!
+        ctx.fillStyle = 'rgba(138, 43, 226, 0.9)';
+        ctx.fillRect(10, yOffset, 120, 25);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        const superJumpTime = Math.ceil(player.superJumpTimer / 60);
+        ctx.fillText(`🚀 SUPER JUMP: ${superJumpTime}s`, 15, yOffset + 17);
+        yOffset += 30;
     }
 }
 
-// Collision Detection
-function checkCollision(obj1, obj2) {
-    return obj1.x < obj2.x + obj2.width &&
-           obj1.x + obj1.width > obj2.x &&
-           obj1.y < obj2.y + obj2.height &&
-           obj1.y + obj1.height > obj2.y;
+function checkCollision(a, b) {
+    return a.x < b.x + (b.width || 24) &&
+           a.x + a.width > b.x &&
+           a.y < b.y + (b.height || 24) &&
+           a.y + a.height > b.y;
 }
 
-// Create Particles
-function createParticles(x, y, color) {
-    for (let i = 0; i < 10; i++) {
+function createParticles(x, y, color, count = 8) {
+    for (let i = 0; i < count; i++) {
         particles.push({
-            x: x,
-            y: y,
-            velX: (Math.random() - 0.5) * 4,
-            velY: (Math.random() - 0.5) * 4,
-            color: color,
-            life: 30
+            x, y,
+            velX: (Math.random() - 0.5) * 6,
+            velY: (Math.random() - 0.5) * 6 - 2, // Slight upward bias
+            color, life: 30
         });
     }
 }
 
-// Game Over
 function gameOver() {
     gameRunning = false;
+    stopBackgroundMusic();
     document.getElementById('finalScore').textContent = score;
     document.getElementById('gameOverScreen').style.display = 'block';
     playSound('gameover');
 }
 
-// 8-bit Sound Effects
+function victory() {
+    gameRunning = false;
+    stopBackgroundMusic();
+    score += 1000;
+    document.getElementById('victoryScore').textContent = score;
+    document.getElementById('victoryScreen').style.display = 'block';
+    playSound('victory');
+}
+
+// Ограничение на количество одновременных звуков
+let activeSounds = 0;
+const MAX_SOUNDS = 3;
+
 function playSound(type) {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    // Ограничиваем количество одновременных звуков
+    if (activeSounds >= MAX_SOUNDS) return;
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    activeSounds++;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
     
-    switch(type) {
-        case 'jump':
-            oscillator.frequency.value = 500;
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
-            break;
-        case 'coin':
-            oscillator.frequency.value = 800;
-            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.15);
-            break;
-        case 'hit':
-            oscillator.type = 'sawtooth';
-            oscillator.frequency.value = 100;
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.2);
-            break;
-        case 'secret':
-            oscillator.frequency.value = 1000;
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            oscillator.start(audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.3);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            oscillator.stop(audioContext.currentTime + 0.3);
-            break;
-        case 'levelup':
-            oscillator.frequency.value = 600;
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            oscillator.start(audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.5);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            oscillator.stop(audioContext.currentTime + 0.5);
-            break;
-        case 'gameover':
-            oscillator.type = 'sawtooth';
-            oscillator.frequency.value = 200;
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            oscillator.start(audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.8);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-            oscillator.stop(audioContext.currentTime + 0.8);
-            break;
+    const sounds = {
+        jump: [500, 0.1],
+        coin: [800, 0.15],
+        hit: [100, 0.2],
+        stomp: [600, 0.1],
+        break: [400, 0.15],
+        powerup: [1000, 0.3],
+        victory: [1200, 0.5],
+        gameover: [200, 0.8],
+        warp: [300, 0.4],
+        star: [1500, 0.6],
+        doublejump: [700, 0.12],
+        shoot: [1200, 0.08],
+        explosion: [150, 0.15],
+        land: [250, 0.08],
+        dash: [900, 0.12] // Dash sound
+    };
+    
+    const [freq, dur] = sounds[type] || [440, 0.1];
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur);
+    
+    // Сброс счетчика звуков после завершения
+    setTimeout(() => {
+        activeSounds = Math.max(0, activeSounds - 1);
+    }, dur * 1000);
+}
+
+// Underground music (simple looping melody)
+function startUndergroundMusic() {
+    stopBackgroundMusic();
+    
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [196, 220, 246, 220, 196, 174, 196, 220]; // Underground melody
+    let noteIndex = 0;
+    
+    function playNote() {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'square'; // 8-bit sound
+        osc.frequency.value = notes[noteIndex];
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.3);
+        
+        noteIndex = (noteIndex + 1) % notes.length;
+    }
+    
+    playNote();
+    bgMusicInterval = setInterval(playNote, 400);
+}
+
+function stopBackgroundMusic() {
+    if (bgMusicInterval) {
+        clearInterval(bgMusicInterval);
+        bgMusicInterval = null;
     }
 }
+
+// Contra music (intense military theme!)
+function startContraMusic() {
+    stopBackgroundMusic();
+    
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Contra-style aggressive melody
+    const notes = [330, 349, 392, 440, 392, 349, 330, 294, 330, 349]; 
+    let noteIndex = 0;
+    
+    function playNote() {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sawtooth'; // Aggressive sound!
+        osc.frequency.value = notes[noteIndex];
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.2);
+        
+        noteIndex = (noteIndex + 1) % notes.length;
+    }
+    
+    playNote();
+    bgMusicInterval = setInterval(playNote, 250); // Faster tempo!
+}
+
+// ========================================
+// 🔥 DOOM ENGINE - FULL RAYCASTING 3D! 🔥
+// ========================================
+
+// DOOM Game State
+let doomPlayer = {
+    x: 1.5,
+    y: 1.5,
+    angle: 0,
+    health: 100,
+    ammo: 50
+};
+
+let doomMap = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1],
+    [1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1],
+    [1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+let doomEnemies = [
+    { x: 3, y: 3, health: 30, alive: true, type: 'demon' },
+    { x: 12, y: 3, health: 30, alive: true, type: 'demon' },
+    { x: 3, y: 12, health: 30, alive: true, type: 'demon' },
+    { x: 12, y: 12, health: 30, alive: true, type: 'demon' },
+    { x: 7, y: 7, health: 30, alive: true, type: 'demon' },
+    { x: 5, y: 8, health: 30, alive: true, type: 'demon' },
+    { x: 10, y: 8, health: 30, alive: true, type: 'demon' }
+];
+
+let doomBullets = [];
+let doomAmmoPickups = [
+    { x: 2, y: 2, collected: false },
+    { x: 17, y: 2, collected: false },
+    { x: 2, y: 17, collected: false },
+    { x: 17, y: 17, collected: false },
+    { x: 8, y: 5, collected: false },
+    { x: 11, y: 5, collected: false },
+    { x: 8, y: 14, collected: false },
+    { x: 11, y: 14, collected: false },
+    // MORE AMMO! 🔫
+    { x: 5, y: 8, collected: false },
+    { x: 14, y: 8, collected: false },
+    { x: 5, y: 11, collected: false },
+    { x: 14, y: 11, collected: false },
+    { x: 3, y: 5, collected: false },
+    { x: 16, y: 5, collected: false },
+    { x: 3, y: 14, collected: false },
+    { x: 16, y: 14, collected: false },
+    { x: 9, y: 2, collected: false },
+    { x: 10, y: 2, collected: false },
+    { x: 9, y: 17, collected: false },
+    { x: 10, y: 17, collected: false }
+];
+let doomDoors = [
+    { x: 7, y: 0, open: false, targetY: 0.5 }, // Exit door
+    { x: 8, y: 0, open: false, targetY: 0.5 }
+];
+
+let doomDoor = null; // 2D door reference
+
+// Add DOOM door to 2D level
+function addDoomDoorToLevel() {
+    doomDoor = {
+        x: 3000, // Around where player can reach
+        y: 450,
+        width: 60,
+        height: 100,
+        canEnter: true
+    };
+}
+
+// Render DOOM door in 2D
+function renderDoomDoor() {
+    if (!doomDoor) return;
+    
+    const dx = doomDoor.x;
+    if (dx < cameraX - 100 || dx > cameraX + canvas.width + 100) return;
+    
+    // Metal door with skull and red glow
+    ctx.fillStyle = '#444';
+    ctx.fillRect(dx, doomDoor.y, doomDoor.width, doomDoor.height);
+    
+    // Door frame
+    ctx.fillStyle = '#666';
+    ctx.fillRect(dx - 5, doomDoor.y - 5, doomDoor.width + 10, doomDoor.height + 10);
+    
+    // Skull symbol
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('💀', dx + doomDoor.width/2, doomDoor.y + 30);
+    
+    // Red glow effect
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.fillRect(dx - 10, doomDoor.y - 10, doomDoor.width + 20, doomDoor.height + 20);
+    
+    // "DOOM" text
+    ctx.fillStyle = '#ff0000';
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText('DOOM', dx + doomDoor.width/2, doomDoor.y + 50);
+    
+    ctx.textAlign = 'left';
+}
+
+// Check DOOM door collision
+function checkDoomDoorCollision() {
+    if (!doomDoor) return;
+    
+    if (checkCollision(player, doomDoor) && keys['ArrowDown']) {
+        // Enter DOOM mode!
+        gameMode = 'doom';
+        console.log('🔥 ENTERING DOOM MODE!');
+        
+        // Reset DOOM player position
+        doomPlayer.x = 1.5;
+        doomPlayer.y = 1.5;
+        doomPlayer.angle = 0;
+        doomPlayer.health = 100;
+        doomPlayer.ammo = 100; // MORE AMMO! 🔫
+        doomPlayer.lives = 3; // LIVES SYSTEM! ❤️
+        
+        // Reset enemies
+        doomEnemies.forEach(enemy => {
+            enemy.alive = true;
+            enemy.health = 30;
+        });
+        
+        // Reset ammo pickups
+        doomAmmoPickups.forEach(ammo => {
+            ammo.collected = false;
+        });
+        
+        doomBullets = [];
+    }
+}
+
+// DOOM Update
+function updateDoom() {
+    // IMPROVED MOVEMENT - SMOOTHER!
+    const moveSpeed = 0.08; // Faster movement
+    const rotSpeed = 0.08; // Faster rotation
+    
+    // Smooth rotation with acceleration
+    if (keys['ArrowLeft']) doomPlayer.angle -= rotSpeed;
+    if (keys['ArrowRight']) doomPlayer.angle += rotSpeed;
+    
+    if (keys['ArrowUp']) {
+        const newX = doomPlayer.x + Math.cos(doomPlayer.angle) * moveSpeed;
+        const newY = doomPlayer.y + Math.sin(doomPlayer.angle) * moveSpeed;
+        
+        if (!isWall(newX, doomPlayer.y)) doomPlayer.x = newX;
+        if (!isWall(doomPlayer.x, newY)) doomPlayer.y = newY;
+    }
+    
+    if (keys['ArrowDown']) {
+        const newX = doomPlayer.x - Math.cos(doomPlayer.angle) * moveSpeed;
+        const newY = doomPlayer.y - Math.sin(doomPlayer.angle) * moveSpeed;
+        
+        if (!isWall(newX, doomPlayer.y)) doomPlayer.x = newX;
+        if (!isWall(doomPlayer.x, newY)) doomPlayer.y = newY;
+    }
+    
+    // Enemy AI - MOVEMENT AND ATTACKS! 👹
+    doomEnemies.forEach(enemy => {
+        if (!enemy.alive) return;
+        
+        // Move towards player
+        const dx = doomPlayer.x - enemy.x;
+        const dy = doomPlayer.y - enemy.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance > 0.1 && distance < 5) { // Move if not too close and not too far
+            const moveSpeed = 0.02;
+            const moveX = (dx / distance) * moveSpeed;
+            const moveY = (dy / distance) * moveSpeed;
+            
+            // Check if new position is valid (not in wall)
+            if (!isWall(enemy.x + moveX, enemy.y)) enemy.x += moveX;
+            if (!isWall(enemy.x, enemy.y + moveY)) enemy.y += moveY;
+        }
+        
+        // Attack player if close enough
+        if (distance < 1.5 && Math.random() < 0.02) { // 2% chance per frame
+            doomPlayer.health -= 5;
+            if (doomPlayer.health <= 0) {
+                doomPlayer.lives--; // Lose a life
+                if (doomPlayer.lives <= 0) {
+                    // Game over - return to 2D
+                    gameMode = '2d';
+                    gameOver();
+                } else {
+                    // Respawn with full health
+                    doomPlayer.health = 100;
+                    doomPlayer.x = 1.5;
+                    doomPlayer.y = 1.5;
+                    doomPlayer.angle = 0;
+                    console.log(`💀 LOST LIFE! Lives remaining: ${doomPlayer.lives}`);
+                }
+            }
+        }
+    });
+    
+    // Ammo pickup
+    doomAmmoPickups.forEach(ammo => {
+        if (!ammo.collected && Math.abs(doomPlayer.x - ammo.x) < 0.5 && Math.abs(doomPlayer.y - ammo.y) < 0.5) {
+            ammo.collected = true;
+            doomPlayer.ammo += 30; // Increased ammo!
+            score += 50;
+        }
+    });
+    
+    // Shooting
+    if (keyCodes['KeyX'] && doomPlayer.ammo > 0) {
+        doomPlayer.ammo--;
+        doomBullets.push({
+            x: doomPlayer.x,
+            y: doomPlayer.y,
+            angle: doomPlayer.angle,
+            distance: 0,
+            speed: 0.1
+        });
+    }
+    
+    // Update bullets
+    doomBullets = doomBullets.filter(bullet => {
+        bullet.distance += bullet.speed;
+        bullet.x += Math.cos(bullet.angle) * bullet.speed;
+        bullet.y += Math.sin(bullet.angle) * bullet.speed;
+        
+        // Check wall collision
+        if (isWall(bullet.x, bullet.y)) return false;
+        
+        // Check enemy collision
+        doomEnemies.forEach(enemy => {
+            if (enemy.alive && Math.abs(bullet.x - enemy.x) < 0.5 && Math.abs(bullet.y - enemy.y) < 0.5) {
+                enemy.health -= 10;
+                if (enemy.health <= 0) {
+                    enemy.alive = false;
+                    score += 100;
+                }
+                return false;
+            }
+        });
+        
+        return bullet.distance < 10; // Max range
+    });
+    
+    // Check exit door - ULTRA IMPROVED!
+    const exitDistance = Math.sqrt((doomPlayer.x - 7.5) ** 2 + (doomPlayer.y - 0.5) ** 2);
+    
+    // Debug info
+    if (exitDistance < 2 && Math.random() < 0.01) { // Log rarely when close
+        console.log('🚪 EXIT DEBUG:', {
+            playerX: doomPlayer.x.toFixed(2),
+            playerY: doomPlayer.y.toFixed(2),
+            exitDistance: exitDistance.toFixed(2),
+            canExit: exitDistance < 1.5
+        });
+    }
+    
+    if (exitDistance < 1.5) { // Larger activation radius
+        // Exit DOOM mode
+        gameMode = '2d';
+        playSound('warp'); // Sound effect for exit
+        console.log('🚪 EXITING DOOM MODE! Distance:', exitDistance.toFixed(2));
+        
+        // Show message
+        setTimeout(() => {
+            alert('🎉 DOOM LEVEL COMPLETED! 🎉\nScore: +1000 points!');
+            score += 1000;
+        }, 100);
+    }
+}
+
+// DOOM Render
+function renderDoom() {
+    // Clear screen with darker background
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Raycasting
+    const numRays = canvas.width;
+    const fov = Math.PI / 3; // 60 degrees
+    const rayAngleStep = fov / numRays;
+    
+    for (let i = 0; i < numRays; i++) {
+        const rayAngle = doomPlayer.angle - fov/2 + i * rayAngleStep;
+        const distance = castRay(doomPlayer.x, doomPlayer.y, rayAngle);
+        
+        // ULTRA FIXED WALL SCALING - NO STRETCHING AT ALL!
+        const wallHeight = Math.max(100, Math.min(250, (canvas.height * 0.4) / distance));
+        const wallTop = (canvas.height - wallHeight) / 2;
+        const wallBottom = wallTop + wallHeight;
+        
+        // Wall color based on distance - IMPROVED COLORS!
+        const brightness = Math.max(0.3, 1 - distance / 8);
+        
+        // Different wall types with better colors
+        let wallColor;
+        if (Math.floor(doomPlayer.x) % 2 === 0) {
+            // Stone walls
+            wallColor = `rgb(${Math.floor(120 * brightness)}, ${Math.floor(100 * brightness)}, ${Math.floor(80 * brightness)})`;
+        } else {
+            // Metal walls
+            wallColor = `rgb(${Math.floor(100 * brightness)}, ${Math.floor(110 * brightness)}, ${Math.floor(120 * brightness)})`;
+        }
+        
+        // Draw wall slice
+        ctx.fillStyle = wallColor;
+        ctx.fillRect(i, wallTop, 1, wallHeight);
+        
+        // Wall texture lines
+        if (i % 3 === 0) {
+            ctx.fillStyle = `rgb(${Math.floor(80 * brightness)}, ${Math.floor(70 * brightness)}, ${Math.floor(60 * brightness)})`;
+            ctx.fillRect(i, wallTop, 1, wallHeight);
+        }
+        
+        // Floor - improved with texture
+        ctx.fillStyle = `rgb(${Math.floor(60 * brightness)}, ${Math.floor(40 * brightness)}, ${Math.floor(30 * brightness)})`;
+        ctx.fillRect(i, wallBottom, 1, canvas.height - wallBottom);
+        
+        // Floor texture lines
+        if (i % 4 === 0 && wallBottom < canvas.height - 10) {
+            ctx.fillStyle = `rgb(${Math.floor(40 * brightness)}, ${Math.floor(30 * brightness)}, ${Math.floor(20 * brightness)})`;
+            ctx.fillRect(i, wallBottom + 10, 1, 2);
+        }
+        
+        // Ceiling - improved with texture
+        ctx.fillStyle = `rgb(${Math.floor(40 * brightness)}, ${Math.floor(40 * brightness)}, ${Math.floor(60 * brightness)})`;
+        ctx.fillRect(i, 0, 1, wallTop);
+        
+        // Ceiling details
+        if (i % 3 === 0 && wallTop > 10) {
+            ctx.fillStyle = `rgb(${Math.floor(30 * brightness)}, ${Math.floor(30 * brightness)}, ${Math.floor(50 * brightness)})`;
+            ctx.fillRect(i, wallTop - 10, 1, 2);
+        }
+    }
+    
+    // Render enemies - IMPROVED!
+    doomEnemies.forEach(enemy => {
+        if (!enemy.alive) return;
+        
+        const dx = enemy.x - doomPlayer.x;
+        const dy = enemy.y - doomPlayer.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance < 0.1) return; // Too close
+        
+        const angle = Math.atan2(dy, dx) - doomPlayer.angle;
+        const screenX = (angle / fov) * canvas.width + canvas.width/2;
+        
+        // IMPROVED BOUNDS CHECKING - NO RENDERING OUTSIDE SCREEN!
+        if (screenX < -150 || screenX > canvas.width + 150) return;
+        
+        // Additional distance check to prevent extreme scaling
+        if (distance > 15) return; // Don't render if too far
+        
+        // ULTRA FIXED SCALING - NO STRETCHING AT ALL!
+        const enemyHeight = Math.max(40, Math.min(80, (canvas.height * 0.3) / distance));
+        const enemyTop = (canvas.height - enemyHeight) / 2;
+        
+        // ULTRA-DETAILED DEMON SPRITE! 👹
+        const breathing = Math.sin(Date.now() / 300) * 0.1 + 1;
+        const eyeGlow = Math.sin(Date.now() / 200) * 0.3 + 0.7;
+        
+        // Outer glow - distance dependent
+        ctx.globalAlpha = Math.max(0.1, 0.5 - distance * 0.05);
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(screenX - 16, enemyTop - 8, 32, enemyHeight + 16);
+        
+        // Body with muscle definition
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#8B0000';
+        ctx.fillRect(screenX - 12, enemyTop + 5, 24, (enemyHeight - 10) * breathing);
+        
+        // Muscle details
+        ctx.fillStyle = '#660000';
+        ctx.fillRect(screenX - 10, enemyTop + 8, 3, 8);
+        ctx.fillRect(screenX + 7, enemyTop + 8, 3, 8);
+        ctx.fillRect(screenX - 6, enemyTop + 12, 12, 2);
+        
+        // Head with detailed structure
+        ctx.fillStyle = '#DC143C';
+        ctx.fillRect(screenX - 8, enemyTop, 16, enemyHeight * 0.4);
+        
+        // Jaw
+        ctx.fillStyle = '#B22222';
+        ctx.fillRect(screenX - 6, enemyTop + enemyHeight * 0.25, 12, 6);
+        
+        // Teeth/Fangs
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(screenX - 2, enemyTop + enemyHeight * 0.3, 2, 4);
+        ctx.fillRect(screenX + 1, enemyTop + enemyHeight * 0.3, 2, 4);
+        
+        // Long horns with red tips
+        ctx.fillStyle = '#2F2F2F';
+        ctx.fillRect(screenX - 6, enemyTop - 5, 3, 8);
+        ctx.fillRect(screenX + 3, enemyTop - 5, 3, 8);
+        
+        // Horn tips
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(screenX - 6, enemyTop - 6, 3, 2);
+        ctx.fillRect(screenX + 3, enemyTop - 6, 3, 2);
+        
+        // Large eyes with white pupils
+        ctx.fillStyle = '#FF0000';
+        ctx.globalAlpha = eyeGlow;
+        ctx.fillRect(screenX - 5, enemyTop + 3, 4, 4);
+        ctx.fillRect(screenX + 1, enemyTop + 3, 4, 4);
+        
+        // White pupils
+        ctx.fillStyle = '#FFFFFF';
+        ctx.globalAlpha = 1;
+        ctx.fillRect(screenX - 4, enemyTop + 4, 2, 2);
+        ctx.fillRect(screenX + 2, enemyTop + 4, 2, 2);
+        
+        // Arms with claws
+        ctx.fillStyle = '#8B0000';
+        ctx.fillRect(screenX - 16, enemyTop + 8, 6, 8);
+        ctx.fillRect(screenX + 10, enemyTop + 8, 6, 8);
+        
+        // Claws
+        ctx.fillStyle = '#2F2F2F';
+        ctx.fillRect(screenX - 17, enemyTop + 10, 2, 4);
+        ctx.fillRect(screenX + 15, enemyTop + 10, 2, 4);
+        
+        // Legs
+        ctx.fillStyle = '#660000';
+        ctx.fillRect(screenX - 8, enemyTop + enemyHeight - 8, 4, 8);
+        ctx.fillRect(screenX + 4, enemyTop + enemyHeight - 8, 4, 8);
+        
+        // Feet
+        ctx.fillStyle = '#2F2F2F';
+        ctx.fillRect(screenX - 9, enemyTop + enemyHeight - 2, 6, 4);
+        ctx.fillRect(screenX + 3, enemyTop + enemyHeight - 2, 6, 4);
+        
+        // Inner glow effect
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = '#FF0000';
+        ctx.fillRect(screenX - 15, enemyTop - 5, 30, enemyHeight + 10);
+        ctx.globalAlpha = 1;
+    });
+    
+    // Render ammo pickups
+    doomAmmoPickups.forEach(ammo => {
+        if (ammo.collected) return;
+        
+        const dx = ammo.x - doomPlayer.x;
+        const dy = ammo.y - doomPlayer.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance < 0.1) return;
+        
+        const angle = Math.atan2(dy, dx) - doomPlayer.angle;
+        const screenX = (angle / fov) * canvas.width + canvas.width/2;
+        
+        // IMPROVED BOUNDS CHECKING FOR AMMO!
+        if (screenX < -50 || screenX > canvas.width + 50) return;
+        
+        // Distance check for ammo
+        if (distance > 10) return; // Don't render if too far
+        
+        const ammoHeight = Math.max(15, Math.min(25, (canvas.height * 0.15) / distance));
+        const ammoTop = (canvas.height - ammoHeight) / 2;
+        
+        // Pulsing glow effect
+        const pulse = Math.sin(Date.now() / 300) * 0.3 + 0.7;
+        
+        // Outer glow
+        ctx.globalAlpha = pulse * 0.4;
+        ctx.fillStyle = '#FFFF00';
+        ctx.fillRect(screenX - 12, ammoTop - 4, 24, ammoHeight + 8);
+        
+        // Main ammo box
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(screenX - 8, ammoTop, 16, ammoHeight);
+        
+        // Box details
+        ctx.fillStyle = '#FFA500';
+        ctx.fillRect(screenX - 6, ammoTop + 2, 12, 2);
+        ctx.fillRect(screenX - 6, ammoTop + ammoHeight - 4, 12, 2);
+        
+        // Ammo symbol - red cross
+        ctx.fillStyle = '#FF0000';
+        ctx.fillRect(screenX - 1, ammoTop + 4, 2, ammoHeight - 8);
+        ctx.fillRect(screenX - 4, ammoTop + ammoHeight/2 - 1, 8, 2);
+        
+        // Inner glow
+        ctx.globalAlpha = pulse * 0.2;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(screenX - 10, ammoTop - 2, 20, ammoHeight + 4);
+        ctx.globalAlpha = 1;
+    });
+    
+    // RENDER EXIT DOOR IN 3D! 🚪
+    const exitDoorX = 7.5;
+    const exitDoorY = 0.5;
+    const dx = exitDoorX - doomPlayer.x;
+    const dy = exitDoorY - doomPlayer.y;
+    const exitDistance = Math.sqrt(dx*dx + dy*dy);
+    
+    if (exitDistance > 0.1 && exitDistance < 20) { // Render if not too close and not too far
+        const angle = Math.atan2(dy, dx) - doomPlayer.angle;
+        const screenX = (angle / fov) * canvas.width + canvas.width/2;
+        
+        if (screenX > -100 && screenX < canvas.width + 100) {
+            const exitHeight = Math.max(60, Math.min(100, (canvas.height * 0.4) / exitDistance));
+            const exitTop = (canvas.height - exitHeight) / 2;
+            
+            // Pulsing glow effect for exit
+            const exitPulse = Math.sin(Date.now() / 200) * 0.3 + 0.7;
+            
+            // Outer glow - cyan
+            ctx.globalAlpha = exitPulse * 0.6;
+            ctx.fillStyle = '#00ffff';
+            ctx.fillRect(screenX - 20, exitTop - 10, 40, exitHeight + 20);
+            
+            // Main exit door
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = '#0088ff';
+            ctx.fillRect(screenX - 15, exitTop, 30, exitHeight);
+            
+            // Door frame
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(screenX - 16, exitTop - 2, 32, exitHeight + 4);
+            
+            // Exit symbol - white arrow up
+            ctx.fillStyle = '#ffffff';
+            const arrowSize = Math.max(4, Math.min(12, exitHeight / 4));
+            // Arrow body
+            ctx.fillRect(screenX - arrowSize/2, exitTop + exitHeight/2, arrowSize, arrowSize);
+            // Arrow head
+            ctx.fillRect(screenX - arrowSize, exitTop + exitHeight/2 - arrowSize/2, arrowSize*2, arrowSize/2);
+            
+            // Inner glow
+            ctx.globalAlpha = exitPulse * 0.4;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(screenX - 12, exitTop + 5, 24, exitHeight - 10);
+            ctx.globalAlpha = 1;
+        }
+    }
+    
+    // Render bullets
+    doomBullets.forEach(bullet => {
+        const dx = bullet.x - doomPlayer.x;
+        const dy = bullet.y - doomPlayer.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance < 0.1) return;
+        
+        const angle = Math.atan2(dy, dx) - doomPlayer.angle;
+        const screenX = (angle / fov) * canvas.width + canvas.width/2;
+        
+        if (screenX < 0 || screenX > canvas.width) return;
+        
+        ctx.fillStyle = '#ffff00';
+        ctx.fillRect(screenX, canvas.height/2, 2, 2);
+    });
+    
+    // HUD - ULTRA IMPROVED WITH LIVES!
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(0, 0, 220, 140);
+    
+    // Health bar
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(10, 10, 150, 20);
+    ctx.fillStyle = '#00ff00';
+    const healthPercent = doomPlayer.health / 100;
+    ctx.fillRect(12, 12, 146 * healthPercent, 16);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText(`HEALTH: ${doomPlayer.health}`, 10, 45);
+    
+    // Lives
+    ctx.fillStyle = '#ff0000';
+    ctx.fillText(`❤️ LIVES: ${doomPlayer.lives}`, 10, 65);
+    
+    // Ammo
+    ctx.fillStyle = '#ffff00';
+    ctx.fillText(`🔫 AMMO: ${doomPlayer.ammo}`, 10, 85);
+    
+    // Score
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(`⭐ SCORE: ${score}`, 10, 105);
+    
+    // Demons
+    ctx.fillStyle = '#ff0000';
+    ctx.fillText(`👹 DEMONS: ${doomEnemies.filter(e => e.alive).length}`, 10, 125);
+    
+    // Exit hint with distance
+    const exitDist = Math.sqrt((doomPlayer.x - 7.5) ** 2 + (doomPlayer.y - 0.5) ** 2);
+    ctx.fillStyle = exitDist < 2 ? '#00ff00' : '#00ffff';
+    ctx.font = 'bold 10px Arial';
+    ctx.fillText(`🚪 EXIT: ${exitDist.toFixed(1)}m - ${exitDist < 1.5 ? 'PRESS TO EXIT!' : 'Find cyan door!'}`, 10, 140);
+    
+    // Mini-map
+    const mapSize = 120;
+    const mapX = canvas.width - mapSize - 10;
+    const mapY = 10;
+    
+    // Map background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(mapX, mapY, mapSize, mapSize);
+    
+    // Map border
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(mapX, mapY, mapSize, mapSize);
+    
+    // Map scale
+    const mapScale = mapSize / 20;
+    
+    // Draw walls on map - FIXED BOUNDS!
+    ctx.fillStyle = '#666666';
+    for (let x = 0; x < 20; x++) {
+        for (let y = 0; y < 20; y++) {
+            if (isWall(x, y)) {
+                // Clamp coordinates to map bounds
+                const clampedX = Math.max(0, Math.min(19, x));
+                const clampedY = Math.max(0, Math.min(19, y));
+                ctx.fillRect(mapX + clampedX * mapScale, mapY + clampedY * mapScale, mapScale, mapScale);
+            }
+        }
+    }
+    
+    // Draw player on map - CLAMPED TO BOUNDS!
+    ctx.fillStyle = '#00ff00';
+    const playerMapX = Math.max(0, Math.min(19, doomPlayer.x)) * mapScale;
+    const playerMapY = Math.max(0, Math.min(19, doomPlayer.y)) * mapScale;
+    ctx.fillRect(mapX + playerMapX - 2, mapY + playerMapY - 2, 4, 4);
+    
+    // Draw enemies on map - CLAMPED TO BOUNDS!
+    ctx.fillStyle = '#ff0000';
+    doomEnemies.forEach(enemy => {
+        if (enemy.alive) {
+            const enemyMapX = Math.max(0, Math.min(19, enemy.x)) * mapScale;
+            const enemyMapY = Math.max(0, Math.min(19, enemy.y)) * mapScale;
+            ctx.fillRect(mapX + enemyMapX - 1, mapY + enemyMapY - 1, 2, 2);
+        }
+    });
+    
+    // Draw ammo on map - CLAMPED TO BOUNDS!
+    ctx.fillStyle = '#ffff00';
+    doomAmmoPickups.forEach(ammo => {
+        if (!ammo.collected) {
+            const ammoMapX = Math.max(0, Math.min(19, ammo.x)) * mapScale;
+            const ammoMapY = Math.max(0, Math.min(19, ammo.y)) * mapScale;
+            ctx.fillRect(mapX + ammoMapX - 1, mapY + ammoMapY - 1, 2, 2);
+        }
+    });
+    
+    // Draw exit on map - IMPROVED WITH GLOW EFFECT!
+    ctx.fillStyle = '#00ffff';
+    const exitMapX = Math.max(0, Math.min(19, 7.5)) * mapScale;
+    const exitMapY = Math.max(0, Math.min(19, 0.5)) * mapScale;
+    
+    // Glow effect
+    ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+    ctx.fillRect(mapX + exitMapX - 4, mapY + exitMapY - 4, 8, 8);
+    
+    // Exit itself - LARGER SIZE!
+    ctx.fillStyle = '#00ffff';
+    ctx.fillRect(mapX + exitMapX - 3, mapY + exitMapY - 3, 6, 6);
+    
+    // Crosshair - IMPROVED!
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(canvas.width/2 - 8, canvas.height/2 - 1, 16, 2);
+    ctx.fillRect(canvas.width/2 - 1, canvas.height/2 - 8, 2, 16);
+    
+    // Crosshair center
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(canvas.width/2 - 1, canvas.height/2 - 1, 2, 2);
+}
+
+// Raycasting function
+function castRay(startX, startY, angle) {
+    const maxDistance = 20;
+    const stepSize = 0.01;
+    
+    let distance = 0;
+    let x = startX;
+    let y = startY;
+    
+    while (distance < maxDistance) {
+        x += Math.cos(angle) * stepSize;
+        y += Math.sin(angle) * stepSize;
+        distance += stepSize;
+        
+        if (isWall(x, y)) {
+            return distance;
+        }
+    }
+    
+    return maxDistance;
+}
+
+// Check if position is a wall
+function isWall(x, y) {
+    const mapX = Math.floor(x);
+    const mapY = Math.floor(y);
+    
+    if (mapX < 0 || mapX >= doomMap[0].length || mapY < 0 || mapY >= doomMap.length) {
+        return true;
+    }
+    
+    return doomMap[mapY][mapX] === 1;
+}
+
+// Add DOOM door collision check to main update (already integrated above)
 </script>
 {% endblock %}
 
