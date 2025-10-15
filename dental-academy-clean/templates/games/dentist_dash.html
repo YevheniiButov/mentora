@@ -1128,14 +1128,7 @@ function createUndergroundLevel(pipeX) {
         color: '#00fc00'
     }];
     
-    // 🔥 DOOM DOOR В ПОДЗЕМНОМ РЕЖИМЕ!
-    doomDoor = {
-        x: 2500, // В подземном режиме
-        y: 450,
-        width: 60,
-        height: 100,
-        canEnter: true
-    };
+    // NO DOOM DOOR in underground - only in Contra!
     
     // 🗝️ KEY #2 will spawn after boss death!
     
@@ -1860,13 +1853,27 @@ function update() {
                 cameraX = Math.max(0, player.x - 400);
                 playSound('warp');
             } else if (pipe.isContra) {
-                // Enter CONTRA level!
-                createContraLevel(pipe.x);
-                playSound('warp');
+                // 🔒 CHECK KEY #2 FOR CONTRA!
+                if (playerProgress.hasKey2) {
+                    createContraLevel(pipe.x);
+                    playSound('warp');
+                } else {
+                    // Show locked message
+                    console.log('🔒 CONTRA LOCKED! Need Key #2!');
+                    playSound('hit');
+                    createParticles(player.x, player.y, '#ff0000', 10);
+                }
             } else if (pipe.isUnderground) {
-                // Enter underground
-                createUndergroundLevel(pipe.x);
-                playSound('warp');
+                // 🔒 CHECK KEY #1 FOR UNDERGROUND!
+                if (playerProgress.hasKey1) {
+                    createUndergroundLevel(pipe.x);
+                    playSound('warp');
+                } else {
+                    // Show locked message
+                    console.log('🔒 UNDERGROUND LOCKED! Need Key #1!');
+                    playSound('hit');
+                    createParticles(player.x, player.y, '#ff0000', 10);
+                }
             }
         }
     });
@@ -4192,6 +4199,11 @@ function renderDoomDoor() {
 // Check DOOM door collision
 function checkDoomDoorCollision() {
     if (!doomDoor) return;
+    
+    // 🔒 DOOM DOOR ONLY AVAILABLE IN CONTRA!
+    if (inUnderground !== 'contra') {
+        return; // No DOOM door in other levels
+    }
     
     if (checkCollision(player, doomDoor) && keys['ArrowDown']) {
         // Enter DOOM mode!
