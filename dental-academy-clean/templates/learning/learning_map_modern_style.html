@@ -835,11 +835,16 @@
             opacity: 0 !important;
         }
 
-        /* Карточки 3x2 */
+        /* Карточки 3x2 или 4x1 для игр */
         .cards-area {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
+        }
+        
+        /* Для игр - 4 карточки в ряд */
+        .cards-area:has(.info-card[data-games="true"]) {
+            grid-template-columns: repeat(4, 1fr);
         }
 
         .info-card {
@@ -925,6 +930,37 @@
         .info-card.clickable-card:hover .play-badge {
             transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Banner card styles */
+        .info-card.banner-card {
+            min-height: 280px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .info-card.banner-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 50px rgba(59, 130, 246, 0.3);
+        }
+
+        .game-banner {
+            transition: all 0.3s ease;
+        }
+
+        .info-card.banner-card:hover .game-banner {
+            transform: scale(1.02);
+        }
+
+        /* Games banner styles */
+        .games-banner {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .games-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
         }
 
         .card-header {
@@ -1243,6 +1279,11 @@
                 gap: 1rem;
             }
             
+            /* Для игр на мобильных - 2 колонки */
+            .cards-area:has(.info-card[data-games="true"]) {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
             .info-card {
                 min-height: 150px;
             }
@@ -1542,11 +1583,12 @@
                     </div>
 
                     <!-- Games Cards (for games tab) -->
-                    <template x-for="module in displayModules.slice(0, 3)" :key="module.id" x-show="activeTab === 'games'">
+                    <template x-for="module in displayModules" :key="module.id" x-show="activeTab === 'games'">
                         <div class="info-card" 
                              :class="{ 'clickable-card': module.url }" 
                              @click="module.url ? window.location.href = module.url : null"
-                             :style="module.url ? 'cursor: pointer;' : ''">
+                             :style="module.url ? 'cursor: pointer;' : ''"
+                             data-games="true">
                             <div class="card-header">
                                 <div class="card-icon module"><i :class="`bi bi-${module.icon}`"></i></div>
                                 <div>
@@ -1560,6 +1602,52 @@
                         </div>
                     </template>
 
+                </div>
+                
+                <!-- Баннер для игр (под играми) -->
+                <div x-show="activeTab === 'games'" class="games-banner" @click="window.location.href = '/games/dentist-dash'" style="
+                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+                    border-radius: 20px;
+                    padding: 1.5rem;
+                    margin-top: 2rem;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                    position: relative;
+                    overflow: hidden;
+                    min-height: 120px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
+                    <!-- Твое изображение -->
+                    <img src="/static/images/superment.png" 
+                         alt="Super Mentora Banner" 
+                         style="
+                            width: 100%;
+                            max-width: 600px;
+                            height: auto;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            transition: transform 0.3s ease;
+                         "
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                         onmouseover="this.style.transform='scale(1.02)'"
+                         onmouseout="this.style.transform='scale(1)'">
+                    
+                    <!-- Fallback если изображение не найдено -->
+                    <div style="display: none; width: 100%; max-width: 600px; height: 100px; background: linear-gradient(45deg, #0a0a0a 0%, #1a0a0a 50%, #2a0a00 100%); border: 2px solid #444; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', monospace; color: #fff; text-align: center; padding: 1rem;">
+                        <div>
+                            <div style="font-size: 14px; font-weight: bold; margin-bottom: 0.5rem;">
+                                <span style="color: #ff0000; font-style: italic;">SUPER</span>
+                                <span style="margin: 0 8px; color: #fff;">MENTORA</span>
+                            </div>
+                            <div style="font-size: 10px; line-height: 1.2;">
+                                Epic 8-bit platformer with Mario & Contra gameplay!<br>
+                                Jump, dash, shoot, explore caves with lava & bats!<br>
+                                Features RAMBO character in jungle mode! 💪
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
             </div>
@@ -1718,8 +1806,8 @@
                     'games': [
                         { 
                             id: 7, 
-                            title: 'Dentist Dash', 
-                            subtitle: '8-Bit Adventure', 
+                            title: 'Super Mentora', 
+                            subtitle: '8-Bit Action', 
                             icon: 'controller', 
                             url: '/games/dentist-dash',
                             featured: true
