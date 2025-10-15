@@ -4418,6 +4418,60 @@ function updateDoom() {
     }
 }
 
+// DOOM Helper Functions
+function adjustBrightness(color, brightness) {
+    // Convert hex to RGB
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Apply brightness
+    const newR = Math.floor(r * brightness);
+    const newG = Math.floor(g * brightness);
+    const newB = Math.floor(b * brightness);
+    
+    return `rgb(${newR}, ${newG}, ${newB})`;
+}
+
+function renderWallTexture(side, sideDistX, sideDistY, rayDirX, rayDirY) {
+    // Calculate texture coordinates
+    let wallX;
+    if (side === 0) wallX = doomPlayer.y + sideDistY * rayDirY;
+    else wallX = doomPlayer.x + sideDistX * rayDirX;
+    wallX -= Math.floor(wallX);
+    
+    const textureX = Math.floor(wallX * 16);
+    const wallType = Math.floor(wallX * 3) % 3;
+    
+    // Wall texture patterns
+    const wallPatterns = {
+        0: { // Stone
+            base: [120, 120, 120],
+            detail: [100, 100, 100],
+            pattern: ['█', '▓', '▒', '░']
+        },
+        1: { // Metal
+            base: [80, 80, 90],
+            detail: [60, 60, 70],
+            pattern: ['█', '▓', '▒', '░']
+        },
+        2: { // Rusty metal
+            base: [90, 60, 40],
+            detail: [70, 40, 20],
+            pattern: ['∞', '◊', '◊', '∞']
+        }
+    };
+    
+    const pattern = wallPatterns[wallType];
+    return {
+        baseColor: pattern.base,
+        detailColor: pattern.detail,
+        textureX: textureX,
+        pattern: pattern.pattern
+    };
+}
+
 // DOOM Render
 function renderDoom() {
     // Clear screen with darker background
@@ -4453,27 +4507,11 @@ function renderDoom() {
         const isDoor = doomMap[mapY] && doomMap[mapY][mapX] === 2;
         const door = isDoor ? doomDoors.find(d => d.x === mapX && d.y === mapY) : null;
         
-        // Determine wall type based on position
-        const wallType = Math.floor(hitX + hitY) % 3;
-        
-        let baseColor, detailColor, crackColor;
-        
-        if (wallType === 0) {
-            // Stone brick walls with cracks
-            baseColor = [120, 100, 80];
-            detailColor = [100, 85, 65];
-            crackColor = [60, 50, 40];
-        } else if (wallType === 1) {
-            // Metal tech walls
-            baseColor = [100, 110, 120];
-            detailColor = [80, 90, 100];
-            crackColor = [60, 70, 80];
-        } else {
-            // Rusty metal walls
-            baseColor = [130, 90, 60];
-            detailColor = [110, 70, 40];
-            crackColor = [90, 50, 20];
-        }
+        // Enhanced wall texture calculation
+        const wallTexture = renderWallTexture(side, sideDistX, sideDistY, rayDirX, rayDirY);
+        const baseColor = wallTexture.baseColor;
+        const detailColor = wallTexture.detailColor;
+        const textureX = wallTexture.textureX;
         
         // Apply gradient lighting (darker at edges, brighter in center)
         const centerDist = Math.abs(i - canvas.width / 2) / (canvas.width / 2);
@@ -4594,7 +4632,7 @@ function renderDoom() {
         }
     }
     
-    // Render enemies - IMPROVED!
+    // Render enemies - ULTRA ENHANCED WITH SHADING!
     doomEnemies.forEach(enemy => {
         if (!enemy.alive) return;
         
@@ -4617,28 +4655,36 @@ function renderDoom() {
         const enemyHeight = Math.max(40, Math.min(80, (canvas.height * 0.3) / distance));
         const enemyTop = (canvas.height - enemyHeight) / 2;
         
-        // ULTRA-DETAILED DEMON SPRITE! 👹
+        // DYNAMIC LIGHTING CALCULATION
+        const lightIntensity = Math.max(0.2, 1 - distance / 20); // Distance-based lighting
+        const transformY = distance; // For shading calculation
+        
+        // ENHANCED DEMON WITH ADVANCED SHADING! 👹
         const breathing = Math.sin(Date.now() / 300) * 0.1 + 1;
         const eyeGlow = Math.sin(Date.now() / 200) * 0.3 + 0.7;
         
-        // Outer glow - distance dependent
-        ctx.globalAlpha = Math.max(0.1, 0.5 - distance * 0.05);
-        ctx.fillStyle = '#ff0000';
+        // Apply dynamic lighting filter
+        ctx.filter = `brightness(${lightIntensity}) contrast(${1 + lightIntensity * 0.2})`;
+        
+        // Outer glow - distance dependent with enhanced shading
+        ctx.globalAlpha = Math.max(0.1, 0.5 - distance * 0.05) * lightIntensity;
+        ctx.fillStyle = adjustBrightness('#ff0000', lightIntensity);
         ctx.fillRect(screenX - 16, enemyTop - 8, 32, enemyHeight + 16);
         
-        // Body with muscle definition
+        // Body with muscle definition and advanced shading
         ctx.globalAlpha = 1;
-        ctx.fillStyle = '#8B0000';
+        const bodyColor = adjustBrightness('#8B0000', lightIntensity * 0.8);
+        ctx.fillStyle = bodyColor;
         ctx.fillRect(screenX - 12, enemyTop + 5, 24, (enemyHeight - 10) * breathing);
         
-        // Muscle details
-        ctx.fillStyle = '#660000';
+        // Muscle details with shading
+        ctx.fillStyle = adjustBrightness('#660000', lightIntensity * 0.6);
         ctx.fillRect(screenX - 10, enemyTop + 8, 3, 8);
         ctx.fillRect(screenX + 7, enemyTop + 8, 3, 8);
         ctx.fillRect(screenX - 6, enemyTop + 12, 12, 2);
         
-        // Head with detailed structure
-        ctx.fillStyle = '#DC143C';
+        // Head with detailed structure and shading
+        ctx.fillStyle = adjustBrightness('#DC143C', lightIntensity * 0.9);
         ctx.fillRect(screenX - 8, enemyTop, 16, enemyHeight * 0.4);
         
         // Jaw
@@ -4697,6 +4743,9 @@ function renderDoom() {
         ctx.fillStyle = '#FF0000';
         ctx.fillRect(screenX - 15, enemyTop - 5, 30, enemyHeight + 10);
         ctx.globalAlpha = 1;
+        
+        // Reset filter after rendering demon
+        ctx.filter = 'none';
     });
     
     // Render ammo pickups
