@@ -1137,6 +1137,11 @@ function createUndergroundLevel(pipeX) {
         canEnter: true
     };
     
+    // 🗝️ KEY #2 will spawn after boss death!
+    
+    // 🏰 BOSS IN UNDERGROUND!
+    spawnBoss();
+    
     player.x = 100;
     player.y = 400;
     cameraX = 0;
@@ -1282,6 +1287,84 @@ function createUndergroundBossPath() {
     console.log('✅ UNDERGROUND BOSS PATH CREATED!', pathPlatforms.length, 'platforms added');
 }
 
+// 🗝️ SPAWN KEY #2 AFTER BOSS DEATH!
+function spawnKey2AfterBoss() {
+    if (!inUnderground) return;
+    console.log('🗝️ SPAWNING KEY #2 AFTER BOSS DEATH!');
+    
+    // Remove existing key2 if any
+    gameKeys = gameKeys.filter(key => key.type !== 'key2');
+    
+    // Spawn new key2 after boss
+    const bossX = currentBoss ? currentBoss.x : 2800;
+    gameKeys.push({
+        x: bossX + 300, // After boss area
+        y: 350, // On a platform
+        width: 24,
+        height: 24,
+        collected: false,
+        type: 'key2', // Key for Contra
+        glow: 0
+    });
+    
+    console.log('✅ KEY #2 SPAWNED!', gameKeys.length, 'keys total');
+}
+
+// 🏰 SUPER BOSS SPAWNING!
+function checkAndSpawnSuperBoss() {
+    // Check if all areas are cleared
+    if (playerProgress.undergroundCleared && 
+        playerProgress.contraCleared && 
+        playerProgress.doomCleared && 
+        !playerProgress.superBossDefeated) {
+        
+        // Spawn super boss if not already spawned
+        if (!currentBoss || !currentBoss.alive) {
+            console.log('🏰 SPAWNING SUPER BOSS! All areas cleared!');
+            spawnSuperBoss();
+        }
+    }
+}
+
+// 🏰 SUPER BOSS - Ultimate final boss!
+function spawnSuperBoss() {
+    currentBoss = {
+        x: LEVEL_WIDTH - 200, // At the very end
+        y: 300,
+        width: 80,
+        height: 80,
+        velX: 0,
+        velY: 0,
+        alive: true,
+        health: 50, // Much stronger!
+        maxHealth: 50,
+        attackTimer: 0,
+        moveTimer: 0,
+        animFrame: 0,
+        damageFlash: 0,
+        isSuperBoss: true // Special flag
+    };
+    
+    bossActive = false; // Will activate when player approaches
+    console.log('🏰 SUPER BOSS SPAWNED! Health:', currentBoss.health);
+}
+
+// 🏁 FINAL EXIT - After super boss defeat!
+function spawnFinalExit() {
+    console.log('🏁 SPAWNING FINAL EXIT!');
+    
+    // Create final goal flag
+    goal = {
+        x: LEVEL_WIDTH - 100, // At the very end
+        y: 200, // On a platform
+        width: 40,
+        height: 150,
+        isFinalExit: true
+    };
+    
+    console.log('✅ FINAL EXIT SPAWNED!');
+}
+
 function gameLoop() {
     if (!gameRunning) return;
     update();
@@ -1294,6 +1377,11 @@ function update() {
     if (gameMode === 'doom') {
         updateDoom();
         return;
+    }
+    
+    // 🏰 CHECK FOR SUPER BOSS SPAWN!
+    if (!inUnderground) { // Only in main level
+        checkAndSpawnSuperBoss();
     }
     
     // Check DOOM door collision
@@ -1917,9 +2005,18 @@ function update() {
                     createParticles(currentBoss.x + 40, currentBoss.y + 40, '#fcfc00', 30);
                     console.log('☠️ BOSS DEFEATED!');
                     
+                    // 🏰 SUPER BOSS DEFEATED!
+                    if (currentBoss.isSuperBoss) {
+                        playerProgress.superBossDefeated = true;
+                        console.log('🏰 SUPER BOSS DEFEATED! Final exit unlocked!');
+                        spawnFinalExit();
+                    }
+                    
                     // Create path after boss death in underground!
                     if (inUnderground) {
                         createUndergroundBossPath();
+                        // 🗝️ SPAWN KEY #2 AFTER BOSS DEATH!
+                        spawnKey2AfterBoss();
                     }
                 }
                 hit = true;
@@ -2074,9 +2171,18 @@ function update() {
                     playSound('victory');
                     createParticles(currentBoss.x + 40, currentBoss.y + 40, '#fcfc00', 30);
                     
+                    // 🏰 SUPER BOSS DEFEATED!
+                    if (currentBoss.isSuperBoss) {
+                        playerProgress.superBossDefeated = true;
+                        console.log('🏰 SUPER BOSS DEFEATED! Final exit unlocked!');
+                        spawnFinalExit();
+                    }
+                    
                     // Create path after boss death in underground!
                     if (inUnderground) {
                         createUndergroundBossPath();
+                        // 🗝️ SPAWN KEY #2 AFTER BOSS DEATH!
+                        spawnKey2AfterBoss();
                     }
                 }
             } else if (!player.hasShield) {
@@ -3820,6 +3926,20 @@ function victory() {
     gameRunning = false;
     stopBackgroundMusic();
     score += 1000;
+    
+    // 🎮 PROGRESS TRACKING!
+    if (inUnderground === 'contra') {
+        playerProgress.contraCleared = true;
+        console.log('🎯 CONTRA LEVEL CLEARED!');
+    } else if (inUnderground) {
+        playerProgress.undergroundCleared = true;
+        console.log('🎯 UNDERGROUND LEVEL CLEARED!');
+    } else if (goal && goal.isFinalExit) {
+        // 🏁 FINAL EXIT REACHED!
+        console.log('🏁 FINAL EXIT REACHED! GAME COMPLETED!');
+        alert('🎉 CONGRATULATIONS! 🎉\nYou have completed the entire game!\nAll areas cleared!\nFinal Score: ' + score);
+    }
+    
     document.getElementById('victoryScore').textContent = score;
     document.getElementById('victoryScreen').style.display = 'block';
     playSound('victory');
@@ -4266,6 +4386,10 @@ function updateDoom() {
         // Exit DOOM mode
         gameMode = '2d';
         mouseEnabled = false;
+        
+        // 🎮 PROGRESS TRACKING!
+        playerProgress.doomCleared = true;
+        console.log('🎯 DOOM LEVEL CLEARED!');
         
         // Release pointer lock
         document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
