@@ -517,11 +517,13 @@ body .hero-section {
 }
 
 .cobweb {
-  position: absolute;
-  opacity: 0.3;
-  font-size: 2rem;
+  position: fixed;
+  opacity: 0.9;
+  font-size: 2.5rem;
   animation: crawl 4s infinite;
-  z-index: 1;
+  z-index: 1000;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(255, 140, 0, 0.5));
 }
 
 .cobweb-top-left {
@@ -537,6 +539,11 @@ body .hero-section {
 .cobweb-bottom-left {
   bottom: 10px;
   left: 10px;
+}
+
+.cobweb-bottom-right {
+  bottom: 10px;
+  right: 10px;
 }
 
 /* Spooky Glow Effect */
@@ -672,9 +679,10 @@ body .hero-section {
 {% block content %}
 
 <!-- HALLOWEEN COBWEBS IN CORNERS -->
-<div class="cobweb cobweb-top-left">🕷️🕸️</div>
-<div class="cobweb cobweb-top-right">🕸️🕷️</div>
-<div class="cobweb cobweb-bottom-left">🕷️🕸️</div>
+<div class="cobweb cobweb-top-left">🕸️🕷️🕸️</div>
+<div class="cobweb cobweb-top-right">🕷️🕸️🕷️</div>
+<div class="cobweb cobweb-bottom-left">🕸️🕷️🕸️</div>
+<div class="cobweb cobweb-bottom-right">🕷️🕸️🕷️</div>
 
 {# === HERO SECTION === #}
 <section class="hero-section">
@@ -1405,7 +1413,23 @@ document.addEventListener('DOMContentLoaded', function() {
   const cobwebs = document.querySelectorAll('.cobweb');
   cobwebs.forEach(cobweb => {
     cobweb.style.animation = 'crawl 4s infinite';
+    cobweb.style.display = 'block';
+    cobweb.style.visibility = 'visible';
+    console.log('🕷️ Cobweb found and activated:', cobweb);
   });
+  
+  // Force show cobwebs if not visible
+  setTimeout(() => {
+    cobwebs.forEach(cobweb => {
+      if (cobweb.offsetParent === null) {
+        cobweb.style.position = 'fixed';
+        cobweb.style.zIndex = '1000';
+        cobweb.style.display = 'block';
+        cobweb.style.visibility = 'visible';
+        console.log('🕷️ Forced cobweb visibility:', cobweb);
+      }
+    });
+  }, 100);
 
   // ===== HALLOWEEN CARD STYLES =====
   document.querySelectorAll('.feature-card, .platform-feature, .benefit-card, .cta-card').forEach(card => {
