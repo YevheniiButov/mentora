@@ -187,13 +187,399 @@
         <button class="pixel-btn" onclick="backToMenu()">MENU</button>
     </div>
     
+    <!-- Cat sprite for all game modes -->
+    <img id="catSprite" src="https://opengameart.org/sites/default/files/cat_0.png" style="display: none;">
+    
+    <!-- Professional Game Sprites from FreeTileset -->
+    <img id="platformSprites" src="/static/images/sprites/1.png" style="display: none;">
+    <img id="enemySprites" src="/static/images/sprites/Mushroom_1.png" style="display: none;">
+    <img id="backgroundSprites" src="/static/images/sprites/BG.png" style="display: none;">
+    <img id="decorationSprites" src="/static/images/sprites/Tree_1.png" style="display: none;">
+    
+    <!-- Additional sprite sheets -->
+    <img id="tileSprites" src="/static/images/sprites/2.png" style="display: none;">
+    <img id="objectSprites" src="/static/images/sprites/Crate.png" style="display: none;">
+    
+    <!-- Decorative sprites -->
+    <img id="treeSprites" src="/static/images/sprites/Tree_1.png" style="display: none;">
+    <img id="bushSprites" src="/static/images/sprites/Bush (1).png" style="display: none;">
+    <img id="stoneSprites" src="/static/images/sprites/Stone.png" style="display: none;">
+    <img id="mushroomSprites" src="/static/images/sprites/Mushroom_1.png" style="display: none;">
+    
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <!-- Cheat Code Button -->
+    <button id="cheatButton" onclick="showCheatInput()" style="position: fixed; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.9); color: #fcfc00; border: 4px solid #fff; padding: 8px 12px; font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer; z-index: 10000; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);">CHEAT</button>
+    
+    <!-- Sound Toggle Button -->
+    <button id="soundToggle" onclick="toggleSound()" style="position: fixed; top: 20px; right: 100px; width: 50px; height: 50px; background: rgba(0, 0, 0, 0.9); color: #fcfc00; border: 4px solid #fff; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10000; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);">🔊</button>
+    
+    <!-- Cheat Code Input -->
+    <div id="cheatInput" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); color: #fcfc00; padding: 20px; border: 4px solid #fff; font-family: 'Press Start 2P', cursive; font-size: 12px; z-index: 10001; display: none;">
+        <div style="margin-bottom: 10px;">ENTER CHEAT CODE:</div>
+        <input type="text" id="cheatCodeInput" style="background: #000; color: #fcfc00; border: 2px solid #fff; padding: 8px; font-family: 'Press Start 2P', cursive; font-size: 10px; width: 200px;" placeholder="Type cheat code...">
+        <br><br>
+        <button onclick="executeCheat()" style="background: #fcfc00; color: #000; border: 2px solid #fff; padding: 8px 16px; font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer; margin-right: 10px;">EXECUTE</button>
+        <button onclick="closeCheatInput()" style="background: #fc0000; color: #fff; border: 2px solid #fff; padding: 8px 16px; font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer;">CLOSE</button>
+    </div>
 </div>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
+
+// 🐱 CAT SPRITE FOR ALL MODES
+const spriteImg = document.getElementById('catSprite');
+
+// 🎨 PROFESSIONAL GAME SPRITES
+const platformSprites = document.getElementById('platformSprites');
+const enemySprites = document.getElementById('enemySprites');
+const backgroundSprites = document.getElementById('backgroundSprites');
+const decorationSprites = document.getElementById('decorationSprites');
+const tileSprites = document.getElementById('tileSprites');
+const objectSprites = document.getElementById('objectSprites');
+
+// 🌳 DECORATIVE SPRITES
+const treeSprites = document.getElementById('treeSprites');
+const bushSprites = document.getElementById('bushSprites');
+const stoneSprites = document.getElementById('stoneSprites');
+const mushroomSprites = document.getElementById('mushroomSprites');
+
+// 🌳 PRELOADED DECORATIVE SPRITES
+const preloadedSprites = {
+    trees: [],
+    bushes: [],
+    stones: [],
+    mushrooms: []
+};
+
+// 🔊 SOUND SETTINGS
+let soundEnabled = true;
+
+// Preload all decorative sprites
+function preloadDecorativeSprites() {
+    // Preload tree sprites
+    ['Tree_1.png', 'Tree_2.png', 'Tree_3.png'].forEach(treeFile => {
+        const img = new Image();
+        img.src = `/static/images/sprites/${treeFile}`;
+        preloadedSprites.trees.push(img);
+    });
+    
+    // Preload bush sprites
+    ['Bush (1).png', 'Bush (2).png', 'Bush (3).png', 'Bush (4).png'].forEach(bushFile => {
+        const img = new Image();
+        img.src = `/static/images/sprites/${bushFile}`;
+        preloadedSprites.bushes.push(img);
+    });
+    
+    // Preload stone sprites
+    const stoneImg = new Image();
+    stoneImg.src = '/static/images/sprites/Stone.png';
+    preloadedSprites.stones.push(stoneImg);
+    
+    // Preload mushroom sprites
+    ['Mushroom_1.png', 'Mushroom_2.png'].forEach(mushroomFile => {
+        const img = new Image();
+        img.src = `/static/images/sprites/${mushroomFile}`;
+        preloadedSprites.mushrooms.push(img);
+    });
+    
+}
+
+// Start preloading
+preloadDecorativeSprites();
+
+// 🔍 SPRITE LOADING COMPLETE
+
+// 🎨 PROFESSIONAL SPRITE RENDERING SYSTEM
+function renderSprite(spriteImg, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight, fallbackColor = '#8b4513') {
+    if (!spriteImg || !spriteImg.complete || spriteImg.naturalWidth === 0) {
+        // Enhanced fallback with better graphics
+        ctx.fillStyle = fallbackColor;
+        ctx.fillRect(destX, destY, destWidth, destHeight);
+        
+        // Add some texture to make it look better
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(destX + 2, destY + 2, destWidth - 4, destHeight - 4);
+        
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fillRect(destX, destY, destWidth, 2);
+        
+        // Debug info removed - sprites should load properly now
+        return;
+    }
+    
+    try {
+        ctx.drawImage(
+            spriteImg,
+            sourceX, sourceY, sourceWidth, sourceHeight,
+            destX, destY, destWidth, destHeight
+        );
+    } catch (e) {
+        // If sprite loading fails, use fallback
+        ctx.fillStyle = fallbackColor;
+        ctx.fillRect(destX, destY, destWidth, destHeight);
+    }
+}
+
+// 🏗️ PROFESSIONAL PLATFORM RENDERING
+function renderProfessionalPlatform(platform, biome = 'forest') {
+    const spriteWidth = 128; // Real sprite size
+    const spriteHeight = 128;
+    
+    // Different biomes use different tile sprites
+    const biomeTiles = {
+        forest: { base: 1, grass: 2, edge: 3 },
+        autumn: { base: 4, grass: 5, edge: 6 },
+        winter: { base: 7, grass: 8, edge: 9 },
+        desert: { base: 10, grass: 11, edge: 12 },
+        industrial: { base: 13, grass: 14, edge: 15 }
+    };
+    
+    const tiles = biomeTiles[biome] || biomeTiles.forest;
+    
+    // Try to use real sprites first
+    if (platformSprites && platformSprites.complete && platformSprites.naturalWidth > 0) {
+        // Render platform base using real sprites - use different parts of sprite
+        const tileSize = 32;
+        const spriteTileSize = 32; // Use 32x32 portion of the 128x128 sprite
+        
+        for (let x = 0; x < platform.width; x += tileSize) {
+            const tileWidth = Math.min(tileSize, platform.width - x);
+            // Use different parts of the sprite for variety
+            const spriteX = (Math.floor(x / 32) % 4) * 32; // Cycle through 4 different tiles
+            const spriteY = 0; // Use top row of tiles
+            
+            renderSprite(
+                platformSprites,
+                spriteX, spriteY, spriteTileSize, spriteTileSize,
+                platform.x + x, platform.y, tileWidth, platform.height,
+                '#5a3a1a'
+            );
+        }
+        
+        // Render grass top
+        for (let x = 0; x < platform.width; x += tileSize) {
+            const tileWidth = Math.min(tileSize, platform.width - x);
+            const spriteX = (Math.floor(x / 32) % 4) * 32; // Cycle through 4 different tiles
+            const spriteY = 32; // Use second row for grass
+            
+            renderSprite(
+                platformSprites,
+                spriteX, spriteY, spriteTileSize, 16,
+                platform.x + x, platform.y - 8, tileWidth, 8,
+                '#2a6a2a'
+            );
+        }
+    } else {
+        // Fallback to enhanced graphics
+        const biomeColors = {
+            forest: { base: '#5a3a1a', grass: '#2a6a2a', edge: '#4a2a0a' },
+            autumn: { base: '#8b4513', grass: '#cd853f', edge: '#a0522d' },
+            winter: { base: '#708090', grass: '#ffffff', edge: '#2f4f4f' },
+            desert: { base: '#daa520', grass: '#f4a460', edge: '#cd853f' },
+            industrial: { base: '#696969', grass: '#32cd32', edge: '#2f4f4f' }
+        };
+        
+        const colors = biomeColors[biome] || biomeColors.forest;
+        
+        // Render platform base with enhanced graphics
+        ctx.fillStyle = colors.base;
+        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+        
+        // Add texture pattern
+        ctx.fillStyle = colors.edge;
+        for (let x = 0; x < platform.width; x += 8) {
+            for (let y = 0; y < platform.height; y += 8) {
+                if ((x + y) % 16 === 0) {
+                    ctx.fillRect(platform.x + x, platform.y + y, 4, 4);
+                }
+            }
+        }
+        
+        // Render grass top
+        ctx.fillStyle = colors.grass;
+        ctx.fillRect(platform.x, platform.y - 8, platform.width, 8);
+        
+        // Add grass texture
+        ctx.fillStyle = colors.edge;
+        for (let x = 0; x < platform.width; x += 4) {
+            ctx.fillRect(platform.x + x, platform.y - 6, 2, 2);
+        }
+        
+        // Add highlights
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fillRect(platform.x, platform.y, platform.width, 2);
+        
+        // Add shadows
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(platform.x, platform.y + platform.height - 2, platform.width, 2);
+    }
+}
+
+// 🌳 DECORATIVE OBJECTS RENDERING
+function renderDecoration(x, y, decorationType) {
+    // Try to use real decoration sprites first
+    let spriteImg = null;
+    let spriteSize = 32;
+    
+    // Choose the right sprite based on decoration type with deterministic variety
+    if (decorationType === 'tree') {
+        // Use preloaded tree sprites with deterministic selection based on position
+        if (preloadedSprites.trees.length > 0) {
+            const treeIndex = Math.floor((x + y) / 200) % preloadedSprites.trees.length; // Deterministic based on position
+            spriteImg = preloadedSprites.trees[treeIndex];
+            spriteSize = 48; // Trees are larger
+        }
+    } else if (decorationType === 'bush') {
+        // Use preloaded bush sprites with deterministic selection
+        if (preloadedSprites.bushes.length > 0) {
+            const bushIndex = Math.floor((x + y) / 150) % preloadedSprites.bushes.length;
+            spriteImg = preloadedSprites.bushes[bushIndex];
+            spriteSize = 32; // Bushes are medium
+        }
+    } else if (decorationType === 'stone') {
+        // Use preloaded stone sprites
+        if (preloadedSprites.stones.length > 0) {
+            spriteImg = preloadedSprites.stones[0];
+            spriteSize = 24; // Stones are smaller
+        }
+    } else if (decorationType === 'mushroom') {
+        // Use preloaded mushroom sprites with deterministic selection
+        if (preloadedSprites.mushrooms.length > 0) {
+            const mushroomIndex = Math.floor((x + y) / 100) % preloadedSprites.mushrooms.length;
+            spriteImg = preloadedSprites.mushrooms[mushroomIndex];
+            spriteSize = 28; // Mushrooms are small
+        }
+    }
+    
+    if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
+        // Use real decoration sprites
+        const centerX = x + (32 - spriteSize) / 2; // Center the sprite
+        const centerY = y + (32 - spriteSize) / 2;
+        
+        ctx.drawImage(
+            spriteImg,
+            0, 0, spriteImg.naturalWidth, spriteImg.naturalHeight,
+            centerX, centerY, spriteSize, spriteSize
+        );
+    } else {
+        // Fallback to simple graphics
+        const decorationColors = {
+            tree: { body: '#2a6a2a', detail: '#1a4a1a' },
+            bush: { body: '#4a7c4a', detail: '#2a6a2a' },
+            stone: { body: '#696969', detail: '#4a4a4a' },
+            mushroom: { body: '#ff6b6b', detail: '#ff4757' }
+        };
+        
+        const colors = decorationColors[decorationType] || decorationColors.tree;
+        
+        if (decorationType === 'tree') {
+            // Tree trunk
+            ctx.fillStyle = colors.detail;
+            ctx.fillRect(x + 12, y + 16, 8, 16);
+            // Tree leaves
+            ctx.fillStyle = colors.body;
+            ctx.fillRect(x + 8, y + 8, 16, 12);
+            ctx.fillRect(x + 6, y + 4, 20, 8);
+        } else if (decorationType === 'bush') {
+            // Bush
+            ctx.fillStyle = colors.body;
+            ctx.fillRect(x + 4, y + 16, 24, 16);
+            ctx.fillRect(x + 2, y + 12, 28, 12);
+            ctx.fillRect(x, y + 8, 32, 8);
+        } else if (decorationType === 'stone') {
+            // Stone
+            ctx.fillStyle = colors.body;
+            ctx.fillRect(x + 8, y + 16, 16, 16);
+            ctx.fillRect(x + 6, y + 12, 20, 8);
+            // Stone details
+            ctx.fillStyle = colors.detail;
+            ctx.fillRect(x + 10, y + 18, 4, 4);
+            ctx.fillRect(x + 18, y + 20, 4, 4);
+        } else if (decorationType === 'mushroom') {
+            // Mushroom cap
+            ctx.fillStyle = colors.body;
+            ctx.fillRect(x + 8, y + 8, 16, 12);
+            // Mushroom stem
+            ctx.fillStyle = '#f8f8f8';
+            ctx.fillRect(x + 14, y + 20, 4, 12);
+            // Mushroom spots
+            ctx.fillStyle = colors.detail;
+            ctx.fillRect(x + 10, y + 10, 4, 4);
+            ctx.fillRect(x + 18, y + 12, 4, 4);
+        }
+    }
+}
+
+// 👾 PROFESSIONAL ENEMY RENDERING
+function renderProfessionalEnemy(enemy, enemyType = 'bacteria') {
+    // Try to use real sprites first
+    if (enemySprites && enemySprites.complete && enemySprites.naturalWidth > 0) {
+        // Use real mushroom sprite for enemies - use full sprite
+        
+        ctx.drawImage(
+            enemySprites,
+            0, 0, enemySprites.naturalWidth, enemySprites.naturalHeight,
+            enemy.x, enemy.y, enemy.width, enemy.height
+        );
+    } else {
+        // Enhanced fallback rendering with detailed graphics
+        const enemyColors = {
+            bacteria: { body: '#00fc00', detail: '#fc0000', outline: '#008000' },
+            contra: { body: '#d02020', detail: '#8b0000', outline: '#8b0000' },
+            bat: { body: '#2a1a2a', detail: '#fc0000', outline: '#1a0a1a' },
+            boss: { body: '#8b0000', detail: '#ffd700', outline: '#4b0000' }
+        };
+        
+        const colors = enemyColors[enemyType] || enemyColors.bacteria;
+        
+        // Render enemy body
+        ctx.fillStyle = colors.outline;
+        ctx.fillRect(enemy.x - 1, enemy.y - 1, enemy.width + 2, enemy.height + 2);
+        
+        ctx.fillStyle = colors.body;
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        
+        // Add details based on enemy type
+        if (enemyType === 'bacteria') {
+            // Eyes
+            ctx.fillStyle = colors.detail;
+            ctx.fillRect(enemy.x + 4, enemy.y + 4, 3, 3);
+            ctx.fillRect(enemy.x + enemy.width - 7, enemy.y + 4, 3, 3);
+        } else if (enemyType === 'contra') {
+            // Helmet
+            ctx.fillStyle = '#2a2a2a';
+            ctx.fillRect(enemy.x + 2, enemy.y + 2, enemy.width - 4, 8);
+            // Body armor
+            ctx.fillStyle = colors.detail;
+            ctx.fillRect(enemy.x + 4, enemy.y + 10, enemy.width - 8, enemy.height - 16);
+        } else if (enemyType === 'bat') {
+            // Wings
+            ctx.fillStyle = colors.outline;
+            ctx.fillRect(enemy.x - 4, enemy.y + 4, 8, 4);
+            ctx.fillRect(enemy.x + enemy.width - 4, enemy.y + 4, 8, 4);
+            // Eyes
+            ctx.fillStyle = colors.detail;
+            ctx.fillRect(enemy.x + 4, enemy.y + 4, 2, 2);
+            ctx.fillRect(enemy.x + enemy.width - 6, enemy.y + 4, 2, 2);
+        } else if (enemyType === 'boss') {
+            // Crown/helmet
+            ctx.fillStyle = colors.detail;
+            ctx.fillRect(enemy.x + 2, enemy.y + 2, enemy.width - 4, 6);
+            // Armor details
+            ctx.fillStyle = '#2a2a2a';
+            ctx.fillRect(enemy.x + 4, enemy.y + 8, enemy.width - 8, enemy.height - 12);
+        }
+        
+        // Add animation effect
+        if (enemy.velX !== 0) {
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.fillRect(enemy.x + 2, enemy.y + 2, 2, enemy.height - 4);
+        }
+    }
+}
 
 let gameRunning = false;
 let score = 0;
@@ -202,8 +588,9 @@ let lives = 3;
 let cameraX = 0;
 let inUnderground = false; // Are we in underground level?
 let gameMode = '2d'; // '2d' or 'doom'
-const LEVEL_WIDTH = 4800; // Bigger levels!
+const LEVEL_WIDTH = 5200; // Bigger levels! Increased to accommodate secret room at x=4200
 let bgMusicInterval = null; // Background music
+let blackHole = null; // Black hole after super boss defeat
 
 // 🎮 PROGRESS SYSTEM - Linear progression with keys!
 let playerProgress = {
@@ -424,6 +811,7 @@ const LEVELS = {
 };
 
 function initLevel() {
+    console.log('🔄 INITIALIZING MAIN LEVEL...');
     enemies = [];
     powerUps = [];
     blocks = [];
@@ -436,6 +824,7 @@ function initLevel() {
     checkpoints = [];
     currentBoss = null;
     bossActive = false;
+    console.log('✅ MAIN LEVEL INITIALIZED! inUnderground:', inUnderground);
     
     // ✅ КРИТИЧЕСКИЙ ФИКС - очищаем специальных врагов!
     if (window.turrets) window.turrets = [];
@@ -653,16 +1042,25 @@ function initLevel() {
         glow: 0
     });
     
-    // Enemies
-    for (let i = 0; i < levelConfig.enemies; i++) {
+    // Enemies - distributed in independent groups
+    const enemyGroups = Math.ceil(levelConfig.enemies / 3); // 1-3 enemies per group
+    for (let group = 0; group < enemyGroups; group++) {
+        const groupStartX = 400 + group * 800; // Groups every 800px
+        const enemiesInGroup = Math.min(3, levelConfig.enemies - group * 3);
+        
+        for (let i = 0; i < enemiesInGroup; i++) {
         enemies.push({
-            x: 400 + i * 280,
+                x: groupStartX + i * 200 + Math.random() * 100, // Random offset within group
             y: 510,
             width: 28,
             height: 28,
-            velX: 1.5 + level * 0.3,
-            alive: true
-        });
+                velX: (1.5 + level * 0.3) * (Math.random() > 0.5 ? 1 : -1), // Random direction
+                alive: true,
+                groupId: group, // Track which group this enemy belongs to
+                patrolStart: groupStartX + i * 200,
+                patrolEnd: groupStartX + i * 200 + 300 // Patrol within 300px
+            });
+        }
     }
     
     // NEW Power-ups with different types!
@@ -853,13 +1251,8 @@ function createContraLevel(pipeX) {
     // Финальная платформа
     platforms.push({ x: 4550, y: 350, width: 200, height: 20 });
     
-    // ✅ ФЛАГ В CONTRA РЕЖИМЕ!
-    goal = {
-        x: 4630, // На финальной платформе
-        y: 200, // На уровне платформы (350 - 150)
-        width: 40,
-        height: 150
-    };
+    // No flag in Contra - only DOOM door leads to exit
+    goal = null;
     
     // TURRETS! (like red mushrooms in original Contra)
     if (!window.turrets) window.turrets = [];
@@ -895,17 +1288,8 @@ function createContraLevel(pipeX) {
         });
     }
     
-    // Exit pipe
-    pipes = [{
-        x: 2200,
-        y: 490,
-        width: 60,
-        height: 60,
-        canEnter: true,
-        isExit: true,
-        returnX: returnX,
-        color: '#000'
-    }];
+    // No exit pipe in Contra - only DOOM door leads to exit
+    pipes = [];
     
     // ✅ КРИТИЧЕСКИЙ ФИКС - правильно включаем стрельбу!
     player.canShoot = true;
@@ -927,6 +1311,7 @@ function createContraLevel(pipeX) {
 }
 
 function createUndergroundLevel(pipeX) {
+    console.log('🕳️ CREATING UNDERGROUND LEVEL! pipeX:', pipeX);
     // Save overworld position
     const returnX = pipeX;
     
@@ -935,6 +1320,7 @@ function createUndergroundLevel(pipeX) {
     enemies.length = 0;
     blocks.length = 0;
     coins.length = 0;
+    if (typeof powerUps !== 'undefined' && powerUps) powerUps.length = 0;
     
     // ✅ Очищаем специальных врагов
     if (window.turrets) window.turrets = [];
@@ -1096,17 +1482,7 @@ function createUndergroundLevel(pipeX) {
     // Falling rocks!
     if (!window.fallingRocks) window.fallingRocks = [];
     window.fallingRocks = [];
-    for (let i = 0; i < 6; i++) {
-        window.fallingRocks.push({
-            x: 500 + i * 400,
-            y: 0,
-            velY: 0,
-            width: 24,
-            height: 24,
-            falling: false,
-            respawnTimer: Math.random() * 100
-        });
-    }
+    // Камни больше не генерируются заранее - они будут появляться только при разбивании потолочных плиток
     
     // Lava pits!
     if (!window.lavaPits) window.lavaPits = [];
@@ -1115,6 +1491,331 @@ function createUndergroundLevel(pipeX) {
         { x: 1000, width: 200 },
         { x: 1600, width: 200 }
     ];
+    
+    // === СЕКРЕТ: потолочные разрушаемые плитки для прохода наверх ===
+    if (!window.ceilingTiles) window.ceilingTiles = [];
+    window.ceilingTiles = [];
+    // Ряд плит по потолку (чуть ниже верха экрана) от самого старта уровня
+    const ceilingY = 80; // высота потолка
+    const corridorEnd = 4200; // до секретной комнаты
+    for (let x = 0; x <= 4500; x += 32) {
+        // Оставим небольшой проём в самом конце для шахты вниз в секретную
+        const isShaftArea = x > corridorEnd - 64; // проём для спуска в конце
+        window.ceilingTiles.push({
+            x: x,
+            y: ceilingY,
+            width: 32,
+            height: 16,
+            hits: 0,
+            maxHits: 2,
+            broken: isShaftArea // в зоне шахты плит нет (считаем сломанными)
+        });
+    }
+    
+    // === Верхний секретный коридор (над потолком) - до самого конца уровня ===
+    if (!window.upperCorridor) window.upperCorridor = [];
+    window.upperCorridor = [];
+    const corridorY = 70; // чуть выше потолочных плит
+    const corridorStartX = 600; // начинаем коридор дальше от старта, чтобы не бросался в глаза
+    const corridorEndX = 4200; // до секретной комнаты (x=4200)
+    for (let x = corridorStartX; x <= corridorEndX; x += 200) {
+        // редкие разрывы для прыжков
+        const skip = ((x / 200) % 6) === 3; // каждый 6-й небольшой разрыв (меньше разрывов)
+        if (!skip) {
+            platforms.push({ x: x, y: corridorY, width: 160, height: 12, isUpperCorridor: true });
+            window.upperCorridor.push({ x: x, y: corridorY, width: 160, height: 12 });
+        }
+    }
+    
+    // Уберём любые высокие платформы вблизи старта, чтобы потолок не бросался в глаза
+    for (let i = platforms.length - 1; i >= 0; i--) {
+        const p = platforms[i];
+        if (p.y <= 120 && p.x < 500) {
+            platforms.splice(i, 1);
+        }
+    }
+    
+    // === Секретная комната с сокровищами в конце коридора ===
+    if (!window.secretCorridor) window.secretCorridor = {};
+    window.secretCorridor.endX = 4200; // до секретной комнаты
+    if (!window.secretTreasureRoom) window.secretTreasureRoom = { revealed: false };
+    window.secretTreasureRoom = { revealed: false, x: 4200 };
+    
+    // Создаём невидимый блок с грибом-артефактом в начале уровня
+    const invisibleBlockX = 300; // в начале подземного уровня
+    const invisibleBlockY = 200; // на высоте для прыжка
+    platforms.push({
+        x: invisibleBlockX,
+        y: invisibleBlockY,
+        width: 16,
+        height: 16,
+        isInvisibleBlock: true,
+        hits: 0,
+        maxHits: 2,
+        revealed: false,
+        mushroomSpawned: false
+    });
+    
+    // Тестовый блок для проверки рендеринга
+    platforms.push({
+        x: 500,
+        y: 300,
+        width: 16,
+        height: 16,
+        isSecretRoom: true,
+        isBrick: true
+    });
+    console.log('🧪 TEST BRICK ADDED at x=500, y=300');
+    
+    // Тестовый разбивающийся блок
+    platforms.push({
+        x: 600,
+        y: 300,
+        width: 32,
+        height: 32,
+        isBreakable: true,
+        isSecretRoom: true,
+        hasCoin: true,
+        broken: false,
+        breakAnimation: 0
+    });
+    console.log('🧪 TEST BREAKABLE BLOCK ADDED at x=600, y=300');
+    
+    // Секретная комната будет создана позже, когда игрок дойдет до конца коридора
+    console.log('🏗️ SECRET ROOM WILL BE CREATED WHEN PLAYER REACHES END OF CORRIDOR');
+    
+    // Создаём секретную комнату с разбивающимися блоками и монетками
+    console.log('🏗️ CREATING BREAKABLE BLOCKS SECRET ROOM at x=4200');
+    const entranceX = 4200; // в самом конце уровня, после супер босса
+    const entranceY = 160; // вертикальная шахта вниз
+    
+    // Добавим вертикальную шахту и платформы секретной комнаты
+    platforms.push({ x: entranceX, y: entranceY, width: 20, height: 200, isShaftWall: true });
+    
+    // Секретная комната - комната с разбивающимися блоками и монетками
+    const roomY = 360;
+    const roomX = entranceX + 30; // комната справа от шахты
+    const roomWidth = 320; // широкая комната
+    const roomHeight = 160; // высокая комната
+    
+    // Создаём стены комнаты из обычных кирпичей (неразбивающиеся)
+    // Пол комнаты
+    for (let x = 0; x < roomWidth; x += 32) {
+        const brick = { 
+            x: roomX + x, 
+            y: roomY, 
+            width: 32, 
+            height: 32, 
+            isSecretRoom: true,
+            isBrick: true 
+        };
+        platforms.push(brick);
+    }
+    
+    // Потолок комнаты
+    for (let x = 0; x < roomWidth; x += 32) {
+        const brick = { 
+            x: roomX + x, 
+            y: roomY - roomHeight, 
+            width: 32, 
+            height: 32, 
+            isSecretRoom: true,
+            isBrick: true 
+        };
+        platforms.push(brick);
+    }
+        
+    // Левая стена
+    for (let y = 0; y < roomHeight; y += 32) {
+        const brick = { 
+            x: roomX, 
+            y: roomY - y, 
+            width: 32, 
+            height: 32, 
+            isSecretRoom: true,
+            isBrick: true 
+        };
+        platforms.push(brick);
+    }
+    
+    // Правая стена
+    for (let y = 0; y < roomHeight; y += 32) {
+        const brick = { 
+            x: roomX + roomWidth - 32, 
+            y: roomY - y, 
+            width: 32, 
+            height: 32, 
+            isSecretRoom: true,
+            isBrick: true 
+        };
+        platforms.push(brick);
+    }
+    
+    // === РАЗБИВАЮЩИЕСЯ БЛОКИ С МОНЕТКАМИ ===
+    // Создаём сетку разбивающихся блоков с монетками внутри
+    const breakableBlocks = [];
+    
+    // Верхний ряд разбивающихся блоков
+    for (let x = 0; x < roomWidth - 64; x += 32) {
+        const blockX = roomX + 32 + x;
+        const blockY = roomY - 80;
+        
+        const breakableBlock = {
+            x: blockX,
+            y: blockY,
+            width: 32,
+            height: 32,
+            isBreakable: true,
+            isSecretRoom: true,
+            hasCoin: true,
+            broken: false,
+            breakAnimation: 0
+        };
+        
+        breakableBlocks.push(breakableBlock);
+        platforms.push(breakableBlock);
+    }
+    
+    // Средний ряд разбивающихся блоков
+    for (let x = 0; x < roomWidth - 64; x += 32) {
+        const blockX = roomX + 32 + x;
+        const blockY = roomY - 120;
+        
+        const breakableBlock = {
+            x: blockX,
+            y: blockY,
+            width: 32,
+            height: 32,
+            isBreakable: true,
+            isSecretRoom: true,
+            hasCoin: true,
+            broken: false,
+            breakAnimation: 0
+        };
+        
+        breakableBlocks.push(breakableBlock);
+        platforms.push(breakableBlock);
+    }
+    
+    // Нижний ряд разбивающихся блоков
+    for (let x = 0; x < roomWidth - 64; x += 32) {
+        const blockX = roomX + 32 + x;
+        const blockY = roomY - 40;
+        
+        const breakableBlock = {
+            x: blockX,
+            y: blockY,
+            width: 32,
+            height: 32,
+            isBreakable: true,
+            isSecretRoom: true,
+            hasCoin: true,
+            broken: false,
+            breakAnimation: 0
+        };
+        
+        breakableBlocks.push(breakableBlock);
+        platforms.push(breakableBlock);
+    }
+    
+    // Сохраняем разбивающиеся блоки для обработки
+    window.secretRoomBreakableBlocks = breakableBlocks;
+    
+    // === МОНЕТКИ В РАЗБИВАЮЩИХСЯ БЛОКАХ ===
+    // Создаём монетки, которые появятся при разбивании блоков
+    const coinPositions = [];
+    breakableBlocks.forEach(block => {
+        coinPositions.push({
+            x: block.x + 16, // центр блока
+            y: block.y + 16,
+            blockX: block.x,
+            blockY: block.y,
+            collected: false,
+            isSecretRoomCoin: true
+        });
+    });
+    
+    // Сохраняем позиции монеток
+    window.secretRoomCoins = coinPositions;
+    
+    // === ДОПОЛНИТЕЛЬНЫЕ МОНЕТКИ В КОМНАТЕ ===
+    // Размещаем дополнительные монетки в разных местах комнаты
+    const extraCoinPositions = [
+        { x: roomX + 50, y: roomY - 60 }, { x: roomX + 100, y: roomY - 60 },
+        { x: roomX + 200, y: roomY - 60 }, { x: roomX + 250, y: roomY - 60 },
+        { x: roomX + 50, y: roomY - 100 }, { x: roomX + 150, y: roomY - 100 },
+        { x: roomX + 250, y: roomY - 100 }, { x: roomX + 100, y: roomY - 140 },
+        { x: roomX + 200, y: roomY - 140 }
+    ];
+    
+    extraCoinPositions.forEach(pos => {
+        coins.push({
+            x: pos.x,
+            y: pos.y,
+            velY: 0,
+            collected: false,
+            isCrystal: true,
+            glowPhase: Math.random() * Math.PI * 2,
+            isSecretRoomCoin: true
+        });
+    });
+    
+    // === РЕДКИЙ БУСТ В КОМНАТЕ ===
+    powerUps.push({ 
+        x: roomX + 150, 
+        y: roomY - 160, 
+        width: 24, 
+        height: 24, 
+        collected: false, 
+        type: POWERUP_TYPES.SHIELD,
+        isSecretRoom: true
+    });
+    
+    // === ЧЕКПОИНТ В КОМНАТЕ ===
+    checkpoints.push({ 
+        x: roomX + 150, 
+        y: roomY - 60, 
+        width: 20, 
+        height: 60, 
+        activated: false, 
+        isSecretFlag: true 
+    });
+    
+    // === ВИЗУАЛЬНЫЙ МАРКЕР СЕКРЕТНОЙ КОМНАТЫ ===
+    // Добавляем яркий маркер над секретной комнатой для отладки
+    window.secretRoomMarker = {
+        x: roomX + 150,
+        y: roomY - 200,
+        width: 100,
+        height: 30,
+        isSecretRoomMarker: true
+    };
+    
+    // Эффекты
+    playSound('star');
+    createParticles(entranceX, entranceY, '#fcfc00', 20);
+    
+    console.log('🏗️ SECRET ROOM CREATED! Total platforms after:', platforms.length);
+    console.log('🏗️ Secret room position:', roomX, roomY);
+    console.log('🏗️ Room size:', roomWidth, 'x', roomHeight);
+    console.log(`🧱 Всего кирпичей создано: ${platforms.filter(p => p.isSecretRoom && p.isBrick).length}`);
+    console.log(`🧱 Разбивающихся блоков создано: ${platforms.filter(p => p.isBreakable && p.isSecretRoom).length}`);
+    console.log(`💰 Монеток в секретной комнате: ${window.secretRoomCoins ? window.secretRoomCoins.length : 0}`);
+    
+    // Отладочная информация о первых нескольких блоках
+    const secretRoomBreakableBlocks = platforms.filter(p => p.isBreakable && p.isSecretRoom);
+    console.log('🧱 Первые 5 разбивающихся блоков:');
+    secretRoomBreakableBlocks.slice(0, 5).forEach((block, i) => {
+        console.log(`  Block ${i}: x=${block.x}, y=${block.y}, broken=${block.broken}`);
+    });
+    
+    // Проверяем, что секретная комната действительно создана
+    console.log('🔍 SECRET ROOM VERIFICATION:');
+    console.log('  - Room X:', roomX, 'Room Y:', roomY);
+    console.log('  - Entrance X:', entranceX, 'Entrance Y:', entranceY);
+    console.log('  - Total platforms with isSecretRoom:', platforms.filter(p => p.isSecretRoom).length);
+    console.log('  - Total platforms with isBreakable:', platforms.filter(p => p.isBreakable).length);
+    console.log('  - Secret room marker created:', !!window.secretRoomMarker);
     
     // Exit pipe
     pipes = [{
@@ -1127,6 +1828,11 @@ function createUndergroundLevel(pipeX) {
         returnX: returnX,
         color: '#00fc00'
     }];
+    
+    // === Три неуязвимости равномерно по подземному уровню ===
+    powerUps.push({ x: 600, y: 320, width: 24, height: 24, collected: false, type: POWERUP_TYPES.SHIELD });
+    powerUps.push({ x: 1500, y: 300, width: 24, height: 24, collected: false, type: POWERUP_TYPES.SHIELD });
+    powerUps.push({ x: 2400, y: 320, width: 24, height: 24, collected: false, type: POWERUP_TYPES.SHIELD });
     
     // NO DOOM DOOR in underground - only in Contra!
     
@@ -1342,20 +2048,78 @@ function spawnSuperBoss() {
     console.log('🏰 SUPER BOSS SPAWNED! Health:', currentBoss.health);
 }
 
-// 🏁 FINAL EXIT - After super boss defeat!
-function spawnFinalExit() {
-    console.log('🏁 SPAWNING FINAL EXIT!');
+// 🕳️ BLACK HOLE - After super boss defeat!
+function spawnBlackHole(bossX, bossY) {
+    console.log('🕳️ SPAWNING BLACK HOLE!');
     
-    // Create final goal flag
-    goal = {
-        x: LEVEL_WIDTH - 100, // At the very end
-        y: 200, // On a platform
-        width: 40,
-        height: 150,
+    // Create epic black hole at boss death location
+    blackHole = {
+        x: bossX - 50, // Center on boss position
+        y: bossY - 50,
+        width: 100,
+        height: 100,
+        radius: 50,
+        rotation: 0,
+        particles: [],
+        isActive: true,
         isFinalExit: true
     };
     
-    console.log('✅ FINAL EXIT SPAWNED!');
+    // Create swirling particles around black hole
+    for (let i = 0; i < 20; i++) {
+        const angle = (i / 20) * Math.PI * 2;
+        const distance = 30 + Math.random() * 20;
+        blackHole.particles.push({
+            x: blackHole.x + 50 + Math.cos(angle) * distance,
+            y: blackHole.y + 50 + Math.sin(angle) * distance,
+            angle: angle,
+            distance: distance,
+            speed: 0.1 + Math.random() * 0.1
+        });
+    }
+    
+    console.log('✅ BLACK HOLE SPAWNED!');
+}
+
+// 🕳️ ENTER BLACK HOLE - Epic transition!
+function enterBlackHole() {
+    console.log('🕳️ ENTERING BLACK HOLE!');
+    
+    // Create epic visual effects
+    for (let i = 0; i < 50; i++) {
+        createParticles(player.x + Math.random() * 40, player.y + Math.random() * 40, '#000000', 20);
+    }
+    
+    // Set black hole message state
+    blackHole.messageTimer = 300; // 5 seconds at 60fps
+    blackHole.messagePhase = 0; // 0 = entering, 1 = space transition, 2 = prepare for battle
+    
+    // Enter space mode after message sequence
+    setTimeout(() => {
+        console.log('🌌 TRANSITIONING TO SPACE MODE!');
+        initSpaceMode({
+            playerHealth: lives * 25, // Convert lives to health
+            onExit: (result) => {
+                console.log('🌌 SPACE MODE RESULT:', result);
+                if (result.victory) {
+                    // Final victory - complete the game
+                    gameRunning = false;
+                    stopBackgroundMusic();
+                    score += result.score; // Add space score to main score
+                    document.getElementById('victoryScore').textContent = score;
+                    document.getElementById('victoryScreen').style.display = 'block';
+                    playSound('victory');
+                } else {
+                    // Return to main game
+                    gameRunning = true;
+                    // Reset player position
+                    player.x = 200;
+                    player.y = 400;
+                    cameraX = 0;
+                }
+            }
+        });
+    }, 5000); // 5 seconds total
 }
 
 function gameLoop() {
@@ -1405,6 +2169,15 @@ function update() {
         player.superJumpTimer--;
         if (player.superJumpTimer === 0) player.hasSuperJump = false;
     }
+    if (player.bigTimer > 0) {
+        player.bigTimer--;
+        if (player.bigTimer === 0) {
+            player.isBig = false;
+            player.width = 16; // возвращаем обычный размер
+            player.height = 16;
+            console.log('🍄 MUSHROOM ARTIFACT EXPIRED! Cat is normal size again.');
+        }
+    }
     if (player.speedBootsTimer > 0) {
         player.speedBootsTimer--;
         if (player.speedBootsTimer === 0) player.hasSpeedBoots = false;
@@ -1414,6 +2187,7 @@ function update() {
     if (player.dashing) {
         player.dashTime--;
         player.velX = player.dashDirection * player.speed * 3; // 3x speed!
+        player.direction = player.dashDirection; // Update direction during dash
         
         // Dash trail effect
         if (Math.random() < 0.5) {
@@ -1441,6 +2215,11 @@ function update() {
             player.direction = 1; // Face right
         } else {
             player.velX *= 0.8;
+        }
+        
+        // Down movement - go through platforms
+        if (keys['ArrowDown'] && player.onGround) {
+            player.velY = 2; // Small downward velocity to pass through platforms
         }
     }
     
@@ -1542,11 +2321,40 @@ function update() {
     }
     cameraX = Math.max(0, Math.min(cameraX, LEVEL_WIDTH - canvas.width));
     
+    // Debug camera limits for secret room
+    if (player.x > 4000) {
+        console.log('📷 CAMERA DEBUG: player.x=', player.x, 'cameraX=', cameraX, 'max cameraX=', LEVEL_WIDTH - canvas.width, 'canvas.width=', canvas.width);
+    }
+    
+    // Отладочная информация о камере и секретной комнате
+    if (player.x > 4100 && player.x < 4300) {
+        console.log('📷 CAMERA DEBUG: player.x:', player.x, 'cameraX:', cameraX, 'secret room at x=4200');
+        console.log('📷 LEVEL_WIDTH:', LEVEL_WIDTH, 'canvas.width:', canvas.width, 'max cameraX:', LEVEL_WIDTH - canvas.width);
+        
+        // Проверяем разбивающиеся блоки
+        if (window.secretRoomBreakableBlocks) {
+            console.log('🧱 SECRET ROOM BLOCKS:', window.secretRoomBreakableBlocks.length);
+            window.secretRoomBreakableBlocks.forEach((block, i) => {
+                if (i < 3) { // Показываем только первые 3 блока
+                    console.log(`🧱 Block ${i}: x=${block.x}, y=${block.y}, broken=${block.broken}`);
+                }
+            });
+        }
+    }
+    
     // Ground collision & Death by falling! 💀
     player.onGround = false;
     
     // Проверка падения в пропасть!
     if (player.y + player.height > 600) {
+        // Проверяем godmode - если включен, телепортируем игрока обратно
+        if (player.godMode) {
+            console.log('🛡️ GODMODE: Player saved from falling!');
+            player.x = Math.max(100, player.x - 200); // Телепорт назад
+            player.y = 400; // На безопасную высоту
+            player.velY = 0; // Остановить падение
+            createParticles(player.x, player.y, '#fcfc00', 15); // Золотые частицы
+        } else {
         // Упал в пропасть - смерть!
         lives--;
         playSound('hit');
@@ -1561,6 +2369,7 @@ function update() {
             player.velY = 0;
             player.velX = 0;
             cameraX = Math.max(0, player.x - 400);
+            }
         }
     }
     
@@ -1598,17 +2407,117 @@ function update() {
             }
         }
         
-        if (player.x < platform.x + platform.width &&
+        // Check if player is trying to go down through platform
+        const tryingToGoDown = keys['ArrowDown'] && player.onGround;
+        
+        // Проверяем, что блок не разбит (для разбивающихся блоков)
+        const isBlockBroken = platform.isBreakable && platform.broken;
+        
+        if (!isBlockBroken &&
+            player.x < platform.x + platform.width &&
             player.x + player.width > platform.x &&
             player.y + player.height > platform.y &&
             player.y + player.height < platform.y + 20 &&
-            player.velY > 0) {
+            player.velY > 0 &&
+            !tryingToGoDown) { // Don't land on platform if trying to go down
             player.y = platform.y - player.height;
             player.velY = 0;
             player.onGround = true;
             // Move with platform!
             if (platform.isMoving) {
                 player.x += platform.moveSpeed * platform.moveDir;
+            }
+        }
+        
+        // Обработка невидимого блока с грибом-артефактом
+        if (platform.isInvisibleBlock) {
+            // Проверяем, ударил ли игрок блок снизу
+            if (player.x < platform.x + platform.width &&
+                player.x + player.width > platform.x &&
+                player.y + player.height > platform.y &&
+                player.y + player.height < platform.y + 20 &&
+                player.velY > 0) {
+                
+                platform.hits++;
+                console.log('🔨 INVISIBLE BLOCK HIT! Hits:', platform.hits, '/', platform.maxHits);
+                
+                // Первый удар - блок становится видимым
+                if (platform.hits === 1 && !platform.revealed) {
+                    platform.revealed = true;
+                    console.log('👁️ INVISIBLE BLOCK REVEALED!');
+                }
+                
+                // Второй удар - спавним гриб-артефакт
+                if (platform.hits >= platform.maxHits && !platform.mushroomSpawned) {
+                    platform.mushroomSpawned = true;
+                    console.log('🍄 MUSHROOM ARTIFACT SPAWNED!');
+                    
+                    // Создаём гриб-артефакт
+                    powerUps.push({
+                        x: platform.x,
+                        y: platform.y - 24,
+                        width: 24,
+                        height: 24,
+                        collected: false,
+                        type: 'MUSHROOM_ARTIFACT',
+                        velY: -2, // подпрыгивает вверх
+                        velX: 0,
+                        isMushroomArtifact: true
+                    });
+                    
+                    // Эффекты
+                    playSound('star');
+                    createParticles(platform.x + platform.width/2, platform.y, '#ff6b6b', 15);
+                }
+            }
+        }
+        
+        // Обработка разбивающихся блоков в секретной комнате
+        if (platform.isBreakable && platform.isSecretRoom && !platform.broken) {
+            // Проверяем, ударил ли игрок блок снизу
+            if (player.x < platform.x + platform.width &&
+                player.x + player.width > platform.x &&
+                player.y + player.height > platform.y &&
+                player.y + player.height < platform.y + 20 &&
+                player.velY > 0) {
+                
+                console.log('💥 BREAKABLE BLOCK HIT! Breaking block at x:', platform.x, 'y:', platform.y);
+                
+                // Разбиваем блок
+                platform.broken = true;
+                platform.breakAnimation = 10; // Анимация разбивания
+                
+                // Спавним монетку из блока
+                if (platform.hasCoin && window.secretRoomCoins) {
+                    const coin = window.secretRoomCoins.find(c => 
+                        Math.abs(c.blockX - platform.x) < 5 && Math.abs(c.blockY - platform.y) < 5
+                    );
+                    
+                    if (coin && !coin.collected) {
+                        coin.collected = true;
+                        console.log('💰 COIN SPAWNED from breakable block!');
+                        
+                        // Создаём монетку
+                        coins.push({
+                            x: platform.x + 16,
+                            y: platform.y - 20,
+                            velY: -3, // подпрыгивает вверх
+                            velX: 0,
+                            collected: false,
+                            isCrystal: true,
+                            glowPhase: Math.random() * Math.PI * 2,
+                            isSecretRoomCoin: true
+                        });
+                        
+                        // Эффекты
+                        playSound('coin');
+                        createParticles(platform.x + 16, platform.y, '#FFD700', 10);
+                    }
+                }
+                
+                // Эффекты разбивания
+                playSound('hit');
+                createParticles(platform.x + 16, platform.y, '#8B4513', 8);
             }
         }
     });
@@ -1675,6 +2584,49 @@ function update() {
             }
         }
     });
+    
+    // === Потолочные плитки: коллизия при ударе головой вверх ===
+    if (inUnderground && window.ceilingTiles) {
+        window.ceilingTiles.forEach(tile => {
+            if (tile.broken) return;
+            // бокс-коллизия с верхом игрока: игрок подлетает и задевает снизу
+            const intersects = (
+                player.x < tile.x + tile.width &&
+                player.x + player.width > tile.x &&
+                player.y < tile.y + tile.height &&
+                player.y + player.height > tile.y
+            );
+            if (!intersects) return;
+            // Удар головой: игрок двигается вверх (velY < 0) и его голова ниже центра плитки
+            if (player.velY < 0 && (player.y + player.height/2) < (tile.y + tile.height)) {
+                tile.hits++;
+                playSound('break');
+                createParticles(tile.x + tile.width/2, tile.y + tile.height, '#aaaaaa', 8);
+                if (tile.hits >= tile.maxHits) {
+                    tile.broken = true;
+                    // При полном разрушении плитки - спавним камень, который падает с этого места
+                    window.fallingRocks.push({
+                        x: tile.x + tile.width/2 - 12,
+                        y: tile.y + tile.height,
+                        velY: 0,
+                        width: 24,
+                        height: 24,
+                        falling: true,
+                        respawnTimer: 0
+                    });
+                }
+                // Остановить вертикальную скорость при ударе
+                player.velY = 0;
+            }
+            // Ходьба по плитам: если падаем сверху и ниже верхней границы плитки — ставим на плиту
+            if (player.velY > 0 && (player.y + player.height) <= (tile.y + tile.height) &&
+                player.x < tile.x + tile.width && player.x + player.width > tile.x) {
+                player.y = tile.y - player.height;
+                player.velY = 0;
+                player.onGround = true;
+            }
+        });
+    }
     
     // Coins
     coins = coins.filter(coin => {
@@ -1744,9 +2696,16 @@ function update() {
         
         enemy.x += enemy.velX;
         
-        // Bounce off edges
+        // Patrol within assigned zone instead of bouncing off edges
+        if (enemy.patrolStart !== undefined && enemy.patrolEnd !== undefined) {
+            if (enemy.x <= enemy.patrolStart || enemy.x >= enemy.patrolEnd) {
+                enemy.velX *= -1;
+            }
+        } else {
+            // Fallback for old enemies without patrol zones
         if (enemy.x < 0 || enemy.x > LEVEL_WIDTH) {
             enemy.velX *= -1;
+            }
         }
         
         // Collision with player
@@ -1816,6 +2775,14 @@ function update() {
                     player.hasSuperJump = true;
                     player.superJumpTimer = 600; // 10 seconds
                     break;
+                case 'MUSHROOM_ARTIFACT':
+                    // Гриб-артефакт увеличивает котика до 32x32
+                    player.width = 32;
+                    player.height = 32;
+                    player.isBig = true;
+                    player.bigTimer = 1800; // 30 секунд
+                    console.log('🍄 MUSHROOM ARTIFACT COLLECTED! Cat is now BIG!');
+                    break;
                 case POWERUP_TYPES.SPEEDBOOTS:
                     player.hasSpeedBoots = true;
                     player.speedBootsTimer = 600; // 10 seconds
@@ -1832,6 +2799,12 @@ function update() {
             score += 500;
             playSound('powerup');
             createParticles(checkpoint.x, checkpoint.y, '#00fc00', 20);
+            
+            // Специальная логика для секретного флага
+            if (checkpoint.isSecretFlag) {
+                playerProgress.secretFound = true;
+                console.log('🗝️ SECRET ROOM DISCOVERED!');
+            }
         }
     });
     
@@ -1839,7 +2812,9 @@ function update() {
     pipes.forEach(pipe => {
         if (checkCollision(player, pipe) && keys['ArrowDown'] && player.onGround) {
             if (pipe.isExit) {
-                // Exit special level
+                // Check if this is Contra exit (leads to super boss)
+                if (pipe.isContraExit) {
+                    console.log('🚪 EXITING CONTRA LEVEL TO SUPER BOSS!');
                 stopBackgroundMusic();
                 player.canShoot = false;
                 player.bullets = [];
@@ -1849,9 +2824,29 @@ function update() {
                 // Clean up DOOM door
                 doomDoor = null;
                 initLevel();
-                player.x = pipe.returnX || 100;
+                    // Move player to super boss area
+                    player.x = 3000; // Position near super boss
                 cameraX = Math.max(0, player.x - 400);
+                    console.log('✅ RETURNED TO MAIN LEVEL FOR SUPER BOSS! Player x:', player.x, 'Camera x:', cameraX);
                 playSound('warp');
+                } else {
+                    // Regular underground exit
+                    console.log('🚪 EXITING UNDERGROUND LEVEL!');
+                    stopBackgroundMusic();
+                    player.canShoot = false;
+                    player.bullets = [];
+                    // Clean up Contra-specific objects
+                    if (window.turrets) window.turrets = [];
+                    if (window.enemyBullets) window.enemyBullets = [];
+                    // Clean up DOOM door
+                    doomDoor = null;
+                    initLevel();
+                    // Move player to a safe position away from any pipes
+                    player.x = 200; // Safe position away from pipes
+                    cameraX = Math.max(0, player.x - 400);
+                    console.log('✅ RETURNED TO MAIN LEVEL! Player x:', player.x, 'Camera x:', cameraX);
+                    playSound('warp');
+                }
             } else if (pipe.isContra) {
                 // 🔒 CHECK KEY #2 FOR CONTRA!
                 if (playerProgress.hasKey2) {
@@ -1865,6 +2860,7 @@ function update() {
                 }
             } else if (pipe.isUnderground) {
                 // 🔒 CHECK KEY #1 FOR UNDERGROUND!
+                console.log('🕳️ ENTERING UNDERGROUND! hasKey1:', playerProgress.hasKey1);
                 if (playerProgress.hasKey1) {
                     createUndergroundLevel(pipe.x);
                     playSound('warp');
@@ -1877,6 +2873,8 @@ function update() {
             }
         }
     });
+    
+    // Секретная комната теперь создается сразу при входе в подземный уровень
     
     // Stars (invincibility power-up)
     stars = stars.filter(star => {
@@ -2015,8 +3013,8 @@ function update() {
                     // 🏰 SUPER BOSS DEFEATED!
                     if (currentBoss.isSuperBoss) {
                         playerProgress.superBossDefeated = true;
-                        console.log('🏰 SUPER BOSS DEFEATED! Final exit unlocked!');
-                        spawnFinalExit();
+                        console.log('🏰 SUPER BOSS DEFEATED! Black hole spawning!');
+                        spawnBlackHole(currentBoss.x, currentBoss.y);
                     }
                     
                     // Create path after boss death in underground!
@@ -2078,8 +3076,8 @@ function update() {
         });
     }
     
-    // Goal
-    if (goal && checkCollision(player, goal)) {
+    // Goal (legacy flag system)
+    if (goal && !blackHole && checkCollision(player, goal)) {
         // Check if boss is defeated
         if (currentBoss && currentBoss.alive) {
             // Boss is still alive - block passage!
@@ -2181,8 +3179,8 @@ function update() {
                     // 🏰 SUPER BOSS DEFEATED!
                     if (currentBoss.isSuperBoss) {
                         playerProgress.superBossDefeated = true;
-                        console.log('🏰 SUPER BOSS DEFEATED! Final exit unlocked!');
-                        spawnFinalExit();
+                        console.log('🏰 SUPER BOSS DEFEATED! Black hole spawning!');
+                        spawnBlackHole(currentBoss.x, currentBoss.y);
                     }
                     
                     // Create path after boss death in underground!
@@ -2269,22 +3267,28 @@ function update() {
         });
     }
     
-    // Falling rocks!
+    // Falling rocks! (теперь падают только с разбитых потолочных плиток)
     if (window.fallingRocks) {
         window.fallingRocks.forEach(rock => {
-            // Trigger fall when player is near
-            if (!rock.falling && Math.abs(player.x - rock.x) < 50) {
-                rock.falling = true;
-                rock.velY = 0;
-            }
+            // Камни уже падают с момента спавна при разбивании плитки
             
             if (rock.falling) {
                 rock.velY += 0.5;
                 rock.y += rock.velY;
                 
                 // Check collision with player
-                if (checkCollision(player, rock)) {
-                    if (!player.invincible) {
+                // Доп. защита: если игрок стоит на потолочной плитке, камень не наносит урон
+                const playerOnCeilingNow = window.ceilingTiles && window.ceilingTiles.some(t => !t.broken &&
+                    (player.x + player.width * 0.3) < (t.x + t.width) &&
+                    (player.x + player.width * 0.7) > t.x &&
+                    Math.abs((player.y + player.height) - t.y) <= 8);
+                if (playerOnCeilingNow && rock.y < player.y) {
+                    // Если игрок под защитой плитки, камень рассеивается/сбрасывается без урона
+                    rock.falling = false;
+                    rock.y = 0;
+                    rock.velY = 0;
+                } else if (!playerOnCeilingNow && checkCollision(player, rock)) {
+                    if (!player.invincible && !player.godMode) {
                         lives--;
                         playSound('hit');
                         createParticles(player.x, player.y, '#fc0000');
@@ -2292,6 +3296,13 @@ function update() {
                         rock.y = 0;
                         rock.velY = 0;
                         if (lives <= 0) gameOver();
+                    } else if (player.godMode) {
+                        // В godmode камни просто исчезают при касании
+                        console.log('🛡️ GODMODE: Rock destroyed on contact!');
+                        rock.falling = false;
+                        rock.y = 0;
+                        rock.velY = 0;
+                        createParticles(player.x, player.y, '#fcfc00', 10);
                     }
                 }
                 
@@ -2316,6 +3327,16 @@ function update() {
             if (player.x + player.width > pit.x &&
                 player.x < pit.x + pit.width &&
                 player.y + player.height > 550) {
+                
+                // Проверяем godmode - если включен, игрок не получает урон от лавы
+                if (player.godMode) {
+                    console.log('🛡️ GODMODE: Player protected from lava!');
+                    // Телепортируем игрока на безопасное место
+                    player.x = pit.x + pit.width + 50; // Рядом с лавой
+                    player.y = 400; // На безопасную высоту
+                    player.velY = 0; // Остановить падение
+                    createParticles(player.x, player.y, '#fcfc00', 15); // Золотые частицы
+                } else {
                 // Fell in lava!
                 lives--;
                 playSound('hit');
@@ -2324,8 +3345,93 @@ function update() {
                 player.y = 400;
                 cameraX = 0;
                 if (lives <= 0) gameOver();
+                }
             }
         });
+    }
+    
+    // 🕳️ BLACK HOLE UPDATE
+    if (blackHole && blackHole.isActive) {
+        // Rotate black hole
+        blackHole.rotation += 0.1;
+        
+        // Update message timer
+        if (blackHole.messageTimer > 0) {
+            blackHole.messageTimer--;
+            
+            // Phase transitions
+            if (blackHole.messageTimer === 200) {
+                blackHole.messagePhase = 1; // Congratulations
+            } else if (blackHole.messageTimer === 100) {
+                blackHole.messagePhase = 2; // Final score
+            }
+        }
+        
+        // Update swirling particles
+        blackHole.particles.forEach(particle => {
+            particle.angle += particle.speed;
+            particle.distance = Math.max(10, particle.distance - 0.2); // Slowly spiral inward
+            
+            particle.x = blackHole.x + 50 + Math.cos(particle.angle) * particle.distance;
+            particle.y = blackHole.y + 50 + Math.sin(particle.angle) * particle.distance;
+            
+            // Reset particle if it gets too close
+            if (particle.distance < 10) {
+                particle.distance = 50;
+                particle.angle += Math.PI;
+            }
+        });
+        
+        // Check collision with player (only if not showing message)
+        if (blackHole.messageTimer === undefined && checkCollision(player, blackHole)) {
+            console.log('🕳️ PLAYER ENTERED BLACK HOLE!');
+            enterBlackHole();
+        }
+    }
+    
+    // === Секретная комната: взаимодействие с рычагом и сундуком ===
+    if (inUnderground && window.secretTreasureRoom && window.secretTreasureRoom.revealed) {
+        // Рычаг
+        if (window.secretTreasureRoom.lever && !window.secretTreasureRoom.lever.activated) {
+            if (checkCollision(player, window.secretTreasureRoom.lever) && keys['ArrowDown']) {
+                window.secretTreasureRoom.lever.activated = true;
+                window.secretTreasureRoom.lever.activationTimer = 300; // 5 секунд
+                playSound('powerup');
+                createParticles(window.secretTreasureRoom.lever.x, window.secretTreasureRoom.lever.y, '#fcfc00', 15);
+                console.log('🔧 LEVER ACTIVATED!');
+            }
+        }
+        
+        // Сундук (открывается только после активации рычага)
+        if (window.secretTreasureRoom.chest && !window.secretTreasureRoom.chest.opened && 
+            window.secretTreasureRoom.lever && window.secretTreasureRoom.lever.activated) {
+            if (checkCollision(player, window.secretTreasureRoom.chest) && keys['ArrowDown']) {
+                window.secretTreasureRoom.chest.opened = true;
+                window.secretTreasureRoom.chestOpened = true;
+                score += 2000;
+                playSound('star');
+                createParticles(window.secretTreasureRoom.chest.x, window.secretTreasureRoom.chest.y, '#fcfc00', 25);
+                
+                // Дополнительный лут из сундука
+                powerUps.push({ 
+                    x: window.secretTreasureRoom.chest.x + 5, 
+                    y: window.secretTreasureRoom.chest.y - 30, 
+                    width: 24, height: 24, 
+                    collected: false, 
+                    type: POWERUP_TYPES.FIREBALL 
+                });
+                console.log('💰 TREASURE CHEST OPENED!');
+            }
+        }
+        
+        // Таймер рычага
+        if (window.secretTreasureRoom.lever && window.secretTreasureRoom.lever.activated) {
+            window.secretTreasureRoom.lever.activationTimer--;
+            if (window.secretTreasureRoom.lever.activationTimer <= 0) {
+                window.secretTreasureRoom.lever.activated = false;
+                console.log('🔧 LEVER DEACTIVATED!');
+            }
+        }
     }
     
     // Particles
@@ -2374,6 +3480,9 @@ function update() {
 }
 
 function render() {
+    // 🧹 CLEAR CANVAS - fix sprite trails!
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
     // 🔥 DOOM RENDERING - в самое начало!
     if (gameMode === 'doom') {
         renderDoom();
@@ -2505,29 +3614,35 @@ function render() {
             }
         }
         
-        // FOREGROUND - Bushes and grass
+        // FOREGROUND - Static bushes (no camera movement)
         ctx.fillStyle = '#1a5a1a';
-        for (let i = 0; i < 30; i++) {
-            const bushX = cameraX + i * 80 - 20;
+        const staticBushes = [200, 800, 1400, 2200, 3000, 3800, 4600, 5400]; // Fixed positions
+        staticBushes.forEach(bushX => {
+            // Only render if bush is visible on screen
+            if (bushX > cameraX - 100 && bushX < cameraX + canvas.width + 100) {
             // Big bush
-            ctx.fillRect(bushX, 360, 70, 40);
-            ctx.fillRect(bushX + 10, 350, 50, 15);
-            ctx.fillRect(bushX + 20, 345, 30, 8);
+                ctx.fillRect(bushX - cameraX, 360, 70, 40);
+                ctx.fillRect(bushX - cameraX + 10, 350, 50, 15);
+                ctx.fillRect(bushX - cameraX + 20, 345, 30, 8);
             
             // Bush highlights
             ctx.fillStyle = '#2a7a2a';
-            ctx.fillRect(bushX + 15, 355, 40, 8);
-            ctx.fillRect(bushX + 25, 348, 20, 4);
+                ctx.fillRect(bushX - cameraX + 15, 355, 40, 8);
+                ctx.fillRect(bushX - cameraX + 25, 348, 20, 4);
             ctx.fillStyle = '#1a5a1a';
         }
+        });
         
-        // Grass blades in foreground
+        // Grass blades in foreground - static
         ctx.fillStyle = '#3a8a3a';
-        for (let i = 0; i < 50; i++) {
-            const grassX = cameraX + i * 40;
-            ctx.fillRect(grassX, 390, 4, 10);
-            ctx.fillRect(grassX + 2, 385, 3, 10);
-        }
+        const staticGrass = [150, 350, 650, 950, 1250, 1550, 1850, 2150, 2450, 2750, 3050, 3350, 3650, 3950, 4250]; // Fixed positions
+        staticGrass.forEach(grassX => {
+            // Only render if grass is visible on screen
+            if (grassX > cameraX - 50 && grassX < cameraX + canvas.width + 50) {
+                ctx.fillRect(grassX - cameraX, 390, 4, 10);
+                ctx.fillRect(grassX - cameraX + 2, 385, 3, 10);
+            }
+        });
         
         // FIREFLIES/GLOWING PARTICLES for atmosphere!
         const time = Date.now() / 200;
@@ -2628,11 +3743,62 @@ function render() {
             ctx.fillRect(x + 2, y - 4, 4, 20);
             ctx.globalAlpha = 1;
         }
+        
+        // === Отрисовка потолочных разрушаемых плиток ===
+        if (window.ceilingTiles) {
+            window.ceilingTiles.forEach(tile => {
+                if (tile.x < cameraX - 100 || tile.x > cameraX + canvas.width + 100) return;
+                if (tile.broken) return;
+                // Базовый каменный блок
+                ctx.fillStyle = '#6b6b6b';
+                ctx.fillRect(tile.x, tile.y, tile.width, tile.height);
+                // Светлая грань
+                ctx.fillStyle = '#8a8a8a';
+                ctx.fillRect(tile.x + 2, tile.y + 2, tile.width - 4, tile.height - 6);
+                // Трещины от урона
+                const crack = tile.hits / tile.maxHits;
+                ctx.fillStyle = '#3a3a3a';
+                if (crack > 0) {
+                    ctx.fillRect(tile.x + 4, tile.y + tile.height - 6, tile.width - 8, 2);
+                }
+                if (crack > 0.5) {
+                    ctx.fillRect(tile.x + 8, tile.y + tile.height - 10, tile.width - 16, 2);
+                }
+            });
+        }
     } else {
-        // Sky with PARALLAX!
+        // 🎨 PROFESSIONAL BACKGROUND RENDERING
         const levelConfig = LEVELS[level] || LEVELS[1];
+        
+        // Try to use real background sprite first
+        if (backgroundSprites && backgroundSprites.complete && backgroundSprites.naturalWidth > 0) {
+            // Render background sprite as a single large image with parallax
+            const bgWidth = backgroundSprites.naturalWidth;
+            const bgHeight = backgroundSprites.naturalHeight;
+            
+            // Calculate parallax offset
+            const parallaxX = (cameraX * 0.1) % bgWidth;
+            const parallaxY = (cameraX * 0.05) % bgHeight;
+            
+            // Render background sprite with proper tiling
+            const startX = Math.floor(-parallaxX / bgWidth) * bgWidth - bgWidth;
+            const startY = Math.floor(-parallaxY / bgHeight) * bgHeight - bgHeight;
+            
+            // Render multiple copies to fill the entire screen with extra coverage
+            for (let x = startX; x < canvas.width + bgWidth * 4; x += bgWidth) {
+                for (let y = startY; y < canvas.height + bgHeight * 4; y += bgHeight) {
+                    ctx.drawImage(
+                        backgroundSprites,
+                        0, 0, bgWidth, bgHeight,
+                        x, y, bgWidth, bgHeight
+                    );
+                }
+            }
+        } else {
+            // Fallback to simple background
         ctx.fillStyle = levelConfig.bg;
-        ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
         
         // PARALLAX LAYER 1 - Far mountains (slowest)
         ctx.fillStyle = 'rgba(100, 100, 150, 0.3)';
@@ -2677,70 +3843,170 @@ function render() {
         }
     }
     
-    // Platforms
-    if (inUnderground === 'contra') {
-        // DEBUG removed
-        // DETAILED Jungle platforms
-        // console.log('🎮 RENDERING CONTRA PLATFORMS:', platforms.length, 'platforms');
+    // 🎨 PROFESSIONAL PLATFORM RENDERING
         platforms.forEach(p => {
-            // Earth base with texture
-            ctx.fillStyle = '#5a3a1a';
-            ctx.fillRect(p.x, p.y, p.width, p.height);
+        // Секретная комната - отладочная информация только при необходимости
+        if (p.isSecretRoom && p.isBrick && player.x > 4100 && player.x < 4300) {
+            console.log(`🧱 SECRET ROOM BRICK: x=${p.x}, y=${p.y}, renderX=${p.x - cameraX}, cameraX=${cameraX}`);
+        }
+        
+        // Отладочная информация для разбивающихся блоков
+        if (p.isBreakable && p.isSecretRoom && player.x > 4100 && player.x < 4300) {
+            console.log(`🧱 BREAKABLE BLOCK: x=${p.x}, y=${p.y}, renderX=${p.x - cameraX}, cameraX=${cameraX}, visible=${(p.x - cameraX) >= -50 && (p.x - cameraX) <= canvas.width + 50}`);
+        }
+        
+        // Отладочная информация для тестовых блоков (в начале уровня)
+        if (p.isSecretRoom && (p.x === 500 || p.x === 600)) {
+            console.log(`🧪 TEST BLOCK: x=${p.x}, y=${p.y}, renderX=${p.x - cameraX}, cameraX=${cameraX}, isBreakable=${p.isBreakable}, isBrick=${p.isBrick}`);
+        }
+        // Determine biome based on level and position
+        let biome = 'forest';
+        if (inUnderground === 'contra') {
+            biome = 'industrial';
+        } else if (level > 3) {
+            biome = 'autumn';
+        } else if (level > 6) {
+            biome = 'winter';
+        } else if (p.x > 2000) {
+            biome = 'desert';
+        }
+        
+        // Use professional sprite rendering
+        if (p.isSecretRoom && p.isBrick) {
+            // Секретная комната - бирюзовые кирпичи как в классическом Марио
+            const renderX = p.x - cameraX;
+            const renderY = p.y;
             
-            // Dirt texture (random spots)
-            ctx.fillStyle = '#4a2a0a';
-            for (let i = 0; i < p.width / 12; i++) {
-                ctx.fillRect(p.x + i * 12 + 2, p.y + 2, 8, 4);
-                ctx.fillRect(p.x + i * 12 + 4, p.y + 8, 6, 3);
+            // Проверяем видимость кирпича
+            if (renderX >= -50 && renderX <= canvas.width + 50) {
+                // Бирюзовые кирпичи как в классическом Марио
+                ctx.fillStyle = '#40E0D0'; // Бирюзовый цвет
+                ctx.fillRect(renderX, renderY, p.width, p.height);
+                
+                // Темная граница для контраста
+                ctx.strokeStyle = '#20B2AA';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(renderX, renderY, p.width, p.height);
+                
+                // Текстура кирпича - небольшие квадратики
+                ctx.fillStyle = '#48D1CC';
+                ctx.fillRect(renderX + 2, renderY + 2, 8, 8);
+                ctx.fillRect(renderX + 14, renderY + 2, 8, 8);
+                ctx.fillRect(renderX + 2, renderY + 14, 8, 8);
+                ctx.fillRect(renderX + 14, renderY + 14, 8, 8);
+            }
+        } else if (p.isBreakable && p.isSecretRoom) {
+            // Разбивающиеся блоки в секретной комнате
+            const renderX = p.x - cameraX;
+            const renderY = p.y;
+            
+            // Отладочная информация для разбивающихся блоков
+            if (player.x > 4100 && player.x < 4300) {
+                console.log(`🧱 RENDERING BREAKABLE BLOCK: x=${p.x}, y=${p.y}, renderX=${renderX}, cameraX=${cameraX}, visible=${renderX >= -50 && renderX <= canvas.width + 50}`);
             }
             
-            // Rocks in dirt
-            ctx.fillStyle = '#6a4a2a';
-            for (let i = 0; i < p.width / 25; i++) {
-                const rockX = p.x + i * 25 + 5;
-                ctx.fillRect(rockX, p.y + 5, 6, 6);
-                ctx.fillRect(rockX + 1, p.y + 6, 4, 4);
-            }
-            
-            // Grass top - thick layer!
-            ctx.fillStyle = '#2a6a2a';
-            ctx.fillRect(p.x, p.y - 8, p.width, 8);
-            
-            // Grass texture (darker line in middle)
-            ctx.fillStyle = '#1a5a1a';
-            ctx.fillRect(p.x, p.y - 4, p.width, 2);
-            
-            // Grass blades on top
-            ctx.fillStyle = '#3a8a3a';
-            for (let i = 0; i < p.width / 6; i++) {
-                const bladeX = p.x + i * 6;
-                // Tall blade
-                ctx.fillRect(bladeX, p.y - 12, 3, 5);
-                ctx.fillRect(bladeX + 1, p.y - 14, 2, 3);
-                // Short blade
-                ctx.fillRect(bladeX + 3, p.y - 10, 2, 3);
-            }
-            
-            // Bright grass highlights
-            ctx.fillStyle = '#4a9a4a';
-            for (let i = 0; i < p.width / 15; i++) {
-                ctx.fillRect(p.x + i * 15 + 2, p.y - 11, 2, 4);
-            }
-            
-            // Platform edge highlights
-            ctx.fillStyle = '#6a4a2a';
-            ctx.fillRect(p.x, p.y, 2, p.height);
-            ctx.fillRect(p.x + p.width - 2, p.y, 2, p.height);
-        });
+            if (renderX >= -50 && renderX <= canvas.width + 50) {
+                if (!p.broken) {
+                    // Обычный разбивающийся блок - коричневый с точками
+                    ctx.fillStyle = '#8B4513'; // Коричневый цвет
+                    ctx.fillRect(renderX, renderY, p.width, p.height);
+                    
+                    // Светлая граница
+                    ctx.strokeStyle = '#D2691E';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(renderX, renderY, p.width, p.height);
+                    
+                    // Точки на блоке как в Марио
+                    ctx.fillStyle = '#F4A460';
+                    ctx.fillRect(renderX + 4, renderY + 4, 4, 4);
+                    ctx.fillRect(renderX + 12, renderY + 4, 4, 4);
+                    ctx.fillRect(renderX + 20, renderY + 4, 4, 4);
+                    ctx.fillRect(renderX + 4, renderY + 12, 4, 4);
+                    ctx.fillRect(renderX + 12, renderY + 12, 4, 4);
+                    ctx.fillRect(renderX + 20, renderY + 12, 4, 4);
+                    ctx.fillRect(renderX + 4, renderY + 20, 4, 4);
+                    ctx.fillRect(renderX + 12, renderY + 20, 4, 4);
+                    ctx.fillRect(renderX + 20, renderY + 20, 4, 4);
+                    
+                    // Отладочный текст на блоке
+                    if (player.x > 4100 && player.x < 4300) {
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.font = '8px Arial';
+                        ctx.fillText('BLOCK', renderX + 2, renderY + 10);
+                    }
     } else {
-        // Normal platforms
-        // DEBUG removed
-        ctx.fillStyle = '#8b4513';
+                    // Анимация разбивания
+                    if (p.breakAnimation > 0) {
+                        ctx.fillStyle = '#FFD700'; // Золотой цвет при разбивании
+                        ctx.fillRect(renderX, renderY, p.width, p.height);
+                        p.breakAnimation--;
+                    }
+                }
+            }
+        } else if (p.isSecretRoom) {
+            // Секретная комната - обычные платформы
+            ctx.fillStyle = '#4A4A4A';
+            ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(p.x - cameraX, p.y, p.width, p.height);
+        } else if (p.isShaftWall) {
+            // Стена шахты
+            ctx.fillStyle = '#2C2C2C';
+            ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
+        } else if (p.isUpperCorridor) {
+            // Верхний коридор - простые платформы
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
+        } else if (p.isInvisibleBlock) {
+            // Невидимый блок - рендерим только если открыт
+            if (p.revealed) {
+                ctx.fillStyle = '#FFD700'; // золотой цвет
+                ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
+                ctx.strokeStyle = '#FFA500';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(p.x - cameraX, p.y, p.width, p.height);
+                
+                // Текст "?"
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('?', p.x - cameraX + p.width/2, p.y + p.height/2 + 4);
+            }
+    } else {
+            // Обычные платформы
+            renderProfessionalPlatform(p, biome);
+        }
+    });
+    
+    // 🌳 DECORATIVE OBJECTS RENDERING
+    if (!inUnderground) {
+        // Add decorative objects on platforms - reduced frequency
         platforms.forEach(p => {
-            ctx.fillRect(p.x, p.y, p.width, p.height);
-            ctx.fillStyle = '#00fc00';
-            ctx.fillRect(p.x, p.y - 4, p.width, 4);
-            ctx.fillStyle = '#8b4513';
+            if (p.x > cameraX - 100 && p.x < cameraX + canvas.width + 100) {
+                // Use platform position to create consistent decorations
+                const platformHash = Math.floor(p.x / 100) + Math.floor(p.y / 100);
+                
+                // Much less frequent decorations - only every 12th platform (even less)
+                if ((platformHash % 12) === 0) {
+                    const decorationX = p.x + 20 + (platformHash % 40);
+                    const decorationY = p.y - 32;
+                    
+                    // Choose decoration type - balanced mix including bushes
+                    const decorationTypes = ['bush', 'stone', 'mushroom', 'bush', 'stone', 'mushroom', 'bush', 'tree']; // Bushes back in
+                    const decorationType = decorationTypes[platformHash % decorationTypes.length];
+                    
+                    renderDecoration(decorationX, decorationY, decorationType);
+                    
+                    // Add second decoration on larger platforms - very rare
+                    if (p.width > 200 && (platformHash % 24) === 0) {
+                        const decorationX2 = p.x + 60 + (platformHash % 30);
+                        const decorationY2 = p.y - 32;
+                        const decorationType2 = decorationTypes[(platformHash + 1) % decorationTypes.length];
+                        renderDecoration(decorationX2, decorationY2, decorationType2);
+                    }
+                }
+            }
         });
     }
     
@@ -2802,6 +4068,88 @@ function render() {
                 }
             }
         });
+    }
+    
+    // === ВИЗУАЛЬНЫЙ МАРКЕР СЕКРЕТНОЙ КОМНАТЫ ===
+    if (inUnderground && window.secretRoomMarker) {
+        const marker = window.secretRoomMarker;
+        const renderX = marker.x - cameraX;
+        const renderY = marker.y;
+        
+        if (renderX >= -100 && renderX <= canvas.width + 100) {
+            // Яркий красный маркер
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(renderX, renderY, marker.width, marker.height);
+            
+            // Белый текст
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('SECRET ROOM', renderX + marker.width/2, renderY + 20);
+            ctx.textAlign = 'left';
+        }
+    }
+    
+    // === Секретная комната: рендер рычага и сундука ===
+    if (inUnderground && window.secretTreasureRoom && window.secretTreasureRoom.revealed) {
+        // Рычаг
+        if (window.secretTreasureRoom.lever) {
+            ctx.fillStyle = window.secretTreasureRoom.lever.activated ? '#fcfc00' : '#8b4513';
+            ctx.fillRect(window.secretTreasureRoom.lever.x, window.secretTreasureRoom.lever.y, window.secretTreasureRoom.lever.width, window.secretTreasureRoom.lever.height);
+            
+            // Ручка рычага
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(window.secretTreasureRoom.lever.x + 2, window.secretTreasureRoom.lever.y + 4, 12, 4);
+            
+            // Индикатор активации
+            if (window.secretTreasureRoom.lever.activated) {
+                const time = Date.now() / 200;
+                ctx.fillStyle = '#fcfc00';
+                ctx.globalAlpha = 0.5 + Math.sin(time) * 0.3;
+                ctx.fillRect(window.secretTreasureRoom.lever.x - 2, window.secretTreasureRoom.lever.y - 2, 
+                           window.secretTreasureRoom.lever.width + 4, window.secretTreasureRoom.lever.height + 4);
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        // Сундук
+        if (window.secretTreasureRoom.chest) {
+            if (!window.secretTreasureRoom.chest.opened) {
+                // Закрытый сундук
+                ctx.fillStyle = '#8b4513';
+                ctx.fillRect(window.secretTreasureRoom.chest.x, window.secretTreasureRoom.chest.y, window.secretTreasureRoom.chest.width, window.secretTreasureRoom.chest.height);
+                
+                // Металлические детали
+                ctx.fillStyle = '#c0c0c0';
+                ctx.fillRect(window.secretTreasureRoom.chest.x + 4, window.secretTreasureRoom.chest.y + 2, 24, 4);
+                ctx.fillRect(window.secretTreasureRoom.chest.x + 4, window.secretTreasureRoom.chest.y + 18, 24, 4);
+                
+                // Замок
+                ctx.fillStyle = '#ffd700';
+                ctx.fillRect(window.secretTreasureRoom.chest.x + 12, window.secretTreasureRoom.chest.y + 8, 8, 8);
+                
+                // Свечение если рычаг активирован
+                if (window.secretTreasureRoom.lever && window.secretTreasureRoom.lever.activated) {
+                    const time = Date.now() / 300;
+                    ctx.fillStyle = '#fcfc00';
+                    ctx.globalAlpha = 0.3 + Math.sin(time) * 0.2;
+                    ctx.fillRect(window.secretTreasureRoom.chest.x - 4, window.secretTreasureRoom.chest.y - 4, 
+                               window.secretTreasureRoom.chest.width + 8, window.secretTreasureRoom.chest.height + 8);
+                    ctx.globalAlpha = 1;
+                }
+            } else {
+                // Открытый сундук
+                ctx.fillStyle = '#654321';
+                ctx.fillRect(window.secretTreasureRoom.chest.x, window.secretTreasureRoom.chest.y, window.secretTreasureRoom.chest.width, window.secretTreasureRoom.chest.height);
+                
+                // Внутреннее свечение
+                ctx.fillStyle = '#fcfc00';
+                ctx.globalAlpha = 0.6;
+                ctx.fillRect(window.secretTreasureRoom.chest.x + 4, window.secretTreasureRoom.chest.y + 4, 
+                           window.secretTreasureRoom.chest.width - 8, window.secretTreasureRoom.chest.height - 8);
+                ctx.globalAlpha = 1;
+            }
+        }
     }
     
     // === НОВОЕ: Факелы (в пещере) ===
@@ -2905,6 +4253,39 @@ function render() {
         const pipeColor = pipe.color || '#00fc00';
         const darkColor = pipe.isContra ? '#333' : '#00c000';
         
+        // Special rendering for exit pipe (long vertical pipe like Mario)
+        if (pipe.isExit && inUnderground) {
+            // Long vertical pipe going up to the very top of screen
+            const pipeHeight = pipe.y; // Go all the way to the top (y=0)
+            const pipeTop = 0; // Start from the very top
+            
+            // Pipe body (vertical) - goes to the very top
+            ctx.fillStyle = pipeColor;
+            ctx.fillRect(pipe.x, pipeTop, pipe.width, pipeHeight);
+            ctx.fillStyle = darkColor;
+            ctx.fillRect(pipe.x + 5, pipeTop + 5, pipe.width - 10, pipeHeight - 10);
+            
+            // Pipe rim at top (at the very top of screen)
+            ctx.fillStyle = pipeColor;
+            ctx.fillRect(pipe.x - 5, pipeTop - 5, pipe.width + 10, 10);
+            
+            // Horizontal entrance at bottom (like Mario)
+            ctx.fillStyle = pipeColor;
+            ctx.fillRect(pipe.x - 10, pipe.y - 5, pipe.width + 20, 10);
+            ctx.fillStyle = darkColor;
+            ctx.fillRect(pipe.x - 5, pipe.y, pipe.width + 10, 5);
+            
+            // Arrow pointing up at the top
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px "Press Start 2P"';
+            ctx.fillText('↑', pipe.x + 20, pipeTop + 15);
+            
+            // "EXIT" text at bottom
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText('EXIT', pipe.x - 10, pipe.y + 15);
+        } else {
+            // Normal pipe rendering
         // Pipe body
         ctx.fillStyle = pipeColor;
         ctx.fillRect(pipe.x, pipe.y, pipe.width, pipe.height);
@@ -2913,6 +4294,7 @@ function render() {
         // Pipe rim
         ctx.fillStyle = pipeColor;
         ctx.fillRect(pipe.x - 5, pipe.y - 5, pipe.width + 10, 10);
+        }
         
         // 🔒 LOCK INDICATOR!
         if (pipe.locked) {
@@ -2968,327 +4350,133 @@ function render() {
         }
     });
     
-    // Player
-    if (inUnderground === 'contra') {
-        // CONTRA HERO - детальный пиксель-арт! 💪
-        const px = player.x;
-        const py = player.y;
+     // Player - CAT SPRITE FOR ALL MODES
+     // Player - CAT SPRITE 🐱
+     if (!spriteImg || !spriteImg.complete) {
+         // Fallback if sprite not loaded yet - draw simple placeholder
+         ctx.fillStyle = player.invincible ? '#fcfc00' : '#ffaacc';
+         ctx.fillRect(player.x, player.y, player.width, player.height);
+     } else {
+        // Cat sprite sheet layout:
+        // Row 0: idle (4 frames)
+        // Row 1: walk (8 frames)
+        // Row 2: jump (4 frames)
+        // Row 3: fall (2 frames)
+        // Row 4: dash (2 frames)
+        // Row 5: attack (3 frames)
         
-        // Base color or invincible rainbow
-        let skinColor = '#d4a574';
+         // Determine current animation state and frame
+         let animState = 'idle';
+         let frameIndex = 0;
+         
+         if (player.dashing) {
+             // Dash animation
+             animState = 'dash';
+             frameIndex = Math.floor((Date.now() / 100) % 2);
+         } else if (!player.onGround) {
+             // In air - check if going up or down
+             if (player.velY < 0) {
+                 // Jumping up
+                 animState = 'jump';
+                 frameIndex = Math.floor((Date.now() / 80) % 4);
+             } else {
+                 // Falling down
+                 animState = 'fall';
+                 frameIndex = Math.floor((Date.now() / 100) % 2);
+             }
+         } else if (Math.abs(player.velX) > 0.5) {
+             // Walking/running on ground
+             animState = 'walk';
+             frameIndex = Math.floor((Date.now() / 80) % 8);
+         } else {
+             // Standing still on ground
+             animState = 'idle';
+             frameIndex = 3; // Статичный кадр для покоя (как вы сказали - кадр 4, но индексация с 0)
+         }
+         
+        // Map animation state to sprite sheet row - FINDING STATIC IDLE!
+        const stateToRow = {
+            'idle': 3,    // Покой = строка 3 (попробуем найти статичный)
+            'walk': 0,    // Ходьба = строка 0 (была анимация движения)
+            'jump': 1,    // Прыжок = строка 1
+            'fall': 2,    // Спуск = строка 2
+            'dash': 4,
+            'attack': 5
+        };
+        
+        // Debug info removed - animation logic is working correctly
+        
+        const row = stateToRow[animState] || 0;
+        const spriteWidth = 32;
+        const spriteHeight = 32;
+        const sourceX = frameIndex * spriteWidth;
+        const sourceY = row * spriteHeight;
+        
+        // Apply invincibility effect
         if (player.invincible) {
-            const time = Date.now() / 100;
-            const colors = ['#fc0000', '#fcfc00', '#00fc00', '#00fcfc', '#0000fc', '#fc00fc'];
-            skinColor = colors[Math.floor(time) % colors.length];
+            ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 100) * 0.4;
         }
         
-        // HEAD
-        // Face
-        ctx.fillStyle = skinColor;
-        ctx.fillRect(px + 12, py + 4, 8, 8);
+         // Draw cat sprite with proper direction
+         ctx.save();
+         
+         // Debug info removed - sprites should load properly now
+         
+         // Flip sprite if facing left
+         if (player.direction === -1) {
+             ctx.translate(player.x + player.width, player.y);
+             ctx.scale(-1, 1);
+             ctx.drawImage(
+                 spriteImg,
+                 sourceX, sourceY, spriteWidth, spriteHeight,
+                 0, 0, player.width, player.height
+             );
+         } else {
+             ctx.translate(player.x, player.y);
+             ctx.drawImage(
+                 spriteImg,
+                 sourceX, sourceY, spriteWidth, spriteHeight,
+                 0, 0, player.width, player.height
+             );
+         }
+         
+         ctx.restore();
+        ctx.globalAlpha = 1;
         
-        // Hair (short military cut)
-        ctx.fillStyle = '#3a2a1a';
-        ctx.fillRect(px + 12, py + 2, 8, 3);
-        ctx.fillRect(px + 11, py + 3, 2, 2);
-        ctx.fillRect(px + 19, py + 3, 2, 2);
-        
-        // RED BANDANA (iconic Rambo!)
-        ctx.fillStyle = '#fc0000';
-        ctx.fillRect(px + 12, py + 4, 8, 2);
-        // Bandana knot
-        ctx.fillRect(px + 20, py + 5, 3, 2);
-        ctx.fillRect(px + 21, py + 7, 2, 1);
-        
-        // Eyes (focused look)
-        ctx.fillStyle = '#000';
-        ctx.fillRect(px + 13, py + 7, 2, 1);
-        ctx.fillRect(px + 17, py + 7, 2, 1);
-        
-        // Nose
-        ctx.fillStyle = '#c49060';
-        ctx.fillRect(px + 15, py + 8, 2, 1);
-        
-        // Mouth (determined)
-        ctx.fillStyle = '#000';
-        ctx.fillRect(px + 14, py + 10, 3, 1);
-        
-        // BODY
-        // Muscular torso (tan, shirtless)
-        ctx.fillStyle = '#c49060';
-        ctx.fillRect(px + 10, py + 12, 12, 10);
-        
-        // Pecs definition
-        ctx.fillStyle = '#b48050';
-        ctx.fillRect(px + 11, py + 13, 4, 4);
-        ctx.fillRect(px + 17, py + 13, 4, 4);
-        
-        // Abs (6-pack!)
-        ctx.fillStyle = '#a87040';
-        ctx.fillRect(px + 14, py + 18, 2, 2);
-        ctx.fillRect(px + 14, py + 20, 2, 1);
-        
-        // Highlights on muscles
-        ctx.fillStyle = '#e8b080';
-        ctx.fillRect(px + 12, py + 13, 2, 1);
-        ctx.fillRect(px + 18, py + 13, 2, 1);
-        
-        // AMMO BELT (detailed!)
-        ctx.fillStyle = '#6a5a3a';
-        ctx.fillRect(px + 9, py + 18, 14, 3);
-        // Belt buckle
-        ctx.fillStyle = '#8a7a5a';
-        ctx.fillRect(px + 15, py + 18, 2, 3);
-        // Ammo bullets
-        ctx.fillStyle = '#fcfc00';
-        ctx.fillRect(px + 11, py + 18, 1, 3);
-        ctx.fillRect(px + 13, py + 18, 1, 3);
-        ctx.fillRect(px + 18, py + 18, 1, 3);
-        ctx.fillRect(px + 20, py + 18, 1, 3);
-        
-        // ARMS
-        // Right arm (holding gun)
-        ctx.fillStyle = '#c49060';
-        ctx.fillRect(px + 22, py + 13, 3, 7);
-        // Hand
-        ctx.fillStyle = '#d4a574';
-        ctx.fillRect(px + 23, py + 15, 3, 3);
-        
-        // Left arm
-        ctx.fillStyle = '#c49060';
-        ctx.fillRect(px + 7, py + 14, 3, 6);
-        // Hand/fist
-        ctx.fillStyle = '#d4a574';
-        ctx.fillRect(px + 7, py + 17, 3, 2);
-        
-        // LEGS
-        // Pants (camo green)
-        ctx.fillStyle = '#3a5a2a';
-        ctx.fillRect(px + 11, py + 22, 4, 8);
-        ctx.fillRect(px + 17, py + 22, 4, 8);
-        
-        // Camo pattern
-        ctx.fillStyle = '#2a4a1a';
-        ctx.fillRect(px + 12, py + 23, 2, 2);
-        ctx.fillRect(px + 18, py + 25, 2, 2);
-        ctx.fillRect(px + 12, py + 27, 1, 2);
-        ctx.fillRect(px + 19, py + 28, 1, 1);
-        
-        // Boots (black tactical)
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(px + 10, py + 30, 5, 2);
-        ctx.fillRect(px + 17, py + 30, 5, 2);
-        // Boot soles
-        ctx.fillStyle = '#3a3a3a';
-        ctx.fillRect(px + 10, py + 31, 5, 1);
-        ctx.fillRect(px + 17, py + 31, 5, 1);
-        
-        // WEAPON - M60 Machine Gun (iconic!)
-        ctx.fillStyle = '#2a2a2a';
-        // Gun body
-        ctx.fillRect(px + 25, py + 15, 8, 4);
-        // Gun details
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(px + 25, py + 16, 2, 2);
-        // Barrel
-        ctx.fillStyle = '#3a3a3a';
-        ctx.fillRect(px + 33, py + 16, 4, 2);
-        // Barrel tip
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(px + 37, py + 16, 1, 2);
-        // Gun handle
-        ctx.fillStyle = '#5a3a1a';
-        ctx.fillRect(px + 26, py + 19, 2, 2);
-        // Magazine
-        ctx.fillStyle = '#2a2a2a';
-        ctx.fillRect(px + 28, py + 19, 3, 2);
-        
-        // Ammo belt feeding into gun
-        ctx.fillStyle = '#8a7a5a';
-        ctx.fillRect(px + 24, py + 17, 2, 1);
-        ctx.fillStyle = '#fcfc00';
-        ctx.fillRect(px + 23, py + 17, 1, 1);
-        
-        // Muzzle flash if shooting - 🎮 используем keyCodes
-        if (keyCodes['KeyX']) {
-            const flashPhase = Math.floor(Date.now() / 50) % 3;
-            if (flashPhase < 2) {
-                ctx.fillStyle = flashPhase === 0 ? '#fcfc00' : '#fc8000';
-                ctx.fillRect(px + 38, py + 15, 3, 4);
-                ctx.fillRect(px + 40, py + 16, 2, 2);
-            }
-        }
-        
-        // Sweat drops (intense action!)
-        if (Math.random() < 0.1) {
-            ctx.fillStyle = '#00fcfc';
-            ctx.fillRect(px + 19, py + 10, 1, 2);
-        }
-    } else {
-        // Normal tooth sprite with ANIMATION!
-        let baseColor = player.invincible ? 
-            ['#fc0000', '#fcfc00', '#00fc00', '#00fcfc', '#0000fc', '#fc00fc'][Math.floor(Date.now() / 100) % 6] : 
-            '#fff';
-        
-        // Dash effect - cyan glow!
-        if (player.dashing) {
-            baseColor = '#00fcfc';
-            // Dash aura
+        // Draw invincibility field effect
+        if (player.invincible && Math.random() < 0.3) {
+            ctx.strokeStyle = '#fcfc00';
+            ctx.lineWidth = 2;
             ctx.globalAlpha = 0.5;
-            ctx.fillStyle = '#00fcfc';
-            ctx.fillRect(player.x - 4, player.y - 4, player.width + 8, player.height + 8);
+            ctx.beginPath();
+            ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width, 0, Math.PI * 2);
+            ctx.stroke();
             ctx.globalAlpha = 1;
-        }
-        
-        // Flip sprite based on direction
-        const flipOffset = player.direction === -1 ? player.width : 0;
-        const dx = player.direction; // Direction multiplier
-        
-        if (!player.onGround) {
-            // JUMPING animation
-            ctx.fillStyle = baseColor;
-            ctx.fillRect(player.x + 8 * dx + flipOffset - 8, player.y, 16, 24);
-            ctx.fillRect(player.x + 4 * dx + flipOffset - 4, player.y + 8, 24, 16);
-            // Eyes looking up
-            ctx.fillStyle = '#000';
-            ctx.fillRect(player.x + 14 * dx + flipOffset - 14, player.y + 6, 4, 4);
-            ctx.fillRect(player.x + 20 * dx + flipOffset - 20, player.y + 6, 4, 4);
-            // Excited mouth
-            ctx.fillRect(player.x + 12 * dx + flipOffset - 12, player.y + 14, 8, 4);
-        } else if (player.animFrame > 0) {
-            // RUNNING animation
-            ctx.fillStyle = baseColor;
-            // Body bounces up and down
-            const bounce = player.animFrame === 1 ? -2 : 0;
-            ctx.fillRect(player.x + 8 * dx + flipOffset - 8, player.y + bounce, 16, 24);
-            ctx.fillRect(player.x + 4 * dx + flipOffset - 4, player.y + 8 + bounce, 24, 16);
-            
-            // Animated eyes
-            ctx.fillStyle = '#000';
-            const eyeY = player.animFrame === 2 ? 9 : 8;
-            ctx.fillRect(player.x + 14 * dx + flipOffset - 14, player.y + eyeY + bounce, 4, 4);
-            ctx.fillRect(player.x + 20 * dx + flipOffset - 20, player.y + eyeY + bounce, 4, 4);
-            
-            // Smile
-            ctx.fillRect(player.x + 12 * dx + flipOffset - 12, player.y + 16 + bounce, 8, 2);
-            
-            // Running dust particles
-            if (player.animFrame === 1 && Math.random() < 0.3) {
-                particles.push({
-                    x: player.x - dx * 8,
-                    y: player.y + player.height - 4,
-                    velX: -dx * 2,
-                    velY: -1,
-                    color: '#ddd',
-                    life: 10
-                });
-            }
-        } else {
-            // IDLE animation
-            ctx.fillStyle = baseColor;
-            ctx.fillRect(player.x + 8 * dx + flipOffset - 8, player.y, 16, 24);
-            ctx.fillRect(player.x + 4 * dx + flipOffset - 4, player.y + 8, 24, 16);
-            // Normal eyes
-            ctx.fillStyle = '#000';
-            ctx.fillRect(player.x + 14 * dx + flipOffset - 14, player.y + 8, 4, 4);
-            ctx.fillRect(player.x + 20 * dx + flipOffset - 20, player.y + 8, 4, 4);
-            // Smile
-            ctx.fillRect(player.x + 12 * dx + flipOffset - 12, player.y + 16, 8, 2);
         }
     }
     
-    // Enemies
+    // 👾 PROFESSIONAL ENEMY RENDERING
     enemies.forEach(e => {
         if (e.alive) {
+            // Determine enemy type
+            let enemyType = 'bacteria';
             if (e.isContra) {
-                // DETAILED Contra soldier!
-                e.animFrame = (e.animFrame || 0) + 0.1;
-                
-                // Body (red uniform with details)
-                ctx.fillStyle = '#d02020';
-                ctx.fillRect(e.x + 6, e.y + 12, e.width - 12, e.height - 16);
-                
-                // Vest/Armor
-                ctx.fillStyle = '#8b0000';
-                ctx.fillRect(e.x + 8, e.y + 14, e.width - 16, e.height - 22);
-                
-                // Belt
-                ctx.fillStyle = '#3a3a3a';
-                ctx.fillRect(e.x + 7, e.y + 24, e.width - 14, 3);
-                
-                // Belt buckle
-                ctx.fillStyle = '#fcfc00';
-                ctx.fillRect(e.x + e.width / 2 - 2, e.y + 24, 4, 3);
-                
-                // Head/Helmet
-                ctx.fillStyle = '#2a2a2a';
-                ctx.fillRect(e.x + 8, e.y + 2, e.width - 16, 10);
-                
-                // Helmet highlight
-                ctx.fillStyle = '#4a4a4a';
-                ctx.fillRect(e.x + 9, e.y + 3, e.width - 18, 4);
-                
-                // Visor
-                ctx.fillStyle = '#1a1a1a';
-                ctx.fillRect(e.x + 10, e.y + 6, e.width - 20, 4);
-                
-                // Legs (animated!)
-                const legOffset = Math.floor(e.animFrame) % 2;
-                ctx.fillStyle = '#5a1a1a';
-                ctx.fillRect(e.x + 7, e.y + 28 + legOffset, 5, 8 - legOffset);
-                ctx.fillRect(e.x + e.width - 12, e.y + 28 + (1 - legOffset), 5, 8 - (1 - legOffset));
-                
-                // Boots
-                ctx.fillStyle = '#1a1a1a';
-                ctx.fillRect(e.x + 7, e.y + 34, 6, 2);
-                ctx.fillRect(e.x + e.width - 13, e.y + 34, 6, 2);
-                
-                // Gun (M16 style)
-                ctx.fillStyle = '#2a2a2a';
-                ctx.fillRect(e.x + e.width - 4, e.y + 16, 12, 4);
-                
-                // Gun details
-                ctx.fillStyle = '#4a4a4a';
-                ctx.fillRect(e.x + e.width - 4, e.y + 17, 10, 2);
-                
-                // Gun barrel
-                ctx.fillStyle = '#1a1a1a';
-                ctx.fillRect(e.x + e.width + 8, e.y + 17, 4, 2);
-                
-                // Arms
-                ctx.fillStyle = '#d02020';
-                ctx.fillRect(e.x + e.width - 6, e.y + 14, 4, 8);
-            } else {
-                // Regular bacteria enemy
-                ctx.fillStyle = '#00fc00';
-                ctx.fillRect(e.x + 4, e.y + 4, e.width - 8, e.height - 8);
-                ctx.fillStyle = '#fc0000';
-                ctx.fillRect(e.x + 8, e.y + 6, 3, 3);
-                ctx.fillRect(e.x + e.width - 11, e.y + 6, 3, 3);
+                enemyType = 'contra';
+            } else if (e.isBoss) {
+                enemyType = 'boss';
             }
+            
+            // Use professional sprite rendering
+            renderProfessionalEnemy(e, enemyType);
         }
     });
     
-    // Bats (underground!)
+    // 🦇 PROFESSIONAL BAT RENDERING
     if (window.bats) {
         window.bats.forEach(bat => {
             if (bat.alive) {
-                const wingFrame = Math.floor(bat.wingPhase) % 2;
-                // Bat body
-                ctx.fillStyle = '#2a1a2a';
-                ctx.fillRect(bat.x + 8, bat.y + 4, 8, 8);
-                // Wings
-                if (wingFrame === 0) {
-                    ctx.fillRect(bat.x, bat.y + 6, 8, 4);
-                    ctx.fillRect(bat.x + 16, bat.y + 6, 8, 4);
-                } else {
-                    ctx.fillRect(bat.x + 2, bat.y + 4, 6, 6);
-                    ctx.fillRect(bat.x + 16, bat.y + 4, 6, 6);
-                }
-                // Eyes
-                ctx.fillStyle = '#fc0000';
-                ctx.fillRect(bat.x + 9, bat.y + 6, 2, 2);
-                ctx.fillRect(bat.x + 13, bat.y + 6, 2, 2);
+                // Use professional sprite rendering for bats
+                renderProfessionalEnemy(bat, 'bat');
             }
         });
     }
@@ -3455,7 +4643,98 @@ function render() {
     }
     
     // Goal flag
-    if (goal) {
+    // 🕳️ BLACK HOLE RENDERING
+    if (blackHole && blackHole.isActive) {
+        ctx.save();
+        
+        // Draw swirling particles
+        blackHole.particles.forEach(particle => {
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.random() * 0.4})`;
+            ctx.fillRect(particle.x, particle.y, 2, 2);
+        });
+        
+        // Draw black hole center (rotating)
+        ctx.translate(blackHole.x + 50, blackHole.y + 50);
+        ctx.rotate(blackHole.rotation);
+        
+        // Outer ring (dark purple)
+        ctx.fillStyle = '#400040';
+        ctx.beginPath();
+        ctx.arc(0, 0, blackHole.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Middle ring (darker)
+        ctx.fillStyle = '#200020';
+        ctx.beginPath();
+        ctx.arc(0, 0, blackHole.radius * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Inner core (pure black)
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(0, 0, blackHole.radius * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Event horizon (white ring)
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, blackHole.radius * 0.4, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        ctx.restore();
+        
+        // 🕳️ BLACK HOLE MESSAGE RENDERING
+        if (blackHole.messageTimer > 0) {
+            ctx.save();
+            ctx.translate(cameraX, 0); // Reset camera offset for UI
+            
+            // Dark overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Message text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            
+            let message = '';
+            let subMessage = '';
+            
+            if (blackHole.messagePhase === 0) {
+                message = '🕳️ BLACK HOLE!';
+                subMessage = 'You have been consumed by the void!';
+            } else if (blackHole.messagePhase === 1) {
+                message = '🌌 SPACE TRANSITION! 🌌';
+                subMessage = 'Entering the cosmic arena...';
+            } else if (blackHole.messagePhase === 2) {
+                message = 'Prepare for battle!';
+                subMessage = 'The final boss awaits in space!';
+            }
+            
+            // Main message
+            ctx.fillStyle = '#fcfc00';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText(message, canvas.width / 2, canvas.height / 2 - 40);
+            
+            // Sub message
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText(subMessage, canvas.width / 2, canvas.height / 2 + 20);
+            
+            // Additional text for phase 0
+            if (blackHole.messagePhase === 0) {
+                ctx.fillStyle = '#cccccc';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText('The cosmic arena awaits...', canvas.width / 2, canvas.height / 2 + 60);
+            }
+            
+            ctx.restore();
+        }
+    }
+    
+    // Legacy goal rendering (if no black hole)
+    if (goal && !blackHole) {
         ctx.fillStyle = '#fcfc00';
         ctx.fillRect(goal.x, goal.y, 8, goal.height);
         ctx.fillStyle = '#fc0000';
@@ -3717,6 +4996,20 @@ function drawPowerUpsAnimated() {
                 ctx.closePath();
                 ctx.fill();
                 break;
+            case 'MUSHROOM_ARTIFACT':
+                // Гриб-артефакт - красный гриб с золотым блеском
+                ctx.fillStyle = '#FF6B6B'; // красный гриб
+                ctx.fillRect(pu.x, pu.y + bounce, pu.width, pu.height);
+                ctx.fillStyle = '#FFD700'; // золотой блеск
+                ctx.fillRect(pu.x + 2, pu.y + bounce + 2, pu.width - 4, 4);
+                ctx.fillRect(pu.x + 2, pu.y + bounce + pu.height - 6, pu.width - 4, 4);
+                
+                // Белые точки на грибе
+                ctx.fillStyle = '#FFF';
+                ctx.fillRect(pu.x + 6, pu.y + bounce + 6, 3, 3);
+                ctx.fillRect(pu.x + 15, pu.y + bounce + 8, 3, 3);
+                ctx.fillRect(pu.x + 8, pu.y + bounce + 12, 2, 2);
+                break;
                 
             case 'fireball':
                 // Fireball
@@ -3941,7 +5234,7 @@ function victory() {
     } else if (inUnderground) {
         playerProgress.undergroundCleared = true;
         console.log('🎯 UNDERGROUND LEVEL CLEARED!');
-    } else if (goal && goal.isFinalExit) {
+    } else if ((goal && goal.isFinalExit) || (blackHole && blackHole.isFinalExit)) {
         // 🏁 FINAL EXIT REACHED!
         console.log('🏁 FINAL EXIT REACHED! GAME COMPLETED!');
         alert('🎉 CONGRATULATIONS! 🎉\nYou have completed the entire game!\nAll areas cleared!\nFinal Score: ' + score);
@@ -3957,6 +5250,9 @@ let activeSounds = 0;
 const MAX_SOUNDS = 3;
 
 function playSound(type) {
+    // Проверяем, включен ли звук
+    if (!soundEnabled) return;
+    
     // Ограничиваем количество одновременных звуков
     if (activeSounds >= MAX_SOUNDS) return;
     
@@ -4002,11 +5298,17 @@ function playSound(type) {
 function startUndergroundMusic() {
     stopBackgroundMusic();
     
+    // Проверяем, включен ли звук
+    if (!soundEnabled) return;
+    
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const notes = [196, 220, 246, 220, 196, 174, 196, 220]; // Underground melody
     let noteIndex = 0;
     
     function playNote() {
+        // Проверяем, включен ли звук перед воспроизведением ноты
+        if (!soundEnabled) return;
+        
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
@@ -4024,7 +5326,14 @@ function startUndergroundMusic() {
     }
     
     playNote();
-    bgMusicInterval = setInterval(playNote, 400);
+    bgMusicInterval = setInterval(() => {
+        if (!soundEnabled) {
+            clearInterval(bgMusicInterval);
+            bgMusicInterval = null;
+            return;
+        }
+        playNote();
+    }, 400);
 }
 
 function stopBackgroundMusic() {
@@ -4038,12 +5347,18 @@ function stopBackgroundMusic() {
 function startContraMusic() {
     stopBackgroundMusic();
     
+    // Проверяем, включен ли звук
+    if (!soundEnabled) return;
+    
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     // Contra-style aggressive melody
     const notes = [330, 349, 392, 440, 392, 349, 330, 294, 330, 349]; 
     let noteIndex = 0;
     
     function playNote() {
+        // Проверяем, включен ли звук перед воспроизведением ноты
+        if (!soundEnabled) return;
+        
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
@@ -4061,7 +5376,14 @@ function startContraMusic() {
     }
     
     playNote();
-    bgMusicInterval = setInterval(playNote, 250); // Faster tempo!
+    bgMusicInterval = setInterval(() => {
+        if (!soundEnabled) {
+            clearInterval(bgMusicInterval);
+            bgMusicInterval = null;
+            return;
+        }
+        playNote();
+    }, 250); // Faster tempo!
 }
 
 // ========================================
@@ -4403,6 +5725,23 @@ function updateDoom() {
         playerProgress.doomCleared = true;
         console.log('🎯 DOOM LEVEL CLEARED!');
         
+        // 🚪 CREATE EXIT PIPE IN CONTRA LEVEL!
+        if (inUnderground === 'contra') {
+            // Create exit pipe at the end of Contra level (on the ground)
+            pipes = [{
+                x: 4630, // Same position as the old flag
+                y: 490,  // On the ground level (same as other pipes)
+                width: 60,
+                height: 60,
+                canEnter: true,
+                isExit: true,
+                isContraExit: true, // Special flag for Contra exit
+                returnX: 100, // Return to main level
+                color: '#00fc00' // Green pipe leading up
+            }];
+            console.log('🚪 EXIT PIPE CREATED IN CONTRA LEVEL!');
+        }
+        
         // Release pointer lock
         document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
         document.exitPointerLock();
@@ -4412,7 +5751,7 @@ function updateDoom() {
         
         // Show message
         setTimeout(() => {
-            alert('🎉 DOOM LEVEL COMPLETED! 🎉\nScore: +1000 points!');
+            alert('🎉 DOOM LEVEL COMPLETED! 🎉\nScore: +1000 points!\nNow find the exit pipe in Contra level!');
             score += 1000;
         }, 100);
     }
@@ -4507,11 +5846,17 @@ function renderDoom() {
         const isDoor = doomMap[mapY] && doomMap[mapY][mapX] === 2;
         const door = isDoor ? doomDoors.find(d => d.x === mapX && d.y === mapY) : null;
         
-        // Enhanced wall texture calculation
-        const wallTexture = renderWallTexture(side, sideDistX, sideDistY, rayDirX, rayDirY);
-        const baseColor = wallTexture.baseColor;
-        const detailColor = wallTexture.detailColor;
-        const textureX = wallTexture.textureX;
+        // Simple wall texture colors based on distance
+        const baseColor = [
+            Math.floor(120 * brightness),
+            Math.floor(120 * brightness),
+            Math.floor(120 * brightness)
+        ];
+        const detailColor = [
+            Math.floor(100 * brightness),
+            Math.floor(100 * brightness),
+            Math.floor(100 * brightness)
+        ];
         
         // Apply gradient lighting (darker at edges, brighter in center)
         const centerDist = Math.abs(i - canvas.width / 2) / (canvas.width / 2);
@@ -4532,16 +5877,16 @@ function renderDoom() {
             } else {
                 // Draw door panel - DETAILED!
                 // Metal door with panels
-                baseColor = [80, 80, 90];
-                detailColor = [60, 60, 70];
+                const doorBaseColor = [80, 80, 90];
+                const doorDetailColor = [60, 60, 70];
                 
-                ctx.fillStyle = `rgb(${Math.floor(baseColor[0] * finalBrightness)}, ${Math.floor(baseColor[1] * finalBrightness)}, ${Math.floor(baseColor[2] * finalBrightness)})`;
+                ctx.fillStyle = `rgb(${Math.floor(doorBaseColor[0] * finalBrightness)}, ${Math.floor(doorBaseColor[1] * finalBrightness)}, ${Math.floor(doorBaseColor[2] * finalBrightness)})`;
                 ctx.fillRect(i, wallTop, 1, wallHeight);
                 
                 // Door panels (horizontal lines)
                 if (i % 2 === 0) {
                     for (let p = 0; p < wallHeight; p += Math.floor(wallHeight / 4)) {
-                        ctx.fillStyle = `rgb(${Math.floor(detailColor[0] * finalBrightness)}, ${Math.floor(detailColor[1] * finalBrightness)}, ${Math.floor(detailColor[2] * finalBrightness)})`;
+                        ctx.fillStyle = `rgb(${Math.floor(doorDetailColor[0] * finalBrightness)}, ${Math.floor(doorDetailColor[1] * finalBrightness)}, ${Math.floor(doorDetailColor[2] * finalBrightness)})`;
                         ctx.fillRect(i, wallTop + p, 1, 2);
                     }
                 }
@@ -4549,7 +5894,7 @@ function renderDoom() {
                 // Door edge highlight
                 if (textureX < 2 || textureX > 14) {
                     ctx.fillStyle = `rgba(255, 255, 255, ${0.2 * finalBrightness})`;
-                    ctx.fillRect(i, wallTop, 1, wallHeight);
+                ctx.fillRect(i, wallTop, 1, wallHeight);
                 }
                 
                 // Warning stripes on door (yellow/black)
@@ -4562,10 +5907,8 @@ function renderDoom() {
             // Normal wall
             ctx.fillStyle = `rgb(${Math.floor(baseColor[0] * finalBrightness)}, ${Math.floor(baseColor[1] * finalBrightness)}, ${Math.floor(baseColor[2] * finalBrightness)})`;
             ctx.fillRect(i, wallTop, 1, wallHeight);
-        }
-        
-        // Apply wall textures only for non-doors
-        if (!isDoor || (door && door.open < 0.1)) {
+            
+            // Apply wall textures for non-doors
             // OPTIMIZED texture pattern - only vertical lines
             const pattern = Math.floor(textureX + i * 0.5) % 8;
             
@@ -4825,7 +6168,7 @@ function renderDoom() {
             
             // Main exit door
             ctx.globalAlpha = 1;
-            ctx.fillStyle = '#0088ff';
+    ctx.fillStyle = '#0088ff';
             ctx.fillRect(screenX - 15, exitTop, 30, exitHeight);
             
             // Door frame
@@ -4833,7 +6176,7 @@ function renderDoom() {
             ctx.fillRect(screenX - 16, exitTop - 2, 32, exitHeight + 4);
             
             // Exit symbol - white arrow up
-            ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#ffffff';
             const arrowSize = Math.max(4, Math.min(12, exitHeight / 4));
             // Arrow body
             ctx.fillRect(screenX - arrowSize/2, exitTop + exitHeight/2, arrowSize, arrowSize);
@@ -4842,7 +6185,7 @@ function renderDoom() {
             
             // Inner glow
             ctx.globalAlpha = exitPulse * 0.4;
-            ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#ffffff';
             ctx.fillRect(screenX - 12, exitTop + 5, 24, exitHeight - 10);
             ctx.globalAlpha = 1;
         }
@@ -5141,6 +6484,783 @@ function isWall(x, y) {
 }
 
 // Add DOOM door collision check to main update (already integrated above)
+
+// 🎮 CHEAT CODE SYSTEM
+function showCheatInput() {
+    document.getElementById('cheatInput').style.display = 'block';
+    document.getElementById('cheatCodeInput').focus();
+}
+
+function closeCheatInput() {
+    document.getElementById('cheatInput').style.display = 'none';
+    document.getElementById('cheatCodeInput').value = '';
+}
+
+// 🔊 SOUND TOGGLE FUNCTION
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    const soundButton = document.getElementById('soundToggle');
+    
+    if (soundEnabled) {
+        soundButton.textContent = '🔊';
+        soundButton.style.background = 'rgba(0, 0, 0, 0.9)';
+        soundButton.style.color = '#fcfc00';
+    } else {
+        soundButton.textContent = '🔇';
+        soundButton.style.background = 'rgba(255, 0, 0, 0.9)';
+        soundButton.style.color = '#ffffff';
+        // Останавливаем всю музыку при выключении звука
+        stopBackgroundMusic();
+    }
+    
+    // Воспроизводим звук подтверждения (если звук включен)
+    if (soundEnabled) {
+        playSound('coin');
+    }
+}
+
+function executeCheat() {
+    const cheatCode = document.getElementById('cheatCodeInput').value.toLowerCase().trim();
+    
+    switch(cheatCode) {
+        case 'godmode':
+            if (player.godMode) {
+                // Отключаем godmode и супер оружие
+                player.invincible = false;
+                player.godMode = false;
+                player.canShoot = false; // Отключаем стрельбу
+                player.fireRate = 10; // Восстанавливаем обычную скорость стрельбы
+                player.bulletDamage = 1; // Восстанавливаем обычный урон
+                console.log('🛡️ CHEAT: GODMODE DEACTIVATED - Normal gameplay restored!');
+            } else {
+                // Включаем godmode + супер оружие
+                player.invincible = true;
+                player.godMode = true; // Полная неуязвимость от всех видов урона
+                player.canShoot = true; // Включаем стрельбу
+                player.fireRate = 0; // Мгновенная стрельба
+                player.bulletDamage = 999; // Урон 999 (одно выстрел = смерть)
+                player.bullets = []; // Очищаем существующие пули
+                console.log('🛡️🔫 CHEAT: GODMODE + SUPER WEAPON ACTIVATED!');
+                console.log('  - Full invincibility from all damage');
+                console.log('  - Instant shooting with 999 damage');
+                console.log('  - Unlimited ammo');
+            }
+            break;
+        case 'noclip':
+            player.noclip = !player.noclip;
+            break;
+        case 'keys':
+            playerProgress.hasKey1 = true;
+            playerProgress.hasKey2 = true;
+            break;
+        case 'ammo':
+            if (player.canShoot) {
+                player.bullets = [];
+            }
+            break;
+        case 'level':
+            level = Math.min(5, level + 1);
+            initLevel();
+            break;
+        case 'score':
+            score += 10000;
+            break;
+        case 'doom':
+            if (inUnderground === 'contra') {
+                gameMode = 'doom';
+                doomPlayer.x = 1.5;
+                doomPlayer.y = 1.5;
+                doomPlayer.angle = 0;
+                doomPlayer.health = 100;
+                doomPlayer.ammo = 100;
+                doomPlayer.lives = 5;
+            }
+            break;
+        case 'superboss':
+            if (!inUnderground) {
+                checkAndSpawnSuperBoss();
+            }
+            break;
+        case 'teleport':
+            if (!inUnderground) {
+                // Teleport to super boss area
+                player.x = LEVEL_WIDTH - 500; // Near super boss
+                cameraX = Math.max(0, player.x - 400);
+                // Ensure all progress is unlocked
+                playerProgress.undergroundCleared = true;
+                playerProgress.contraCleared = true;
+                playerProgress.doomCleared = true;
+                // Spawn super boss if not already spawned
+                checkAndSpawnSuperBoss();
+            }
+            break;
+        case 'space':
+            // Direct transition to space mode
+            console.log('🌌 CHEAT: ENTERING SPACE MODE!');
+            initSpaceMode({
+                playerHealth: lives * 25, // Convert lives to health
+                onExit: (result) => {
+                    console.log('🌌 SPACE MODE RESULT:', result);
+                    if (result.victory) {
+                        // Final victory - complete the game
+                        gameRunning = false;
+                        stopBackgroundMusic();
+                        score += result.score; // Add space score to main score
+                        document.getElementById('victoryScore').textContent = score;
+                        document.getElementById('victoryScreen').style.display = 'block';
+                        playSound('victory');
+                    } else {
+                        // Return to main game
+                        gameRunning = true;
+                        // Reset player position
+                        player.x = 200;
+                        player.y = 400;
+                        cameraX = 0;
+                    }
+                }
+            });
+            break;
+        case 'sound':
+            // Toggle sound on/off
+            toggleSound();
+            break;
+        case 'killall':
+            // Kill all enemies and bosses
+            enemies.forEach(enemy => {
+                enemy.health = 0;
+                enemy.alive = false;
+            });
+            if (currentBoss && currentBoss.alive) {
+                currentBoss.health = 0;
+                currentBoss.alive = false;
+            }
+            console.log('💀 CHEAT: ALL ENEMIES KILLED!');
+            break;
+        case 'superweapon':
+            // Give super weapon - unlimited ammo, fire rate, damage
+            player.canShoot = true;
+            player.fireRate = 0; // Instant shooting
+            player.bulletDamage = 999; // One-shot kill
+            player.bullets = []; // Clear existing bullets
+            console.log('🔫 CHEAT: SUPER WEAPON ACTIVATED!');
+            console.log('💡 TIP: Use "godmode" for invincibility + super weapon combo!');
+            break;
+        case 'secretroom':
+            // Teleport directly to secret room
+            if (inUnderground) {
+                player.x = 4200;
+                cameraX = Math.max(0, player.x - 400);
+                console.log('🏗️ CHEAT: TELEPORTED TO SECRET ROOM!');
+            } else {
+                console.log('❌ CHEAT: Must be in underground level!');
+            }
+            break;
+        case 'underground':
+            // Enter underground level directly
+            if (!inUnderground) {
+                createUndergroundLevel(1000);
+                console.log('🕳️ CHEAT: ENTERED UNDERGROUND LEVEL!');
+            }
+            break;
+        case 'help':
+            // Show all available cheats
+            console.log('🎮 AVAILABLE CHEATS:');
+            console.log('  godmode - Invincibility + Super Weapon (toggle)');
+            console.log('  noclip - Walk through walls');
+            console.log('  keys - Get all keys');
+            console.log('  ammo - Refill ammo');
+            console.log('  level - Next level');
+            console.log('  score - +10000 score');
+            console.log('  doom - Enter DOOM mode');
+            console.log('  superboss - Spawn super boss');
+            console.log('  teleport - Teleport to boss area');
+            console.log('  space - Enter space mode');
+            console.log('  sound - Toggle sound');
+            console.log('  killall - Kill all enemies');
+            console.log('  superweapon - Super weapon only');
+            console.log('  secretroom - Teleport to secret room');
+            console.log('  underground - Enter underground');
+            break;
+        default:
+            // Неизвестный чит - ничего не делаем
+    }
+    
+    closeCheatInput();
+}
+
+// Keyboard shortcut to open cheat input (F9 key)
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F9') {
+        e.preventDefault();
+        showCheatInput();
+    }
+    if (e.key === 'Escape') {
+        closeCheatInput();
+    }
+});
+
+// ==========================================
+// SPACE MODE - EMBEDDED IN GAME
+// ==========================================
+
+let spaceMode = {
+    active: false,
+    canvas: null,
+    ctx: null,
+    gameState: { active: false, playerHP: 100, maxHP: 100, score: 0 },
+    player: { x: 0, y: 0, vx: 0, vy: 0, width: 40, height: 40, speed: 5 },
+    boss: { x: 0, y: 0, width: 80, height: 80, hp: 50, maxHP: 50, vx: 2, attackTimer: 0 },
+    playerBullets: [],
+    bossBullets: [],
+    asteroids: [],
+    particles: [],
+    keys: {},
+    sprites: {},
+    onExit: null
+};
+
+function initSpaceMode(config) {
+    console.log('🌌 ENTERING SPACE MODE!');
+    
+    spaceMode.onExit = config.onExit || (() => {});
+    spaceMode.gameState.playerHP = config.playerHealth || 100;
+    spaceMode.gameState.maxHP = config.playerHealth || 100;
+    spaceMode.gameState.score = 0;
+    
+    // Hide main canvas
+    canvas.style.display = 'none';
+    gameRunning = false;
+    
+    // Create space overlay
+    if (!spaceMode.canvas) {
+        spaceMode.canvas = document.createElement('canvas');
+        spaceMode.canvas.id = 'spaceCanvas';
+        spaceMode.canvas.width = window.innerWidth;
+        spaceMode.canvas.height = window.innerHeight;
+        spaceMode.canvas.style.cssText = 'position:fixed;top:0;left:0;z-index:9999;background:#000515;display:block;';
+        document.body.appendChild(spaceMode.canvas);
+        
+        spaceMode.ctx = spaceMode.canvas.getContext('2d');
+        spaceMode.ctx.imageSmoothingEnabled = false;
+        
+        // Load sprites
+        loadSpaceSprites();
+        
+        // Setup input
+        setupSpaceInput();
+    }
+    
+    // Reset game
+    spaceMode.player.x = spaceMode.canvas.width / 2;
+    spaceMode.player.y = spaceMode.canvas.height - 100;
+    spaceMode.player.vx = 0;
+    spaceMode.player.vy = 0;
+    
+    spaceMode.boss.x = spaceMode.canvas.width / 2;
+    spaceMode.boss.y = 150;
+    spaceMode.boss.hp = 50;
+    spaceMode.boss.attackTimer = 0;
+    
+    spaceMode.playerBullets = [];
+    spaceMode.bossBullets = [];
+    spaceMode.asteroids = [];
+    spaceMode.particles = [];
+    
+    spaceMode.gameState.active = true;
+    spaceMode.active = true;
+    
+    // Create UI only for space mode
+    createSpaceUI();
+    
+    spawnSpaceAsteroids();
+    spaceGameLoop();
+}
+
+function loadSpaceSprites() {
+    spaceMode.sprites = {
+        asteroid: new Image(),
+        asteroidExplode: new Image(),
+        planet: new Image(),
+        flame: new Image()
+    };
+    // Ensure flags container exists for sprite error handling/retries
+    spaceMode.flags = spaceMode.flags || { skipPlanet: false, triedAltPlanet: false };
+    
+    // Add load event listeners to ensure sprites are fully loaded
+    spaceMode.sprites.asteroid.onload = () => {
+        console.log('✅ Asteroid sprite loaded');
+    };
+    spaceMode.sprites.asteroid.onerror = () => {
+        console.log('❌ Asteroid sprite failed to load');
+    };
+    
+    spaceMode.sprites.planet.onload = () => {
+        console.log('✅ Planet sprite loaded');
+        spaceMode.flags.skipPlanet = false;
+    };
+    spaceMode.sprites.planet.onerror = () => {
+        console.log('❌ Planet sprite failed to load');
+        // Try an alternate filename once (without the "Without back glow" suffix)
+        if (!spaceMode.flags.triedAltPlanet) {
+            spaceMode.flags.triedAltPlanet = true;
+            try {
+                const original = '/static/images/sprites/void/Planets/PNGs/Earth-Like planet - Without back glow.png';
+                const alternative = '/static/images/sprites/void/Planets/PNGs/Earth-Like planet.png';
+                // Only switch if currently pointing to the original path
+                if (spaceMode.sprites.planet.src.endsWith('Earth-Like%20planet%20-%20Without%20back%20glow.png') ||
+                    spaceMode.sprites.planet.src.endsWith('Earth-Like planet - Without back glow.png')) {
+                    spaceMode.sprites.planet.src = alternative;
+                    console.log('↩️ Retrying planet sprite with alternative path:', alternative);
+                    return;
+                }
+            } catch (e) {
+                // no-op
+            }
+        }
+        // If retry failed or not applicable, disable planet rendering to avoid artifacts
+        spaceMode.flags.skipPlanet = true;
+    };
+    
+    spaceMode.sprites.asteroidExplode.onload = () => {
+        console.log('✅ Asteroid explode sprite loaded');
+    };
+    spaceMode.sprites.asteroidExplode.onerror = () => {
+        console.log('❌ Asteroid explode sprite failed to load');
+    };
+    
+    spaceMode.sprites.flame.onload = () => {
+        console.log('✅ Flame sprite loaded');
+    };
+    spaceMode.sprites.flame.onerror = () => {
+        console.log('❌ Flame sprite failed to load');
+    };
+    
+    // Set sources after event listeners
+    spaceMode.sprites.asteroid.src = '/static/images/sprites/void/Asteroids/PNGs/Asteroid 01 - Base.png';
+    spaceMode.sprites.asteroidExplode.src = '/static/images/sprites/void/Asteroids/PNGs/Asteroid 01 - Explode.png';
+    spaceMode.sprites.planet.src = '/static/images/sprites/void/Planets/PNGs/Earth-Like planet - Without back glow.png';
+    spaceMode.sprites.flame.src = '/static/images/sprites/void/Effects/PNGs/Asteroid - Flame.png';
+    
+    console.log('🌌 Loading space sprites...');
+    console.log('Asteroid:', spaceMode.sprites.asteroid.src);
+    console.log('Planet:', spaceMode.sprites.planet.src);
+    console.log('Flame:', spaceMode.sprites.flame.src);
+}
+
+// Helper function to safely check if sprite is loaded (no verbose logs to avoid frame drops)
+function isSpriteLoaded(sprite) {
+    if (!sprite) {
+        return false;
+    }
+    if (!sprite.complete) {
+        return false;
+    }
+    if (sprite.naturalWidth <= 0 || sprite.naturalHeight <= 0) {
+        return false;
+    }
+    if (sprite.error) {
+        return false;
+    }
+    if (!sprite.src || sprite.src === '') {
+        return false;
+    }
+    return true;
+}
+
+function setupSpaceInput() {
+    const spaceKeyHandler = (e) => {
+        spaceMode.keys[e.key] = true;
+        
+        if (e.key === ' ') {
+            e.preventDefault();
+            shootSpaceBullet();
+        }
+        
+        if (e.key === 'Escape') {
+            exitSpaceMode();
+        }
+    };
+    
+    const spaceKeyUpHandler = (e) => {
+        spaceMode.keys[e.key] = false;
+    };
+    
+    document.addEventListener('keydown', spaceKeyHandler);
+    document.addEventListener('keyup', spaceKeyUpHandler);
+    
+    // Store handlers for cleanup
+    spaceMode.keyHandlers = { down: spaceKeyHandler, up: spaceKeyUpHandler };
+}
+
+function shootSpaceBullet() {
+    if (!spaceMode.gameState.active) return;
+    spaceMode.playerBullets.push({
+        x: spaceMode.player.x + spaceMode.player.width / 2,
+        y: spaceMode.player.y,
+        vx: 0,
+        vy: -8,
+        width: 4,
+        height: 12
+    });
+}
+
+function spawnSpaceAsteroids() {
+    for (let i = 0; i < 8; i++) {
+        spaceMode.asteroids.push({
+            x: Math.random() * spaceMode.canvas.width,
+            y: Math.random() * (spaceMode.canvas.height * 0.5),
+            vx: (Math.random() - 0.5) * 3,
+            vy: Math.random() * 2 + 1,
+            size: 30 + Math.random() * 40,
+            rotation: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 0.1,
+            hp: 2
+        });
+    }
+}
+
+function createSpaceExplosion(x, y, color) {
+    for (let i = 0; i < 8; i++) {
+        spaceMode.particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 0.5) * 4,
+            color: color,
+            life: 30
+        });
+    }
+}
+
+function updateSpaceGame() {
+    if (!spaceMode.gameState.active) return;
+    
+    // Player movement
+    if (spaceMode.keys['ArrowLeft']) spaceMode.player.vx = -spaceMode.player.speed;
+    else if (spaceMode.keys['ArrowRight']) spaceMode.player.vx = spaceMode.player.speed;
+    else spaceMode.player.vx *= 0.9;
+
+    if (spaceMode.keys['ArrowUp']) spaceMode.player.vy = -spaceMode.player.speed;
+    else if (spaceMode.keys['ArrowDown']) spaceMode.player.vy = spaceMode.player.speed;
+    else spaceMode.player.vy *= 0.9;
+
+    spaceMode.player.x += spaceMode.player.vx;
+    spaceMode.player.y += spaceMode.player.vy;
+
+    spaceMode.player.x = Math.max(0, Math.min(spaceMode.player.x, spaceMode.canvas.width - spaceMode.player.width));
+    spaceMode.player.y = Math.max(0, Math.min(spaceMode.player.y, spaceMode.canvas.height - spaceMode.player.height));
+
+    // Boss attacks
+    spaceMode.boss.attackTimer++;
+    if (spaceMode.boss.attackTimer > 40) {
+        spaceMode.boss.attackTimer = 0;
+        for (let i = 0; i < 3; i++) {
+            const angle = (i - 1) * 0.3;
+            spaceMode.bossBullets.push({
+                x: spaceMode.boss.x + spaceMode.boss.width / 2,
+                y: spaceMode.boss.y + spaceMode.boss.height / 2,
+                vx: Math.sin(angle) * 4,
+                vy: Math.cos(angle) * 4,
+                width: 8,
+                height: 8
+            });
+        }
+    }
+
+    spaceMode.boss.x += spaceMode.boss.vx;
+    if (spaceMode.boss.x < 50 || spaceMode.boss.x > spaceMode.canvas.width - 100) spaceMode.boss.vx *= -1;
+
+    // Player bullets
+    spaceMode.playerBullets = spaceMode.playerBullets.filter(bullet => {
+        bullet.x += bullet.vx;
+        bullet.y += bullet.vy;
+
+        if (bullet.x > spaceMode.boss.x && bullet.x < spaceMode.boss.x + spaceMode.boss.width &&
+            bullet.y > spaceMode.boss.y && bullet.y < spaceMode.boss.y + spaceMode.boss.height) {
+            spaceMode.boss.hp--;
+            spaceMode.gameState.score += 100;
+            createSpaceExplosion(bullet.x, bullet.y, '#ffaa00');
+            
+            if (spaceMode.boss.hp <= 0) {
+                spaceMode.gameState.score += 5000;
+                spaceVictory();
+            }
+            return false;
+        }
+
+        let hitAsteroid = false;
+        spaceMode.asteroids.forEach(ast => {
+            const dist = Math.hypot(ast.x - bullet.x, ast.y - bullet.y);
+            if (dist < ast.size / 2) {
+                ast.hp--;
+                spaceMode.gameState.score += 50;
+                createSpaceExplosion(ast.x, ast.y, '#ff8800');
+                hitAsteroid = true;
+            }
+        });
+
+        return !hitAsteroid && bullet.y > 0;
+    });
+
+    // Boss bullets
+    spaceMode.bossBullets = spaceMode.bossBullets.filter(bullet => {
+        bullet.x += bullet.vx;
+        bullet.y += bullet.vy;
+
+        if (bullet.x > spaceMode.player.x && bullet.x < spaceMode.player.x + spaceMode.player.width &&
+            bullet.y > spaceMode.player.y && bullet.y < spaceMode.player.y + spaceMode.player.height) {
+            spaceMode.gameState.playerHP -= 10;
+            createSpaceExplosion(spaceMode.player.x, spaceMode.player.y, '#ff0000');
+            if (spaceMode.gameState.playerHP <= 0) {
+                exitSpaceMode();
+            }
+            return false;
+        }
+
+        return bullet.x > 0 && bullet.x < spaceMode.canvas.width && bullet.y > 0 && bullet.y < spaceMode.canvas.height;
+    });
+
+    // Asteroids
+    spaceMode.asteroids = spaceMode.asteroids.filter(ast => {
+        ast.x += ast.vx;
+        ast.y += ast.vy;
+        ast.rotation += ast.rotSpeed;
+
+        const dist = Math.hypot(ast.x - spaceMode.player.x, ast.y - spaceMode.player.y);
+        if (dist < ast.size / 2 + spaceMode.player.width / 2) {
+            spaceMode.gameState.playerHP -= 5;
+            createSpaceExplosion(spaceMode.player.x, spaceMode.player.y, '#ff0000');
+            if (spaceMode.gameState.playerHP <= 0) exitSpaceMode();
+        }
+
+        if (ast.hp <= 0) {
+            createSpaceExplosion(ast.x, ast.y, '#ffaa00');
+            return false;
+        }
+
+        return ast.y < spaceMode.canvas.height;
+    });
+
+    // Particles
+    spaceMode.particles = spaceMode.particles.filter(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        return p.life > 0;
+    });
+
+    updateSpaceUI();
+}
+
+function renderSpaceGame() {
+    const ctx = spaceMode.ctx;
+    const w = spaceMode.canvas.width;
+    const h = spaceMode.canvas.height;
+    
+    // Clear canvas first to prevent artifacts
+    ctx.clearRect(0, 0, w, h);
+    
+    // Background
+    ctx.fillStyle = '#000515';
+    ctx.fillRect(0, 0, w, h);
+
+    // Stars
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.6;
+    for (let i = 0; i < 200; i++) {
+        const x = (i * 73) % w;
+        const y = (i * 97) % h;
+        const size = (i % 3) + 1;
+        ctx.fillRect(x, y, size, size);
+    }
+    ctx.globalAlpha = 1;
+
+    // Planet (render only if not skipped and fully loaded)
+    if (!spaceMode.flags?.skipPlanet && isSpriteLoaded(spaceMode.sprites.planet)) {
+        ctx.globalAlpha = 0.25;
+        const planetSize = 180;
+        ctx.drawImage(spaceMode.sprites.planet, w - planetSize - 40, 30, planetSize, planetSize);
+        ctx.globalAlpha = 1;
+    } else if (!spaceMode.flags?.skipPlanet) {
+        // Fallback: рисуем простую планету
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#4a4a8a';
+        ctx.beginPath();
+        ctx.arc(w - 130, 120, 90, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Добавляем детали
+        ctx.fillStyle = '#6a6aaa';
+        ctx.beginPath();
+        ctx.arc(w - 150, 100, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(w - 110, 140, 15, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.globalAlpha = 1;
+    }
+
+    // Asteroids (рисуем ДО всего остального)
+    spaceMode.asteroids.forEach(ast => {
+        if (isSpriteLoaded(spaceMode.sprites.asteroid)) {
+            // Рисуем спрайт астероида
+            ctx.save();
+            ctx.translate(ast.x, ast.y);
+            ctx.rotate(ast.rotation);
+            ctx.drawImage(spaceMode.sprites.asteroid, -ast.size/2, -ast.size/2, ast.size, ast.size);
+            ctx.restore();
+        } else {
+            // Fallback: рисуем серый квадрат
+            ctx.save();
+            ctx.translate(ast.x, ast.y);
+            ctx.rotate(ast.rotation);
+            ctx.fillStyle = '#6a5a4a';
+            ctx.fillRect(-ast.size/2, -ast.size/2, ast.size, ast.size);
+            ctx.restore();
+        }
+    });
+
+    // Boss
+    ctx.fillStyle = '#ff0000';
+    ctx.shadowColor = '#ff0000';
+    ctx.shadowBlur = 20;
+    ctx.fillRect(spaceMode.boss.x, spaceMode.boss.y, spaceMode.boss.width, spaceMode.boss.height);
+    ctx.shadowBlur = 0;
+    
+    ctx.fillStyle = '#ff0000';
+    ctx.font = 'bold 12px Courier New';
+    ctx.fillText('BOSS: ' + Math.max(0, spaceMode.boss.hp), spaceMode.boss.x + 10, spaceMode.boss.y - 10);
+
+    // Player (корабль)
+    ctx.fillStyle = '#00ff00';
+    ctx.shadowColor = '#00ff00';
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.moveTo(spaceMode.player.x + 20, spaceMode.player.y);
+    ctx.lineTo(spaceMode.player.x + 40, spaceMode.player.y + 40);
+    ctx.lineTo(spaceMode.player.x + 20, spaceMode.player.y + 28);
+    ctx.lineTo(spaceMode.player.x, spaceMode.player.y + 40);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Player bullets
+    ctx.fillStyle = '#00ff00';
+    ctx.shadowColor = '#00ff00';
+    ctx.shadowBlur = 5;
+    spaceMode.playerBullets.forEach(b => {
+        ctx.fillRect(b.x, b.y, b.width, b.height);
+    });
+    ctx.shadowBlur = 0;
+
+    // Boss bullets
+    ctx.fillStyle = '#ff6600';
+    ctx.shadowColor = '#ff6600';
+    ctx.shadowBlur = 8;
+    spaceMode.bossBullets.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+
+    // Particles
+    spaceMode.particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / 30;
+        ctx.fillRect(p.x, p.y, 3, 3);
+        ctx.globalAlpha = 1;
+    });
+}
+
+function updateSpaceUI() {
+    if (!spaceMode.active) return;
+    if (!document.getElementById('spaceUI')) return;
+    const hpPercent = (spaceMode.boss.hp / spaceMode.boss.maxHP) * 100;
+    const fill = document.getElementById('bossHPFill');
+    if (fill) fill.style.width = hpPercent + '%';
+    
+    const hpText = document.getElementById('playerHPText');
+    if (hpText) hpText.textContent = Math.max(0, spaceMode.gameState.playerHP);
+    
+    const scoreText = document.getElementById('scoreText');
+    if (scoreText) scoreText.textContent = spaceMode.gameState.score;
+}
+
+function spaceGameLoop() {
+    if (!spaceMode.gameState.active) return;
+    updateSpaceGame();
+    renderSpaceGame();
+    requestAnimationFrame(spaceGameLoop);
+}
+
+function spaceVictory() {
+    spaceMode.gameState.active = false;
+    document.getElementById('spaceFinalScore').textContent = spaceMode.gameState.score;
+    document.getElementById('spaceVictory').style.display = 'block';
+    
+    setTimeout(() => {
+        exitSpaceMode();
+    }, 3000);
+}
+
+function exitSpaceMode() {
+    spaceMode.active = false;
+    spaceMode.gameState.active = false;
+    
+    if (spaceMode.canvas) {
+        spaceMode.canvas.style.display = 'none';
+    }
+    
+    canvas.style.display = 'block';
+    gameRunning = true;
+    
+    // Remove space UI if exists
+    const ui = document.getElementById('spaceUI');
+    if (ui && ui.parentNode) ui.parentNode.removeChild(ui);
+    const victory = document.getElementById('spaceVictory');
+    if (victory && victory.parentNode) victory.parentNode.removeChild(victory);
+    
+    if (spaceMode.onExit) {
+        spaceMode.onExit({
+            health: spaceMode.gameState.playerHP,
+            score: spaceMode.gameState.score,
+            victory: spaceMode.boss.hp <= 0
+        });
+    }
+    
+    console.log('🌌 EXITED SPACE MODE!');
+}
+
+// HTML ДЛЯ UI
+function createSpaceUI() {
+    if (document.getElementById('spaceUI')) return;
+    
+    const ui = document.createElement('div');
+    ui.id = 'spaceUI';
+    ui.style.cssText = 'position:fixed;top:15px;left:15px;color:#00ff00;font-family:"Courier New",monospace;font-size:13px;z-index:100;background:rgba(0,0,0,0.85);padding:15px;border:2px solid #ffaa00;box-shadow:0 0 10px #ffaa00;line-height:1.8;';
+    ui.innerHTML = `
+        <div>⭐ SPACE ARENA ⭐</div>
+        <div style="margin-top:8px;">HP: <span id="playerHPText">100</span>/100</div>
+        <div id="bossHPBar" style="width:300px;height:20px;background:#000;border:2px solid #ff0000;margin:10px 0;"><div id="bossHPFill" style="height:100%;background:linear-gradient(90deg,#ff0000,#ff8800);box-shadow:0 0 10px #ff0000;width:100%;transition:width 0.2s;"></div></div>
+        <div style="margin-top:8px;color:#ffaa00;">SCORE: <span id="scoreText">0</span></div>
+        <div style="margin-top:12px;font-size:11px;color:#666;">ARROWS - MOVE | SPACE - SHOOT | ESC - EXIT</div>
+    `;
+    document.body.appendChild(ui);
+    
+    const victory = document.createElement('div');
+    victory.id = 'spaceVictory';
+    victory.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);padding:40px;border:3px solid #00ff00;text-align:center;color:#00ff00;font-family:"Courier New",monospace;z-index:200;display:none;box-shadow:0 0 30px #00ff00;';
+    victory.innerHTML = `
+        <h1 style="font-size:32px;margin:20px 0;text-shadow:0 0 20px #00ff00;">🎉 VICTORY! 🎉</h1>
+        <p style="font-size:16px;margin:10px 0;">YOU DEFEATED THE BOSS!</p>
+        <p style="font-size:14px;">FINAL SCORE: <span id="spaceFinalScore">0</span></p>
+    `;
+    document.body.appendChild(victory);
+}
+
+// Space UI создаётся только при входе в космос (initSpaceMode)
 </script>
 {% endblock %}
 

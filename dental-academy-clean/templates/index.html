@@ -468,12 +468,213 @@ body .hero-section {
     font-size: 1.3rem;
   }
 }
+
+/* ===== HALLOWEEN THEME ===== */
+/* Halloween Colors */
+:root {
+  --halloween-orange: #ff8c00;
+  --halloween-purple: #663399;
+  --halloween-dark: #1a1a2e;
+}
+
+/* Flying Halloween Elements */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+}
+
+.halloween-element {
+  position: fixed;
+  font-size: 3rem;
+  animation: float linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Animated Eyes */
+@keyframes blink {
+  0%, 49%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.1); }
+}
+
+.eye {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: black;
+  border-radius: 50%;
+  animation: blink 3s infinite;
+  margin: 0 3px;
+}
+
+/* Cobweb Animation */
+@keyframes crawl {
+  0% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(10px) translateY(10px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+.cobweb {
+  position: absolute;
+  opacity: 0.3;
+  font-size: 2rem;
+  animation: crawl 4s infinite;
+  z-index: 1;
+}
+
+.cobweb-top-left {
+  top: 10px;
+  left: 10px;
+}
+
+.cobweb-top-right {
+  top: 10px;
+  right: 10px;
+}
+
+.cobweb-bottom-left {
+  bottom: 10px;
+  left: 10px;
+}
+
+/* Spooky Glow Effect */
+.spooky-glow {
+  text-shadow: 0 0 10px var(--halloween-orange),
+               0 0 20px var(--halloween-purple);
+}
+
+/* Halloween Card Style */
+.halloween-card {
+  border: 3px solid var(--halloween-orange) !important;
+  box-shadow: 0 0 20px rgba(255, 140, 0, 0.3),
+              inset 0 0 20px rgba(102, 51, 153, 0.1) !important;
+  background: linear-gradient(135deg, rgba(255, 140, 0, 0.05), rgba(102, 51, 153, 0.05)) !important;
+}
+
+/* Zombie Helper Button */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--halloween-orange); }
+  50% { box-shadow: 0 0 20px var(--halloween-orange); }
+}
+
+.zombie-helper {
+  display: inline-block;
+  padding: 8px 12px;
+  background: var(--halloween-orange);
+  color: white;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  animation: pulse-glow 2s infinite;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+.zombie-helper:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+/* Zombie Tooltip */
+.zombie-tooltip {
+  position: absolute;
+  background: var(--halloween-purple);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  display: none;
+  z-index: 1000;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.zombie-tooltip.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Halloween Button Effects */
+.btn-modern {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 140, 0, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-modern:hover::before {
+  left: 100%;
+}
+
+/* Halloween Section Titles */
+.section-title {
+  position: relative;
+}
+
+.section-title::after {
+  content: '🎃';
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Progress Bar Styles */
+.anatomy-progress {
+  width: 92%;
+}
+
+.physiology-progress {
+  width: 78%;
+}
+
+.radiology-progress {
+  width: 65%;
+}
+
+/* Mobile Halloween Adjustments */
+@media (max-width: 768px) {
+  .halloween-element {
+    font-size: 2rem;
+  }
+  
+  .cobweb {
+    font-size: 1.5rem;
+  }
+  
+  .section-title::after {
+    display: none;
+  }
+}
 </style>
 {% endblock %}
 
 {% block top_banner %}{% endblock %}
 
 {% block content %}
+
+<!-- HALLOWEEN COBWEBS IN CORNERS -->
+<div class="cobweb cobweb-top-left">🕷️🕸️</div>
+<div class="cobweb cobweb-top-right">🕸️🕷️</div>
+<div class="cobweb cobweb-bottom-left">🕷️🕸️</div>
 
 {# === HERO SECTION === #}
 <section class="hero-section">
@@ -615,7 +816,7 @@ body .hero-section {
                   <span>{{ stats.anatomy_progress|default(92) }}%</span>
                 </div>
                 <div class="progress-bar">
-                  <div class="progress-fill" style="width: {{ stats.anatomy_progress|default(92) }}%"></div>
+                  <div class="progress-fill anatomy-progress"></div>
                 </div>
               </div>
               <div class="progress-item">
@@ -624,7 +825,7 @@ body .hero-section {
                   <span>{{ stats.physiology_progress|default(78) }}%</span>
                 </div>
                 <div class="progress-bar">
-                  <div class="progress-fill" style="width: {{ stats.physiology_progress|default(78) }}%"></div>
+                  <div class="progress-fill physiology-progress"></div>
                 </div>
               </div>
               <div class="progress-item">
@@ -633,7 +834,7 @@ body .hero-section {
                   <span>{{ stats.radiology_progress|default(65) }}%</span>
                 </div>
                 <div class="progress-bar">
-                  <div class="progress-fill" style="width: {{ stats.radiology_progress|default(65) }}%"></div>
+                  <div class="progress-fill radiology-progress"></div>
                 </div>
               </div>
             </div>
@@ -1163,6 +1364,167 @@ document.addEventListener('DOMContentLoaded', function() {
       announcement.style.display = 'block';
       announcement.style.animation = 'slideInRight 0.6s ease-out forwards';
     }, 2000); // Show after 2 seconds
+  }
+});
+
+// HALLOWEEN EFFECTS - COMPLETE VERSION
+document.addEventListener('DOMContentLoaded', function() {
+  // ===== FLYING PUMPKINS & GHOSTS =====
+  const elements = ['🎃', '👻', '🦇', '💀', '🕷️'];
+  
+  function createHalloweenElement() {
+    const el = document.createElement('div');
+    el.className = 'halloween-element';
+    el.textContent = elements[Math.floor(Math.random() * elements.length)];
+    
+    const left = Math.random() * 100;
+    const randomSize = 2 + Math.random() * 2; // 2-4rem
+    const duration = 5 + Math.random() * 5; // 5-10 seconds
+    const delay = Math.random() * 2;
+    
+    el.style.left = left + '%';
+    el.style.fontSize = randomSize + 'rem';
+    el.style.opacity = 0.15 + Math.random() * 0.2; // Random opacity
+    el.style.bottom = '-50px';
+    el.style.animation = `float ${duration}s linear ${delay}s infinite`;
+    
+    document.body.appendChild(el);
+    
+    setTimeout(() => el.remove(), (duration + delay) * 1000);
+  }
+  
+  // Create elements every 1.5 seconds
+  setInterval(createHalloweenElement, 1500);
+  
+  // Initial batch
+  for (let i = 0; i < 4; i++) {
+    setTimeout(createHalloweenElement, i * 400);
+  }
+
+  // ===== COBWEBS WITH CRAWLING SPIDER =====
+  const cobwebs = document.querySelectorAll('.cobweb');
+  cobwebs.forEach(cobweb => {
+    cobweb.style.animation = 'crawl 4s infinite';
+  });
+
+  // ===== HALLOWEEN CARD STYLES =====
+  document.querySelectorAll('.feature-card, .platform-feature, .benefit-card, .cta-card').forEach(card => {
+    card.classList.add('halloween-card');
+  });
+
+  // ===== ANIMATED EYES IN LOGO =====
+  const logoArea = document.querySelector('.navbar-brand');
+  if (logoArea && !logoArea.querySelector('.eye')) {
+    const eyesContainer = document.createElement('span');
+    eyesContainer.style.display = 'inline-flex';
+    eyesContainer.style.gap = '8px';
+    eyesContainer.style.marginLeft = '10px';
+    eyesContainer.style.alignItems = 'center';
+    
+    const eye1 = document.createElement('span');
+    eye1.className = 'eye';
+    eye1.style.display = 'inline-block';
+    eye1.style.width = '10px';
+    eye1.style.height = '10px';
+    eye1.style.background = 'black';
+    eye1.style.borderRadius = '50%';
+    
+    const eye2 = document.createElement('span');
+    eye2.className = 'eye';
+    eye2.style.display = 'inline-block';
+    eye2.style.width = '10px';
+    eye2.style.height = '10px';
+    eye2.style.background = 'black';
+    eye2.style.borderRadius = '50%';
+    
+    eyesContainer.appendChild(eye1);
+    eyesContainer.appendChild(eye2);
+    logoArea.appendChild(eyesContainer);
+
+    // Make eyes follow cursor
+    document.addEventListener('mousemove', (e) => {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      
+      [eye1, eye2].forEach(eye => {
+        const eyeRect = eye.getBoundingClientRect();
+        const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+        const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+        
+        const angle = Math.atan2(mouseY - eyeCenterY, mouseX - eyeCenterX);
+        const distance = 3;
+        
+        const pupil = eye.querySelector('.pupil') || document.createElement('span');
+        if (!pupil.classList.contains('pupil')) {
+          pupil.className = 'pupil';
+          pupil.style.display = 'inline-block';
+          pupil.style.width = '4px';
+          pupil.style.height = '4px';
+          pupil.style.background = 'white';
+          pupil.style.borderRadius = '50%';
+          pupil.style.position = 'absolute';
+          eye.style.position = 'relative';
+          eye.appendChild(pupil);
+        }
+        
+        pupil.style.left = (distance * Math.cos(angle)) + 'px';
+        pupil.style.top = (distance * Math.sin(angle)) + 'px';
+      });
+    });
+  }
+
+  // ===== SPOOKY GLOW ON MAIN TITLE =====
+  const mainTitle = document.querySelector('.hero-title');
+  if (mainTitle) {
+    mainTitle.classList.add('spooky-glow');
+  }
+
+  // ===== HALLOWEEN COLOR ACCENTS =====
+  // Change some accent colors to orange/purple
+  const accentElements = document.querySelectorAll('.btn-primary');
+  accentElements.forEach((btn, index) => {
+    if (index % 2 === 0) {
+      btn.style.background = 'linear-gradient(135deg, #ff8c00, #663399)';
+      btn.style.borderColor = '#ff8c00';
+    }
+  });
+
+  // ===== ZOMBIE HELPER EASTER EGG =====
+  const mainButton = document.querySelector('.btn-primary');
+  if (mainButton && !mainButton.querySelector('.zombie-helper')) {
+    const zombieBtn = document.createElement('div');
+    zombieBtn.className = 'zombie-helper';
+    zombieBtn.textContent = '🧟 Zombie Helper?';
+    zombieBtn.style.marginTop = '15px';
+    zombieBtn.style.cursor = 'pointer';
+    
+    zombieBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const messages = [
+        '🧟: Braaains! Maybe check the theory first?',
+        '🧟: *groans* Sounds like you need practice questions!',
+        '🧟: Arrgh! Try answering 10 more questions today!',
+        '🧟: *shuffles* Your weak areas: Radiology!'
+      ];
+      
+      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+      
+      const tooltip = document.createElement('div');
+      tooltip.className = 'zombie-tooltip show';
+      tooltip.textContent = randomMsg;
+      tooltip.style.position = 'absolute';
+      tooltip.style.bottom = '100%';
+      tooltip.style.left = '50%';
+      tooltip.style.transform = 'translateX(-50%)';
+      tooltip.style.marginBottom = '10px';
+      
+      zombieBtn.style.position = 'relative';
+      zombieBtn.appendChild(tooltip);
+      
+      setTimeout(() => tooltip.remove(), 4000);
+    });
+    
+    mainButton.parentElement.insertBefore(zombieBtn, mainButton.nextSibling);
   }
 });
 </script>
