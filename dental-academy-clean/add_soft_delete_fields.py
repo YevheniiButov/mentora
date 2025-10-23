@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from app import app
 from extensions import db
 from models import User
+from sqlalchemy import text
 
 def add_soft_delete_fields():
     """Добавляет поля для мягкого удаления пользователей"""
@@ -27,12 +28,14 @@ def add_soft_delete_fields():
                 return
             
             # Добавляем поля для мягкого удаления
-            db.engine.execute("""
-                ALTER TABLE "user" 
-                ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE,
-                ADD COLUMN deleted_at TIMESTAMP,
-                ADD COLUMN deleted_by INTEGER REFERENCES "user"(id)
-            """)
+            with db.engine.connect() as connection:
+                connection.execute(text("""
+                    ALTER TABLE "user" 
+                    ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE,
+                    ADD COLUMN deleted_at TIMESTAMP,
+                    ADD COLUMN deleted_by INTEGER REFERENCES "user"(id)
+                """))
+                connection.commit()
             
             print("✅ Поля для мягкого удаления успешно добавлены!")
             print("   - is_deleted: BOOLEAN DEFAULT FALSE")
