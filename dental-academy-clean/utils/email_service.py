@@ -587,12 +587,18 @@ def send_welcome_email(user):
             <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                 <h2>Welcome, {user.first_name}!</h2>
                 
-                <p>Congratulations! You have successfully completed your pre-registration for Mentora. We will notify you when the platform becomes available.</p>
+                <p>🎉 <strong>Welcome to Mentora!</strong> Your account has been created and is ready to use.</p>
+                
+                <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3 style="color: #2c3e50; margin-top: 0;">📧 Your Login Details:</h3>
+                    <p><strong>Email:</strong> {user.email}</p>
+                    <p><strong>Password:</strong> The password you created during registration</p>
+                </div>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="https://bigmentor.nl/dashboard" 
+                    <a href="https://bigmentor.nl/login" 
                        style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                        🚀 Go to Dashboard
+                        🚀 Login to Mentora
                     </a>
                 </div>
                 
@@ -603,13 +609,17 @@ def send_welcome_email(user):
         """
         
         msg.body = f"""
-Welcome to Mentora!
+🎉 Welcome to Mentora!
 
 Hello, {user.first_name}!
 
-Congratulations! You have successfully completed your pre-registration for Mentora. We will notify you when the platform becomes available.
+Your account has been created and is ready to use!
 
-Go to Dashboard: https://bigmentor.nl/dashboard
+📧 Your Login Details:
+Email: {user.email}
+Password: The password you created during registration
+
+Login to Mentora: https://bigmentor.nl/login
 
 Best regards,
 Mentora Team

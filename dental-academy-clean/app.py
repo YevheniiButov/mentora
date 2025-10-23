@@ -709,11 +709,6 @@ def test_diagnostic():
     """Тестовая страница для отладки диагностики"""
     return render_template('test_diagnostic.html')
 
-@app.route('/demo/learning-map-alpine')
-def demo_learning_map_alpine():
-    """Demo страница - Alpine.js версия карты обучения (темная)"""
-    return render_template('learning/learning_map_alpine_demo.html')
-
 @app.route('/demo/learning-map-light')
 def demo_learning_map_light():
     """Demo страница - Alpine.js версия карты обучения (светлая с шапкой)"""

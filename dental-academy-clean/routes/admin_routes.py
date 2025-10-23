@@ -2397,15 +2397,17 @@ def users_list():
         # Apply status filter
         if status_filter != 'all':
             if status_filter == 'active':
-                query = query.filter(User.is_active == True)
+                query = query.filter(User.is_active == True, User.is_deleted == False)
             elif status_filter == 'inactive':
-                query = query.filter(User.is_active == False)
+                query = query.filter(User.is_active == False, User.is_deleted == False)
+            elif status_filter == 'deleted':
+                query = query.filter(User.is_deleted == True)
             elif status_filter == 'email_verified':
-                query = query.filter(User.email_confirmed == True)
+                query = query.filter(User.email_confirmed == True, User.is_deleted == False)
             elif status_filter == 'email_unverified':
-                query = query.filter(User.email_confirmed == False)
+                query = query.filter(User.email_confirmed == False, User.is_deleted == False)
             elif status_filter == 'digid':
-                query = query.filter(User.created_via_digid == True)
+                query = query.filter(User.created_via_digid == True, User.is_deleted == False)
         
         # Apply role filter
         if role_filter != 'all':
@@ -5229,4 +5231,102 @@ def test_deactivate_premium(user_id):
         flash(f'Error deactivating premium: {str(e)}', 'error')
         db.session.rollback()
     
-    return redirect(url_for('admin.membership_test')) 
+    return redirect(url_for('admin.membership_test'))
+
+# ========================================
+# SOFT DELETE USER MANAGEMENT
+# ========================================
+
+@admin_bp.route('/users/soft-delete/<int:user_id>')
+@login_required
+@admin_required
+def soft_delete_user(user_id):
+    """Мягкое удаление пользователя - сохраняет данные, но скрывает от обычных запросов"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Проверяем, не пытаемся ли удалить себя
+        if user.id == current_user.id:
+            flash('Вы не можете удалить свой собственный аккаунт!', 'error')
+            return redirect(url_for('admin.users_list'))
+        
+        # Проверяем, не пытаемся ли удалить другого админа
+        if user.role == 'admin' and user.id != current_user.id:
+            flash('Вы не можете удалить другого администратора!', 'error')
+            return redirect(url_for('admin.users_list'))
+        
+        # Выполняем мягкое удаление
+        user.soft_delete(current_user.id)
+        
+        flash(f'Пользователь {user.get_display_name()} был мягко удален. Данные сохранены.', 'success')
+        
+    except Exception as e:
+        current_app.logger.error(f"Error soft deleting user {user_id}: {str(e)}")
+        flash(f'Ошибка при удалении пользователя: {str(e)}', 'error')
+        db.session.rollback()
+    
+    return redirect(url_for('admin.users_list'))
+
+@admin_bp.route('/users/restore/<int:user_id>')
+@login_required
+@admin_required
+def restore_user(user_id):
+    """Восстановление пользователя после мягкого удаления"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Проверяем, что пользователь действительно удален
+        if not user.is_soft_deleted():
+            flash('Пользователь не был удален!', 'warning')
+            return redirect(url_for('admin.users_list'))
+        
+        # Восстанавливаем пользователя
+        user.restore()
+        
+        flash(f'Пользователь {user.get_display_name()} был восстановлен.', 'success')
+        
+    except Exception as e:
+        current_app.logger.error(f"Error restoring user {user_id}: {str(e)}")
+        flash(f'Ошибка при восстановлении пользователя: {str(e)}', 'error')
+        db.session.rollback()
+    
+    return redirect(url_for('admin.users_list'))
+
+@admin_bp.route('/users/hard-delete/<int:user_id>')
+@login_required
+@admin_required
+def hard_delete_user(user_id):
+    """Жесткое удаление пользователя - удаляет все данные навсегда (только для удаленных пользователей)"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Проверяем, что пользователь был мягко удален
+        if not user.is_soft_deleted():
+            flash('Сначала выполните мягкое удаление пользователя!', 'error')
+            return redirect(url_for('admin.users_list'))
+        
+        # Проверяем, не пытаемся ли удалить себя
+        if user.id == current_user.id:
+            flash('Вы не можете удалить свой собственный аккаунт!', 'error')
+            return redirect(url_for('admin.users_list'))
+        
+        # Проверяем, не пытаемся ли удалить другого админа
+        if user.role == 'admin' and user.id != current_user.id:
+            flash('Вы не можете удалить другого администратора!', 'error')
+            return redirect(url_for('admin.users_list'))
+        
+        # Получаем имя пользователя для сообщения
+        user_name = user.get_display_name()
+        
+        # Выполняем жесткое удаление
+        db.session.delete(user)
+        db.session.commit()
+        
+        flash(f'Пользователь {user_name} был полностью удален из системы.', 'warning')
+        
+    except Exception as e:
+        current_app.logger.error(f"Error hard deleting user {user_id}: {str(e)}")
+        flash(f'Ошибка при полном удалении пользователя: {str(e)}', 'error')
+        db.session.rollback()
+    
+    return redirect(url_for('admin.users_list')) 

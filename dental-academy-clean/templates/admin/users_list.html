@@ -148,6 +148,7 @@
                     <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все</option>
                     <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Активные</option>
                     <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Неактивные</option>
+                    <option value="deleted" {% if status_filter == 'deleted' %}selected{% endif %}>🗑️ Удаленные</option>
                     <option value="email_verified" {% if status_filter == 'email_verified' %}selected{% endif %}>Email подтвержден</option>
                     <option value="email_unverified" {% if status_filter == 'email_unverified' %}selected{% endif %}>Email не подтвержден</option>
                     <option value="digid" {% if status_filter == 'digid' %}selected{% endif %}>DigiD пользователи</option>
@@ -269,7 +270,9 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if user.is_active %}
+                                {% if user.is_deleted %}
+                                <span class="badge bg-danger">🗑️ Удален</span>
+                                {% elif user.is_active %}
                                 <span class="badge bg-success">Активен</span>
                                 {% else %}
                                 <span class="badge bg-warning">Неактивен</span>
@@ -300,14 +303,34 @@
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     {% if user.id != current_user.id %}
-                                    <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" 
-                                          style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-outline-warning btn-sm" 
-                                                title="{% if user.is_active %}Деактивировать{% else %}Активировать{% endif %}">
-                                            <i class="bi bi-{% if user.is_active %}pause{% else %}play{% endif %}"></i>
-                                        </button>
-                                    </form>
+                                        {% if user.is_deleted %}
+                                            <!-- Кнопки для удаленных пользователей -->
+                                            <a href="{{ url_for('admin.restore_user', user_id=user.id) }}" 
+                                               class="btn btn-outline-success" title="Восстановить пользователя"
+                                               onclick="return confirm('Восстановить пользователя {{ user.get_display_name() }}?')">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin.hard_delete_user', user_id=user.id) }}" 
+                                               class="btn btn-outline-danger" title="Полностью удалить"
+                                               onclick="return confirm('⚠️ ВНИМАНИЕ! Это действие удалит пользователя {{ user.get_display_name() }} навсегда! Все данные будут потеряны!')">
+                                                <i class="bi bi-trash3"></i>
+                                            </a>
+                                        {% else %}
+                                            <!-- Кнопки для активных пользователей -->
+                                            <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" 
+                                                  style="display: inline;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-outline-warning btn-sm" 
+                                                        title="{% if user.is_active %}Деактивировать{% else %}Активировать{% endif %}">
+                                                    <i class="bi bi-{% if user.is_active %}pause{% else %}play{% endif %}"></i>
+                                                </button>
+                                            </form>
+                                            <a href="{{ url_for('admin.soft_delete_user', user_id=user.id) }}" 
+                                               class="btn btn-outline-warning" title="Мягко удалить (сохранить данные)"
+                                               onclick="return confirm('Мягко удалить пользователя {{ user.get_display_name() }}? Данные будут сохранены.')">
+                                                <i class="bi bi-archive"></i>
+                                            </a>
+                                        {% endif %}
                                     {% endif %}
                                 </div>
                             </td>

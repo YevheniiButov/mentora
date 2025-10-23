@@ -105,6 +105,11 @@ class User(db.Model, UserMixin):
     is_active = db.Column(db.Boolean, default=True)
     role = db.Column(db.String(20), default='user')  # user, admin
     
+    # Soft delete fields
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+    deleted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
     # Preferences & Settings
     language = db.Column(db.String(5), default='en')
     theme = db.Column(db.String(20), default='light')
@@ -654,6 +659,41 @@ class User(db.Model, UserMixin):
         incomplete_modules.sort(key=lambda x: x['progress']['progress_percent'], reverse=True)
         
         return incomplete_modules[:limit]
+    
+    def soft_delete(self, deleted_by_user_id):
+        """Мягкое удаление пользователя - сохраняет данные, но скрывает от обычных запросов"""
+        self.is_deleted = True
+        self.deleted_at = datetime.now(timezone.utc)
+        self.deleted_by = deleted_by_user_id
+        self.is_active = False  # Деактивируем аккаунт
+        db.session.commit()
+    
+    def restore(self):
+        """Восстановление пользователя после мягкого удаления"""
+        self.is_deleted = False
+        self.deleted_at = None
+        self.deleted_by = None
+        self.is_active = True  # Реактивируем аккаунт
+        db.session.commit()
+    
+    def is_soft_deleted(self):
+        """Проверка, удален ли пользователь мягко"""
+        return self.is_deleted
+    
+    @classmethod
+    def get_active_users(cls):
+        """Получить только активных (не удаленных) пользователей"""
+        return cls.query.filter_by(is_deleted=False)
+    
+    @classmethod
+    def get_deleted_users(cls):
+        """Получить только удаленных пользователей"""
+        return cls.query.filter_by(is_deleted=True)
+    
+    @classmethod
+    def get_all_users_including_deleted(cls):
+        """Получить всех пользователей, включая удаленных (для админ панели)"""
+        return cls.query
 
 # Analytics Models
 class WebsiteVisit(db.Model):

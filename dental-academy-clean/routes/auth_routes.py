@@ -573,13 +573,7 @@ def login(lang=None):
                     'error': 'Account is deactivated'
                 }), 400
             
-            # Check if email is confirmed
-            if not user.email_confirmed:
-                return jsonify({
-                    'success': False,
-                    'error': 'Please confirm your email before logging in. Check your inbox for confirmation link.',
-                    'email_not_confirmed': True
-                }), 400
+            # ✅ Убрали проверку подтверждения email - пользователи активны сразу!
             
             login_user(user, remember=True)
             user.last_login = datetime.now(timezone.utc)
@@ -1105,8 +1099,8 @@ def quick_register(lang=None):
             profession=data['profession'],
             required_consents=True,  # Terms and privacy consent
             optional_consents=data.get('marketingConsent', False),  # Marketing consent
-            is_active=False,  # Не активируем до подтверждения email
-            email_confirmed=False  # Требуем подтверждение email
+            is_active=True,  # ✅ Активируем сразу после регистрации!
+            email_confirmed=True  # ✅ Не требуем подтверждение email
         )
         
         # Установка пароля пользователя
@@ -1127,14 +1121,10 @@ def quick_register(lang=None):
             safe_log('log_database_error', 'quick_registration', 'create_user', str(e), data)
             raise
         
-        # Отправляем welcome email с подтверждением
+        # ✅ Отправляем welcome email с данными для входа
         try:
-            from utils.email_service import send_email_confirmation
-            # Generate confirmation token using the proper method
-            token = user.generate_email_confirmation_token()
-            db.session.commit()
-            
-            email_sent = send_email_confirmation(user, token)
+            from utils.email_service import send_welcome_email
+            email_sent = send_welcome_email(user)
             if email_sent:
                 safe_log('log_registration_success', 'quick_registration', user.id, user.email, data)
             else:
@@ -1147,7 +1137,7 @@ def quick_register(lang=None):
         
         return jsonify({
             'success': True,
-            'message': 'Registration successful! Please check your email and click the confirmation link to activate your account.',
+            'message': 'Registration successful! Welcome to Mentora! Check your email for login details.',
             'redirect_url': url_for('auth.login')
         })
         

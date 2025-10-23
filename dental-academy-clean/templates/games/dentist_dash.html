@@ -664,7 +664,8 @@ const POWERUP_TYPES = {
     FIREBALL: 'fireball',
     SHIELD: 'shield',
     SUPERJUMP: 'superjump',
-    SPEEDBOOTS: 'speedboots'
+    SPEEDBOOTS: 'speedboots',
+    HEART: 'heart' // ❤️ Новый тип - сердечки для восстановления жизней!
 };
 
 // Input
@@ -1151,13 +1152,12 @@ function spawnBoss() {
         return;
     }
     
-    // ✅ ФИКС: Босс намного ближе для видимости!
-    // Было: LEVEL_WIDTH - 1000 = 3800 (слишком далеко!)
-    // Стало: LEVEL_WIDTH - 2000 = 2800 (ближе!)
-    const bossX = LEVEL_WIDTH - 2000; // Намного ближе!
+    // ✅ ФИКС: Босс ближе к трубе выхода в подземном мире!
+    // В подземном мире труба выхода на x=2800, поэтому босс должен быть рядом
+    const bossX = inUnderground ? 2500 : LEVEL_WIDTH - 2000; // Ближе к трубе в подземном мире!
     currentBoss = {
         x: bossX,
-        y: 380, // Ниже, чтобы можно было прыгнуть
+        y: inUnderground ? 400 : 380, // Выше в подземном мире для лучшего боя
         width: 80,
         height: 80,
         damageFlash: 0, // Для мигания при получении урона
@@ -1388,8 +1388,22 @@ function createUndergroundLevel(pipeX) {
     platforms.length = 0;
     const UNDERGROUND_WIDTH = 3000;
     
-    // Ground with lava pits!
-    platforms.push({ x: 0, y: 550, width: 400, height: 50 });
+    // ✅ СЕКРЕТНЫЙ ОБРЫВ В НАЧАЛЕ УРОВНЯ!
+    // Создаем обрыв с платформой сверху для легкого обхода
+    platforms.push({ x: 0, y: 550, width: 200, height: 50 }); // Левая часть земли
+    // ОБРЫВ! (пропасть между x=200 и x=400)
+    platforms.push({ x: 400, y: 550, width: 200, height: 50 }); // Правая часть земли
+    
+    // Платформа сверху для легкого обхода обрыва
+    platforms.push({ 
+        x: 250, 
+        y: 400, // Не очень высоко, легко перепрыгнуть
+        width: 100, 
+        height: 20,
+        isSecretPitPlatform: true // Помечаем как платформу над секретным обрывом
+    });
+    
+    // Остальная земля
     platforms.push({ x: 600, y: 550, width: 400, height: 50 });
     platforms.push({ x: 1200, y: 550, width: 400, height: 50 });
     platforms.push({ x: 1800, y: 550, width: 400, height: 50 });
@@ -1541,19 +1555,28 @@ function createUndergroundLevel(pipeX) {
     if (!window.secretTreasureRoom) window.secretTreasureRoom = { revealed: false };
     window.secretTreasureRoom = { revealed: false, x: 4200 };
     
-    // Создаём невидимый блок с грибом-артефактом в начале уровня
-    const invisibleBlockX = 300; // в начале подземного уровня
-    const invisibleBlockY = 200; // на высоте для прыжка
-    platforms.push({
-        x: invisibleBlockX,
-        y: invisibleBlockY,
-        width: 16,
-        height: 16,
-        isInvisibleBlock: true,
-        hits: 0,
-        maxHits: 2,
-        revealed: false,
-        mushroomSpawned: false
+    // ✅ ДОБАВЛЯЕМ НЕСКОЛЬКО НЕВИДИМЫХ БЛОКОВ!
+    const invisibleBlocks = [
+        { x: 300, y: 200 },   // В начале уровня
+        { x: 800, y: 150 },   // На средней высоте
+        { x: 1200, y: 180 },  // В середине уровня
+        { x: 1800, y: 160 },  // Перед боссом
+        { x: 2200, y: 140 }   // Рядом с боссом
+    ];
+    
+    invisibleBlocks.forEach((block, index) => {
+        platforms.push({
+            x: block.x,
+            y: block.y,
+            width: 16,
+            height: 16,
+            isInvisibleBlock: true,
+            hits: 0,
+            maxHits: 2,
+            revealed: false,
+            mushroomSpawned: false,
+            blockIndex: index // Для идентификации
+        });
     });
     
     // Тестовый блок для проверки рендеринга
@@ -1834,6 +1857,26 @@ function createUndergroundLevel(pipeX) {
     powerUps.push({ x: 1500, y: 300, width: 24, height: 24, collected: false, type: POWERUP_TYPES.SHIELD });
     powerUps.push({ x: 2400, y: 320, width: 24, height: 24, collected: false, type: POWERUP_TYPES.SHIELD });
     
+    // ❤️ СЕРДЕЧКИ ДЛЯ ВОССТАНОВЛЕНИЯ ЖИЗНЕЙ!
+    // Добавляем сердечки в разных местах подземного мира
+    powerUps.push({ x: 800, y: 350, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART });
+    powerUps.push({ x: 1200, y: 280, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART });
+    powerUps.push({ x: 1800, y: 320, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART });
+    powerUps.push({ x: 2200, y: 300, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART });
+    
+    // Специальные сердечки рядом с боссом для сложного боя!
+    powerUps.push({ x: 2300, y: 380, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART });
+    powerUps.push({ x: 2600, y: 380, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART });
+    
+    // 🩹 АПТЕЧКИ ДЛЯ ВОССТАНОВЛЕНИЯ ЗДОРОВЬЯ!
+    // Добавляем аптечки в секретных местах
+    powerUps.push({ x: 1000, y: 200, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART });
+    powerUps.push({ x: 2000, y: 180, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART });
+    
+    // Специальные предметы для боя с боссом
+    powerUps.push({ x: 2400, y: 350, width: 24, height: 24, collected: false, type: POWERUP_TYPES.FIREBALL });
+    powerUps.push({ x: 2550, y: 350, width: 24, height: 24, collected: false, type: POWERUP_TYPES.SHIELD });
+    
     // NO DOOM DOOR in underground - only in Contra!
     
     // 🗝️ KEY #2 will spawn after boss death!
@@ -1841,9 +1884,220 @@ function createUndergroundLevel(pipeX) {
     // 🏰 BOSS IN UNDERGROUND!
     spawnBoss();
     
+    // ✅ ДОБАВЛЯЕМ ПЛАТФОРМЫ ДЛЯ БОЯ С БОССОМ!
+    // Платформы вокруг босса для безопасного боя
+    const bossX = 2500; // Позиция босса
+    platforms.push(
+        // Основная платформа под боссом
+        { x: bossX - 100, y: 480, width: 200, height: 20 },
+        // Платформы для прыжков
+        { x: bossX - 200, y: 420, width: 80, height: 15 },
+        { x: bossX + 120, y: 420, width: 80, height: 15 },
+        // Высокие платформы для атаки сверху
+        { x: bossX - 150, y: 350, width: 60, height: 15 },
+        { x: bossX + 90, y: 350, width: 60, height: 15 },
+        // Платформы для отступления
+        { x: bossX - 300, y: 450, width: 100, height: 20 },
+        { x: bossX + 200, y: 450, width: 100, height: 20 }
+    );
+    
+    console.log('🛡️ BOSS BATTLE PLATFORMS ADDED! Boss at x:', bossX);
+    
     player.x = 100;
     player.y = 400;
     cameraX = 0;
+}
+
+// 🕳️ СЕКРЕТНЫЙ ЛАБИРИНТ - Создается при падении в обрыв!
+function createSecretLabyrinth() {
+    console.log('🏰 CREATING SECRET LABYRINTH!');
+    
+    // Очищаем все объекты уровня
+    platforms.length = 0;
+    blocks.length = 0;
+    coins.length = 0;
+    powerUps.length = 0;
+    enemies.length = 0;
+    particles.length = 0;
+    
+    // Устанавливаем специальный режим лабиринта
+    window.inSecretLabyrinth = true;
+    window.labyrinthProgress = 0; // Прогресс прохождения лабиринта
+    window.labyrinthStartTime = Date.now();
+    
+    // Создаем лабиринт из разбивающихся кирпичей
+    const LABYRINTH_WIDTH = 2000;
+    const LABYRINTH_HEIGHT = 600;
+    
+    // Пол лабиринта
+    platforms.push({ x: 0, y: 550, width: LABYRINTH_WIDTH, height: 50 });
+    
+    // Создаем сложный лабиринт из разбивающихся кирпичей
+    const brickSize = 30;
+    const rows = 15;
+    const cols = Math.floor(LABYRINTH_WIDTH / brickSize);
+    
+    // ✅ ИСПРАВЛЕНО: Создаем стены лабиринта ТОЛЬКО НА ПОЛУ И КАК СТЕНЫ!
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            // Создаем паттерн лабиринта (только стены, не потолок!)
+            const shouldPlaceBrick = (
+                // Внешние стены (только боковые и нижние)
+                col === 0 || col === cols - 1 || row === rows - 1 ||
+                // Внутренние стены с паттерном (только на полу)
+                (row === rows - 2 && col % 4 === 0) ||
+                (row === rows - 3 && col % 3 === 1) ||
+                // Случайные кирпичи для сложности (только на полу)
+                (row >= rows - 4 && Math.random() < 0.2)
+            );
+            
+            if (shouldPlaceBrick) {
+                blocks.push({
+                    x: col * brickSize,
+                    y: 520 - (rows - 1 - row) * brickSize, // Размещаем от пола вверх
+                    width: brickSize,
+                    height: brickSize,
+                    broken: false,
+                    hasCoin: Math.random() < 0.2, // 20% шанс монеты
+                    isLabyrinthBrick: true // Помечаем как кирпич лабиринта
+                });
+            }
+        }
+    }
+    
+    // Добавляем монеты в лабиринте
+    for (let i = 0; i < 50; i++) {
+        coins.push({
+            x: 100 + (i % 10) * 80,
+            y: 200 + Math.floor(i / 10) * 60,
+            velY: 0,
+            collected: false
+        });
+    }
+    
+    // Специальные награды в лабиринте
+    powerUps.push({
+        x: 500, y: 200, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART
+    });
+    powerUps.push({
+        x: 800, y: 300, width: 24, height: 24, collected: false, type: POWERUP_TYPES.FIREBALL
+    });
+    powerUps.push({
+        x: 1200, y: 150, width: 24, height: 24, collected: false, type: POWERUP_TYPES.SHIELD
+    });
+    powerUps.push({
+        x: 1500, y: 400, width: 24, height: 24, collected: false, type: 'MUSHROOM_ARTIFACT'
+    });
+    
+    // Кротовая дыра в конце лабиринта
+    window.moleHole = {
+        x: LABYRINTH_WIDTH - 100,
+        y: 500,
+        width: 60,
+        height: 60,
+        active: true
+    };
+    
+    // ✅ ИСПРАВЛЕНО: Телепортируем игрока НА ПОЛ лабиринта!
+    player.x = 100;
+    player.y = 520; // На пол лабиринта (550 - 30 = 520, где 30 - высота игрока)
+    player.velX = 0;
+    player.velY = 0;
+    cameraX = 0;
+    
+    // Специальная музыка для лабиринта
+    stopBackgroundMusic();
+    startLabyrinthMusic();
+    
+    console.log('🏰 SECRET LABYRINTH CREATED!', blocks.length, 'bricks,', coins.length, 'coins');
+}
+
+// 🕳️ ВЫХОД ИЗ СЕКРЕТНОГО ЛАБИРИНТА ЧЕРЕЗ КРОТОВУЮ ДЫРУ!
+function exitSecretLabyrinth() {
+    console.log('🕳️ EXITING SECRET LABYRINTH! Returning to underground level...');
+    
+    // Выходим из режима лабиринта
+    window.inSecretLabyrinth = false;
+    window.moleHole = null;
+    
+    // ✅ ИСПРАВЛЕНО: Восстанавливаем подземный уровень БЕЗ босса и трубы!
+    // Очищаем все объекты
+    platforms.length = 0;
+    blocks.length = 0;
+    coins.length = 0;
+    powerUps.length = 0;
+    enemies.length = 0;
+    particles.length = 0;
+    
+    // Создаем простой подземный уровень без босса
+    createSimpleUndergroundLevel();
+    
+    // Телепортируем игрока в начало подземного уровня
+    player.x = 100;
+    player.y = 400;
+    player.velX = 0;
+    player.velY = 0;
+    cameraX = 0;
+    
+    // Восстанавливаем музыку подземного уровня
+    stopBackgroundMusic();
+    startUndergroundMusic();
+    
+    // Бонусные очки за прохождение лабиринта
+    const timeSpent = Date.now() - window.labyrinthStartTime;
+    const timeBonus = Math.max(0, 10000 - Math.floor(timeSpent / 100)); // Бонус за скорость
+    score += timeBonus + 5000; // Базовый бонус + бонус за скорость
+    
+    // Эффекты выхода
+    createParticles(player.x, player.y, '#00ff00', 30);
+    playSound('warp');
+    
+    console.log('🕳️ EXITED SECRET LABYRINTH! Time bonus:', timeBonus, 'Total score added:', timeBonus + 5000);
+}
+
+// 🏗️ ПРОСТОЙ ПОДЗЕМНЫЙ УРОВЕНЬ БЕЗ БОССА И ТРУБЫ!
+function createSimpleUndergroundLevel() {
+    console.log('🏗️ CREATING SIMPLE UNDERGROUND LEVEL (no boss, no pipe)!');
+    
+    // Устанавливаем режим подземного уровня
+    inUnderground = true;
+    
+    // Создаем простой пол
+    platforms.push({ x: 0, y: 550, width: 3000, height: 50 });
+    
+    // Добавляем несколько платформ для прыжков
+    for (let i = 0; i < 10; i++) {
+        platforms.push({
+            x: 200 + i * 200,
+            y: 450 - i * 20,
+            width: 100,
+            height: 20
+        });
+    }
+    
+    // Добавляем монеты
+    for (let i = 0; i < 30; i++) {
+        coins.push({
+            x: 150 + i * 80,
+            y: 200 + Math.floor(i / 10) * 60,
+            velY: 0,
+            collected: false
+        });
+    }
+    
+    // Добавляем несколько power-ups
+    powerUps.push({
+        x: 500, y: 300, width: 24, height: 24, collected: false, type: POWERUP_TYPES.HEART
+    });
+    powerUps.push({
+        x: 800, y: 250, width: 24, height: 24, collected: false, type: POWERUP_TYPES.FIREBALL
+    });
+    
+    // НЕ добавляем босса и трубу!
+    currentBoss = null;
+    bossActive = false;
+    
+    console.log('🏗️ SIMPLE UNDERGROUND LEVEL CREATED! No boss, no pipe!');
 }
 
 function startGame() {
@@ -1938,7 +2192,7 @@ function createUndergroundBossPath() {
     console.log('🛤️ CREATING UNDERGROUND BOSS PATH!');
     
     // Find boss position and create platforms leading to exit
-    const bossX = currentBoss ? currentBoss.x : 2800; // Default boss position
+    const bossX = currentBoss ? currentBoss.x : 2500; // Новая позиция босса в подземном мире
     const startX = bossX + 200; // Start path after boss
     
     // Create platforms leading to the exit pipe
@@ -1995,7 +2249,7 @@ function spawnKey2AfterBoss() {
     gameKeys = gameKeys.filter(key => key.type !== 'key2');
     
     // Spawn new key2 after boss
-    const bossX = currentBoss ? currentBoss.x : 2800;
+    const bossX = currentBoss ? currentBoss.x : 2500; // Новая позиция босса
     gameKeys.push({
         x: bossX + 300, // After boss area
         y: 350, // On a platform
@@ -2173,9 +2427,9 @@ function update() {
         player.bigTimer--;
         if (player.bigTimer === 0) {
             player.isBig = false;
-            player.width = 16; // возвращаем обычный размер
-            player.height = 16;
-            console.log('🍄 MUSHROOM ARTIFACT EXPIRED! Cat is normal size again.');
+            player.width = 32; // возвращаем обычный размер (было 16, стало 32)
+            player.height = 32; // возвращаем обычный размер (было 16, стало 32)
+            console.log('🍄 MUSHROOM ARTIFACT EXPIRED! Cat is normal size again. Size:', player.width, 'x', player.height);
         }
     }
     if (player.speedBootsTimer > 0) {
@@ -2293,6 +2547,86 @@ function update() {
         player.shootCooldown = 0; // Reset cooldown when not shooting
     }
     
+    // ✅ КОМБИНАЦИЯ КЛАВИШ: ВНИЗ + X ДЛЯ РАЗРУШЕНИЯ ОБЪЕКТОВ!
+    if (keys['ArrowDown'] && keyCodes['KeyX']) {
+        // Проверяем все разрушающиеся объекты в радиусе
+        const destroyRadius = 80; // Радиус разрушения
+        
+        // Разрушаем кирпичи
+        blocks.forEach(block => {
+            if (!block.broken && 
+                Math.abs(player.x - block.x) < destroyRadius && 
+                Math.abs(player.y - block.y) < destroyRadius) {
+                
+                console.log('💥 DESTROYING BLOCK WITH DOWN+X!', block.x, block.y);
+                
+                // Разрушаем блок
+                block.broken = true;
+                block.breakAnimation = 10;
+                
+                // Спавним монетку если есть
+                if (block.hasCoin) {
+                    coins.push({
+                        x: block.x + block.width/2,
+                        y: block.y,
+                        velY: -3,
+                        collected: false
+                    });
+                }
+                
+                // Эффекты
+                playSound('break');
+                createParticles(block.x + block.width/2, block.y + block.height/2, '#ff8800', 15);
+            }
+        });
+        
+        // Разрушаем разбивающиеся платформы
+        platforms.forEach(platform => {
+            if (platform.isBreakable && !platform.broken &&
+                Math.abs(player.x - platform.x) < destroyRadius && 
+                Math.abs(player.y - platform.y) < destroyRadius) {
+                
+                console.log('💥 DESTROYING PLATFORM WITH DOWN+X!', platform.x, platform.y);
+                
+                // Разрушаем платформу
+                platform.broken = true;
+                platform.breakAnimation = 10;
+                
+                // Эффекты
+                playSound('break');
+                createParticles(platform.x + platform.width/2, platform.y + platform.height/2, '#ff8800', 15);
+            }
+        });
+        
+        // Разрушаем кирпичи лабиринта
+        blocks.forEach(block => {
+            if (block.isLabyrinthBrick && !block.broken &&
+                Math.abs(player.x - block.x) < destroyRadius && 
+                Math.abs(player.y - block.y) < destroyRadius) {
+                
+                console.log('💥 DESTROYING LABYRINTH BRICK WITH DOWN+X!', block.x, block.y);
+                
+                // Разрушаем кирпич лабиринта
+                block.broken = true;
+                block.breakAnimation = 10;
+                
+                // Спавним монетку если есть
+                if (block.hasCoin) {
+                    coins.push({
+                        x: block.x + block.width/2,
+                        y: block.y,
+                        velY: -3,
+                        collected: false
+                    });
+                }
+                
+                // Эффекты
+                playSound('break');
+                createParticles(block.x + block.width/2, block.y + block.height/2, '#ff8800', 15);
+            }
+        });
+    }
+    
     // Update animation
     if (Math.abs(player.velX) > 0.5 && player.onGround) {
         // Running animation
@@ -2345,8 +2679,15 @@ function update() {
     // Ground collision & Death by falling! 💀
     player.onGround = false;
     
-    // Проверка падения в пропасть!
+    // ✅ СЕКРЕТНЫЙ ОБРЫВ - ПРОВЕРКА ПАДЕНИЯ В НАЧАЛЕ УРОВНЯ!
     if (player.y + player.height > 600) {
+        // Проверяем, упал ли игрок в секретный обрыв (между x=200 и x=400)
+        if (inUnderground && player.x > 200 && player.x < 400) {
+            console.log('🕳️ PLAYER FELL INTO SECRET PIT! Creating labyrinth...');
+            createSecretLabyrinth();
+            return; // Не обрабатываем как обычное падение
+        }
+        
         // Проверяем godmode - если включен, телепортируем игрока обратно
         if (player.godMode) {
             console.log('🛡️ GODMODE: Player saved from falling!');
@@ -2431,15 +2772,27 @@ function update() {
         
         // Обработка невидимого блока с грибом-артефактом
         if (platform.isInvisibleBlock) {
-            // Проверяем, ударил ли игрок блок снизу
+            // ✅ УЛУЧШЕННАЯ ЛОГИКА НЕВИДИМЫХ БЛОКОВ!
+            // Проверяем столкновение с блоком (более мягкие условия)
             if (player.x < platform.x + platform.width &&
                 player.x + player.width > platform.x &&
-                player.y + player.height > platform.y &&
-                player.y + player.height < platform.y + 20 &&
-                player.velY > 0) {
+                player.y < platform.y + platform.height &&
+                player.y + player.height > platform.y) {
                 
-                platform.hits++;
-                console.log('🔨 INVISIBLE BLOCK HIT! Hits:', platform.hits, '/', platform.maxHits);
+                // Удар головой снизу (основной способ)
+                if (player.velY > 0 && player.y + player.height > platform.y && player.y + player.height < platform.y + 20) {
+                    platform.hits++;
+                    console.log('🔨 INVISIBLE BLOCK HIT FROM BELOW! Hits:', platform.hits, '/', platform.maxHits);
+                    playSound('hit');
+                    createParticles(platform.x, platform.y, '#ffff00', 8);
+                }
+                // Удар дашем (альтернативный способ)
+                else if (player.dashing && Math.abs(player.velX) > 5) {
+                    platform.hits++;
+                    console.log('💥 INVISIBLE BLOCK HIT WITH DASH! Hits:', platform.hits, '/', platform.maxHits);
+                    playSound('hit');
+                    createParticles(platform.x, platform.y, '#ff8800', 10);
+                }
                 
                 // Первый удар - блок становится видимым
                 if (platform.hits === 1 && !platform.revealed) {
@@ -2521,6 +2874,15 @@ function update() {
             }
         }
     });
+    
+    // 🕳️ КРОТОВАЯ ДЫРА - Выход из секретного лабиринта!
+    if (window.inSecretLabyrinth && window.moleHole && window.moleHole.active) {
+        if (checkCollision(player, window.moleHole)) {
+            console.log('🕳️ PLAYER ENTERED MOLE HOLE! Exiting labyrinth...');
+            exitSecretLabyrinth();
+            return; // Не обрабатываем другие столкновения
+        }
+    }
     
     // Pipe collision - can stand on top!
     pipes.forEach(pipe => {
@@ -2776,16 +3138,29 @@ function update() {
                     player.superJumpTimer = 600; // 10 seconds
                     break;
                 case 'MUSHROOM_ARTIFACT':
-                    // Гриб-артефакт увеличивает котика до 32x32
-                    player.width = 32;
-                    player.height = 32;
+                    // 🍄 Гриб-артефакт увеличивает котика до 48x48 (в 1.5 раза больше!)
+                    player.width = 48; // Было 32, стало 48
+                    player.height = 48; // Было 32, стало 48
                     player.isBig = true;
                     player.bigTimer = 1800; // 30 секунд
-                    console.log('🍄 MUSHROOM ARTIFACT COLLECTED! Cat is now BIG!');
+                    console.log('🍄 MUSHROOM ARTIFACT COLLECTED! Cat is now BIG! Size:', player.width, 'x', player.height);
                     break;
                 case POWERUP_TYPES.SPEEDBOOTS:
                     player.hasSpeedBoots = true;
                     player.speedBootsTimer = 600; // 10 seconds
+                    break;
+                case POWERUP_TYPES.HEART:
+                    // ❤️ СЕРДЕЧКО ВОССТАНАВЛИВАЕТ ЖИЗНЬ!
+                    if (lives < 5) { // Максимум 5 жизней
+                        lives++;
+                        console.log('❤️ HEART COLLECTED! Lives:', lives);
+                        createParticles(powerUp.x, powerUp.y, '#ff69b4', 20); // Розовые частицы
+                        playSound('powerup');
+                    } else {
+                        // Если уже максимум жизней, даем бонусные очки
+                        score += 1000;
+                        console.log('❤️ HEART COLLECTED! Max lives, bonus points!');
+                    }
                     break;
             }
         }
@@ -2993,11 +3368,24 @@ function update() {
                 let damage = 1;
                 if (bullet.type === 'laser') damage = 2; // Лазер делает больше урона!
                 if (bullet.type === 'fireball') damage = 3; // ФАЙРБОЛ СУПЕР СИЛЬНЫЙ! 🔥
+                if (bullet.type === 'spread') damage = 2; // Разброс тоже сильный!
+                
+                // ✅ УЛУЧШЕННАЯ ЛОГИКА УБИЙСТВА БОССА!
+                // Критические попадания в подземном мире
+                if (inUnderground) {
+                    const criticalChance = Math.random();
+                    if (criticalChance < 0.3) { // 30% шанс критического урона
+                        damage *= 2;
+                        console.log('💥 CRITICAL HIT! Double damage!');
+                        createParticles(bullet.x, bullet.y, '#ffff00', 20); // Желтые частицы для крита
+                    }
+                }
+                
                 currentBoss.health -= damage;
                 bossHealthBar = currentBoss.health;
                 createParticles(bullet.x, bullet.y, '#fc0000', 12); // Красные частицы урона
                 playSound('hit');
-                console.log('🎯 HIT BOSS! Health:', currentBoss.health, '/', currentBoss.maxHealth);
+                console.log('🎯 HIT BOSS! Health:', currentBoss.health, '/', currentBoss.maxHealth, '| Damage:', damage);
                 
                 // Flash effect - IMPROVED!
                 currentBoss.damageFlash = 15; // Longer flash for bullets
@@ -3131,9 +3519,16 @@ function update() {
         currentBoss.x += currentBoss.velX;
         currentBoss.y += currentBoss.velY;
         
-        // Keep boss in bounds (исправлено для новой позиции!)
-        currentBoss.x = Math.max(LEVEL_WIDTH - 2200, Math.min(currentBoss.x, LEVEL_WIDTH - 1800));
-        currentBoss.y = Math.max(200, Math.min(currentBoss.y, 450));
+        // Keep boss in bounds (исправлено для подземного мира!)
+        if (inUnderground) {
+            // В подземном мире босс должен быть рядом с трубой выхода
+            currentBoss.x = Math.max(2300, Math.min(currentBoss.x, 2700)); // Ограничиваем движение вокруг трубы
+            currentBoss.y = Math.max(350, Math.min(currentBoss.y, 450)); // Не летает слишком высоко или низко
+        } else {
+            // В основном мире старые границы
+            currentBoss.x = Math.max(LEVEL_WIDTH - 2200, Math.min(currentBoss.x, LEVEL_WIDTH - 1800));
+            currentBoss.y = Math.max(200, Math.min(currentBoss.y, 450));
+        }
         
         // Boss attacks every 1 second - УЛУЧШЕНО!
         if (currentBoss.attackTimer > 60) {
@@ -3162,13 +3557,30 @@ function update() {
         // Check player collision with boss
         if (checkCollision(player, currentBoss)) {
             if (player.invincible || player.dashing) {
-                // Damage boss with dash/star!
-                currentBoss.health -= 2;
+                // ✅ УЛУЧШЕННАЯ АТАКА БОССА!
+                let damage = 2; // Базовый урон от даша
+                
+                // Дополнительный урон в подземном мире
+                if (inUnderground) {
+                    damage = 3; // Больше урона в подземном мире
+                    
+                    // Специальные атаки в зависимости от способностей игрока
+                    if (player.hasFireball) {
+                        damage += 2; // Огненный урон
+                        console.log('🔥 FIRE DASH ATTACK! Extra fire damage!');
+                    }
+                    if (player.isBig) {
+                        damage += 1; // Большой котик = больше урона
+                        console.log('🍄 BIG CAT ATTACK! Extra size damage!');
+                    }
+                }
+                
+                currentBoss.health -= damage;
                 bossHealthBar = currentBoss.health;
-                currentBoss.damageFlash = 10;
-                createParticles(currentBoss.x, currentBoss.y, '#fc0000', 10);
+                currentBoss.damageFlash = 15; // Дольше мигает
+                createParticles(currentBoss.x, currentBoss.y, '#fc0000', 15);
                 playSound('hit');
-                console.log('💥 DASH HIT BOSS! Health:', currentBoss.health);
+                console.log('💥 DASH HIT BOSS! Health:', currentBoss.health, '| Damage:', damage);
                 
                 if (currentBoss.health <= 0) {
                     currentBoss.alive = false;
@@ -3959,8 +4371,9 @@ function render() {
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
         } else if (p.isInvisibleBlock) {
-            // Невидимый блок - рендерим только если открыт
+            // ✅ УЛУЧШЕННЫЙ РЕНДЕРИНГ НЕВИДИМЫХ БЛОКОВ!
             if (p.revealed) {
+                // Открытый блок - золотой цвет
                 ctx.fillStyle = '#FFD700'; // золотой цвет
                 ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
                 ctx.strokeStyle = '#FFA500';
@@ -3972,6 +4385,27 @@ function render() {
                 ctx.font = '12px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('?', p.x - cameraX + p.width/2, p.y + p.height/2 + 4);
+            } else {
+                // Неоткрытый блок - едва заметная индикация
+                const time = Date.now() / 1000;
+                const alpha = 0.1 + Math.sin(time * 3) * 0.05; // Мерцание
+                
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = '#FFFF00'; // Желтый цвет
+                ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
+                
+                // Тонкая рамка
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(p.x - cameraX, p.y, p.width, p.height);
+                
+                // Текст "?" едва заметный
+                ctx.fillStyle = '#000';
+                ctx.font = '8px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('?', p.x - cameraX + p.width/2, p.y + p.height/2 + 3);
+                ctx.restore();
             }
     } else {
             // Обычные платформы
@@ -4248,6 +4682,37 @@ function render() {
     // ✅ ANIMATED POWER-UPS!
     drawPowerUpsAnimated();
     
+    // 🕳️ КРОТОВАЯ ДЫРА - Выход из секретного лабиринта!
+    if (window.inSecretLabyrinth && window.moleHole && window.moleHole.active) {
+        const moleX = window.moleHole.x - cameraX;
+        const moleY = window.moleHole.y;
+        
+        if (moleX > -50 && moleX < canvas.width + 50) {
+            // Рисуем кротовую дыру
+            ctx.fillStyle = '#8B4513'; // Коричневый цвет
+            ctx.fillRect(moleX, moleY, window.moleHole.width, window.moleHole.height);
+            
+            // Внутренняя часть дыры (темнее)
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(moleX + 5, moleY + 5, window.moleHole.width - 10, window.moleHole.height - 10);
+            
+            // Эффект глубины
+            ctx.fillStyle = '#2F1B14';
+            ctx.fillRect(moleX + 10, moleY + 10, window.moleHole.width - 20, window.moleHole.height - 20);
+            
+            // Блеск на краях
+            ctx.fillStyle = '#D2691E';
+            ctx.fillRect(moleX, moleY, window.moleHole.width, 3);
+            ctx.fillRect(moleX, moleY, 3, window.moleHole.height);
+            
+            // Текст "EXIT"
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('EXIT', moleX + window.moleHole.width/2, moleY + window.moleHole.height/2 + 4);
+        }
+    }
+    
     // 🚪 PIPES WITH LOCKS!
     pipes.forEach(pipe => {
         const pipeColor = pipe.color || '#00fc00';
@@ -4352,10 +4817,36 @@ function render() {
     
      // Player - CAT SPRITE FOR ALL MODES
      // Player - CAT SPRITE 🐱
+     
+     // 🍄 СПЕЦИАЛЬНЫЕ ЭФФЕКТЫ ДЛЯ БОЛЬШОГО КОТИКА!
+     if (player.isBig) {
+         // Золотое свечение вокруг большого котика
+         ctx.save();
+         ctx.shadowColor = '#FFD700';
+         ctx.shadowBlur = 15;
+         ctx.shadowOffsetX = 0;
+         ctx.shadowOffsetY = 0;
+     }
+     
      if (!spriteImg || !spriteImg.complete) {
          // Fallback if sprite not loaded yet - draw simple placeholder
-         ctx.fillStyle = player.invincible ? '#fcfc00' : '#ffaacc';
+         if (player.isBig) {
+             // Большой котик - золотой цвет с эффектом
+             ctx.fillStyle = player.invincible ? '#fcfc00' : '#FFD700';
+         } else {
+             ctx.fillStyle = player.invincible ? '#fcfc00' : '#ffaacc';
+         }
          ctx.fillRect(player.x, player.y, player.width, player.height);
+         
+         // Дополнительные детали для большого котика
+         if (player.isBig) {
+             // Рисуем корону на большом котике
+             ctx.fillStyle = '#FF6B6B';
+             ctx.fillRect(player.x + player.width/2 - 8, player.y - 5, 16, 8);
+             // Блеск короны
+             ctx.fillStyle = '#FFD700';
+             ctx.fillRect(player.x + player.width/2 - 6, player.y - 3, 12, 4);
+         }
      } else {
         // Cat sprite sheet layout:
         // Row 0: idle (4 frames)
@@ -4442,6 +4933,11 @@ function render() {
          
          ctx.restore();
         ctx.globalAlpha = 1;
+        
+        // 🍄 ЗАКРЫВАЕМ ЭФФЕКТ БОЛЬШОГО КОТИКА!
+        if (player.isBig) {
+            ctx.restore(); // Закрываем save() из начала эффекта
+        }
         
         // Draw invincibility field effect
         if (player.invincible && Math.random() < 0.3) {
@@ -5032,6 +5528,31 @@ function drawPowerUpsAnimated() {
                     ctx.fillRect(pu.x + 5, pu.y + bounce + i * 8, pu.width - 10, 6);
                 }
                 break;
+                
+            case 'heart':
+                // ❤️ СЕРДЕЧКО ДЛЯ ВОССТАНОВЛЕНИЯ ЖИЗНЕЙ!
+                ctx.fillStyle = '#FF69B4'; // Розовый цвет
+                ctx.beginPath();
+                // Рисуем сердечко
+                const heartX = pu.x + pu.width/2;
+                const heartY = pu.y + bounce + pu.height/2;
+                const heartSize = pu.width/2;
+                
+                // Верхняя часть сердечка
+                ctx.arc(heartX - heartSize/2, heartY - heartSize/2, heartSize/2, Math.PI, 0, false);
+                ctx.arc(heartX + heartSize/2, heartY - heartSize/2, heartSize/2, Math.PI, 0, false);
+                
+                // Нижняя часть сердечка
+                ctx.lineTo(heartX, heartY + heartSize);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Блеск на сердечке
+                ctx.fillStyle = '#FFB6C1';
+                ctx.beginPath();
+                ctx.arc(heartX - heartSize/4, heartY - heartSize/4, heartSize/4, 0, Math.PI * 2);
+                ctx.fill();
+                break;
         }
         
         // Outer glow
@@ -5194,6 +5715,14 @@ function drawPowerUpStatus() {
         ctx.fillText(`🚀 SUPER JUMP: ${superJumpTime}s`, 15, yOffset + 17);
         yOffset += 30;
     }
+    
+    // ✅ ПОДСКАЗКА О КОМБИНАЦИИ КЛАВИШ: ВНИЗ + X!
+    ctx.fillStyle = 'rgba(255, 140, 0, 0.9)';
+    ctx.fillRect(10, yOffset, 200, 25);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText('💥 DOWN + X: Destroy blocks!', 15, yOffset + 17);
+    yOffset += 30;
 }
 
 function checkCollision(a, b) {
@@ -5384,6 +5913,49 @@ function startContraMusic() {
         }
         playNote();
     }, 250); // Faster tempo!
+}
+
+// 🏰 Labyrinth music (mysterious and magical theme!)
+function startLabyrinthMusic() {
+    stopBackgroundMusic();
+    
+    // Проверяем, включен ли звук
+    if (!soundEnabled) return;
+    
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Mysterious labyrinth melody
+    const notes = [220, 247, 277, 311, 277, 247, 220, 196, 220, 247, 277, 311, 370, 311, 277, 247]; 
+    let noteIndex = 0;
+    
+    function playNote() {
+        // Проверяем, включен ли звук перед воспроизведением ноты
+        if (!soundEnabled) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sine'; // Mysterious sound!
+        osc.frequency.value = notes[noteIndex];
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.3);
+        
+        noteIndex = (noteIndex + 1) % notes.length;
+    }
+    
+    playNote();
+    bgMusicInterval = setInterval(() => {
+        if (!soundEnabled) {
+            clearInterval(bgMusicInterval);
+            bgMusicInterval = null;
+            return;
+        }
+        playNote();
+    }, 400); // Mysterious tempo!
 }
 
 // ========================================
