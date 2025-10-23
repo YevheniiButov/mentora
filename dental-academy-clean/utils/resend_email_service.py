@@ -542,3 +542,89 @@ Website: https://bigmentor.nl
 © 2024 Mentora. All rights reserved.
 This email was sent to {user.email}
     """
+
+def send_welcome_email_resend(user):
+    """Send welcome email using Resend API"""
+    try:
+        print(f"=== WELCOME EMAIL RESEND START for {user.email} ===")
+        
+        # Проверяем, отключена ли отправка email
+        mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
+        print(f"=== MAIL_SUPPRESS_SEND: {mail_suppress} ===")
+        
+        if mail_suppress:
+            print(f"=== WELCOME EMAIL SUPPRESSED (TESTING MODE) ===")
+            print(f"=== WELCOME EMAIL CONTENT ===")
+            print(f"To: {user.email}")
+            print(f"Subject: 🎉 Welcome to Mentora!")
+            print(f"Content: Welcome, {user.first_name}! Your account has been created and is ready to use.")
+            return True
+        
+        # Получаем настройки
+        api_key = current_app.config.get('RESEND_API_KEY')
+        from_email = current_app.config.get('RESEND_FROM_EMAIL', 'Mentora <info@bigmentor.nl>')
+        
+        if not api_key:
+            print("❌ RESEND_API_KEY not configured!")
+            return False
+        
+        # Подготавливаем HTML контент
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="margin: 0;">🎉 Welcome!</h1>
+            </div>
+            
+            <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h2>Welcome, {user.first_name}!</h2>
+                
+                <p>🎉 <strong>Welcome to Mentora!</strong> Your account has been created and is ready to use.</p>
+                
+                <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3 style="color: #2c3e50; margin-top: 0;">📧 Your Login Details:</h3>
+                    <p><strong>Email:</strong> {user.email}</p>
+                    <p><strong>Password:</strong> The password you created during registration</p>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="https://bigmentor.nl/login" 
+                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                        🚀 Login to Mentora
+                    </a>
+                </div>
+                
+                <p style="color: #666;">Best regards,<br>Mentora Team</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Подготавливаем данные для Resend API
+        email_data = {
+            "from": from_email,
+            "to": [user.email],
+            "subject": "🎉 Welcome to Mentora!",
+            "html": html_content,
+            "click_tracking": False,
+            "open_tracking": False
+        }
+        
+        # Отправляем через Resend API
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post("https://api.resend.com/emails", headers=headers, json=email_data)
+        response.raise_for_status()
+        
+        response_json = response.json()
+        print(f"✅ Welcome email sent successfully via Resend! ID: {response_json.get('id')}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error sending welcome email via Resend: {str(e)}")
+        return False

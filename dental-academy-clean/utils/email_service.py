@@ -566,6 +566,28 @@ def send_welcome_email(user):
     try:
         print(f"=== WELCOME EMAIL START for {user.email} ===")
         
+        # Check email provider
+        email_provider = current_app.config.get('EMAIL_PROVIDER', 'smtp')
+        print(f"=== EMAIL_PROVIDER: {email_provider} ===")
+        
+        if email_provider == 'resend':
+            # Use Resend API
+            from utils.resend_email_service import send_welcome_email_resend
+            return send_welcome_email_resend(user)
+        else:
+            # Use SMTP
+            return send_welcome_email_smtp(user)
+        
+    except Exception as e:
+        print(f"=== WELCOME EMAIL ERROR: {str(e)} ===")
+        current_app.logger.error(f"Failed to send welcome email: {str(e)}")
+        return False
+
+def send_welcome_email_smtp(user):
+    """Send welcome email using SMTP"""
+    try:
+        print(f"=== WELCOME EMAIL SMTP START for {user.email} ===")
+        
         if current_app.config.get('MAIL_SUPPRESS_SEND', False):
             print(f"Welcome email (console) for {user.email}")
             return True
@@ -631,8 +653,8 @@ Mentora Team
         return True
         
     except Exception as e:
-        print(f"=== WELCOME EMAIL ERROR: {str(e)} ===")
-        current_app.logger.error(f"Failed to send welcome email: {str(e)}")
+        print(f"=== WELCOME EMAIL SMTP ERROR: {str(e)} ===")
+        current_app.logger.error(f"Failed to send welcome email via SMTP: {str(e)}")
         return False
 
 
