@@ -7,13 +7,12 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app import create_app
+from app import app
 from extensions import db
 from models import User
 
 def add_soft_delete_fields():
     """Добавляет поля для мягкого удаления пользователей"""
-    app = create_app()
     
     with app.app_context():
         try:
@@ -29,15 +28,15 @@ def add_soft_delete_fields():
             
             # Добавляем поля для мягкого удаления
             db.engine.execute("""
-                ALTER TABLE user 
+                ALTER TABLE "user" 
                 ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE,
-                ADD COLUMN deleted_at DATETIME,
-                ADD COLUMN deleted_by INTEGER REFERENCES user(id)
+                ADD COLUMN deleted_at TIMESTAMP,
+                ADD COLUMN deleted_by INTEGER REFERENCES "user"(id)
             """)
             
             print("✅ Поля для мягкого удаления успешно добавлены!")
             print("   - is_deleted: BOOLEAN DEFAULT FALSE")
-            print("   - deleted_at: DATETIME")
+            print("   - deleted_at: TIMESTAMP")
             print("   - deleted_by: INTEGER REFERENCES user(id)")
             
         except Exception as e:
