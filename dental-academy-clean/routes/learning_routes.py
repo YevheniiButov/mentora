@@ -1231,12 +1231,12 @@ def test_learning_map():
             'total_modules': Module.query.count(),
             'completed_modules': UserProgress.query.filter_by(
                 user_id=user.id,
-                status='completed'
+                completed=True
             ).count(),
             'total_lessons': Lesson.query.count(),
             'completed_lessons': UserProgress.query.filter_by(
                 user_id=user.id,
-                status='completed'
+                completed=True
             ).join(Lesson).count(),
             'diagnostic_completed': latest_diagnostic is not None,
             'learning_plan_active': active_plan is not None

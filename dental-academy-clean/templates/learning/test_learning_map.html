@@ -1,361 +1,2190 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Тестовая карта обучения - Mentora</title>
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary-color: #6366f1;
+        }
 
-{% block title %}🧪 Тестовая карта обучения - Mentora{% endblock %}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/category-navigation.css') }}">
-<style>
-    .test-banner {
-        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        color: white;
-        padding: 15px;
-        text-align: center;
-        font-weight: bold;
-        margin-bottom: 20px;
-        border-radius: 8px;
-    }
-    
-    .test-section {
-        background: #f8f9fa;
-        border: 2px dashed #dee2e6;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .test-section h3 {
-        color: #495057;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .test-section h3 i {
-        color: #6c757d;
-    }
-    
-    .status-card {
-        background: white;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .status-card.success {
-        border-left: 4px solid #28a745;
-    }
-    
-    .status-card.warning {
-        border-left: 4px solid #ffc107;
-    }
-    
-    .status-card.danger {
-        border-left: 4px solid #dc3545;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    
-    .btn-test {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-test:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        color: white;
-        text-decoration: none;
-    }
-    
-    .btn-test.primary {
-        background: linear-gradient(135deg, #3ECDC1, #2DB5A9);
-    }
-    
-    .btn-test.success {
-        background: linear-gradient(135deg, #28a745, #20c997);
-    }
-    
-    .btn-test.warning {
-        background: linear-gradient(135deg, #ffc107, #fd7e14);
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .stat-card {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .stat-number {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #3ECDC1;
-        margin-bottom: 5px;
-    }
-    
-    .stat-label {
-        color: #6c757d;
-        font-size: 0.9rem;
-    }
-    
-    .recommendations-list {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-    
-    .recommendation-item {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        transition: all 0.3s ease;
-    }
-    
-    .recommendation-item:hover {
-        background: #f8f9fa;
-        border-color: #3ECDC1;
-    }
-    
-    .recommendation-priority {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-right: 15px;
-    }
-    
-    .recommendation-priority.high {
-        background: #dc3545;
-    }
-    
-    .recommendation-priority.medium {
-        background: #ffc107;
-    }
-    
-    .recommendation-priority.low {
-        background: #28a745;
-    }
-</style>
-{% endblock %}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #dbeafe 100%);
+            min-height: 100vh;
+            position: relative;
+        }
 
-{% block content %}
-<div class="container-fluid">
-    <!-- Тестовый баннер -->
-    <div class="test-banner">
-        🧪 ТЕСТОВАЯ КАРТА ОБУЧЕНИЯ - РАЗРАБОТКА И ТЕСТИРОВАНИЕ
-    </div>
-    
-    <!-- Статистика пользователя -->
-    <div class="test-section">
-        <h3><i class="fas fa-chart-bar"></i> Статистика пользователя</h3>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ user_stats.total_modules }}</div>
-                <div class="stat-label">Всего модулей</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ user_stats.completed_modules }}</div>
-                <div class="stat-label">Завершено модулей</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ user_stats.total_lessons }}</div>
-                <div class="stat-label">Всего уроков</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ user_stats.completed_lessons }}</div>
-                <div class="stat-label">Завершено уроков</div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Статус диагностики -->
-    <div class="test-section">
-        <h3><i class="fas fa-clipboard-check"></i> Диагностика знаний</h3>
+        /* ===== МОРФИРУЮЩИЕ ФОРМЫ ===== */
+        .morphing-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            filter: blur(60px);
+            opacity: 0.2;
+            animation: morph 20s ease-in-out infinite;
+        }
+
+        .shape-1 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            top: -10%;
+            left: -10%;
+            animation-duration: 25s;
+        }
+
+        .shape-2 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(45deg, #4834d4, #686de0);
+            top: 40%;
+            right: -15%;
+            animation-duration: 30s;
+            animation-delay: -10s;
+        }
+
+        .shape-3 {
+            width: 350px;
+            height: 350px;
+            background: linear-gradient(45deg, #00d2d3, #54a0ff);
+            bottom: -10%;
+            left: 40%;
+            animation-duration: 35s;
+            animation-delay: -20s;
+        }
+
+        @keyframes morph {
+            0%, 100% {
+                border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%;
+                transform: translate(50px, 50px) rotate(90deg);
+            }
+            50% {
+                border-radius: 50% 60% 30% 40% / 60% 30% 70% 40%;
+                transform: translate(0, 100px) rotate(180deg);
+            }
+            75% {
+                border-radius: 60% 40% 60% 40% / 70% 50% 50% 50%;
+                transform: translate(-50px, 50px) rotate(270deg);
+            }
+        }
+
+        /* ===== ШАПКА (идентичная оригинальной из _header.html) ===== */
         
-        {% if latest_diagnostic %}
-        <div class="status-card success">
-            <h5><i class="fas fa-check-circle"></i> Диагностика пройдена</h5>
-            <p>Последняя диагностика: {{ latest_diagnostic.completed_at.strftime('%d.%m.%Y %H:%M') }}</p>
-            <p>Тип: {{ latest_diagnostic.diagnostic_type }}</p>
-            <p>Статус: {{ latest_diagnostic.status }}</p>
-        </div>
-        {% else %}
-        <div class="status-card danger">
-            <h5><i class="fas fa-exclamation-triangle"></i> Диагностика не пройдена</h5>
-            <p>Для создания индивидуального плана обучения необходимо пройти диагностику знаний.</p>
-        </div>
-        {% endif %}
+        /* ПОЛНОЕ ПЕРЕОПРЕДЕЛЕНИЕ BOOTSTRAP СТИЛЕЙ */
+        header.modern-header {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            height: 70px !important;
+            min-height: 70px !important;
+            max-height: 70px !important;
+            z-index: 1000 !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+        }
+
+        header.modern-header nav.navbar {
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 100% !important;
+            max-height: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-wrap: nowrap !important;
+        }
+
+        header.modern-header nav.navbar .container {
+            width: 100% !important;
+            max-width: 1200px !important;
+            height: 100% !important;
+            min-height: 100% !important;
+            max-height: 100% !important;
+            margin: 0 auto !important;
+            padding: 0 1.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: nowrap !important;
+            flex-direction: row !important;
+        }
+
+        header.modern-header .navbar-brand {
+            display: flex !important;
+            align-items: center !important;
+            height: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            flex-shrink: 0 !important;
+            order: 1 !important;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        header.modern-header .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+
+        header.modern-header .navbar-brand img {
+            height: 40px !important;
+            width: auto !important;
+            max-height: 40px !important;
+            object-fit: contain !important;
+            transition: all 0.3s ease;
+        }
+
+        header.modern-header .navbar-brand:hover img {
+            filter: brightness(1.1);
+        }
+
+        header.modern-header .navbar-collapse {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex: 1 !important;
+            height: 100% !important;
+            margin: 0 1rem !important;
+            flex-wrap: nowrap !important;
+            flex-direction: row !important;
+            order: 2 !important;
+        }
+
+        header.modern-header .navbar-nav {
+            display: flex !important;
+            align-items: center !important;
+            flex-direction: row !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            list-style: none !important;
+            flex-wrap: nowrap !important;
+            gap: 0.5rem !important;
+        }
+
+        header.modern-header .navbar-nav .nav-item {
+            display: flex !important;
+            align-items: center !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        header.modern-header .navbar-nav .nav-link {
+            display: flex !important;
+            align-items: center !important;
+            height: auto !important;
+            padding: 0.5rem 1rem !important;
+            margin: 0 !important;
+            color: #64748b !important;
+            text-decoration: none !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            font-weight: 500;
+            position: relative;
+        }
+
+        header.modern-header .navbar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transform: translateX(-50%);
+            transition: width 0.3s ease;
+        }
+
+        header.modern-header .navbar-nav .nav-link:hover {
+            color: #3b82f6 !important;
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        header.modern-header .navbar-nav .nav-link:hover::before {
+            width: 80%;
+        }
+
+        header.modern-header .navbar-nav .nav-link.active {
+            color: #3b82f6 !important;
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        header.modern-header .navbar-nav .nav-link.active::before {
+            width: 80%;
+        }
+
+        header.modern-header .navbar-actions {
+            display: flex !important;
+            align-items: center !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            gap: 0.5rem !important;
+            flex-wrap: nowrap !important;
+            flex-direction: row !important;
+            flex-shrink: 0 !important;
+        }
+
+        header.modern-header .dropdown {
+            position: relative !important;
+            z-index: 9999 !important;
+        }
+
+        header.modern-header .btn,
+        header.modern-header .language-btn-modern,
+        header.modern-header .user-btn-modern {
+            display: flex !important;
+            align-items: center !important;
+            height: auto !important;
+            padding: 0.5rem 1rem !important;
+            margin: 0 !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            border-radius: 8px !important;
+            background: rgba(255, 255, 255, 0.8) !important;
+            color: #333 !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+
+        header.modern-header .btn:hover,
+        header.modern-header .language-btn-modern:hover,
+        header.modern-header .user-btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 1) !important;
+        }
+
+        header.modern-header .dropdown-menu {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            animation: dropdownSlide 0.3s ease;
+            min-width: 220px;
+            z-index: 10000 !important;
+            position: absolute !important;
+            max-height: 70vh !important;
+            overflow-y: auto !important;
+        }
         
-        <div class="action-buttons">
-            {% if not latest_diagnostic %}
-            <a href="{{ url_for('learning.test_start_diagnostic') }}" class="btn-test primary">
-                <i class="fas fa-play"></i> Пройти диагностику
-            </a>
-            {% else %}
-            <a href="{{ url_for('learning.test_start_diagnostic') }}" class="btn-test warning">
-                <i class="fas fa-redo"></i> Пройти диагностику снова
-            </a>
-            {% endif %}
-        </div>
+
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        header.modern-header .dropdown-item {
+            color: #64748b;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        header.modern-header .dropdown-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            transform: translateX(5px);
+        }
+
+        header.modern-header .dropdown-item.active {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+
+        header.modern-header .dropdown-item.text-danger {
+            color: #ef4444;
+        }
+
+        header.modern-header .dropdown-item.text-danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        header.modern-header .dropdown-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.5rem;
+        }
+
+        header.modern-header .dropdown-divider {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        header.modern-header .navbar-toggler {
+            display: none !important;
+            order: 3 !important;
+            border: none;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        header.modern-header .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        header.modern-header .hamburger-line {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: #1e293b;
+            margin: 4px auto;
+            transition: all 0.3s ease;
+            border-radius: 1px;
+        }
+
+        header.modern-header .navbar-toggler:not(.collapsed) .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        header.modern-header .navbar-toggler:not(.collapsed) .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        header.modern-header .navbar-toggler:not(.collapsed) .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        /* Мобильные устройства */
+        @media (max-width: 992px) {
+            header.modern-header {
+                height: 60px !important;
+                min-height: 60px !important;
+                max-height: 60px !important;
+            }
+            
+            header.modern-header .navbar-brand img {
+                height: 32px !important;
+                max-height: 32px !important;
+            }
+            
+            header.modern-header .navbar-toggler {
+                display: block !important;
+            }
+            
+            header.modern-header .navbar-collapse {
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                backdrop-filter: blur(20px) !important;
+                border-radius: 0 0 16px 16px !important;
+                padding: 1rem !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                height: auto !important;
+                z-index: 1001 !important;
+                display: none !important;
+            }
+            
+            header.modern-header .navbar-collapse.show {
+                display: flex !important;
+            }
+            
+            header.modern-header .navbar-nav {
+                flex-direction: column !important;
+                width: 100% !important;
+                height: auto !important;
+                gap: 0.5rem !important;
+            }
+            
+            header.modern-header .navbar-actions {
+                flex-direction: column !important;
+                width: 100% !important;
+                height: auto !important;
+                margin-top: 1rem !important;
+                padding-top: 1rem !important;
+                border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+            }
+        }
+
+        /* ПЛАНШЕТЫ (768px - 1024px) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            header.modern-header {
+                height: 65px !important;
+            }
+            
+            header.modern-header .navbar-brand img {
+                height: 36px !important;
+            }
+            
+            header.modern-header .navbar-collapse {
+                position: static !important;
+                display: flex !important;
+                flex-direction: row !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                height: 100% !important;
+                z-index: auto !important;
+            }
+            
+            header.modern-header .navbar-nav {
+                flex-direction: row !important;
+                height: 100% !important;
+                gap: 0.25rem !important;
+            }
+            
+            header.modern-header .navbar-actions {
+                flex-direction: row !important;
+                height: 100% !important;
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+                border-top: none !important;
+                gap: 0.25rem !important;
+            }
+            
+            header.modern-header .navbar-toggler {
+                display: none !important;
+            }
+            
+            header.modern-header .nav-link,
+            header.modern-header .btn {
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.9rem !important;
+            }
+        }
+
+        /* ТОЛЬКО ТЕЛЕФОНЫ (до 768px) */
+        @media (max-width: 767px) {
+            header.modern-header {
+                height: 60px !important;
+            }
+            
+            header.modern-header .navbar-brand img {
+                height: 32px !important;
+            }
+            
+            header.modern-header .navbar-toggler {
+                display: block !important;
+            }
+            
+            header.modern-header .navbar-collapse {
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                backdrop-filter: blur(20px) !important;
+                border-radius: 0 0 16px 16px !important;
+                padding: 1rem !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                height: auto !important;
+                z-index: 1001 !important;
+                display: none !important;
+            }
+            
+            header.modern-header .navbar-collapse.show {
+                display: flex !important;
+            }
+            
+            /* ИСПРАВЛЕНИЕ ДЛЯ МОБИЛЬНЫХ DROPDOWN */
+            header.modern-header .dropdown-menu {
+                position: static !important;
+                width: 100% !important;
+                margin-top: 0.5rem !important;
+                border: none !important;
+                box-shadow: none !important;
+                max-height: none !important;
+                overflow-y: visible !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+                animation: none !important;
+            }
+            
+            /* КАСТОМНОЕ МЕНЮ ЯЗЫКОВ - ПОКАЗЫВАЕМ ВСЕ */
+            header.modern-header .language-dropdown .dropdown-menu {
+                position: static !important;
+                width: 100% !important;
+                margin-top: 0.5rem !important;
+                border: none !important;
+                box-shadow: none !important;
+                max-height: none !important;
+                overflow-y: visible !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+                animation: none !important;
+            }
+            
+            /* ЛИШНИЕ ЯЗЫКИ НА МОБИЛЬНЫХ - ПОКАЗЫВАЕМ ВСЕ */
+            header.modern-header .language-menu {
+                max-height: none !important;
+                overflow-y: visible !important;
+                height: auto !important;
+            }
+            
+            /* КОМПАКТНЫЕ ЭЛЕМЕНТЫ ДЛЯ МОБИЛЬНЫХ */
+            header.modern-header .dropdown-item {
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.85rem !important;
+                margin-bottom: 0.2rem !important;
+                border-radius: 6px !important;
+                background: rgba(255, 255, 255, 0.9) !important;
+                border: 1px solid rgba(0, 0, 0, 0.05) !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+            }
+            
+            header.modern-header .dropdown-item:hover {
+                background: rgba(59, 130, 246, 0.1) !important;
+                border-color: rgba(59, 130, 246, 0.2) !important;
+            }
+            
+            header.modern-header .dropdown-item.active {
+                background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+                color: white !important;
+                border-color: transparent !important;
+            }
+            
+            /* УБИРАЕМ ОГРАНИЧЕНИЕ ВЫСОТЫ ДЛЯ МОБИЛЬНЫХ */
+            header.modern-header .dropdown {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+        }
+
+        /* ===== КОНТЕЙНЕР ===== */
+        .learning-map-container {
+            position: relative;
+            z-index: 2;
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
+            padding: 2rem;
+            max-width: 1800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ===== ПРАВИЛЬНЫЙ 2-КОЛОНОЧНЫЙ LAYOUT ===== */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* Левая колонка */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Правая колонка - sticky */
+        .sidebar-description {
+            position: sticky;
+            top: 90px;
+            height: fit-content;
+        }
+
+        /* Узлы на блоке (как на скриншоте) */
+        .learning-tabs {
+            position: relative;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 4.5rem 1.5rem 1.5rem 1.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 50px;
+        }
+
+        .tabs-container {
+            position: absolute;
+            top: -42px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1.5rem;
+            z-index: 10;
+        }
+
+        .tab-circle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .tab-circle:hover .circle-button {
+            transform: scale(1.1);
+        }
+
+        .circle-button {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .tab-circle:nth-child(1) .circle-button { background: linear-gradient(135deg, #a855f7, #6366f1); }
+        .tab-circle:nth-child(2) .circle-button { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+        .tab-circle:nth-child(3) .circle-button { background: linear-gradient(135deg, #f97316, #dc2626); }
+        .tab-circle:nth-child(4) .circle-button { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+        .tab-circle:nth-child(5) .circle-button { background: linear-gradient(135deg, #eab308, #f97316); }
+        .tab-circle:nth-child(6) .circle-button { background: linear-gradient(135deg, #22c55e, #16a34a); }
+
+        .circle-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-button i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .circle-glow {
+            position: absolute;
+            inset: -15px;
+            border-radius: 50%;
+            opacity: 0;
+            filter: blur(20px);
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .tab-circle:nth-child(1) .circle-glow { background: linear-gradient(135deg, #a855f7, #6366f1); }
+        .tab-circle:nth-child(2) .circle-glow { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+        .tab-circle:nth-child(3) .circle-glow { background: linear-gradient(135deg, #f97316, #dc2626); }
+        .tab-circle:nth-child(4) .circle-glow { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+        .tab-circle:nth-child(5) .circle-glow { background: linear-gradient(135deg, #eab308, #f97316); }
+        .tab-circle:nth-child(6) .circle-glow { background: linear-gradient(135deg, #22c55e, #16a34a); }
+
+        .tab-circle.active .circle-glow {
+            opacity: 0.7;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.9; }
+        }
+
+        .tab-status-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #22c55e;
+            border: 2px solid rgba(15, 23, 42, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .tab-status-badge i {
+            font-size: 0.75rem !important;
+        }
+
+        .tab-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #64748b;
+            text-align: center;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .beta-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.4rem;
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            border-radius: 8px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+            animation: betaPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes betaPulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .tab-circle.active .tab-label {
+            color: #3b82f6;
+        }
+
+        .tab-circle.disabled {
+            cursor: not-allowed;
+        }
+
+        .tab-circle.disabled .circle-button {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .tab-circle.disabled:hover .circle-button {
+            transform: none;
+        }
+
+        .tab-circle.disabled .circle-glow {
+            opacity: 0 !important;
+        }
+
+        /* Карточки 3x2 или 4x1 для игр */
+        .cards-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        
+        /* Для игр - 4 карточки в ряд */
+        .cards-area:has(.info-card[data-games="true"]) {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.75rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            min-height: 180px;
+        }
+
+        .test-card {
+            position: relative;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .test-card .card-icon {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+        }
+
+        .test-card .play-badge {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            animation: playPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes playPulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .info-card.clickable-card {
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .info-card.clickable-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.2);
+        }
+
+        .play-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .info-card.clickable-card:hover .play-badge {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Banner card styles */
+        .info-card.banner-card {
+            min-height: 280px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .info-card.banner-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 50px rgba(59, 130, 246, 0.3);
+        }
+
+        .game-banner {
+            transition: all 0.3s ease;
+        }
+
+        .info-card.banner-card:hover .game-banner {
+            transform: scale(1.02);
+        }
+
+        /* Games banner styles */
+        .games-banner {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .games-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .card-icon.progress { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+        .card-icon.legend { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+        .card-icon.stats { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+        .card-icon.module { background: linear-gradient(135deg, #22c55e, #16a34a); }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .progress-percentage {
+            font-weight: 700;
+            color: #3b82f6;
+            font-size: 1.5rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            margin: 0.5rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            color: #64748b;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stats-row:last-child {
+            border-bottom: none;
+        }
+
+        .stats-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .stats-value {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+
+        /* Описание */
+        .description-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .description-card h3 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .description-card h3 i {
+            font-size: 1.75rem;
+            color: #3b82f6;
+        }
+
+        .description-card p {
+            color: #64748b;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .description-card h4 {
+            color: #1e293b;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* IRT Diagnostic Styles */
+        .irt-actions {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .irt-actions .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .irt-actions .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .irt-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .irt-actions .btn-outline-primary {
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .irt-actions .btn-outline-primary:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .irt-actions .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .diagnostic-options h5 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .diagnostic-options .btn small {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .description-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .description-card ul li {
+            color: #64748b;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .description-card ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-description {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Контейнер карты обучения */
+            .learning-map-container {
+                padding: 1rem;
+                margin-top: 60px;
+            }
+            
+            /* Узлы - горизонтальная прокрутка для мобильных */
+            .learning-tabs {
+                padding: 3rem 0 1rem 0;
+                margin-top: 30px;
+                overflow: visible;
+            }
+            
+            .tabs-container {
+                top: -30px;
+                left: 0;
+                transform: none;
+                gap: 1rem;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                overflow-x: auto;
+                overflow-y: visible;
+                padding: 0 1rem 1rem 1rem;
+                width: 100%;
+                /* Плавная прокрутка */
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+                /* Скрываем scrollbar но оставляем функциональность */
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+            }
+            
+            .tabs-container::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
+            }
+            
+            /* Индикатор прокрутки */
+            .learning-tabs::after {
+                content: '← Свайп →';
+                position: absolute;
+                bottom: 0.5rem;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7rem;
+                color: #94a3b8;
+                opacity: 0.6;
+                pointer-events: none;
+            }
+            
+            .tab-circle {
+                margin: 0;
+                flex-shrink: 0;
+            }
+            
+            .circle-button {
+                width: 65px;
+                height: 65px;
+            }
+            
+            .circle-inner {
+                width: 57px;
+                height: 57px;
+            }
+            
+            .circle-button i {
+                font-size: 1.6rem;
+            }
+            
+            .circle-glow {
+                width: 75px;
+                height: 75px;
+            }
+            
+            .tab-status-badge {
+                width: 22px;
+                height: 22px;
+                top: -5px;
+                right: -5px;
+            }
+            
+            .tab-status-badge i {
+                font-size: 0.7rem !important;
+            }
+            
+            .tab-label {
+                font-size: 0.75rem;
+                margin-top: 0.35rem;
+                white-space: nowrap;
+            }
+            
+            /* Карточки - одна колонка */
+            .cards-area {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            /* Для игр на мобильных - 2 колонки */
+            .cards-area:has(.info-card[data-games="true"]) {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .info-card {
+                min-height: 150px;
+            }
+            
+            /* Описание */
+            .description-card {
+                padding: 1.5rem;
+            }
+            
+            .description-card h3 {
+                font-size: 1.25rem;
+            }
+            
+            .description-card h4 {
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* Компактные узлы для маленьких экранов */
+            .circle-button {
+                width: 55px;
+                height: 55px;
+            }
+            
+            .circle-inner {
+                width: 48px;
+                height: 48px;
+            }
+            
+            .circle-button i {
+                font-size: 1.4rem;
+            }
+            
+            .circle-glow {
+                width: 65px;
+                height: 65px;
+            }
+            
+            .tab-label {
+                font-size: 0.7rem;
+            }
+            
+            .tabs-container {
+                gap: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Морфирующие формы -->
+    <div class="morphing-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
     </div>
-    
-    <!-- План обучения -->
-    <div class="test-section">
-        <h3><i class="fas fa-map"></i> План обучения</h3>
-        
-        {% if active_plan %}
-        <div class="status-card success">
-            <h5><i class="fas fa-check-circle"></i> План обучения активен</h5>
-            <p>Дата создания: {{ active_plan.created_at.strftime('%d.%m.%Y') }}</p>
-            <p>Интенсивность: {{ active_plan.intensity }}</p>
-            <p>Часов в неделю: {{ active_plan.study_hours_per_week }}</p>
-            <p>Прогресс: {{ "%.1f"|format(active_plan.overall_progress) }}%</p>
-        </div>
-        {% else %}
-        <div class="status-card warning">
-            <h5><i class="fas fa-exclamation-triangle"></i> План обучения не создан</h5>
-            <p>Создайте индивидуальный план обучения на основе результатов диагностики.</p>
-        </div>
-        {% endif %}
-        
-        <div class="action-buttons">
-            {% if latest_diagnostic and not active_plan %}
-            <a href="{{ url_for('learning.test_create_learning_plan') }}" class="btn-test primary">
-                <i class="fas fa-plus"></i> Создать план обучения
-            </a>
-            {% elif active_plan %}
-            <a href="{{ url_for('learning.test_daily_plan') }}" class="btn-test success">
-                <i class="fas fa-calendar-day"></i> Ежедневный план
-            </a>
-            <a href="{{ url_for('learning.test_create_learning_plan') }}" class="btn-test warning">
-                <i class="fas fa-edit"></i> Обновить план
-            </a>
-            {% else %}
-            <a href="#" class="btn-test" style="opacity: 0.5; cursor: not-allowed;">
-                <i class="fas fa-lock"></i> Сначала пройдите диагностику
-            </a>
-            {% endif %}
-        </div>
-    </div>
-    
-    <!-- Рекомендации -->
-    {% if recommendations %}
-    <div class="test-section">
-        <h3><i class="fas fa-lightbulb"></i> Рекомендации на основе диагностики</h3>
-        <div class="recommendations-list">
-            {% for rec in recommendations %}
-            <div class="recommendation-item">
-                <div class="recommendation-priority {{ rec.priority }}"></div>
-                <div style="flex: 1;">
-                    <h6>{{ rec.domain }}</h6>
-                    <p class="mb-0">{{ rec.description }}</p>
-                    <small class="text-muted">{{ rec.modules_count }} модулей доступно</small>
+
+    <!-- Header (идентичная оригинальной) -->
+    <header class="modern-header">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <!-- Logo -->
+                <a class="navbar-brand" href="/en/">
+                    <div class="logo-container">
+                        <img class="logo logo-light" src="/static/images/logo.png" alt="Mentora" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="logo-text" style="display:none; font-size: 1.5rem; font-weight: 800; color: #1e293b;">MENTORA</div>
+                    </div>
+                </a>
+                
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+                
+                <!-- Navigation -->
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto">
+                        <!-- Home -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/en/">Home</a>
+                        </li>
+                        
+                        <!-- Learning Map -->
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/en/learning-map">Learning Map</a>
+                        </li>
+                        
+                        <!-- Knowledge Base -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/en/knowledge-base">Knowledge Base</a>
+                        </li>
+                        
+                        <!-- Community -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/en/community">Community</a>
+                        </li>
+                        
+                        <!-- About BIG -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/en/big-info">About BIG</a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Right Side Actions -->
+                    <div class="navbar-actions d-flex align-items-center">
+                        <!-- Language Dropdown -->
+                        <div class="dropdown me-3 language-dropdown" style="position: relative; z-index: 9999;">
+                            <button class="btn language-btn-modern" 
+                                    type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                    title="Language: EN">
+                                <span class="language-icon"><i class="bi bi-globe2"></i></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end language-menu" aria-labelledby="languageDropdown">
+                                <li><a class="dropdown-item" href="#"><span class="fi fi-nl me-2"></span> Nederlands</a></li>
+                                <li><a class="dropdown-item active" href="#"><span class="fi fi-gb me-2"></span> English <i class="bi bi-check-lg ms-1"></i></a></li>
+                                <li><a class="dropdown-item" href="#"><span class="fi fi-es me-2"></span> Español</a></li>
+                                <li><a class="dropdown-item" href="#"><span class="fi fi-pt me-2"></span> Português</a></li>
+                                <li><a class="dropdown-item" href="#"><span class="fi fi-ua me-2"></span> Українська</a></li>
+                                <li><a class="dropdown-item" href="#"><span class="fi fi-ir me-2"></span> فارسی</a></li>
+                                <li><a class="dropdown-item" href="#"><span class="fi fi-tr me-2"></span> Türkçe</a></li>
+                                <li><a class="dropdown-item" href="#"><span class="fi fi-ru me-2"></span> Русский</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- User Menu -->
+                        <div class="dropdown" style="position: relative; z-index: 1002;">
+                            <button class="btn user-btn-modern" 
+                                    type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                    title="User Menu">
+                                <span class="user-icon"><i class="bi bi-person-circle"></i></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
+                                <!-- User Info Header -->
+                                <li class="dropdown-header">
+                                    <i class="bi bi-person-badge fs-5 me-1"></i> <strong>Dr. John Doe</strong>
+                                    <br>
+                                    <small class="text-muted">Pharmacist</small>
+                                </li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                
+                                <!-- Profile -->
+                                <li><a class="dropdown-item" href="/en/profile">
+                                    <i class="bi bi-person-gear fs-5 me-2"></i>
+                                    Edit profile
+                                </a></li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                
+                                <!-- Logout -->
+                                <li><a class="dropdown-item text-danger" href="/en/auth/logout">
+                                    <i class="bi bi-box-arrow-right fs-5 me-2"></i>
+                                    Logout
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    
-    <!-- Домены BIG -->
-    <div class="test-section">
-        <h3><i class="fas fa-layer-group"></i> Домены BIG экзамена</h3>
-        <div class="row">
-            {% for domain in big_domains %}
-            <div class="col-md-4 col-lg-3 mb-3">
-                <div class="stat-card">
-                    <h6>{{ domain.name }}</h6>
-                    <small class="text-muted">ID: {{ domain.id }}</small>
+        </nav>
+    </header>
+
+    <!-- Main -->
+    <div x-data="learningMapApp()" x-init="init()" class="learning-map-container">
+        
+        <div class="main-layout">
+            
+            <!-- ЛЕВАЯ КОЛОНКА: УЗЛЫ + КАРТОЧКИ -->
+            <div class="left-column">
+                
+                <!-- Узлы на блоке -->
+                <div class="learning-tabs">
+                    <div class="tabs-container">
+                        <!-- IRT Tab - Always Enabled -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'irt' }" @click="selectTab('irt')">
+                            <div class="circle-button">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-cpu-fill"></i></div>
+                                <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
+                            </div>
+                            <div class="tab-label">
+                                IRT
+                                <span class="beta-badge">BETA</span>
+                            </div>
+                        </div>
+
+                        <!-- Virtual Tab - Disabled until launch -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'virtual', 'disabled': !isLaunched }" @click="selectTab('virtual')">
+                            <div class="circle-button" :style="!isLaunched ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-people-fill"></i></div>
+                                <div class="tab-status-badge" :style="!isLaunched ? 'background: #94a3b8;' : ''"><i class="bi bi-lock-fill" x-show="!isLaunched"></i><i class="bi bi-play-fill" x-show="isLaunched"></i></div>
+                            </div>
+                            <div class="tab-label">Virtual</div>
+                        </div>
+
+                        <!-- Individual Tab - Disabled until launch -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'individual', 'disabled': !isLaunched }" @click="selectTab('individual')">
+                            <div class="circle-button" :style="!isLaunched ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-person-fill"></i></div>
+                                <div class="tab-status-badge" style="background: #94a3b8;"><i class="bi bi-lock-fill"></i></div>
+                            </div>
+                            <div class="tab-label">Individual</div>
+                        </div>
+
+                        <!-- Games Tab - Always Enabled -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'games' }" @click="selectTab('games')">
+                            <div class="circle-button">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-controller"></i></div>
+                                <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
+                            </div>
+                            <div class="tab-label">Games</div>
+                        </div>
+
+                        <!-- Diagnostic Tab - Always Enabled -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'diagnostic' }" @click="selectTab('diagnostic')">
+                            <div class="circle-button">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-clipboard-check-fill"></i></div>
+                                <div class="tab-status-badge" style="background: #3b82f6;"><i class="bi bi-star-fill"></i></div>
+                            </div>
+                            <div class="tab-label">
+                                Диагностика
+                                <span class="beta-badge" style="background: #3b82f6;">NEW</span>
+                            </div>
+                        </div>
+
+                        <!-- Learning Planner Tab - Always Enabled -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'planner' }" @click="selectTab('planner')">
+                            <div class="circle-button">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-calendar-check-fill"></i></div>
+                                <div class="tab-status-badge" style="background: #8b5cf6;"><i class="bi bi-star-fill"></i></div>
+                            </div>
+                            <div class="tab-label">
+                                Планировщик
+                                <span class="beta-badge" style="background: #8b5cf6;">NEW</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Tab - Disabled until launch -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'progress', 'disabled': !isLaunched }" @click="selectTab('progress')">
+                            <div class="circle-button" :style="!isLaunched ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-graph-up"></i></div>
+                                <div class="tab-status-badge" :style="!isLaunched ? 'background: #94a3b8;' : ''"><i class="bi bi-lock-fill" x-show="!isLaunched"></i><i class="bi bi-play-fill" x-show="isLaunched"></i></div>
+                            </div>
+                            <div class="tab-label">Progress</div>
+                        </div>
+
+                        <!-- Planner Tab - Disabled until launch -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'planner', 'disabled': !isLaunched }" @click="selectTab('planner')">
+                            <div class="circle-button" :style="!isLaunched ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-calendar-check-fill"></i></div>
+                                <div class="tab-status-badge" style="background: #94a3b8;"><i class="bi bi-lock-fill"></i></div>
+                            </div>
+                            <div class="tab-label">Planner</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Карточки -->
+                <div class="cards-area">
+                    
+                    <!-- IRT Test Cards -->
+                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(30)" style="cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-lightning-charge-fill"></i></div>
+                            <div>
+                                <div class="card-title" style="color: white;">Quick Test</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 questions</div>
+                            </div>
+                        </div>
+                        <div style="padding: 1rem 0;">
+                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
+                                Fast knowledge check. Results shown at the end.
+                            </p>
+                        </div>
+                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
+                            <i class="bi bi-play-circle-fill"></i>
+                        </div>
+                    </div>
+
+                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(60)" style="cursor: pointer; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-speedometer2"></i></div>
+                            <div>
+                                <div class="card-title" style="color: white;">Full Test</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">60 questions</div>
+                            </div>
+                        </div>
+                        <div style="padding: 1rem 0;">
+                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
+                                Comprehensive assessment covering all domains.
+                            </p>
+                        </div>
+                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
+                            <i class="bi bi-play-circle-fill"></i>
+                        </div>
+                    </div>
+
+                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startLearningMode()" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-book-fill"></i></div>
+                            <div>
+                                <div class="card-title" style="color: white;">Learning Mode</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 questions with explanations</div>
+                            </div>
+                        </div>
+                        <div style="padding: 1rem 0;">
+                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
+                                Study mode: see correct answer and explanation after each question.
+                            </p>
+                        </div>
+                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
+                            <i class="bi bi-play-circle-fill"></i>
+                        </div>
+                    </div>
+
+                    <!-- Games Cards (for games tab) -->
+                    <template x-for="module in displayModules" :key="module.id" x-show="activeTab === 'games'">
+                        <div class="info-card" 
+                             :class="{ 'clickable-card': module.url }" 
+                             @click="module.url ? window.location.href = module.url : null"
+                             :style="module.url ? 'cursor: pointer;' : ''"
+                             data-games="true">
+                            <div class="card-header">
+                                <div class="card-icon module"><i :class="`bi bi-${module.icon}`"></i></div>
+                                <div>
+                                    <div class="card-title" x-text="module.title"></div>
+                                    <div class="card-subtitle" x-text="module.subtitle"></div>
+                                </div>
+                            </div>
+                            <div x-show="module.url" class="play-badge">
+                                <i class="bi bi-play-circle-fill"></i>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+                
+                <!-- Diagnostic Cards (for diagnostic tab) -->
+                <div x-show="activeTab === 'diagnostic'" class="cards-grid" style="display: none;">
+                    <div class="info-card clickable-card" @click="window.location.href = '/big-diagnostic/start'" style="cursor: pointer;">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);"><i class="bi bi-clipboard-check-fill"></i></div>
+                            <div>
+                                <div class="card-title">Начать диагностику</div>
+                                <div class="card-subtitle">Адаптивный тест для оценки ваших знаний</div>
+                            </div>
+                        </div>
+                        <div class="play-badge">
+                            <i class="bi bi-play-circle-fill"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card clickable-card" @click="window.location.href = '/big-diagnostic/results'" style="cursor: pointer;">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);"><i class="bi bi-graph-up-arrow"></i></div>
+                            <div>
+                                <div class="card-title">Результаты диагностики</div>
+                                <div class="card-subtitle">Посмотреть ваши результаты и прогресс</div>
+                            </div>
+                        </div>
+                        <div class="play-badge">
+                            <i class="bi bi-arrow-right-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Learning Planner Cards (for planner tab) -->
+                <div x-show="activeTab === 'planner'" class="cards-grid" style="display: none;">
+                    <div class="info-card clickable-card" @click="window.location.href = '/dashboard/create-learning-plan'" style="cursor: pointer;">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);"><i class="bi bi-calendar-plus-fill"></i></div>
+                            <div>
+                                <div class="card-title">Создать план обучения</div>
+                                <div class="card-subtitle">Персонализированный план на основе диагностики</div>
+                            </div>
+                        </div>
+                        <div class="play-badge">
+                            <i class="bi bi-play-circle-fill"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card clickable-card" @click="window.location.href = '/dashboard/learning-planner'" style="cursor: pointer;">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);"><i class="bi bi-calendar-check-fill"></i></div>
+                            <div>
+                                <div class="card-title">Мой план обучения</div>
+                                <div class="card-subtitle">Просмотр и управление вашим планом</div>
+                            </div>
+                        </div>
+                        <div class="play-badge">
+                            <i class="bi bi-arrow-right-circle-fill"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card clickable-card" @click="window.location.href = '/learning/test-learning-map/daily-plan'" style="cursor: pointer;">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"><i class="bi bi-calendar-day-fill"></i></div>
+                            <div>
+                                <div class="card-title">Ежедневный план</div>
+                                <div class="card-subtitle">Что изучать сегодня</div>
+                            </div>
+                        </div>
+                        <div class="play-badge">
+                            <i class="bi bi-arrow-right-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Баннер для игр (под играми) -->
+                <div x-show="activeTab === 'games'" class="games-banner" @click="window.location.href = '/games/dentist-dash'" style="
+                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+                    border-radius: 20px;
+                    padding: 1.5rem;
+                    margin-top: 2rem;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                    position: relative;
+                    overflow: hidden;
+                    min-height: 120px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
+                    <!-- Твое изображение -->
+                    <img src="/static/images/superment.png" 
+                         alt="Super Mentora Banner" 
+                         style="
+                            width: 100%;
+                            max-width: 600px;
+                            height: auto;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            transition: transform 0.3s ease;
+                         "
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                         onmouseover="this.style.transform='scale(1.02)'"
+                         onmouseout="this.style.transform='scale(1)'">
+                    
+                    <!-- Fallback если изображение не найдено -->
+                    <div style="display: none; width: 100%; max-width: 600px; height: 100px; background: linear-gradient(45deg, #0a0a0a 0%, #1a0a0a 50%, #2a0a00 100%); border: 2px solid #444; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', monospace; color: #fff; text-align: center; padding: 1rem;">
+                        <div>
+                            <div style="font-size: 14px; font-weight: bold; margin-bottom: 0.5rem;">
+                                <span style="color: #ff0000; font-style: italic;">SUPER</span>
+                                <span style="margin: 0 8px; color: #fff;">MENTORA</span>
+                            </div>
+                            <div style="font-size: 10px; line-height: 1.2;">
+                                Epic 8-bit platformer with Mario & Contra gameplay!<br>
+                                Jump, dash, shoot, explore caves with lava & bats!<br>
+                                Features RAMBO character in jungle mode! 💪
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- ПРАВАЯ КОЛОНКА: ОПИСАНИЕ -->
+            <div class="sidebar-description">
+                <div class="description-card">
+                    <h3>
+                        <i :class="`bi bi-${getTabIcon(activeTab)}`"></i>
+                        <span x-text="getTabTitle(activeTab)"></span>
+                    </h3>
+                    <p x-text="getTabDescription(activeTab)"></p>
+                    
+                    <h4>💡 How to use</h4>
+                    <ul>
+                        <template x-for="tip in getTabTips(activeTab)" :key="tip">
+                            <li x-text="tip"></li>
+                        </template>
+                    </ul>
                 </div>
             </div>
-            {% endfor %}
+            
         </div>
+        
     </div>
-    
-    <!-- Отладочная информация -->
-    <div class="test-section">
-        <h3><i class="fas fa-bug"></i> Отладочная информация</h3>
-        <div class="row">
-            <div class="col-md-6">
-                <h6>Пользователь:</h6>
-                <ul>
-                    <li>ID: {{ user.id }}</li>
-                    <li>Email: {{ user.email }}</li>
-                    <li>Имя: {{ user.get_display_name() }}</li>
-                    <li>Роль: {{ user.role }}</li>
-                </ul>
-            </div>
-            <div class="col-md-6">
-                <h6>Система:</h6>
-                <ul>
-                    <li>Диагностика: {{ 'Да' if user_stats.diagnostic_completed else 'Нет' }}</li>
-                    <li>План обучения: {{ 'Да' if user_stats.learning_plan_active else 'Нет' }}</li>
-                    <li>Всего доменов: {{ big_domains|length }}</li>
-                    <li>Рекомендаций: {{ recommendations|length }}</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-    // Добавляем интерактивность для тестовой карты
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('🧪 Тестовая карта обучения загружена');
-        
-        // Анимация для карточек статистики
-        const statCards = document.querySelectorAll('.stat-card');
-        statCards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
+    <script>
+        function learningMapApp() {
+            // Launch date: October 13, 2025 00:00
+            const launchDate = new Date('2025-10-13T00:00:00');
+            const now = new Date();
+            const isLaunched = now >= launchDate;
             
-            setTimeout(() => {
-                card.style.transition = 'all 0.5s ease';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-        
-        // Подсветка рекомендаций при наведении
-        const recommendations = document.querySelectorAll('.recommendation-item');
-        recommendations.forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateX(5px)';
+            // Получаем параметр tab из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            const validTabs = ['irt', 'virtual', 'individual', 'games', 'progress', 'planner'];
+            const initialTab = validTabs.includes(tabParam) ? tabParam : 'irt';
+            
+            return {
+                activeTab: initialTab,
+                isStartingDiagnostic: false,
+                isLaunched: false, // ВСЕГДА false - блокируем все кроме IRT и Games
+                launchDate: launchDate,
+                // Enabled tabs (only IRT and Games before launch)
+                enabledTabs: ['irt', 'games'], // Только IRT и Games всегда доступны
+                // Real user statistics
+                userStats: {
+                    activeModules: 0,
+                    totalLearningTime: '0h',
+                    avgScore: 0,
+                    irtTestsCompleted: 0,
+                    totalLessonsCompleted: 0,
+                    totalLessonsStarted: 0,
+                    avgIrtScore: 0,
+                    testAttempts: 0,
+                    lastActivity: null
+                },
+                gamesStats: {
+                    sudoku: { games_played: 0, best_time: null, difficulty_completed: {easy: false, medium: false, hard: false} },
+                    memory: { games_played: 0, best_time: null, difficulty_completed: {easy: false, medium: false, hard: false} },
+                    quiz: { games_played: 0, best_score: 0, categories_completed: [] },
+                    achievements: { total: 0, completed: 0, progress: 0 },
+                    leaderboard: { user_rank: null, total_users: 0, user_score: 0 }
+                },
+                statsLoaded: false,
+                gamesStatsLoaded: false,
+                async loadUserStats() {
+                    try {
+                        const currentLang = document.querySelector('html').getAttribute('lang') || 'en';
+                        console.log('Loading user statistics for language:', currentLang);
+                        const response = await fetch(`/${currentLang}/api/user-statistics`);
+                        
+                        if (!response.ok) {
+                            console.error('Failed to fetch statistics:', response.status, response.statusText);
+                            this.statsLoaded = true; // Mark as loaded to prevent UI issues
+                            return;
+                        }
+                        
+                        const data = await response.json();
+                        console.log('User statistics loaded:', data);
+                        
+                        if (data.success) {
+                            this.userStats = {
+                                activeModules: data.statistics.active_modules || 0,
+                                totalLearningTime: data.statistics.total_learning_time || '0h',
+                                avgScore: data.statistics.avg_score || 0,
+                                irtTestsCompleted: data.statistics.irt_tests_completed || 0,
+                                totalLessonsCompleted: data.statistics.total_lessons_completed || 0,
+                                totalLessonsStarted: data.statistics.total_lessons_started || 0,
+                                avgIrtScore: data.statistics.avg_irt_score || 0,
+                                testAttempts: data.statistics.test_attempts || 0,
+                                lastActivity: data.statistics.last_activity || null
+                            };
+                            this.statsLoaded = true;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load user statistics:', error);
+                        this.statsLoaded = true; // Mark as loaded to prevent UI issues
+                    }
+                },
+                async loadGamesStats() {
+                    try {
+                        const currentLang = document.querySelector('html').getAttribute('lang') || 'en';
+                        const response = await fetch(`/${currentLang}/api/games-statistics`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.gamesStats = {
+                                sudoku: data.statistics.games.sudoku,
+                                memory: data.statistics.games.memory,
+                                quiz: data.statistics.games.quiz,
+                                achievements: data.statistics.achievements,
+                                leaderboard: data.statistics.leaderboard
+                            };
+                            this.gamesStatsLoaded = true;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load games statistics:', error);
+                    }
+                },
+                init() {
+                    this.loadUserStats();
+                    // Games statistics не загружаем, так как не показываем статистику игр
+                },
+                selectTab(tab) {
+                    if (!this.enabledTabs.includes(tab)) {
+                        this.showComingSoonModal(tab);
+                        return;
+                    }
+                    this.activeTab = tab;
+                },
+                showComingSoonModal(tab) {
+                    const tabNames = {
+                        'virtual': 'Virtual Patients',
+                        'individual': 'Individual Learning',
+                        'progress': 'Progress Tracking',
+                        'planner': 'Learning Planner'
+                    };
+                    
+                    this.showNotification(
+                        `${tabNames[tab]} is coming soon!`,
+                        'info'
+                    );
+                },
+                modules: {
+                    'irt': [
+                        // Модули скрыты - используем карточки тестов вместо них
+                    ],
+                    'virtual': [
+                        { id: 4, title: 'Case #1', subtitle: 'Emergency', icon: 'heart-pulse-fill', progress: 100, completed: 5, total: 5 }
+                    ],
+                    'individual': [
+                        { id: 6, title: 'My Topics', subtitle: 'Custom', icon: 'book-fill', progress: 45, completed: 9, total: 20 }
+                    ],
+                    'games': [
+                        { 
+                            id: 7, 
+                            title: 'Super Mentora', 
+                            subtitle: '8-Bit Action', 
+                            icon: 'controller', 
+                            url: '/games/dentist-dash',
+                            featured: true
+                        },
+                        { 
+                            id: 8, 
+                            title: 'Sudoku', 
+                            subtitle: 'Classic', 
+                            icon: 'grid-3x3-gap-fill', 
+                            url: '/games/sudoku' 
+                        },
+                        { 
+                            id: 9, 
+                            title: 'Medical Memory', 
+                            subtitle: 'Match Terms', 
+                            icon: 'bullseye', 
+                            url: '/games/memory' 
+                        },
+                        { 
+                            id: 10, 
+                            title: 'Quick Quiz', 
+                            subtitle: 'Fast Questions', 
+                            icon: 'lightning-charge-fill', 
+                            url: '/games/quiz' 
+                        }
+                    ],
+                    'progress': [
+                        { id: 10, title: 'Overall', subtitle: 'All modules', icon: 'graph-up', progress: 68, completed: 68, total: 100 },
+                        { id: 11, title: 'This Week', subtitle: 'Activity', icon: 'calendar-week', progress: 85, completed: 6, total: 7 },
+                        { id: 12, title: 'Study Time', subtitle: '12.5 hours', icon: 'clock-fill', progress: 0, completed: 0, total: 0 }
+                    ],
+                    'planner': [
+                        { id: 13, title: 'Today', subtitle: '3 tasks', icon: 'calendar-check', progress: 66, completed: 2, total: 3 },
+                        { id: 14, title: 'This Week', subtitle: '10 tasks', icon: 'calendar-week', progress: 40, completed: 4, total: 10 },
+                        { id: 15, title: 'Upcoming', subtitle: 'Schedule', icon: 'calendar-event', progress: 0, completed: 0, total: 5 }
+                    ]
+                },
+                get displayModules() { return this.modules[this.activeTab] || []; },
+                get currentProgress() {
+                    if (this.activeTab === 'irt') {
+                        // Для IRT считаем прогресс на основе модулей
+                    const mods = this.displayModules;
+                        return mods.length ? Math.round(mods.reduce((s, m) => s + (typeof m.progress === 'function' ? m.progress() : m.progress), 0) / mods.length) : 0;
+                    } else if (this.activeTab === 'games') {
+                        // Для игр не показываем прогресс
+                        return 0;
+                    } else {
+                        // Для остальных табов используем статические данные
+                        const mods = this.displayModules;
+                        return mods.length ? Math.round(mods.reduce((s, m) => s + (typeof m.progress === 'function' ? m.progress() : m.progress), 0) / mods.length) : 0;
+                    }
+                },
+                get completedModules() { 
+                    if (this.activeTab === 'irt') {
+                        return this.displayModules.filter(m => (typeof m.progress === 'function' ? m.progress() : m.progress) === 100).length;
+                    } else if (this.activeTab === 'games') {
+                        return 0; // Не показываем статистику для игр
+                    } else {
+                        return this.displayModules.filter(m => (typeof m.progress === 'function' ? m.progress() : m.progress) === 100).length;
+                    }
+                },
+                get totalModules() { 
+                    if (this.activeTab === 'irt') {
+                        return this.displayModules.length; // Все IRT модули
+                    } else if (this.activeTab === 'games') {
+                        return 3; // sudoku, memory, quiz
+                    } else {
+                        return this.displayModules.length;
+                    }
+                },
+                get activeModules() { return this.displayModules.filter(m => m.progress > 0 && m.progress < 100).length; },
+                get completedTabs() {
+                    // Для примера: 2 таба завершено (IRT, Virtual)
+                    return 2;
+                },
+                getTabIcon(tab) {
+                    return { 
+                        'irt': 'cpu-fill', 
+                        'virtual': 'people-fill', 
+                        'individual': 'person-fill',
+                        'games': 'controller',
+                        'progress': 'graph-up',
+                        'planner': 'calendar-check-fill'
+                    }[tab] || 'circle';
+                },
+                getTabTitle(tab) {
+                    return { 
+                        'irt': 'IRT Adaptive Learning (Beta)', 
+                        'virtual': 'Virtual Patients', 
+                        'individual': 'Individual Learning',
+                        'games': 'Gamification & Achievements',
+                        'progress': 'Your Progress',
+                        'planner': 'Learning Planner'
+                    }[tab] || 'Unknown';
+                },
+                getTabDescription(tab) {
+                    const descriptions = { 
+                        'irt': '🧪 BETA: Choose your test format - Quick Test (30 questions) for rapid assessment, Full Test (60 questions) for comprehensive evaluation, or Learning Mode (30 questions with explanations) to study while testing. All tests use adaptive IRT technology.',
+                        'virtual': 'Practice with realistic virtual patient cases. Apply your knowledge in simulated clinical scenarios and improve your decision-making skills.',
+                        'individual': 'Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises.',
+                        'games': 'Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!',
+                        'progress': 'Track your learning journey with detailed analytics. Monitor your performance across all modules, see your study time, and identify areas for improvement.',
+                        'planner': 'Plan your learning schedule effectively. Set daily and weekly goals, track deadlines, and stay organized with our intelligent learning planner.'
+                    };
+                    
+                    if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
+                        return `This feature is coming soon! ${descriptions[tab] || ''}`;
+                    }
+                    
+                    return descriptions[tab] || '';
+                },
+                getTabTips(tab) {
+                    const tips = { 
+                        'irt': ['Click on any test card to start', 'Quick Test (30q) - fast knowledge check', 'Full Test (60q) - comprehensive assessment', 'Learning Mode (30q) - study with instant feedback'],
+                        'virtual': ['Read patient history carefully before making decisions', 'Each case has multiple scenarios and outcomes', 'Review feedback to improve your clinical reasoning'],
+                        'individual': ['Choose modules based on your learning goals', 'Complete quizzes to reinforce your knowledge', 'Unlock new modules by progressing through the curriculum'],
+                        'games': ['Play Sudoku to improve logical thinking', 'Medical Memory helps learn terminology quickly', 'Quick Quiz tests your knowledge in seconds', 'Earn achievements and climb the leaderboard', 'Take breaks with games to refresh your mind'],
+                        'progress': ['Review your statistics regularly', 'Set weekly and monthly goals', 'Track time spent on each learning activity', 'Identify weak areas and focus on improvement'],
+                        'planner': ['Schedule study sessions in advance', 'Set reminders for important deadlines', 'Balance different types of learning activities', 'Review and adjust your plan weekly']
+                    };
+                    
+                    if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
+                        return ['This feature is coming soon', 'Stay tuned for updates', 'Check back later'];
+                    }
+                    
+                    return tips[tab] || [];
+                },
+                async startDiagnostic(diagnosticType) {
+                    if (this.isStartingDiagnostic) return;
+                    
+                    this.isStartingDiagnostic = true;
+                    
+                    try {
+                        // Показываем уведомление о начале
+                        const notification = this.showNotification(`Starting ${diagnosticType} diagnostic...`, 'info');
+                        
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                        console.log('CSRF Token:', csrfToken ? 'Found' : 'Missing');
+                        console.log('Diagnostic Type:', diagnosticType);
+                        
+                        // Отправляем запрос на сервер
+                        const response = await fetch('/big-diagnostic/start', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken || ''
+                            },
+                            body: JSON.stringify({
+                                diagnostic_type: diagnosticType
+                            })
+                        });
+                        
+                        console.log('Response status:', response.status);
+                        
+                        const data = await response.json();
+                        console.log('Response data:', data);
+                        
+                        if (data.success) {
+                            // Успешно запустили диагностику - перенаправляем
+                            window.location.href = data.redirect_url;
+                        } else if (data.error === 'active_session') {
+                            // Уже есть активная сессия
+                            this.showNotification('You already have an active diagnostic session', 'warning');
+                            if (data.session_info) {
+                                window.location.href = `/big-diagnostic/question/${data.session_info.id}`;
+                            }
+                        } else {
+                            // Ошибка
+                            console.error('Diagnostic error:', data.error, data);
+                            this.showNotification(data.error || 'Failed to start diagnostic', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error starting diagnostic:', error);
+                        this.showNotification('Failed to start diagnostic. Please try again.', 'error');
+                    } finally {
+                        this.isStartingDiagnostic = false;
+                    }
+                },
+                showNotification(message, type = 'info') {
+                    // Простая система уведомлений
+                    const notification = document.createElement('div');
+                    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'info'} alert-dismissible fade show position-fixed`;
+                    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                    notification.innerHTML = `
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    
+                    document.body.appendChild(notification);
+                    
+                    // Автоматически скрываем через 5 секунд
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 5000);
+                    
+                    return notification;
+                },
+                startIRTTest(questionCount) {
+                    // Запуск IRT теста с заданным количеством вопросов
+                    console.log(`Starting IRT test with ${questionCount} questions`);
+                    
+                    // Определяем тип теста на основе количества вопросов
+                    let diagnosticType = 'quick_30';
+                    if (questionCount === 60) {
+                        diagnosticType = 'full_60';
+                    }
+                    
+                    // Запускаем тест
+                    this.startDiagnostic(diagnosticType);
+                },
+                startLearningMode() {
+                    // Запуск обучающего режима (30 вопросов с объяснениями)
+                    console.log('Starting learning mode with explanations');
+                    this.startDiagnostic('learning_30');
+                }
+            }
+        }
+    </script>
+    
+    <!-- JavaScript для правильной работы dropdown на мобильных -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация всех dropdown меню
+            var dropdowns = document.querySelectorAll('.dropdown-toggle');
+            
+            dropdowns.forEach(function(dropdown) {
+                dropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    var menu = this.nextElementSibling;
+                    var isOpen = menu.style.display === 'block';
+                    
+                    // Закрываем все другие меню
+                    document.querySelectorAll('.dropdown-menu').forEach(function(otherMenu) {
+                        if (otherMenu !== menu) {
+                            otherMenu.style.display = 'none';
+                        }
+                    });
+                    
+                    // Переключаем текущее меню
+                    menu.style.display = isOpen ? 'none' : 'block';
+                });
             });
             
-            item.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateX(0)';
+            // Закрываем меню при клике вне его
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                        menu.style.display = 'none';
+                    });
+                }
             });
+            
+            // Для мобильных устройств - дополнительные настройки
+            function isMobile() {
+                return window.innerWidth <= 767;
+            }
+            
+            // При изменении размера экрана
+            window.addEventListener('resize', function() {
+                if (!isMobile()) {
+                    // На десктопе возвращаем стандартное поведение
+                    document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                        menu.style.display = '';
+                    });
+                }
+            });
+            
+            // Инициализация при загрузке
+            if (isMobile()) {
+                document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                    menu.style.display = 'none';
+                });
+            }
         });
-    });
-</script>
-{% endblock %}
+    </script>
+</body>
+</html>
+</body>
+</html>
