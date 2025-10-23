@@ -567,6 +567,12 @@ def login(lang=None):
         user = User.query.filter_by(email=email).first()
         
         if user and user.check_password(password):
+            if user.is_deleted:
+                return jsonify({
+                    'success': False,
+                    'error': 'Account has been deleted. Please register again to restore your account.'
+                }), 400
+            
             if not user.is_active:
                 return jsonify({
                     'success': False,
@@ -1074,11 +1080,45 @@ def quick_register(lang=None):
         # Проверка существования пользователя
         existing_user = User.query.filter_by(email=data['email']).first()
         if existing_user:
-            safe_log('log_business_logic_error', 'quick_registration', 'email_exists', f'Email already registered: {existing_user.email}', data)
-            return jsonify({
-                'success': False,
-                'error': 'User with this email already exists'
-            }), 400
+            # Если пользователь удален мягко, восстанавливаем его
+            if existing_user.is_deleted:
+                print(f"🔄 RESTORING SOFT DELETED USER: {existing_user.email}")
+                existing_user.restore()
+                
+                # Обновляем данные пользователя
+                existing_user.first_name = data['firstName']
+                existing_user.last_name = data['lastName']
+                existing_user.birth_date = datetime.strptime(data['birthDate'], '%Y-%m-%d').date()
+                existing_user.profession = data['profession']
+                existing_user.required_consents = True
+                existing_user.optional_consents = data.get('marketingConsent', False)
+                
+                # Устанавливаем новый пароль
+                existing_user.set_password(password)
+                
+                # Сохраняем изменения
+                db.session.commit()
+                
+                # Отправляем welcome email
+                try:
+                    from utils.email_service import send_welcome_email
+                    send_welcome_email(existing_user)
+                    safe_log('log_registration_success', 'quick_registration', existing_user.id, existing_user.email, data)
+                except Exception as e:
+                    safe_log('log_unexpected_error', 'quick_registration', f'Email service error: {str(e)}', data)
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Account restored successfully! Welcome back! Check your email for login details.',
+                    'redirect_url': url_for('auth.login')
+                })
+            else:
+                # Пользователь активен, нельзя регистрироваться
+                safe_log('log_business_logic_error', 'quick_registration', 'email_exists', f'Email already registered: {existing_user.email}', data)
+                return jsonify({
+                    'success': False,
+                    'error': 'User with this email already exists'
+                }), 400
         
         # Создание нового пользователя
         try:
@@ -1193,9 +1233,14 @@ def invite_register(token):
         # Проверяем, не зарегистрирован ли уже пользователь с этим email
         existing_user = User.query.filter_by(email=invitation.email).first()
         if existing_user:
-            registration_logger.log_business_logic_error('invite_registration', 'email_exists', f'Email already registered: {invitation.email}', {'token': token, 'email': invitation.email})
-            flash('Пользователь с этим email уже зарегистрирован', 'error')
-            return redirect(url_for('auth.login'))
+            if existing_user.is_deleted:
+                # Пользователь удален мягко, разрешаем восстановление
+                flash('Ваш аккаунт был удален. Вы можете восстановить его, заполнив форму ниже.', 'info')
+            else:
+                # Пользователь активен
+                registration_logger.log_business_logic_error('invite_registration', 'email_exists', f'Email already registered: {invitation.email}', {'token': token, 'email': invitation.email})
+                flash('Пользователь с этим email уже зарегистрирован', 'error')
+                return redirect(url_for('auth.login'))
         
         # Получаем язык из параметров или используем английский по умолчанию
         lang = request.args.get('lang', 'en')
@@ -1263,11 +1308,45 @@ def invite_register_submit(token):
         # Проверяем, не зарегистрирован ли уже пользователь
         existing_user = User.query.filter_by(email=invitation.email).first()
         if existing_user:
-            registration_logger.log_business_logic_error('invite_registration', 'email_exists', f'Email already registered: {invitation.email}', data)
-            return jsonify({
-                'success': False,
-                'error': 'Пользователь с этим email уже зарегистрирован'
-            }), 400
+            # Если пользователь удален мягко, восстанавливаем его
+            if existing_user.is_deleted:
+                print(f"🔄 RESTORING SOFT DELETED USER VIA INVITATION: {existing_user.email}")
+                existing_user.restore()
+                
+                # Обновляем данные пользователя
+                existing_user.first_name = data['firstName']
+                existing_user.last_name = data['lastName']
+                existing_user.birth_date = datetime.strptime(data['birthDate'], '%Y-%m-%d').date()
+                existing_user.profession = data['profession']
+                existing_user.required_consents = True
+                existing_user.optional_consents = data.get('marketingConsent', False)
+                
+                # Устанавливаем новый пароль
+                existing_user.set_password(data['password'])
+                
+                # Сохраняем изменения
+                db.session.commit()
+                
+                # Отправляем welcome email
+                try:
+                    from utils.email_service import send_welcome_email
+                    send_welcome_email(existing_user)
+                    registration_logger.log_registration_success('invite_registration', existing_user.id, existing_user.email, data)
+                except Exception as e:
+                    registration_logger.log_unexpected_error('invite_registration', f'Email service error: {str(e)}', data)
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Account restored successfully! Welcome back! Check your email for login details.',
+                    'redirect_url': url_for('auth.login')
+                })
+            else:
+                # Пользователь активен, нельзя регистрироваться
+                registration_logger.log_business_logic_error('invite_registration', 'email_exists', f'Email already registered: {invitation.email}', data)
+                return jsonify({
+                    'success': False,
+                    'error': 'Пользователь с этим email уже зарегистрирован'
+                }), 400
         
         # Создаем нового пользователя
         user = User(
