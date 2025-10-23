@@ -5398,10 +5398,12 @@ def deleted_users():
                              search=search,
                              role_filter=role_filter,
                              sort_by=sort_by,
-                             sort_order=sort_order)
+                             sort_order=sort_order,
+                             per_page=per_page)
         
     except Exception as e:
         current_app.logger.error(f"Error loading deleted users: {str(e)}")
         return render_template('admin/deleted_users.html', 
                              users=None, 
-                             error_message=str(e)) 
+                             error_message=str(e),
+                             per_page=20) 
