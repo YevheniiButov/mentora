@@ -1200,3 +1200,144 @@ def learning_cards(path):
         return redirect(url_for('learning_bp.index'))
 
 # Блокировка через CSS overlay - убрано для использования JavaScript overlay
+
+# ========================================
+# ТЕСТОВАЯ КАРТА ОБУЧЕНИЯ (РАЗРАБОТКА)
+# ========================================
+
+@learning_bp.route('/test-learning-map')
+@login_required
+def test_learning_map():
+    """Тестовая карта обучения для разработки и тестирования"""
+    try:
+        # Получаем текущего пользователя
+        user = current_user
+        
+        # Получаем последнюю диагностическую сессию
+        from models import DiagnosticSession
+        latest_diagnostic = DiagnosticSession.query.filter_by(
+            user_id=user.id,
+            status='completed'
+        ).order_by(DiagnosticSession.completed_at.desc()).first()
+        
+        # Получаем активный план обучения
+        active_plan = PersonalLearningPlan.query.filter_by(
+            user_id=user.id,
+            status='active'
+        ).first()
+        
+        # Получаем статистику пользователя
+        user_stats = {
+            'total_modules': Module.query.count(),
+            'completed_modules': UserProgress.query.filter_by(
+                user_id=user.id,
+                status='completed'
+            ).count(),
+            'total_lessons': Lesson.query.count(),
+            'completed_lessons': UserProgress.query.filter_by(
+                user_id=user.id,
+                status='completed'
+            ).join(Lesson).count(),
+            'diagnostic_completed': latest_diagnostic is not None,
+            'learning_plan_active': active_plan is not None
+        }
+        
+        # Получаем все домены BIG
+        big_domains = BIGDomain.query.all()
+        
+        # Получаем рекомендации на основе диагностики
+        recommendations = []
+        if latest_diagnostic:
+            try:
+                results = latest_diagnostic.generate_results()
+                weak_domains = results.get('weak_domains', [])
+                
+                # Создаем рекомендации на основе слабых доменов
+                for domain_name in weak_domains[:5]:  # Топ 5 слабых доменов
+                    domain = BIGDomain.query.filter_by(name=domain_name).first()
+                    if domain:
+                        recommendations.append({
+                            'domain': domain_name,
+                            'priority': 'high',
+                            'description': f'Усилить знания в области {domain_name}',
+                            'modules_count': Module.query.filter_by(subject_id=domain.id).count()
+                        })
+            except Exception as e:
+                current_app.logger.error(f"Error generating recommendations: {str(e)}")
+        
+        return render_template('learning/test_learning_map.html',
+                             user=user,
+                             user_stats=user_stats,
+                             latest_diagnostic=latest_diagnostic,
+                             active_plan=active_plan,
+                             big_domains=big_domains,
+                             recommendations=recommendations)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading test learning map: {str(e)}")
+        flash('Ошибка загрузки тестовой карты обучения', 'error')
+        return redirect(url_for('learning.index'))
+
+@learning_bp.route('/test-learning-map/start-diagnostic')
+@login_required
+def test_start_diagnostic():
+    """Запуск диагностики из тестовой карты"""
+    try:
+        # Перенаправляем на выбор типа диагностики
+        return redirect(url_for('diagnostic.choose_diagnostic_type'))
+    except Exception as e:
+        current_app.logger.error(f"Error starting diagnostic: {str(e)}")
+        flash('Ошибка запуска диагностики', 'error')
+        return redirect(url_for('learning.test_learning_map'))
+
+@learning_bp.route('/test-learning-map/create-plan')
+@login_required
+def test_create_learning_plan():
+    """Создание плана обучения из тестовой карты"""
+    try:
+        # Получаем последнюю диагностическую сессию
+        from models import DiagnosticSession
+        latest_diagnostic = DiagnosticSession.query.filter_by(
+            user_id=current_user.id,
+            status='completed'
+        ).order_by(DiagnosticSession.completed_at.desc()).first()
+        
+        if not latest_diagnostic:
+            flash('Сначала пройдите диагностику!', 'warning')
+            return redirect(url_for('learning.test_learning_map'))
+        
+        # Перенаправляем на создание плана
+        return redirect(url_for('diagnostic.generate_learning_plan'))
+        
+    except Exception as e:
+        current_app.logger.error(f"Error creating learning plan: {str(e)}")
+        flash('Ошибка создания плана обучения', 'error')
+        return redirect(url_for('learning.test_learning_map'))
+
+@learning_bp.route('/test-learning-map/daily-plan')
+@login_required
+def test_daily_plan():
+    """Ежедневный план обучения из тестовой карты"""
+    try:
+        # Получаем активный план обучения
+        active_plan = PersonalLearningPlan.query.filter_by(
+            user_id=current_user.id,
+            status='active'
+        ).first()
+        
+        if not active_plan:
+            flash('Сначала создайте план обучения!', 'warning')
+            return redirect(url_for('learning.test_learning_map'))
+        
+        # Генерируем ежедневный план
+        algorithm = DailyLearningAlgorithm(current_user.id)
+        daily_plan = algorithm.generate_daily_plan()
+        
+        return render_template('learning/test_daily_plan.html',
+                               daily_plan=daily_plan,
+                               active_plan=active_plan)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error generating daily plan: {str(e)}")
+        flash('Ошибка генерации ежедневного плана', 'error')
+        return redirect(url_for('learning.test_learning_map'))
