@@ -238,7 +238,7 @@ class NotificationSystem {
             content: t.pre_registration_content_short,
             primaryAction: {
                 text: t.register_now,
-                url: '/auth/register',
+                url: '/auth/quick-register',
                 icon: 'bi bi-person-plus'
             },
             secondaryAction: {

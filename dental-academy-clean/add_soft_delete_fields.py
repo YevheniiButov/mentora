@@ -27,14 +27,18 @@ def add_soft_delete_fields():
                 print("✅ Поля для мягкого удаления уже существуют!")
                 return
             
-            # Добавляем поля для мягкого удаления
+            # Добавляем поля для мягкого удаления (по одному для SQLite)
             with db.engine.connect() as connection:
-                connection.execute(text("""
-                    ALTER TABLE "user" 
-                    ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE,
-                    ADD COLUMN deleted_at TIMESTAMP,
-                    ADD COLUMN deleted_by INTEGER REFERENCES "user"(id)
-                """))
+                # Добавляем is_deleted
+                connection.execute(text("ALTER TABLE \"user\" ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE"))
+                connection.commit()
+                
+                # Добавляем deleted_at
+                connection.execute(text("ALTER TABLE \"user\" ADD COLUMN deleted_at TIMESTAMP"))
+                connection.commit()
+                
+                # Добавляем deleted_by
+                connection.execute(text("ALTER TABLE \"user\" ADD COLUMN deleted_by INTEGER REFERENCES \"user\"(id)"))
                 connection.commit()
             
             print("✅ Поля для мягкого удаления успешно добавлены!")
