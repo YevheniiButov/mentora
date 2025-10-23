@@ -1789,8 +1789,8 @@
                 isStartingDiagnostic: false,
                 isLaunched: false, // ВСЕГДА false - блокируем все кроме IRT и Games
                 launchDate: launchDate,
-                // Enabled tabs (only IRT and Games before launch)
-                enabledTabs: ['irt', 'games'], // Только IRT и Games всегда доступны
+                // Enabled tabs (IRT, Games, Diagnostic, and Planner)
+                enabledTabs: ['irt', 'games', 'diagnostic', 'planner'], // IRT, Games, Diagnostic, и Planner доступны
                 // Real user statistics
                 userStats: {
                     activeModules: 0,
@@ -1986,8 +1986,9 @@
                         'virtual': 'people-fill', 
                         'individual': 'person-fill',
                         'games': 'controller',
-                        'progress': 'graph-up',
-                        'planner': 'calendar-check-fill'
+                        'diagnostic': 'clipboard-check-fill',
+                        'planner': 'calendar-check-fill',
+                        'progress': 'graph-up'
                     }[tab] || 'circle';
                 },
                 getTabTitle(tab) {
@@ -1996,8 +1997,9 @@
                         'virtual': 'Virtual Patients', 
                         'individual': 'Individual Learning',
                         'games': 'Gamification & Achievements',
-                        'progress': 'Your Progress',
-                        'planner': 'Learning Planner'
+                        'diagnostic': 'Knowledge Diagnostic (NEW)',
+                        'planner': 'Learning Planner (NEW)',
+                        'progress': 'Your Progress'
                     }[tab] || 'Unknown';
                 },
                 getTabDescription(tab) {
@@ -2006,8 +2008,9 @@
                         'virtual': 'Practice with realistic virtual patient cases. Apply your knowledge in simulated clinical scenarios and improve your decision-making skills.',
                         'individual': 'Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises.',
                         'games': 'Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!',
-                        'progress': 'Track your learning journey with detailed analytics. Monitor your performance across all modules, see your study time, and identify areas for improvement.',
-                        'planner': 'Plan your learning schedule effectively. Set daily and weekly goals, track deadlines, and stay organized with our intelligent learning planner.'
+                        'diagnostic': '🔍 NEW: Comprehensive knowledge assessment using advanced diagnostic tools. Start with adaptive testing, view detailed results, and get personalized recommendations for your learning journey.',
+                        'planner': '📅 NEW: Create and manage your personalized learning plan. Set goals, schedule study sessions, track progress, and get daily recommendations based on your diagnostic results.',
+                        'progress': 'Track your learning journey with detailed analytics. Monitor your performance across all modules, see your study time, and identify areas for improvement.'
                     };
                     
                     if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
@@ -2022,8 +2025,9 @@
                         'virtual': ['Read patient history carefully before making decisions', 'Each case has multiple scenarios and outcomes', 'Review feedback to improve your clinical reasoning'],
                         'individual': ['Choose modules based on your learning goals', 'Complete quizzes to reinforce your knowledge', 'Unlock new modules by progressing through the curriculum'],
                         'games': ['Play Sudoku to improve logical thinking', 'Medical Memory helps learn terminology quickly', 'Quick Quiz tests your knowledge in seconds', 'Earn achievements and climb the leaderboard', 'Take breaks with games to refresh your mind'],
-                        'progress': ['Review your statistics regularly', 'Set weekly and monthly goals', 'Track time spent on each learning activity', 'Identify weak areas and focus on improvement'],
-                        'planner': ['Schedule study sessions in advance', 'Set reminders for important deadlines', 'Balance different types of learning activities', 'Review and adjust your plan weekly']
+                        'diagnostic': ['Start with adaptive testing to assess your knowledge', 'View detailed results and recommendations', 'Use results to create personalized learning plans', 'Track your progress over time'],
+                        'planner': ['Create a personalized learning plan based on your diagnostic results', 'Set daily and weekly study goals', 'Schedule study sessions that fit your schedule', 'Review and adjust your plan regularly'],
+                        'progress': ['Review your statistics regularly', 'Set weekly and monthly goals', 'Track time spent on each learning activity', 'Identify weak areas and focus on improvement']
                     };
                     
                     if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
