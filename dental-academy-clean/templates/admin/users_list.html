@@ -24,6 +24,9 @@
             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportUsers()">
                 <i class="bi bi-download"></i> Экспорт
             </button>
+            <a href="{{ url_for('admin.deleted_users') }}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i> Удаленные пользователи
+            </a>
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
                 <i class="bi bi-person-plus"></i> Добавить пользователя
             </button>
@@ -148,7 +151,6 @@
                     <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все</option>
                     <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Активные</option>
                     <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Неактивные</option>
-                    <option value="deleted" {% if status_filter == 'deleted' %}selected{% endif %}>🗑️ Удаленные</option>
                     <option value="email_verified" {% if status_filter == 'email_verified' %}selected{% endif %}>Email подтвержден</option>
                     <option value="email_unverified" {% if status_filter == 'email_unverified' %}selected{% endif %}>Email не подтвержден</option>
                     <option value="digid" {% if status_filter == 'digid' %}selected{% endif %}>DigiD пользователи</option>

@@ -2379,8 +2379,8 @@ def users_list():
         sort_by = request.args.get('sort', 'created_at')
         sort_order = request.args.get('order', 'desc')
         
-        # Base query
-        query = User.query
+        # Base query - по умолчанию исключаем удаленных пользователей
+        query = User.query.filter(User.is_deleted == False)
         
         # Apply search filter
         if search:
@@ -2397,17 +2397,15 @@ def users_list():
         # Apply status filter
         if status_filter != 'all':
             if status_filter == 'active':
-                query = query.filter(User.is_active == True, User.is_deleted == False)
+                query = query.filter(User.is_active == True)
             elif status_filter == 'inactive':
-                query = query.filter(User.is_active == False, User.is_deleted == False)
-            elif status_filter == 'deleted':
-                query = query.filter(User.is_deleted == True)
+                query = query.filter(User.is_active == False)
             elif status_filter == 'email_verified':
-                query = query.filter(User.email_confirmed == True, User.is_deleted == False)
+                query = query.filter(User.email_confirmed == True)
             elif status_filter == 'email_unverified':
-                query = query.filter(User.email_confirmed == False, User.is_deleted == False)
+                query = query.filter(User.email_confirmed == False)
             elif status_filter == 'digid':
-                query = query.filter(User.created_via_digid == True, User.is_deleted == False)
+                query = query.filter(User.created_via_digid == True)
         
         # Apply role filter
         if role_filter != 'all':
@@ -5329,4 +5327,81 @@ def hard_delete_user(user_id):
         flash(f'Ошибка при полном удалении пользователя: {str(e)}', 'error')
         db.session.rollback()
     
-    return redirect(url_for('admin.users_list')) 
+    return redirect(url_for('admin.users_list'))
+
+@admin_bp.route('/users/deleted')
+@login_required
+@admin_required
+def deleted_users():
+    """Список удаленных пользователей"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        search = request.args.get('search', '')
+        role_filter = request.args.get('role', 'all')
+        sort_by = request.args.get('sort', 'deleted_at')
+        sort_order = request.args.get('order', 'desc')
+        
+        # Base query - только удаленные пользователи
+        query = User.query.filter(User.is_deleted == True)
+        
+        # Apply search filter
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    User.first_name.ilike(search_term),
+                    User.last_name.ilike(search_term),
+                    User.email.ilike(search_term),
+                    User.username.ilike(search_term)
+                )
+            )
+        
+        # Apply role filter
+        if role_filter != 'all':
+            query = query.filter(User.role == role_filter)
+        
+        # Apply sorting
+        if sort_by == 'name':
+            order_col = User.first_name
+        elif sort_by == 'email':
+            order_col = User.email
+        elif sort_by == 'deleted_at':
+            order_col = User.deleted_at
+        elif sort_by == 'created_at':
+            order_col = User.created_at
+        else:
+            order_col = User.deleted_at
+        
+        if sort_order == 'asc':
+            query = query.order_by(order_col.asc())
+        else:
+            query = query.order_by(order_col.desc())
+        
+        # Pagination
+        users = query.paginate(
+            page=page, 
+            per_page=per_page, 
+            error_out=False
+        )
+        
+        # Statistics
+        stats = {
+            'total_deleted': User.query.filter(User.is_deleted == True).count(),
+            'deleted_admins': User.query.filter(User.is_deleted == True, User.role == 'admin').count(),
+            'deleted_users': User.query.filter(User.is_deleted == True, User.role == 'user').count(),
+        }
+        
+        return render_template('admin/deleted_users.html', 
+                             users=users, 
+                             stats=stats,
+                             search=search,
+                             role_filter=role_filter,
+                             sort_by=sort_by,
+                             sort_order=sort_order)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading deleted users: {str(e)}")
+        return render_template('admin/deleted_users.html', 
+                             users=None, 
+                             error_message=str(e)) 
