@@ -65,7 +65,7 @@
         <div class="navbar-actions d-flex align-items-center">
           <!-- Language Dropdown -->
           <div class="dropdown me-3 language-dropdown" style="position: relative; z-index: 9999;">
-            <button class="btn language-btn-modern" 
+            <button class="btn language-btn-modern dropdown-toggle" 
                     type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false"
                     style="pointer-events: auto !important; cursor: pointer !important;"
                     title="{{ t('language', lang)|default('Язык') }}: {{ lang|upper }}">
@@ -75,7 +75,7 @@
                 style="z-index: 10000 !important; position: absolute !important; display: none;">
               <li><a class="dropdown-item {% if lang == 'nl' %}active{% endif %}" 
                      href="{{ language_url('nl') }}"
-                     onclick="">
+                     onclick="console.log('🌐 Language click: Nederlands, URL:', this.href);">
                 <span class="fi fi-nl me-2"></span> Nederlands{% if lang == 'nl' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
               </a></li>
               <li><a class="dropdown-item {% if lang == 'en' %}active{% endif %}" 
@@ -119,10 +119,9 @@
           {% if current_user.is_authenticated %}
           <!-- User Menu with Everything Inside -->
           <div class="dropdown" style="position: relative; z-index: 1002;">
-            <button class="btn user-btn-modern" 
+            <button class="btn user-btn-modern dropdown-toggle" 
                     type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false"
-                    title="{{ current_user.get_display_name() }}"
-                    onclick="var dropdown = bootstrap.Dropdown.getInstance(this) || new bootstrap.Dropdown(this); dropdown.toggle();">
+                    title="{{ current_user.get_display_name() }}">
               <span class="user-icon"><i class="bi bi-person-circle"></i></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
@@ -131,7 +130,13 @@
                 <i class="bi bi-person-badge fs-5 me-1"></i> <strong>Dr. {{ current_user.get_display_name() }}</strong>
                 <br>
                 <small class="text-muted">
-                  {{ t('pharmacist', lang)|default('Pharmacist') }}
+                  {% if current_user.profession == 'tandarts' %}
+                    {{ t('dentist', lang)|default('Dentist') }}
+                  {% elif current_user.profession == 'huisarts' %}
+                    {{ t('general_practitioner', lang)|default('General Practitioner') }}
+                  {% else %}
+                    {{ t('medical_professional', lang)|default('Medical Professional') }}
+                  {% endif %}
                 </small>
               </li>
               
@@ -154,7 +159,7 @@
                 {{ t('logout', lang)|default('Logout') }}
               </a></li>
               {% else %}
-              <li><a class="dropdown-item text-danger" href="/{{ lang }}/auth/logout">
+              <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout', lang=lang) }}">
                 <i class="bi bi-box-arrow-right fs-5 me-2"></i>
                 {{ t('logout', lang)|default('Logout') }}
               </a></li>

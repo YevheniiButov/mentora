@@ -11,6 +11,7 @@ import time
 import logging
 import json
 from datetime import datetime, timedelta, timezone, date
+from sqlalchemy import func
 
 from models import db, DiagnosticSession, Question, IRTParameters, User, PersonalLearningPlan, StudySession, BIGDomain, DiagnosticResponse, TestAttempt
 from utils.serializers import safe_jsonify
@@ -21,6 +22,8 @@ from utils.translations import t
 from utils.irt_calibration import calibration_service
 from utils.data_validator import DataValidator, ValidationLevel
 from utils.irt_engine import validate_irt_parameters_for_calculation
+from utils.helpers import get_user_profession_code
+from diagnostic_config.diagnostic_domains import get_quick_test_config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -127,13 +130,26 @@ def start_diagnostic():
                     return redirect(url_for('diagnostic.show_question', session_id=active_session.id))
 
             # Get first question using IRT with diagnostic type BEFORE creating session
-            irt_engine = IRTEngine(diagnostic_type=diagnostic_type)
-            first_question = irt_engine.select_initial_question()
+            # For Quick Test, use TOP-10 configuration instead of IRT
+            if diagnostic_type == 'quick_30':
+                # Use TOP-10 configuration for Quick Test
+                selected_questions = select_questions_for_quick_test(current_user, diagnostic_type)
+                first_question = selected_questions[0] if selected_questions else None
+                
+                if not first_question:
+                    # Fallback to IRT if TOP-10 selection fails
+                    irt_engine = IRTEngine(diagnostic_type=diagnostic_type, user=current_user)
+                    first_question = irt_engine.select_initial_question()
+            else:
+                # Use IRT for other diagnostic types
+                irt_engine = IRTEngine(diagnostic_type=diagnostic_type, user=current_user)
+                first_question = irt_engine.select_initial_question()
             
             if not first_question:
                 logger.error(f"No questions available for diagnostic type: {diagnostic_type}")
                 # Try to get any question as emergency fallback
-                emergency_question = Question.query.first()
+                user_profession = get_user_profession_code(current_user)
+                emergency_question = Question.query.filter_by(profession=user_profession).first()
                 if not emergency_question:
                     logger.error("No questions found in database at all")
                     
@@ -145,11 +161,12 @@ def start_diagnostic():
                         logger.info("Data loaded successfully, trying again...")
                         
                         # Try again after loading
-                        irt_engine = IRTEngine(diagnostic_type=diagnostic_type)
+                        irt_engine = IRTEngine(diagnostic_type=diagnostic_type, user=current_user)
                         first_question = irt_engine.select_initial_question()
                         
                         if not first_question:
-                            emergency_question = Question.query.first()
+                            user_profession = get_user_profession_code(current_user)
+                            emergency_question = Question.query.filter_by(profession=user_profession).first()
                             if not emergency_question:
                                 raise BadRequest('No questions available in database after loading')
                             else:
@@ -218,6 +235,15 @@ def start_diagnostic():
                 'questions_per_domain': questions_per_domain,
                 'estimated_total_questions': estimated_questions
             }
+            
+            # For Quick Test, save selected questions
+            if diagnostic_type == 'quick_30':
+                selected_questions = select_questions_for_quick_test(current_user, diagnostic_type)
+                if selected_questions:
+                    session_data['selected_questions'] = [q.id for q in selected_questions]
+                    session_data['quick_test_config'] = get_quick_test_config(get_user_profession_code(current_user))
+                    logger.info(f"Saved {len(selected_questions)} questions for Quick Test")
+            
             diagnostic_session.set_session_data(session_data)
             
             # DEBUG: Проверим, что сохранилось
@@ -253,8 +279,8 @@ def start_diagnostic():
                     logger.info(f"DEBUG: Redirecting to regular question for session {diagnostic_session.id}")
                     return redirect(url_for('diagnostic.show_question', session_id=diagnostic_session.id))
         
-        # GET request - redirect to diagnostic type selector
-        return redirect(url_for('diagnostic.choose_diagnostic_type'))
+        # GET request - redirect directly to Quick Test
+        return redirect(url_for('diagnostic.start_quick_test'))
         
     except Exception as e:
         logger.error(f"Error starting diagnostic: {str(e)}")
@@ -265,7 +291,7 @@ def start_diagnostic():
             }), 500
         else:
             flash('Ошибка при запуске диагностики', 'error')
-            return redirect(url_for('diagnostic.choose_diagnostic_type'))
+            return redirect(url_for('diagnostic.start_quick_test'))
 
 @diagnostic_bp.route('/next-question', methods=['POST'])
 @login_required
@@ -317,26 +343,32 @@ def get_next_question():
         # ИСПРАВЛЕНИЕ: используем правильный diagnostic_type из session_data
         correct_diagnostic_type = session_data.get('diagnostic_type', 'express')
         logger.info(f"Using correct diagnostic_type: {correct_diagnostic_type}")
-        irt_engine = IRTEngine(diagnostic_session, diagnostic_type=correct_diagnostic_type)
-        logger.info("IRT Engine created successfully")
         
-        # Check if session should terminate
-        if irt_engine.should_terminate():
-            diagnostic_session.status = 'completed'
-            diagnostic_session.completed_at = datetime.now(timezone.utc)
-            db.session.commit()
+        # For Quick Test, use pre-selected questions instead of IRT
+        if correct_diagnostic_type == 'quick_30':
+            next_question = get_next_quick_test_question(diagnostic_session, session_data)
+        else:
+            # Use IRT for other diagnostic types
+            irt_engine = IRTEngine(diagnostic_session, diagnostic_type=correct_diagnostic_type, user=current_user)
+            logger.info("IRT Engine created successfully")
             
-            logger.info(f"Diagnostic session {diagnostic_session.id} completed")
+            # Check if session should terminate
+            if irt_engine.should_terminate():
+                diagnostic_session.status = 'completed'
+                diagnostic_session.completed_at = datetime.now(timezone.utc)
+                db.session.commit()
+                
+                logger.info(f"Diagnostic session {diagnostic_session.id} completed")
+                
+                return safe_jsonify({
+                    'success': True,
+                    'session_completed': True,
+                    'message': 'Diagnostic completed successfully',
+                    'redirect_url': f'/big-diagnostic/results/{diagnostic_session.id}'
+                })
             
-            return safe_jsonify({
-                'success': True,
-                'session_completed': True,
-                'message': 'Diagnostic completed successfully',
-                'redirect_url': f'/big-diagnostic/results/{diagnostic_session.id}'
-            })
-        
-        logger.info("About to call irt_engine.select_next_question()...")
-        next_question = irt_engine.select_next_question()
+            logger.info("About to call irt_engine.select_next_question()...")
+            next_question = irt_engine.select_next_question()
         logger.info(f"select_next_question() returned: {next_question}")
         if next_question:
             logger.info(f"Question ID: {next_question.id}")
@@ -396,14 +428,27 @@ def get_next_question():
         logger.info(f"✅ Updated current_question_id: {old_question_id} → {next_question.id}")
         
         # Calculate session info
-        session_info = {
-            'questions_answered': diagnostic_session.questions_answered,
-            'correct_answers': diagnostic_session.correct_answers,
-            'current_ability': irt_engine.current_ability_estimate,
-            'confidence_interval': irt_engine.get_confidence_interval(),
-            'domain_abilities': irt_engine.get_domain_abilities(),
-            'estimated_questions_remaining': irt_engine.estimate_questions_remaining()
-        }
+        if correct_diagnostic_type == 'quick_30':
+            # For Quick Test, use simple session info
+            selected_question_ids = session_data.get('selected_questions', [])
+            session_info = {
+                'questions_answered': diagnostic_session.questions_answered,
+                'correct_answers': diagnostic_session.correct_answers,
+                'current_ability': diagnostic_session.current_ability,
+                'confidence_interval': [diagnostic_session.current_ability - 1.0, diagnostic_session.current_ability + 1.0],
+                'domain_abilities': {},
+                'estimated_questions_remaining': len(selected_question_ids) - diagnostic_session.questions_answered
+            }
+        else:
+            # For other diagnostic types, use IRT engine
+            session_info = {
+                'questions_answered': diagnostic_session.questions_answered,
+                'correct_answers': diagnostic_session.correct_answers,
+                'current_ability': irt_engine.current_ability_estimate,
+                'confidence_interval': irt_engine.get_confidence_interval(),
+                'domain_abilities': irt_engine.get_domain_abilities(),
+                'estimated_questions_remaining': irt_engine.estimate_questions_remaining()
+            }
         
         # ИСПРАВЛЕНИЕ: Безопасное преобразование в dict
         logger.info("About to convert question to dict...")
@@ -443,11 +488,21 @@ def get_next_question():
                     'error': 'Question data partially unavailable'
                 }
         
+        # Calculate progress based on diagnostic type
+        if correct_diagnostic_type == 'quick_30':
+            # For Quick Test, calculate simple progress
+            selected_question_ids = session_data.get('selected_questions', [])
+            total_questions = len(selected_question_ids)
+            progress = (diagnostic_session.questions_answered / total_questions * 100) if total_questions > 0 else 0
+        else:
+            # For other diagnostic types, use IRT engine
+            progress = irt_engine.get_progress_percentage()
+        
         return safe_jsonify({
             'success': True,
             'question': question_dict,
             'session_info': session_info,
-            'progress': irt_engine.get_progress_percentage()
+            'progress': progress
         })
         
     except Exception as e:
@@ -534,7 +589,7 @@ def submit_learning_answer(session_id):
             })
         
         # Get next question
-        irt_engine = IRTEngine(diagnostic_session)
+        irt_engine = IRTEngine(diagnostic_session, user=current_user)
         next_question = irt_engine.select_next_question()
         
         if next_question:
@@ -667,6 +722,7 @@ def submit_answer(session_id):
             return jsonify({'success': False, 'error': 'Invalid selected option'}), 400
         
         # Create response with validation
+        logger.info(f"Creating response for question {question_id}, option {selected_option}")
         response = session.record_response(
             question_id=question_id,
             selected_option=selected_option,
@@ -675,7 +731,10 @@ def submit_answer(session_id):
         
         # Validate response creation
         if not response:
+            logger.error(f"Failed to create response for question {question_id}")
             return jsonify({'success': False, 'error': 'Failed to create response'}), 500
+        
+        logger.info(f"Response created successfully: {response.id} for question {question_id}")
         
         # Validate IRT parameters before calculation
         irt_params = None
@@ -695,7 +754,7 @@ def submit_answer(session_id):
         
         # Update IRT ability estimate with validation
         try:
-            irt = IRTEngine(session)
+            irt = IRTEngine(session, user=current_user)
             irt_result = irt.update_ability_estimate(response)
             
             # Validate IRT result
@@ -749,13 +808,14 @@ def submit_answer(session_id):
         diagnostic_type = session_data.get('diagnostic_type', 'express')
         
         # Validate diagnostic type
-        if diagnostic_type not in ['express', 'preliminary', 'readiness', 'full', 'comprehensive']:
+        if diagnostic_type not in ['express', 'quick_30', 'preliminary', 'readiness', 'full', 'comprehensive']:
             logger.warning(f"Invalid diagnostic type: {diagnostic_type}")
             diagnostic_type = 'express'
         
         # Determine max questions with validation
         max_questions = {
             'express': 25,
+            'quick_30': 30,  # 30 вопросов для Quick Test
             'preliminary': 75, 
             'readiness': 130,
             'full': 75,
@@ -1321,7 +1381,7 @@ def restart_diagnostic():
         new_session.set_session_data(session_data)
         
         # Get first question using IRT with diagnostic type
-        irt_engine = IRTEngine(diagnostic_type=diagnostic_type)
+        irt_engine = IRTEngine(diagnostic_type=diagnostic_type, user=current_user)
         first_question = irt_engine.select_initial_question()
         
         new_session.current_question_id = first_question.id
@@ -1376,7 +1436,7 @@ def restart_session(session_id):
         new_session.set_session_data(session_data)
         
         # Get first question using IRT with diagnostic type
-        irt_engine = IRTEngine(diagnostic_type=diagnostic_type)
+        irt_engine = IRTEngine(diagnostic_type=diagnostic_type, user=current_user)
         first_question = irt_engine.select_initial_question()
         
         new_session.current_question_id = first_question.id
@@ -1446,7 +1506,7 @@ def generate_learning_plan():
 
         if not latest_diagnostic:
             flash('Необходимо пройти диагностику перед созданием плана', 'warning')
-            return redirect(url_for('diagnostic.choose_diagnostic_type'))
+            return redirect(url_for('diagnostic.start_quick_test'))
         
         data = request.get_json()
         if not data:
@@ -1879,7 +1939,7 @@ def start_domain_diagnostic(domain_code):
     db.session.commit()
     
     # Инициализировать IRT движок
-    irt_engine = IRTEngine(session)
+    irt_engine = IRTEngine(session, user=current_user)
     first_question = irt_engine.select_next_question_by_domain(domain_code)
     
     if not first_question:
@@ -1960,7 +2020,7 @@ def domain_diagnostic_page(domain_code):
         db.session.commit()
         
         # Инициализировать IRT движок
-        irt_engine = IRTEngine(diagnostic_session)
+        irt_engine = IRTEngine(diagnostic_session, user=current_user)
         first_question = irt_engine.select_next_question_by_domain(domain_code)
         
         if not first_question:
@@ -2140,13 +2200,8 @@ def get_diagnostic_types():
 @diagnostic_bp.route('/choose-type')
 @login_required
 def choose_diagnostic_type():
-    """Страница выбора типа диагностики - временно закрыта"""
-    # Получаем язык из сессии или используем дефолтный
-    lang = session.get('lang', 'nl')
-    return render_template('coming_soon.html', 
-                         lang=lang,
-                         feature_name='BIG Diagnostic',
-                         feature_description='Deze functie wordt momenteel ontwikkeld en zal binnenkort beschikbaar zijn.')
+    """Redirect directly to quick test - no selection needed"""
+    return redirect(url_for('diagnostic.start_quick_test'))
 
 @diagnostic_bp.route('/learning-question/<int:session_id>', methods=['GET'])
 @login_required
@@ -2168,7 +2223,7 @@ def show_learning_question(session_id):
         # Get current question
         if not diagnostic_session.current_question_id:
             # Start learning session
-            irt_engine = IRTEngine(diagnostic_session)
+            irt_engine = IRTEngine(diagnostic_session, user=current_user)
             question = irt_engine.select_next_question()
             if not question:
                 return redirect(url_for('diagnostic.show_results', session_id=session_id))
@@ -2205,7 +2260,7 @@ def show_question(session_id):
         # Проверяем, что сессия активна
         if diagnostic_session.status != 'active':
             flash('Диагностическая сессия завершена', 'warning')
-            return redirect(url_for('diagnostic.choose_diagnostic_type'))
+            return redirect(url_for('diagnostic.start_quick_test'))
         
         # Получить текущий вопрос для пользователя
         # NOTE: current_question_id должен быть уже установлен через get_next_question API
@@ -2215,11 +2270,11 @@ def show_question(session_id):
             from utils.irt_engine import IRTEngine
             session_data = diagnostic_session.get_session_data()
             diagnostic_type = session_data.get('diagnostic_type', 'express')
-            irt = IRTEngine(diagnostic_session, diagnostic_type=diagnostic_type)
+            irt = IRTEngine(diagnostic_session, diagnostic_type=diagnostic_type, user=current_user)
             first_question = irt.select_initial_question()
             if not first_question:
                 flash('Нет доступных вопросов', 'error')
-                return redirect(url_for('diagnostic.choose_diagnostic_type'))
+                return redirect(url_for('diagnostic.start_quick_test'))
             
             diagnostic_session.current_question_id = first_question.id
             db.session.commit()
@@ -2228,7 +2283,7 @@ def show_question(session_id):
         question = Question.query.get(diagnostic_session.current_question_id)
         if not question:
             flash('Вопрос не найден', 'error')
-            return redirect(url_for('diagnostic.choose_diagnostic_type'))
+            return redirect(url_for('diagnostic.start_quick_test'))
         
         # Для шаблона нужны номер вопроса, всего вопросов и т.д.
         question_num = diagnostic_session.questions_answered + 1
@@ -2241,7 +2296,16 @@ def show_question(session_id):
         question.question_text = question.text
         
         # Добавляем оставшееся время
-        remaining_time = 3600  # 1 час по умолчанию
+        # Определяем лимит времени на основе типа диагностики
+        session_data = diagnostic_session.get_session_data()
+        diagnostic_type = session_data.get('diagnostic_type', 'express')
+        
+        if diagnostic_type == 'quick_30':
+            time_limit_seconds = 20 * 60  # 20 минут для Quick Test
+        else:
+            time_limit_seconds = 60 * 60  # 60 минут для полной диагностики
+            
+        remaining_time = time_limit_seconds
         if diagnostic_session.started_at:
             # Убеждаемся, что оба времени имеют часовой пояс
             current_time = datetime.now(timezone.utc)
@@ -2250,7 +2314,7 @@ def show_question(session_id):
                 # Если started_at наивное время, добавляем UTC
                 started_time = started_time.replace(tzinfo=timezone.utc)
             elapsed = (current_time - started_time).total_seconds()
-            remaining_time = max(0, 3600 - int(elapsed))
+            remaining_time = max(0, time_limit_seconds - int(elapsed))
         
         return render_template('assessment/question.html', 
                              diagnostic_session=diagnostic_session, 
@@ -2303,6 +2367,61 @@ def terminate_active_session():
             'success': False,
             'error': 'Failed to terminate session'
         }), 500 
+
+@diagnostic_bp.route('/quick-test', methods=['GET'])
+@login_required
+def start_quick_test():
+    """Start Quick Test directly - bypass selection template"""
+    try:
+        # Start diagnostic directly with quick_30 type (simulate POST request)
+        from flask import request
+        
+        # Check for existing active session
+        active_session = DiagnosticSession.query.filter_by(
+            user_id=current_user.id,
+            status='active'
+        ).first()
+        
+        if active_session:
+            flash('У вас уже есть активная диагностическая сессия', 'warning')
+            return redirect(url_for('diagnostic.show_question', session_id=active_session.id))
+
+        # Get first question using TOP-10 configuration for Quick Test
+        selected_questions = select_questions_for_quick_test(current_user, 'quick_30')
+        first_question = selected_questions[0] if selected_questions else None
+        
+        if not first_question:
+            flash('Нет доступных вопросов для Quick Test', 'error')
+            return redirect(url_for('learning_map_bp.learning_map', lang='ru', path_id='irt'))
+        
+        # Create diagnostic session
+        diagnostic_session = DiagnosticSession.create_session(
+            user_id=current_user.id,
+            session_type='quick_30',
+            ip_address=request.remote_addr
+        )
+        
+        # Set session data for Quick Test
+        session_data = {
+            'diagnostic_type': 'quick_30',
+            'selected_questions': [q.id for q in selected_questions],
+            'quick_test_config': get_quick_test_config(get_user_profession_code(current_user)),
+            'estimated_total_questions': 30,
+            'time_limit_minutes': 20
+        }
+        
+        diagnostic_session.set_session_data(session_data)
+        diagnostic_session.current_question_id = first_question.id
+        diagnostic_session.started_at = datetime.now(timezone.utc)
+        db.session.commit()
+        
+        # Redirect to first question
+        return redirect(url_for('diagnostic.show_question', session_id=diagnostic_session.id))
+        
+    except Exception as e:
+        logger.error(f"Error starting Quick Test: {e}")
+        flash('Er is een fout opgetreden bij het starten van de Quick Test.', 'error')
+        return redirect(url_for('learning_map_bp.learning_map', lang='ru', path_id='irt'))
 
 @diagnostic_bp.route('/quick-test', methods=['POST'])
 @login_required
@@ -2738,5 +2857,153 @@ def get_irt_statistics():
         }), 500
 
 # Блокировка через CSS overlay - убрано для использования JavaScript overlay
+
+def get_next_quick_test_question(diagnostic_session, session_data):
+    """
+    Get next question for Quick Test from pre-selected questions
+    
+    Args:
+        diagnostic_session: Current diagnostic session
+        session_data: Session data containing selected questions
+        
+    Returns:
+        Question object or None if no more questions
+    """
+    try:
+        logger.info(f"=== DEBUGGING get_next_quick_test_question ===")
+        logger.info(f"Session data: {session_data}")
+        
+        # Get pre-selected questions from session data
+        selected_question_ids = session_data.get('selected_questions', [])
+        logger.info(f"Selected question IDs: {selected_question_ids}")
+        
+        if not selected_question_ids:
+            logger.warning("No pre-selected questions found for Quick Test")
+            return None
+        
+        # Get answered questions
+        answered_questions = DiagnosticResponse.query.filter_by(
+            session_id=diagnostic_session.id
+        ).with_entities(DiagnosticResponse.question_id).all()
+        
+        answered_question_ids = {q[0] for q in answered_questions}
+        logger.info(f"Found {len(answered_questions)} DiagnosticResponse records for session {diagnostic_session.id}")
+        logger.info(f"Already answered question IDs: {answered_question_ids}")
+        logger.info(f"Current question ID: {diagnostic_session.current_question_id}")
+        logger.info(f"Session questions_answered: {diagnostic_session.questions_answered}")
+        
+        # НЕ добавляем current_question_id в answered_question_ids!
+        # Текущий вопрос еще не отвечен, только что был показан
+        
+        # Find next unanswered question from pre-selected list
+        logger.info(f"Looking for next unanswered question from {len(selected_question_ids)} total questions")
+        for i, question_id in enumerate(selected_question_ids):
+            if question_id not in answered_question_ids:
+                question = Question.query.get(question_id)
+                if question:
+                    logger.info(f"Selected next Quick Test question: {question_id} (position {i+1}/{len(selected_question_ids)})")
+                    return question
+                else:
+                    logger.warning(f"Question {question_id} not found in database")
+            else:
+                logger.info(f"Question {question_id} already answered, skipping")
+        
+        # No more questions available
+        logger.info("No more Quick Test questions available")
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error in get_next_quick_test_question: {e}")
+        return None
+
+def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
+    """
+    Select questions for Quick Test using TOP-10 configuration
+    
+    Args:
+        user: Current user object
+        diagnostic_type: Type of diagnostic test
+        
+    Returns:
+        list: Selected questions for the test
+    """
+    try:
+        # Get user profession
+        profession_code = get_user_profession_code(user)
+        if not profession_code:
+            profession_code = 'huisarts'  # Default fallback
+        
+        # Get Quick Test configuration
+        test_config = get_quick_test_config(profession_code)
+        logger.info(f"Quick Test config for {profession_code}: {test_config['filter_type']} with {len(test_config['areas'])} areas")
+        
+        selected_questions = []
+        
+        for area in test_config['areas']:
+            try:
+                if test_config['filter_type'] == 'big_domain':
+                    # For tandarts: filter by BIG domain
+                    big_domain = BIGDomain.query.filter_by(
+                        name=area['name']
+                    ).first()
+                    
+                    if big_domain:
+                        questions = Question.query.filter_by(
+                            profession=profession_code,
+                            big_domain_id=big_domain.id
+                        ).order_by(func.random()).limit(area['questions_count']).all()
+                        
+                        selected_questions.extend(questions)
+                        logger.info(f"Selected {len(questions)} questions from BIG domain '{area['name']}'")
+                    else:
+                        logger.warning(f"BIG domain '{area['name']}' not found for profession {profession_code}")
+                
+                elif test_config['filter_type'] == 'category':
+                    # For huisarts: filter by category
+                    questions = Question.query.filter_by(
+                        profession=profession_code,
+                        category=area['name']
+                    ).order_by(func.random()).limit(area['questions_count']).all()
+                    
+                    selected_questions.extend(questions)
+                    logger.info(f"Selected {len(questions)} questions from category '{area['name']}'")
+                
+            except Exception as area_error:
+                logger.error(f"Error selecting questions for area '{area['name']}': {area_error}")
+                continue
+        
+        # Shuffle final list
+        import random
+        random.shuffle(selected_questions)
+        
+        logger.info(f"Total selected questions: {len(selected_questions)}")
+        
+        # Handle edge case: if not enough questions, add fallback
+        if len(selected_questions) < 20:
+            logger.warning(f"Only {len(selected_questions)} questions selected, adding fallback questions")
+            
+            # Get additional random questions
+            user_profession = get_user_profession_code(user)
+            fallback_questions = Question.query.filter_by(
+                profession=user_profession
+            ).filter(
+                ~Question.id.in_([q.id for q in selected_questions])
+            ).order_by(func.random()).limit(30 - len(selected_questions)).all()
+            
+            selected_questions.extend(fallback_questions)
+            logger.info(f"Added {len(fallback_questions)} fallback questions, total: {len(selected_questions)}")
+        
+        return selected_questions[:30]  # Limit to 30 questions max
+        
+    except Exception as e:
+        logger.error(f"Error in select_questions_for_quick_test: {e}")
+        # Fallback: return random questions
+        user_profession = get_user_profession_code(user)
+        fallback_questions = Question.query.filter_by(
+            profession=user_profession
+        ).order_by(func.random()).limit(30).all()
+        
+        logger.warning(f"Using fallback: {len(fallback_questions)} random questions")
+        return fallback_questions
 
  

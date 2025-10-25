@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Learning Map - Modern Style</title>
+    <title>{{ t('learning_map', lang)|default('Learning Map') }} - {{ t('modern_style', lang)|default('Modern Style') }}</title>
     
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,11 +13,14 @@
     <!-- Flag Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
     
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap JS (load first) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Lottie Player Web Component -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.2/dist/lottie-player.js"></script>
+    
+    <!-- Alpine.js (load last) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <style>
         :root {
@@ -1219,8 +1222,8 @@
                 display: none; /* Chrome, Safari, Opera */
             }
             
-            /* Индикатор прокрутки */
-            .learning-tabs::after {
+            /* Индикатор прокрутки - убран */
+            /* .learning-tabs::after {
                 content: '← Свайп →';
                 position: absolute;
                 bottom: 0.5rem;
@@ -1230,7 +1233,7 @@
                 color: #94a3b8;
                 opacity: 0.6;
                 pointer-events: none;
-            }
+            } */
             
             .tab-circle {
                 margin: 0;
@@ -1331,6 +1334,1199 @@
                 gap: 0.75rem;
             }
         }
+
+        /* ===== INDIVIDUAL PLAN STYLES ===== */
+        .individual-plan-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .plan-header h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .streak-widget {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+        
+        .streak-animation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .streak-info {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .streak-icon {
+            font-size: 24px;
+            color: #ff6b6b;
+        }
+
+        .streak-count {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .streak-label {
+            font-size: 14px;
+        }
+
+        .daily-tasks-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+
+        .daily-tasks-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #1a202c;
+        }
+
+        .tasks-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .task-stat {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .task-icon {
+            font-size: 32px;
+            color: var(--primary-color, #3b82f6);
+        }
+
+        .task-info strong {
+            display: block;
+            font-size: 24px;
+            color: #0066cc;
+            font-weight: 700;
+        }
+
+        .task-info small {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .daily-progress {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066cc, #4ca0ff);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            margin-top: 8px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .btn-large {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0066cc, #4ca0ff);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+        }
+
+        .categories-section {
+            margin: 32px 0;
+        }
+
+        .categories-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #1a202c;
+        }
+
+        .categories-accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .category-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .category-header:hover {
+            background: #f8f9fa;
+        }
+
+        .category-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .category-icon {
+            font-size: 28px;
+        }
+
+        .category-info h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .category-info small {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .category-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-percent {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .progress-high { color: #28a745; }
+        .progress-medium { color: #ffc107; }
+        .progress-low { color: #dc3545; }
+
+        .category-content {
+            padding: 16px 20px;
+            border-top: 1px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
+        .category-progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .category-content p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            color: var(--primary-color, #3b82f6);
+        }
+
+        .category-icon {
+            font-size: 28px;
+            color: var(--text-muted, #6c757d);
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 24px;
+            color: #0066cc;
+            font-weight: 700;
+        }
+
+        .stat-card small {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        /* Mobile responsive for Individual Plan */
+        @media (max-width: 768px) {
+            .tasks-summary,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .plan-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .individual-plan-container {
+                padding: 15px;
+            }
+
+            .daily-tasks-card {
+                padding: 20px;
+            }
+
+            .task-stat {
+                padding: 12px;
+            }
+
+            .task-icon {
+                font-size: 24px;
+            }
+
+            .task-info strong {
+                font-size: 20px;
+            }
+        }
+
+        /* ===== PROGRESS TAB STYLES ===== */
+        .progress-dashboard {
+            width: 100%;
+            max-width: 1400px; /* Wide max-width for desktop */
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .progress-header {
+            margin-bottom: 32px;
+        }
+
+        .progress-header h2 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            font-size: 16px;
+        }
+
+        /* Metrics Grid - RESPONSIVE */
+        .metrics-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 40px;
+            /* Mobile: 1 column */
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 576px) {
+            .metrics-grid {
+                /* Small screens: 2 columns */
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 992px) {
+            .metrics-grid {
+                /* Desktop: 4 columns */
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .metric-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .metric-card.primary {
+            background: linear-gradient(135deg, rgba(0,102,204,0.1), white);
+            border-left: 4px solid #0066cc;
+        }
+
+        .metric-card.accent {
+            background: linear-gradient(135deg, rgba(255,107,107,0.1), white);
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .metric-card.success {
+            background: linear-gradient(135deg, rgba(40,167,69,0.1), white);
+            border-left: 4px solid #28a745;
+        }
+
+        .metric-card.info {
+            background: linear-gradient(135deg, rgba(23,162,184,0.1), white);
+            border-left: 4px solid #17a2b8;
+        }
+
+        .metric-icon i {
+            font-size: 40px;
+        }
+
+        .metric-card.primary .metric-icon i { color: #0066cc; }
+        .metric-card.success .metric-icon i { color: #28a745; }
+        .metric-card.info .metric-icon i { color: #17a2b8; }
+
+        .metric-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #212529;
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        /* Categories Progress */
+        .categories-progress-section {
+            margin-bottom: 40px;
+        }
+
+        .categories-progress-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .categories-list {
+            display: grid;
+            gap: 16px;
+            /* Mobile: 1 column */
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 992px) {
+            .categories-list {
+                /* Desktop: 2 columns */
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .category-progress-item {
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .category-progress-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .category-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .category-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .category-percentage {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .category-progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .category-meta {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        /* Activity Heatmap */
+        .activity-section {
+            margin-bottom: 40px;
+        }
+
+        .activity-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .activity-heatmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 16px);
+            gap: 4px;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 100%;
+        }
+
+        @media (min-width: 992px) {
+            .activity-heatmap {
+                /* Desktop: bigger squares */
+                grid-template-columns: repeat(auto-fill, 20px);
+            }
+        }
+
+        .activity-day {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            background: #e9ecef;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        @media (min-width: 992px) {
+            .activity-day {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        .activity-day:hover {
+            transform: scale(1.2);
+        }
+
+        .activity-day.level-0 { background: #ebedf0; }
+        .activity-day.level-1 { background: #c6e48b; }
+        .activity-day.level-2 { background: #7bc96f; }
+        .activity-day.level-3 { background: #239a3b; }
+        .activity-day.level-4 { background: #196127; }
+
+        .activity-legend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .legend-colors {
+            display: flex;
+            gap: 4px;
+        }
+
+        .legend-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .legend-box.level-0 { background: #ebedf0; }
+        .legend-box.level-1 { background: #c6e48b; }
+        .legend-box.level-2 { background: #7bc96f; }
+        .legend-box.level-3 { background: #239a3b; }
+        .legend-box.level-4 { background: #196127; }
+
+        /* Sessions List */
+        .sessions-section {
+            margin-bottom: 40px;
+        }
+
+        .sessions-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .sessions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .session-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .session-icon i {
+            font-size: 32px;
+            color: #0066cc;
+        }
+
+        .session-info {
+            flex: 1;
+        }
+
+        .session-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .session-meta {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .session-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .badge-success {
+            background: rgba(40,167,69,0.1);
+            color: #28a745;
+        }
+
+        .badge-warning {
+            background: rgba(255,193,7,0.1);
+            color: #ffc107;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #dee2e6;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .empty-state .btn-primary {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #0066cc, #4ca0ff);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .empty-state .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,102,204,0.3);
+        }
+
+        /* Achievements */
+        .achievements-section {
+            margin-bottom: 40px;
+        }
+
+        .achievements-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .badges-grid {
+            display: grid;
+            gap: 20px;
+            /* Mobile: 2 columns */
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 576px) {
+            .badges-grid {
+                /* Tablet: 3 columns */
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 992px) {
+            .badges-grid {
+                /* Desktop: 4 columns */
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .badge-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .badge-item.locked {
+            opacity: 0.4;
+        }
+
+        .badge-item.earned {
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), white);
+            border: 2px solid #ffd700;
+        }
+
+        .badge-animation-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .lock-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 50%;
+            backdrop-filter: blur(2px);
+        }
+
+        .lock-overlay i {
+            font-size: 32px;
+            color: #adb5bd;
+        }
+
+        .badge-item.earned .lock-overlay {
+            display: none;
+        }
+
+        .badge-name {
+            margin-top: 12px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .badge-requirement {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .badge-progress {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        /* Old badge-locked class - kept for backwards compatibility */
+        .badge-locked {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 50%;
+        }
+
+        .badge-locked i {
+            font-size: 32px;
+            color: #adb5bd;
+        }
+
+        /* Fix for dropdown menus in header */
+        .dropdown-menu {
+            display: none;
+        }
+        
+        .dropdown-menu.show {
+            display: block !important;
+        }
+        
+        .dropdown-toggle::after {
+            display: none;
+        }
+        
+        /* Ensure dropdown menus are visible when shown */
+        .dropdown-menu[data-bs-popper] {
+            display: block !important;
+        }
+        
+        /* Mobile responsive for Progress tab */
+        @media (max-width: 768px) {
+            .progress-dashboard {
+                padding: 15px;
+                max-width: 600px; /* Constrain width on mobile */
+            }
+
+            .progress-header h2 {
+                font-size: 24px;
+            }
+
+            .metric-card {
+                padding: 16px;
+            }
+
+            .metric-value {
+                font-size: 24px;
+            }
+
+            .activity-heatmap {
+                grid-template-columns: repeat(auto-fill, 12px);
+                gap: 3px;
+                padding: 15px;
+            }
+
+            .activity-day {
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        /* Tablet responsive */
+        @media (min-width: 769px) and (max-width: 1199px) {
+            .progress-dashboard {
+                max-width: 900px; /* Medium width on tablet */
+            }
+        }
+
+        /* ===== BEAUTIFUL MODAL STYLES ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.2s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Celebration Overlay */
+        .celebration-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            cursor: pointer;
+        }
+
+        .celebration-content {
+            text-align: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .celebration-content h3 {
+            color: white;
+            font-size: 24px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f8f9fa;
+            color: #000;
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #0066cc, #4ca0ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .modal-icon i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .modal-card h3 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+            color: #212529;
+        }
+
+        .modal-description {
+            text-align: center;
+            color: #6c757d;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .modal-features {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .feature {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .feature i {
+            font-size: 28px;
+            color: #0066cc;
+        }
+
+        .feature span {
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0066cc, #4ca0ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 576px) {
+            .modal-overlay {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 80px;
+            }
+            
+            .modal-card {
+                padding: 20px 15px;
+                max-width: 100%;
+                width: 100%;
+                margin: 0;
+                border-radius: 16px;
+            }
+            
+            .modal-icon {
+                width: 60px;
+                height: 60px;
+                margin-bottom: 16px;
+            }
+            
+            .modal-icon i {
+                font-size: 30px;
+            }
+            
+            .modal-card h3 {
+                font-size: 22px;
+                margin-bottom: 12px;
+            }
+            
+            .modal-description {
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+            
+            .modal-features {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            
+            .feature {
+                flex-direction: row;
+                justify-content: flex-start;
+                text-align: left;
+                gap: 12px;
+            }
+            
+            .feature i {
+                font-size: 20px;
+                min-width: 20px;
+            }
+            
+            .feature span {
+                font-size: 13px;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .modal-buttons button {
+                padding: 12px 20px;
+                font-size: 15px;
+            }
+        }
+        
+        /* Extra small screens (iPhone SE) */
+        @media (max-width: 375px) {
+            .modal-overlay {
+                padding: 5px;
+                padding-top: 70px;
+            }
+            
+            .modal-card {
+                padding: 15px 12px;
+                border-radius: 12px;
+            }
+            
+            .modal-icon {
+                width: 50px;
+                height: 50px;
+                margin-bottom: 12px;
+            }
+            
+            .modal-icon i {
+                font-size: 24px;
+            }
+            
+            .modal-card h3 {
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+            
+            .modal-description {
+                font-size: 13px;
+                margin-bottom: 16px;
+            }
+            
+            .modal-features {
+                padding: 12px;
+                margin-bottom: 16px;
+                gap: 8px;
+            }
+            
+            .feature {
+                gap: 8px;
+            }
+            
+            .feature i {
+                font-size: 18px;
+                min-width: 18px;
+            }
+            
+            .feature span {
+                font-size: 12px;
+            }
+            
+            .modal-buttons button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1365,27 +2561,27 @@
                     <ul class="navbar-nav me-auto">
                         <!-- Home -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/en/">Home</a>
+                            <a class="nav-link" href="/{{ lang }}/">{{ t('home', lang)|default('Home') }}</a>
                         </li>
                         
                         <!-- Learning Map -->
                         <li class="nav-item">
-                            <a class="nav-link active" href="/en/learning-map">Learning Map</a>
+                            <a class="nav-link active" href="/{{ lang }}/learning-map">{{ t('learning_map', lang)|default('Learning Map') }}</a>
                         </li>
                         
                         <!-- Knowledge Base -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/en/knowledge-base">Knowledge Base</a>
+                            <a class="nav-link" href="/{{ lang }}/knowledge-base">{{ t('knowledge_base', lang)|default('Knowledge Base') }}</a>
                         </li>
                         
                         <!-- Community -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/en/community">Community</a>
+                            <a class="nav-link" href="/{{ lang }}/community">{{ t('community', lang)|default('Community') }}</a>
                         </li>
                         
                         <!-- About BIG -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/en/big-info">About BIG</a>
+                            <a class="nav-link" href="/{{ lang }}/big-info">{{ t('about_big', lang)|default('About BIG') }}</a>
                         </li>
                     </ul>
                     
@@ -1395,18 +2591,19 @@
                         <div class="dropdown me-3 language-dropdown" style="position: relative; z-index: 9999;">
                             <button class="btn language-btn-modern" 
                                     type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false"
-                                    title="Language: EN">
+                                    title="{{ t('language', lang)|default('Language') }}: {{ lang|upper }}">
                                 <span class="language-icon"><i class="bi bi-globe2"></i></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end language-menu" aria-labelledby="languageDropdown">
-                                <li><a class="dropdown-item" href="#"><span class="fi fi-nl me-2"></span> Nederlands</a></li>
-                                <li><a class="dropdown-item active" href="#"><span class="fi fi-gb me-2"></span> English <i class="bi bi-check-lg ms-1"></i></a></li>
-                                <li><a class="dropdown-item" href="#"><span class="fi fi-es me-2"></span> Español</a></li>
-                                <li><a class="dropdown-item" href="#"><span class="fi fi-pt me-2"></span> Português</a></li>
-                                <li><a class="dropdown-item" href="#"><span class="fi fi-ua me-2"></span> Українська</a></li>
-                                <li><a class="dropdown-item" href="#"><span class="fi fi-ir me-2"></span> فارسی</a></li>
-                                <li><a class="dropdown-item" href="#"><span class="fi fi-tr me-2"></span> Türkçe</a></li>
-                                <li><a class="dropdown-item" href="#"><span class="fi fi-ru me-2"></span> Русский</a></li>
+                                {% from "includes/_macros.html" import language_url %}
+                                <li><a class="dropdown-item {% if lang == 'nl' %}active{% endif %}" href="{{ language_url('nl') }}"><span class="fi fi-nl me-2"></span> Nederlands{% if lang == 'nl' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}</a></li>
+                                <li><a class="dropdown-item {% if lang == 'en' %}active{% endif %}" href="{{ language_url('en') }}"><span class="fi fi-gb me-2"></span> English{% if lang == 'en' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}</a></li>
+                                <li><a class="dropdown-item {% if lang == 'es' %}active{% endif %}" href="{{ language_url('es') }}"><span class="fi fi-es me-2"></span> Español{% if lang == 'es' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}</a></li>
+                                <li><a class="dropdown-item {% if lang == 'pt' %}active{% endif %}" href="{{ language_url('pt') }}"><span class="fi fi-pt me-2"></span> Português{% if lang == 'pt' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}</a></li>
+                                <li><a class="dropdown-item {% if lang == 'uk' %}active{% endif %}" href="{{ language_url('uk') }}"><span class="fi fi-ua me-2"></span> Українська{% if lang == 'uk' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}</a></li>
+                                <li><a class="dropdown-item {% if lang == 'fa' %}active{% endif %}" href="{{ language_url('fa') }}"><span class="fi fi-ir me-2"></span> فارسی{% if lang == 'fa' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}</a></li>
+                                <li><a class="dropdown-item {% if lang == 'tr' %}active{% endif %}" href="{{ language_url('tr') }}"><span class="fi fi-tr me-2"></span> Türkçe{% if lang == 'tr' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}</a></li>
+                                <li><a class="dropdown-item {% if lang == 'ru' %}active{% endif %}" href="{{ language_url('ru') }}"><span class="fi fi-ru me-2"></span> Русский{% if lang == 'ru' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}</a></li>
                             </ul>
                         </div>
                         
@@ -1420,9 +2617,17 @@
                             <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
                                 <!-- User Info Header -->
                                 <li class="dropdown-header">
-                                    <i class="bi bi-person-badge fs-5 me-1"></i> <strong>Dr. John Doe</strong>
+                                    <i class="bi bi-person-badge fs-5 me-1"></i> <strong>{{ current_user.get_display_name() if current_user.is_authenticated else 'Dr. John Doe' }}</strong>
                                     <br>
-                                    <small class="text-muted">Pharmacist</small>
+                                    <small class="text-muted">
+                                        {% if current_user.is_authenticated and current_user.profession == 'tandarts' %}
+                                            {{ t('dentist', lang)|default('Dentist') }}
+                                        {% elif current_user.is_authenticated and current_user.profession == 'huisarts' %}
+                                            {{ t('general_practitioner', lang)|default('General Practitioner') }}
+                                        {% else %}
+                                            {{ t('medical_professional', lang)|default('Medical Professional') }}
+                                        {% endif %}
+                                    </small>
                                 </li>
                                 
                                 <li><hr class="dropdown-divider"></li>
@@ -1436,7 +2641,7 @@
                                 <li><hr class="dropdown-divider"></li>
                                 
                                 <!-- Logout -->
-                                <li><a class="dropdown-item text-danger" href="/en/auth/logout">
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout', lang='en') }}">
                                     <i class="bi bi-box-arrow-right fs-5 me-2"></i>
                                     Logout
                                 </a></li>
@@ -1467,8 +2672,8 @@
                                 <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
                             </div>
                             <div class="tab-label">
-                                IRT
-                                <span class="beta-badge">BETA</span>
+                                {{ t('irt', lang)|default('IRT') }}
+                                <span class="beta-badge">{{ t('beta', lang)|default('BETA') }}</span>
                             </div>
                         </div>
 
@@ -1479,17 +2684,20 @@
                                 <div class="circle-inner"><i class="bi bi-people-fill"></i></div>
                                 <div class="tab-status-badge" :style="!isLaunched ? 'background: #94a3b8;' : ''"><i class="bi bi-lock-fill" x-show="!isLaunched"></i><i class="bi bi-play-fill" x-show="isLaunched"></i></div>
                             </div>
-                            <div class="tab-label">Virtual</div>
+                            <div class="tab-label">{{ t('virtual', lang)|default('Virtual') }}</div>
                         </div>
 
-                        <!-- Individual Tab - Disabled until launch -->
-                        <div class="tab-circle" :class="{ 'active': activeTab === 'individual', 'disabled': !isLaunched }" @click="selectTab('individual')">
-                            <div class="circle-button" :style="!isLaunched ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                        <!-- Individual Tab - Always Enabled -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'individual' }" @click="selectTab('individual')">
+                            <div class="circle-button">
                                 <div class="circle-glow"></div>
                                 <div class="circle-inner"><i class="bi bi-person-fill"></i></div>
-                                <div class="tab-status-badge" style="background: #94a3b8;"><i class="bi bi-lock-fill"></i></div>
+                                <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
                             </div>
-                            <div class="tab-label">Individual</div>
+                            <div class="tab-label">
+                                {{ t('individual_plan', lang)|default('Individual') }}
+                                <span class="beta-badge">{{ t('beta', lang)|default('BETA') }}</span>
+                            </div>
                         </div>
 
                         <!-- Games Tab - Always Enabled -->
@@ -1499,17 +2707,16 @@
                                 <div class="circle-inner"><i class="bi bi-controller"></i></div>
                                 <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
                             </div>
-                            <div class="tab-label">Games</div>
+                            <div class="tab-label">{{ t('games', lang)|default('Games') }}</div>
                         </div>
 
-                        <!-- Progress Tab - Disabled until launch -->
-                        <div class="tab-circle" :class="{ 'active': activeTab === 'progress', 'disabled': !isLaunched }" @click="selectTab('progress')">
-                            <div class="circle-button" :style="!isLaunched ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                        <!-- Progress Tab - Always Enabled -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'progress' }" @click="selectTab('progress')">
+                            <div class="circle-button">
                                 <div class="circle-glow"></div>
                                 <div class="circle-inner"><i class="bi bi-graph-up"></i></div>
-                                <div class="tab-status-badge" :style="!isLaunched ? 'background: #94a3b8;' : ''"><i class="bi bi-lock-fill" x-show="!isLaunched"></i><i class="bi bi-play-fill" x-show="isLaunched"></i></div>
                             </div>
-                            <div class="tab-label">Progress</div>
+                            <div class="tab-label">{{ t('progress', lang)|default('Progress') }}</div>
                         </div>
 
                         <!-- Planner Tab - Disabled until launch -->
@@ -1519,26 +2726,26 @@
                                 <div class="circle-inner"><i class="bi bi-calendar-check-fill"></i></div>
                                 <div class="tab-status-badge" style="background: #94a3b8;"><i class="bi bi-lock-fill"></i></div>
                             </div>
-                            <div class="tab-label">Planner</div>
+                            <div class="tab-label">{{ t('planner', lang)|default('Planner') }}</div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Карточки -->
-                <div class="cards-area">
+                <div class="cards-area" x-show="activeTab !== 'individual'">
                     
                     <!-- IRT Test Cards -->
                     <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(30)" style="cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                         <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
                             <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-lightning-charge-fill"></i></div>
                             <div>
-                                <div class="card-title" style="color: white;">Quick Test</div>
-                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 questions</div>
+                                <div class="card-title" style="color: white;">{{ t('quick_test', lang)|default('Quick Test') }}</div>
+                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 {{ t('questions', lang)|default('questions') }}</div>
                             </div>
                         </div>
                         <div style="padding: 1rem 0;">
                             <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
-                                Fast knowledge check. Results shown at the end.
+                                {{ t('quick_test_description', lang)|default('Fast knowledge check. Results shown at the end.') }}
                             </p>
                         </div>
                         <div class="play-badge" style="background: rgba(255,255,255,0.3);">
@@ -1550,7 +2757,7 @@
                         <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
                             <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-speedometer2"></i></div>
                             <div>
-                                <div class="card-title" style="color: white;">Full Test</div>
+                                <div class="card-title" style="color: white;">{{ t('full_test', lang)|default('Full Test') }}</div>
                                 <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">60 questions</div>
                             </div>
                         </div>
@@ -1568,7 +2775,7 @@
                         <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
                             <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-book-fill"></i></div>
                             <div>
-                                <div class="card-title" style="color: white;">Learning Mode</div>
+                                <div class="card-title" style="color: white;">{{ t('learning_mode', lang)|default('Learning Mode') }}</div>
                                 <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 questions with explanations</div>
                             </div>
                         </div>
@@ -1649,6 +2856,441 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- INDIVIDUAL PLAN TAB CONTENT -->
+                <div x-show="activeTab === 'individual'" class="individual-plan-container">
+                    
+                    <!-- Header with Streak -->
+                    <div class="plan-header">
+                        <h2>{{ t('daily_study_plan', lang)|default('Your Daily Study Plan') }}</h2>
+                        <div class="streak-widget">
+                            <!-- Animated fire icon with Lottie -->
+                            <div class="streak-animation">
+                                <lottie-player
+                                    x-show="dailyStreak > 0"
+                                    src="{{ url_for('static', filename='animations/flame.json') }}"
+                                    background="transparent"
+                                    speed="1"
+                                    style="width: 48px; height: 48px;"
+                                    loop
+                                    autoplay>
+                                </lottie-player>
+                                <i x-show="dailyStreak === 0" 
+                                   class="bi bi-fire streak-icon" 
+                                   style="font-size: 32px; color: #ff6b6b;"></i>
+                            </div>
+                            <div class="streak-info">
+                                <span class="streak-count" x-text="dailyStreak"></span>
+                                <span class="streak-label">dagen streak</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Tasks Card -->
+                    <div class="daily-tasks-card">
+                        <h3><i class="bi bi-book"></i> Vandaag te doen</h3>
+                        
+                        <div class="tasks-summary">
+                            <div class="task-stat">
+                                <i class="bi bi-plus-circle task-icon"></i>
+                                <div class="task-info">
+                                    <strong x-text="dailyTasks.new_questions"></strong>
+                                    <small>nieuwe vragen</small>
+                                </div>
+                            </div>
+                            
+                            <div class="task-stat">
+                                <i class="bi bi-arrow-repeat task-icon"></i>
+                                <div class="task-info">
+                                    <strong x-text="dailyTasks.reviews_due"></strong>
+                                    <small>herhalingen</small>
+                                </div>
+                            </div>
+                            
+                            <div class="task-stat">
+                                <i class="bi bi-clock task-icon"></i>
+                                <div class="task-info">
+                                    <strong x-text="'~' + dailyTasks.estimated_time"></strong>
+                                    <small>minuten</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="daily-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" :style="'width: ' + dailyProgressPercent + '%'"></div>
+                            </div>
+                            <p class="progress-text" x-text="questionsToday + '/' + dailyTasks.goal + ' vragen vandaag'"></p>
+                        </div>
+
+                        <button class="btn-primary btn-large" @click="startDailySession">
+                            Start dagelijkse sessie →
+                        </button>
+                    </div>
+
+                    <!-- Categories Progress - MAIN FEATURE -->
+                    <div class="categories-section">
+                        <h3><i class="bi bi-bar-chart-fill"></i> Voortgang per categorie</h3>
+                        
+                        <div class="categories-accordion">
+                            <template x-for="category in categories" :key="category.id">
+                                <div class="category-card">
+                                    <div class="category-header" @click="toggleCategory(category.id)">
+                                        <div class="category-info">
+                                            <i :class="'bi ' + getCategoryIcon(category.name)" class="category-icon"></i>
+                                            <div>
+                                                <h4 x-text="category.name"></h4>
+                                                <small x-text="category.domains_count + ' domeinen'"></small>
+                                            </div>
+                                        </div>
+                                        <div class="category-stats">
+                                            <span class="progress-percent" :class="getProgressClass(category.percentage)" x-text="category.percentage + '%'"></span>
+                                            <i class="bi" :class="expandedCategories.includes(category.id) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Expanded content -->
+                                    <div x-show="expandedCategories.includes(category.id)" class="category-content">
+                                        <div class="category-progress-bar">
+                                            <div class="progress-fill" 
+                                                 :style="'width: ' + category.percentage + '%; background-color: ' + category.color">
+                                            </div>
+                                        </div>
+                                        <p x-text="category.completed_domains + '/' + category.domains_count + ' domeinen voltooid'"></p>
+                                        
+                                        <!-- Optional: Show weak domains in this category -->
+                                        <button class="btn-secondary btn-sm" @click="focusOnCategory(category.id)">
+                                            Focus op deze categorie
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Overall Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="bi bi-graph-up stat-icon"></i>
+                            <div>
+                                <strong x-text="overallProgress + '%'"></strong>
+                                <small>totaal voortgang</small>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <i class="bi bi-clock-history stat-icon"></i>
+                            <div>
+                                <strong x-text="timeInvested"></strong>
+                                <small>uur geïnvesteerd</small>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <i class="bi bi-bullseye stat-icon"></i>
+                            <div>
+                                <strong x-text="retentionRate + '%'"></strong>
+                                <small>retentie rate</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Diagnostic Modal -->
+                    <div x-show="showQuickDiagnosticModal" style="display: none;" class="modal-overlay" @click.self="closeModal">
+                        <div class="modal-card">
+                            <button class="modal-close" @click="closeModal">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            
+                            <div class="modal-icon">
+                                <i class="bi bi-speedometer2"></i>
+                            </div>
+                            
+                            <h3>{{ t('quick_diagnostic_test', lang)|default('Quick Diagnostic Test') }}</h3>
+                            
+                            <p class="modal-description">
+                                {{ t('diagnostic_test_description', lang)|default('To create your personal learning plan, we first need a quick diagnostic test.') }}
+                            </p>
+                            
+                            <div class="modal-features">
+                                <div class="feature">
+                                    <i class="bi bi-clock"></i>
+                                    <span>20 {{ t('minutes', lang)|default('minutes') }}</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="bi bi-list-check"></i>
+                                    <span>30 {{ t('questions', lang)|default('questions') }}</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="bi bi-graph-up"></i>
+                                    <span>{{ t('identify_weak_points', lang)|default('Identify weak points') }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="modal-buttons">
+                                <button class="btn-secondary" @click="closeModal">
+                                    {{ t('later', lang)|default('Later') }}
+                                </button>
+                                <button class="btn-primary" @click="startQuickDiagnostic">
+                                    {{ t('start_test', lang)|default('Start test') }} →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Celebration Overlay -->
+                    <div x-show="showCelebration" 
+                         class="celebration-overlay" 
+                         @click="showCelebration = false"
+                         style="display: none;">
+                        <div class="celebration-content" @click.stop>
+                            <div id="celebration-lottie" style="width: 200px; height: 200px; margin: 0 auto;"></div>
+                            <h3 x-text="celebrationMessage" style="margin-top: 20px;"></h3>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ============================================ -->
+                <!-- PROGRESS TAB CONTENT -->
+                <!-- ============================================ -->
+                <div x-show="activeTab === 'progress'" class="progress-dashboard">
+                    
+                    <!-- Header with overall stats -->
+                    <div class="progress-header">
+                        <h2><i class="bi bi-graph-up"></i> {{ t('your_progress', lang)|default('Your Progress') }}</h2>
+                        <p class="subtitle">{{ t('overview_learning_results', lang)|default('Overview of your learning results') }}</p>
+                    </div>
+                    
+                    <!-- Key metrics cards -->
+                    <div class="metrics-grid">
+                        
+                        <!-- Total Progress -->
+                        <div class="metric-card primary">
+                            <div class="metric-icon">
+                                <lottie-player
+                                    src="{{ url_for('static', filename='animations/arm.json') }}"
+                                    background="transparent"
+                                    speed="0.5"
+                                    style="width: 60px; height: 60px;"
+                                    loop
+                                    autoplay>
+                                </lottie-player>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" x-text="overallProgress + '%'"></span>
+                                <span class="metric-label">{{ t('total_progress', lang)|default('Total Progress') }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Streak -->
+                        <div class="metric-card accent">
+                            <div class="metric-icon">
+                                <lottie-player
+                                    x-show="dailyStreak > 0"
+                                    src="{{ url_for('static', filename='animations/flame.json') }}"
+                                    background="transparent"
+                                    speed="1"
+                                    style="width: 60px; height: 60px;"
+                                    loop
+                                    autoplay>
+                                </lottie-player>
+                                <i x-show="dailyStreak === 0" class="bi bi-fire" style="font-size: 40px; color: #ff6b6b;"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" x-text="dailyStreak"></span>
+                                <span class="metric-label">{{ t('days_streak', lang)|default('Days Streak') }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Questions answered -->
+                        <div class="metric-card success">
+                            <div class="metric-icon">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" x-text="totalQuestionsAnswered"></span>
+                                <span class="metric-label">{{ t('questions_answered', lang)|default('Questions Answered') }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Study time -->
+                        <div class="metric-card info">
+                            <div class="metric-icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" x-text="timeInvested + 'h'"></span>
+                                <span class="metric-label">{{ t('study_time', lang)|default('Study Time') }}</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- Categories progress breakdown -->
+                    <div class="categories-progress-section">
+                        <h3><i class="bi bi-bar-chart-line"></i> {{ t('progress_per_category', lang)|default('Progress per Category') }}</h3>
+                        
+                        <div class="categories-list">
+                            <template x-for="category in categories" :key="category.id">
+                                <div class="category-progress-item">
+                                    <div class="category-header-row">
+                                        <span class="category-name" x-text="category.name"></span>
+                                        <span class="category-percentage" :class="getProgressClass(category.percentage)" x-text="category.percentage + '%'"></span>
+                                    </div>
+                                    <div class="category-progress-bar">
+                                        <div class="progress-fill" 
+                                             :style="{width: category.percentage + '%', backgroundColor: category.color}">
+                                        </div>
+                                    </div>
+                                    <div class="category-meta">
+                                        <span x-text="category.completed_domains + '/' + category.domains_count + ' {{ t('completed', lang)|default('completed') }}'"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <!-- Study activity chart -->
+                    <div class="activity-section">
+                        <h3><i class="bi bi-calendar3"></i> {{ t('study_activity', lang)|default('Study Activity') }} ({{ t('last_30_days', lang)|default('last 30 days') }})</h3>
+                        
+                        <!-- Weekly activity heatmap -->
+                        <div class="activity-heatmap">
+                            <template x-for="day in last30Days" :key="day.date">
+                                <div class="activity-day"
+                                     :class="getActivityClass(day.questions)"
+                                     :title="day.date + ': ' + day.questions + ' vragen'">
+                                </div>
+                            </template>
+                        </div>
+                        
+                        <div class="activity-legend">
+                            <span>Minder</span>
+                            <div class="legend-colors">
+                                <div class="legend-box level-0"></div>
+                                <div class="legend-box level-1"></div>
+                                <div class="legend-box level-2"></div>
+                                <div class="legend-box level-3"></div>
+                                <div class="legend-box level-4"></div>
+                            </div>
+                            <span>{{ t('more', lang)|default('More') }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent sessions -->
+                    <div class="sessions-section">
+                        <h3><i class="bi bi-list-ul"></i> {{ t('recent_sessions', lang)|default('Recent Sessions') }}</h3>
+                        
+                        <div class="sessions-list">
+                            <template x-for="session in recentSessions" :key="session.id">
+                                <div class="session-item">
+                                    <div class="session-icon">
+                                        <i class="bi bi-play-circle-fill"></i>
+                                    </div>
+                                    <div class="session-info">
+                                        <div class="session-title" x-text="session.title"></div>
+                                        <div class="session-meta" x-text="session.date + ' • ' + session.questions + ' {{ t('questions', lang)|default('questions') }} • ' + session.accuracy + '% {{ t('correct', lang)|default('correct') }}'"></div>
+                                    </div>
+                                    <div class="session-badge" :class="session.accuracy >= 80 ? 'badge-success' : 'badge-warning'" x-text="session.accuracy + '%'"></div>
+                                </div>
+                            </template>
+                            
+                            <!-- Empty state -->
+                            <div x-show="recentSessions.length === 0" class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <p>{{ t('no_sessions_completed', lang)|default('No sessions completed yet') }}</p>
+                                <button class="btn-primary" @click="activeTab = 'individual'">
+                                    {{ t('start_first_session', lang)|default('Start your first session') }} →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Achievement badges -->
+                    <div class="achievements-section">
+                        <h3><i class="bi bi-award"></i> {{ t('achievements', lang)|default('Achievements') }}</h3>
+                        
+                        <div class="badges-grid">
+                            
+                            <!-- Streak badges -->
+                            <div class="badge-item" :class="dailyStreak >= 7 ? 'earned' : 'locked'">
+                                <div class="badge-animation-container">
+                                    <lottie-player
+                                        src="{{ url_for('static', filename='animations/flame.json') }}"
+                                        background="transparent"
+                                        :speed="dailyStreak >= 7 ? '1' : '0.5'"
+                                        :style="dailyStreak >= 7 ? 'width: 80px; height: 80px;' : 'width: 80px; height: 80px; opacity: 0.3; filter: grayscale(100%);'"
+                                        loop
+                                        autoplay>
+                                    </lottie-player>
+                                    <div x-show="dailyStreak < 7" class="lock-overlay">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </div>
+                                </div>
+                                <div class="badge-name">7 {{ t('days_streak', lang)|default('days streak') }}</div>
+                                <div class="badge-requirement" x-show="dailyStreak < 7" x-text="'{{ t('more', lang)|default('More') }} ' + (7 - dailyStreak) + ' {{ t('days', lang)|default('days') }}'"></div>
+                            </div>
+                            
+                            <div class="badge-item" :class="dailyStreak >= 30 ? 'earned' : 'locked'">
+                                <div class="badge-animation-container">
+                                    <lottie-player
+                                        src="{{ url_for('static', filename='animations/fist.json') }}"
+                                        background="transparent"
+                                        :speed="dailyStreak >= 30 ? '1' : '0.5'"
+                                        :style="dailyStreak >= 30 ? 'width: 80px; height: 80px;' : 'width: 80px; height: 80px; opacity: 0.3; filter: grayscale(100%);'"
+                                        loop
+                                        autoplay>
+                                    </lottie-player>
+                                    <div x-show="dailyStreak < 30" class="lock-overlay">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </div>
+                                </div>
+                                <div class="badge-name">30 {{ t('days_streak', lang)|default('days streak') }}</div>
+                                <div class="badge-requirement" x-show="dailyStreak < 30" x-text="'{{ t('more', lang)|default('More') }} ' + (30 - dailyStreak) + ' {{ t('days', lang)|default('days') }}'"></div>
+                            </div>
+                            
+                            <!-- Questions badges -->
+                            <div class="badge-item" :class="totalQuestionsAnswered >= 100 ? 'earned' : 'locked'">
+                                <div class="badge-animation-container">
+                                    <lottie-player
+                                        src="{{ url_for('static', filename='animations/arm.json') }}"
+                                        background="transparent"
+                                        :speed="totalQuestionsAnswered >= 100 ? '1' : '0.5'"
+                                        :style="totalQuestionsAnswered >= 100 ? 'width: 80px; height: 80px;' : 'width: 80px; height: 80px; opacity: 0.3; filter: grayscale(100%);'"
+                                        loop
+                                        autoplay>
+                                    </lottie-player>
+                                    <div x-show="totalQuestionsAnswered < 100" class="lock-overlay">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </div>
+                                </div>
+                                <div class="badge-name">100 {{ t('questions', lang)|default('questions') }}</div>
+                                <div class="badge-requirement" x-show="totalQuestionsAnswered < 100" x-text="totalQuestionsAnswered + '/100 {{ t('questions', lang)|default('questions') }}'"></div>
+                            </div>
+                            
+                            <div class="badge-item" :class="totalQuestionsAnswered >= 500 ? 'earned' : 'locked'">
+                                <div class="badge-animation-container">
+                                    <lottie-player
+                                        src="{{ url_for('static', filename='animations/brain.json') }}"
+                                        background="transparent"
+                                        :speed="totalQuestionsAnswered >= 500 ? '1' : '0.5'"
+                                        :style="totalQuestionsAnswered >= 500 ? 'width: 80px; height: 80px;' : 'width: 80px; height: 80px; opacity: 0.3; filter: grayscale(100%);'"
+                                        loop
+                                        autoplay>
+                                    </lottie-player>
+                                    <div x-show="totalQuestionsAnswered < 500" class="lock-overlay">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </div>
+                                </div>
+                                <div class="badge-name">500 {{ t('questions', lang)|default('questions') }}</div>
+                                <div class="badge-requirement" x-show="totalQuestionsAnswered < 500" x-text="totalQuestionsAnswered + '/500 {{ t('questions', lang)|default('questions') }}'"></div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
                 
             </div>
             
@@ -1661,7 +3303,7 @@
                     </h3>
                     <p x-text="getTabDescription(activeTab)"></p>
                     
-                    <h4>💡 How to use</h4>
+                    <h4>💡 {{ t('how_to_use', lang)|default('How to use') }}</h4>
                     <ul>
                         <template x-for="tip in getTabTips(activeTab)" :key="tip">
                             <li x-text="tip"></li>
@@ -1692,8 +3334,8 @@
                 isStartingDiagnostic: false,
                 isLaunched: false, // ВСЕГДА false - блокируем все кроме IRT и Games
                 launchDate: launchDate,
-                // Enabled tabs (only IRT and Games before launch)
-                enabledTabs: ['irt', 'games'], // Только IRT и Games всегда доступны
+                // Enabled tabs (IRT, Individual, Progress, and Games)
+                enabledTabs: ['irt', 'individual', 'progress', 'games'], // IRT, Individual Plan, Progress, и Games доступны
                 // Real user statistics
                 userStats: {
                     activeModules: 0,
@@ -1715,6 +3357,35 @@
                 },
                 statsLoaded: false,
                 gamesStatsLoaded: false,
+                
+                // Individual Plan data
+                dailyStreak: 0,
+                dailyTasks: {
+                    new_questions: 0,
+                    reviews_due: 0,
+                    total_tasks: 0,
+                    estimated_time: 0,
+                    goal: 20
+                },
+                questionsToday: 0,
+                categories: [],
+                expandedCategories: [],
+                overallProgress: 0,
+                timeInvested: 0,
+                retentionRate: 0,
+                showQuickDiagnosticModal: false,
+                individualPlanDataLoaded: false,
+                
+                // Celebration data
+                showCelebration: false,
+                celebrationAnimation: '',
+                celebrationMessage: '',
+                
+                // Progress tab data
+                totalQuestionsAnswered: 0,
+                recentSessions: [],
+                last30Days: [],
+                
                 async loadUserStats() {
                     try {
                         const currentLang = document.querySelector('html').getAttribute('lang') || 'en';
@@ -1772,6 +3443,11 @@
                 init() {
                     this.loadUserStats();
                     // Games statistics не загружаем, так как не показываем статистику игр
+                    
+                    // Load Individual Plan data if that's the active tab
+                    if (this.activeTab === 'individual') {
+                        this.loadIndividualPlanData();
+                    }
                 },
                 selectTab(tab) {
                     if (!this.enabledTabs.includes(tab)) {
@@ -1779,6 +3455,16 @@
                         return;
                     }
                     this.activeTab = tab;
+                    
+                    // Load Individual Plan data when switching to that tab
+                    if (tab === 'individual') {
+                        this.loadIndividualPlanData();
+                    }
+                    
+                    // Load Progress data when switching to that tab
+                    if (tab === 'progress') {
+                        this.loadProgressData();
+                    }
                 },
                 showComingSoonModal(tab) {
                     const tabNames = {
@@ -1801,7 +3487,7 @@
                         { id: 4, title: 'Case #1', subtitle: 'Emergency', icon: 'heart-pulse-fill', progress: 100, completed: 5, total: 5 }
                     ],
                     'individual': [
-                        { id: 6, title: 'My Topics', subtitle: 'Custom', icon: 'book-fill', progress: 45, completed: 9, total: 20 }
+                        // No module cards for Individual Plan - it has its own custom layout
                     ],
                     'games': [
                         { 
@@ -1879,6 +3565,9 @@
                     }
                 },
                 get activeModules() { return this.displayModules.filter(m => m.progress > 0 && m.progress < 100).length; },
+                get dailyProgressPercent() {
+                    return Math.min(100, (this.questionsToday / this.dailyTasks.goal) * 100);
+                },
                 get completedTabs() {
                     // Для примера: 2 таба завершено (IRT, Virtual)
                     return 2;
@@ -1905,32 +3594,32 @@
                 },
                 getTabDescription(tab) {
                     const descriptions = { 
-                        'irt': '🧪 BETA: Choose your test format - Quick Test (30 questions) for rapid assessment, Full Test (60 questions) for comprehensive evaluation, or Learning Mode (30 questions with explanations) to study while testing. All tests use adaptive IRT technology.',
-                        'virtual': 'Practice with realistic virtual patient cases. Apply your knowledge in simulated clinical scenarios and improve your decision-making skills.',
-                        'individual': 'Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises.',
-                        'games': 'Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!',
-                        'progress': 'Track your learning journey with detailed analytics. Monitor your performance across all modules, see your study time, and identify areas for improvement.',
-                        'planner': 'Plan your learning schedule effectively. Set daily and weekly goals, track deadlines, and stay organized with our intelligent learning planner.'
+                        'irt': '{{ t("irt_description", lang)|default("🧪 BETA: Choose your test format - Quick Test (30 questions) for rapid assessment, Full Test (60 questions) for comprehensive evaluation, or Learning Mode (30 questions with explanations) to study while testing. All tests use adaptive IRT technology.") }}',
+                        'virtual': '{{ t("virtual_description", lang)|default("Practice with realistic virtual patient cases. Apply your knowledge in simulated clinical scenarios and improve your decision-making skills.") }}',
+                        'individual': '{{ t("individual_description", lang)|default("Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises.") }}',
+                        'games': '{{ t("games_description", lang)|default("Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!") }}',
+                        'progress': '{{ t("progress_description", lang)|default("Track your learning journey with detailed analytics. Monitor your performance across all modules, see your study time, and identify areas for improvement.") }}',
+                        'planner': '{{ t("planner_description", lang)|default("Plan your learning schedule effectively. Set daily and weekly goals, track deadlines, and stay organized with our intelligent learning planner.") }}'
                     };
                     
                     if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
-                        return `This feature is coming soon! ${descriptions[tab] || ''}`;
+                        return `{{ t('feature_coming_soon', lang)|default('This feature is coming soon!') }} ${descriptions[tab] || ''}`;
                     }
                     
                     return descriptions[tab] || '';
                 },
                 getTabTips(tab) {
                     const tips = { 
-                        'irt': ['Click on any test card to start', 'Quick Test (30q) - fast knowledge check', 'Full Test (60q) - comprehensive assessment', 'Learning Mode (30q) - study with instant feedback'],
-                        'virtual': ['Read patient history carefully before making decisions', 'Each case has multiple scenarios and outcomes', 'Review feedback to improve your clinical reasoning'],
-                        'individual': ['Choose modules based on your learning goals', 'Complete quizzes to reinforce your knowledge', 'Unlock new modules by progressing through the curriculum'],
-                        'games': ['Play Sudoku to improve logical thinking', 'Medical Memory helps learn terminology quickly', 'Quick Quiz tests your knowledge in seconds', 'Earn achievements and climb the leaderboard', 'Take breaks with games to refresh your mind'],
-                        'progress': ['Review your statistics regularly', 'Set weekly and monthly goals', 'Track time spent on each learning activity', 'Identify weak areas and focus on improvement'],
-                        'planner': ['Schedule study sessions in advance', 'Set reminders for important deadlines', 'Balance different types of learning activities', 'Review and adjust your plan weekly']
+                        'irt': ['{{ t("tip_click_test_card", lang)|default("Click on any test card to start") }}', '{{ t("tip_quick_test", lang)|default("Quick Test (30q) - fast knowledge check") }}', '{{ t("tip_full_test", lang)|default("Full Test (60q) - comprehensive assessment") }}', '{{ t("tip_learning_mode", lang)|default("Learning Mode (30q) - study with instant feedback") }}'],
+                        'virtual': ['{{ t("tip_read_patient_history", lang)|default("Read patient history carefully before making decisions") }}', '{{ t("tip_multiple_scenarios", lang)|default("Each case has multiple scenarios and outcomes") }}', '{{ t("tip_review_feedback", lang)|default("Review feedback to improve your clinical reasoning") }}'],
+                        'individual': ['{{ t("tip_choose_modules", lang)|default("Choose modules based on your learning goals") }}', '{{ t("tip_complete_quizzes", lang)|default("Complete quizzes to reinforce your knowledge") }}', '{{ t("tip_unlock_modules", lang)|default("Unlock new modules by progressing through the curriculum") }}'],
+                        'games': ['{{ t("tip_play_sudoku", lang)|default("Play Sudoku to improve logical thinking") }}', '{{ t("tip_medical_memory", lang)|default("Medical Memory helps learn terminology quickly") }}', '{{ t("tip_quick_quiz", lang)|default("Quick Quiz tests your knowledge in seconds") }}', '{{ t("tip_earn_achievements", lang)|default("Earn achievements and climb the leaderboard") }}', '{{ t("tip_take_breaks", lang)|default("Take breaks with games to refresh your mind") }}'],
+                        'progress': ['{{ t("tip_review_statistics", lang)|default("Review your statistics regularly") }}', '{{ t("tip_set_goals", lang)|default("Set weekly and monthly goals") }}', '{{ t("tip_track_time", lang)|default("Track time spent on each learning activity") }}', '{{ t("tip_identify_weak_areas", lang)|default("Identify weak areas and focus on improvement") }}'],
+                        'planner': ['{{ t("tip_schedule_sessions", lang)|default("Schedule study sessions in advance") }}', '{{ t("tip_set_reminders", lang)|default("Set reminders for important deadlines") }}', '{{ t("tip_balance_activities", lang)|default("Balance different types of learning activities") }}', '{{ t("tip_review_plan", lang)|default("Review and adjust your plan weekly") }}']
                     };
                     
                     if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
-                        return ['This feature is coming soon', 'Stay tuned for updates', 'Check back later'];
+                        return ['{{ t("feature_coming_soon", lang)|default("This feature is coming soon") }}', '{{ t("stay_tuned", lang)|default("Stay tuned for updates") }}', '{{ t("check_back_later", lang)|default("Check back later") }}'];
                     }
                     
                     return tips[tab] || [];
@@ -1942,7 +3631,7 @@
                     
                     try {
                         // Показываем уведомление о начале
-                        const notification = this.showNotification(`Starting ${diagnosticType} diagnostic...`, 'info');
+                        const notification = this.showNotification(`{{ t('starting_diagnostic', lang)|default('Starting') }} ${diagnosticType} {{ t('diagnostic', lang)|default('diagnostic') }}...`, 'info');
                         
                         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
                         console.log('CSRF Token:', csrfToken ? 'Found' : 'Missing');
@@ -1970,18 +3659,18 @@
                             window.location.href = data.redirect_url;
                         } else if (data.error === 'active_session') {
                             // Уже есть активная сессия
-                            this.showNotification('You already have an active diagnostic session', 'warning');
+                            this.showNotification('{{ t("active_diagnostic_session", lang)|default("You already have an active diagnostic session") }}', 'warning');
                             if (data.session_info) {
                                 window.location.href = `/big-diagnostic/question/${data.session_info.id}`;
                             }
                         } else {
                             // Ошибка
                             console.error('Diagnostic error:', data.error, data);
-                            this.showNotification(data.error || 'Failed to start diagnostic', 'error');
+                            this.showNotification(data.error || '{{ t("failed_to_start_diagnostic", lang)|default("Failed to start diagnostic") }}', 'error');
                         }
                     } catch (error) {
                         console.error('Error starting diagnostic:', error);
-                        this.showNotification('Failed to start diagnostic. Please try again.', 'error');
+                        this.showNotification('{{ t("failed_to_start_diagnostic_try_again", lang)|default("Failed to start diagnostic. Please try again.") }}', 'error');
                     } finally {
                         this.isStartingDiagnostic = false;
                     }
@@ -2024,6 +3713,219 @@
                     // Запуск обучающего режима (30 вопросов с объяснениями)
                     console.log('Starting learning mode with explanations');
                     this.startDiagnostic('learning_30');
+                },
+                
+                // Individual Plan methods
+                toggleCategory(categoryId) {
+                    const index = this.expandedCategories.indexOf(categoryId);
+                    if (index > -1) {
+                        this.expandedCategories.splice(index, 1);
+                    } else {
+                        this.expandedCategories.push(categoryId);
+                    }
+                },
+                
+                getProgressClass(percentage) {
+                    if (percentage >= 80) return 'progress-high';
+                    if (percentage >= 60) return 'progress-medium';
+                    return 'progress-low';
+                },
+                
+                async startDailySession() {
+                    // If data not loaded yet, load it first
+                    if (!this.individualPlanDataLoaded) {
+                        await this.loadIndividualPlanData();
+                    }
+                    
+                    // Check if user has done Quick Diagnostic
+                    if (this.overallProgress === 0) {
+                        // Show modal to start Quick Diagnostic first
+                        this.showQuickDiagnosticModal = true;
+                    } else {
+                        // Has diagnostic - start daily practice with selected questions
+                        window.location.href = '/learning-map/daily-session';
+                    }
+                },
+                
+                getCategoryIcon(categoryName) {
+                    // Map category names to Bootstrap Icons
+                    const iconMap = {
+                        'Clinical Foundations': 'bi-hospital',
+                        'Medical Sciences': 'bi-capsule',
+                        'Diagnostics & Imaging': 'bi-gear',
+                        'Basic Sciences': 'bi-mortarboard',
+                        'Research & Methodology': 'bi-graph-up',
+                        'Clinical Practice': 'bi-person-badge',
+                        'Professional Development': 'bi-award'
+                    };
+                    return iconMap[categoryName] || 'bi-folder';
+                },
+                
+                focusOnCategory(categoryId) {
+                    // TODO: Start practice focused on this category
+                    alert('{{ t("start_practice_for_category", lang)|default("Start practice for category") }} ' + categoryId);
+                },
+                
+                startQuickDiagnostic() {
+                    // Close modal and start Quick Diagnostic (30q)
+                    this.showQuickDiagnosticModal = false;
+                    // Redirect to Quick Test route (bypasses old template)
+                    window.location.href = '/big-diagnostic/quick-test';
+                },
+                
+                closeModal() {
+                    this.showQuickDiagnosticModal = false;
+                },
+                
+                async loadIndividualPlanData() {
+                    try {
+                        // Fetch daily tasks
+                        const tasksResponse = await fetch('/api/individual-plan/daily-tasks');
+                        const tasksData = await tasksResponse.json();
+                        this.dailyTasks = tasksData.tasks;
+                        this.questionsToday = tasksData.questions_today || 0;
+                        
+                        // Fetch progress summary
+                        const progressResponse = await fetch('/api/individual-plan/progress');
+                        const progressData = await progressResponse.json();
+                        
+                        this.dailyStreak = progressData.daily_streak || 0;
+                        this.categories = progressData.categories || [];
+                        this.overallProgress = progressData.overall_progress || 0;
+                        this.timeInvested = Math.round((progressData.time_invested || 0) / 60); // Convert to hours
+                        this.retentionRate = Math.round(progressData.retention_rate || 0);
+                        
+                        // Mark data as loaded
+                        this.individualPlanDataLoaded = true;
+                        
+                        // Check for celebrations after data is loaded
+                        this.$nextTick(() => {
+                            this.checkForCelebrations();
+                        });
+                    } catch (error) {
+                        console.error('Error loading Individual Plan data:', error);
+                        // Even on error, mark as loaded to prevent infinite waiting
+                        this.individualPlanDataLoaded = true;
+                    }
+                },
+                
+                // Progress tab methods
+                async loadProgressData() {
+                    try {
+                        // Fetch progress data
+                        const response = await fetch('/api/individual-plan/progress');
+                        const data = await response.json();
+                        
+                        // Update progress metrics
+                        this.totalQuestionsAnswered = data.total_questions_answered || 0;
+                        this.recentSessions = data.recent_sessions || [];
+                        this.last30Days = data.activity_last_30_days || this.generateLast30Days();
+                        
+                        // Also update Individual Plan data for consistency
+                        this.dailyStreak = data.daily_streak || 0;
+                        this.categories = data.categories || [];
+                        this.overallProgress = data.overall_progress || 0;
+                        this.timeInvested = Math.round((data.time_invested || 0) / 60); // Convert to hours
+                        
+                    } catch (error) {
+                        console.error('Error loading progress data:', error);
+                        // Generate empty 30 days on error
+                        this.last30Days = this.generateLast30Days();
+                    }
+                },
+                
+                generateLast30Days() {
+                    // Generate last 30 days with 0 questions
+                    const days = [];
+                    const today = new Date();
+                    for (let i = 29; i >= 0; i--) {
+                        const date = new Date(today);
+                        date.setDate(date.getDate() - i);
+                        days.push({
+                            date: date.toISOString().split('T')[0],
+                            questions: 0
+                        });
+                    }
+                    return days;
+                },
+                
+                getActivityClass(questions) {
+                    if (questions === 0) return 'level-0';
+                    if (questions <= 5) return 'level-1';
+                    if (questions <= 10) return 'level-2';
+                    if (questions <= 20) return 'level-3';
+                    return 'level-4';
+                },
+                
+                // Celebration methods
+                triggerCelebration(type) {
+                    // Different animations for different achievements
+                    const celebrations = {
+                        'streak_7': {
+                            animation: '/static/animations/flame.json',
+                            message: '🔥 7 {{ t("days_streak", lang)|default("days streak") }}! {{ t("you_are_on_the_right_track", lang)|default("You are on the right track!") }}'
+                        },
+                        'streak_14': {
+                            animation: '/static/animations/fist.json',
+                            message: '💪 2 {{ t("weeks_streak", lang)|default("weeks streak") }}! {{ t("amazing", lang)|default("Amazing!") }}'
+                        },
+                        'streak_30': {
+                            animation: '/static/animations/arm.json',
+                            message: '🏆 30 {{ t("days_streak", lang)|default("days streak") }}! {{ t("you_are_a_legend", lang)|default("You are a legend!") }}'
+                        },
+                        'goal_met': {
+                            animation: '/static/animations/fist.json',
+                            message: '🎯 {{ t("daily_goal_achieved", lang)|default("Daily goal achieved") }}! {{ t("well_done", lang)|default("Well done!") }}'
+                        },
+                        'category_complete': {
+                            animation: '/static/animations/arm.json',
+                            message: '✅ {{ t("category_completed", lang)|default("Category completed") }}! {{ t("perfect", lang)|default("Perfect!") }}'
+                        }
+                    };
+                    
+                    const config = celebrations[type];
+                    
+                    if (config) {
+                        this.celebrationMessage = config.message;
+                        this.showCelebration = true;
+                        
+                        // Load Lottie animation using lottie-player web component
+                        this.$nextTick(() => {
+                            const container = document.getElementById('celebration-lottie');
+                            if (container) {
+                                // Clear previous animation
+                                container.innerHTML = '';
+                                
+                                // Create lottie-player element
+                                const player = document.createElement('lottie-player');
+                                player.setAttribute('src', config.animation);
+                                player.setAttribute('background', 'transparent');
+                                player.setAttribute('speed', '1');
+                                player.setAttribute('loop', '');
+                                player.setAttribute('autoplay', '');
+                                player.style.width = '200px';
+                                player.style.height = '200px';
+                                
+                                container.appendChild(player);
+                            }
+                        });
+                        
+                        // Auto-hide after 3 seconds
+                        setTimeout(() => {
+                            this.showCelebration = false;
+                        }, 3000);
+                    }
+                },
+                
+                checkForCelebrations() {
+                    // Check streak milestones
+                    if (this.dailyStreak === 7) {
+                        this.triggerCelebration('streak_7');
+                    } else if (this.dailyStreak === 14) {
+                        this.triggerCelebration('streak_14');
+                    } else if (this.dailyStreak === 30) {
+                        this.triggerCelebration('streak_30');
+                    }
                 }
             }
         }
@@ -2086,8 +3988,57 @@
                 });
             }
         });
+        
+        // Дополнительная инициализация для карты обучения (не переопределяет base.html)
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Learning Map: Additional dropdown initialization...');
+            console.log('🔍 Learning Map Debug - Current endpoint:', '{{ request.endpoint }}');
+            console.log('🔍 Learning Map Debug - Current view_args:', {{ (request.view_args or {})|tojson }});
+            
+            // Проверяем, что dropdowns уже инициализированы в base.html
+            setTimeout(function() {
+                var languageDropdown = document.getElementById('languageDropdown');
+                var userDropdown = document.getElementById('userDropdown');
+                
+                if (languageDropdown) {
+                    console.log('🌐 Learning Map: Language dropdown found, ensuring it works');
+                    // Проверяем, что dropdown работает
+                    if (!bootstrap.Dropdown.getInstance(languageDropdown)) {
+                        console.log('⚠️ Learning Map: Language dropdown not initialized, fixing...');
+                        new bootstrap.Dropdown(languageDropdown);
+                    }
+                    
+                    // Добавляем отладку для клика по кнопке языка
+                    languageDropdown.addEventListener('click', function(e) {
+                        console.log('🌐 Language button clicked!');
+                        console.log('🌐 Language button element:', this);
+                        console.log('🌐 Language button dropdown instance:', bootstrap.Dropdown.getInstance(this));
+                    });
+                    
+                    // Добавляем отладку для ссылок языков
+                    setTimeout(function() {
+                        var languageLinks = document.querySelectorAll('.language-menu .dropdown-item');
+                        console.log('🌐 Found language links:', languageLinks.length);
+                        languageLinks.forEach(function(link, index) {
+                            console.log('🌐 Language link ' + index + ':', link.textContent.trim(), 'URL:', link.href);
+                            link.addEventListener('click', function(e) {
+                                console.log('🌐 Language link clicked:', this.textContent.trim(), 'URL:', this.href);
+                                console.log('🌐 Language link event:', e);
+                            });
+                        });
+                    }, 200);
+                }
+                
+                if (userDropdown) {
+                    console.log('👤 Learning Map: User dropdown found, ensuring it works');
+                    // Проверяем, что dropdown работает
+                    if (!bootstrap.Dropdown.getInstance(userDropdown)) {
+                        console.log('⚠️ Learning Map: User dropdown not initialized, fixing...');
+                        new bootstrap.Dropdown(userDropdown);
+                    }
+                }
+            }, 100); // Небольшая задержка, чтобы base.html успел инициализироваться
+        });
     </script>
-</body>
-</html>
 </body>
 </html>

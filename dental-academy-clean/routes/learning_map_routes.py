@@ -660,7 +660,7 @@ def profession_redirect(lang):
         return redirect(url_for('profession_map_bp.profession_learning_map', lang=lang, profession=profession_slug))
     else:
         # Fallback на обычную карту обучения
-        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
 
 @profession_map_bp.route('/<string:profession>')
 @login_required
@@ -778,7 +778,7 @@ def profession_learning_map(lang, profession):
         import traceback
         traceback.print_exc()
         flash("Произошла ошибка при загрузке карты обучения: " + str(e), "danger")
-        return redirect(url_for('index', lang=lang))
+        return redirect(url_for('main.index', lang=lang))
 
 # --- Языковые и защитные обработчики ---
 SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
@@ -907,12 +907,16 @@ def learning_map(lang, path_id=None):
             if path.id == 6:  # Virtual Patients
                 vp_stats = get_virtual_patients_stats(current_user.id)
                 path.vp_stats = vp_stats        
-        # Если path_id не указан, используем первый путь
-        if path_id is None and learning_paths:
-            path_id = learning_paths[0].id
         
-        # Получаем запрашиваемый путь
-        current_path = LearningPath.query.get_or_404(path_id) if path_id else None
+        # Если path_id не указан или не найден, используем первый путь
+        current_path = None
+        if path_id:
+            current_path = LearningPath.query.get(path_id)
+        
+        # Если путь не найден, используем первый доступный
+        if not current_path and learning_paths:
+            current_path = learning_paths[0]
+            path_id = current_path.id
         
         # Получаем выбранный предмет из параметра URL
         selected_subject_id = request.args.get('subject', type=int)
@@ -1061,7 +1065,7 @@ def learning_map(lang, path_id=None):
         import traceback
         traceback.print_exc()
         flash("An error occurred while loading the learning map: " + str(e), "danger")
-        return redirect(url_for('index', lang=current_lang))
+        return redirect(url_for('main.index', lang=current_lang))
 
 # --- НОВЫЙ API-маршрут для запуска модуля ---
 @learning_map_bp.route("/api/start-module/<int:module_id>")
@@ -1236,7 +1240,7 @@ def start_module_redirect(lang, module_id):
         # Проверяем доступность для пользователя
         if module.is_premium and not current_user.has_subscription:
             flash('This module is only available to premium subscribers', 'warning')
-            return redirect(url_for('learning_map_bp.learning_map', lang=g.lang))
+            return redirect(url_for('learning_map_bp.learning_map', lang=g.lang, path_id='irt'))
 
         # Если это финальный тест
         if module.is_final_test:
@@ -1249,7 +1253,7 @@ def start_module_redirect(lang, module_id):
         import traceback
         traceback.print_exc()
         flash(f'Error starting module: {str(e)}', 'danger')
-        return redirect(url_for('learning_map_bp.learning_map', lang=g.lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=g.lang, path_id='irt'))
 
 # --- API-эндпоинт ---
 @learning_map_bp.route("/api/data/<string:path_id>")
@@ -1509,7 +1513,7 @@ def debug_add_progress(lang):
         
         if not lessons:
             flash("Уроки не найдены в базе данных", "warning")
-            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
             
         added_count = 0
         lesson_info = []
@@ -1569,7 +1573,7 @@ def debug_add_progress(lang):
         db.session.rollback()
         current_app.logger.error(f"Ошибка при добавлении тестового прогресса: {str(e)}", exc_info=True)
         flash(f"❌ Ошибка при добавлении тестового прогресса: {str(e)}", "danger")
-        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
     
     
 @learning_map_bp.route("/debug/progress-status")
@@ -1636,7 +1640,7 @@ def debug_progress_status(lang):
     except Exception as e:
         current_app.logger.error(f"Ошибка при получении статистики прогресса: {str(e)}", exc_info=True)
         flash(f"❌ Ошибка при получении статистики прогресса: {str(e)}", "danger")
-        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
     
 @learning_map_bp.route('/api/path/<string:path_id>/subjects')
 def get_path_subjects(path_id):
@@ -1759,7 +1763,7 @@ def view_path(lang, path_id):
     except Exception as e:
         current_app.logger.error(f"Ошибка при отображении пути {path_id}: {str(e)}", exc_info=True)
         flash(f"Ошибка при загрузке данных: {str(e)}", "danger")
-        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
     
 @learning_map_bp.route("/debug/post-rollback-check")
 @login_required
@@ -2025,7 +2029,7 @@ def test_caries(lang):
         # Тест через карту обучения
         html += f"""
         <h2>Через карту обучения</h2>
-        <p><a href="{url_for('learning_map_bp.learning_map', lang=lang)}" 
+        <p><a href="{url_for('learning_map_bp.learning_map', lang=lang, path_id='irt')}" 
               style="background: blue; color: white; padding: 10px; text-decoration: none;">
             🗺️ Открыть карту обучения
         </a></p>
@@ -2091,7 +2095,7 @@ def subject_tests(lang, subject_id):
     except Exception as e:
         current_app.logger.error(f"Ошибка при отображении тестов: {str(e)}")
         flash("Er is een fout opgetreden bij het laden van de tests.", "error")
-        return redirect(url_for('learning_map_bp.learning_map', lang=g.lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=g.lang, path_id='irt'))
 
 # === ФУНКЦИИ ПРОВЕРКИ СОСТОЯНИЯ === #
 
@@ -2291,7 +2295,7 @@ def subject_topics(lang, subject_id):
     except Exception as e:
         current_app.logger.error(f"Error in subject_topics: {e}", exc_info=True)
         flash("Error loading subject topics", "error")
-        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
 
 def get_diagnostic_based_recommendations(user_id, limit=5):
     """
@@ -2394,7 +2398,7 @@ def start_diagnostic_learning(lang):
         if not recommendations:
             # Если нет рекомендаций, перенаправляем на обычную карту обучения
             flash(t('no_diagnostic_recommendations', lang) | default('No diagnostic recommendations available. Please complete a knowledge assessment first.'), 'info')
-            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
         
         # Берем первый рекомендуемый модуль
         recommended_module = recommendations[0]
@@ -2404,13 +2408,13 @@ def start_diagnostic_learning(lang):
         module = Module.query.get(module_id)
         if not module:
             flash(t('module_not_found', lang) | default('Module not found.'), 'error')
-            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
         
         # Получаем первый урок модуля
         first_lesson = module.lessons.order_by(Lesson.order).first()
         if not first_lesson:
             flash(t('no_lessons_in_module', lang) | default('No lessons found in this module.'), 'error')
-            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
         
         # Перенаправляем на интерактивный урок
         return redirect(url_for('modules_bp.subtopic_lessons_list', 
@@ -2421,7 +2425,7 @@ def start_diagnostic_learning(lang):
     except Exception as e:
         current_app.logger.error(f"Ошибка при начале обучения на основе диагностики: {str(e)}", exc_info=True)
         flash(t('error_starting_diagnostic_learning', lang) | default('Error starting diagnostic-based learning.'), 'error')
-        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
 
 
     stage = 'post_diagnostic' if diagnostic_completed else 'pre_diagnostic'

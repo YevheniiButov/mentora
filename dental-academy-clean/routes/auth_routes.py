@@ -133,11 +133,13 @@ def get_file_size(file):
 
 # Activating authentication routes:
 @auth_bp.route('/logout')
+@auth_bp.route('/<lang>/logout')
 @login_required
-def logout():
+def logout(lang=None):
     """Logout user"""
     logout_user()
-    lang = g.get('lang', 'en')
+    if not lang:
+        lang = g.get('lang', 'en')
     return redirect(f'/{lang}/')
 
 # Keeping only DigiD:

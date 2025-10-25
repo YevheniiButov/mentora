@@ -16,6 +16,7 @@ from models import UserLearningProgress
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from utils.daily_learning_algorithm import DailyLearningAlgorithm
+from utils.helpers import get_user_profession_code
 
 learning_bp = Blueprint('learning', __name__)
 
@@ -572,21 +573,40 @@ def automated_practice(plan_id=None, week=None):
     practice_questions = []
     
     if weak_domains:
+        user_profession = get_user_profession_code(current_user)
         for domain_name in weak_domains:
             domain_questions = Question.query.join(BIGDomain).filter(
-                BIGDomain.name.contains(domain_name)
+                BIGDomain.name.contains(domain_name),
+                Question.profession == user_profession
             ).limit(5).all()
             practice_questions.extend(domain_questions)
     
     # If no domain-specific questions, get general questions
     if not practice_questions:
-        practice_questions = Question.query.limit(10).all()
+        user_profession = get_user_profession_code(current_user)
+        practice_questions = Question.query.filter_by(profession=user_profession).limit(10).all()
+    
+    # Convert Question objects to JSON-serializable dictionaries
+    questions_data = []
+    for q in practice_questions:
+        questions_data.append({
+            'id': q.id,
+            'text': q.text,
+            'options': q.options,
+            'correct_answer_index': q.correct_answer_index,
+            'correct_answer_text': q.correct_answer_text,
+            'explanation': q.explanation,
+            'difficulty_level': q.difficulty_level,
+            'category': q.category,
+            'domain': q.domain,
+            'question_type': q.question_type
+        })
     
     return render_template('learning/automated_practice.html',
                          plan=plan,
                          current_week=week,
                          current_session=current_session,
-                         practice_questions=practice_questions)
+                         practice_questions=questions_data)
 
 @learning_bp.route('/automated/test')
 @login_required
@@ -642,13 +662,38 @@ def complete_automated_session():
         plan_id = session.get('learning_plan_id')
         current_week = session.get('current_week')
         current_session = session.get('current_session')
+        learning_mode = session.get('learning_mode')
         
         # Добавляем диагностику
-        current_app.logger.info(f"Complete session request - plan_id: {plan_id}, week: {current_week}, session: {current_session}")
+        current_app.logger.info(f"Complete session request - plan_id: {plan_id}, week: {current_week}, session: {current_session}, mode: {learning_mode}")
         
         if not plan_id or not current_session:
             current_app.logger.error(f"Missing session data - plan_id: {plan_id}, current_session: {current_session}")
             return safe_jsonify({'error': 'No active session'}), 400
+        
+        # Special handling for daily practice mode
+        if learning_mode == 'daily_practice':
+            # Clear session data
+            session.pop('learning_plan_id', None)
+            session.pop('current_week', None)
+            session.pop('current_session', None)
+            session.pop('learning_mode', None)
+            session.pop('daily_session_questions', None)
+            session.pop('daily_session_active', None)
+            
+            # NOTE: Redirect to dashboard after daily practice completion
+            # Dashboard is currently NOT the main hub of the app - it's just a transition point
+            # that shows basic stats and redirects to the main page/learning map.
+            # In the future, if the app grows significantly, we might make dashboard the central hub.
+            # For now: Daily Practice → Dashboard → Main page
+            redirect_url = url_for('dashboard.index')
+            
+            return safe_jsonify({
+                'success': True,
+                'redirect_url': redirect_url,
+                'completed': True,
+                'message': 'Dagelijkse sessie voltooid! Goed gedaan!'
+            })
         
         plan = PersonalLearningPlan.query.get_or_404(plan_id)
         current_app.logger.info(f"Found plan: {plan.id} for user: {plan.user_id}")
@@ -1205,139 +1250,3 @@ def learning_cards(path):
 # ТЕСТОВАЯ КАРТА ОБУЧЕНИЯ (РАЗРАБОТКА)
 # ========================================
 
-@learning_bp.route('/test-learning-map')
-@login_required
-def test_learning_map():
-    """Тестовая карта обучения для разработки и тестирования"""
-    try:
-        # Получаем текущего пользователя
-        user = current_user
-        
-        # Получаем последнюю диагностическую сессию
-        from models import DiagnosticSession
-        latest_diagnostic = DiagnosticSession.query.filter_by(
-            user_id=user.id,
-            status='completed'
-        ).order_by(DiagnosticSession.completed_at.desc()).first()
-        
-        # Получаем активный план обучения
-        active_plan = PersonalLearningPlan.query.filter_by(
-            user_id=user.id,
-            status='active'
-        ).first()
-        
-        # Получаем статистику пользователя
-        user_stats = {
-            'total_modules': Module.query.count(),
-            'completed_modules': UserProgress.query.filter_by(
-                user_id=user.id,
-                completed=True
-            ).count(),
-            'total_lessons': Lesson.query.count(),
-            'completed_lessons': UserProgress.query.filter_by(
-                user_id=user.id,
-                completed=True
-            ).join(Lesson).count(),
-            'diagnostic_completed': latest_diagnostic is not None,
-            'learning_plan_active': active_plan is not None
-        }
-        
-        # Получаем все домены BIG
-        big_domains = BIGDomain.query.all()
-        
-        # Получаем рекомендации на основе диагностики
-        recommendations = []
-        if latest_diagnostic:
-            try:
-                results = latest_diagnostic.generate_results()
-                weak_domains = results.get('weak_domains', [])
-                
-                # Создаем рекомендации на основе слабых доменов
-                for domain_name in weak_domains[:5]:  # Топ 5 слабых доменов
-                    domain = BIGDomain.query.filter_by(name=domain_name).first()
-                    if domain:
-                        recommendations.append({
-                            'domain': domain_name,
-                            'priority': 'high',
-                            'description': f'Усилить знания в области {domain_name}',
-                            'modules_count': Module.query.filter_by(subject_id=domain.id).count()
-                        })
-            except Exception as e:
-                current_app.logger.error(f"Error generating recommendations: {str(e)}")
-        
-        return render_template('learning/test_learning_map.html',
-                             user=user,
-                             user_stats=user_stats,
-                             latest_diagnostic=latest_diagnostic,
-                             active_plan=active_plan,
-                             big_domains=big_domains,
-                             recommendations=recommendations)
-        
-    except Exception as e:
-        current_app.logger.error(f"Error loading test learning map: {str(e)}")
-        flash('Ошибка загрузки тестовой карты обучения', 'error')
-        return redirect(url_for('learning.index'))
-
-@learning_bp.route('/test-learning-map/start-diagnostic')
-@login_required
-def test_start_diagnostic():
-    """Запуск диагностики из тестовой карты"""
-    try:
-        # Перенаправляем на выбор типа диагностики
-        return redirect(url_for('diagnostic.choose_diagnostic_type'))
-    except Exception as e:
-        current_app.logger.error(f"Error starting diagnostic: {str(e)}")
-        flash('Ошибка запуска диагностики', 'error')
-        return redirect(url_for('learning.test_learning_map'))
-
-@learning_bp.route('/test-learning-map/create-plan')
-@login_required
-def test_create_learning_plan():
-    """Создание плана обучения из тестовой карты"""
-    try:
-        # Получаем последнюю диагностическую сессию
-        from models import DiagnosticSession
-        latest_diagnostic = DiagnosticSession.query.filter_by(
-            user_id=current_user.id,
-            status='completed'
-        ).order_by(DiagnosticSession.completed_at.desc()).first()
-        
-        if not latest_diagnostic:
-            flash('Сначала пройдите диагностику!', 'warning')
-            return redirect(url_for('learning.test_learning_map'))
-        
-        # Перенаправляем на создание плана
-        return redirect(url_for('diagnostic.generate_learning_plan'))
-        
-    except Exception as e:
-        current_app.logger.error(f"Error creating learning plan: {str(e)}")
-        flash('Ошибка создания плана обучения', 'error')
-        return redirect(url_for('learning.test_learning_map'))
-
-@learning_bp.route('/test-learning-map/daily-plan')
-@login_required
-def test_daily_plan():
-    """Ежедневный план обучения из тестовой карты"""
-    try:
-        # Получаем активный план обучения
-        active_plan = PersonalLearningPlan.query.filter_by(
-            user_id=current_user.id,
-            status='active'
-        ).first()
-        
-        if not active_plan:
-            flash('Сначала создайте план обучения!', 'warning')
-            return redirect(url_for('learning.test_learning_map'))
-        
-        # Генерируем ежедневный план
-        algorithm = DailyLearningAlgorithm(current_user.id)
-        daily_plan = algorithm.generate_daily_plan()
-        
-        return render_template('learning/test_daily_plan.html',
-                               daily_plan=daily_plan,
-                               active_plan=active_plan)
-        
-    except Exception as e:
-        current_app.logger.error(f"Error generating daily plan: {str(e)}")
-        flash('Ошибка генерации ежедневного плана', 'error')
-        return redirect(url_for('learning.test_learning_map'))

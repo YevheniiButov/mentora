@@ -83,7 +83,7 @@ def index():
             flash(f'Необходимо пройти переоценку прогресса для продолжения эффективного обучения!', 'warning')
             # Добавляем в контекст для показа большого баннера
             reassessment_required = True
-            reassessment_url = url_for('diagnostic_bp.start_reassessment', plan_id=active_plan.id)
+            reassessment_url = url_for('diagnostic.start_reassessment', plan_id=active_plan.id)
         elif days_until_reassessment <= 3:
             # Скоро переоценка
             flash(f'Через {days_until_reassessment} дня запланирована переоценка прогресса', 'info')
@@ -190,28 +190,8 @@ def learning_plan(plan_id):
     study_schedule = plan.get_study_schedule()
     milestones = plan.get_milestones()
     
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
-    # Redirect to the enhanced learning planner
-    return redirect(url_for("learning_planner.learning_planner", plan_id=plan_id))
+    # Redirect to learning map instead of learning planner
+    return redirect(url_for('learning_map_bp.learning_map', lang=session.get('lang', 'nl'), path_id='irt'))
 
 @dashboard_bp.route('/learning-plan/<int:plan_id>/start-learning')
 # @login_required  # Временно отключено для тестирования
@@ -485,13 +465,13 @@ def create_learning_plan():
                 return jsonify({
                     'success': True,
                     'plan_id': plan.id,
-                    'redirect_url': url_for('dashboard.learning_plan', plan_id=plan.id),
+                    'redirect_url': url_for('learning_map_bp.learning_map', lang=session.get('lang', 'nl'), path_id='irt'),
                     'goals': goals,
                     'schedule': schedule
                 })
             else:
                 flash(f'План обучения успешно создан! ID: {plan.id}', 'success')
-                return redirect(url_for('dashboard.learning_plan', plan_id=plan.id))
+                return redirect(url_for('learning_map_bp.learning_map', lang=session.get('lang', 'nl'), path_id='irt'))
             
         except ValueError as e:
             error_msg = f'Ошибка: {str(e)}'

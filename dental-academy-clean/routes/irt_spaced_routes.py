@@ -16,6 +16,7 @@ from models import User, Question, SpacedRepetitionItem, DiagnosticSession
 from utils.irt_spaced_integration import get_irt_spaced_integration
 from utils.metrics import record_error, record_fallback_usage
 from utils.serializers import safe_jsonify
+from utils.helpers import get_user_profession_code
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,11 @@ def get_review_schedule():
         formatted_items = []
         for item in review_items:
             # Получаем информацию о вопросе
-            question = Question.query.get(item.question_id)
+            user_profession = get_user_profession_code(current_user)
+            question = Question.query.filter_by(
+                id=item.question_id,
+                profession=user_profession
+            ).first()
             if not question:
                 continue
             

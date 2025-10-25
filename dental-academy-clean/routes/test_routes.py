@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from models import User, Question, QuestionCategory, BIGDomain, IRTParameters, DiagnosticSession, DiagnosticResponse, PersonalLearningPlan
 from extensions import db
 from utils.irt_engine import IRTEngine
+from utils.helpers import get_user_profession_code
 import logging
 import json
 from datetime import datetime, timezone

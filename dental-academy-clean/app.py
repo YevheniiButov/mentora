@@ -468,7 +468,7 @@ try:
 
     
     # Register blueprints
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
     app.register_blueprint(learning_bp, url_prefix='/learning')  # ВКЛЮЧЕНО с декораторами блокировки
@@ -581,6 +581,16 @@ try:
         logger.info("✅ Membership blueprint registered successfully")
     except Exception as membership_error:
         logger.error(f"❌ ERROR importing Membership routes: {membership_error}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+    
+    # Individual Plan API System
+    try:
+        from routes.individual_plan_api import individual_plan_api_bp
+        app.register_blueprint(individual_plan_api_bp)
+        logger.info("✅ Individual Plan API blueprint registered successfully")
+    except Exception as individual_plan_error:
+        logger.error(f"❌ ERROR importing Individual Plan API routes: {individual_plan_error}")
         import traceback
         logger.error(f"❌ Traceback: {traceback.format_exc()}")
     
@@ -2102,7 +2112,8 @@ def track_email_entry():
             return safe_jsonify({"success": True})
         else:
             logger.warning(f"⚠️ Failed to track email entry: {email} on {page_type}")
-            return safe_jsonify({"success": False, "error": "Failed to track email entry"}), 500
+            # Не возвращаем ошибку 500, так как это может быть нормально (нет активной сессии)
+            return safe_jsonify({"success": False, "message": "No active visitor session"})
             
     except Exception as e:
         logger.error(f"❌ Error tracking email entry: {str(e)}")

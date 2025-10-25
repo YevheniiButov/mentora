@@ -401,6 +401,7 @@ def questions_management():
     page = request.args.get('page', 1, type=int)
     domain_filter = request.args.get('domain', 'all')
     irt_filter = request.args.get('irt', 'all')
+    profession_filter = request.args.get('profession', 'all')
     search = request.args.get('search', '')
     
     query = Question.query
@@ -412,6 +413,10 @@ def questions_management():
     # Фильтр по домену
     if domain_filter != 'all':
         query = query.filter_by(domain=domain_filter)
+    
+    # Фильтр по профессии
+    if profession_filter != 'all':
+        query = query.filter_by(profession=profession_filter)
     
     # Фильтр по IRT
     if irt_filter == 'with_irt':
@@ -432,10 +437,16 @@ def questions_management():
     domains = db.session.query(Question.domain).distinct().all()
     domains = [d[0] for d in domains if d[0]]
     
+    # Получаем список профессий для фильтра
+    professions = db.session.query(Question.profession).filter(Question.profession.isnot(None)).distinct().all()
+    professions = [p[0] for p in professions if p[0]]
+    
     return render_template('admin/questions_management.html',
                          questions=questions,
                          domains=domains,
+                         professions=professions,
                          domain_filter=domain_filter,
+                         profession_filter=profession_filter,
                          irt_filter=irt_filter,
                          search=search)
 
@@ -451,6 +462,7 @@ def edit_question(question_id):
         question.text = request.form.get('text')
         question.correct_answer_text = request.form.get('correct_answer')
         question.explanation = request.form.get('explanation')
+        question.profession = request.form.get('profession')
         
         # Обновляем опции
         options = []

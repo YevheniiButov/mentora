@@ -65,6 +65,13 @@
       {% else %}
         {{ url_for(request.endpoint, **args) }}
       {% endif %}
+    {# Специальная обработка для карты обучения #}
+    {% elif request.endpoint == 'learning_map_bp.learning_map' %}
+      {% if request.view_args.get('path_id') %}
+        {{ url_for('learning_map_bp.learning_map', lang=language, path_id=request.view_args.get('path_id')) }}
+      {% else %}
+        {{ url_for('learning_map_bp.learning_map', lang=language) }}
+      {% endif %}
     {% else %}
       {{ url_for(request.endpoint, **args) }}
     {% endif %}

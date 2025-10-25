@@ -255,7 +255,7 @@
 {% block content %}
 <div class="daily-plan-container">
     <!-- Кнопка назад -->
-    <a href="{{ url_for('learning.test_learning_map') }}" class="back-button">
+    <a href="{{ url_for('learning_map_bp.learning_map', lang=session.get('lang', 'nl'), path_id='irt') }}" class="back-button">
         <i class="fas fa-arrow-left"></i> Назад к тестовой карте
     </a>
     
@@ -324,7 +324,7 @@
         <i class="fas fa-calendar-times"></i>
         <h3>Нет заданий на сегодня</h3>
         <p>Все задания выполнены или план обучения не активен.</p>
-        <a href="{{ url_for('learning.test_learning_map') }}" class="btn-task btn-start">
+        <a href="{{ url_for('learning_map_bp.learning_map', lang=session.get('lang', 'nl'), path_id='irt') }}" class="btn-task btn-start">
             <i class="fas fa-arrow-left"></i> Вернуться к карте обучения
         </a>
     </div>
@@ -366,3 +366,5 @@
     });
 </script>
 {% endblock %}
+
+

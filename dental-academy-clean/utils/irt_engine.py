@@ -10,6 +10,7 @@ from extensions import db
 from models import Question, DiagnosticSession, DiagnosticResponse, BIGDomain
 from models import IRTParameters # Added missing import
 from utils.metrics import record_fallback_usage, record_error
+from utils.helpers import get_user_profession_code
 
 # Добавляем импорты для оптимизации
 from utils.cache_manager import get_cached_question, get_cached_irt_parameters, get_cached_domain_questions
@@ -212,8 +213,9 @@ def safe_ability_estimation(responses: List[Dict], initial_ability: float = 0.0)
 class IRTEngine:
     """IRT Engine for 3PL model adaptive testing with domain support"""
     
-    def __init__(self, session: Optional[DiagnosticSession] = None, diagnostic_type: str = 'express'):
+    def __init__(self, session: Optional[DiagnosticSession] = None, diagnostic_type: str = 'express', user=None):
         self.session = session
+        self.user = user
         self.max_iterations = 50
         self.convergence_threshold = 0.001
         self.min_se_threshold = 0.4  # Увеличен порог стандартной ошибки для завершения
@@ -558,14 +560,15 @@ class IRTEngine:
         """
         try:
             # First try: Get all questions with IRT parameters
-            questions = Question.query.join(IRTParameters).all()
-            logger.info(f"Found {len(questions)} questions with IRT parameters")
+            user_profession = get_user_profession_code(self.user) if self.user else 'huisarts'
+            questions = Question.query.join(IRTParameters).filter_by(profession=user_profession).all()
+            logger.info(f"Found {len(questions)} questions with IRT parameters for profession {user_profession}")
             
             if not questions:
                 logger.warning("No questions with IRT parameters found, trying all questions")
                 # Fallback: Get all questions without IRT requirement
-                questions = Question.query.all()
-                logger.info(f"Found {len(questions)} total questions")
+                questions = Question.query.filter_by(profession=user_profession).all()
+                logger.info(f"Found {len(questions)} total questions for profession {user_profession}")
                 
                 if not questions:
                     logger.error("No questions found in database at all")
@@ -619,7 +622,8 @@ class IRTEngine:
             logger.error(f"Error in select_initial_question: {e}")
             # Final fallback: try to get any question
             try:
-                questions = Question.query.limit(10).all()
+                user_profession = get_user_profession_code(self.user) if self.user else 'huisarts'
+                questions = Question.query.filter_by(profession=user_profession).limit(10).all()
                 if questions:
                     import random
                     selected = random.choice(questions)
@@ -665,7 +669,8 @@ class IRTEngine:
                 logger.info(f"Added current question {self.session.current_question_id} to answered questions")
             
             # Проверить, есть ли еще доступные вопросы
-            total_questions = Question.query.count()
+            user_profession = get_user_profession_code(self.user) if self.user else 'huisarts'
+            total_questions = Question.query.filter_by(profession=user_profession).count()
             if len(answered_question_ids) >= total_questions:
                 logger.warning(f"All {total_questions} questions have been answered")
                 self._recursion_counter = 0
@@ -673,6 +678,7 @@ class IRTEngine:
             
             # Дополнительная проверка: убедимся, что у нас есть вопросы для выбора
             available_questions_count = Question.query.filter(
+                Question.profession == user_profession,
                 ~Question.id.in_(answered_question_ids)
             ).count()
             
@@ -777,10 +783,14 @@ class IRTEngine:
         # Если все домены покрыты, использовать стандартную логику
         # Найти вопрос с оптимальной сложностью, исключая уже отвеченные
         # ИСПРАВЛЕНИЕ: Добавляем eager loading для предотвращения detached объектов
+        user_profession = get_user_profession_code(self.user) if self.user else 'huisarts'
         all_questions = Question.query.options(
             db.joinedload(Question.irt_parameters),
             db.joinedload(Question.big_domain)
-        ).filter(~Question.id.in_(answered_question_ids)).all()
+        ).filter(
+            Question.profession == user_profession,
+            ~Question.id.in_(answered_question_ids)
+        ).all()
         
         if not all_questions:
             # Если все вопросы отвечены, завершить диагностику
@@ -1107,8 +1117,12 @@ class IRTEngine:
         
         # Получить только домены с вопросами
         domains_with_questions = []
+        user_profession = get_user_profession_code(self.user) if self.user else 'huisarts'
         for domain_code in self.all_domains.keys():
-            questions_count = Question.query.filter_by(big_domain_id=self.all_domains[domain_code].id).count()
+            questions_count = Question.query.filter_by(
+                big_domain_id=self.all_domains[domain_code].id,
+                profession=user_profession
+            ).count()
             if questions_count > 0:
                 domains_with_questions.append(domain_code)
         

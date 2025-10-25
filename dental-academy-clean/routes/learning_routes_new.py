@@ -119,7 +119,7 @@ def _adapt_daily_plan_for_template(daily_plan_result):
 def learning_map(lang):
     """Redirect to real learning map"""
     from flask import redirect, url_for, g
-    return redirect(url_for('learning_map_bp.learning_map', lang=lang))
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
 
 @daily_learning_bp.route('/knowledge-base')
 @login_required  

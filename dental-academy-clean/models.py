@@ -1282,6 +1282,9 @@ class Question(db.Model):
     question_type = db.Column(db.String(50), default='multiple_choice', nullable=False)
     clinical_context = db.Column(db.Text, nullable=True)
     learning_objectives = db.Column(db.JSON, nullable=True)
+    
+    # Profession filtering
+    profession = db.Column(db.String(50), nullable=True, index=True)  # tandarts, apotheker, huisarts, verpleegkundige
 
     # Relationships
     big_domain = db.relationship('BIGDomain', backref='questions', lazy=True)
@@ -2486,6 +2489,42 @@ class UserReminder(db.Model):
 # BI-TOETS DIAGNOSTIC TESTING MODELS
 # ========================================
 
+class DomainCategory(db.Model):
+    """Category for grouping BIG domains (e.g., Clinical Foundations, Medical Sciences)"""
+    __tablename__ = 'domain_category'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    name_nl = db.Column(db.String(100), nullable=True)  # Dutch translation
+    description = db.Column(db.Text, nullable=True)
+    icon = db.Column(db.String(50), nullable=True)  # Emoji or icon class
+    profession = db.Column(db.String(50), nullable=False, index=True)  # tandarts, huisarts, etc.
+    order = db.Column(db.Integer, default=0)  # Display order
+    color = db.Column(db.String(20), nullable=True)  # For UI (e.g., '#0066cc')
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship with BIG domains
+    big_domains = db.relationship('BIGDomain', backref='domain_category', lazy='dynamic')
+    
+    def __repr__(self):
+        return f'<DomainCategory {self.name} ({self.profession})>'
+    
+    def to_dict(self):
+        """Convert to dictionary for API responses"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'name_nl': self.name_nl,
+            'description': self.description,
+            'icon': self.icon,
+            'profession': self.profession,
+            'order': self.order,
+            'color': self.color,
+            'domains_count': self.big_domains.count()
+        }
+
 class BIGDomain(db.Model):
     """BI-toets domains based on ACTA 180 ECTS program - Updated Structure"""
     __tablename__ = 'big_domain'
@@ -2501,6 +2540,7 @@ class BIGDomain(db.Model):
     
     # НОВЫЕ ПОЛЯ ДЛЯ РЕСТРУКТУРИЗАЦИИ
     category = db.Column(db.String(50), nullable=True, index=True)  # THEORETICAL, METHODOLOGY, PRACTICAL, CLINICAL
+    category_id = db.Column(db.Integer, db.ForeignKey('domain_category.id'), nullable=True, index=True)  # Link to DomainCategory
     exam_type = db.Column(db.String(50), nullable=True, index=True)  # multiple_choice, open_book, practical, case_study, interview
     is_critical = db.Column(db.Boolean, default=False, index=True)  # Критические домены для приоритета
     subcategories = db.Column(db.Text, nullable=True)  # JSON array of subcategories
@@ -3400,6 +3440,35 @@ class PersonalLearningPlan(db.Model, JSONSerializableMixin):
     next_diagnostic_date = db.Column(db.Date, nullable=True)  # Дата следующей переоценки
     diagnostic_reminder_sent = db.Column(db.Boolean, default=False)  # Флаг отправки напоминания
     
+    # === NEW FIELDS FOR PHASE 4 ===
+    
+    # Spaced Repetition Integration
+    spaced_repetition_enabled = db.Column(db.Boolean, default=True)
+    sr_algorithm = db.Column(db.String(20), default='sm2')  # sm2, anki, custom
+    next_review_date = db.Column(db.Date, nullable=True)  # Next SR review session
+    sr_streak = db.Column(db.Integer, default=0)  # Days of consecutive SR reviews
+    total_sr_reviews = db.Column(db.Integer, default=0)  # Total SR reviews completed
+    
+    # Domain Category Integration (from Phase 3)
+    category_progress = db.Column(db.Text, nullable=True)  # JSON: {category_id: progress_percent}
+    weak_categories = db.Column(db.Text, nullable=True)    # JSON: [category_ids]
+    strong_categories = db.Column(db.Text, nullable=True)  # JSON: [category_ids]
+    current_category_focus = db.Column(db.Integer, nullable=True)  # Current category being studied
+    
+    # Daily Tasks and Goals
+    daily_question_goal = db.Column(db.Integer, default=20)  # Questions per day target
+    daily_time_goal = db.Column(db.Integer, default=30)     # Minutes per day target
+    daily_streak = db.Column(db.Integer, default=0)         # Current daily activity streak
+    longest_daily_streak = db.Column(db.Integer, default=0) # Best streak record
+    last_activity_date = db.Column(db.Date, nullable=True)  # Last active date
+    daily_goal_met_count = db.Column(db.Integer, default=0) # Total days goal was met
+    
+    # Enhanced Progress Tracking
+    category_abilities = db.Column(db.Text, nullable=True)  # JSON: {category_id: ability_score}
+    learning_velocity = db.Column(db.Float, nullable=True)  # Questions per hour
+    retention_rate = db.Column(db.Float, nullable=True)     # % of reviewed questions retained
+    time_invested = db.Column(db.Integer, default=0)        # Total minutes studied
+    
     # Relationships
     user = db.relationship('User', backref='learning_plans')
     diagnostic_session = db.relationship('DiagnosticSession', backref='learning_plans')
@@ -4002,6 +4071,168 @@ class PersonalLearningPlan(db.Model, JSONSerializableMixin):
         
         change = abs(new_ability - self.current_ability)
         return change >= min_change_threshold
+    
+    # === NEW HELPER METHODS FOR PHASE 4 ===
+    
+    # Category Progress Methods
+    def get_category_progress(self):
+        """Get category progress as dict"""
+        if not self.category_progress:
+            return {}
+        try:
+            return json.loads(self.category_progress)
+        except:
+            return {}
+    
+    def set_category_progress(self, progress_dict):
+        """Set category progress from dict"""
+        self.category_progress = json.dumps(progress_dict)
+    
+    def update_category_progress(self, category_id, progress_percent):
+        """Update progress for specific category"""
+        progress = self.get_category_progress()
+        progress[str(category_id)] = progress_percent
+        self.set_category_progress(progress)
+    
+    # Weak/Strong Categories Methods
+    def get_weak_categories(self):
+        """Get list of weak category IDs"""
+        if not self.weak_categories:
+            return []
+        try:
+            return json.loads(self.weak_categories)
+        except:
+            return []
+    
+    def set_weak_categories(self, category_ids):
+        """Set weak categories"""
+        self.weak_categories = json.dumps(category_ids)
+    
+    def get_strong_categories(self):
+        """Get list of strong category IDs"""
+        if not self.strong_categories:
+            return []
+        try:
+            return json.loads(self.strong_categories)
+        except:
+            return []
+    
+    def set_strong_categories(self, category_ids):
+        """Set strong categories"""
+        self.strong_categories = json.dumps(category_ids)
+    
+    # Daily Streak Methods
+    def update_daily_streak(self, activity_date=None):
+        """Update daily streak based on activity"""
+        from datetime import date
+        if activity_date is None:
+            activity_date = date.today()
+        
+        if self.last_activity_date:
+            days_diff = (activity_date - self.last_activity_date).days
+            
+            if days_diff == 1:
+                # Consecutive day - increase streak
+                self.daily_streak += 1
+                if self.daily_streak > self.longest_daily_streak:
+                    self.longest_daily_streak = self.daily_streak
+            elif days_diff > 1:
+                # Streak broken
+                self.daily_streak = 1
+            # If days_diff == 0, same day - don't change streak
+        else:
+            # First activity
+            self.daily_streak = 1
+            self.longest_daily_streak = 1
+        
+        self.last_activity_date = activity_date
+        return self.daily_streak
+    
+    def check_daily_goal_met(self, questions_today, minutes_today):
+        """Check if daily goal was met"""
+        daily_goal = self.daily_question_goal or 20
+        time_goal = self.daily_time_goal or 30
+        
+        goal_met = (questions_today >= daily_goal and 
+                    minutes_today >= time_goal)
+        
+        if goal_met:
+            if self.daily_goal_met_count is None:
+                self.daily_goal_met_count = 0
+            self.daily_goal_met_count += 1
+        
+        return goal_met
+    
+    # Category Abilities Methods
+    def get_category_abilities(self):
+        """Get category abilities as dict"""
+        if not self.category_abilities:
+            return {}
+        try:
+            return json.loads(self.category_abilities)
+        except:
+            return {}
+    
+    def set_category_abilities(self, abilities_dict):
+        """Set category abilities from dict"""
+        self.category_abilities = json.dumps(abilities_dict)
+    
+    def update_category_ability(self, category_id, ability_score):
+        """Update ability for specific category"""
+        abilities = self.get_category_abilities()
+        abilities[str(category_id)] = ability_score
+        self.set_category_abilities(abilities)
+    
+    # Spaced Repetition Methods
+    def update_sr_streak(self, review_completed=True):
+        """Update spaced repetition streak"""
+        if review_completed:
+            if self.sr_streak is None:
+                self.sr_streak = 0
+            if self.total_sr_reviews is None:
+                self.total_sr_reviews = 0
+            self.sr_streak += 1
+            self.total_sr_reviews += 1
+        else:
+            self.sr_streak = 0
+    
+    def get_next_sr_review_date(self):
+        """Get next spaced repetition review date"""
+        return self.next_review_date
+    
+    def set_next_sr_review_date(self, review_date):
+        """Set next spaced repetition review date"""
+        self.next_review_date = review_date
+    
+    # Enhanced Progress Methods
+    def update_learning_velocity(self, questions_answered, time_spent_minutes):
+        """Update learning velocity (questions per hour)"""
+        if time_spent_minutes > 0:
+            self.learning_velocity = (questions_answered * 60) / time_spent_minutes
+    
+    def update_retention_rate(self, reviewed_questions, retained_questions):
+        """Update retention rate percentage"""
+        if reviewed_questions > 0:
+            self.retention_rate = (retained_questions / reviewed_questions) * 100
+    
+    def add_time_invested(self, minutes):
+        """Add time invested to total"""
+        if self.time_invested is None:
+            self.time_invested = 0
+        self.time_invested += minutes
+    
+    def get_progress_summary(self):
+        """Get comprehensive progress summary"""
+        return {
+            'overall_progress': self.overall_progress,
+            'current_ability': self.current_ability,
+            'daily_streak': self.daily_streak,
+            'sr_streak': self.sr_streak,
+            'category_progress': self.get_category_progress(),
+            'learning_velocity': self.learning_velocity,
+            'retention_rate': self.retention_rate,
+            'time_invested': self.time_invested
+        }
 
 class StudySession(db.Model):
     """Individual study session within learning plan"""

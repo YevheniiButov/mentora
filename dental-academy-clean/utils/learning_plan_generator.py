@@ -882,7 +882,7 @@ def create_learning_plan_from_diagnostic(
         target_ability=target_ability,
         study_hours_per_week=20.0,
         current_ability=diagnostic_session.current_ability,
-        overall_progress=0.0,
+        overall_progress=round(diagnostic_data.get('readiness_percentage', 0), 1),
         estimated_readiness=round(diagnostic_data.get('readiness_percentage', 0) / 100.0, 3),
         status='active',
         next_diagnostic_date=date.today() + timedelta(days=14),

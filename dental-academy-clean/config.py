@@ -249,9 +249,36 @@ class ProductionConfig(Config):
     """Конфигурация для production"""
     
     DEBUG = False
+    TESTING = False
     
     # База данных для production
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    
+    # Production optimizations
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_POOL_RECYCLE = 280
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 280,
+        'pool_size': 10,
+        'max_overflow': 20,
+        'pool_timeout': 30,
+    }
+    
+    # Security settings
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=4)
+    
+    # WTF CSRF enabled for production
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_TIME_LIMIT = 3600
+    
+    # Production URLs
+    BASE_URL = os.environ.get('BASE_URL', 'https://bigmentor.nl')
+    SERVER_NAME = os.environ.get('SERVER_NAME', 'bigmentor.nl')
+    PREFERRED_URL_SCHEME = 'https'
     
     # DigiD для production (real DigiD)
     DIGID_MOCK_MODE = False
@@ -263,10 +290,29 @@ class ProductionConfig(Config):
     DIGID_AUTH_URL = os.environ.get('DIGID_AUTH_URL', 'https://digid.nl/auth')
     DIGID_LOGOUT_URL_EXTERNAL = os.environ.get('DIGID_LOGOUT_URL_EXTERNAL', 'https://digid.nl/logout')
     
-    # Дополнительные настройки безопасности для production
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
+    # Production email settings
+    MAIL_SUPPRESS_SEND = False
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Mentora <info@bigmentor.nl>')
+    
+    # Production reCAPTCHA
+    RECAPTCHA_ENABLED = os.environ.get('RECAPTCHA_ENABLED', 'true').lower() == 'true'
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
+    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
+    
+    # Production cache settings
+    CACHE_TYPE = 'redis' if os.environ.get('REDIS_URL') else 'simple'
+    CACHE_REDIS_URL = os.environ.get('REDIS_URL')
+    CACHE_DEFAULT_TIMEOUT = 300
+    
+    # Production logging
+    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+    LOG_FILE = os.environ.get('LOG_FILE', '/var/log/mentora/app.log')
     
     @classmethod
     def validate_digid_config(cls):

@@ -14,4 +14,5 @@ learning_planner_bp = Blueprint('learning_planner', __name__)
 def learning_planner(plan_id):
     """Redirect to coming soon page"""
     from flask import redirect, url_for, g
-    return redirect(url_for('main.coming_soon', lang=g.get('lang', 'nl'))) 
+    # Redirect to learning map instead of coming soon
+    return redirect(url_for('learning_map_bp.learning_map', lang=g.get('lang', 'nl', path_id='irt'))) 

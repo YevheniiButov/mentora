@@ -21,12 +21,12 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <form method="get" class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">Поиск</label>
                             <input type="text" class="form-control" name="search" 
                                    value="{{ search }}" placeholder="Поиск по тексту вопроса...">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">Домен</label>
                             <select class="form-select" name="domain">
                                 <option value="all">Все домены</option>
@@ -37,7 +37,18 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <label class="form-label">Профессия</label>
+                            <select class="form-select" name="profession">
+                                <option value="all">Все профессии</option>
+                                {% for profession in professions %}
+                                <option value="{{ profession }}" {% if profession_filter == profession %}selected{% endif %}>
+                                    {{ profession }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
                             <label class="form-label">IRT параметры</label>
                             <select class="form-select" name="irt">
                                 <option value="all" {% if irt_filter == 'all' %}selected{% endif %}>Все вопросы</option>
@@ -46,7 +57,7 @@
                                 <option value="not_calibrated" {% if irt_filter == 'not_calibrated' %}selected{% endif %}>Не калиброванные</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <label class="form-label">&nbsp;</label>
                             <div>
                                 <button type="submit" class="btn btn-primary w-100">
@@ -70,6 +81,7 @@
                             <th>ID</th>
                             <th>Текст вопроса</th>
                             <th>Домен</th>
+                            <th>Профессия</th>
                             <th>Правильный ответ</th>
                             <th>IRT параметры</th>
                             <th>Действия</th>
@@ -96,6 +108,23 @@
                                     <span class="badge bg-secondary">{{ question.domain }}</span>
                                 {% else %}
                                     <span class="text-muted">Не указан</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if question.profession %}
+                                    {% if question.profession == 'tandarts' %}
+                                        <span class="badge bg-primary">🦷 Tandarts</span>
+                                    {% elif question.profession == 'huisarts' %}
+                                        <span class="badge bg-success">🩺 Huisarts</span>
+                                    {% elif question.profession == 'apotheker' %}
+                                        <span class="badge bg-warning">💊 Apotheker</span>
+                                    {% elif question.profession == 'verpleegkundige' %}
+                                        <span class="badge bg-info">👩‍⚕️ Verpleegkundige</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ question.profession }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Не указана</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -141,7 +170,7 @@
                 <ul class="pagination justify-content-center">
                     {% if questions.has_prev %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin.questions_management', page=questions.prev_num, domain=domain_filter, irt=irt_filter, search=search) }}">
+                            <a class="page-link" href="{{ url_for('admin.questions_management', page=questions.prev_num, domain=domain_filter, profession=profession_filter, irt=irt_filter, search=search) }}">
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                         </li>
@@ -151,7 +180,7 @@
                         {% if page_num %}
                             {% if page_num != questions.page %}
                                 <li class="page-item">
-                                    <a class="page-link" href="{{ url_for('admin.questions_management', page=page_num, domain=domain_filter, irt=irt_filter, search=search) }}">
+                                    <a class="page-link" href="{{ url_for('admin.questions_management', page=page_num, domain=domain_filter, profession=profession_filter, irt=irt_filter, search=search) }}">
                                         {{ page_num }}
                                     </a>
                                 </li>
@@ -169,7 +198,7 @@
                     
                     {% if questions.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin.questions_management', page=questions.next_num, domain=domain_filter, irt=irt_filter, search=search) }}">
+                            <a class="page-link" href="{{ url_for('admin.questions_management', page=questions.next_num, domain=domain_filter, profession=profession_filter, irt=irt_filter, search=search) }}">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
                         </li>
