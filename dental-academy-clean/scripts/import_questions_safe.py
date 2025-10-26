@@ -108,6 +108,18 @@ def import_questions_safe():
                             values.append(json.dumps(q.get(col)) if q.get(col) else None)
                         elif col == 'options':
                             values.append(json.dumps(q.get(col)) if q.get(col) else None)
+                        elif col == 'big_domain_id':
+                            # Проверить существование big_domain_id
+                            domain_id = q.get('big_domain_id')
+                            if domain_id:
+                                # Проверить, существует ли big_domain
+                                try:
+                                    cur.execute('SELECT id FROM big_domain WHERE id = %s', (domain_id,))
+                                    if not cur.fetchone():
+                                        domain_id = None  # Если не существует, устанавливаем NULL
+                                except:
+                                    domain_id = None
+                            values.append(domain_id)
                         else:
                             values.append(q.get(col))
                 
@@ -125,17 +137,32 @@ def import_questions_safe():
                 
                 if i % 50 == 0:
                     print(f"   ✓ Обработано: {i}/{len(questions)} (импортировано: {imported}, пропущено: {skipped})")
+                    conn.commit()  # Commit каждые 50 вопросов
+                
+                # Сохранять после каждого INSERT (для безопасности от транзакций)
+                try:
                     conn.commit()
+                except:
+                    conn.rollback()
                 
             except Exception as e:
                 errors += 1
+                # Rollback для сброса транзакции
+                try:
+                    conn.rollback()
+                except:
+                    pass
+                
                 if errors <= 3:  # Показать первые 3 ошибки
                     print(f"\n❌ Ошибка на вопросе {i} (ID: {q.get('id', '?')}): {e}")
                     import traceback
                     traceback.print_exc()
                     print()
         
-        conn.commit()
+        try:
+            conn.commit()
+        except:
+            conn.rollback()
         
         cur.execute('SELECT COUNT(*) FROM questions')
         final_count = cur.fetchone()[0]
