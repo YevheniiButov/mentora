@@ -911,7 +911,11 @@ def learning_map(lang, path_id=None):
         # Если path_id не указан или не найден, используем первый путь
         current_path = None
         if path_id:
-            current_path = LearningPath.query.get(path_id)
+            # Если path_id - это строка 'irt', игнорируем её
+            if isinstance(path_id, str) and path_id.isdigit():
+                current_path = LearningPath.query.get(int(path_id))
+            elif isinstance(path_id, int):
+                current_path = LearningPath.query.get(path_id)
         
         # Если путь не найден, используем первый доступный
         if not current_path and learning_paths:
