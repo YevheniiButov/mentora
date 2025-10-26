@@ -93,6 +93,47 @@ def api_progress_summary():
         return jsonify({'error': str(e)}), 500
 
 
+@individual_plan_api_bp.route('/api/individual-plan/data')
+@login_required
+def api_individual_plan_data():
+    """Get individual plan data for the Individual Plan tab"""
+    try:
+        from models import UserActivity
+        from datetime import date
+        from utils.domain_helpers import get_category_summary
+        from utils.helpers import get_user_profession_code
+        
+        # Get daily tasks
+        daily_tasks = get_daily_tasks(current_user)
+        
+        # Get today's activity
+        today_activity = UserActivity.query.filter_by(
+            user_id=current_user.id,
+            activity_date=date.today()
+        ).first()
+        
+        questions_today = today_activity.lessons_completed if today_activity else 0
+        
+        # Get categories
+        profession = get_user_profession_code(current_user)
+        categories = get_category_summary(current_user, profession)
+        
+        # Get progress summary
+        progress_data = get_progress_summary(current_user)
+        
+        return jsonify({
+            'daily_tasks': daily_tasks,
+            'questions_today': questions_today,
+            'daily_streak': progress_data.get('daily_streak', 0),
+            'categories': categories,
+            'weak_categories': progress_data.get('weak_categories', [])
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
 @individual_plan_api_bp.route('/learning-map/daily-session')
 @login_required
 def start_daily_session():

@@ -300,7 +300,21 @@ function markAsCompleted() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Lesson completed:', data);
+        
         if (data.success) {
+            // ✅ Триггер событие для синхронизации вкладок
+            if (window.triggerProgressUpdate) {
+                window.triggerProgressUpdate({
+                    xp_earned: data.xp_earned || 10,
+                    lesson_id: {{ lesson.id }},
+                    completed_lessons: data.completed_lessons
+                });
+            }
+            
+            // ✅ Показать уведомление
+            showXpNotification(data.xp_earned || 10);
+            
             // Показываем экран завершения
             showCompletionScreen();
         }
@@ -309,6 +323,62 @@ function markAsCompleted() {
         console.error('Error:', error);
     });
 }
+
+// Функция показа уведомления об XP
+function showXpNotification(xpEarned) {
+    // Show toast notification if available
+    if (window.app && window.app.showToast) {
+        window.app.showToast(`+${xpEarned} XP!`);
+    } else {
+        // Fallback: создаём простое уведомление
+        const notification = document.createElement('div');
+        notification.textContent = `+${xpEarned} XP!`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
+    }
+}
+
+// CSS анимации для уведомления
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 
 // Функция показа экрана завершения
 function showCompletionScreen() {

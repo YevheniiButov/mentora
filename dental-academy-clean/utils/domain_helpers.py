@@ -116,20 +116,50 @@ def calculate_category_progress(user, category_id: int) -> Dict[str, Any]:
                 'domains': []
             }
         
+        # Import models for progress calculation
+        from models import DiagnosticResponse, PersonalLearningPlan, StudySession
+        
         domain_progress = []
         completed_count = 0
         
         for domain in domains:
-            # For now, simulate progress based on user activity
-            # This is a placeholder - in real implementation, you would
-            # calculate based on actual user progress data
-            domain_percentage = 0.0
-            is_completed = False
+            # Calculate actual progress based on user's diagnostic and practice sessions
+            diagnostic_correct = DiagnosticResponse.query.join(
+                DiagnosticResponse.session
+            ).join(Question).filter(
+                DiagnosticResponse.session.has(user_id=user.id),
+                Question.big_domain_id == domain.id,
+                DiagnosticResponse.is_correct == True
+            ).count()
             
-            # TODO: Implement actual progress calculation based on:
-            # - UserProgress for lessons in this domain
-            # - TestAttempt results for this domain
-            # - UserActivity for this domain
+            diagnostic_total = DiagnosticResponse.query.join(
+                DiagnosticResponse.session
+            ).join(Question).filter(
+                DiagnosticResponse.session.has(user_id=user.id),
+                Question.big_domain_id == domain.id
+            ).count()
+            
+            # Get user's practice responses for this domain from StudySessionResponse
+            # Join through StudySession and Question to get domain information
+            from models import StudySessionResponse
+            
+            practice_responses = StudySessionResponse.query.join(
+                StudySession
+            ).join(PersonalLearningPlan).join(Question).filter(
+                PersonalLearningPlan.user_id == user.id,
+                Question.big_domain_id == domain.id,
+                StudySession.status == 'completed'
+            ).all()
+            
+            practice_correct = sum(1 for resp in practice_responses if resp.is_correct)
+            practice_total = len(practice_responses)
+            
+            # Calculate percentage
+            total_correct = diagnostic_correct + practice_correct
+            total_questions = diagnostic_total + practice_total
+            
+            domain_percentage = (total_correct / total_questions * 100) if total_questions > 0 else 0.0
+            is_completed = domain_percentage >= 80.0
             
             if is_completed:
                 completed_count += 1

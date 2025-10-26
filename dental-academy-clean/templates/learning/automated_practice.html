@@ -259,26 +259,28 @@
         /* RESULTS SCREEN */
         .results-screen {
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px 20px 10px;
             animation: slideIn 0.5s ease;
+            max-height: 100vh;
+            overflow-y: auto;
         }
 
         .results-animation {
-            width: 200px;
-            height: 200px;
-            margin: 0 auto 30px;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 10px;
         }
 
         .score-circle {
-            width: 180px;
-            height: 180px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            margin: 0 auto 40px;
+            margin: 0 auto 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 8px solid;
+            border: 6px solid;
             animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -312,47 +314,47 @@
         }
 
         .score-number {
-            font-size: 48px;
+            font-size: 32px;
             font-weight: 700;
             color: #1a1a1a;
         }
 
         .score-label {
-            font-size: 16px;
+            font-size: 12px;
             color: #666;
-            margin-top: 8px;
+            margin-top: 4px;
         }
 
         .results-title {
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 700;
             color: #1a1a1a;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
 
         .results-message {
-            font-size: 18px;
+            font-size: 14px;
             color: #666;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
 
         .results-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .stat {
             background: white;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .stat i {
-            font-size: 32px;
-            margin-bottom: 12px;
+            font-size: 24px;
+            margin-bottom: 6px;
             display: block;
         }
 
@@ -370,14 +372,14 @@
 
         .stat strong {
             display: block;
-            font-size: 32px;
+            font-size: 20px;
             font-weight: 700;
             color: #1a1a1a;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .stat span {
-            font-size: 14px;
+            font-size: 11px;
             color: #666;
         }
 
@@ -390,9 +392,9 @@
         }
 
         .btn-large {
-            padding: 18px 32px;
-            border-radius: 16px;
-            font-size: 18px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 16px;
             font-weight: 600;
             border: none;
             cursor: pointer;
@@ -401,7 +403,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             flex: 1;
             white-space: nowrap;
         }
@@ -459,21 +461,62 @@
                 font-size: 14px;
             }
 
+            .results-screen {
+                padding: 15px 10px 10px;
+            }
+            
+            .results-animation {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 8px;
+            }
+
             .results-title {
-                font-size: 24px;
+                font-size: 20px;
+                margin-bottom: 6px;
             }
 
             .score-circle {
-                width: 150px;
-                height: 150px;
+                width: 100px;
+                height: 100px;
+                margin-bottom: 12px;
             }
 
             .score-number {
-                font-size: 36px;
+                font-size: 28px;
+            }
+
+            .score-label {
+                font-size: 10px;
+            }
+
+            .results-message {
+                font-size: 13px;
+                margin-bottom: 15px;
             }
 
             .results-stats {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+            
+            .stat {
+                padding: 10px 8px;
+            }
+            
+            .stat i {
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+            
+            .stat strong {
+                font-size: 18px;
+                margin-bottom: 2px;
+            }
+            
+            .stat span {
+                font-size: 10px;
             }
 
             .results-actions {
@@ -481,8 +524,8 @@
             }
 
             .btn-large {
-                font-size: 16px;
-                padding: 16px 24px;
+                font-size: 15px;
+                padding: 12px 20px;
             }
         }
 
@@ -669,7 +712,7 @@
                             src="/static/animations/${animationFile}"
                             background="transparent"
                             speed="1"
-                            style="width: 200px; height: 200px;"
+                            style="width: 120px; height: 120px;"
                             autoplay>
                         </lottie-player>
                     </div>
@@ -702,11 +745,8 @@
                     </div>
 
                     <div class="results-actions">
-                        <button class="btn-large btn-secondary" onclick="goBackToLearningMap()">
+                        <button class="btn-large btn-primary" onclick="goBackToLearningMap()">
                             <i class="bi bi-arrow-left"></i> Terug naar leerkaart
-                        </button>
-                        <button class="btn-large btn-primary" onclick="viewStatistics()">
-                            Bekijk statistieken <i class="bi bi-arrow-right"></i>
                         </button>
                     </div>
                 </div>
@@ -717,51 +757,70 @@
             document.getElementById('feedback-banner').classList.remove('show');
         }
 
-        function completeSessionAPI() {
-            const timeSpent = Math.floor((Date.now() - startTime) / 1000 / 60);
-
-            // NOTE: Complete session and save results to backend
-            // This API call saves the practice session data but doesn't redirect
-            // See: routes/learning_routes.py → complete_automated_session()
-            return fetch('{{ url_for("learning.complete_automated_session") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    questions_answered: questions.length,
-                    correct_answers: correctAnswers,
-                    time_spent: timeSpent
-                })
-            })
-            .then(response => response.json())
-            .catch(error => {
-                console.error('Error completing session:', error);
-                return { success: false };
-            });
+        async function completeSessionAPI() {
+            try {
+                const totalSeconds = (Date.now() - startTime) / 1000;
+                const timeSpent = Math.max(1, Math.floor(totalSeconds / 60)); // Минимум 1 минута
+                
+                const response = await fetch('{{ url_for("learning.complete_automated_session") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        questions_answered: questions.length,
+                        correct_answers: correctAnswers,
+                        time_spent: timeSpent
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // ✅ Триггер событие перед редиректом
+                    if (window.triggerProgressUpdate) {
+                        window.triggerProgressUpdate({
+                            questions_answered: questions.length,
+                            correct_answers: correctAnswers,
+                            time_spent: timeSpent,
+                            accuracy: Math.round((correctAnswers / questions.length) * 100),
+                            session_score: data.score || correctAnswers
+                        });
+                    }
+                    
+                    return { success: true, data: data };
+                } else {
+                    return { success: false, error: data.error || 'Unknown error' };
+                }
+            } catch (error) {
+                console.error('Session completion error:', error);
+                return { success: false, error: error.message };
+            }
         }
 
-        function goBackToLearningMap() {
+        async function goBackToLearningMap() {
             // Save session data first, then redirect to Learning Map
-            completeSessionAPI().then(() => {
-                window.location.href = '/dashboard';
-            });
-        }
-
-        function viewStatistics() {
-            // Save session data first, then redirect to Progress tab in Learning Map
-            // NOTE: We redirect to dashboard which then shows the main page
-            // In the future, we could add a direct link to Learning Map Progress tab
-            completeSessionAPI().then(() => {
-                window.location.href = '/dashboard';
-            });
+            const lang = '{{ session.get("lang", "nl") }}';
+            const result = await completeSessionAPI();
+            
+            console.log('Session completed:', result);
+            
+            if (result.success) {
+                // Даём время событию обработаться перед редиректом
+                setTimeout(() => {
+                    window.location.href = `/${lang}/learning-map/irt`;
+                }, 300);
+            } else {
+                console.error('Failed to save progress:', result.error || result);
+                alert('Er was een fout bij het opslaan van je voortgang.');
+            }
         }
 
         function exitPractice() {
-            // Exit practice and go back to dashboard
-            // NOTE: Dashboard is not the main hub - just a transition point
+            // Exit practice and go back to Learning Map
             if (confirm('Weet je zeker dat je wilt stoppen? Je voortgang gaat verloren.')) {
-                window.location.href = '/dashboard';
+                const lang = '{{ session.get("lang", "nl") }}';
+                window.location.href = `/${lang}/learning-map/irt`;
             }
         }
     </script>

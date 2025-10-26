@@ -3765,15 +3765,31 @@ class PersonalLearningPlan(db.Model, JSONSerializableMixin):
                     domain_analysis = self.get_domain_analysis()
                     
                     if domain_code in domain_analysis:
-                        old_ability = domain_analysis[domain_code].get('ability_estimate', 0.0)
+                        # Проверяем тип данных - может быть dict или float
+                        domain_data = domain_analysis[domain_code]
+                        if isinstance(domain_data, dict):
+                            old_ability = domain_data.get('ability_estimate', 0.0)
+                        elif isinstance(domain_data, (int, float)):
+                            # Если это просто число, сохраняем его как старое значение
+                            old_ability = float(domain_data)
+                            # Преобразуем в dict
+                            domain_analysis[domain_code] = {
+                                'ability_estimate': old_ability,
+                                'last_updated': datetime.now(timezone.utc).isoformat()
+                            }
+                        else:
+                            logger.warning(f"Plan {self.id}: Unexpected domain_data type for {domain_code}: {type(domain_data)}")
+                            old_ability = 0.0
+                        
                         new_ability = old_ability + session_ability_change
                         
                         # Ограничиваем способность разумными пределами
                         new_ability = max(-3.0, min(3.0, new_ability))
                         
-                        # Обновляем в domain_analysis
-                        domain_analysis[domain_code]['ability_estimate'] = new_ability
-                        domain_analysis[domain_code]['last_updated'] = datetime.now(timezone.utc).isoformat()
+                        # Обновляем значение
+                        if isinstance(domain_analysis[domain_code], dict):
+                            domain_analysis[domain_code]['ability_estimate'] = new_ability
+                            domain_analysis[domain_code]['last_updated'] = datetime.now(timezone.utc).isoformat()
                         
                         self.set_domain_analysis(domain_analysis)
                         
@@ -3788,7 +3804,16 @@ class PersonalLearningPlan(db.Model, JSONSerializableMixin):
             # 4. ОБНОВЛЯЕМ ОБЩУЮ СПОСОБНОСТЬ
             domain_analysis = self.get_domain_analysis()
             if domain_analysis:
-                abilities = [data.get('ability_estimate', 0.0) for data in domain_analysis.values()]
+                abilities = []
+                for data in domain_analysis.values():
+                    if isinstance(data, dict):
+                        ability = data.get('ability_estimate', 0.0)
+                    elif isinstance(data, (int, float)):
+                        ability = float(data)
+                    else:
+                        ability = 0.0
+                    abilities.append(ability)
+                
                 if abilities:
                     new_overall_ability = sum(abilities) / len(abilities)
                     ability_change = new_overall_ability - self.current_ability
@@ -3797,10 +3822,16 @@ class PersonalLearningPlan(db.Model, JSONSerializableMixin):
                     logger.info(f"Plan {self.id}: overall ability "
                                f"{self.current_ability:.3f} (change: {ability_change:.3f})")
             
-            # 5. ОБНОВЛЯЕМ TIMESTAMP
+            # 5. ОБНОВЛЯЕМ DAILY STREAK
+            from datetime import date
+            self.last_activity_date = date.today()
+            self.update_daily_streak(date.today())
+            logger.info(f"Plan {self.id}: daily_streak = {self.daily_streak}")
+            
+            # 6. ОБНОВЛЯЕМ TIMESTAMP
             self.last_updated = datetime.now(timezone.utc)
             
-            # 6. ОБНОВЛЯЕМ next_diagnostic_date на основе прогресса
+            # 7. ОБНОВЛЯЕМ next_diagnostic_date на основе прогресса
             if self.overall_progress >= 80:
                 # Для продвинутых учеников - еженедельная переоценка
                 self.set_next_diagnostic_date(7)

@@ -3389,7 +3389,6 @@
                 async loadUserStats() {
                     try {
                         const currentLang = document.querySelector('html').getAttribute('lang') || 'en';
-                        console.log('Loading user statistics for language:', currentLang);
                         const response = await fetch(`/${currentLang}/api/user-statistics`);
                         
                         if (!response.ok) {
@@ -3399,7 +3398,6 @@
                         }
                         
                         const data = await response.json();
-                        console.log('User statistics loaded:', data);
                         
                         if (data.success) {
                             this.userStats = {
@@ -3456,14 +3454,13 @@
                     }
                     this.activeTab = tab;
                     
-                    // Load Individual Plan data when switching to that tab
-                    if (tab === 'individual') {
-                        this.loadIndividualPlanData();
-                    }
-                    
-                    // Load Progress data when switching to that tab
+                    // ✅ ВСЕГДА перезагружать данные при переключении
                     if (tab === 'progress') {
+                        console.log('🔄 Refreshing progress data...');
                         this.loadProgressData();
+                    } else if (tab === 'individual') {
+                        console.log('🔄 Refreshing individual plan data...');
+                        this.loadIndividualPlanData();
                     }
                 },
                 showComingSoonModal(tab) {
@@ -3816,8 +3813,17 @@
                         const response = await fetch('/api/individual-plan/progress');
                         const data = await response.json();
                         
+                        console.log('📊 Progress data loaded:', data);
+                        
+                        // ✅ Обновить Alpine.js состояние
+                        this.progressData = data;
+                        this.completedLessons = data.completed_lessons || 0;
+                        this.totalXp = data.total_xp || 0;
+                        this.currentStreak = data.current_streak || 0;
+                        this.progressPercent = data.overall_progress || 0;
+                        
                         // Update progress metrics
-                        this.totalQuestionsAnswered = data.total_questions_answered || 0;
+                        this.totalQuestionsAnswered = data.questions_today || 0;
                         this.recentSessions = data.recent_sessions || [];
                         this.last30Days = data.activity_last_30_days || this.generateLast30Days();
                         
@@ -3828,7 +3834,7 @@
                         this.timeInvested = Math.round((data.time_invested || 0) / 60); // Convert to hours
                         
                     } catch (error) {
-                        console.error('Error loading progress data:', error);
+                        console.error('❌ Failed to load progress:', error);
                         // Generate empty 30 days on error
                         this.last30Days = this.generateLast30Days();
                     }
@@ -3991,54 +3997,29 @@
         
         // Дополнительная инициализация для карты обучения (не переопределяет base.html)
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔧 Learning Map: Additional dropdown initialization...');
-            console.log('🔍 Learning Map Debug - Current endpoint:', '{{ request.endpoint }}');
-            console.log('🔍 Learning Map Debug - Current view_args:', {{ (request.view_args or {})|tojson }});
-            
             // Проверяем, что dropdowns уже инициализированы в base.html
             setTimeout(function() {
                 var languageDropdown = document.getElementById('languageDropdown');
                 var userDropdown = document.getElementById('userDropdown');
                 
                 if (languageDropdown) {
-                    console.log('🌐 Learning Map: Language dropdown found, ensuring it works');
                     // Проверяем, что dropdown работает
                     if (!bootstrap.Dropdown.getInstance(languageDropdown)) {
-                        console.log('⚠️ Learning Map: Language dropdown not initialized, fixing...');
                         new bootstrap.Dropdown(languageDropdown);
                     }
-                    
-                    // Добавляем отладку для клика по кнопке языка
-                    languageDropdown.addEventListener('click', function(e) {
-                        console.log('🌐 Language button clicked!');
-                        console.log('🌐 Language button element:', this);
-                        console.log('🌐 Language button dropdown instance:', bootstrap.Dropdown.getInstance(this));
-                    });
-                    
-                    // Добавляем отладку для ссылок языков
-                    setTimeout(function() {
-                        var languageLinks = document.querySelectorAll('.language-menu .dropdown-item');
-                        console.log('🌐 Found language links:', languageLinks.length);
-                        languageLinks.forEach(function(link, index) {
-                            console.log('🌐 Language link ' + index + ':', link.textContent.trim(), 'URL:', link.href);
-                            link.addEventListener('click', function(e) {
-                                console.log('🌐 Language link clicked:', this.textContent.trim(), 'URL:', this.href);
-                                console.log('🌐 Language link event:', e);
-                            });
-                        });
-                    }, 200);
                 }
                 
                 if (userDropdown) {
-                    console.log('👤 Learning Map: User dropdown found, ensuring it works');
                     // Проверяем, что dropdown работает
                     if (!bootstrap.Dropdown.getInstance(userDropdown)) {
-                        console.log('⚠️ Learning Map: User dropdown not initialized, fixing...');
                         new bootstrap.Dropdown(userDropdown);
                     }
                 }
             }, 100); // Небольшая задержка, чтобы base.html успел инициализироваться
         });
     </script>
+    
+    <!-- Progress Sync Script -->
+    <script src="{{ url_for('static', filename='js/sync-progress.js') }}"></script>
 </body>
 </html>

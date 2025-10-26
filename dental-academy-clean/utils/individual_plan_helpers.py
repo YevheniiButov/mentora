@@ -206,9 +206,22 @@ def get_progress_summary(user):
     # Get category summary
     categories = get_category_summary(user, profession)
     
-    # Calculate today's activity (placeholder - would need UserActivity query)
-    questions_today = 0  # TODO: Query from UserActivity for today
-    time_today = 0       # TODO: Query from UserActivity for today
+    # Calculate today's activity from StudySession
+    from datetime import datetime, timezone
+    from models import StudySession, PersonalLearningPlan
+    
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Get completed sessions for today
+    sessions_today = StudySession.query.join(PersonalLearningPlan).filter(
+        PersonalLearningPlan.user_id == user.id,
+        StudySession.status == 'completed',
+        StudySession.completed_at >= today_start
+    ).all()
+    
+    # Sum up questions and time from today's sessions
+    questions_today = sum(session.questions_answered for session in sessions_today)
+    time_today = sum(session.actual_duration or 0 for session in sessions_today)
     
     # SR statistics
     total_sr_items = SpacedRepetitionItem.query.filter_by(user_id=user.id).count()
@@ -225,15 +238,25 @@ def get_progress_summary(user):
         status='completed'
     ).first() is not None
     
-    # DEBUG: Log diagnostic check
-    print(f"🔍 HELPER DEBUG: user_id = {user.id}")
-    print(f"🔍 HELPER DEBUG: has_diagnostic = {has_diagnostic}")
-    print(f"🔍 HELPER DEBUG: plan.overall_progress = {plan.overall_progress}")
-    
     # If user has diagnostic, use plan progress, otherwise show 0
     overall_progress = plan.overall_progress if has_diagnostic else 0
     
-    print(f"🔍 HELPER DEBUG: final overall_progress = {overall_progress}")
+    # Get recent sessions (last 5 completed sessions)
+    recent_sessions_query = StudySession.query.join(PersonalLearningPlan).filter(
+        PersonalLearningPlan.user_id == user.id,
+        StudySession.status == 'completed'
+    ).order_by(StudySession.completed_at.desc()).limit(5).all()
+    
+    recent_sessions = []
+    for session in recent_sessions_query:
+        recent_sessions.append({
+            'id': session.id,
+            'date': session.completed_at.strftime('%Y-%m-%d') if session.completed_at else '',
+            'questions': session.questions_answered,
+            'correct': session.correct_answers,
+            'accuracy': round((session.correct_answers / session.questions_answered * 100) if session.questions_answered > 0 else 0, 1),
+            'time': session.actual_duration or 0
+        })
     
     return {
         'overall_progress': overall_progress,
@@ -253,7 +276,8 @@ def get_progress_summary(user):
         },
         'time_invested': plan.time_invested,
         'learning_velocity': plan.learning_velocity or 0.0,
-        'retention_rate': plan.retention_rate or 0.0
+        'retention_rate': plan.retention_rate or 0.0,
+        'recent_sessions': recent_sessions
     }
 
 

@@ -69,15 +69,6 @@ def update_progress():
         if was_correct is not None:
             progress.score = 1.0 if was_correct else 0.0
         
-        # ✅ FIX: Update daily activity, streak, XP when lesson is completed
-        if completed and content_type == 'lesson' and not progress.completed:
-            xp_earned = 10
-            current_user.update_daily_activity(
-                lessons_completed=1,
-                time_spent=time_spent,
-                xp_earned=xp_earned
-            )
-        
         # Handle spaced repetition for questions
         if content_type == 'question' and is_review and was_correct is not None:
             try:
@@ -94,10 +85,6 @@ def update_progress():
                 print(f"Error updating spaced repetition: {e}")
         
         db.session.commit()
-        
-        # ✅ Clear cache after progress update
-        from utils.diagnostic_data_manager import clear_cache
-        clear_cache(current_user.id)
         
         return jsonify({
             'status': 'success',
@@ -240,3 +227,22 @@ def get_user_stats():
         
     except Exception as e:
         return jsonify({'error': f'Error getting user stats: {str(e)}'}), 500 
+
+@api_bp.route('/dashboard/stats')
+@login_required
+def get_dashboard_stats():
+    """Get current dashboard statistics (AJAX)"""
+    try:
+        stats = current_user.get_dashboard_stats()
+        return jsonify({
+            'completed_lessons': stats.get('completed_lessons', 0),
+            'xp': stats.get('xp', 0),
+            'current_streak': stats.get('current_streak', 0),
+            'level': stats.get('level', 1),
+            'level_progress': stats.get('level_progress', 0),
+            'today_lessons': stats.get('today_lessons', 0),
+            'today_xp': stats.get('today_xp', 0),
+            'achievements_count': stats.get('achievements_count', 0)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500 
