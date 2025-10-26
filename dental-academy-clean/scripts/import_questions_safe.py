@@ -96,10 +96,10 @@ def import_questions_safe():
                         else:
                             values.append(q.get(col))
                 
-                # Опциональные столбцы
+                # Опциональные столбцы (НЕ включаем 'id' - БД сгенерирует автоматически)
                 optional_cols = ['image_url', 'tags', 'big_domain_id', 'question_type', 
                                'clinical_context', 'learning_objectives', 'profession', 
-                               'created_at', 'updated_at', 'id']
+                               'created_at', 'updated_at']
                 
                 for col in optional_cols:
                     if col in available_columns:
@@ -118,6 +118,7 @@ def import_questions_safe():
                 cur.execute(f'''
                     INSERT INTO questions ({columns_str})
                     VALUES ({placeholders})
+                    ON CONFLICT DO NOTHING
                 ''', values)
                 
                 imported += 1
