@@ -3,12 +3,21 @@
 -- ============================================================================
 -- 
 -- ПРОБЛЕМА: На продакшене отсутствуют столбцы:
--- 1. questions.profession - для фильтрации вопросов по профессиям
--- 2. personal_learning_plan.spaced_repetition_enabled - для включения/отключения spaced repetition
--- 3. personal_learning_plan.sr_algorithm - алгоритм spaced repetition
--- 4. personal_learning_plan.next_review_date - дата следующего повторения
--- 5. personal_learning_plan.sr_streak - серия повторений
--- 6. personal_learning_plan.total_sr_reviews - всего повторений
+-- questions:
+--   1. big_domain_id - связь с доменами
+--   2. question_type - тип вопроса
+--   3. clinical_context - клинический контекст
+--   4. learning_objectives - цели обучения (JSON)
+--   5. profession - для фильтрации вопросов по профессиям
+-- personal_learning_plan:
+--   6. category_progress - прогресс по категориям (JSON)
+--   7. spaced_repetition_enabled - для включения/отключения spaced repetition
+--   8. sr_algorithm - алгоритм spaced repetition
+--   9. next_review_date - дата следующего повторения
+--  10. sr_streak - серия повторений
+--  11. total_sr_reviews - всего повторений
+-- big_domain:
+--  12. category_id - связь с domain_category
 --
 -- ДАТА: 2025-10-26
 -- ============================================================================
@@ -88,6 +97,43 @@ BEGIN
         RAISE NOTICE '✅ Столбец questions.profession добавлен';
     ELSE
         RAISE NOTICE 'ℹ️  Столбец questions.profession уже существует';
+    END IF;
+END $$;
+
+-- ============================================================================
+-- 1a. Добавляем недостающие столбцы в personal_learning_plan
+-- ============================================================================
+
+-- category_progress
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'personal_learning_plan' AND column_name = 'category_progress'
+    ) THEN
+        ALTER TABLE personal_learning_plan ADD COLUMN category_progress JSON;
+        RAISE NOTICE '✅ Столбец personal_learning_plan.category_progress добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец personal_learning_plan.category_progress уже существует';
+    END IF;
+END $$;
+
+-- ============================================================================
+-- 1b. Добавляем недостающие столбцы в big_domain
+-- ============================================================================
+
+-- category_id (foreign key to domain_category)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'big_domain' AND column_name = 'category_id'
+    ) THEN
+        ALTER TABLE big_domain ADD COLUMN category_id INTEGER;
+        CREATE INDEX IF NOT EXISTS ix_big_domain_category_id ON big_domain(category_id);
+        RAISE NOTICE '✅ Столбец big_domain.category_id добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец big_domain.category_id уже существует';
     END IF;
 END $$;
 
@@ -216,6 +262,8 @@ DO $$
 DECLARE
     questions_columns_count INTEGER := 0;
     plan_columns_count INTEGER := 0;
+    plan_category_progress_count INTEGER := 0;
+    big_domain_category_id_count INTEGER := 0;
 BEGIN
     -- Проверяем questions
     SELECT COUNT(*) INTO questions_columns_count
@@ -223,21 +271,35 @@ BEGIN
     WHERE table_name = 'questions' 
     AND column_name IN ('big_domain_id', 'question_type', 'clinical_context', 'learning_objectives', 'profession');
     
-    -- Проверяем personal_learning_plan
+    -- Проверяем personal_learning_plan (SR столбцы)
     SELECT COUNT(*) INTO plan_columns_count
     FROM information_schema.columns 
     WHERE table_name = 'personal_learning_plan' 
     AND column_name IN ('spaced_repetition_enabled', 'sr_algorithm', 'next_review_date', 'sr_streak', 'total_sr_reviews');
     
+    -- Проверяем personal_learning_plan.category_progress
+    SELECT COUNT(*) INTO plan_category_progress_count
+    FROM information_schema.columns 
+    WHERE table_name = 'personal_learning_plan' 
+    AND column_name = 'category_progress';
+    
+    -- Проверяем big_domain.category_id
+    SELECT COUNT(*) INTO big_domain_category_id_count
+    FROM information_schema.columns 
+    WHERE table_name = 'big_domain' 
+    AND column_name = 'category_id';
+    
     RAISE NOTICE '';
     RAISE NOTICE '📊 РЕЗУЛЬТАТЫ МИГРАЦИИ:';
     RAISE NOTICE '   questions: % / 5 столбцов добавлено', questions_columns_count;
-    RAISE NOTICE '   personal_learning_plan: % / 5 столбцов добавлено', plan_columns_count;
+    RAISE NOTICE '   personal_learning_plan (SR): % / 5 столбцов добавлено', plan_columns_count;
+    RAISE NOTICE '   personal_learning_plan (category_progress): % / 1 столбец добавлено', plan_category_progress_count;
+    RAISE NOTICE '   big_domain (category_id): % / 1 столбец добавлено', big_domain_category_id_count;
     
-    IF questions_columns_count = 5 AND plan_columns_count = 5 THEN
+    IF questions_columns_count = 5 AND plan_columns_count = 5 AND plan_category_progress_count = 1 AND big_domain_category_id_count = 1 THEN
         RAISE NOTICE '';
         RAISE NOTICE '✅ МИГРАЦИЯ ЗАВЕРШЕНА УСПЕШНО';
-        RAISE NOTICE '✅ Все необходимые столбцы добавлены';
+        RAISE NOTICE '✅ Все необходимые столбцы добавлены (всего 12)';
     ELSE
         RAISE WARNING '⚠️  Не все столбцы были добавлены';
     END IF;
