@@ -38,10 +38,15 @@ def track_lesson_progress(user_id, lesson_id):
 def update_lesson_progress(user_id, lesson_id, viewed=False, completed=False):
     """Обновляет прогресс урока"""
     try:
+        from models import User
+        
         progress = UserProgress.query.filter_by(
             user_id=user_id,
             lesson_id=lesson_id
         ).first()
+        
+        # Check if this is a new completion
+        was_completed_before = progress.completed if progress else False
         
         if not progress:
             progress = UserProgress(
@@ -62,6 +67,23 @@ def update_lesson_progress(user_id, lesson_id, viewed=False, completed=False):
                 progress.completed_at = datetime.now(timezone.utc)
         
         db.session.commit()
+        
+        # ✅ FIX: Update daily activity when lesson is newly completed
+        if completed and not was_completed_before:
+            user = User.query.get(user_id)
+            if user:
+                xp_earned = 10
+                user.update_daily_activity(
+                    lessons_completed=1,
+                    time_spent=0,
+                    xp_earned=xp_earned
+                )
+                db.session.commit()
+                
+                # Clear cache
+                from utils.diagnostic_data_manager import clear_cache
+                clear_cache(user_id)
+        
     except Exception as e:
         current_app.logger.error(f"Error updating lesson progress: {e}")
         db.session.rollback()

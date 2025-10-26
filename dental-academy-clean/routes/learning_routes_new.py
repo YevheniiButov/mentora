@@ -228,6 +228,9 @@ def mark_daily_plan_item_completed():
                 lesson_id=content_id
             ).first()
             
+            # Check if this is a new completion
+            was_completed_before = progress.completed if progress else False
+            
             if not progress:
                 progress = UserProgress(
                     user_id=current_user.id,
@@ -239,6 +242,15 @@ def mark_daily_plan_item_completed():
             else:
                 progress.completed = True
                 progress.completed_at = datetime.now(timezone.utc)
+            
+            # ✅ FIX: Update daily activity when lesson is newly completed
+            if not was_completed_before:
+                xp_earned = 10
+                current_user.update_daily_activity(
+                    lessons_completed=1,
+                    time_spent=0,
+                    xp_earned=xp_earned
+                )
         
         elif content_type == 'question':
             # Отмечаем вопрос как изученный
@@ -270,6 +282,10 @@ def mark_daily_plan_item_completed():
             db.session.add(study_session)
         
         db.session.commit()
+        
+        # ✅ Clear cache after progress update
+        from utils.diagnostic_data_manager import clear_cache
+        clear_cache(current_user.id)
         
         return {'success': True, 'message': 'Item marked as completed'}
         

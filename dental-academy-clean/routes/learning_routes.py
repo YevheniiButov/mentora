@@ -16,7 +16,6 @@ from models import UserLearningProgress
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from utils.daily_learning_algorithm import DailyLearningAlgorithm
-from utils.helpers import get_user_profession_code
 
 learning_bp = Blueprint('learning', __name__)
 
@@ -267,6 +266,14 @@ def complete_lesson(lesson_id):
     # Mark as completed
     if not progress.completed:
         progress.mark_completed(score=float(score) if score else None)
+        
+        # ✅ FIX: Update daily activity, streak, XP
+        xp_earned = 10  # Base XP for completing a lesson
+        current_user.update_daily_activity(
+            lessons_completed=1,
+            time_spent=time_spent,
+            xp_earned=xp_earned
+        )
     
     # Add time spent
     if time_spent > 0:
@@ -274,6 +281,10 @@ def complete_lesson(lesson_id):
     
     try:
         db.session.commit()
+        
+        # ✅ Clear cache after progress update
+        from utils.diagnostic_data_manager import clear_cache
+        clear_cache(current_user.id)
         
         # Return JSON response for AJAX requests
         if request.headers.get('Content-Type') == 'application/json':
@@ -382,9 +393,22 @@ def api_update_progress(lesson_id):
     
     if 'completed' in data and data['completed']:
         progress.mark_completed(score=data.get('score'))
+        
+        # ✅ FIX: Update daily activity, streak, XP
+        xp_earned = 10
+        current_user.update_daily_activity(
+            lessons_completed=1,
+            time_spent=float(data.get('time_spent', 0)),
+            xp_earned=xp_earned
+        )
     
     try:
         db.session.commit()
+        
+        # ✅ Clear cache after progress update
+        from utils.diagnostic_data_manager import clear_cache
+        clear_cache(current_user.id)
+        
         return safe_jsonify({
             'success': True,
             'completed': progress.completed,
@@ -573,18 +597,15 @@ def automated_practice(plan_id=None, week=None):
     practice_questions = []
     
     if weak_domains:
-        user_profession = get_user_profession_code(current_user)
         for domain_name in weak_domains:
             domain_questions = Question.query.join(BIGDomain).filter(
-                BIGDomain.name.contains(domain_name),
-                Question.profession == user_profession
+                BIGDomain.name.contains(domain_name)
             ).limit(5).all()
             practice_questions.extend(domain_questions)
     
     # If no domain-specific questions, get general questions
     if not practice_questions:
-        user_profession = get_user_profession_code(current_user)
-        practice_questions = Question.query.filter_by(profession=user_profession).limit(10).all()
+        practice_questions = Question.query.limit(10).all()
     
     # Convert Question objects to JSON-serializable dictionaries
     questions_data = []
@@ -662,38 +683,13 @@ def complete_automated_session():
         plan_id = session.get('learning_plan_id')
         current_week = session.get('current_week')
         current_session = session.get('current_session')
-        learning_mode = session.get('learning_mode')
         
         # Добавляем диагностику
-        current_app.logger.info(f"Complete session request - plan_id: {plan_id}, week: {current_week}, session: {current_session}, mode: {learning_mode}")
+        current_app.logger.info(f"Complete session request - plan_id: {plan_id}, week: {current_week}, session: {current_session}")
         
         if not plan_id or not current_session:
             current_app.logger.error(f"Missing session data - plan_id: {plan_id}, current_session: {current_session}")
             return safe_jsonify({'error': 'No active session'}), 400
-        
-        # Special handling for daily practice mode
-        if learning_mode == 'daily_practice':
-            # Clear session data
-            session.pop('learning_plan_id', None)
-            session.pop('current_week', None)
-            session.pop('current_session', None)
-            session.pop('learning_mode', None)
-            session.pop('daily_session_questions', None)
-            session.pop('daily_session_active', None)
-            
-            # NOTE: Redirect to dashboard after daily practice completion
-            # Dashboard is currently NOT the main hub of the app - it's just a transition point
-            # that shows basic stats and redirects to the main page/learning map.
-            # In the future, if the app grows significantly, we might make dashboard the central hub.
-            # For now: Daily Practice → Dashboard → Main page
-            redirect_url = url_for('dashboard.index')
-            
-            return safe_jsonify({
-                'success': True,
-                'redirect_url': redirect_url,
-                'completed': True,
-                'message': 'Dagelijkse sessie voltooid! Goed gedaan!'
-            })
         
         plan = PersonalLearningPlan.query.get_or_404(plan_id)
         current_app.logger.info(f"Found plan: {plan.id} for user: {plan.user_id}")
@@ -1245,8 +1241,3 @@ def learning_cards(path):
         return redirect(url_for('learning_bp.index'))
 
 # Блокировка через CSS overlay - убрано для использования JavaScript overlay
-
-# ========================================
-# ТЕСТОВАЯ КАРТА ОБУЧЕНИЯ (РАЗРАБОТКА)
-# ========================================
-

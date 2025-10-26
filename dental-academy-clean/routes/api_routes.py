@@ -69,6 +69,15 @@ def update_progress():
         if was_correct is not None:
             progress.score = 1.0 if was_correct else 0.0
         
+        # ✅ FIX: Update daily activity, streak, XP when lesson is completed
+        if completed and content_type == 'lesson' and not progress.completed:
+            xp_earned = 10
+            current_user.update_daily_activity(
+                lessons_completed=1,
+                time_spent=time_spent,
+                xp_earned=xp_earned
+            )
+        
         # Handle spaced repetition for questions
         if content_type == 'question' and is_review and was_correct is not None:
             try:
@@ -85,6 +94,10 @@ def update_progress():
                 print(f"Error updating spaced repetition: {e}")
         
         db.session.commit()
+        
+        # ✅ Clear cache after progress update
+        from utils.diagnostic_data_manager import clear_cache
+        clear_cache(current_user.id)
         
         return jsonify({
             'status': 'success',

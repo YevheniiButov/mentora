@@ -86,14 +86,8 @@ def api_progress_summary():
     """
     try:
         progress = get_progress_summary(current_user)
-        
-        # DEBUG: Log what we're returning
-        print(f"🔍 API DEBUG: overall_progress = {progress.get('overall_progress')}")
-        print(f"🔍 API DEBUG: Full progress data = {progress}")
-        
         return jsonify(progress)
     except Exception as e:
-        print(f"❌ API ERROR: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
