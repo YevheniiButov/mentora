@@ -16,29 +16,75 @@
 BEGIN;
 
 -- ============================================================================
--- 1. Добавляем поле profession в таблицу questions
+-- 1. Добавляем недостающие поля в таблицу questions
 -- ============================================================================
 
--- Проверяем, существует ли поле
+-- big_domain_id
 DO $$ 
 BEGIN
     IF NOT EXISTS (
-        SELECT 1 
-        FROM information_schema.columns 
-        WHERE table_name = 'questions' 
-        AND column_name = 'profession'
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'questions' AND column_name = 'big_domain_id'
     ) THEN
-        -- Добавляем поле profession
-        ALTER TABLE questions 
-        ADD COLUMN profession VARCHAR(50);
-        
-        -- Создаем индекс для быстрой фильтрации
-        CREATE INDEX IF NOT EXISTS ix_questions_profession 
-        ON questions(profession);
-        
-        -- Добавляем комментарий
-        COMMENT ON COLUMN questions.profession IS 'Профессия (tandarts, apotheker, huisarts, verpleegkundige)';
-        
+        ALTER TABLE questions ADD COLUMN big_domain_id INTEGER;
+        CREATE INDEX IF NOT EXISTS ix_questions_big_domain_id ON questions(big_domain_id);
+        RAISE NOTICE '✅ Столбец questions.big_domain_id добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец questions.big_domain_id уже существует';
+    END IF;
+END $$;
+
+-- question_type
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'questions' AND column_name = 'question_type'
+    ) THEN
+        ALTER TABLE questions ADD COLUMN question_type VARCHAR(50) DEFAULT 'multiple_choice';
+        RAISE NOTICE '✅ Столбец questions.question_type добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец questions.question_type уже существует';
+    END IF;
+END $$;
+
+-- clinical_context
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'questions' AND column_name = 'clinical_context'
+    ) THEN
+        ALTER TABLE questions ADD COLUMN clinical_context TEXT;
+        RAISE NOTICE '✅ Столбец questions.clinical_context добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец questions.clinical_context уже существует';
+    END IF;
+END $$;
+
+-- learning_objectives
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'questions' AND column_name = 'learning_objectives'
+    ) THEN
+        ALTER TABLE questions ADD COLUMN learning_objectives JSON;
+        RAISE NOTICE '✅ Столбец questions.learning_objectives добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец questions.learning_objectives уже существует';
+    END IF;
+END $$;
+
+-- profession
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'questions' AND column_name = 'profession'
+    ) THEN
+        ALTER TABLE questions ADD COLUMN profession VARCHAR(50);
+        CREATE INDEX IF NOT EXISTS ix_questions_profession ON questions(profession);
         RAISE NOTICE '✅ Столбец questions.profession добавлен';
     ELSE
         RAISE NOTICE 'ℹ️  Столбец questions.profession уже существует';
@@ -46,7 +92,30 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- 2. Добавляем поля Spaced Repetition в personal_learning_plan
+-- 2. Добавляем связь с big_domain (foreign key constraint)
+-- ============================================================================
+
+DO $$ 
+BEGIN
+    -- Проверяем, существует ли foreign key
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'questions_big_domain_id_fkey'
+        AND table_name = 'questions'
+    ) THEN
+        -- Добавляем foreign key constraint
+        ALTER TABLE questions 
+        ADD CONSTRAINT questions_big_domain_id_fkey 
+        FOREIGN KEY (big_domain_id) REFERENCES big_domain(id);
+        
+        RAISE NOTICE '✅ Foreign key constraint добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Foreign key constraint уже существует';
+    END IF;
+END $$;
+
+-- ============================================================================
+-- 3. Добавляем поля Spaced Repetition в personal_learning_plan
 -- ============================================================================
 
 -- spaced_repetition_enabled
@@ -140,28 +209,32 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- 3. Проверка успешности миграции
+-- 4. Проверка успешности миграции
 -- ============================================================================
 
 DO $$ 
 DECLARE
-    questions_ok BOOLEAN := FALSE;
-    plan_ok BOOLEAN := FALSE;
+    questions_columns_count INTEGER := 0;
+    plan_columns_count INTEGER := 0;
 BEGIN
     -- Проверяем questions
-    SELECT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'questions' AND column_name = 'profession'
-    ) INTO questions_ok;
+    SELECT COUNT(*) INTO questions_columns_count
+    FROM information_schema.columns 
+    WHERE table_name = 'questions' 
+    AND column_name IN ('big_domain_id', 'question_type', 'clinical_context', 'learning_objectives', 'profession');
     
     -- Проверяем personal_learning_plan
-    SELECT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'personal_learning_plan' 
-        AND column_name IN ('spaced_repetition_enabled', 'sr_algorithm', 'next_review_date', 'sr_streak', 'total_sr_reviews')
-    ) INTO plan_ok;
+    SELECT COUNT(*) INTO plan_columns_count
+    FROM information_schema.columns 
+    WHERE table_name = 'personal_learning_plan' 
+    AND column_name IN ('spaced_repetition_enabled', 'sr_algorithm', 'next_review_date', 'sr_streak', 'total_sr_reviews');
     
-    IF questions_ok AND plan_ok THEN
+    RAISE NOTICE '';
+    RAISE NOTICE '📊 РЕЗУЛЬТАТЫ МИГРАЦИИ:';
+    RAISE NOTICE '   questions: % / 5 столбцов добавлено', questions_columns_count;
+    RAISE NOTICE '   personal_learning_plan: % / 5 столбцов добавлено', plan_columns_count;
+    
+    IF questions_columns_count = 5 AND plan_columns_count = 5 THEN
         RAISE NOTICE '';
         RAISE NOTICE '✅ МИГРАЦИЯ ЗАВЕРШЕНА УСПЕШНО';
         RAISE NOTICE '✅ Все необходимые столбцы добавлены';
