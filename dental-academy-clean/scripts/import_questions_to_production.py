@@ -122,6 +122,9 @@ def import_questions_to_production(json_file=None):
             except Exception as e:
                 errors += 1
                 print(f"   ❌ Ошибка при импорте вопроса {q.get('id')}: {e}")
+                if errors <= 3:  # Показать первые 3 ошибки
+                    import traceback
+                    traceback.print_exc()
                 continue
         
         # Финальный коммит
