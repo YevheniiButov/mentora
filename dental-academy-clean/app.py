@@ -594,6 +594,16 @@ try:
         import traceback
         logger.error(f"❌ Traceback: {traceback.format_exc()}")
     
+    # Flashcard System (Medical Terminology)
+    try:
+        from routes.flashcard_routes import flashcard_bp
+        app.register_blueprint(flashcard_bp)
+        logger.info("✅ Flashcard blueprint registered successfully")
+    except Exception as flashcard_error:
+        logger.error(f"❌ ERROR importing Flashcard routes: {flashcard_error}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+    
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
         # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется
