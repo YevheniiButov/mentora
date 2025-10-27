@@ -760,7 +760,6 @@ class PageView(db.Model):
     
     def __repr__(self):
         return f'<PageView {self.id}: {self.page_url}>'
-
 class UserSession(db.Model):
     """Track user sessions"""
     __tablename__ = 'user_sessions'
@@ -1260,7 +1259,6 @@ class QuestionCategory(db.Model):
     
     def __repr__(self):
         return f'<QuestionCategory {self.name}>'
-
 class Question(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True)
@@ -2000,7 +1998,6 @@ class ForumCategory(db.Model):
             'topics_count': self.topics.count(),
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
-
 class ForumTopic(db.Model):
     """Темы форума"""
     __tablename__ = 'forum_topics'
@@ -2712,7 +2709,6 @@ class BIGDomain(db.Model):
     
     def __repr__(self):
         return f'<BIGDomain {self.code}: {self.name} ({self.weight_percentage}%)>'
-
 class IRTParameters(db.Model):
     """IRT parameters for 3PL model (difficulty, discrimination, guessing)"""
     __tablename__ = 'irt_parameters'
@@ -3400,7 +3396,6 @@ class DiagnosticResponse(db.Model, JSONSerializableMixin):
     
     def __repr__(self):
         return f'<DiagnosticResponse Session{self.session_id} Q{self.question_id} {"✓" if self.is_correct else "✗"}>'
-
 class PersonalLearningPlan(db.Model, JSONSerializableMixin):
     """Personalized learning plan based on diagnostic results"""
     __tablename__ = 'personal_learning_plan'
@@ -4193,7 +4188,6 @@ class PersonalLearningPlan(db.Model, JSONSerializableMixin):
             self.daily_goal_met_count += 1
         
         return goal_met
-    
     # Category Abilities Methods
     def get_category_abilities(self):
         """Get category abilities as dict"""
@@ -4871,18 +4865,21 @@ class SpacedRepetitionItem(db.Model):
         # Рассчитываем дату следующего повторения
         self.next_review = datetime.now(timezone.utc) + timedelta(days=self.interval)
     
-    def is_due(self) -> bool:
-        """Проверка, готов ли элемент к повторению"""
-        # Убеждаемся, что next_review имеет timezone
-        if self.next_review.tzinfo is None:
-            next_review = self.next_review.replace(tzinfo=timezone.utc)
-        else:
-            next_review = self.next_review
-        return datetime.now(timezone.utc) >= next_review
+    @property
+    def is_due(self):
+        now = datetime.now(timezone.utc)
+        next_review = self.next_review
+        
+        # Handle both timezone-aware and naive datetimes
+        if next_review.tzinfo is None:
+            # Convert naive to aware (assume UTC)
+            next_review = next_review.replace(tzinfo=timezone.utc)
+        
+        return now >= next_review
     
     def get_days_overdue(self) -> int:
         """Количество дней просрочки"""
-        if not self.is_due():
+        if not self.is_due:
             return 0
         # Убеждаемся, что next_review имеет timezone
         if self.next_review.tzinfo is None:
@@ -4926,13 +4923,13 @@ class SpacedRepetitionItem(db.Model):
             'total_reviews': self.total_reviews,
             'consecutive_correct': self.consecutive_correct,
             'consecutive_incorrect': self.consecutive_incorrect,
-            'is_due': self.is_due(),
+            'is_due': self.is_due,
             'days_overdue': self.get_days_overdue(),
             'priority_score': self.get_priority_score()
         }
     
     def __repr__(self):
-        return f'<SpacedRepetitionItem User:{self.user_id} Question:{self.question_id} Interval:{self.interval} Due:{self.is_due()}>'
+        return f'<SpacedRepetitionItem User:{self.user_id} Question:{self.question_id} Interval:{self.interval} Due:{self.is_due}>'
 
 
 class StudySessionResponse(db.Model):
@@ -4957,7 +4954,6 @@ class StudySessionResponse(db.Model):
     def response_time_seconds(self):
         """Convert response time to seconds"""
         return self.response_time / 1000 if self.response_time else None
-
 # ========================================
 # CRM SYSTEM MODELS
 # ========================================
@@ -5743,8 +5739,6 @@ class CommunicationHistory(db.Model):
     
     def __repr__(self):
         return f'<CommunicationHistory {self.id}: {self.recipient_email}>'
-
-
 class CommunicationCampaign(db.Model):
     """Кампании массовых рассылок"""
     __tablename__ = 'communication_campaigns'
@@ -6233,7 +6227,15 @@ class UserTermProgress(db.Model):
     
     @property
     def is_due(self):
-        return datetime.now(timezone.utc) >= self.next_review
+        now = datetime.now(timezone.utc)
+        next_review = self.next_review
+        
+        # Handle both timezone-aware and naive datetimes
+        if next_review.tzinfo is None:
+            # Convert naive to aware (assume UTC)
+            next_review = next_review.replace(tzinfo=timezone.utc)
+        
+        return now >= next_review
     
     def update_progress_sm2(self, quality: int):
         self.times_reviewed += 1

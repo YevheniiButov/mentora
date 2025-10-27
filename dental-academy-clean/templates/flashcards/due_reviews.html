@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}🔄 Due Reviews - Medical Flashcards{% endblock %}
+{% block title %}Due Reviews - Medical Flashcards{% endblock %}
 
 {% block content %}
 <div class="due-reviews-container">
     <!-- Header -->
     <div class="header">
         <a href="{{ url_for('flashcards.categories') }}" class="back-btn">← Back</a>
-        <h1>🔄 Reviews Due Today</h1>
+        <h1>Due Reviews</h1>
         <p>{{ categories_with_due|sum(attribute='count') }} terms waiting for review</p>
     </div>
 
@@ -17,16 +17,7 @@
         {% for cat_data in categories_with_due %}
         <div class="category-section">
             <div class="category-header">
-                <h2>
-                    {% if cat_data.name == 'anatomy' %}🫀
-                    {% elif cat_data.name == 'symptoms' %}🤒
-                    {% elif cat_data.name == 'diseases' %}🦠
-                    {% elif cat_data.name == 'treatments' %}💊
-                    {% elif cat_data.name == 'dental' %}🦷
-                    {% else %}📚
-                    {% endif %}
-                    {{ cat_data.name|title }}
-                </h2>
+                <h2>{{ cat_data.name|title }}</h2>
                 <span class="count-badge">{{ cat_data.count }} terms</span>
             </div>
 
@@ -36,7 +27,7 @@
                     <div class="term-header">
                         <h3>{{ term.term_nl }}</h3>
                         <span class="mastery" title="Mastery level">
-                            {% for i in range(term.mastery_level) %}⭐{% endfor %}
+                            {% for i in range(term.mastery_level) %}<span class="star">★</span>{% endfor %}
                         </span>
                     </div>
 
@@ -55,7 +46,7 @@
 
                     <a href="{{ url_for('flashcards.study_single_term', term_id=term.id) }}" 
                        class="btn btn-study">
-                        🔄 Review This →
+                        Review This
                     </a>
                 </div>
                 {% endfor %}
@@ -63,7 +54,7 @@
 
             <a href="{{ url_for('flashcards.study_category', category=cat_data.name) }}" 
                class="btn-category-review">
-                Review All {{ cat_data.count }} →
+                Review All {{ cat_data.count }} Terms
             </a>
         </div>
         {% endfor %}
@@ -72,25 +63,22 @@
     <!-- Quick Stats -->
     <div class="quick-stats">
         <div class="stat-box">
-            <span class="icon">🔄</span>
-            <span class="label">Total Due</span>
+            <span class="icon">Reviews Due</span>
             <span class="value">{{ categories_with_due|sum(attribute='count') }}</span>
         </div>
         <div class="stat-box">
-            <span class="icon">⏱️</span>
-            <span class="label">Est. Time</span>
+            <span class="icon">Est. Time</span>
             <span class="value">{{ (categories_with_due|sum(attribute='count') * 1.5)|int }} min</span>
         </div>
         <div class="stat-box">
-            <span class="icon">✅</span>
-            <span class="label">Category Count</span>
+            <span class="icon">Categories</span>
             <span class="value">{{ categories_with_due|length }}</span>
         </div>
     </div>
     {% else %}
     <!-- No Reviews Message -->
     <div class="empty-state">
-        <div class="empty-icon">📭</div>
+        <div class="empty-icon">-</div>
         <h2>No Reviews Due Today</h2>
         <p>Great job! You're all caught up. Come back tomorrow for more reviews.</p>
         <a href="{{ url_for('flashcards.categories') }}" class="btn btn-primary">
@@ -102,10 +90,10 @@
     <!-- Footer Navigation -->
     <div class="footer-nav">
         <a href="{{ url_for('flashcards.categories') }}" class="nav-link">
-            📚 All Categories
+            All Categories
         </a>
         <a href="{{ url_for('flashcards.user_stats') }}" class="nav-link">
-            📈 Statistics
+            Statistics
         </a>
     </div>
 </div>
@@ -119,36 +107,38 @@
 
 .header {
     margin-bottom: 40px;
-    padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
+    padding: 24px;
+    background: linear-gradient(135deg, #3b82f6, #0ea5e9);
+    border-radius: 16px;
     color: white;
 }
 
 .back-btn {
     display: inline-block;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.15);
     color: white;
     padding: 8px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 600;
     margin-bottom: 12px;
-    transition: background 0.3s;
+    transition: all 0.3s;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 .back-btn:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.25);
 }
 
 .header h1 {
     margin: 0 0 8px 0;
     font-size: 32px;
+    font-weight: 600;
 }
 
 .header p {
     margin: 0;
-    opacity: 0.9;
+    opacity: 0.95;
     font-size: 16px;
 }
 
@@ -161,10 +151,11 @@
 }
 
 .category-section {
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 24px;
     background: white;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .category-header {
@@ -173,22 +164,23 @@
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 16px;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .category-header h2 {
     margin: 0;
     font-size: 24px;
-    color: #333;
+    color: #1f2937;
+    font-weight: 600;
 }
 
 .count-badge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6, #0ea5e9);
     color: white;
     padding: 8px 16px;
-    border-radius: 20px;
+    border-radius: 12px;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 /* Terms Grid */
@@ -200,8 +192,8 @@
 }
 
 .term-card {
-    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
-    border: 1px solid #e8eef7;
+    background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 20px;
     transition: all 0.3s ease;
@@ -216,13 +208,18 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(90deg, #3b82f6, #0ea5e9);
 }
 
 .term-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
-    border-color: #667eea;
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
+}
+
+.star {
+    color: #f59e0b;
+    font-size: 14px;
 }
 
 .term-header {
@@ -235,12 +232,13 @@
 .term-header h3 {
     margin: 0;
     font-size: 18px;
-    color: #333;
+    color: #1f2937;
     flex: 1;
+    font-weight: 600;
 }
 
 .mastery {
-    color: #ffd700;
+    color: #f59e0b;
     font-size: 14px;
     white-space: nowrap;
 }
@@ -248,7 +246,7 @@
 .translation {
     margin: 0 0 12px 0;
     font-size: 16px;
-    color: #667eea;
+    color: #3b82f6;
     font-weight: 500;
 }
 
@@ -265,52 +263,53 @@
 }
 
 .stat .label {
-    color: #999;
+    color: #6b7280;
 }
 
 /* Buttons */
 .btn {
     display: inline-block;
-    padding: 10px 16px;
-    background: #667eea;
+    padding: 12px 16px;
+    background: #3b82f6;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 600;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
+    font-size: 14px;
 }
 
 .btn:hover {
-    background: #5568d3;
+    background: #2563eb;
     transform: scale(1.02);
 }
 
 .btn-study {
     width: 100%;
-    font-size: 14px;
 }
 
 .btn-category-review {
     display: block;
     width: 100%;
     padding: 12px;
-    background: #f0f0f0;
-    color: #333;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
     text-decoration: none;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
     transition: all 0.3s;
+    font-size: 14px;
 }
 
 .btn-category-review:hover {
-    background: #e0e0e0;
-    border-color: #667eea;
-    color: #667eea;
+    background: #e5e7eb;
+    border-color: #3b82f6;
+    color: #3b82f6;
 }
 
 /* Quick Stats */
@@ -323,36 +322,31 @@
 
 .stat-box {
     background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
     padding: 20px;
     text-align: center;
     transition: all 0.3s;
 }
 
 .stat-box:hover {
-    border-color: #667eea;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
 
 .stat-box .icon {
     display: block;
-    font-size: 32px;
+    font-size: 14px;
+    color: #6b7280;
     margin-bottom: 8px;
-}
-
-.stat-box .label {
-    display: block;
-    font-size: 12px;
-    color: #999;
-    margin-bottom: 4px;
+    font-weight: 600;
 }
 
 .stat-box .value {
     display: block;
     font-size: 28px;
     font-weight: bold;
-    color: #667eea;
+    color: #3b82f6;
 }
 
 /* Empty State */
@@ -364,22 +358,23 @@
 .empty-icon {
     font-size: 64px;
     margin-bottom: 16px;
+    color: #d1d5db;
 }
 
 .empty-state h2 {
     margin: 0 0 12px 0;
     font-size: 28px;
-    color: #333;
+    color: #1f2937;
 }
 
 .empty-state p {
     margin: 0 0 24px 0;
     font-size: 16px;
-    color: #666;
+    color: #6b7280;
 }
 
 .btn-primary {
-    background: #667eea;
+    background: #3b82f6;
     color: white;
     padding: 12px 24px;
 }
@@ -390,24 +385,25 @@
     gap: 16px;
     justify-content: center;
     padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
+    background: #f9fafb;
+    border-radius: 12px;
 }
 
 .nav-link {
-    padding: 10px 16px;
+    padding: 12px 16px;
     background: white;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
     text-decoration: none;
-    color: #333;
-    font-weight: 500;
+    color: #374151;
+    font-weight: 600;
     transition: all 0.3s;
 }
 
 .nav-link:hover {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: #3b82f6;
+    color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
 }
 
 /* Mobile Responsive */
