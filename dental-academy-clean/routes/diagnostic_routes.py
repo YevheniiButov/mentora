@@ -1132,7 +1132,7 @@ def show_results(session_id):
         db.session.commit()
         
         # Создание или обновление плана обучения на основе результатов диагностики
-        if diagnostic_session.session_type in ['diagnostic', 'express', 'preliminary', 'readiness']:
+        if diagnostic_session.session_type in ['diagnostic', 'express', 'preliminary', 'readiness', 'adaptive_diagnostic', 'full', 'learning', 'quick_30', 'full_60']:
             # Проверяем, есть ли активный план
             existing_plan = PersonalLearningPlan.query.filter_by(
                 user_id=current_user.id,

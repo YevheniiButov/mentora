@@ -124,11 +124,12 @@ def calculate_category_progress(user, category_id: int) -> Dict[str, Any]:
         
         for domain in domains:
             # Calculate actual progress based on user's diagnostic and practice sessions
+            # Try both big_domain_id and domain string field
             diagnostic_correct = DiagnosticResponse.query.join(
                 DiagnosticResponse.session
             ).join(Question).filter(
                 DiagnosticResponse.session.has(user_id=user.id),
-                Question.big_domain_id == domain.id,
+                (Question.big_domain_id == domain.id) | (Question.domain == domain.code),
                 DiagnosticResponse.is_correct == True
             ).count()
             
@@ -136,7 +137,7 @@ def calculate_category_progress(user, category_id: int) -> Dict[str, Any]:
                 DiagnosticResponse.session
             ).join(Question).filter(
                 DiagnosticResponse.session.has(user_id=user.id),
-                Question.big_domain_id == domain.id
+                (Question.big_domain_id == domain.id) | (Question.domain == domain.code)
             ).count()
             
             # Get user's practice responses for this domain from StudySessionResponse
@@ -147,7 +148,7 @@ def calculate_category_progress(user, category_id: int) -> Dict[str, Any]:
                 StudySession
             ).join(PersonalLearningPlan).join(Question).filter(
                 PersonalLearningPlan.user_id == user.id,
-                Question.big_domain_id == domain.id,
+                (Question.big_domain_id == domain.id) | (Question.domain == domain.code),
                 StudySession.status == 'completed'
             ).all()
             
@@ -193,20 +194,38 @@ def calculate_category_progress(user, category_id: int) -> Dict[str, Any]:
                 'domains': []
             }
         
+        from models import DiagnosticResponse, DiagnosticSession
+        
         category_progress = []
         completed_count = 0
         
         for qcat in question_categories:
-            # Count questions in this category
+            # Count total questions in this category
             total_questions = Question.query.filter_by(
                 profession='huisarts',
                 category=qcat
             ).count()
             
-            # Count answered questions (placeholder - would need actual user progress)
-            answered_questions = 0  # TODO: Query from user's answered questions
+            # Count answered questions from user's diagnostic sessions
+            answered_questions = DiagnosticResponse.query.join(
+                DiagnosticResponse.session
+            ).join(Question).filter(
+                DiagnosticResponse.session.has(user_id=user.id),
+                Question.profession == 'huisarts',
+                Question.category == qcat
+            ).count()
             
-            qcat_percentage = (answered_questions / total_questions * 100) if total_questions > 0 else 0.0
+            correct_answers = DiagnosticResponse.query.join(
+                DiagnosticResponse.session
+            ).join(Question).filter(
+                DiagnosticResponse.session.has(user_id=user.id),
+                Question.profession == 'huisarts',
+                Question.category == qcat,
+                DiagnosticResponse.is_correct == True
+            ).count()
+            
+            # Calculate percentage
+            qcat_percentage = (correct_answers / answered_questions * 100) if answered_questions > 0 else 0.0
             is_completed = qcat_percentage >= 80.0
             
             if is_completed:

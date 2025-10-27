@@ -8,7 +8,7 @@ This module provides REST API endpoints for:
 - Progress updates
 """
 
-from flask import Blueprint, jsonify, redirect, url_for, request, session
+from flask import Blueprint, jsonify, redirect, url_for, request, session, current_app
 from flask_login import login_required, current_user
 from utils.individual_plan_helpers import (
     get_daily_tasks,
@@ -85,7 +85,17 @@ def api_progress_summary():
         }
     """
     try:
+        from utils.helpers import get_user_profession_code
+        
+        # DEBUG
+        profession = get_user_profession_code(current_user)
+        current_app.logger.info(f"🔍 API Progress - User {current_user.id}, profession: {profession}")
+        
         progress = get_progress_summary(current_user)
+        
+        # Log categories
+        current_app.logger.info(f"🔍 API Progress - categories count: {len(progress.get('categories', []))}, percentages: {[c['percentage'] for c in progress.get('categories', [])]}")
+        
         return jsonify(progress)
     except Exception as e:
         import traceback

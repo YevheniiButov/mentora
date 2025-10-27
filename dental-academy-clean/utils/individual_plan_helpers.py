@@ -212,16 +212,45 @@ def get_progress_summary(user):
     
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Get completed sessions for today
+    # Get completed sessions for today from StudySession
     sessions_today = StudySession.query.join(PersonalLearningPlan).filter(
         PersonalLearningPlan.user_id == user.id,
         StudySession.status == 'completed',
         StudySession.completed_at >= today_start
     ).all()
     
-    # Sum up questions and time from today's sessions
+    # Sum up questions and time from today's StudySession
     questions_today = sum(session.questions_answered for session in sessions_today)
     time_today = sum(session.actual_duration or 0 for session in sessions_today)
+    
+    # ALSO count questions from DiagnosticSession (IRT practice sessions)
+    from models import DiagnosticSession, DiagnosticResponse
+    diagnostic_sessions_today = DiagnosticSession.query.filter(
+        DiagnosticSession.user_id == user.id,
+        DiagnosticSession.status == 'completed',
+        DiagnosticSession.completed_at >= today_start
+    ).all()
+    
+    # Add diagnostic session questions
+    diagnostic_questions_today = sum(session.questions_answered for session in diagnostic_sessions_today)
+    questions_today += diagnostic_questions_today
+    
+    # Calculate time from DiagnosticSession responses
+    diagnostic_time_today = 0
+    for session in diagnostic_sessions_today:
+        # Get all responses for this session
+        responses = DiagnosticResponse.query.filter_by(session_id=session.id).all()
+        # Sum up response_time (in seconds), convert to minutes
+        session_time = sum(response.response_time or 0 for response in responses) / 60
+        diagnostic_time_today += session_time
+    
+    time_today += diagnostic_time_today
+    
+    # DEBUG: Log the counts
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"DEBUG questions_today: StudySession={questions_today - diagnostic_questions_today}, DiagnosticSession={diagnostic_questions_today}, Total={questions_today}")
+    logger.info(f"DEBUG time_today: StudySession={time_today - diagnostic_time_today}, DiagnosticSession={diagnostic_time_today}, Total={time_today}")
     
     # SR statistics
     total_sr_items = SpacedRepetitionItem.query.filter_by(user_id=user.id).count()
@@ -258,11 +287,78 @@ def get_progress_summary(user):
             'time': session.actual_duration or 0
         })
     
+    # Get last 30 days activity data
+    from datetime import timedelta
+    activity_last_30_days = []
+    for i in range(29, -1, -1):
+        date = datetime.now(timezone.utc).date() - timedelta(days=i)
+        date_start = datetime.combine(date, datetime.min.time()).replace(tzinfo=timezone.utc)
+        date_end = date_start + timedelta(days=1)
+        
+        # Count questions answered on this date from StudySession
+        day_sessions = StudySession.query.join(PersonalLearningPlan).filter(
+            PersonalLearningPlan.user_id == user.id,
+            StudySession.status == 'completed',
+            StudySession.completed_at >= date_start,
+            StudySession.completed_at < date_end
+        ).all()
+        
+        questions_count = sum(session.questions_answered for session in day_sessions)
+        
+        # Also count questions from DiagnosticSession
+        diagnostic_day_sessions = DiagnosticSession.query.filter(
+            DiagnosticSession.user_id == user.id,
+            DiagnosticSession.status == 'completed',
+            DiagnosticSession.completed_at >= date_start,
+            DiagnosticSession.completed_at < date_end
+        ).all()
+        
+        diagnostic_questions = sum(session.questions_answered for session in diagnostic_day_sessions)
+        questions_count += diagnostic_questions
+        
+        activity_last_30_days.append({
+            'date': date.isoformat(),
+            'questions': questions_count
+        })
+    
+    # Calculate streak from activity_last_30_days
+    streak = 0
+    if activity_last_30_days:
+        # Skip today (last element) and count consecutive days with questions, starting from yesterday
+        # This allows streak to continue even if user hasn't answered questions yet today
+        for i in range(len(activity_last_30_days) - 2, -1, -1):  # Start from second-to-last element
+            if activity_last_30_days[i]['questions'] > 0:
+                streak += 1
+            else:
+                break
+    
+    # DEBUG: Log streak calculation
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"🔍 STREAK DEBUG: streak={streak}, activity_last_30_days[-4:0]={activity_last_30_days[-4:] if len(activity_last_30_days) >= 4 else 'N/A'}")
+    
+    # Calculate total questions answered (sum of all days in activity_last_30_days)
+    total_questions_answered = sum(day['questions'] for day in activity_last_30_days)
+    
+    # Calculate total time for last 30 days (use plan.time_invested or sum from sessions)
+    # We'll use plan.time_invested if available, otherwise calculate from sessions
+    total_time_minutes = plan.time_invested or 0
+    if total_time_minutes == 0:
+        # Fallback: sum up time from all completed sessions in last 30 days
+        for session in StudySession.query.join(PersonalLearningPlan).filter(
+            PersonalLearningPlan.user_id == user.id,
+            StudySession.status == 'completed',
+            StudySession.completed_at >= (datetime.now(timezone.utc) - timedelta(days=30))
+        ).all():
+            if session.actual_duration:
+                total_time_minutes += session.actual_duration
+    
     return {
         'overall_progress': overall_progress,
-        'daily_streak': plan.daily_streak,
-        'longest_streak': plan.longest_daily_streak,
+        'daily_streak': streak if streak > 0 else (plan.daily_streak or 0),
+        'longest_streak': plan.longest_daily_streak or 0,
         'questions_today': questions_today,
+        'questions_total': total_questions_answered,  # Total questions in last 30 days
         'time_today': time_today,
         'daily_goal': plan.daily_question_goal,
         'time_goal': plan.daily_time_goal,
@@ -271,13 +367,15 @@ def get_progress_summary(user):
         'sr_stats': {
             'total_items': total_sr_items,
             'mastered_items': mastered_items,
-            'streak': plan.sr_streak,
-            'total_reviews': plan.total_sr_reviews
+            'streak': plan.sr_streak or 0,
+            'total_reviews': plan.total_sr_reviews or 0
         },
-        'time_invested': plan.time_invested,
+        'time_invested': total_time_minutes,  # Return in minutes
+        'time_invested_hours': round(total_time_minutes / 60, 1),  # Return in hours
         'learning_velocity': plan.learning_velocity or 0.0,
         'retention_rate': plan.retention_rate or 0.0,
-        'recent_sessions': recent_sessions
+        'recent_sessions': recent_sessions,
+        'activity_last_30_days': activity_last_30_days
     }
 
 
@@ -285,6 +383,8 @@ def select_questions_for_today(user, count=20):
     """
     Select questions for today's study session.
     Mix of: SR reviews + new questions from weak categories.
+    
+    IMPORTANT: Excludes questions already answered today.
     
     Args:
         user: User object
@@ -298,17 +398,30 @@ def select_questions_for_today(user, count=20):
     
     selected_questions = []
     
+    # Get questions already answered today
+    from datetime import datetime, timezone, date
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    from models import DiagnosticSession, DiagnosticResponse
+    today_responses = DiagnosticResponse.query.join(DiagnosticSession).filter(
+        DiagnosticSession.user_id == user.id,
+        DiagnosticSession.completed_at >= today_start
+    ).all()
+    
+    answered_today_ids = set([r.question_id for r in today_responses])
+    
     # 1. Get SR reviews due
     sr_items_due = SpacedRepetitionItem.query.filter(
         SpacedRepetitionItem.user_id == user.id,
         SpacedRepetitionItem.next_review <= date.today()
     ).limit(count // 2).all()  # Max 50% of daily questions from SR
     
-    # Get questions for these SR items
+    # Get questions for these SR items (exclude already answered)
     for sr_item in sr_items_due:
-        question = Question.query.get(sr_item.question_id)
-        if question:
-            selected_questions.append(question)
+        if sr_item.question_id not in answered_today_ids:
+            question = Question.query.get(sr_item.question_id)
+            if question:
+                selected_questions.append(question)
     
     # 2. Get new questions from weak categories
     remaining = count - len(selected_questions)
@@ -327,13 +440,14 @@ def select_questions_for_today(user, count=20):
             
             if domain_ids:
                 # Get questions from these domains
-                # Exclude questions already in SR
+                # Exclude questions already in SR AND already answered today
                 sr_question_ids = [item.question_id for item in sr_items_due]
+                used_question_ids = list(answered_today_ids) + sr_question_ids + [q.id for q in selected_questions]
                 
                 new_questions = Question.query.filter(
                     Question.profession == profession,
                     Question.big_domain_id.in_(domain_ids),
-                    ~Question.id.in_(sr_question_ids) if sr_question_ids else True
+                    ~Question.id.in_(used_question_ids) if used_question_ids else True
                 ).order_by(func.random()).limit(remaining).all()
                 
                 selected_questions.extend(new_questions)
@@ -342,6 +456,7 @@ def select_questions_for_today(user, count=20):
         if len(selected_questions) < count:
             remaining = count - len(selected_questions)
             used_ids = [q.id for q in selected_questions]
+            used_ids.extend(answered_today_ids)
             
             random_questions = Question.query.filter(
                 Question.profession == profession,

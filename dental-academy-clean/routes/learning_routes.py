@@ -596,16 +596,27 @@ def automated_practice(plan_id=None, week=None):
     weak_domains = plan.get_weak_domain_names()  # Используем полные названия
     practice_questions = []
     
-    if weak_domains:
-        for domain_name in weak_domains:
-            domain_questions = Question.query.join(BIGDomain).filter(
-                BIGDomain.name.contains(domain_name)
-            ).limit(5).all()
-            practice_questions.extend(domain_questions)
-    
-    # If no domain-specific questions, get general questions
-    if not practice_questions:
-        practice_questions = Question.query.limit(10).all()
+    # Check if we have daily_session_questions in session (from start_daily_session)
+    if 'daily_session_questions' in session and session.get('daily_session_active'):
+        # Use the questions already selected for today
+        question_ids = session.get('daily_session_questions', [])
+        practice_questions = Question.query.filter(Question.id.in_(question_ids)).all()
+        print(f"🔧 DEBUG: Using {len(practice_questions)} questions from daily_session_questions")
+    else:
+        # Fallback: get questions based on weak domains
+        if weak_domains:
+            for domain_name in weak_domains:
+                domain_questions = Question.query.join(BIGDomain).filter(
+                    BIGDomain.name.contains(domain_name)
+                ).limit(5).all()
+                practice_questions.extend(domain_questions)
+        
+        # If no domain-specific questions, get general questions
+        if not practice_questions:
+            practice_questions = Question.query.limit(10).all()
+        
+        # Store for next time to avoid repeats
+        session['last_practice_questions'] = [q.id for q in practice_questions]
     
     # Convert Question objects to JSON-serializable dictionaries
     questions_data = []
@@ -722,6 +733,12 @@ def complete_automated_session():
                 break
         
         current_app.logger.info(f"Next session found: {next_session is not None}")
+        
+        # ✅ Update daily streak when session is completed
+        from datetime import date
+        plan.update_daily_streak(date.today())
+        current_app.logger.info(f"Updated daily streak: {plan.daily_streak}")
+        db.session.commit()
         
         # Update session data
         if next_session:

@@ -763,15 +763,15 @@
                 const timeSpent = Math.max(1, Math.floor(totalSeconds / 60)); // Минимум 1 минута
                 
                 const response = await fetch('{{ url_for("learning.complete_automated_session") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        questions_answered: questions.length,
-                        correct_answers: correctAnswers,
-                        time_spent: timeSpent
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    questions_answered: questions.length,
+                    correct_answers: correctAnswers,
+                    time_spent: timeSpent
+                })
                 });
                 
                 const data = await response.json();

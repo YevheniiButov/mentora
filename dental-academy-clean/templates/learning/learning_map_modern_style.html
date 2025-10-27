@@ -2664,6 +2664,19 @@
                 <!-- Узлы на блоке -->
                 <div class="learning-tabs">
                     <div class="tabs-container">
+                        <!-- Individual Tab - Always Enabled (FIRST) -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'individual' }" @click="selectTab('individual')">
+                            <div class="circle-button">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-person-fill"></i></div>
+                                <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
+                            </div>
+                            <div class="tab-label">
+                                {{ t('individual_plan', lang)|default('Individual') }}
+                                <span class="beta-badge">{{ t('beta', lang)|default('BETA') }}</span>
+                            </div>
+                        </div>
+
                         <!-- IRT Tab - Always Enabled -->
                         <div class="tab-circle" :class="{ 'active': activeTab === 'irt' }" @click="selectTab('irt')">
                             <div class="circle-button">
@@ -2685,19 +2698,6 @@
                                 <div class="tab-status-badge" :style="!isLaunched ? 'background: #94a3b8;' : ''"><i class="bi bi-lock-fill" x-show="!isLaunched"></i><i class="bi bi-play-fill" x-show="isLaunched"></i></div>
                             </div>
                             <div class="tab-label">{{ t('virtual', lang)|default('Virtual') }}</div>
-                        </div>
-
-                        <!-- Individual Tab - Always Enabled -->
-                        <div class="tab-circle" :class="{ 'active': activeTab === 'individual' }" @click="selectTab('individual')">
-                            <div class="circle-button">
-                                <div class="circle-glow"></div>
-                                <div class="circle-inner"><i class="bi bi-person-fill"></i></div>
-                                <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
-                            </div>
-                            <div class="tab-label">
-                                {{ t('individual_plan', lang)|default('Individual') }}
-                                <span class="beta-badge">{{ t('beta', lang)|default('BETA') }}</span>
-                            </div>
                         </div>
 
                         <!-- Games Tab - Always Enabled -->
@@ -3327,7 +3327,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
             const validTabs = ['irt', 'virtual', 'individual', 'games', 'progress', 'planner'];
-            const initialTab = validTabs.includes(tabParam) ? tabParam : 'irt';
+            const initialTab = validTabs.includes(tabParam) ? tabParam : 'individual';
             
             return {
                 activeTab: initialTab,
@@ -3442,6 +3442,9 @@
                     this.loadUserStats();
                     // Games statistics не загружаем, так как не показываем статистику игр
                     
+                    // Initialize last30Days with empty data
+                    this.last30Days = this.generateLast30Days();
+                    
                     // Load Individual Plan data if that's the active tab
                     if (this.activeTab === 'individual') {
                         this.loadIndividualPlanData();
@@ -3518,9 +3521,9 @@
                         }
                     ],
                     'progress': [
-                        { id: 10, title: 'Overall', subtitle: 'All modules', icon: 'graph-up', progress: 68, completed: 68, total: 100 },
-                        { id: 11, title: 'This Week', subtitle: 'Activity', icon: 'calendar-week', progress: 85, completed: 6, total: 7 },
-                        { id: 12, title: 'Study Time', subtitle: '12.5 hours', icon: 'clock-fill', progress: 0, completed: 0, total: 0 }
+                        { id: 10, title: 'Overall', subtitle: 'Loading...', icon: 'graph-up', progress: 0, completed: 0, total: 100 },
+                        { id: 11, title: 'This Week', subtitle: 'Loading...', icon: 'calendar-week', progress: 0, completed: 0, total: 20 },
+                        { id: 12, title: 'Study Time', subtitle: 'Loading...', icon: 'clock-fill', progress: 0, completed: 0, total: 0 }
                     ],
                     'planner': [
                         { id: 13, title: 'Today', subtitle: '3 tasks', icon: 'calendar-check', progress: 66, completed: 2, total: 3 },
@@ -3780,11 +3783,13 @@
                         const tasksResponse = await fetch('/api/individual-plan/daily-tasks');
                         const tasksData = await tasksResponse.json();
                         this.dailyTasks = tasksData.tasks;
-                        this.questionsToday = tasksData.questions_today || 0;
                         
                         // Fetch progress summary
                         const progressResponse = await fetch('/api/individual-plan/progress');
                         const progressData = await progressResponse.json();
+                        
+                        // Get questions_today from progressData (it has the correct count)
+                        this.questionsToday = progressData.questions_today || 0;
                         
                         this.dailyStreak = progressData.daily_streak || 0;
                         this.categories = progressData.categories || [];
@@ -3823,15 +3828,39 @@
                         this.progressPercent = data.overall_progress || 0;
                         
                         // Update progress metrics
-                        this.totalQuestionsAnswered = data.questions_today || 0;
+                        this.totalQuestionsAnswered = data.questions_total || data.questions_today || 0; // Use questions_total for all questions, fallback to questions_today
                         this.recentSessions = data.recent_sessions || [];
                         this.last30Days = data.activity_last_30_days || this.generateLast30Days();
+                        
+                        console.log('📊 Last30Days data:', this.last30Days);
+                        console.log('📊 Last30Days length:', this.last30Days.length);
                         
                         // Also update Individual Plan data for consistency
                         this.dailyStreak = data.daily_streak || 0;
                         this.categories = data.categories || [];
                         this.overallProgress = data.overall_progress || 0;
-                        this.timeInvested = Math.round((data.time_invested || 0) / 60); // Convert to hours
+                        this.timeInvested = data.time_invested_hours || Math.round((data.time_invested || 0) / 60); // Use hours directly or convert from minutes
+                        
+                        // DEBUG: Log streak
+                        console.log('🔍 DAILY STREAK DEBUG:', {
+                            'data.daily_streak': data.daily_streak,
+                            'this.dailyStreak': this.dailyStreak,
+                            'activity_last_30_days last 3': data.activity_last_30_days?.slice(-3)
+                        });
+                        
+                        // Update progress tab modules
+                        this.modules['progress'][0].subtitle = this.overallProgress + '%';
+                        this.modules['progress'][0].progress = this.overallProgress;
+                        this.modules['progress'][0].completed = this.overallProgress;
+                        
+                        // Use questions_total for "This Week" instead of questionsToday
+                        const questionsThisWeek = data.questions_total || this.questionsToday || 0;
+                        this.modules['progress'][1].subtitle = questionsThisWeek + ' questions';
+                        this.modules['progress'][1].progress = this.dailyProgressPercent;
+                        this.modules['progress'][1].completed = questionsThisWeek;
+                        this.modules['progress'][1].total = this.dailyTasks.goal;
+                        
+                        this.modules['progress'][2].subtitle = this.timeInvested + 'h';
                         
                     } catch (error) {
                         console.error('❌ Failed to load progress:', error);
