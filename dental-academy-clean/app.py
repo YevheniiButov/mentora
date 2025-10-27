@@ -193,6 +193,12 @@ def before_request():
 @app.after_request
 def after_request(response):
     """Handle post-request processing"""
+    # Add cache control headers to prevent browser caching during development
+    # This ensures CSS/JS changes are immediately visible without manual cache clear
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, public, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
     # Update DigiD session if user is authenticated and has active DigiD session
     if current_user.is_authenticated and current_user.is_digid_user():
         digid_session_id = session.get('digid_session_id')
