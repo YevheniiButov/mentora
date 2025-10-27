@@ -226,11 +226,11 @@ def study_single_term(term_id):
 @login_required
 def review_term(term_id):
     """
-    Process user's review of a term
+    Process user's review of a term (Premium UX with 4-point confidence rating)
     
     Input (JSON):
     {
-        "quality": 1-5,  // 1=hard, 3=good, 5=easy
+        "quality": 1-4,  // 1=Again (forgot), 2=Hard, 3=Good, 4=Easy
         "time_spent": 10 // seconds
     }
     
@@ -245,12 +245,20 @@ def review_term(term_id):
     """
     try:
         data = request.get_json()
-        quality = data.get('quality', 3)
+        confidence = data.get('quality', 3)  # New: 1,2,3,4 confidence rating
         time_spent = data.get('time_spent', 0)
         
-        # Validate quality
-        if not 1 <= quality <= 5:
-            return jsonify({'error': 'Quality must be 1-5'}), 400
+        # Validate confidence rating
+        if not 1 <= confidence <= 4:
+            return jsonify({'error': 'Confidence must be 1-4'}), 400
+        
+        # Convert new 4-point to SM-2 quality scale (0-5)
+        # 1 (Again) -> 0 (complete failure)
+        # 2 (Hard) -> 2 (difficulty understanding)
+        # 3 (Good) -> 3 (correct with hesitation)  
+        # 4 (Easy) -> 5 (perfect recall)
+        quality_mapping = {1: 0, 2: 2, 3: 3, 4: 5}
+        quality = quality_mapping.get(confidence, 3)
         
         # Get term
         term = MedicalTerm.query.get_or_404(term_id)

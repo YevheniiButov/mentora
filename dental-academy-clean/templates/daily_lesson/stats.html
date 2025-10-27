@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Lesson Statistics{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">Daily Lesson Statistics</h1>
+                    <p class="text-muted mb-0">Your medical terminology learning progress</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('daily_lesson.index') }}" class="btn btn-outline-primary">
+                        Back to Lessons
+                    </a>
+                </div>
+            </div>
+
+            <!-- Overall Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">{{ total_terms }}</h4>
+                            <p class="card-text">Total Terms</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">{{ studied_terms }}</h4>
+                            <p class="card-text">Studied</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">{{ mastered_terms }}</h4>
+                            <p class="card-text">Mastered</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">{{ ((studied_terms / total_terms) * 100)|round|int }}%</h4>
+                            <p class="card-text">Progress</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress by Category -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Progress by Category</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for category in categories_progress %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">{{ category.category.replace('_', ' ').title() }}</h6>
+                                    <span class="badge bg-secondary">{{ category.studied }}/{{ category.total }}</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                         style="width: {{ category.progress_percent }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ category.progress_percent }}% complete</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_terms %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Term</th>
+                                            <th>Mastery Level</th>
+                                            <th>Accuracy</th>
+                                            <th>Last Reviewed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for term in recent_terms %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ term.term }}</strong>
+                                            </td>
+                                            <td>
+                                                {% for i in range(5) %}
+                                                    {% if i < term.mastery_level %}
+                                                        <span class="text-warning">★</span>
+                                                    {% else %}
+                                                        <span class="text-muted">☆</span>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="ms-2 text-muted">({{ term.mastery_level }}/5)</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if term.accuracy >= 80 else 'warning' if term.accuracy >= 60 else 'danger' }}">
+                                                    {{ term.accuracy }}%
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if term.last_reviewed %}
+                                                    {{ term.last_reviewed[:10] }}
+                                                {% else %}
+                                                    <span class="text-muted">Never</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <p class="text-muted">No recent activity. Start learning to see your progress!</p>
+                                <a href="{{ url_for('daily_lesson.index') }}" class="btn btn-primary">
+                                    Start Learning
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

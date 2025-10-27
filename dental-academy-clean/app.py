@@ -610,6 +610,16 @@ try:
         import traceback
         logger.error(f"❌ Traceback: {traceback.format_exc()}")
     
+    # Daily Lesson System (Medical Terminology)
+    try:
+        from routes.daily_lesson_routes import daily_lesson_bp
+        app.register_blueprint(daily_lesson_bp)
+        logger.info("✅ Daily Lesson blueprint registered successfully")
+    except Exception as daily_lesson_error:
+        logger.error(f"❌ ERROR importing Daily Lesson routes: {daily_lesson_error}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+    
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
         # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется

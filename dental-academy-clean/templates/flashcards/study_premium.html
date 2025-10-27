@@ -341,6 +341,12 @@ function premiumFlashcardStudy() {
 
         playSound(type) {
             // Optional: Add sound effects using Web Audio API or preloaded audio
+            // This is a placeholder for future sound implementation
+            if (type === 'flip') {
+                // Subtle flip sound
+            } else if (type === 'success') {
+                // Success sound
+            }
         },
 
         formatTime(seconds) {
@@ -651,9 +657,24 @@ document.addEventListener('keydown', (e) => {
     transform: translateY(-2px);
 }
 
-.rating-btn:hover {
-    border-color: inherit;
-    background: inherit;
+.rating-again:hover {
+    border-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.rating-hard:hover {
+    border-color: #ffa940;
+    background: rgba(255, 169, 64, 0.1);
+}
+
+.rating-good:hover {
+    border-color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.rating-easy:hover {
+    border-color: #51cf66;
+    background: rgba(81, 207, 102, 0.1);
 }
 
 .rating-emoji {
@@ -949,6 +970,11 @@ document.addEventListener('keydown', (e) => {
     .session-stats-grid {
         grid-template-columns: 1fr;
         gap: 12px;
+    }
+
+    .session-stats-grid .stat-card:nth-child(n+3) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
     }
 }
 
