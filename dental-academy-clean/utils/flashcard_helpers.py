@@ -41,8 +41,15 @@ def get_session_terms(user, category, count=10):
             
             if not progress:
                 new_terms.append(term)
-            elif progress.is_due:
-                review_terms.append(term)
+            else:
+                try:
+                    # Check if term is due for review (with error handling for datetime issues)
+                    if progress.is_due:
+                        review_terms.append(term)
+                except Exception as is_due_error:
+                    print(f"Warning: Error checking is_due for progress {progress.id}: {is_due_error}")
+                    # If error checking is_due, treat as not due
+                    pass
         
         # Sort by difficulty and frequency (prioritize harder, more common terms)
         new_terms.sort(key=lambda t: (t.difficulty, t.frequency), reverse=True)
@@ -71,7 +78,9 @@ def get_session_terms(user, category, count=10):
         return selected[:count]
     
     except Exception as e:
+        import traceback
         print(f"Error getting session terms: {e}")
+        print(f"Traceback: {traceback.format_exc()}")
         return []
 
 

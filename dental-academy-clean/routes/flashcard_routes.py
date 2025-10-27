@@ -97,15 +97,21 @@ def study_category(category):
     - 5 due for review
     """
     try:
+        current_app.logger.info(f"Study session started for category: {category}, user: {current_user.id}")
+        
         # Validate category
         category_exists = MedicalTerm.query.filter_by(category=category).first()
         if not category_exists:
+            current_app.logger.warning(f"Category not found: {category}")
             return jsonify({'error': 'Category not found'}), 404
         
         # Get session terms
+        current_app.logger.info(f"Getting session terms for category: {category}")
         session_terms = get_session_terms(current_user, category, count=10)
+        current_app.logger.info(f"Got {len(session_terms)} terms for session")
         
         if not session_terms:
+            current_app.logger.warning(f"No terms available for category: {category}")
             return render_template('flashcards/study.html',
                                  category=category,
                                  terms=[],
@@ -146,6 +152,7 @@ def study_category(category):
             })
         
         db.session.commit()
+        current_app.logger.info(f"Study session data prepared: {len(terms_data)} terms")
         
         return render_template('flashcards/study.html',
                              category=category,
@@ -153,8 +160,10 @@ def study_category(category):
                              total=len(terms_data))
     
     except Exception as e:
+        import traceback
         current_app.logger.error(f"Error starting study session: {e}")
-        return jsonify({'error': 'Failed to start study session'}), 500
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': f'Failed to start study session: {str(e)}'}), 500
 
 
 @flashcard_bp.route('/study/term/<int:term_id>')
