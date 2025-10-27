@@ -53,9 +53,9 @@
                         </span>
                     </div>
 
-                    <a href="{{ url_for('flashcards.study_category', category=cat_data.name) }}" 
+                    <a href="{{ url_for('flashcards.study_single_term', term_id=term.id) }}" 
                        class="btn btn-study">
-                        Review →
+                        🔄 Review This →
                     </a>
                 </div>
                 {% endfor %}
@@ -183,9 +183,9 @@
 }
 
 .count-badge {
-    background: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: 20px;
     font-size: 14px;
     font-weight: bold;
@@ -200,16 +200,28 @@
 }
 
 .term-card {
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 16px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+    border: 1px solid #e8eef7;
+    border-radius: 12px;
+    padding: 20px;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.term-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
 }
 
 .term-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-6px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
     border-color: #667eea;
 }
 

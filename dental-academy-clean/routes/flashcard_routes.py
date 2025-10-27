@@ -49,9 +49,12 @@ def categories():
         
         for category_name, total_terms in categories_data:
             # Get user's progress for this category
-            user_progress = UserTermProgress.query.filter(
+            # Fixed: Join properly with term table
+            user_progress = db.session.query(UserTermProgress).join(
+                MedicalTerm, UserTermProgress.term_id == MedicalTerm.id
+            ).filter(
                 UserTermProgress.user_id == current_user.id,
-                UserTermProgress.term.has(category=category_name)
+                MedicalTerm.category == category_name
             ).all()
             
             # Count by status
@@ -152,6 +155,62 @@ def study_category(category):
     except Exception as e:
         current_app.logger.error(f"Error starting study session: {e}")
         return jsonify({'error': 'Failed to start study session'}), 500
+
+
+@flashcard_bp.route('/study/term/<int:term_id>')
+@login_required
+def study_single_term(term_id):
+    """
+    Start a study session for a single term (quick review)
+    Used when clicking "Review" on a specific term from due-reviews list
+    """
+    try:
+        term = MedicalTerm.query.get_or_404(term_id)
+        
+        # Get or create progress
+        progress = UserTermProgress.query.filter_by(
+            user_id=current_user.id,
+            term_id=term_id
+        ).first()
+        
+        if not progress:
+            progress = UserTermProgress(
+                user_id=current_user.id,
+                term_id=term_id
+            )
+            db.session.add(progress)
+            db.session.flush()
+        
+        # Get user's language, default to 'en' if not set
+        user_lang = current_user.language or 'en'
+        if not user_lang or user_lang == '':
+            user_lang = 'en'
+        
+        # Get translated term or fallback to English
+        term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+        
+        # Prepare single term for display
+        terms_data = [{
+            'id': term.id,
+            'term_nl': term.term_nl,
+            'term_translated': term_translated,
+            'definition': term.definition_nl,
+            'category': term.category,
+            'difficulty': term.difficulty,
+            'progress_id': progress.id
+        }]
+        
+        db.session.commit()
+        
+        return render_template('flashcards/study.html',
+                             category=term.category,
+                             terms=terms_data,
+                             total=1,
+                             session_type='single_review')
+    
+    except Exception as e:
+        current_app.logger.error(f"Error starting single term review: {e}")
+        return jsonify({'error': 'Failed to start review'}), 500
 
 
 @flashcard_bp.route('/review/<int:term_id>', methods=['POST'])
