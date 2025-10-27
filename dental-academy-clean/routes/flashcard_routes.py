@@ -124,10 +124,18 @@ def study_category(category):
                 )
                 db.session.add(progress)
             
+            # Get user's language, default to 'en' if not set
+            user_lang = current_user.language or 'en'
+            if not user_lang or user_lang == '':
+                user_lang = 'en'
+            
+            # Get translated term or fallback to English
+            term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+            
             terms_data.append({
                 'id': term.id,
                 'term_nl': term.term_nl,
-                'term_translated': getattr(term, f'term_{current_user.language or "en"}') or term.term_en,
+                'term_translated': term_translated,
                 'definition': term.definition_nl,
                 'category': term.category,
                 'difficulty': term.difficulty,

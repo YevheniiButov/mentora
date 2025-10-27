@@ -241,10 +241,18 @@ def get_due_reviews_by_category(user):
             if category not in due_by_category:
                 due_by_category[category] = []
             
+            # Get user's language, default to 'en' if not set
+            user_lang = user.language or 'en'
+            if not user_lang or user_lang == '':
+                user_lang = 'en'
+            
+            # Get translated term or fallback to English
+            term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+            
             due_by_category[category].append({
                 'id': term.id,
                 'term_nl': term.term_nl,
-                'term_translated': getattr(term, f'term_{user.language or "en"}') or term.term_en,
+                'term_translated': term_translated,
                 'mastery_level': progress.mastery_level,
                 'next_review': progress.next_review,
                 'times_reviewed': progress.times_reviewed,
