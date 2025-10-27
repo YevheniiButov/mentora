@@ -3762,8 +3762,30 @@
                 },
                 
                 focusOnCategory(categoryId) {
-                    // TODO: Start practice focused on this category
-                    alert('{{ t("start_practice_for_category", lang)|default("Start practice for category") }} ' + categoryId);
+                    // Start practice focused on this category
+                    console.log('🎯 Starting category focus practice:', categoryId);
+                    
+                    fetch(`/api/individual-plan/focus-category/${categoryId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('✅ Category practice started:', data);
+                            // Redirect to practice
+                            window.location.href = data.redirect_url;
+                        } else {
+                            alert('Error: ' + (data.error || 'Unknown error'));
+                            console.error('❌ Failed to start category practice:', data);
+                        }
+                    })
+                    .catch(err => {
+                        alert('Error starting practice: ' + err.message);
+                        console.error('❌ Category focus error:', err);
+                    });
                 },
                 
                 startQuickDiagnostic() {

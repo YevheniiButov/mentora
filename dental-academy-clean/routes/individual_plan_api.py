@@ -311,3 +311,94 @@ def api_reset_plan():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@individual_plan_api_bp.route('/api/individual-plan/focus-category/<int:category_id>', methods=['POST'])
+@login_required
+def focus_on_category(category_id):
+    """
+    Start practice focused on a specific category.
+    
+    Returns:
+        JSON: {
+            'success': bool,
+            'redirect_url': str (URL to start practice),
+            'questions_count': int
+        }
+    """
+    try:
+        from models import DomainCategory, BIGDomain, Question
+        from utils.individual_plan_helpers import get_or_create_learning_plan
+        from utils.helpers import get_user_profession_code
+        from sqlalchemy import func
+        
+        # Get the category
+        category = DomainCategory.query.get(category_id)
+        if not category:
+            return jsonify({'success': False, 'error': 'Category not found'}), 404
+        
+        # Get or create learning plan
+        plan = get_or_create_learning_plan(current_user)
+        
+        profession = get_user_profession_code(current_user)
+        
+        # Get domains for this category
+        domains = BIGDomain.query.filter_by(category_id=category_id, profession=profession).all()
+        domain_ids = [d.id for d in domains]
+        
+        if not domain_ids:
+            return jsonify({'success': False, 'error': 'No domains found for this category'}), 400
+        
+        # Get questions from these domains (limit to 20)
+        questions = Question.query.filter(
+            Question.profession == profession,
+            Question.big_domain_id.in_(domain_ids)
+        ).order_by(func.random()).limit(20).all()
+        
+        if not questions:
+            return jsonify({'success': False, 'error': 'No questions found for this category'}), 400
+        
+        # ✅ Create a DiagnosticSession for category-focused practice
+        from models import DiagnosticSession
+        from datetime import datetime, timezone
+        
+        diagnostic_session = DiagnosticSession.create_session(
+            user_id=current_user.id,
+            session_type='category_practice',
+            ip_address=request.remote_addr
+        )
+        
+        # Store in Flask session
+        session['daily_session_questions'] = [q.id for q in questions]
+        session['daily_session_diagnostic_id'] = diagnostic_session.id
+        session['focus_category_id'] = category_id
+        session['daily_session_active'] = True
+        session['learning_plan_id'] = plan.id
+        session['learning_mode'] = 'category_practice'
+        
+        # Create mock session for automated_practice
+        session['current_session'] = {
+            'type': 'practice',
+            'day': datetime.now().strftime('%A'),
+            'duration': 30,
+            'questions_count': len(questions),
+            'focus_domains': [d.name for d in domains[:3]],  # Top 3 domains
+            'category_name': category.name,
+            'category_id': category_id
+        }
+        session['current_week'] = 1
+        
+        current_app.logger.info(f"✅ Category practice started: user={current_user.id}, category={category.name}, questions={len(questions)}")
+        
+        return jsonify({
+            'success': True,
+            'redirect_url': url_for('learning.automated_practice'),
+            'questions_count': len(questions),
+            'category_name': category.name
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        current_app.logger.error(f"Error starting category practice: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
