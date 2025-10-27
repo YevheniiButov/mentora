@@ -15,7 +15,7 @@ from sqlalchemy import func
 import json
 import os
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from utils.unified_stats import get_unified_user_stats, get_module_stats_unified, get_subject_stats_unified, clear_stats_cache
 
 # Создаем Blueprint для карты обучения
@@ -1049,6 +1049,38 @@ def learning_map(lang, path_id=None):
             print(f"✅ DEBUG: Обработана категория ID={category.id}, name='{category.name}', подкатегорий={len(subcategories)}")
 
         
+        # Add flashcard data
+        try:
+            from models import UserTermProgress, MedicalTerm
+            from datetime import datetime, timezone, timedelta
+            
+            # Calculate due reviews count
+            due_reviews_count = UserTermProgress.query.filter(
+                UserTermProgress.user_id == current_user.id,
+                UserTermProgress.next_review <= datetime.now(timezone.utc)
+            ).count()
+            
+            # Calculate total terms studied
+            total_terms_studied = UserTermProgress.query.filter(
+                UserTermProgress.user_id == current_user.id
+            ).count()
+            
+            # Calculate language streak (simplified - terms reviewed in last 7 days)
+            from sqlalchemy import func
+            last_7_days = datetime.now(timezone.utc) - timedelta(days=7)
+            current_language_streak = db.session.query(
+                func.count(func.distinct(func.date(UserTermProgress.last_reviewed)))
+            ).filter(
+                UserTermProgress.user_id == current_user.id,
+                UserTermProgress.last_reviewed >= last_7_days
+            ).scalar() or 0
+            
+        except Exception as e:
+            current_app.logger.error(f"Error loading flashcard data: {e}")
+            due_reviews_count = 0
+            total_terms_studied = 0
+            current_language_streak = 0
+        
         return render_template(
                     "learning/learning_map_modern_style.html",  # Новая современная карта обучения
                     title='Learning Map',
@@ -1062,8 +1094,10 @@ def learning_map(lang, path_id=None):
                     has_subscription=current_user.has_subscription,
                     stats=stats,
                     recommendations=get_user_recommendations(current_user.id),
-                    content_categories=processed_categories
-
+                    content_categories=processed_categories,
+                    due_reviews_count=due_reviews_count,
+                    total_terms_studied=total_terms_studied,
+                    current_language_streak=current_language_streak
         )
     except Exception as e:
         import traceback
