@@ -118,6 +118,48 @@ BEGIN
     END IF;
 END $$;
 
+-- weak_categories
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'personal_learning_plan' AND column_name = 'weak_categories'
+    ) THEN
+        ALTER TABLE personal_learning_plan ADD COLUMN weak_categories JSON;
+        RAISE NOTICE '✅ Столбец personal_learning_plan.weak_categories добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец personal_learning_plan.weak_categories уже существует';
+    END IF;
+END $$;
+
+-- strong_categories
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'personal_learning_plan' AND column_name = 'strong_categories'
+    ) THEN
+        ALTER TABLE personal_learning_plan ADD COLUMN strong_categories JSON;
+        RAISE NOTICE '✅ Столбец personal_learning_plan.strong_categories добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец personal_learning_plan.strong_categories уже существует';
+    END IF;
+END $$;
+
+-- category_abilities
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'personal_learning_plan' AND column_name = 'category_abilities'
+    ) THEN
+        ALTER TABLE personal_learning_plan ADD COLUMN category_abilities JSON;
+        RAISE NOTICE '✅ Столбец personal_learning_plan.category_abilities добавлен';
+    ELSE
+        RAISE NOTICE 'ℹ️  Столбец personal_learning_plan.category_abilities уже существует';
+    END IF;
+END $$;
+
 -- ============================================================================
 -- 1b. Добавляем недостающие столбцы в big_domain
 -- ============================================================================
@@ -263,6 +305,7 @@ DECLARE
     questions_columns_count INTEGER := 0;
     plan_columns_count INTEGER := 0;
     plan_category_progress_count INTEGER := 0;
+    plan_category_columns_count INTEGER := 0;
     big_domain_category_id_count INTEGER := 0;
 BEGIN
     -- Проверяем questions
@@ -283,6 +326,12 @@ BEGIN
     WHERE table_name = 'personal_learning_plan' 
     AND column_name = 'category_progress';
     
+    -- Проверяем personal_learning_plan (weak/strong/abilities - новые колонки)
+    SELECT COUNT(*) INTO plan_category_columns_count
+    FROM information_schema.columns 
+    WHERE table_name = 'personal_learning_plan' 
+    AND column_name IN ('weak_categories', 'strong_categories', 'current_category_focus', 'daily_question_goal', 'daily_time_goal', 'daily_streak', 'longest_daily_streak', 'last_activity_date', 'daily_goal_met_count', 'category_abilities', 'learning_velocity', 'retention_rate', 'time_invested');
+    
     -- Проверяем big_domain.category_id
     SELECT COUNT(*) INTO big_domain_category_id_count
     FROM information_schema.columns 
@@ -294,12 +343,13 @@ BEGIN
     RAISE NOTICE '   questions: % / 5 столбцов добавлено', questions_columns_count;
     RAISE NOTICE '   personal_learning_plan (SR): % / 5 столбцов добавлено', plan_columns_count;
     RAISE NOTICE '   personal_learning_plan (category_progress): % / 1 столбец добавлено', plan_category_progress_count;
+    RAISE NOTICE '   personal_learning_plan (weak/strong/goals): % / 13 столбцов найдено', plan_category_columns_count;
     RAISE NOTICE '   big_domain (category_id): % / 1 столбец добавлено', big_domain_category_id_count;
     
     IF questions_columns_count = 5 AND plan_columns_count = 5 AND plan_category_progress_count = 1 AND big_domain_category_id_count = 1 THEN
         RAISE NOTICE '';
         RAISE NOTICE '✅ МИГРАЦИЯ ЗАВЕРШЕНА УСПЕШНО';
-        RAISE NOTICE '✅ Все необходимые столбцы добавлены (всего 12)';
+        RAISE NOTICE '✅ Все необходимые столбцы добавлены';
     ELSE
         RAISE WARNING '⚠️  Не все столбцы были добавлены';
     END IF;
