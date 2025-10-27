@@ -54,21 +54,24 @@ class MedicalTerm(db.Model):
 
 ## Translation Coverage
 
-**31 core medical terms** translated to all 8 languages:
+**50 core medical terms** translated to all 8 languages:
 
 ### Anatomy (10 terms)
 - Heart, Lung, Stomach, Liver, Kidney, Brain, Throat, Blood Vessel, Muscle, Bone
 
 ### Symptoms (10 terms)
-- Pain, Fever, Cough, Diarrhea, Nausea, Headache, Fatigue, Flu, Diabetes, Cancer
+- Pain, Fever, Cough, Diarrhea, Nausea, Headache, Fatigue, Vomiting, Dizziness, Shortness of Breath
 
-### Treatments (5 terms)
-- Medicine, Pill, Injection, Operation, Physical Therapy
+### Diseases (10 terms)
+- Flu, Diabetes, Cancer, Hypertension, Pneumonia, Eczema, Asthma, Arthritis, Stroke, Heart Attack
 
-### Dental (6 terms)
-- Tooth, Molar, Incisor, Gum, Cavity, Crown
+### Treatments (10 terms)
+- Treatment, Medicine, Pill, Injection, Operation, Antibiotic, Ointment, Physical Therapy, Radiotherapy, Surgery
 
-**Total: 31 × 8 languages = 248 translations**
+### Dental (10 terms)
+- Tooth, Molar, Incisor, Gum, Cavity, Periodontitis, Toothbrush, Toothpaste, Filling, Crown
+
+**Total: 50 × 8 languages = 400 translations**
 
 ## Example Term: "Pain"
 
