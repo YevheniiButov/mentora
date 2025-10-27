@@ -820,10 +820,11 @@
                     console.warn('Could not fetch updated progress:', e);
                 }
                 
-                // Даём время событию обработаться перед редиректом
+                // ✅ Reload page to get fresh data instead of redirecting
+                // This ensures recentSessions and all other data are refreshed
                 setTimeout(() => {
                     window.location.href = `/${lang}/learning-map/irt`;
-                }, 300);
+                }, 500);
             } else {
                 console.error('Failed to save progress:', result.error || result);
                 alert('Er was een fout bij het opslaan van je voortgang.');

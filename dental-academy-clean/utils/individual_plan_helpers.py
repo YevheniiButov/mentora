@@ -199,6 +199,7 @@ def get_progress_summary(user):
         }
     """
     from utils.domain_helpers import get_category_summary
+    from models import DiagnosticSession, DiagnosticResponse
     
     plan = get_or_create_learning_plan(user)
     profession = get_user_profession_code(user)
@@ -224,7 +225,6 @@ def get_progress_summary(user):
     time_today = sum(session.actual_duration or 0 for session in sessions_today)
     
     # ALSO count questions from DiagnosticSession (IRT practice sessions)
-    from models import DiagnosticSession, DiagnosticResponse
     diagnostic_sessions_today = DiagnosticSession.query.filter(
         DiagnosticSession.user_id == user.id,
         DiagnosticSession.status == 'completed',
@@ -276,7 +276,16 @@ def get_progress_summary(user):
         StudySession.status == 'completed'
     ).order_by(StudySession.completed_at.desc()).limit(5).all()
     
+    # ✅ Also get DiagnosticSession results (category practice, daily practice, etc.)
+    diagnostic_sessions_query = DiagnosticSession.query.filter(
+        DiagnosticSession.user_id == user.id,
+        DiagnosticSession.status == 'completed',
+        DiagnosticSession.questions_answered > 0  # Only include sessions with actual questions
+    ).order_by(DiagnosticSession.completed_at.desc()).limit(5).all()
+    
     recent_sessions = []
+    
+    # Add StudySession results
     for session in recent_sessions_query:
         recent_sessions.append({
             'id': session.id,
@@ -286,6 +295,20 @@ def get_progress_summary(user):
             'accuracy': round((session.correct_answers / session.questions_answered * 100) if session.questions_answered > 0 else 0, 1),
             'time': session.actual_duration or 0
         })
+    
+    # Add DiagnosticSession results
+    for session in diagnostic_sessions_query:
+        recent_sessions.append({
+            'id': session.id,
+            'date': session.completed_at.strftime('%Y-%m-%d') if session.completed_at else '',
+            'questions': session.questions_answered,
+            'correct': session.correct_answers,
+            'accuracy': round((session.correct_answers / session.questions_answered * 100) if session.questions_answered > 0 else 0, 1),
+            'time': int((sum(r.response_time or 0 for r in DiagnosticResponse.query.filter_by(session_id=session.id).all()) / 60)) or 0
+        })
+    
+    # Sort all sessions by date (most recent first) and limit to 5
+    recent_sessions = sorted(recent_sessions, key=lambda x: x['date'], reverse=True)[:5]
     
     # Get last 30 days activity data
     from datetime import timedelta
