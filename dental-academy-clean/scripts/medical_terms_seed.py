@@ -16,9 +16,16 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from app import create_app
+from app import app
 from extensions import db
-from models.medical_terms import MedicalTerm
+
+# Try to import MedicalTerm, if it doesn't exist yet, define it here
+try:
+    from models import MedicalTerm, UserTermProgress
+except ImportError:
+    print("⚠️ MedicalTerm models not found in models.py")
+    print("This is expected in Phase 1. Models should be added to models.py separately.")
+    sys.exit(1)
 
 
 # Basic terms data: (dutch_term, english_translation, category)
@@ -242,15 +249,14 @@ def print_stats(app):
 
 
 if __name__ == '__main__':
-    # Create Flask app
-    app = create_app()
-    
-    # Run seed
-    success = seed_basic_terms(app)
-    
-    # Print stats
-    if success:
-        print_stats(app)
-        sys.exit(0)
-    else:
-        sys.exit(1)
+    # Use Flask app context
+    with app.app_context():
+        # Run seed
+        success = seed_basic_terms(app)
+        
+        # Print stats
+        if success:
+            print_stats(app)
+            sys.exit(0)
+        else:
+            sys.exit(1)

@@ -6125,3 +6125,158 @@ class EmailAttachment(db.Model):
             'file_path': self.file_path,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+
+# ========================================
+# MEDICAL TERMINOLOGY FLASHCARD SYSTEM
+# ========================================
+
+class MedicalTerm(db.Model):
+    """
+    Dutch medical term with translations to 8 languages.
+    Used for the medical terminology flashcard system.
+    """
+    __tablename__ = 'medical_term'
+    
+    # Primary key
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Dutch term (source language) - required
+    term_nl = db.Column(db.String(200), nullable=False, index=True, unique=True)
+    definition_nl = db.Column(db.Text, nullable=True)
+    
+    # Translations to 8 languages
+    term_en = db.Column(db.String(200), nullable=True)
+    term_ru = db.Column(db.String(200), nullable=True)
+    term_uk = db.Column(db.String(200), nullable=True)
+    term_es = db.Column(db.String(200), nullable=True)
+    term_pt = db.Column(db.String(200), nullable=True)
+    term_tr = db.Column(db.String(200), nullable=True)
+    term_fa = db.Column(db.String(200), nullable=True)
+    term_ar = db.Column(db.String(200), nullable=True)
+    
+    # Metadata
+    category = db.Column(db.String(50), nullable=False, index=True)
+    difficulty = db.Column(db.Integer, default=1)
+    frequency = db.Column(db.Integer, default=1)
+    audio_url = db.Column(db.String(500), nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    user_progress = db.relationship('UserTermProgress', backref='term', cascade='all, delete-orphan', lazy='select')
+    
+    def __repr__(self):
+        return f'<MedicalTerm {self.term_nl}>'
+    
+    def to_dict(self, lang='en'):
+        lang_field = f'term_{lang}'
+        return {
+            'id': self.id,
+            'term_nl': self.term_nl,
+            'term': getattr(self, lang_field, self.term_en) or self.term_en,
+            'definition': self.definition_nl,
+            'category': self.category,
+            'difficulty': self.difficulty,
+            'frequency': self.frequency,
+            'audio_url': self.audio_url
+        }
+
+
+class UserTermProgress(db.Model):
+    """
+    Spaced Repetition progress for individual medical terms.
+    Tracks when each user should review each term and their mastery level.
+    """
+    __tablename__ = 'user_term_progress'
+    
+    # Primary key & Foreign keys
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    term_id = db.Column(db.Integer, db.ForeignKey('medical_term.id'), nullable=False, index=True)
+    
+    # SM-2 Spaced Repetition Algorithm parameters
+    ease_factor = db.Column(db.Float, default=2.5)
+    interval = db.Column(db.Integer, default=1)
+    repetitions = db.Column(db.Integer, default=0)
+    next_review = db.Column(db.DateTime, nullable=False, index=True, default=lambda: datetime.now(timezone.utc))
+    
+    # Statistics
+    times_reviewed = db.Column(db.Integer, default=0)
+    times_correct = db.Column(db.Integer, default=0)
+    mastery_level = db.Column(db.Integer, default=0)
+    last_quality = db.Column(db.Integer, nullable=True)
+    
+    # Timestamps
+    last_reviewed = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Composite indexes
+    __table_args__ = (
+        db.Index('ix_user_term_progress_user_next_review', 'user_id', 'next_review'),
+        db.UniqueConstraint('user_id', 'term_id', name='uq_user_term_progress'),
+    )
+    
+    # Relationships
+    user = db.relationship('User', backref='term_progress')
+    
+    def __repr__(self):
+        return f'<UserTermProgress user={self.user_id} term={self.term_id} mastery={self.mastery_level}>'
+    
+    @property
+    def accuracy_rate(self):
+        if self.times_reviewed == 0:
+            return 0.0
+        return (self.times_correct / self.times_reviewed) * 100
+    
+    @property
+    def is_due(self):
+        return datetime.now(timezone.utc) >= self.next_review
+    
+    def update_progress_sm2(self, quality: int):
+        self.times_reviewed += 1
+        self.last_quality = quality
+        self.last_reviewed = datetime.now(timezone.utc)
+        
+        if quality >= 3:
+            self.times_correct += 1
+            self.repetitions += 1
+            self.ease_factor = max(1.3, self.ease_factor + 0.1 - (5 - quality) * 0.08)
+            
+            if self.repetitions == 1:
+                self.interval = 1
+            elif self.repetitions == 2:
+                self.interval = 3
+            else:
+                self.interval = int(self.interval * self.ease_factor)
+            
+            correct_rate = self.accuracy_rate
+            if correct_rate >= 90:
+                self.mastery_level = min(5, self.mastery_level + 1)
+        else:
+            self.repetitions = 0
+            self.ease_factor = max(1.3, self.ease_factor - 0.2)
+            self.interval = 1
+            self.mastery_level = max(0, self.mastery_level - 1)
+        
+        from datetime import timedelta
+        self.next_review = datetime.now(timezone.utc) + timedelta(days=self.interval)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'term_id': self.term_id,
+            'ease_factor': round(self.ease_factor, 2),
+            'interval': self.interval,
+            'repetitions': self.repetitions,
+            'next_review': self.next_review.isoformat(),
+            'times_reviewed': self.times_reviewed,
+            'times_correct': self.times_correct,
+            'accuracy_rate': round(self.accuracy_rate, 1),
+            'mastery_level': self.mastery_level,
+            'is_due': self.is_due,
+            'last_reviewed': self.last_reviewed.isoformat() if self.last_reviewed else None
+        }
