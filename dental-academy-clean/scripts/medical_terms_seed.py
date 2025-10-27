@@ -37,7 +37,7 @@ BASIC_TERMS = [
     ('de lever', 'liver', 'anatomy'),
     ('de nier', 'kidney', 'anatomy'),
     ('het brein', 'brain', 'anatomy'),
-    ('het hart', 'heart', 'anatomy'),
+    ('de keel', 'throat', 'anatomy'),
     ('het bloedvat', 'blood vessel', 'anatomy'),
     ('de spier', 'muscle', 'anatomy'),
     ('het bot', 'bone', 'anatomy'),
