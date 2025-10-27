@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+
+{% block title %}🔄 Due Reviews - Medical Flashcards{% endblock %}
+
+{% block content %}
+<div class="due-reviews-container">
+    <!-- Header -->
+    <div class="header">
+        <a href="{{ url_for('flashcards.categories') }}" class="back-btn">← Back</a>
+        <h1>🔄 Reviews Due Today</h1>
+        <p>{{ categories_with_due|sum(attribute='count') }} terms waiting for review</p>
+    </div>
+
+    {% if categories_with_due %}
+    <!-- Categories List -->
+    <div class="categories-list">
+        {% for cat_data in categories_with_due %}
+        <div class="category-section">
+            <div class="category-header">
+                <h2>
+                    {% if cat_data.name == 'anatomy' %}🫀
+                    {% elif cat_data.name == 'symptoms' %}🤒
+                    {% elif cat_data.name == 'diseases' %}🦠
+                    {% elif cat_data.name == 'treatments' %}💊
+                    {% elif cat_data.name == 'dental' %}🦷
+                    {% else %}📚
+                    {% endif %}
+                    {{ cat_data.name|title }}
+                </h2>
+                <span class="count-badge">{{ cat_data.count }} terms</span>
+            </div>
+
+            <div class="terms-grid">
+                {% for term in cat_data.terms %}
+                <div class="term-card">
+                    <div class="term-header">
+                        <h3>{{ term.term_nl }}</h3>
+                        <span class="mastery" title="Mastery level">
+                            {% for i in range(term.mastery_level) %}⭐{% endfor %}
+                        </span>
+                    </div>
+
+                    <p class="translation">{{ term.term_translated }}</p>
+
+                    <div class="term-stats">
+                        <span class="stat">
+                            <span class="label">Reviewed:</span>
+                            {{ term.times_reviewed }}
+                        </span>
+                        <span class="stat">
+                            <span class="label">Accuracy:</span>
+                            {{ term.accuracy }}%
+                        </span>
+                    </div>
+
+                    <a href="{{ url_for('flashcards.study_category', category=cat_data.name) }}" 
+                       class="btn btn-study">
+                        Review →
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <a href="{{ url_for('flashcards.study_category', category=cat_data.name) }}" 
+               class="btn-category-review">
+                Review All {{ cat_data.count }} →
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+        <div class="stat-box">
+            <span class="icon">🔄</span>
+            <span class="label">Total Due</span>
+            <span class="value">{{ categories_with_due|sum(attribute='count') }}</span>
+        </div>
+        <div class="stat-box">
+            <span class="icon">⏱️</span>
+            <span class="label">Est. Time</span>
+            <span class="value">{{ (categories_with_due|sum(attribute='count') * 1.5)|int }} min</span>
+        </div>
+        <div class="stat-box">
+            <span class="icon">✅</span>
+            <span class="label">Category Count</span>
+            <span class="value">{{ categories_with_due|length }}</span>
+        </div>
+    </div>
+    {% else %}
+    <!-- No Reviews Message -->
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h2>No Reviews Due Today</h2>
+        <p>Great job! You're all caught up. Come back tomorrow for more reviews.</p>
+        <a href="{{ url_for('flashcards.categories') }}" class="btn btn-primary">
+            Continue Learning New Terms
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Footer Navigation -->
+    <div class="footer-nav">
+        <a href="{{ url_for('flashcards.categories') }}" class="nav-link">
+            📚 All Categories
+        </a>
+        <a href="{{ url_for('flashcards.user_stats') }}" class="nav-link">
+            📈 Statistics
+        </a>
+    </div>
+</div>
+
+<style>
+.due-reviews-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    margin-bottom: 40px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.back-btn {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 12px;
+    transition: background 0.3s;
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.header h1 {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+}
+
+.header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+/* Categories List */
+.categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.category-section {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 24px;
+    background: white;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.category-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.count-badge {
+    background: #667eea;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Terms Grid */
+.terms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.term-card {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.term-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #667eea;
+}
+
+.term-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.term-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+    flex: 1;
+}
+
+.mastery {
+    color: #ffd700;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.translation {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #667eea;
+    font-weight: 500;
+}
+
+.term-stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+
+.stat {
+    display: flex;
+    gap: 4px;
+}
+
+.stat .label {
+    color: #999;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    background: #5568d3;
+    transform: scale(1.02);
+}
+
+.btn-study {
+    width: 100%;
+    font-size: 14px;
+}
+
+.btn-category-review {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: #f0f0f0;
+    color: #333;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-category-review:hover {
+    background: #e0e0e0;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.stat-box {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.stat-box:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.stat-box .icon {
+    display: block;
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.stat-box .label {
+    display: block;
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 4px;
+}
+
+.stat-box .value {
+    display: block;
+    font-size: 28px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.empty-state h2 {
+    margin: 0 0 12px 0;
+    font-size: 28px;
+    color: #333;
+}
+
+.empty-state p {
+    margin: 0 0 24px 0;
+    font-size: 16px;
+    color: #666;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+    padding: 12px 24px;
+}
+
+/* Footer Navigation */
+.footer-nav {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.nav-link {
+    padding: 10px 16px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.nav-link:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .header {
+        margin-bottom: 24px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .category-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .terms-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .stat-box {
+        padding: 12px;
+    }
+
+    .stat-box .value {
+        font-size: 20px;
+    }
+
+    .footer-nav {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
