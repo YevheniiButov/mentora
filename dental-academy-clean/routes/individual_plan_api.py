@@ -153,6 +153,7 @@ def start_daily_session():
     """
     try:
         from utils.individual_plan_helpers import get_or_create_learning_plan
+        from models import DiagnosticSession
         
         # Get or create learning plan
         plan = get_or_create_learning_plan(current_user)
@@ -168,8 +169,17 @@ def start_daily_session():
             flash('Geen vragen beschikbaar. Probeer later opnieuw.', 'warning')
             return redirect(url_for('dashboard.index'))
         
-        # Store question IDs and plan info in session for practice
+        # ✅ Create a DiagnosticSession for tracking today's practice
+        from datetime import datetime, timezone
+        diagnostic_session = DiagnosticSession.create_session(
+            user_id=current_user.id,
+            session_type='daily_practice',
+            ip_address=request.remote_addr
+        )
+        
+        # Store question IDs and session IDs in Flask session for practice
         session['daily_session_questions'] = [q.id for q in questions]
+        session['daily_session_diagnostic_id'] = diagnostic_session.id  # Store diagnostic session ID
         session['daily_session_active'] = True
         session['learning_plan_id'] = plan.id
         session['learning_mode'] = 'daily_practice'
@@ -184,6 +194,8 @@ def start_daily_session():
             'focus_domains': []
         }
         session['current_week'] = 1
+        
+        current_app.logger.info(f"✅ Daily session started: user={current_user.id}, diagnostic_id={diagnostic_session.id}, questions={len(questions)}")
         
         # Redirect to automated practice
         return redirect(url_for('learning.automated_practice'))

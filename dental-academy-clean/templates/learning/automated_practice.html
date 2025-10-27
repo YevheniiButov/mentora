@@ -806,6 +806,20 @@
             console.log('Session completed:', result);
             
             if (result.success) {
+                // ✅ Trigger progress update event before redirect
+                try {
+                    // Fetch and display updated progress
+                    const progressResponse = await fetch('/api/individual-plan/progress');
+                    const progressData = await progressResponse.json();
+                    
+                    // Dispatch custom event with updated data
+                    window.dispatchEvent(new CustomEvent('progressUpdated', {
+                        detail: progressData
+                    }));
+                } catch (e) {
+                    console.warn('Could not fetch updated progress:', e);
+                }
+                
                 // Даём время событию обработаться перед редиректом
                 setTimeout(() => {
                     window.location.href = `/${lang}/learning-map/irt`;

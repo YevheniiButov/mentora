@@ -695,8 +695,15 @@ def complete_automated_session():
         current_week = session.get('current_week')
         current_session = session.get('current_session')
         
+        # Get data from request
+        data = request.get_json() or {}
+        questions_answered = data.get('questions_answered', 0)
+        correct_answers = data.get('correct_answers', 0)
+        time_spent = data.get('time_spent', 0)
+        
         # Добавляем диагностику
         current_app.logger.info(f"Complete session request - plan_id: {plan_id}, week: {current_week}, session: {current_session}")
+        current_app.logger.info(f"Session data: questions_answered={questions_answered}, correct_answers={correct_answers}, time_spent={time_spent}")
         
         if not plan_id or not current_session:
             current_app.logger.error(f"Missing session data - plan_id: {plan_id}, current_session: {current_session}")
@@ -704,6 +711,26 @@ def complete_automated_session():
         
         plan = PersonalLearningPlan.query.get_or_404(plan_id)
         current_app.logger.info(f"Found plan: {plan.id} for user: {plan.user_id}")
+        
+        # ✅ Update DiagnosticSession if this is a daily practice session
+        diagnostic_session_id = session.get('daily_session_diagnostic_id')
+        if diagnostic_session_id:
+            from models import DiagnosticSession
+            diagnostic_session = DiagnosticSession.query.get(diagnostic_session_id)
+            if diagnostic_session:
+                diagnostic_session.questions_answered = questions_answered
+                diagnostic_session.correct_answers = correct_answers
+                diagnostic_session.completed_at = datetime.now(timezone.utc)
+                diagnostic_session.status = 'completed'
+                current_app.logger.info(f"✅ Updated DiagnosticSession {diagnostic_session_id}: questions={questions_answered}, correct={correct_answers}")
+                db.session.commit()
+        
+        # ✅ Update time_invested if time_spent provided
+        if time_spent > 0:
+            if plan.time_invested is None:
+                plan.time_invested = 0
+            plan.time_invested += int(time_spent)
+            current_app.logger.info(f"Updated time_invested: {plan.time_invested}")
         
         # Get study schedule
         study_schedule = plan.get_study_schedule()
@@ -762,6 +789,7 @@ def complete_automated_session():
             session.pop('current_week', None)
             session.pop('current_session', None)
             session.pop('learning_mode', None)
+            session.pop('daily_session_diagnostic_id', None)  # Clear diagnostic session ID
             redirect_url = url_for('dashboard.learning_plan', plan_id=plan_id)
         
         current_app.logger.info(f"Redirect URL: {redirect_url}")
@@ -775,6 +803,8 @@ def complete_automated_session():
         
     except Exception as e:
         current_app.logger.error(f"Error completing automated session: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return safe_jsonify({
             'error': 'Internal server error',
             'details': str(e)
