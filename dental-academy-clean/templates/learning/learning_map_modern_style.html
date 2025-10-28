@@ -3170,7 +3170,7 @@
                                 <i class="bi bi-clock-history"></i>
                             </div>
                             <div class="metric-info">
-                                <span class="metric-value" x-text="timeInvested + 'h'"></span>
+                                <span class="metric-value" x-text="(timeInvestedHours || 0) + 'h ' + (timeInvestedMinutes || 0) + 'min'"></span>
                                 <span class="metric-label">{{ t('study_time', lang)|default('Study Time') }}</span>
                             </div>
                         </div>
@@ -3866,7 +3866,11 @@
                         this.dailyStreak = progressData.daily_streak || 0;
                         this.categories = progressData.categories || [];
                         this.overallProgress = progressData.overall_progress || 0;
-                        this.timeInvested = Math.round((progressData.time_invested || 0) / 60); // Convert to hours
+                        this.timeInvested = progressData.time_invested || 0; // Store in minutes
+                        this.timeInvestedHours = progressData.time_invested_hours || 0;
+                        this.timeInvestedMinutes = progressData.time_invested_minutes || 0;
+                        this.timeTodayHours = progressData.time_today_hours || 0;
+                        this.timeTodayMinutes = progressData.time_today_minutes || 0;
                         this.retentionRate = Math.round(progressData.retention_rate || 0);
                         
                         // Mark data as loaded
@@ -3911,7 +3915,11 @@
                         this.dailyStreak = data.daily_streak || 0;
                         this.categories = data.categories || [];
                         this.overallProgress = data.overall_progress || 0;
-                        this.timeInvested = data.time_invested_hours || Math.round((data.time_invested || 0) / 60); // Use hours directly or convert from minutes
+                        this.timeInvested = data.time_invested || 0; // Store in minutes
+                        this.timeInvestedHours = data.time_invested_hours || 0;
+                        this.timeInvestedMinutes = data.time_invested_minutes || 0;
+                        this.timeTodayHours = data.time_today_hours || 0;
+                        this.timeTodayMinutes = data.time_today_minutes || 0;
                         
                         // DEBUG: Log streak
                         console.log('🔍 DAILY STREAK DEBUG:', {
@@ -3932,7 +3940,7 @@
                         this.modules['progress'][1].completed = questionsThisWeek;
                         this.modules['progress'][1].total = this.dailyTasks.goal;
                         
-                        this.modules['progress'][2].subtitle = this.timeInvested + 'h';
+                        this.modules['progress'][2].subtitle = (this.timeInvestedHours || 0) + 'h ' + (this.timeInvestedMinutes || 0) + 'min';
                         
                     } catch (error) {
                         console.error('❌ Failed to load progress:', error);

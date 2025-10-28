@@ -394,7 +394,10 @@ def get_progress_summary(user):
             'total_reviews': plan.total_sr_reviews or 0
         },
         'time_invested': total_time_minutes,  # Return in minutes
-        'time_invested_hours': round(total_time_minutes / 60, 1),  # Return in hours
+        'time_invested_hours': int(total_time_minutes // 60),  # Full hours
+        'time_invested_minutes': int(total_time_minutes % 60),  # Remaining minutes
+        'time_today_hours': int(time_today // 60),  # Today's full hours
+        'time_today_minutes': int(time_today % 60),  # Today's remaining minutes
         'learning_velocity': plan.learning_velocity or 0.0,
         'retention_rate': plan.retention_rate or 0.0,
         'recent_sessions': recent_sessions,
