@@ -445,9 +445,9 @@ def select_questions_for_today(user, count=20):
     # Get questions for these SR items (exclude already answered)
     for sr_item in sr_items_due:
         if sr_item.question_id not in answered_today_ids:
-        question = Question.query.get(sr_item.question_id)
-        if question:
-            selected_questions.append(question)
+            question = Question.query.get(sr_item.question_id)
+            if question:
+                selected_questions.append(question)
     
     # 2. Get new questions from weak categories
     remaining = count - len(selected_questions)
