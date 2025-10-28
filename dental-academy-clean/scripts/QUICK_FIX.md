@@ -14,7 +14,13 @@
 ### 2. Запустить скрипт
 ```bash
 cd /opt/render/project/src
-./scripts/run_production_fix.sh
+python3 scripts/run_production_fix.py
+```
+
+**Или если файлы в подпапке:**
+```bash
+cd /opt/render/project/src/dental-academy-clean
+python3 scripts/run_production_fix.py
 ```
 
 ### 3. Готово! ✅
