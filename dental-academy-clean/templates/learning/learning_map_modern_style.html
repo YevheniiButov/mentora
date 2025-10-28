@@ -3422,6 +3422,10 @@
                 expandedCategories: [],
                 overallProgress: 0,
                 timeInvested: 0,
+                timeInvestedHours: 0,
+                timeInvestedMinutes: 0,
+                timeTodayHours: 0,
+                timeTodayMinutes: 0,
                 retentionRate: 0,
                 showQuickDiagnosticModal: false,
                 individualPlanDataLoaded: false,
@@ -3491,6 +3495,13 @@
                 init() {
                     this.loadUserStats();
                     // Games statistics не загружаем, так как не показываем статистику игр
+                    
+                    // Initialize time variables
+                    this.timeInvested = 0;
+                    this.timeInvestedHours = 0;
+                    this.timeInvestedMinutes = 0;
+                    this.timeTodayHours = 0;
+                    this.timeTodayMinutes = 0;
                     
                     // Initialize last30Days with empty data
                     this.last30Days = this.generateLast30Days();

@@ -1,0 +1,284 @@
+{
+    "title": {
+      "nl": "Pijnlijke Verstandskies en Pericoronitis: Eerste Hulp"
+    },
+    "description": {
+      "nl": "Een patiënt komt met acute, kloppende pijn en zwelling rond een (half) doorgebroken verstandskies. De focus ligt op snelle diagnose (Pericoronitis), het geven van adequate pijnverlichting/advies en het bespreken van het vervolgtraject (extractie of spoelen)."
+    },
+    "specialty": "dentistry",
+    "difficulty": "medium",
+    "scenario_data": {
+      "patient_info": {
+        "name": "Jesse Mulder",
+        "age": 24,
+        "gender": "male",
+        "medical_history": "Gezond. Geen allergieën.",
+        "dental_history": "Laatste controle 2 jaar geleden. Weinig problemen. Verstandskiezen zijn in de gaten gehouden.",
+        "current_medications": "Paracetamol, maar helpt niet goed meer.",
+        "social_context": "Student, heeft tentamens en kan niet lang afwezig zijn."
+      },
+      "initial_state": {
+        "patient_statement": "Mijn wang is dik en mijn kies klopt! Ik kan mijn mond bijna niet openen en de pijn straalt uit naar mijn oor. Wat is dit?",
+        "patient_emotion": "desperate",
+        "clinical_phase": "initial_assessment",
+        "notes_dentist": "Beperkte mondopening (trismus), lichte zwelling wang rechtsonder. Patiënt wijst naar de regio van de verstandskies (48).",
+        "diagnostic_hints": "De combinatie van zwelling, trismus, en pijn bij een half-doorbroken kies wijst sterk op Pericoronitis. Eerst rustig onderzoek plannen.",
+        "available_tools": [
+          "visuele_inspectie",
+          "palpatie",
+          "rontgen_opname"
+        ],
+        "patient_concerns": [
+          "snelle_pijnverlichting",
+          "oorzaak_weten",
+          "behandelplan_weten"
+        ]
+      },
+      "dialogue_nodes": [
+        {
+          "id": "node_1_empathy_assessment",
+          "title": "Erkenning en anamnese",
+          "patient_statement": "Ik heb het gevoel dat de helft van mijn gezicht in brand staat.",
+          "patient_emotion": "desperate",
+          "clinical_phase": "rapport_building_anamnese",
+          "notes_dentist": "Begin met de medische en pijnanamnese.",
+          "diagnostic_hints": "Vraag naar de duur van de symptomen, koorts en de effectiviteit van pijnstillers.",
+          "options": [
+            {
+              "id": "opt_empathy_good",
+              "text": "Dat klinkt vreselijk, meneer Mulder. Het spijt me dat u hierdoorheen gaat. We gaan u nu helpen. Kunt u vertellen wanneer de pijn begon en of u koorts heeft?",
+              "next_node": "node_2_examination_needed",
+              "score": 25,
+              "empathy_level": "excellent",
+              "clinical_validity": "excellent",
+              "feedback": [
+                "Erkent de pijn en angst van de patiënt",
+                "Systematisch: stelt de juiste klinische vragen (koorts, duur)",
+                "Creëert vertrouwen voor het onderzoek"
+              ]
+            },
+            {
+              "id": "opt_rushed_exam",
+              "text": "Gaat u zitten. We moeten kijken of hij eruit moet. Waar doet het pijn?",
+              "next_node": "node_4_patient_angry",
+              "score": -5,
+              "empathy_level": "low",
+              "clinical_validity": "poor",
+              "feedback": [
+                "Hoge focus op extractie, geen anamnese",
+                "Ignoreert de emotie van de patiënt",
+                "Verhoogt de angst van de patiënt"
+              ]
+            },
+            {
+              "id": "opt_quick_fix",
+              "text": "Ik zie dat het een verstandskies is. Neem nu een sterke pijnstiller en dan kijken we verder.",
+              "next_node": "node_2_examination_needed",
+              "score": 8,
+              "empathy_level": "medium",
+              "clinical_validity": "fair",
+              "feedback": [
+                "Geeft een onmiddellijke (niet optimale) oplossing",
+                "Voortijdige conclusie zonder visuele inspectie of vragen",
+                "Onvoldoende klinische aanpak"
+              ]
+            }
+          ],
+          "fill_in": null
+        },
+        {
+          "id": "node_2_examination_needed",
+          "title": "Pijnassessment en voorbereiding op onderzoek",
+          "patient_statement": "Ik heb geen koorts, maar de pijn begon gisteren en is van 6/10 naar 8/10 gegaan. Borstelen doet pijn.",
+          "patient_emotion": "focused",
+          "clinical_phase": "assessment_preparation",
+          "notes_dentist": "Typisch verloop van acute ontsteking. Beperkte mondhygiëne in de regio 48, wat de Pericoronitis voedt.",
+          "diagnostic_hints": "Er moet lokaal onderzoek worden gedaan om de ernst en de mate van doorbraak vast te stellen.",
+          "examination_results": null,
+          "options": [
+            {
+              "id": "opt_visual_inspection_good",
+              "text": "Oké, bedankt. Ik ga nu heel voorzichtig kijken. Eerst wil ik uw wang en hals even voelen. Zeg het meteen als het pijn doet. Dit is een 'visuele inspectie'.",
+              "next_node": "node_3_diagnosis_and_plan",
+              "score": 20,
+              "empathy_level": "high",
+              "clinical_validity": "excellent",
+              "feedback": [
+                "Goede overgang van anamnese naar onderzoek",
+                "Gebruikt de juiste term ('visuele inspectie') en waarschuwt de patiënt",
+                "Volgt het klinische protocol"
+              ]
+            },
+            {
+              "id": "opt_skip_visual",
+              "text": "We doen direct een röntgenfoto, dan zien we alles meteen.",
+              "next_node": "node_4_patient_angry",
+              "score": 5,
+              "empathy_level": "medium",
+              "clinical_validity": "fair",
+              "feedback": [
+                "Röntgenfoto is prematuur; een klinisch onderzoek moet eerst plaatsvinden",
+                "Kan onnodig ongemak veroorzaken"
+              ]
+            }
+          ],
+          "fill_in": {
+            "word": "visuele_inspectie",
+            "hint": "Visual check of the affected area"
+          }
+        },
+        {
+          "id": "node_3_diagnosis_and_plan",
+          "title": "Diagnose: Pericoronitis & Behandelopties",
+          "patient_statement": "Au, dat tandvlees is erg gevoelig. Wat is er aan de hand?",
+          "patient_emotion": "anxious",
+          "clinical_phase": "diagnosis_and_treatment_planning",
+          "notes_dentist": "Visuele inspectie: Rood, gezwollen tandvlees (operculum) rond de verstandskies (48). Er komt pus vrij bij lichte druk. Conclusie: Pericoronitis.",
+          "diagnostic_hints": "Behandelplan: 1. Spoeladvies (zout/chloorhexidine) om ontsteking onder controle te houden. 2. Pijnstilling (Ibuprofen + Paracetamol). 3. Bepaal of extractie nodig is na de acute fase.",
+          "examination_results": "Lokale roodheid en zwelling rond 48. Bij palpatie lichte pusafscheiding.",
+          "options": [
+            {
+              "id": "opt_plan_good",
+              "text": "De diagnose is 'Pericoronitis', een ontsteking van het tandvlees rond uw verstandskies. Dit is pijnlijk, maar behandelbaar. We gaan het schoonmaken en u een sterkere 'pijnstiller' adviseren. Daarna bespreken we of de kies eruit moet.",
+              "next_node": "node_5_patient_education",
+              "score": 30,
+              "empathy_level": "excellent",
+              "clinical_validity": "excellent",
+              "feedback": [
+                "Duidelijke diagnose met geruststelling",
+                "Patiëntgericht: eerst pijn verlichten, dan pas de extractie",
+                "Geeft een tijdelijke oplossing en een lange-termijn plan"
+              ]
+            },
+            {
+              "id": "opt_force_extraction",
+              "text": "Uw verstandskies moet eruit, anders blijft dit gebeuren. Ik plan u meteen in bij de kaakchirurg.",
+              "next_node": "node_4_patient_angry",
+              "score": 5,
+              "empathy_level": "medium",
+              "clinical_validity": "fair",
+              "feedback": [
+                "Onnodige paniek. De acute fase moet eerst behandeld worden",
+                "Patiënt overrompeld (schendt WGBO informed consent)"
+              ]
+            }
+          ],
+          "fill_in": {
+            "word": "Pericoronitis",
+            "hint": "Inflammation around a partially erupted tooth (verstandskies)"
+          }
+        },
+        {
+          "id": "node_4_patient_angry",
+          "title": "Crisis: Angst en boosheid",
+          "patient_statement": "Eruit?! Ik wil helemaal niet dat hij eruit gaat! Waarom praat u alleen over trekken?",
+          "patient_emotion": "angry_frustrated",
+          "clinical_phase": "crisis_management",
+          "notes_dentist": "Slechte communicatie veroorzaakte conflict. Terugkeren naar empathie en duidelijke uitleg is essentieel.",
+          "options": [
+            {
+              "id": "opt_recovery",
+              "text": "Mijn excuses, ik liep te hard van stapel. We focussen nu op de pijn. De extractie is slechts één optie. We gaan eerst spoelen om de ontsteking te verminderen.",
+              "next_node": "node_5_patient_education",
+              "score": 15,
+              "empathy_level": "high",
+              "clinical_validity": "good",
+              "feedback": [
+                "Erkent de fout en corrigeert de communicatie",
+                "Herstelt het vertrouwen door de focus te verschuiven naar de acute pijn"
+              ]
+            },
+            {
+              "id": "opt_worse",
+              "text": "Als u niet wilt luisteren, kan ik u ook niet helpen. De ontsteking is ernstig.",
+              "next_node": "outcome_poor",
+              "score": -20,
+              "empathy_level": "poor",
+              "clinical_validity": "poor",
+              "feedback": [
+                "Defensieve reactie schaadt de patiënt-artsrelatie",
+                "Medisch correct, maar communicatief slecht (relatie verwoest)"
+              ]
+            }
+          ],
+          "fill_in": null
+        },
+        {
+          "id": "node_5_patient_education",
+          "title": "Advies en vervolgstappen (Nazorg)",
+          "patient_statement": "Oké, wat moet ik thuis doen totdat ik terugkom? Ik moet mijn tentamens halen.",
+          "patient_emotion": "cooperative",
+          "clinical_phase": "treatment_implementation",
+          "notes_dentist": "Patiënt is gecompromitteerd. Focus op zelfzorg en planning van een controleafspraak/röntgenfoto na de acute fase.",
+          "diagnostic_hints": "Instructies: spoelen met zout water/chloorhexidine, gebruik van Ibuprofen/Paracetamol (combinatie) en zacht voedsel.",
+          "options": [
+            {
+              "id": "opt_education_good",
+              "text": "Thuis doet u drie keer per dag voorzichtig spoelen met zout water. U neemt Paracetamol + Ibuprofen samen in, dat is de beste 'pijnstiller' voor dit. Als de pijn weg is, plannen we een röntgenfoto en bespreken we het vervolg.",
+              "next_node": "outcome_excellent",
+              "score": 30,
+              "empathy_level": "excellent",
+              "clinical_validity": "excellent",
+              "feedback": [
+                "Geeft duidelijke, effectieve nazorginstructies",
+                "Adviseren van combinatietherapie voor pijnstilling (klinisch optimaal)",
+                "Respecteert de tijd van de patiënt ('als de pijn weg is')"
+              ]
+            },
+            {
+              "id": "opt_education_medium",
+              "text": "U moet vaker poetsen en veel spoelen. Neem gewoon die sterke pijnstiller van de apotheek.",
+              "next_node": "outcome_good",
+              "score": 10,
+              "empathy_level": "medium",
+              "clinical_validity": "good",
+              "feedback": [
+                "Correcte, maar te algemene instructies (spoelen, poetsen)",
+                "Niet-specifiek pijnadvies (combinatie is beter)"
+              ]
+            }
+          ],
+          "fill_in": {
+            "word": "pijnstiller",
+            "hint": "Medication for pain relief"
+          }
+        }
+      ],
+      "outcomes": {
+        "excellent": {
+          "title": "Uitstekend Resultaat: Ontsteking Onder Controle",
+          "text": "U heeft de acute Pericoronitis perfect behandeld. Uw duidelijke en empathische aanpak heeft de angst van {{patient_name}} weggenomen. Hij kan zich nu concentreren op zijn tentamens en is bereid terug te komen voor het vervolgplan (waarschijnlijk extractie). De relatie is sterk."
+        },
+        "good": {
+          "title": "Voldoende Resultaat: Klinisch Goed",
+          "text": "De ontsteking is onder controle dankzij uw advies. Klinisch gezien is het een succes. Echter, uw communicatie was soms gehaast, wat wat twijfel bij {{patient_name}} heeft achtergelaten. Hij komt terug, maar met enige terughoudendheid."
+        },
+        "poor": {
+          "title": "Onvoldoende Resultaat: Vertrouwen Beschadigd",
+          "text": "Door uw onnodige nadruk op extractie en gebrek aan empathie heeft u het vertrouwen van {{patient_name}} geschaad. Hij is boos vertrokken en heeft de acute pijn nog niet onder controle. De kans is groot dat hij niet terugkomt voor de noodzakelijke vervolgbehandeling."
+        }
+      }
+    },
+    "scenario_info": {
+      "estimated_time_minutes": 20,
+      "max_score": 120,
+      "clinical_focus": [
+        "pericoronitis_diagnosis",
+        "acute_pain_management",
+        "patient_education_nazorg",
+        "communication_extraction_options"
+      ],
+      "dutch_guidelines": [
+        "KNMT_protocol_verstandskies",
+        "WGBO_informed_consent"
+      ],
+      "keywords": [
+        "verstandskies",
+        "pericoronitis",
+        "pijnstiller",
+        "zwelling",
+        "extractie",
+        "spoelen"
+      ]
+    }
+  }
