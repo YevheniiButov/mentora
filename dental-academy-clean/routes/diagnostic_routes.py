@@ -356,6 +356,14 @@ def get_next_question():
             if irt_engine.should_terminate():
                 diagnostic_session.status = 'completed'
                 diagnostic_session.completed_at = datetime.now(timezone.utc)
+                
+                # ✅ Update time_invested in PersonalLearningPlan
+                from models import PersonalLearningPlan
+                plan = PersonalLearningPlan.query.filter_by(user_id=current_user.id).first()
+                if plan and diagnostic_session.actual_duration:
+                    plan.add_time_invested(int(diagnostic_session.actual_duration))
+                    logger.info(f"Updated time_invested: {plan.time_invested} minutes")
+                
                 db.session.commit()
                 
                 logger.info(f"Diagnostic session {diagnostic_session.id} completed")
@@ -377,6 +385,14 @@ def get_next_question():
             # No more questions available - complete the session
             diagnostic_session.status = 'completed'
             diagnostic_session.completed_at = datetime.now(timezone.utc)
+            
+            # ✅ Update time_invested in PersonalLearningPlan
+            from models import PersonalLearningPlan
+            plan = PersonalLearningPlan.query.filter_by(user_id=current_user.id).first()
+            if plan and diagnostic_session.actual_duration:
+                plan.add_time_invested(int(diagnostic_session.actual_duration))
+                logger.info(f"Updated time_invested: {plan.time_invested} minutes")
+            
             db.session.commit()
             
             logger.info(f"Diagnostic session {diagnostic_session.id} completed - no more questions")
@@ -575,6 +591,14 @@ def submit_learning_answer(session_id):
             # Complete session - reached max questions
             diagnostic_session.status = 'completed'
             diagnostic_session.completed_at = datetime.now(timezone.utc)
+            
+            # ✅ Update time_invested in PersonalLearningPlan
+            from models import PersonalLearningPlan
+            plan = PersonalLearningPlan.query.filter_by(user_id=current_user.id).first()
+            if plan and diagnostic_session.actual_duration:
+                plan.add_time_invested(int(diagnostic_session.actual_duration))
+                current_app.logger.info(f"Updated time_invested: {plan.time_invested} minutes")
+            
             db.session.commit()
             
             current_app.logger.info(f"Learning Mode completed: {diagnostic_session.questions_answered} questions")
@@ -608,6 +632,14 @@ def submit_learning_answer(session_id):
             # Complete session
             diagnostic_session.status = 'completed'
             diagnostic_session.completed_at = datetime.now(timezone.utc)
+            
+            # ✅ Update time_invested in PersonalLearningPlan
+            from models import PersonalLearningPlan
+            plan = PersonalLearningPlan.query.filter_by(user_id=current_user.id).first()
+            if plan and diagnostic_session.actual_duration:
+                plan.add_time_invested(int(diagnostic_session.actual_duration))
+                current_app.logger.info(f"Updated time_invested: {plan.time_invested} minutes")
+            
             db.session.commit()
             
             return jsonify({
@@ -2469,6 +2501,13 @@ def quick_test():
         diagnostic_session.questions_answered = test_results['total_questions']
         diagnostic_session.correct_answers = test_results['correct_answers']
         diagnostic_session.current_ability = test_results['final_ability']
+        
+        # ✅ Update time_invested in PersonalLearningPlan
+        from models import PersonalLearningPlan
+        plan = PersonalLearningPlan.query.filter_by(user_id=current_user.id).first()
+        if plan and diagnostic_session.actual_duration:
+            plan.add_time_invested(int(diagnostic_session.actual_duration))
+            logger.info(f"Updated time_invested: {plan.time_invested} minutes")
         
         db.session.commit()
         

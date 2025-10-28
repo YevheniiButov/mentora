@@ -3817,16 +3817,21 @@ class PersonalLearningPlan(db.Model, JSONSerializableMixin):
                     logger.info(f"Plan {self.id}: overall ability "
                                f"{self.current_ability:.3f} (change: {ability_change:.3f})")
             
-            # 5. ОБНОВЛЯЕМ DAILY STREAK
+            # 5. ОБНОВЛЯЕМ TIME_INVESTED
+            if session_duration > 0:
+                self.add_time_invested(session_duration)
+                logger.info(f"Plan {self.id}: time_invested = {self.time_invested} minutes (+{session_duration})")
+            
+            # 6. ОБНОВЛЯЕМ DAILY STREAK
             from datetime import date
             self.last_activity_date = date.today()
             self.update_daily_streak(date.today())
             logger.info(f"Plan {self.id}: daily_streak = {self.daily_streak}")
             
-            # 6. ОБНОВЛЯЕМ TIMESTAMP
+            # 7. ОБНОВЛЯЕМ TIMESTAMP
             self.last_updated = datetime.now(timezone.utc)
             
-            # 7. ОБНОВЛЯЕМ next_diagnostic_date на основе прогресса
+            # 8. ОБНОВЛЯЕМ next_diagnostic_date на основе прогресса
             if self.overall_progress >= 80:
                 # Для продвинутых учеников - еженедельная переоценка
                 self.set_next_diagnostic_date(7)

@@ -727,9 +727,7 @@ def complete_automated_session():
         
         # ✅ Update time_invested if time_spent provided
         if time_spent > 0:
-            if plan.time_invested is None:
-                plan.time_invested = 0
-            plan.time_invested += int(time_spent)
+            plan.add_time_invested(int(time_spent))
             current_app.logger.info(f"Updated time_invested: {plan.time_invested}")
         
         # Get study schedule
