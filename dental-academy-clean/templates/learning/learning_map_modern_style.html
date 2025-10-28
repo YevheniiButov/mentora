@@ -3799,11 +3799,12 @@
                     }
                     
                     // Check if user has done Quick Diagnostic
-                    if (this.overallProgress === 0) {
+                    // Allow practice if user has any progress OR has completed diagnostic sessions
+                    if (this.overallProgress === 0 && this.questionsToday === 0) {
                         // Show modal to start Quick Diagnostic first
                         this.showQuickDiagnosticModal = true;
                     } else {
-                        // Has diagnostic - start daily practice with selected questions
+                        // Has diagnostic or some progress - start daily practice with selected questions
                         window.location.href = '/learning-map/daily-session';
                     }
                 },

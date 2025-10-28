@@ -268,7 +268,16 @@ def get_progress_summary(user):
     ).first() is not None
     
     # If user has diagnostic, use plan progress, otherwise show 0
-    overall_progress = plan.overall_progress if has_diagnostic else 0
+    # BUT: If plan.overall_progress is 0 but user has diagnostic, set a minimum progress
+    if has_diagnostic:
+        if plan.overall_progress > 0:
+            overall_progress = plan.overall_progress
+        else:
+            # User has diagnostic but plan shows 0% - this means they should be able to practice
+            # Set a small progress to indicate they can start practicing
+            overall_progress = 1.0  # 1% to indicate they can practice
+    else:
+        overall_progress = 0
     
     # Get recent sessions (last 5 completed sessions)
     recent_sessions_query = StudySession.query.join(PersonalLearningPlan).filter(
