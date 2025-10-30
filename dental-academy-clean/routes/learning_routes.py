@@ -719,8 +719,32 @@ def complete_automated_session():
         current_app.logger.info(f"Session data: questions_answered={questions_answered}, correct_answers={correct_answers}, time_spent={time_spent}")
         
         if not plan_id or not current_session:
-            current_app.logger.error(f"Missing session data - plan_id: {plan_id}, current_session: {current_session}")
-            return safe_jsonify({'error': 'No active session'}), 400
+            # Мягкое восстановление: если сессия потеряна, перенаправим на запуск дневной сессии
+            current_app.logger.warning(
+                f"No active session in complete_automated_session – plan_id={plan_id}, current_session={current_session}. "
+                "Returning redirect to start_daily_session."
+            )
+            # Попробуем закрыть DiagnosticSession, если он есть
+            diagnostic_session_id = session.get('daily_session_diagnostic_id')
+            if diagnostic_session_id:
+                try:
+                    from models import DiagnosticSession
+                    diagnostic_session = DiagnosticSession.query.get(diagnostic_session_id)
+                    if diagnostic_session:
+                        diagnostic_session.questions_answered = questions_answered
+                        diagnostic_session.correct_answers = correct_answers
+                        diagnostic_session.completed_at = datetime.now(timezone.utc)
+                        diagnostic_session.status = 'completed'
+                        db.session.commit()
+                except Exception as e2:
+                    current_app.logger.error(f"Failed to finalize DiagnosticSession on soft-complete: {e2}")
+            redirect_url = url_for('individual_plan_api.start_daily_session')
+            return safe_jsonify({
+                'success': True,
+                'redirect_url': redirect_url,
+                'next_session': None,
+                'completed': False
+            }), 200
         
         plan = PersonalLearningPlan.query.get_or_404(plan_id)
         current_app.logger.info(f"Found plan: {plan.id} for user: {plan.user_id}")

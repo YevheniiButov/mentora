@@ -829,8 +829,9 @@
                 const redirectUrl = (result.data && result.data.redirect_url) ? result.data.redirect_url : `/${lang}/learning-map/irt`;
                 setTimeout(() => { window.location.href = redirectUrl; }, 400);
             } else {
-                console.error('Failed to save progress:', result.error || result);
-                alert('Er was een fout bij het opslaan van je voortgang.');
+                const msg = result && result.error ? result.error : 'Er was een fout bij het opslaan van je voortgang.';
+                console.error('Failed to save progress:', msg, result);
+                alert(msg);
             }
         }
 
