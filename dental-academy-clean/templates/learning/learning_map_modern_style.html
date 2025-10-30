@@ -3305,7 +3305,16 @@
                 padding: 16px;
             }
         }
+
+        /* Hide residual Debug Info block on learning map */
+        .debug-section { display: none !important; }
     </style>
+    <script>
+      // Remove residual Debug Info blocks at runtime (safety net)
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.debug-section').forEach(function(el){ el.remove(); });
+      });
+    </script>
 </head>
 <body>
     <!-- Морфирующие формы -->

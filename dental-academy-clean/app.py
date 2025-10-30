@@ -325,7 +325,13 @@ def route_by_domain():
 
 @app.route('/')
 def root_redirect():
-    """Redirect root to default language"""
+    """Root handler with host-based routing.
+    - mentora.com.in → render landing page
+    - other hosts (e.g., bigmentor.nl) → redirect to default language
+    """
+    host = request.host.lower()
+    if 'mentora.com.in' in host:
+        return render_template('mentora_landing.html')
     return redirect('/nl')
 
 @app.route('/debug-mentora-login', methods=['GET', 'POST'])
