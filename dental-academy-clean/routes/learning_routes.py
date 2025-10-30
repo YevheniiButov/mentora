@@ -820,12 +820,21 @@ def complete_automated_session():
                 redirect_url = url_for('learning.automated_theory')
         else:
             # All sessions completed
-            session.pop('learning_plan_id', None)
-            session.pop('current_week', None)
-            session.pop('current_session', None)
-            session.pop('learning_mode', None)
-            session.pop('daily_session_diagnostic_id', None)  # Clear diagnostic session ID
-            redirect_url = url_for('dashboard.learning_plan', plan_id=plan_id)
+            if session.get('daily_session_active'):
+                # Если это дневная сессия и план не знает «следующей», принудительно идём к терминам
+                session['current_session'] = {
+                    'type': 'theory',
+                    'day': (current_session or {}).get('day', 'Today'),
+                    'duration': 20
+                }
+                redirect_url = url_for('learning.automated_theory')
+            else:
+                session.pop('learning_plan_id', None)
+                session.pop('current_week', None)
+                session.pop('current_session', None)
+                session.pop('learning_mode', None)
+                session.pop('daily_session_diagnostic_id', None)  # Clear diagnostic session ID
+                redirect_url = url_for('dashboard.learning_plan', plan_id=plan_id)
         
         current_app.logger.info(f"Redirect URL: {redirect_url}")
         
