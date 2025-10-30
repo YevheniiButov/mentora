@@ -45,3 +45,7 @@ AND ec.column_name IN (
     'category_abilities', 'time_invested', 'daily_question_goal',
     'daily_time_goal', 'daily_streak', 'last_activity_date'
 );
+
+
+
+

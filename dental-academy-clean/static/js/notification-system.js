@@ -253,27 +253,8 @@ class NotificationSystem {
     // ========================================
     
     checkAutoShow() {
-        // Проверяем, показывать ли уведомление автоматически
-        const lastShown = localStorage.getItem('mentora_notification_last_shown');
-        const notificationDismissed = localStorage.getItem('mentora_notification_dismissed');
-        const currentPage = window.location.pathname;
-        const today = new Date().toDateString();
-        
-        // // Показываем только на главной странице
-        if (currentPage === '/' || currentPage === '/index' || currentPage === '') {
-            // Если уведомление не было отклонено и не показывалось сегодня
-            if (!notificationDismissed && lastShown !== today) {
-
-                setTimeout(() => {
-                    this.showPreRegistration();
-                    localStorage.setItem('mentora_notification_last_shown', today);
-                }, this.autoShowDelay);
-            } else {
-
-            }
-        } else {
-
-        }
+        // Автопоказ предрегистрации отключен по требованиям продукта
+        return;
     }
     
     // ========================================

@@ -244,3 +244,7 @@ sudo systemctl restart mentora nginx
 - Monitor application logs during deployment
 - Have rollback plan ready
 - Test all critical user flows after deployment
+
+
+
+

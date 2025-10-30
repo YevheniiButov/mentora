@@ -148,3 +148,7 @@ def is_valid_profession(profession_code):
         False
     """
     return profession_code in get_available_professions()
+
+
+
+

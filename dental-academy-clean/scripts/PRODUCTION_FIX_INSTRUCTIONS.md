@@ -86,3 +86,7 @@ ALTER TABLE personal_learning_plan DROP COLUMN IF EXISTS current_category_focus;
 
 ## Contact
 If issues persist, check the logs for any remaining column errors.
+
+
+
+

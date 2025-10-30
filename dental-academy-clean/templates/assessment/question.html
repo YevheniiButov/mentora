@@ -382,7 +382,17 @@ async function nextQuestion() {
         }
     } catch (error) {
         console.error('Error in nextQuestion:', error);
-        showModal('Error', 'An error occurred', [{text: 'OK', class: 'btn-primary', onclick: hideModal}]);
+        hideLoading();
+        
+        // Show more specific error message
+        let errorMessage = 'An error occurred while loading the next question';
+        if (error.message && error.message.includes('Session data error')) {
+            errorMessage = 'Session data error. Please refresh the page and try again.';
+        } else if (error.message && error.message.includes('500')) {
+            errorMessage = 'Server error. Please try again.';
+        }
+        
+        showModal('Error', errorMessage, [{text: 'OK', class: 'btn-primary', onclick: hideModal}]);
     }
 }
 
@@ -447,7 +457,8 @@ async function submitAnswer() {
     
     // Защита от двойной отправки
     const submitBtn = document.getElementById('submit-answer-btn');
-    if (submitBtn && submitBtn.disabled) {return;
+    if (submitBtn && submitBtn.disabled) {
+        return;
     }
     
     if (submitBtn) {
@@ -458,14 +469,14 @@ async function submitAnswer() {
     showLoading('{{ t("sending_answer", lang) | default("Sending answer") }}...');
     
     try {
-    const formData = new FormData();
+        const formData = new FormData();
         formData.append('answer', selectedOption);
         formData.append('confidence', confidenceLevel);
-    formData.append('csrf_token', '{{ csrf_token() }}');
-    
+        formData.append('csrf_token', '{{ csrf_token() }}');
+        
         const response = await fetch('{{ url_for("diagnostic.submit_answer", session_id=session_id) }}', {
-        method: 'POST',
-        body: formData
+            method: 'POST',
+            body: formData
         });
         
         hideLoading();
@@ -487,7 +498,8 @@ async function submitAnswer() {
         
         // If this is a regular successful response, DON'T redirect automatically
         // User will press "Next" or "Finish" themselves
-        if (response.ok) {return { success: true };
+        if (response.ok) {
+            return { success: true };
         } else {
             throw new Error(`HTTP error! status: ${response.status}`);
         }

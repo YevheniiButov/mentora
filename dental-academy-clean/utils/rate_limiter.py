@@ -23,7 +23,9 @@ class RateLimiter:
             'start_diagnostic': 10,  # 10 requests per minute
             'next_question': 30,     # 30 requests per minute
             'submit_answer': 30,     # 30 requests per minute
-            'general': 60            # 60 requests per minute
+            'general': 60,           # 60 requests per minute
+            'learning_map': 180,     # 180 requests per minute for learning-map APIs
+            'statistics': 120        # 120 requests per minute for statistics APIs
         }
     
     def check_rate_limit(self, identifier, requests_per_minute=None, window_size=60):

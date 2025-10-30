@@ -97,3 +97,7 @@ COMMIT;
 -- Проверяем, что таблицы созданы
 SELECT COUNT(*) as medical_term_count FROM medical_term;
 SELECT COUNT(*) as user_term_progress_count FROM user_term_progress;
+
+
+
+

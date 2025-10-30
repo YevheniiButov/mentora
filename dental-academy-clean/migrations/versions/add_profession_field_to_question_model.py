@@ -30,3 +30,7 @@ def downgrade():
         batch_op.drop_index('ix_questions_profession')
         batch_op.drop_column('profession')
     # ### end Alembic commands ###
+
+
+
+

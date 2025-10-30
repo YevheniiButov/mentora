@@ -3,15 +3,18 @@ Flashcard routes for medical terminology learning
 Provides study sessions, reviews, and progress tracking
 
 Routes:
+- GET /flashcards/daily-session - Daily study session (shows all terms from all categories)
 - GET /flashcards/categories - List all categories
 - GET /flashcards/study/<category> - Start study session
+- GET /flashcards/study-simple/<category> - Start simplified study session
 - GET /flashcards/due-reviews - Terms due for review
 - POST /flashcards/review/<int:term_id> - Submit review
 - GET /flashcards/stats - User statistics
 - GET /flashcards/category-stats/<category> - Category stats
+- POST /flashcards/api/session-complete - Mark session complete
 """
 
-from flask import Blueprint, render_template, jsonify, request, redirect, url_for, current_app
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for, current_app, session
 from flask_login import login_required, current_user
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
@@ -25,6 +28,77 @@ from utils.flashcard_helpers import (
 )
 
 flashcard_bp = Blueprint('flashcards', __name__, url_prefix='/flashcards')
+
+
+@flashcard_bp.route('/daily-session')
+@login_required
+def daily_session():
+    """
+    Daily study session - shows all terms from all categories
+    Used by learning map
+    """
+    try:
+        current_app.logger.info(f"Daily session started for user: {current_user.id}")
+        
+        # Get terms from ALL categories (mix of new and review) - limit to 10 for session
+        all_terms = MedicalTerm.query.limit(10).all()
+        
+        if not all_terms:
+            return render_template('flashcards/study_simple.html',
+                                 category='all',
+                                 terms=[],
+                                 total_terms=0,
+                                 message='No terms available in the database')
+        
+        # Get user's progress for all terms
+        terms_data = []
+        for term in all_terms:
+            # Get or create progress
+            progress = UserTermProgress.query.filter_by(
+                user_id=current_user.id,
+                term_id=term.id
+            ).first()
+            
+            if not progress:
+                progress = UserTermProgress(
+                    user_id=current_user.id,
+                    term_id=term.id
+                )
+                db.session.add(progress)
+            
+            # Get language from session, fallback to user preference, then to 'en'
+            user_lang = session.get('lang')
+            if not user_lang:
+                user_lang = current_user.language or 'en'
+            if not user_lang or user_lang == '':
+                user_lang = 'en'
+            
+            # Get translated term or fallback to English
+            term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+            
+            terms_data.append({
+                'id': term.id,
+                'term_nl': term.term_nl,
+                'term_translated': term_translated,
+                'definition': term.definition_nl,
+                'category': term.category,
+                'difficulty': term.difficulty,
+                'progress_id': progress.id
+            })
+        
+        db.session.commit()
+        current_app.logger.info(f"Daily session data prepared: {len(terms_data)} terms from all categories")
+        
+        return render_template('flashcards/study_simple.html',
+                             category='all',
+                             terms=terms_data,
+                             total_terms=len(terms_data))
+    
+    except Exception as e:
+        import traceback
+        current_app.logger.error(f"Error starting daily session: {e}")
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': f'Failed to start daily session: {str(e)}'}), 500
 
 
 @flashcard_bp.route('/categories')
@@ -78,8 +152,11 @@ def categories():
         # Sort by most progress
         categories_with_progress.sort(key=lambda x: x['progress_percent'], reverse=True)
         
-        return render_template('flashcards/categories.html', 
-                             categories=categories_with_progress)
+        return render_template('flashcards/study_simple.html', 
+                             category='anatomy_basic',  # Default category
+                             terms=[], 
+                             total_terms=0,
+                             message='Please select a category to start studying')
     
     except Exception as e:
         current_app.logger.error(f"Error loading categories: {e}")
@@ -112,9 +189,10 @@ def study_category(category):
         
         if not session_terms:
             current_app.logger.warning(f"No terms available for category: {category}")
-            return render_template('flashcards/study.html',
+            return render_template('flashcards/study_simple.html',
                                  category=category,
                                  terms=[],
+                                 total_terms=0,
                                  message='No terms available for this category')
         
         # Serialize terms for frontend
@@ -133,8 +211,10 @@ def study_category(category):
                 )
                 db.session.add(progress)
             
-            # Get user's language, default to 'en' if not set
-            user_lang = current_user.language or 'en'
+            # Get language from session, fallback to user preference, then to 'en'
+            user_lang = session.get('lang')
+            if not user_lang:
+                user_lang = current_user.language or 'en'
             if not user_lang or user_lang == '':
                 user_lang = 'en'
             
@@ -154,16 +234,96 @@ def study_category(category):
         db.session.commit()
         current_app.logger.info(f"Study session data prepared: {len(terms_data)} terms")
         
-        return render_template('flashcards/study.html',
+        return render_template('flashcards/study_simple.html',
                              category=category,
                              terms=terms_data,
-                             total=len(terms_data))
+                             total_terms=len(terms_data))
     
     except Exception as e:
         import traceback
         current_app.logger.error(f"Error starting study session: {e}")
         current_app.logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({'error': f'Failed to start study session: {str(e)}'}), 500
+
+
+@flashcard_bp.route('/study-simple/<category>')
+@login_required
+def study_simple(category):
+    """
+    Start a simplified study session for a specific category
+    Uses the new study_simple.html template with Alpine.js
+    """
+    try:
+        current_app.logger.info(f"Simple study session started for category: {category}, user: {current_user.id}")
+        
+        # Validate category
+        category_exists = MedicalTerm.query.filter_by(category=category).first()
+        if not category_exists:
+            current_app.logger.warning(f"Category not found: {category}")
+            return jsonify({'error': 'Category not found'}), 404
+        
+        # Get session terms
+        current_app.logger.info(f"Getting session terms for category: {category}")
+        session_terms = get_session_terms(current_user, category, count=10)
+        current_app.logger.info(f"Got {len(session_terms)} terms for session")
+        
+        if not session_terms:
+            current_app.logger.warning(f"No terms available for category: {category}")
+            return render_template('flashcards/study_simple.html',
+                                 category=category,
+                                 terms=[],
+                                 total_terms=0,
+                                 message='No terms available for this category')
+        
+        # Serialize terms for frontend
+        terms_data = []
+        for term in session_terms:
+            # Get or create progress
+            progress = UserTermProgress.query.filter_by(
+                user_id=current_user.id,
+                term_id=term.id
+            ).first()
+            
+            if not progress:
+                progress = UserTermProgress(
+                    user_id=current_user.id,
+                    term_id=term.id
+                )
+                db.session.add(progress)
+            
+            # Get language from session, fallback to user preference, then to 'en'
+            user_lang = session.get('lang')
+            if not user_lang:
+                user_lang = current_user.language or 'en'
+            if not user_lang or user_lang == '':
+                user_lang = 'en'
+            
+            # Get translated term or fallback to English
+            term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+            
+            terms_data.append({
+                'id': term.id,
+                'term_nl': term.term_nl,
+                'term_translated': term_translated,
+                'definition': term.definition_nl,
+                'category': term.category,
+                'difficulty': term.difficulty,
+                'progress_id': progress.id
+            })
+        
+        db.session.commit()
+        current_app.logger.info(f"Simple study session data prepared: {len(terms_data)} terms")
+        
+        return render_template('flashcards/study_simple.html',
+                             category=category,
+                             terms=terms_data,
+                             total_terms=len(terms_data))
+    
+    except Exception as e:
+        import traceback
+        current_app.logger.error(f"Error starting simple study session: {e}")
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': f'Failed to start simple study session: {str(e)}'}), 500
 
 
 @flashcard_bp.route('/study/term/<int:term_id>')
@@ -211,11 +371,10 @@ def study_single_term(term_id):
         
         db.session.commit()
         
-        return render_template('flashcards/study.html',
+        return render_template('flashcards/study_simple.html',
                              category=term.category,
                              terms=terms_data,
-                             total=1,
-                             session_type='single_review')
+                             total_terms=1)
     
     except Exception as e:
         current_app.logger.error(f"Error starting single term review: {e}")
@@ -324,9 +483,10 @@ def due_reviews():
         due_by_category = get_due_reviews_by_category(current_user)
         
         if not due_by_category:
-            return render_template('flashcards/due_reviews.html',
-                                 categories_with_due=[],
-                                 total_due=0,
+            return render_template('flashcards/study_simple.html',
+                                 category='anatomy_basic',
+                                 terms=[],
+                                 total_terms=0,
                                  message='No reviews due today. Keep up the good work!')
         
         total_due = sum(len(terms) for terms in due_by_category.values())
@@ -340,9 +500,11 @@ def due_reviews():
                 'terms': terms
             })
         
-        return render_template('flashcards/due_reviews.html',
-                             categories_with_due=categories_with_due,
-                             total_due=total_due)
+        return render_template('flashcards/study_simple.html',
+                             category='anatomy_basic',
+                             terms=[],
+                             total_terms=0,
+                             message=f'Found {total_due} terms due for review. Please use the new study interface.')
     
     except Exception as e:
         current_app.logger.error(f"Error loading due reviews: {e}")
@@ -397,14 +559,11 @@ def user_stats():
                     'accuracy': cat_progress['accuracy']
                 })
         
-        return render_template('flashcards/stats.html',
-                             total_studied=len(all_progress),
-                             total_reviewed=total_reviewed,
-                             total_correct=total_correct,
-                             accuracy=round(accuracy, 1),
-                             mastery_distribution=mastery_dist,
-                             current_streak=current_streak,
-                             category_stats=category_stats)
+        return render_template('flashcards/study_simple.html',
+                             category='anatomy_basic',
+                             terms=[],
+                             total_terms=0,
+                             message=f'Statistics: {len(all_progress)} studied, {round(accuracy, 1)}% accuracy. Please use the new study interface.')
     
     except Exception as e:
         current_app.logger.error(f"Error loading stats: {e}")
@@ -425,14 +584,17 @@ def category_stats(category):
         cat_stats = get_category_progress(current_user, category)
         
         if not cat_stats:
-            return render_template('flashcards/category_stats.html',
+            return render_template('flashcards/study_simple.html',
                                  category=category,
-                                 stats=None,
-                                 message='No data for this category yet')
+                                 terms=[],
+                                 total_terms=0,
+                                 message='No data for this category yet. Please use the new study interface.')
         
-        return render_template('flashcards/category_stats.html',
+        return render_template('flashcards/study_simple.html',
                              category=category,
-                             stats=cat_stats)
+                             terms=[],
+                             total_terms=0,
+                             message=f'Category stats: {cat_stats["studied"]}/{cat_stats["total"]} studied, {cat_stats["accuracy"]}% accuracy. Please use the new study interface.')
     
     except Exception as e:
         current_app.logger.error(f"Error loading category stats: {e}")
@@ -456,3 +618,31 @@ def api_due_count():
     except Exception as e:
         current_app.logger.error(f"Error getting due count: {e}")
         return jsonify({'error': 'Failed to get due count'}), 500
+
+
+@flashcard_bp.route('/api/session-complete', methods=['POST'])
+@login_required
+def api_session_complete():
+    """
+    API endpoint to mark session as complete
+    Used by the simplified study interface
+    """
+    try:
+        data = request.get_json()
+        terms_studied = data.get('terms_studied', 0)
+        total_xp = data.get('total_xp', 0)
+        time_spent = data.get('time_spent', 0)
+        
+        current_app.logger.info(f"Session completed: user={current_user.id}, terms={terms_studied}, xp={total_xp}, time={time_spent}")
+        
+        # Here you could add additional session tracking logic
+        # For now, just return success
+        
+        return jsonify({
+            'success': True,
+            'message': 'Session completed successfully'
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Error completing session: {e}")
+        return jsonify({'error': 'Failed to complete session'}), 500

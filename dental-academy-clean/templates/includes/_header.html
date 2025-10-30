@@ -170,19 +170,10 @@
           <!-- Скрипт для инициализации меню профиля -->
           <script>
             document.addEventListener('DOMContentLoaded', function() {
-              // Инициализация выпадающего меню профиля
+              // Инициализация Bootstrap Dropdown без пользовательских перехватчиков клика
               var userDropdownEl = document.getElementById('userDropdown');
               if (userDropdownEl) {
-                var userDropdown = new bootstrap.Dropdown(userDropdownEl);
-                
-                // Добавляем обработчик клика для кнопки профиля
-                userDropdownEl.addEventListener('click', function(e) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  userDropdown.toggle();
-                });
-                
-                // Меню профиля инициализировано
+                new bootstrap.Dropdown(userDropdownEl);
               }
             });
           </script>
@@ -211,6 +202,15 @@
               </a></li>
             </ul>
           </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              // Инициализация гостевого dropdown без пользовательских обработчиков
+              var guestDropdownEl = document.getElementById('guestDropdown');
+              if (guestDropdownEl) {
+                new bootstrap.Dropdown(guestDropdownEl);
+              }
+            });
+          </script>
           {% endif %}
         </div>
       </div>

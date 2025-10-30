@@ -560,6 +560,19 @@ def automated_practice(plan_id=None, week=None):
         week = session.get('current_week')
     
     current_session = session.get('current_session')
+    # Auto-rotate daily session by calendar date
+    try:
+        from datetime import date as _date
+        session_date = session.get('daily_session_date')
+        if session_date and session_date != _date.today().isoformat():
+            # Outdated daily session → start a new one
+            session.pop('daily_session_questions', None)
+            session.pop('daily_session_diagnostic_id', None)
+            session.pop('daily_session_active', None)
+            session.pop('daily_session_date', None)
+            return redirect(url_for('individual_plan_api.start_daily_session'))
+    except Exception:
+        pass
     
     print(f"🔧 DEBUG: automated_practice - plan_id={plan_id}, week={week}, session={current_session}")
     

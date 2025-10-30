@@ -135,3 +135,7 @@ If animations don't show after upload:
 4. Clear browser cache (Cmd+Shift+R on Mac)
 5. Check browser console for errors (F12 → Console tab)
 
+
+
+
+

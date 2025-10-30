@@ -16,12 +16,30 @@ from utils.individual_plan_helpers import (
     update_daily_progress,
     select_questions_for_today
 )
+from utils.rate_limiter import rate_limiter
 
 individual_plan_api_bp = Blueprint('individual_plan_api', __name__)
+
+def rate_limit(requests_per_minute=120):
+    """Rate limiting decorator for API endpoints"""
+    def decorator(f):
+        from functools import wraps
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            user_id = current_user.id if current_user.is_authenticated else request.remote_addr
+            if not rate_limiter.check_rate_limit(user_id, requests_per_minute):
+                return jsonify({
+                    'success': False,
+                    'error': 'Rate limit exceeded. Please try again later.'
+                }), 429
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 @individual_plan_api_bp.route('/api/individual-plan/daily-tasks')
 @login_required
+@rate_limit(requests_per_minute=180)  # 180 requests per minute for learning-map APIs
 def api_daily_tasks():
     """
     Get today's daily tasks for the user.
@@ -63,6 +81,7 @@ def api_daily_tasks():
 
 @individual_plan_api_bp.route('/api/individual-plan/progress')
 @login_required
+@rate_limit(requests_per_minute=180)  # 180 requests per minute for learning-map APIs
 def api_progress_summary():
     """
     Get comprehensive progress summary.
@@ -181,6 +200,9 @@ def start_daily_session():
         session['daily_session_questions'] = [q.id for q in questions]
         session['daily_session_diagnostic_id'] = diagnostic_session.id  # Store diagnostic session ID
         session['daily_session_active'] = True
+        # Track the calendar day for auto-rotation
+        from datetime import date as _date
+        session['daily_session_date'] = _date.today().isoformat()
         session['learning_plan_id'] = plan.id
         session['learning_mode'] = 'daily_practice'
         

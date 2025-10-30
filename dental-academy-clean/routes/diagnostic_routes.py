@@ -121,7 +121,7 @@ def start_diagnostic():
                             'questions_answered': active_session.questions_answered,
                             'correct_answers': active_session.correct_answers,
                             'current_ability': active_session.current_ability,
-                            'progress': round((active_session.questions_answered / session_data.get('estimated_total_questions', 25)) * 100) if active_session.questions_answered > 0 else 0,
+                            'progress': round((active_session.questions_answered / session_data.get('estimated_total_questions', 30)) * 100) if active_session.questions_answered > 0 else 0,
                             'created_at': active_session.started_at.isoformat()
                         }
                     }), 200
@@ -188,6 +188,9 @@ def start_diagnostic():
                 ip_address=request.remote_addr
             )
             
+            # Set started_at immediately when session is created
+            diagnostic_session.started_at = datetime.now(timezone.utc)
+            
             # Определяем правильный session_type и diagnostic_type на основе выбора пользователя
             if diagnostic_type == 'quick_30':
                 session_type = 'preliminary'
@@ -252,7 +255,6 @@ def start_diagnostic():
             
             # Update session with first question
             diagnostic_session.current_question_id = first_question.id
-            diagnostic_session.started_at = datetime.now(timezone.utc)
             db.session.commit()
             
             logger.info(f"Started {diagnostic_type} diagnostic session {diagnostic_session.id} for user {current_user.id}")
@@ -833,9 +835,14 @@ def submit_answer(session_id):
         
         # Validate session data before proceeding
         session_data = session.get_session_data()
-        if not session_data:
-            logger.error("Failed to get session data")
+        if not isinstance(session_data, dict):
+            logger.error(f"Invalid session data type: {type(session_data)}")
             return jsonify({'success': False, 'error': 'Session data error'}), 500
+        
+        # Ensure session has required fields
+        if 'diagnostic_type' not in session_data:
+            logger.warning(f"Session {session.id} missing diagnostic_type, using default")
+            session_data['diagnostic_type'] = 'express'
         
         diagnostic_type = session_data.get('diagnostic_type', 'express')
         
@@ -846,13 +853,14 @@ def submit_answer(session_id):
         
         # Determine max questions with validation
         max_questions = {
-            'express': 25,
+            'express': 30,  # Изменено с 25 на 30 для совместимости
             'quick_30': 30,  # 30 вопросов для Quick Test
+            'full_60': 60,   # 60 вопросов для Full Test
             'preliminary': 75, 
             'readiness': 130,
-            'full': 75,
+            'full': 60,      # Изменено с 75 на 60 для совместимости
             'comprehensive': 130
-        }.get(diagnostic_type, 25)
+        }.get(diagnostic_type, 30)  # Изменено с 25 на 30
         
         # Validate question count
         if session.questions_answered > max_questions:
@@ -930,9 +938,11 @@ def show_simple_test_results(diagnostic_session, lang='nl'):
     """Show simple test results (not full diagnostic)"""
     try:
         # Calculate simple statistics
-        total_questions = diagnostic_session.questions_answered
+        session_data = diagnostic_session.get_session_data()
+        total_questions = session_data.get('estimated_total_questions', 30)  # Use estimated total, not answered
+        questions_answered = diagnostic_session.questions_answered
         correct_answers = diagnostic_session.correct_answers
-        score_percentage = int((correct_answers / total_questions * 100)) if total_questions > 0 else 0
+        score_percentage = int((correct_answers / questions_answered * 100)) if questions_answered > 0 else 0
         
         # Calculate time taken
         time_taken_seconds = 0
@@ -943,12 +953,38 @@ def show_simple_test_results(diagnostic_session, lang='nl'):
             completed = diagnostic_session.completed_at
             if completed.tzinfo is None:
                 completed = completed.replace(tzinfo=timezone.utc)
-            time_taken_seconds = int((completed - started).total_seconds())
             
-            # Debug logging
-            current_app.logger.info(f"Time calculation: started={started}, completed={completed}, seconds={time_taken_seconds}")
+            # Calculate time difference
+            time_diff = completed - started
+            time_taken_seconds = int(time_diff.total_seconds())
+            
+            # Debug logging with more details
+            current_app.logger.info(f"Time calculation details:")
+            current_app.logger.info(f"  started_at: {diagnostic_session.started_at}")
+            current_app.logger.info(f"  completed_at: {diagnostic_session.completed_at}")
+            current_app.logger.info(f"  started (with tz): {started}")
+            current_app.logger.info(f"  completed (with tz): {completed}")
+            current_app.logger.info(f"  time_diff: {time_diff}")
+            current_app.logger.info(f"  time_taken_seconds: {time_taken_seconds}")
+            
+            # Check for negative time (completed before started)
+            if time_taken_seconds < 0:
+                current_app.logger.warning(f"Negative time detected: {time_taken_seconds} seconds, using 0")
+                time_taken_seconds = 0
+            # Check for unrealistic time (more than 24 hours)
+            elif time_taken_seconds > 86400:  # 24 hours in seconds
+                current_app.logger.warning(f"Unrealistic time: {time_taken_seconds} seconds, capping to 1 hour")
+                time_taken_seconds = 3600  # Cap to 1 hour
+            # Check for very short time (less than 1 second) - might indicate timing issue
+            elif time_taken_seconds < 1 and questions_answered > 0:
+                current_app.logger.warning(f"Very short time detected: {time_taken_seconds} seconds for {questions_answered} questions, using estimated time")
+                time_taken_seconds = questions_answered * 30  # Assume 30 seconds per question
         else:
             current_app.logger.warning(f"Missing time data: started_at={diagnostic_session.started_at}, completed_at={diagnostic_session.completed_at}")
+            # If no time data, use a reasonable default based on questions answered
+            if questions_answered > 0:
+                time_taken_seconds = questions_answered * 30  # Assume 30 seconds per question
+                current_app.logger.info(f"Using estimated time: {time_taken_seconds} seconds based on {questions_answered} questions")
         
         time_minutes = time_taken_seconds // 60
         time_seconds = time_taken_seconds % 60
@@ -974,6 +1010,7 @@ def show_simple_test_results(diagnostic_session, lang='nl'):
         return render_template('assessment/test_results_simple.html',
                              session=diagnostic_session,
                              total_questions=total_questions,
+                             questions_answered=questions_answered,
                              correct_answers=correct_answers,
                              score_percentage=score_percentage,
                              time_minutes=time_minutes,
@@ -1408,7 +1445,7 @@ def restart_diagnostic():
         session_data = {
             'diagnostic_type': diagnostic_type,
             'questions_per_domain': 1 if diagnostic_type == 'express' else (3 if diagnostic_type == 'preliminary' else 5),
-            'estimated_total_questions': 25 if diagnostic_type == 'express' else (75 if diagnostic_type == 'preliminary' else 130)
+            'estimated_total_questions': 30 if diagnostic_type == 'express' else (60 if diagnostic_type == 'full_60' else (75 if diagnostic_type == 'preliminary' else 130))
         }
         new_session.set_session_data(session_data)
         
@@ -1417,7 +1454,6 @@ def restart_diagnostic():
         first_question = irt_engine.select_initial_question()
         
         new_session.current_question_id = first_question.id
-        new_session.started_at = datetime.now(timezone.utc)
         db.session.commit()
         
         logger.info(f"Restarted diagnostic session: {new_session.id}")
@@ -1463,7 +1499,7 @@ def restart_session(session_id):
         session_data = {
             'diagnostic_type': diagnostic_type,
             'questions_per_domain': 1 if diagnostic_type == 'express' else (3 if diagnostic_type == 'preliminary' else 5),
-            'estimated_total_questions': 25 if diagnostic_type == 'express' else (75 if diagnostic_type == 'preliminary' else 130)
+            'estimated_total_questions': 30 if diagnostic_type == 'express' else (60 if diagnostic_type == 'full_60' else (75 if diagnostic_type == 'preliminary' else 130))
         }
         new_session.set_session_data(session_data)
         
@@ -1472,7 +1508,6 @@ def restart_session(session_id):
         first_question = irt_engine.select_initial_question()
         
         new_session.current_question_id = first_question.id
-        new_session.started_at = datetime.now(timezone.utc)
         db.session.commit()
         
         logger.info(f"Restarted diagnostic session: {new_session.id}")
@@ -2322,7 +2357,7 @@ def show_question(session_id):
         
         # Получаем общее количество вопросов
         session_data = diagnostic_session.get_session_data()
-        total_questions = session_data.get('estimated_total_questions', 25)
+        total_questions = session_data.get('estimated_total_questions', 30)
         
         # Добавляем атрибут question_text для совместимости с шаблоном
         question.question_text = question.text
@@ -2444,7 +2479,6 @@ def start_quick_test():
         
         diagnostic_session.set_session_data(session_data)
         diagnostic_session.current_question_id = first_question.id
-        diagnostic_session.started_at = datetime.now(timezone.utc)
         db.session.commit()
         
         # Redirect to first question
@@ -2483,7 +2517,7 @@ def quick_test():
         session_data = {
             'diagnostic_type': diagnostic_type,
             'questions_per_domain': 1 if diagnostic_type == 'express' else (3 if diagnostic_type == 'preliminary' else 5),
-            'estimated_total_questions': 25 if diagnostic_type == 'express' else (75 if diagnostic_type == 'preliminary' else 130),
+            'estimated_total_questions': 30 if diagnostic_type == 'express' else (60 if diagnostic_type == 'full_60' else (75 if diagnostic_type == 'preliminary' else 130)),
             'is_test_session': True,
             'test_result_type': result_type
         }
@@ -2532,7 +2566,7 @@ def generate_test_results(result_type, diagnostic_type):
     import random
     
     # Определяем количество вопросов
-    total_questions = 25 if diagnostic_type == 'express' else (75 if diagnostic_type == 'preliminary' else 130)
+    total_questions = 30 if diagnostic_type == 'express' else (60 if diagnostic_type == 'full_60' else (75 if diagnostic_type == 'preliminary' else 130))
     
     # Генерируем результаты в зависимости от типа
     if result_type == 'high':
@@ -3046,3 +3080,31 @@ def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
         return fallback_questions
 
  
+
+# API endpoint for checking diagnostic completion status
+@diagnostic_bp.route('/api/status')
+@login_required
+def get_diagnostic_status():
+    """Check if user has completed any diagnostic sessions"""
+    try:
+        from models import DiagnosticSession
+        
+        # Check if user has any completed diagnostic sessions
+        completed_sessions = DiagnosticSession.query.filter_by(
+            user_id=current_user.id,
+            completed=True
+        ).count()
+        
+        has_completed_diagnostic = completed_sessions > 0
+        
+        return jsonify({
+            'success': True,
+            'has_completed_diagnostic': has_completed_diagnostic,
+            'completed_sessions_count': completed_sessions
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

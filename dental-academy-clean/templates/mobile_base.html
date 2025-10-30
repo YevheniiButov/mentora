@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'light' }}">
 <head>
-    <!-- Preload critical CSS -->
-    <link rel="preload" href="{{ static_versioned('css/main.css') }}" as="style">
-    <link rel="preload" href="{{ static_versioned('css/universal-styles.css') }}" as="style">
+    <!-- Preload only the most critical CSS -->
+    <link rel="preload" href="{{ static_versioned('css/main.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ static_versioned('css/main.css') }}"></noscript>
+    
+    <!-- Prefetch other CSS for better performance -->
+    <link rel="prefetch" href="{{ static_versioned('css/universal-styles.css') }}" as="style">
 
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">

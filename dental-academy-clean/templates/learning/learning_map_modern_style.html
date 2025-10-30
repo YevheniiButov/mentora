@@ -1342,6 +1342,329 @@
             padding: 20px;
         }
 
+        /* ===== SIMPLIFIED DAILY FLOW STYLES ===== */
+        .daily-plan-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 24px;
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .plan-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .plan-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .plan-status.status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .plan-status.status-in-progress {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .plan-status.status-completed {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .plan-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 32px;
+        }
+
+        .plan-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .plan-item.completed {
+            background: #f0fdf4;
+            border-color: #22c55e;
+        }
+
+        .plan-item.in-progress {
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+
+        .plan-item.locked {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            opacity: 0.6;
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .item-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .plan-item.completed .item-number {
+            background: #22c55e;
+            color: white;
+        }
+
+        .plan-item.in-progress .item-number {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .item-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 4px 0;
+        }
+
+        .item-info p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .item-progress {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .item-status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .item-status-badge {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+
+        .item-status-badge.in-progress {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .item-status-badge.locked {
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .connector {
+            height: 2px;
+            background: #e5e7eb;
+            margin: 0 24px;
+            transition: all 0.3s ease;
+        }
+
+        .connector.active {
+            background: #22c55e;
+        }
+
+        .plan-actions {
+            margin-bottom: 32px;
+        }
+
+        .action-group {
+            text-align: center;
+        }
+
+        .btn-primary.btn-large {
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary.btn-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .completion-group {
+            background: #f0fdf4;
+            padding: 24px;
+            border-radius: 12px;
+            border: 2px solid #22c55e;
+        }
+
+        .completion-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+
+        .repeat-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-outline {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            background: white;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .daily-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 24px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .daily-plan-card {
+                padding: 20px;
+                margin: 0 -10px 20px -10px;
+                border-radius: 0;
+            }
+
+            .plan-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .plan-header h2 {
+                font-size: 24px;
+            }
+
+            .plan-item {
+                padding: 16px;
+            }
+
+            .item-left {
+                gap: 12px;
+            }
+
+            .item-number {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .item-info h3 {
+                font-size: 16px;
+            }
+
+            .item-info p {
+                font-size: 13px;
+            }
+
+            .repeat-buttons {
+                flex-direction: column;
+            }
+
+            .daily-stats {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                padding: 16px;
+            }
+        }
+
         .plan-header {
             display: flex;
             justify-content: space-between;
@@ -2527,6 +2850,461 @@
                 font-size: 14px;
             }
         }
+
+        /* ============================================================
+           VIRTUAL PATIENT SECTION STYLES
+           ============================================================ */
+
+        .training-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border: 1px solid #e0e7ff;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .training-section:hover {
+            box-shadow: 0 8px 24px rgba(0, 102, 204, 0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: #0066cc;
+            font-size: 24px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #0066cc;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* VP Content */
+        .vp-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* VP Cards Container */
+        .vp-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .vp-card {
+            background: white;
+            border: 2px solid #e0e7ff;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vp-card:hover {
+            border-color: #0066cc;
+            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .vp-card.vp-current {
+            border-color: #0066cc;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+        }
+
+        .vp-card.vp-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            grid-column: 1 / -1;
+        }
+
+        .vp-empty-icon {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        .vp-card h4 {
+            margin: 0;
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        .vp-card p {
+            margin: 8px 0 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .vp-empty-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 12px !important;
+        }
+
+        /* VP Card Header */
+        .vp-card-header {
+            padding: 16px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #f8f9ff 100%);
+            border-bottom: 1px solid #e0e7ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .vp-difficulty {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .difficulty-easy {
+            background: #d4f4dd;
+            color: #10b981;
+        }
+
+        .difficulty-medium {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .difficulty-hard {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .vp-estimated-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .vp-estimated-time i {
+            color: #0066cc;
+        }
+
+        /* VP Card Body */
+        .vp-card-body {
+            padding: 16px;
+            flex: 1;
+        }
+
+        .vp-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0 0 8px 0;
+        }
+
+        .vp-card-description {
+            font-size: 13px;
+            color: #666;
+            margin: 0 0 12px 0;
+            line-height: 1.5;
+        }
+
+        .vp-specialty {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .specialty-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e0e7ff;
+            color: #0066cc;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        /* VP Card Footer */
+        .vp-card-footer {
+            padding: 16px;
+            background: #f8f9ff;
+            border-top: 1px solid #e0e7ff;
+        }
+
+        .vp-in-progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            background: #d4f4dd;
+            color: #10b981;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .vp-in-progress i {
+            animation: spin 2s linear infinite;
+        }
+
+        /* VP Stats Grid */
+        .vp-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #0066cc;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f4ff 100%);
+            border-radius: 12px;
+            font-size: 24px;
+            color: #0066cc;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-title {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0066cc;
+        }
+
+        /* VP Recent Sessions */
+        .vp-recent-sessions {
+            margin-top: 20px;
+        }
+
+        .recent-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sessions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .session-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border: 1px solid #e0e7ff;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .session-item:hover {
+            background: #f8f9ff;
+            border-color: #0066cc;
+        }
+
+        .session-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .session-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .session-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .session-score {
+            margin-left: 12px;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .score-excellent {
+            background: #d4f4dd;
+            color: #10b981;
+        }
+
+        .score-good {
+            background: #d4e8ff;
+            color: #0066cc;
+        }
+
+        .score-needs-improvement {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .score-poor {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* VP Loading */
+        .vp-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+            background: white;
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e7ff;
+            border-top-color: #0066cc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        .vp-loading p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .section-header {
+                flex-direction: column;
+            }
+            
+            .header-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .vp-cards-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .vp-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .training-section {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2857,249 +3635,199 @@
                     </div>
                 </div>
 
-                <!-- INDIVIDUAL PLAN TAB CONTENT -->
+                <!-- INDIVIDUAL PLAN TAB CONTENT - SIMPLIFIED DAILY FLOW -->
                 <div x-show="activeTab === 'individual'" class="individual-plan-container">
                     
-                    <!-- Header with Streak -->
+                    <!-- TODAY'S PLAN CARD -->
+                    <div class="daily-plan-card">
                     <div class="plan-header">
-                        <h2>{{ t('daily_study_plan', lang)|default('Your Daily Study Plan') }}</h2>
-                        <div class="streak-widget">
-                            <!-- Animated fire icon with Lottie -->
-                            <div class="streak-animation">
-                                <lottie-player
-                                    x-show="dailyStreak > 0"
-                                    src="{{ url_for('static', filename='animations/flame.json') }}"
-                                    background="transparent"
-                                    speed="1"
-                                    style="width: 48px; height: 48px;"
-                                    loop
-                                    autoplay>
-                                </lottie-player>
-                                <i x-show="dailyStreak === 0" 
-                                   class="bi bi-fire streak-icon" 
-                                   style="font-size: 32px; color: #ff6b6b;"></i>
-                            </div>
-                            <div class="streak-info">
-                                <span class="streak-count" x-text="dailyStreak"></span>
-                                <span class="streak-label">dagen streak</span>
-                            </div>
-                        </div>
+                            <h2>Vandaag te doen</h2>
+                            <span class="plan-status" :class="'status-' + getTodayStatus()">
+                                <span x-text="getTodayCompletionPercentage() + '%'"></span> voltooid
+                            </span>
                     </div>
 
-                    <!-- Daily Tasks Card -->
-                    <div class="daily-tasks-card">
-                        <h3><i class="bi bi-book"></i> Vandaag te doen</h3>
-                        
-                        <div class="tasks-summary">
-                            <div class="task-stat">
-                                <i class="bi bi-plus-circle task-icon"></i>
-                                <div class="task-info">
-                                    <strong x-text="dailyTasks.new_questions"></strong>
-                                    <small>nieuwe vragen</small>
+                        <!-- PLAN ITEMS WITH PROGRESS -->
+                        <div class="plan-items">
+                            
+                            <!-- TESTS ITEM -->
+                            <div class="plan-item" :class="{ 'completed': testsCompleted, 'in-progress': testsInProgress }">
+                                <div class="item-left">
+                                    <div class="item-number">1</div>
+                                    <div class="item-info">
+                                        <h3 class="item-title">Medische Testen</h3>
+                                        <p class="item-description">Adaptieve vragen</p>
+                                </div>
+                            </div>
+                                <div class="item-right">
+                                    <span class="item-progress" x-show="!testsCompleted">
+                                        <span x-text="testsProgress + '%'"></span>
+                                    </span>
+                                    <span class="item-status-badge" x-show="testsCompleted">
+                                        <i class="bi bi-check-circle-fill"></i> Klaar
+                                    </span>
+                                    <span class="item-status-badge in-progress" x-show="testsInProgress">
+                                        <i class="bi bi-play-circle"></i> Bezig
+                                    </span>
                                 </div>
                             </div>
                             
-                            <div class="task-stat">
-                                <i class="bi bi-arrow-repeat task-icon"></i>
-                                <div class="task-info">
-                                    <strong x-text="dailyTasks.reviews_due"></strong>
-                                    <small>herhalingen</small>
-                                </div>
-                            </div>
-                            
-                            <div class="task-stat">
-                                <i class="bi bi-clock task-icon"></i>
-                                <div class="task-info">
-                                    <strong x-text="'~' + dailyTasks.estimated_time"></strong>
-                                    <small>minuten</small>
-                                </div>
+                            <!-- PROGRESS BAR BETWEEN ITEMS -->
+                            <div class="connector" :class="{ 'active': testsCompleted }"></div>
+
+                            <!-- LANGUAGE TERMS ITEM -->
+                            <div class="plan-item" :class="{ 'completed': termsCompleted, 'in-progress': termsInProgress, 'locked': !testsCompleted }">
+                                <div class="item-left">
+                                    <div class="item-number">2</div>
+                                    <div class="item-info">
+                                        <h3 class="item-title">Nederlandse Termen</h3>
+                                        <p class="item-description">10 medische woorden</p>
                             </div>
                         </div>
-
-                        <div class="daily-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" :style="'width: ' + dailyProgressPercent + '%'"></div>
-                            </div>
-                            <p class="progress-text" x-text="questionsToday + '/' + dailyTasks.goal + ' vragen vandaag'"></p>
-                        </div>
-
-                        <button class="btn-primary btn-large" @click="startDailySession">
-                            Start dagelijkse sessie →
-                        </button>
+                                <div class="item-right">
+                                    <span class="item-progress" x-show="!termsCompleted && testsCompleted">
+                                        <span x-text="termsProgress + '/' + 10"></span>
+                                    </span>
+                                    <span class="item-status-badge" x-show="termsCompleted">
+                                        <i class="bi bi-check-circle-fill"></i> Klaar
+                                    </span>
+                                    <span class="item-status-badge in-progress" x-show="termsInProgress">
+                                        <i class="bi bi-play-circle"></i> Bezig
+                                    </span>
+                                    <span class="item-status-badge locked" x-show="!testsCompleted && !termsCompleted">
+                                        <i class="bi bi-lock"></i> Vergrendeld
+                                    </span>
                     </div>
+                        </div>
+                        
+                            <!-- PROGRESS BAR BETWEEN ITEMS -->
+                            <div class="connector" :class="{ 'active': termsCompleted }"></div>
 
-                    <!-- Language Training Section (Flashcards) -->
-                    <div class="language-training-card" style="background: linear-gradient(135deg, #3b82f6, #0ea5e9); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px;">
-                        <div class="language-training-header" style="margin-bottom: 16px;">
-                            <h3 style="color: white; margin-bottom: 8px;"><i class="bi bi-translate"></i> Taaltraining</h3>
-                            <p style="color: rgba(255,255,255,0.9); margin: 0;">Leer medische termen in het Nederlands met spaced repetition</p>
-                        </div>
-                        
-                        <!-- Due reviews badge -->
-                        {% if due_reviews_count > 0 %}
-                        <div class="alert" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 12px; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
-                            <span class="badge" style="background: #ffc107; color: #333; font-size: 16px; padding: 6px 12px;">{{ due_reviews_count }}</span>
-                            <span>herhalingen klaar voor vandaag</span>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Quick stats -->
-                        <div class="language-stats" style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
-                            {% if total_terms_studied > 0 %}
-                            <div class="stat-item" style="flex: 1; min-width: 100px; text-align: center;">
-                                <div class="stat-number" style="font-size: 24px; font-weight: bold; color: white;">{{ total_terms_studied }}</div>
-                                <div class="stat-label" style="font-size: 12px; opacity: 0.9;">termen geleerd</div>
+                            <!-- VIRTUAL PATIENT ITEM -->
+                            <div class="plan-item" :class="{ 'completed': vpCompleted, 'in-progress': vpInProgress, 'locked': !termsCompleted }">
+                                <div class="item-left">
+                                    <div class="item-number">3</div>
+                                    <div class="item-info">
+                                        <h3 class="item-title">Virtuele Patiënt</h3>
+                                        <p class="item-description">Praktische casus - diagnose en behandeling</p>
                             </div>
-                            {% endif %}
-                            
-                            {% if current_language_streak > 0 %}
-                            <div class="stat-item" style="flex: 1; min-width: 100px; text-align: center;">
-                                <div class="stat-number" style="font-size: 24px; font-weight: bold; color: white;">{{ current_language_streak }}</div>
-                                <div class="stat-label" style="font-size: 12px; opacity: 0.9;">dagen streak</div>
                             </div>
-                            {% endif %}
+                                <div class="item-right">
+                                    <span class="item-status-badge" x-show="vpCompleted">
+                                        <i class="bi bi-check-circle-fill"></i> Klaar
+                                    </span>
+                                    <span class="item-status-badge in-progress" x-show="vpInProgress">
+                                        <i class="bi bi-play-circle"></i> Bezig
+                                    </span>
+                                    <span class="item-status-badge locked" x-show="!termsCompleted && !vpCompleted">
+                                        <i class="bi bi-lock"></i> Vergrendeld
+                                    </span>
                         </div>
-                        
-                        <!-- Action buttons -->
-                        <div class="language-action-buttons" style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            {% if due_reviews_count > 0 %}
-                            <a href="{{ url_for('flashcards.due_reviews') }}" class="btn" style="flex: 1; min-width: 160px; background: rgba(255,255,255,0.2); color: white; padding: 12px; border-radius: 6px; text-decoration: none; text-align: center; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); transition: all 0.3s;">
-                                Start herhalingen ({{ due_reviews_count }})
-                            </a>
-                            {% else %}
-                            <a href="{{ url_for('flashcards.categories') }}" class="btn" style="flex: 1; min-width: 160px; background: rgba(255,255,255,0.2); color: white; padding: 12px; border-radius: 6px; text-decoration: none; text-align: center; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); transition: all 0.3s;">
-                                Nieuwe termen leren
-                            </a>
-                            {% endif %}
-                            
-                            <a href="{{ url_for('flashcards.categories') }}" class="btn" style="flex: 1; min-width: 160px; background: rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 6px; text-decoration: none; text-align: center; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); transition: all 0.3s;">
-                                Alle categorieën
-                            </a>
                         </div>
                     </div>
 
-                    <!-- Categories Progress - MAIN FEATURE -->
-                    <div class="categories-section">
-                        <h3><i class="bi bi-bar-chart-fill"></i> Voortgang per categorie</h3>
-                        
-                        <div class="categories-accordion">
-                            <template x-for="category in categories" :key="category.id">
-                                <div class="category-card">
-                                    <div class="category-header" @click="toggleCategory(category.id)">
-                                        <div class="category-info">
-                                            <i :class="'bi ' + getCategoryIcon(category.name)" class="category-icon"></i>
-                                            <div>
-                                                <h4 x-text="category.name"></h4>
-                                                <small x-text="category.domains_count + ' domeinen'"></small>
-                                            </div>
-                                        </div>
-                                        <div class="category-stats">
-                                            <span class="progress-percent" :class="getProgressClass(category.percentage)" x-text="category.percentage + '%'"></span>
-                                            <i class="bi" :class="expandedCategories.includes(category.id) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                                        </div>
+                        <!-- ACTION BUTTONS -->
+                        <div class="plan-actions">
+                            <!-- TESTS START/CONTINUE -->
+                            <div class="action-group" x-show="!testsCompleted">
+                                <button 
+                                    class="btn-primary btn-large"
+                                    @click="startOrContinueTests()"
+                                    x-text="testsInProgress ? 'Doorgaan met testen →' : 'Start testen →'"
+                                >
+                                </button>
                                     </div>
                                     
-                                    <!-- Expanded content -->
-                                    <div x-show="expandedCategories.includes(category.id)" class="category-content">
-                                        <div class="category-progress-bar">
-                                            <div class="progress-fill" 
-                                                 :style="'width: ' + category.percentage + '%; background-color: ' + category.color">
+                            <!-- TERMS START/CONTINUE (Only if tests completed) -->
+                            <div class="action-group" x-show="testsCompleted && !termsCompleted">
+                                <button 
+                                    class="btn-primary btn-large"
+                                    @click="startOrContinueTerms()"
+                                    x-text="termsInProgress ? 'Doorgaan met termen →' : 'Start termen →'"
+                                >
+                                </button>
                                             </div>
-                                        </div>
-                                        <p x-text="category.completed_domains + '/' + category.domains_count + ' domeinen voltooid'"></p>
-                                        
-                                        <!-- Optional: Show weak domains in this category -->
-                                        <button class="btn-secondary btn-sm" @click="focusOnCategory(category.id)">
-                                            Focus op deze categorie
+
+                            <!-- VIRTUAL PATIENT START (Only if terms completed) -->
+                            <div class="action-group" x-show="termsCompleted && !vpCompleted">
+                                <button 
+                                    class="btn-primary btn-large"
+                                    @click="startVirtualPatient()"
+                                    x-text="vpInProgress ? 'Doorgaan met patiënt →' : 'Start patiënt →'"
+                                >
                                         </button>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
                     </div>
 
-                    <!-- Overall Stats -->
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <i class="bi bi-graph-up stat-icon"></i>
-                            <div>
-                                <strong x-text="overallProgress + '%'"></strong>
-                                <small>totaal voortgang</small>
+                            <!-- REPEAT OPTIONS (All completed) -->
+                            <div class="action-group completion-group" x-show="vpCompleted">
+                                <h3 class="completion-title">
+                                    <i class="bi bi-star-fill"></i> Goed gedaan! Wil je herhalen?
+                                </h3>
+                                <div class="repeat-buttons">
+                                    <button 
+                                        class="btn-outline"
+                                        @click="repeatTests()"
+                                    >
+                                        <i class="bi bi-arrow-clockwise"></i> Testen herhalen
+                                    </button>
+                                    <button 
+                                        class="btn-outline"
+                                        @click="repeatTerms()"
+                                    >
+                                        <i class="bi bi-arrow-clockwise"></i> Termen herhalen
+                                    </button>
+                                    <button 
+                                        class="btn-outline"
+                                        @click="repeatVirtualPatient()"
+                                    >
+                                        <i class="bi bi-arrow-clockwise"></i> Patiënt herhalen
+                                    </button>
+                            </div>
                             </div>
                         </div>
                         
-                        <div class="stat-card">
-                            <i class="bi bi-clock-history stat-icon"></i>
-                            <div>
-                                <strong x-text="timeInvested"></strong>
-                                <small>uur geïnvesteerd</small>
+                <!-- DAILY STATS -->
+                <div class="daily-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">Punten vandaag</span>
+                        <span class="stat-value" x-text="todayScore">0</span>
                             </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Studietijd</span>
+                        <span class="stat-value" x-text="studyTimeToday">0 min</span>
                         </div>
-                        
-                        <div class="stat-card">
-                            <i class="bi bi-bullseye stat-icon"></i>
-                            <div>
-                                <strong x-text="retentionRate + '%'"></strong>
-                                <small>retentie rate</small>
-                            </div>
-                        </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Voortgang</span>
+                        <span class="stat-value" x-text="getTodayCompletionPercentage() + '%'">0%</span>
                     </div>
-
-                    <!-- Quick Diagnostic Modal -->
-                    <div x-show="showQuickDiagnosticModal" style="display: none;" class="modal-overlay" @click.self="closeModal">
-                        <div class="modal-card">
-                            <button class="modal-close" @click="closeModal">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                            
-                            <div class="modal-icon">
-                                <i class="bi bi-speedometer2"></i>
                             </div>
                             
-                            <h3>{{ t('quick_diagnostic_test', lang)|default('Quick Diagnostic Test') }}</h3>
-                            
-                            <p class="modal-description">
-                                {{ t('diagnostic_test_description', lang)|default('To create your personal learning plan, we first need a quick diagnostic test.') }}
-                            </p>
-                            
-                            <div class="modal-features">
-                                <div class="feature">
-                                    <i class="bi bi-clock"></i>
-                                    <span>20 {{ t('minutes', lang)|default('minutes') }}</span>
-                                </div>
-                                <div class="feature">
-                                    <i class="bi bi-list-check"></i>
-                                    <span>30 {{ t('questions', lang)|default('questions') }}</span>
-                                </div>
-                                <div class="feature">
-                                    <i class="bi bi-graph-up"></i>
-                                    <span>{{ t('identify_weak_points', lang)|default('Identify weak points') }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="modal-buttons">
-                                <button class="btn-secondary" @click="closeModal">
-                                    {{ t('later', lang)|default('Later') }}
+                <!-- DEBUG BUTTON (временно для тестирования) -->
+                <div class="debug-section" style="margin-top: 20px; padding: 16px; background: #f0f0f0; border-radius: 8px;">
+                    <h4 style="margin: 0 0 12px 0; color: #666;">Debug Info</h4>
+                    <button 
+                        class="btn btn-sm btn-outline" 
+                        @click="loadTodayProgress()"
+                        style="margin-right: 8px;"
+                    >
+                        🔄 Обновить прогресс
                                 </button>
-                                <button class="btn-primary" @click="startQuickDiagnostic">
-                                    {{ t('start_test', lang)|default('Start test') }} →
+                    <button 
+                        class="btn btn-sm btn-outline" 
+                        @click="console.log('Tests:', {completed: testsCompleted, inProgress: testsInProgress, progress: testsProgress})"
+                    >
+                        📊 Логи тестов
                                 </button>
+                    <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                        <div>Tests: <span x-text="testsCompleted ? '✅' : '❌'"></span> | Progress: <span x-text="testsProgress + '%'"></span></div>
+                        <div>Terms: <span x-text="termsCompleted ? '✅' : '❌'"></span> | Progress: <span x-text="termsProgress + '%'"></span></div>
+                        <div>VP: <span x-text="vpCompleted ? '✅' : '❌'"></span> | Progress: <span x-text="vpInProgress ? '🔄' : '⏸️'"></span></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Celebration Overlay -->
-                    <div x-show="showCelebration" 
-                         class="celebration-overlay" 
-                         @click="showCelebration = false"
-                         style="display: none;">
-                        <div class="celebration-content" @click.stop>
-                            <div id="celebration-lottie" style="width: 200px; height: 200px; margin: 0 auto;"></div>
-                            <h3 x-text="celebrationMessage" style="margin-top: 20px;"></h3>
                         </div>
-                    </div>
-
-                </div>
+                <!-- END SIMPLIFIED DAILY FLOW -->
 
                 <!-- ============================================ -->
                 <!-- PROGRESS TAB CONTENT -->
@@ -3250,7 +3978,7 @@
                             <div x-show="recentSessions.length === 0" class="empty-state">
                                 <i class="bi bi-inbox"></i>
                                 <p>{{ t('no_sessions_completed', lang)|default('No sessions completed yet') }}</p>
-                                <button class="btn-primary" @click="activeTab = 'individual'">
+                                <button class="btn-primary" @click="showIndividualPlanTab()">
                                     {{ t('start_first_session', lang)|default('Start your first session') }} →
                                 </button>
                             </div>
@@ -3374,13 +4102,26 @@
             const isLaunched = now >= launchDate;
             
             // Получаем параметр tab из URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const tabParam = urlParams.get('tab');
-            const validTabs = ['irt', 'virtual', 'individual', 'games', 'progress', 'planner'];
-            const initialTab = validTabs.includes(tabParam) ? tabParam : 'individual';
+                const urlParams = new URLSearchParams(window.location.search);
+                const tabParam = urlParams.get('tab');
+                const reloadParam = urlParams.get('reload');
+                const validTabs = ['irt', 'virtual', 'individual', 'games', 'progress', 'planner'];
+                const initialTab = validTabs.includes(tabParam) ? tabParam : 'individual';
+                
+                console.log('URL params:', window.location.search);
+                console.log('Tab param:', tabParam);
+                console.log('Reload param:', reloadParam);
+                console.log('Initial tab:', initialTab);
+                
+                // Force tab switch if reload=true
+                let finalTab = initialTab;
+                if (reloadParam === 'true' && tabParam) {
+                    console.log('Force switching to tab:', tabParam);
+                    finalTab = tabParam;
+                }
             
             return {
-                activeTab: initialTab,
+                activeTab: finalTab,
                 isStartingDiagnostic: false,
                 isLaunched: false, // ВСЕГДА false - блокируем все кроме IRT и Games
                 launchDate: launchDate,
@@ -3446,6 +4187,12 @@
                         const response = await fetch(`/${currentLang}/api/user-statistics`);
                         
                         if (!response.ok) {
+                            if (response.status === 429) {
+                                // Rate limit exceeded - show user-friendly message
+                                console.warn('Rate limit exceeded for user statistics, retrying in 2 seconds...');
+                                setTimeout(() => this.loadUserStats(), 2000);
+                                return;
+                            }
                             console.error('Failed to fetch statistics:', response.status, response.statusText);
                             this.statsLoaded = true; // Mark as loaded to prevent UI issues
                             return;
@@ -3492,8 +4239,15 @@
                         console.error('Failed to load games statistics:', error);
                     }
                 },
-                init() {
-                    this.loadUserStats();
+                async init() {
+                    console.log('🚀 Learning Map initialized');
+                    console.log('Initial activeTab:', this.activeTab);
+                    // Load user statistics first
+                    await this.loadUserStats();
+                    
+                    // Add delay between API calls to prevent rate limiting
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
                     // Games statistics не загружаем, так как не показываем статистику игр
                     
                     // Initialize time variables
@@ -3508,15 +4262,22 @@
                     
                     // Load Individual Plan data if that's the active tab
                     if (this.activeTab === 'individual') {
-                        this.loadIndividualPlanData();
+                        console.log('Loading individual plan data...');
+                        // Add delay before loading individual plan data
+                        setTimeout(() => {
+                            this.loadIndividualPlanData();
+                            this.loadTodayProgress();
+                        }, 300);
                     }
                 },
                 selectTab(tab) {
+                    console.log('Selecting tab:', tab);
                     if (!this.enabledTabs.includes(tab)) {
                         this.showComingSoonModal(tab);
                         return;
                     }
                     this.activeTab = tab;
+                    console.log('Active tab set to:', this.activeTab);
                     
                     // ✅ ВСЕГДА перезагружать данные при переключении
                     if (tab === 'progress') {
@@ -3798,14 +4559,20 @@
                         await this.loadIndividualPlanData();
                     }
                     
+                    // Загрузить VP данные если ещё не загружены
+                    if (!this.vpStats) {
+                        await this.loadVirtualPatientData();
+                    }
+                    
                     // Check if user has done Quick Diagnostic
                     // Allow practice if user has any progress OR has completed diagnostic sessions
                     if (this.overallProgress === 0 && this.questionsToday === 0) {
                         // Show modal to start Quick Diagnostic first
                         this.showQuickDiagnosticModal = true;
                     } else {
-                        // Has diagnostic or some progress - start daily practice with selected questions
-                        window.location.href = '/learning-map/daily-session';
+                        // Перейти на daily session start page (новая страница)
+                        // которая показывает flow: тесты → слова → виртуальный пациент
+                        window.location.href = '/learning-map/daily-session-flow';
                     }
                 },
                 
@@ -3863,13 +4630,26 @@
                 
                 async loadIndividualPlanData() {
                     try {
-                        // Fetch daily tasks
+                        // Fetch daily tasks with rate limit handling
                         const tasksResponse = await fetch('/api/individual-plan/daily-tasks');
+                        if (tasksResponse.status === 429) {
+                            console.warn('Rate limit exceeded for daily tasks, retrying in 1 second...');
+                            setTimeout(() => this.loadIndividualPlanData(), 1000);
+                            return;
+                        }
                         const tasksData = await tasksResponse.json();
                         this.dailyTasks = tasksData.tasks;
                         
-                        // Fetch progress summary
+                        // Add small delay between API calls to prevent rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                        // Fetch progress summary with rate limit handling
                         const progressResponse = await fetch('/api/individual-plan/progress');
+                        if (progressResponse.status === 429) {
+                            console.warn('Rate limit exceeded for progress, retrying in 1 second...');
+                            setTimeout(() => this.loadIndividualPlanData(), 1000);
+                            return;
+                        }
                         const progressData = await progressResponse.json();
                         
                         // Get questions_today from progressData (it has the correct count)
@@ -4053,6 +4833,254 @@
                     } else if (this.dailyStreak === 30) {
                         this.triggerCelebration('streak_30');
                     }
+                },
+
+                // ============================================================
+                // VIRTUAL PATIENT FUNCTIONS
+                // ============================================================
+                
+                vpLoading: false,
+                vpSessionActive: false,
+                todayVPScenario: null,
+                vpStats: null,
+                vpStatsDetailed: null,
+                recentVPSessions: [],
+                
+                async loadVirtualPatientData() {
+                    this.vpLoading = true;
+                    try {
+                        // Загрузить today's VP scenario
+                        const scenarioResponse = await fetch('/api/vp/daily-scenario');
+                        const scenarioData = await scenarioResponse.json();
+                        
+                        if (scenarioData.success && scenarioData.scenario) {
+                            console.log('✅ VP scenario loaded:', scenarioData.scenario);
+                            this.todayVPScenario = {
+                                id: scenarioData.scenario.id,
+                                title: scenarioData.scenario.title,
+                                description: scenarioData.scenario.description,
+                                difficulty: scenarioData.scenario.difficulty,
+                                specialty: scenarioData.scenario.specialty,
+                                estimated_time: scenarioData.scenario.estimated_time || 20,
+                                max_score: scenarioData.scenario.max_score || 100
+                            };
+                        } else {
+                            console.log('❌ No VP scenario available:', scenarioData.message || 'Unknown error');
+                            this.todayVPScenario = null;
+                        }
+                        
+                        // Загрузить VP статистику
+                        const statsResponse = await fetch('/api/vp/my-statistics');
+                        const statsData = await statsResponse.json();
+                        
+                        if (statsData.success && statsData.statistics) {
+                            const stats = statsData.statistics;
+                            this.vpStats = {
+                                completed_today: stats.completed_attempts > 0 ? 1 : 0,
+                                completed_week: stats.completed_attempts
+                            };
+                            
+                            this.vpStatsDetailed = {
+                                total_completed: stats.completed_attempts,
+                                average_score: Math.round(stats.average_score),
+                                streak: 0, // можно добавить позже в backend
+                                progress_percentage: Math.round((stats.completed_attempts / 10) * 100) // assume 10 scenarios per course
+                            };
+                            
+                            this.recentVPSessions = stats.recent_attempts || [];
+                        }
+                    } catch (error) {
+                        console.error('Error loading VP data:', error);
+                    } finally {
+                        this.vpLoading = false;
+                    }
+                },
+                
+                async startVirtualPatientSession(scenarioId) {
+                    try {
+                        // 1. Создать attempt
+                        const attemptResponse = await fetch('/api/vp/start-attempt', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ scenario_id: scenarioId })
+                        });
+                        
+                        const attemptData = await attemptResponse.json();
+                        
+                        if (!attemptData.success) {
+                            alert('Ошибка при начале сессии');
+                            return;
+                        }
+                        
+                        const attemptId = attemptData.attempt_id;
+                        
+                        // 2. Перейти на страницу диалога
+                        console.log('Redirecting to dialogue page with attempt_id:', attemptId);
+                        window.location.href = `/learning-map/daily-session/dialogue/${attemptId}`;
+                        
+                    } catch (error) {
+                        console.error('Error starting VP session:', error);
+                        alert('Ошибка при запуске сессии');
+                    }
+                },
+                
+                formatDate(dateString) {
+                    if (!dateString) return '--';
+                    const date = new Date(dateString);
+                    const today = new Date();
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    
+                    if (date.toDateString() === today.toDateString()) {
+                        return 'Vandaag';
+                    } else if (date.toDateString() === yesterday.toDateString()) {
+                        return 'Gisteren';
+                    } else {
+                        return date.toLocaleDateString('nl-NL', { month: 'short', day: 'numeric' });
+                    }
+                },
+                
+                getScoreLevel(percentage) {
+                    if (percentage >= 80) return 'excellent';
+                    if (percentage >= 60) return 'good';
+                    if (percentage >= 40) return 'needs-improvement';
+                    return 'poor';
+                },
+                
+                // Вызвать загрузку VP данных когда открывается Individual Plan tab
+                async showIndividualPlanTab() {
+                    // Это вызовется когда пользователь кликнет на Individual Plan вкладку
+                    this.activeTab = 'individual';
+                    
+                    // Загрузить VP данные если ещё не загружены
+                    if (!this.vpStats) {
+                        await this.loadVirtualPatientData();
+                    }
+                    
+                    // Загрузить прогресс дня
+                    await this.loadTodayProgress();
+                },
+
+                // ===== SIMPLIFIED DAILY FLOW PROPERTIES =====
+                testsCompleted: false,
+                testsInProgress: false,
+                testsProgress: 0,
+                termsCompleted: false,
+                termsInProgress: false,
+                termsProgress: 0,
+                vpCompleted: false,
+                vpInProgress: false,
+                todayScore: 0,
+                studyTimeToday: '0 min',
+
+                // ===== SIMPLIFIED DAILY FLOW METHODS =====
+                getTodayStatus() {
+                    if (this.vpCompleted) return 'completed';
+                    if (this.testsInProgress || this.termsInProgress || this.vpInProgress) return 'in-progress';
+                    return 'pending';
+                },
+
+                getTodayCompletionPercentage() {
+                    let completed = 0;
+                    if (this.testsCompleted) completed++;
+                    if (this.termsCompleted) completed++;
+                    if (this.vpCompleted) completed++;
+                    return Math.round((completed / 3) * 100);
+                },
+
+                async startOrContinueTests() {
+                    // Initialize daily session (server sets plan/session in Flask session)
+                    window.location.href = '/learning-map/daily-session';
+                },
+
+                async startOrContinueTerms() {
+                    // Redirect to terms/flashcards page
+                    window.location.href = '/flashcards/daily-session';
+                },
+
+                async startVirtualPatient() {
+                    // Start virtual patient session
+                    console.log('Start VP clicked, todayVPScenario:', this.todayVPScenario);
+                    
+                    if (!this.todayVPScenario) {
+                        console.log('No VP scenario, trying to load...');
+                        await this.loadVirtualPatientData();
+                    }
+                    
+                    if (this.todayVPScenario) {
+                        console.log('Starting VP session with scenario:', this.todayVPScenario);
+                        await this.startVirtualPatientSession(this.todayVPScenario.id);
+                    } else {
+                        console.log('Still no VP scenario available');
+                        alert('Geen patiënt beschikbaar vandaag');
+                    }
+                },
+
+                async repeatTests() {
+                    // Reset tests and start again
+                    this.testsCompleted = false;
+                    this.testsInProgress = true;
+                    await this.startOrContinueTests();
+                },
+
+                async repeatTerms() {
+                    // Reset terms and start again
+                    this.termsCompleted = false;
+                    this.termsInProgress = true;
+                    await this.startOrContinueTerms();
+                },
+
+                async repeatVirtualPatient() {
+                    // Reset VP and start again
+                    this.vpCompleted = false;
+                    this.vpInProgress = true;
+                    await this.startVirtualPatient();
+                },
+
+                async loadTodayProgress() {
+                    try {
+                        console.log('Loading today progress...');
+                        const response = await fetch('/api/daily-progress');
+                        console.log('Response status:', response.status);
+                        
+                        if (response.status === 200) {
+                            const data = await response.json();
+                            console.log('Response data:', data);
+                            
+                            if (data.success) {
+                                const progress = data.progress;
+                                
+                                // Update test progress
+                                this.testsCompleted = progress.tests.completed;
+                                this.testsInProgress = progress.tests.in_progress;
+                                this.testsProgress = progress.tests.progress;
+                                
+                                // Update terms progress
+                                this.termsCompleted = progress.terms.completed;
+                                this.termsInProgress = progress.terms.in_progress;
+                                this.termsProgress = progress.terms.progress;
+                                
+                                // Update VP progress
+                                this.vpCompleted = progress.virtual_patient.completed;
+                                this.vpInProgress = progress.virtual_patient.in_progress;
+                                
+                                // Update stats
+                                this.todayScore = progress.today_score;
+                                this.studyTimeToday = progress.study_time;
+                                
+                                console.log('Progress loaded successfully:', progress);
+                            } else {
+                                console.error('Failed to load progress:', data.message);
+                            }
+                        } else if (response.status === 401) {
+                            console.log('User not authenticated, using default values');
+                            // Пользователь не авторизован, используем значения по умолчанию
+                        } else {
+                            console.error('HTTP error:', response.status);
+                        }
+                    } catch (error) {
+                        console.error('Error loading today progress:', error);
+                    }
                 }
             }
         }
@@ -4142,5 +5170,19 @@
     
     <!-- Progress Sync Script -->
     <script src="{{ url_for('static', filename='js/sync-progress.js') }}"></script>
+    <script>
+      // Disable debug logs on production for this page
+      (function(){
+        var methods = ['log','warn','error'];
+        for (var i=0;i<methods.length;i++){
+          try {
+            (function(m){
+              var original = console[m];
+              console[m] = function(){ /* disabled in production */ };
+            })(methods[i]);
+          } catch(e) {}
+        }
+      })();
+    </script>
 </body>
 </html>

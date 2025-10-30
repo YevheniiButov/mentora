@@ -5,6 +5,8 @@ from flask_login import login_required, current_user
 from extensions import db
 from models import UserProgress, DiagnosticSession, UserActivity, TestAttempt
 from datetime import datetime, timedelta, timezone
+from utils.rate_limiter import rate_limiter
+from werkzeug.exceptions import TooManyRequests
 
 # Создаем Blueprint для статистики
 statistics_bp = Blueprint(
@@ -13,9 +15,26 @@ statistics_bp = Blueprint(
     url_prefix='/<string:lang>/api'
 )
 
+def rate_limit(requests_per_minute=120):
+    """Rate limiting decorator for API endpoints"""
+    def decorator(f):
+        from functools import wraps
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            user_id = current_user.id if current_user.is_authenticated else request.remote_addr
+            if not rate_limiter.check_rate_limit(user_id, requests_per_minute):
+                return jsonify({
+                    'success': False,
+                    'error': 'Rate limit exceeded. Please try again later.'
+                }), 429
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 
 @statistics_bp.route('/user-statistics')
 @login_required
+@rate_limit(requests_per_minute=180)  # 180 requests per minute for statistics
 def get_user_statistics(lang):
     """
     API endpoint для получения реальной статистики пользователя
@@ -131,6 +150,7 @@ def get_user_statistics(lang):
 
 @statistics_bp.route('/games-statistics')
 @login_required
+@rate_limit(requests_per_minute=180)  # 180 requests per minute for statistics
 def get_games_statistics(lang):
     """
     API endpoint для получения статистики по играм

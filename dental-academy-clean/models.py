@@ -63,7 +63,8 @@ class User(db.Model, UserMixin):
     
     # Registration completion fields
     registration_completed = db.Column(db.Boolean, default=False)
-    profession = db.Column(db.String(50), nullable=True)  # tandarts, apotheker, huisarts, verpleegkundige
+    profession = db.Column(db.String(50), nullable=True)
+    specialty = db.Column(db.String(50), nullable=True, default='dentistry')  # tandarts, apotheker, huisarts, verpleegkundige
     diploma_file = db.Column(db.String(255), nullable=True)  # Path to uploaded diploma file
     language_certificate = db.Column(db.String(255), nullable=True)  # Path to uploaded language certificate
     
@@ -1858,6 +1859,18 @@ class VirtualPatientScenario(db.Model):
     # JSON данные сценария
     scenario_data = db.Column(db.Text, nullable=False)
     
+    # ==================== НОВЫЕ ПОЛЯ ====================
+    specialty = db.Column(
+        db.String(50), 
+        nullable=False,
+        default='dentistry',
+        index=True
+    )
+
+    target_keywords = db.Column(db.Text, nullable=True)
+
+    last_played_date = db.Column(db.DateTime, nullable=True)
+    
     # Отношения
     attempts = db.relationship("VirtualPatientAttempt", backref="scenario", lazy='dynamic', cascade="all, delete-orphan")
     
@@ -1885,6 +1898,26 @@ class VirtualPatientScenario(db.Model):
                 "outcomes": {}
             }
     
+    @property
+    def keywords_list(self):
+        try:
+            return json.loads(self.target_keywords) if self.target_keywords else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def is_available_for_user(self, user):
+        if user.specialty != self.specialty:
+            return False
+        if self.last_played_date:
+            days_since_last = (datetime.utcnow() - self.last_played_date).days
+            if days_since_last < 3:
+                return False
+        return True
+
+    def mark_played(self):
+        self.last_played_date = datetime.utcnow()
+        db.session.commit()
+    
     def __repr__(self):
         return f'<VirtualPatientScenario {self.title}>'
 
@@ -1909,6 +1942,11 @@ class VirtualPatientAttempt(db.Model):
     # История диалога (JSON)
     dialogue_history = db.Column(db.Text, nullable=True)
     
+    # ==================== НОВЫЕ ПОЛЯ ====================
+    fill_in_answers = db.Column(db.Text, nullable=True)
+
+    fill_in_score = db.Column(db.Integer, default=0)
+    
     # Отношения
     user = db.relationship("User", backref=db.backref("virtual_patient_attempts", lazy='dynamic'))
     
@@ -1918,6 +1956,18 @@ class VirtualPatientAttempt(db.Model):
         if self.max_score > 0:
             return int((self.score / self.max_score) * 100)
         return 0
+    
+    @property
+    def fill_in_answers_dict(self):
+        try:
+            return json.loads(self.fill_in_answers) if self.fill_in_answers else {}
+        except (json.JSONDecodeError, TypeError):
+            return {}
+
+    def add_fill_in_answer(self, node_id, answer):
+        answers = self.fill_in_answers_dict
+        answers[node_id] = answer
+        self.fill_in_answers = json.dumps(answers)
     
     def __repr__(self):
         return f'<VirtualPatientAttempt {self.user_id}-{self.scenario_id}>'
@@ -3056,10 +3106,28 @@ class DiagnosticSession(db.Model):
         """Get session data as dict"""
         if self.session_data:
             try:
-                return json.loads(self.session_data)
-            except:
-                pass
-        return {}
+                data = json.loads(self.session_data)
+                # Ensure we return a valid dict, not None or empty
+                if isinstance(data, dict):
+                    return data
+            except (json.JSONDecodeError, TypeError) as e:
+                # Log the error for debugging
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to parse session_data for session {self.id}: {e}")
+        
+        # Return default session data structure instead of empty dict
+        return {
+            'diagnostic_type': 'express',
+            'estimated_total_questions': 25,
+            'questions_answered': 0,
+            'correct_answers': 0,
+            'current_ability': 0.0,
+            'ability_se': 1.0,
+            'response_history': [],
+            'domain_scores': {},
+            'start_time': datetime.now(timezone.utc).isoformat()
+        }
     
     def set_session_data(self, data):
         """Set session data from dict"""
@@ -6287,3 +6355,26 @@ class UserTermProgress(db.Model):
             'is_due': self.is_due,
             'last_reviewed': self.last_reviewed.isoformat() if self.last_reviewed else None
         }
+
+
+class DailyFlashcardProgress(db.Model):
+    """Daily progress tracking for flashcard sessions"""
+    __tablename__ = 'daily_flashcard_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False, default=lambda: datetime.now(timezone.utc).date())
+    terms_studied = db.Column(db.Integer, default=0)
+    terms_completed = db.Column(db.Integer, default=0)
+    xp_earned = db.Column(db.Integer, default=0)
+    session_count = db.Column(db.Integer, default=0)
+    last_session = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    user = db.relationship('User', backref='daily_flashcard_progress')
+    
+    # Unique constraint
+    __table_args__ = (db.UniqueConstraint('user_id', 'date', name='_user_date_uc'),)
+    
+    def __repr__(self):
+        return f'<DailyFlashcardProgress User:{self.user_id} Date:{self.date} Completed:{self.terms_completed}>'

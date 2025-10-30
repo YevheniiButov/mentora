@@ -620,6 +620,36 @@ try:
         import traceback
         logger.error(f"❌ Traceback: {traceback.format_exc()}")
     
+    # Virtual Patient Daily Learning System
+    try:
+        from routes.virtual_patient_daily import vp_daily_bp
+        app.register_blueprint(vp_daily_bp)
+        logger.info("✅ Virtual Patient Daily Learning blueprint registered successfully")
+    except Exception as vp_daily_error:
+        logger.error(f"❌ ERROR importing Virtual Patient Daily Learning routes: {vp_daily_error}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+    
+    # Daily Session Flow System
+    try:
+        from routes.daily_session_flow import daily_flow_bp
+        app.register_blueprint(daily_flow_bp)
+        logger.info("✅ Daily Session Flow blueprint registered successfully")
+    except Exception as daily_flow_error:
+        logger.error(f"❌ ERROR importing Daily Session Flow routes: {daily_flow_error}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+    
+    # Daily Progress System
+    try:
+        from routes.daily_progress import daily_progress_bp
+        app.register_blueprint(daily_progress_bp)
+        logger.info("✅ Daily Progress blueprint registered successfully")
+    except Exception as daily_progress_error:
+        logger.error(f"❌ ERROR importing Daily Progress routes: {daily_progress_error}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+    
     # CSRF exemptions for API endpoints (only in development)
     if app.config.get('FLASK_ENV') != 'production':
         # csrf.exempt(digid_bp)  # ОТКЛЮЧЕНО - не используется

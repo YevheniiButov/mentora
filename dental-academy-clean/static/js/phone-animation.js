@@ -198,14 +198,7 @@
     initPhoneAnimation();
 })();
 
-// Notification System - show pre-registration notification
+// Notification System - pre-registration popup disabled by product requirements
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        // Check if user is authenticated
-        const isAuthenticated = document.querySelector('meta[name="user-authenticated"]')?.content === 'true';
-        
-        if (window.mentorNotifications && !isAuthenticated) {
-            window.mentorNotifications.showPreRegistration();
-        }
-    }, 1000); // Show after 1 second
+    // intentionally do nothing
 });

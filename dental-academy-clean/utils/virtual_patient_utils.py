@@ -1,432 +1,380 @@
+#!/usr/bin/env python3
 """
-Virtual Patient Daily Learning Utils
-Утилиты для системы ежедневного обучения с виртуальными пациентами
+Утилиты для работы с виртуальными пациентами в ежедневных сессиях
 """
 
 import json
 import random
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Tuple
-from sqlalchemy import and_, or_, desc, func
-
-from models import VirtualPatientScenario, VirtualPatientAttempt, User, db
+from typing import List, Dict, Optional
+from app import db
+from models import VirtualPatientScenario, VirtualPatientAttempt, User
 
 
 class VirtualPatientSelector:
-    """Класс для выбора сценариев виртуальных пациентов для ежедневного обучения"""
+    """Класс для выбора виртуальных пациентов для ежедневных сессий"""
     
-    def __init__(self, user: User):
-        self.user = user
-        self.specialty = getattr(user, 'specialty', 'dentistry')
-    
-    def get_daily_scenarios(self, limit: int = 3) -> List[VirtualPatientScenario]:
+    @staticmethod
+    def get_daily_scenario(user: User) -> Optional[VirtualPatientScenario]:
         """
-        Получить сценарии для ежедневного обучения
+        Получить сценарий виртуального пациента для ежедневной сессии
         
         Args:
-            limit: Максимальное количество сценариев
+            user: Пользователь
             
         Returns:
-            Список доступных сценариев
+            VirtualPatientScenario или None
         """
-        # Получаем сценарии, подходящие для пользователя
-        available_scenarios = self._get_available_scenarios()
-        
-        # Фильтруем по специальности
-        specialty_scenarios = [
-            scenario for scenario in available_scenarios 
-            if scenario.specialty == self.specialty
-        ]
-        
-        # Если нет сценариев для специальности, берем общие
-        if not specialty_scenarios:
-            specialty_scenarios = [
-                scenario for scenario in available_scenarios 
-                if scenario.specialty == 'general'
+        try:
+            # Получаем все доступные сценарии для специальности пользователя
+            available_scenarios = VirtualPatientScenario.query.filter(
+                VirtualPatientScenario.specialty == user.specialty,
+                VirtualPatientScenario.is_published == True
+            ).all()
+            
+            if not available_scenarios:
+                return None
+            
+            # Фильтруем сценарии, которые доступны для пользователя
+            available_for_user = [
+                scenario for scenario in available_scenarios
+                if scenario.is_available_for_user(user)
             ]
-        
-        # Сортируем по приоритету (новые, не игранные, по сложности)
-        prioritized_scenarios = self._prioritize_scenarios(specialty_scenarios)
-        
-        return prioritized_scenarios[:limit]
-    
-    def _get_available_scenarios(self) -> List[VirtualPatientScenario]:
-        """Получить все доступные опубликованные сценарии"""
-        return VirtualPatientScenario.query.filter(
-            VirtualPatientScenario.is_published == True
-        ).all()
-    
-    def _prioritize_scenarios(self, scenarios: List[VirtualPatientScenario]) -> List[VirtualPatientScenario]:
-        """
-        Приоритизировать сценарии для ежедневного обучения
-        
-        Приоритет:
-        1. Никогда не игранные
-        2. Не игранные в последние 7 дней
-        3. По сложности (easy -> medium -> hard)
-        4. По дате создания (новые)
-        """
-        never_played = []
-        not_recently_played = []
-        recently_played = []
-        
-        seven_days_ago = datetime.utcnow() - timedelta(days=7)
-        
-        for scenario in scenarios:
-            last_attempt = VirtualPatientAttempt.query.filter(
-                and_(
-                    VirtualPatientAttempt.user_id == self.user.id,
-                    VirtualPatientAttempt.scenario_id == scenario.id
-                )
-            ).order_by(desc(VirtualPatientAttempt.completed_at)).first()
             
-            if not last_attempt:
-                never_played.append(scenario)
-            elif last_attempt.completed_at and last_attempt.completed_at < seven_days_ago:
-                not_recently_played.append(scenario)
-            else:
-                recently_played.append(scenario)
-        
-        # Сортируем каждую группу по сложности и дате
-        def sort_by_difficulty_and_date(scenarios_list):
-            difficulty_order = {'easy': 1, 'medium': 2, 'hard': 3}
-            return sorted(scenarios_list, key=lambda x: (
-                difficulty_order.get(x.difficulty, 2),
-                x.created_at
-            ))
-        
-        # Объединяем в порядке приоритета
-        prioritized = []
-        prioritized.extend(sort_by_difficulty_and_date(never_played))
-        prioritized.extend(sort_by_difficulty_and_date(not_recently_played))
-        prioritized.extend(sort_by_difficulty_and_date(recently_played))
-        
-        return prioritized
+            if not available_for_user:
+                # Если нет доступных сценариев, выбираем случайный
+                # Но сначала сбрасываем last_played_date чтобы он был доступен
+                if available_scenarios:
+                    selected = random.choice(available_scenarios)
+                    # Сбросим дату последней игры если она слишком недавняя
+                    if selected.last_played_date:
+                        from datetime import datetime, timedelta
+                        days_since_last = (datetime.utcnow() - selected.last_played_date).days
+                        if days_since_last < 3:
+                            selected.last_played_date = datetime.utcnow() - timedelta(days=4)
+                            db.session.commit()
+                    return selected
+                return None
+            
+            # Выбираем случайный из доступных
+            selected_scenario = random.choice(available_for_user)
+            
+            # Отмечаем как сыгранный
+            selected_scenario.mark_played()
+            
+            return selected_scenario
+            
+        except Exception as e:
+            print(f"Error getting daily scenario: {e}")
+            return None
     
-    def get_scenario_by_keywords(self, keywords: List[str], limit: int = 5) -> List[VirtualPatientScenario]:
+    @staticmethod
+    def get_scenario_by_keywords(user: User, keywords: List[str]) -> Optional[VirtualPatientScenario]:
         """
-        Найти сценарии по ключевым словам
+        Получить сценарий по ключевым словам
         
         Args:
-            keywords: Список ключевых слов для поиска
-            limit: Максимальное количество результатов
+            user: Пользователь
+            keywords: Список ключевых слов
             
         Returns:
-            Список подходящих сценариев
+            VirtualPatientScenario или None
         """
-        if not keywords:
-            return []
-        
-        # Поиск по ключевым словам в target_keywords
-        keyword_conditions = []
-        for keyword in keywords:
-            keyword_conditions.append(
-                VirtualPatientScenario.target_keywords.contains(keyword)
-            )
-        
-        scenarios = VirtualPatientScenario.query.filter(
-            and_(
-                VirtualPatientScenario.is_published == True,
-                VirtualPatientScenario.specialty == self.specialty,
-                or_(*keyword_conditions)
-            )
-        ).limit(limit).all()
-        
-        return scenarios
+        try:
+            # Поиск по ключевым словам
+            scenarios = VirtualPatientScenario.query.filter(
+                VirtualPatientScenario.specialty == user.specialty,
+                VirtualPatientScenario.is_published == True
+            ).all()
+            
+            # Фильтруем по ключевым словам
+            matching_scenarios = []
+            for scenario in scenarios:
+                scenario_keywords = scenario.keywords_list
+                if any(keyword.lower() in [kw.lower() for kw in scenario_keywords] for keyword in keywords):
+                    matching_scenarios.append(scenario)
+            
+            if not matching_scenarios:
+                return None
+            
+            # Выбираем случайный из подходящих
+            selected_scenario = random.choice(matching_scenarios)
+            selected_scenario.mark_played()
+            
+            return selected_scenario
+            
+        except Exception as e:
+            print(f"Error getting scenario by keywords: {e}")
+            return None
     
-    def get_user_progress_stats(self) -> Dict:
+    @staticmethod
+    def get_user_statistics(user: User) -> Dict:
         """
-        Получить статистику прогресса пользователя
+        Получить статистику пользователя по виртуальным пациентам
         
+        Args:
+            user: Пользователь
+            
         Returns:
             Словарь со статистикой
         """
-        # Общая статистика
-        total_attempts = VirtualPatientAttempt.query.filter(
-            VirtualPatientAttempt.user_id == self.user.id
-        ).count()
-        
-        completed_attempts = VirtualPatientAttempt.query.filter(
-            and_(
-                VirtualPatientAttempt.user_id == self.user.id,
-                VirtualPatientAttempt.completed == True
-            )
-        ).count()
-        
-        # Статистика за последние 30 дней
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-        recent_attempts = VirtualPatientAttempt.query.filter(
-            and_(
-                VirtualPatientAttempt.user_id == self.user.id,
-                VirtualPatientAttempt.started_at >= thirty_days_ago
-            )
-        ).count()
-        
-        # Средний балл
-        avg_score_result = db.session.query(
-            func.avg(VirtualPatientAttempt.score)
-        ).filter(
-            and_(
-                VirtualPatientAttempt.user_id == self.user.id,
-                VirtualPatientAttempt.completed == True
-            )
-        ).scalar()
-        
-        avg_score = float(avg_score_result) if avg_score_result else 0.0
-        
-        # Статистика по специальностям
-        specialty_stats = db.session.query(
-            VirtualPatientScenario.specialty,
-            func.count(VirtualPatientAttempt.id).label('attempts'),
-            func.avg(VirtualPatientAttempt.score).label('avg_score')
-        ).join(
-            VirtualPatientAttempt, 
-            VirtualPatientScenario.id == VirtualPatientAttempt.scenario_id
-        ).filter(
-            VirtualPatientAttempt.user_id == self.user.id
-        ).group_by(
-            VirtualPatientScenario.specialty
-        ).all()
-        
-        return {
-            'total_attempts': total_attempts,
-            'completed_attempts': completed_attempts,
-            'completion_rate': (completed_attempts / total_attempts * 100) if total_attempts > 0 else 0,
-            'recent_attempts': recent_attempts,
-            'average_score': round(avg_score, 1),
-            'specialty_stats': [
-                {
-                    'specialty': stat.specialty,
-                    'attempts': stat.attempts,
-                    'avg_score': round(float(stat.avg_score or 0), 1)
-                }
-                for stat in specialty_stats
-            ]
-        }
-    
-    def get_recommended_scenarios(self, limit: int = 3) -> List[VirtualPatientScenario]:
-        """
-        Получить рекомендованные сценарии на основе прогресса пользователя
-        
-        Args:
-            limit: Максимальное количество рекомендаций
+        try:
+            # Общее количество попыток
+            total_attempts = VirtualPatientAttempt.query.filter_by(user_id=user.id).count()
             
-        Returns:
-            Список рекомендованных сценариев
-        """
-        # Получаем сценарии, которые пользователь еще не проходил
-        attempted_scenario_ids = db.session.query(
-            VirtualPatientAttempt.scenario_id
-        ).filter(
-            VirtualPatientAttempt.user_id == self.user.id
-        ).subquery()
-        
-        new_scenarios = VirtualPatientScenario.query.filter(
-            and_(
-                VirtualPatientScenario.is_published == True,
-                VirtualPatientScenario.specialty == self.specialty,
-                ~VirtualPatientScenario.id.in_(attempted_scenario_ids)
-            )
-        ).limit(limit).all()
-        
-        # Если новых сценариев недостаточно, добавляем недавно не игранные
-        if len(new_scenarios) < limit:
-            remaining_limit = limit - len(new_scenarios)
-            additional_scenarios = self.get_daily_scenarios(remaining_limit)
-            new_scenarios.extend(additional_scenarios)
-        
-        return new_scenarios[:limit]
+            # Завершенные попытки
+            completed_attempts = VirtualPatientAttempt.query.filter_by(
+                user_id=user.id, 
+                completed=True
+            ).count()
+            
+            # Средний балл
+            avg_score = db.session.query(db.func.avg(VirtualPatientAttempt.score)).filter(
+                VirtualPatientAttempt.user_id == user.id,
+                VirtualPatientAttempt.completed == True
+            ).scalar() or 0
+            
+            # Лучший балл
+            best_score = db.session.query(db.func.max(VirtualPatientAttempt.score)).filter(
+                VirtualPatientAttempt.user_id == user.id,
+                VirtualPatientAttempt.completed == True
+            ).scalar() or 0
+            
+            # Количество уникальных сценариев
+            unique_scenarios = db.session.query(db.func.count(db.func.distinct(
+                VirtualPatientAttempt.scenario_id
+            ))).filter(VirtualPatientAttempt.user_id == user.id).scalar() or 0
+            
+            # Попытки за последние 7 дней
+            week_ago = datetime.utcnow() - timedelta(days=7)
+            recent_attempts = VirtualPatientAttempt.query.filter(
+                VirtualPatientAttempt.user_id == user.id,
+                VirtualPatientAttempt.started_at >= week_ago
+            ).count()
+            
+            return {
+                'total_attempts': total_attempts,
+                'completed_attempts': completed_attempts,
+                'completion_rate': (completed_attempts / total_attempts * 100) if total_attempts > 0 else 0,
+                'average_score': round(float(avg_score), 2),
+                'best_score': best_score,
+                'unique_scenarios': unique_scenarios,
+                'recent_attempts': recent_attempts
+            }
+            
+        except Exception as e:
+            print(f"Error getting user statistics: {e}")
+            return {
+                'total_attempts': 0,
+                'completed_attempts': 0,
+                'completion_rate': 0,
+                'average_score': 0,
+                'best_score': 0,
+                'unique_scenarios': 0,
+                'recent_attempts': 0
+            }
 
 
 class VirtualPatientSessionManager:
     """Менеджер сессий виртуальных пациентов"""
     
-    def __init__(self, user: User, scenario: VirtualPatientScenario):
-        self.user = user
-        self.scenario = scenario
-        self.attempt = None
-    
-    def start_session(self) -> VirtualPatientAttempt:
+    @staticmethod
+    def start_attempt(user: User, scenario_id: int) -> Optional[VirtualPatientAttempt]:
         """
-        Начать новую сессию
-        
-        Returns:
-            Созданная попытка
-        """
-        self.attempt = VirtualPatientAttempt(
-            user_id=self.user.id,
-            scenario_id=self.scenario.id,
-            max_score=self.scenario.max_score,
-            started_at=datetime.utcnow()
-        )
-        
-        db.session.add(self.attempt)
-        db.session.commit()
-        
-        return self.attempt
-    
-    def save_fill_in_answer(self, node_id: str, answer: str) -> bool:
-        """
-        Сохранить ответ на fill-in вопрос
+        Начать новую попытку прохождения сценария
         
         Args:
+            user: Пользователь
+            scenario_id: ID сценария
+            
+        Returns:
+            VirtualPatientAttempt или None
+        """
+        try:
+            scenario = VirtualPatientScenario.query.get(scenario_id)
+            if not scenario:
+                print(f"Scenario {scenario_id} not found")
+                return None
+            
+            # Просто убедимся что сценарий опубликован
+            if not scenario.is_published:
+                print(f"Scenario {scenario_id} is not published")
+                return None
+            
+            # Не проверяем is_available_for_user, так как сценарий был выбран через get_daily_scenario
+            # и там уже была проверка доступности
+            
+            # Создаем новую попытку
+            print(f"Creating attempt for user {user.id}, scenario {scenario_id}")
+            attempt = VirtualPatientAttempt(
+                user_id=user.id,
+                scenario_id=scenario_id,
+                max_score=scenario.max_score,
+                started_at=datetime.utcnow()
+            )
+            
+            db.session.add(attempt)
+            db.session.commit()
+            
+            print(f"Attempt created successfully: {attempt.id}")
+            return attempt
+            
+        except Exception as e:
+            print(f"Error starting attempt: {e}")
+            import traceback
+            traceback.print_exc()
+            db.session.rollback()
+            return None
+    
+    @staticmethod
+    def complete_attempt(attempt_id: int, score: int, time_spent: float, 
+                        dialogue_history: List[Dict] = None) -> bool:
+        """
+        Завершить попытку прохождения
+        
+        Args:
+            attempt_id: ID попытки
+            score: Полученный балл
+            time_spent: Время в минутах
+            dialogue_history: История диалога
+            
+        Returns:
+            True если успешно
+        """
+        try:
+            attempt = VirtualPatientAttempt.query.get(attempt_id)
+            if not attempt:
+                return False
+            
+            attempt.score = score
+            attempt.completed = True
+            attempt.time_spent = time_spent
+            attempt.completed_at = datetime.utcnow()
+            
+            if dialogue_history:
+                attempt.dialogue_history = json.dumps(dialogue_history)
+            
+            db.session.commit()
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error completing attempt: {e}")
+            db.session.rollback()
+            return False
+    
+    @staticmethod
+    def add_fill_in_answer(attempt_id: int, node_id: str, answer: str) -> bool:
+        """
+        Добавить ответ на вопрос с заполнением пропусков
+        
+        Args:
+            attempt_id: ID попытки
             node_id: ID узла диалога
             answer: Ответ пользователя
             
         Returns:
-            True если успешно сохранено
+            True если успешно
         """
-        if not self.attempt:
-            return False
-        
         try:
-            self.attempt.add_fill_in_answer(node_id, answer)
+            attempt = VirtualPatientAttempt.query.get(attempt_id)
+            if not attempt:
+                return False
+            
+            attempt.add_fill_in_answer(node_id, answer)
             db.session.commit()
+            
             return True
+            
         except Exception as e:
+            print(f"Error adding fill-in answer: {e}")
             db.session.rollback()
             return False
+
+
+class VirtualPatientDailyIntegration:
+    """Интеграция виртуальных пациентов в ежедневные сессии"""
     
-    def complete_session(self, score: int, dialogue_history: List[Dict] = None) -> bool:
+    @staticmethod
+    def get_daily_vp_session(user: User) -> Dict:
         """
-        Завершить сессию
+        Получить данные для ежедневной сессии с виртуальным пациентом
         
         Args:
-            score: Полученный балл
-            dialogue_history: История диалога
+            user: Пользователь
             
-        Returns:
-            True если успешно завершено
-        """
-        if not self.attempt:
-            return False
-        
-        try:
-            self.attempt.score = score
-            self.attempt.completed = True
-            self.attempt.completed_at = datetime.utcnow()
-            
-            if dialogue_history:
-                self.attempt.dialogue_history = json.dumps(dialogue_history)
-            
-            # Обновляем время прохождения
-            if self.attempt.started_at:
-                time_spent = (self.attempt.completed_at - self.attempt.started_at).total_seconds() / 60
-                self.attempt.time_spent = time_spent
-            
-            # Отмечаем сценарий как сыгранный
-            self.scenario.mark_played()
-            
-            db.session.commit()
-            return True
-        except Exception as e:
-            db.session.rollback()
-            return False
-    
-    def get_session_data(self) -> Dict:
-        """
-        Получить данные текущей сессии
-        
         Returns:
             Словарь с данными сессии
         """
-        if not self.attempt:
-            return {}
-        
-        return {
-            'attempt_id': self.attempt.id,
-            'scenario_id': self.attempt.scenario_id,
-            'score': self.attempt.score,
-            'max_score': self.attempt.max_score,
-            'completed': self.attempt.completed,
-            'time_spent': self.attempt.time_spent,
-            'started_at': self.attempt.started_at.isoformat() if self.attempt.started_at else None,
-            'completed_at': self.attempt.completed_at.isoformat() if self.attempt.completed_at else None,
-            'fill_in_answers': self.attempt.fill_in_answers_dict,
-            'fill_in_score': self.attempt.fill_in_score
-        }
-
-
-def calculate_fill_in_score(answers: Dict[str, str], correct_answers: Dict[str, str]) -> int:
-    """
-    Вычислить балл за fill-in вопросы
-    
-    Args:
-        answers: Ответы пользователя {node_id: answer}
-        correct_answers: Правильные ответы {node_id: correct_answer}
-        
-    Returns:
-        Количество правильных ответов
-    """
-    if not answers or not correct_answers:
-        return 0
-    
-    correct_count = 0
-    for node_id, user_answer in answers.items():
-        if node_id in correct_answers:
-            correct_answer = correct_answers[node_id].lower().strip()
-            user_answer_clean = user_answer.lower().strip()
+        try:
+            # Получаем сценарий для дня
+            scenario = VirtualPatientSelector.get_daily_scenario(user)
             
-            # Простое сравнение (можно улучшить)
-            if correct_answer == user_answer_clean:
-                correct_count += 1
+            if not scenario:
+                return {
+                    'available': False,
+                    'message': 'No virtual patient scenarios available for your specialty'
+                }
+            
+            # Получаем статистику пользователя
+            stats = VirtualPatientSelector.get_user_statistics(user)
+            
+            return {
+                'available': True,
+                'scenario': {
+                    'id': scenario.id,
+                    'title': scenario.title,
+                    'description': scenario.description,
+                    'difficulty': scenario.difficulty,
+                    'max_score': scenario.max_score,
+                    'keywords': scenario.keywords_list
+                },
+                'user_stats': stats,
+                'session_type': 'virtual_patient'
+            }
+            
+        except Exception as e:
+            print(f"Error getting daily VP session: {e}")
+            return {
+                'available': False,
+                'message': 'Error loading virtual patient session'
+            }
     
-    return correct_count
-
-
-def get_daily_learning_summary(user: User) -> Dict:
-    """
-    Получить сводку ежедневного обучения
-    
-    Args:
-        user: Пользователь
+    @staticmethod
+    def integrate_with_daily_learning(user: User, existing_sessions: List[Dict]) -> List[Dict]:
+        """
+        Интегрировать виртуальных пациентов в существующие ежедневные сессии
         
-    Returns:
-        Словарь со сводкой
-    """
-    selector = VirtualPatientSelector(user)
-    
-    # Статистика за сегодня
-    today = datetime.utcnow().date()
-    today_attempts = VirtualPatientAttempt.query.filter(
-        and_(
-            VirtualPatientAttempt.user_id == user.id,
-            func.date(VirtualPatientAttempt.started_at) == today
-        )
-    ).count()
-    
-    # Доступные сценарии
-    available_scenarios = selector.get_daily_scenarios(5)
-    
-    # Рекомендации
-    recommended = selector.get_recommended_scenarios(3)
-    
-    # Общая статистика
-    stats = selector.get_user_progress_stats()
-    
-    return {
-        'today_attempts': today_attempts,
-        'available_scenarios': [
-            {
-                'id': scenario.id,
-                'title': scenario.title,
-                'difficulty': scenario.difficulty,
-                'category': scenario.category,
-                'max_score': scenario.max_score,
-                'specialty': scenario.specialty
-            }
-            for scenario in available_scenarios
-        ],
-        'recommended_scenarios': [
-            {
-                'id': scenario.id,
-                'title': scenario.title,
-                'difficulty': scenario.difficulty,
-                'category': scenario.category,
-                'max_score': scenario.max_score,
-                'specialty': scenario.specialty
-            }
-            for scenario in recommended
-        ],
-        'stats': stats
-    }
+        Args:
+            user: Пользователь
+            existing_sessions: Существующие сессии
+            
+        Returns:
+            Обновленный список сессий
+        """
+        try:
+            # Получаем данные для виртуального пациента
+            vp_session = VirtualPatientDailyIntegration.get_daily_vp_session(user)
+            
+            if vp_session['available']:
+                # Добавляем сессию с виртуальным пациентом
+                vp_session_data = {
+                    'id': f"vp_{vp_session['scenario']['id']}",
+                    'type': 'virtual_patient',
+                    'title': f"Virtual Patient: {vp_session['scenario']['title']}",
+                    'description': vp_session['scenario']['description'],
+                    'difficulty': vp_session['scenario']['difficulty'],
+                    'estimated_duration': 15,  # минут
+                    'scenario_id': vp_session['scenario']['id'],
+                    'max_score': vp_session['scenario']['max_score'],
+                    'keywords': vp_session['scenario']['keywords'],
+                    'status': 'ready'
+                }
+                
+                existing_sessions.append(vp_session_data)
+            
+            return existing_sessions
+            
+        except Exception as e:
+            print(f"Error integrating VP with daily learning: {e}")
+            return existing_sessions

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Patient - Daily Learning</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vp-medical-pro.css') }}">
+</head>
+<body>
+    <div class="vp-container" id="vpContainer">
+        
+        <!-- LOADING STATE -->
+        <div class="vp-loading" id="vpLoading">
+            <div class="loading-spinner"></div>
+            <p class="text-muted">Patiënt wordt geladen...</p>
+        </div>
+        
+        <!-- MAIN INTERFACE (hidden until loaded) -->
+        <div class="vp-interface" id="vpInterface" style="display: none;">
+            
+            <!-- TOP PROGRESS BAR -->
+            <div class="vp-progress-header">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-info">
+                    <button class="btn-menu-toggle show-mobile" id="menuToggleBtn" aria-label="Patient info" title="Patient info" style="display: none;"></button>
+                    <span class="progress-text">Stap <span id="currentStep">1</span> van <span id="totalSteps">12</span></span>
+                    <span class="progress-score">Punten: <span id="headerScore">0</span></span>
+                </div>
+            </div>
+            
+            <!-- MAIN LAYOUT WRAPPER -->
+            <div class="vp-layout">
+                
+                <!-- LEFT SIDEBAR: PATIENT INFO (Desktop only) -->
+                <aside class="vp-patient-sidebar hide-mobile" id="patientSidebar">
+                    <div class="patient-card">
+                        
+                        <!-- Patient Header -->
+                        <div class="patient-header">
+                            <div class="patient-avatar">
+                                <span id="patientInitials">--</span>
+                            </div>
+                            <div class="patient-basic-info">
+                                <h3 class="patient-name" id="patientName">Laden...</h3>
+                                <p class="patient-meta">
+                                    <span id="patientAge">--</span> jaar | 
+                                    <span id="patientGender">--</span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Patient Details (Expandable) -->
+                        <div class="patient-details">
+                            
+                            <!-- Medical History -->
+                            <div class="detail-section">
+                                <button class="detail-toggle" data-section="history">
+                                    <span class="toggle-label">Medische geschiedenis</span>
+                                    <span class="toggle-icon">▼</span>
+                                </button>
+                                <div class="detail-content" id="detail-history" style="display: none;">
+                                    <p id="patientHistory">Geen informatie beschikbaar</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Allergies -->
+                            <div class="detail-section">
+                                <button class="detail-toggle" data-section="allergies">
+                                    <span class="toggle-label">Allergieën</span>
+                                    <span class="toggle-icon">▼</span>
+                                </button>
+                                <div class="detail-content" id="detail-allergies" style="display: none;">
+                                    <div class="allergy-list">
+                                        <span class="allergy-tag" id="allergiesContainer">Geen allergieën</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Current Symptoms -->
+                            <div class="detail-section">
+                                <button class="detail-toggle" data-section="symptoms">
+                                    <span class="toggle-label">Huidige symptomen</span>
+                                    <span class="toggle-icon">▼</span>
+                                </button>
+                                <div class="detail-content" id="detail-symptoms" style="display: none;">
+                                    <div class="symptoms-list" id="symptomsContainer">
+                                        <p class="text-muted">Geen symptomen gespecificeerd</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Vital Signs (if available) -->
+                            <div class="detail-section" id="vitalSignsSection" style="display: none;">
+                                <button class="detail-toggle" data-section="vitals">
+                                    <span class="toggle-label">Vitale functies</span>
+                                    <span class="toggle-icon">▼</span>
+                                </button>
+                                <div class="detail-content" id="detail-vitals" style="display: none;">
+                                    <div class="vitals-grid" id="vitalsContainer"></div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </aside>
+                
+                <!-- CENTER: DIALOGUE AREA -->
+                <main class="vp-dialogue-area">
+                    
+                    <!-- Mobile Patient Card (collapsed) -->
+                    <div class="patient-card-mobile show-mobile" id="mobilePatientCard">
+                        <button class="card-toggle" id="mobileCardToggle">
+                            <div class="card-header">
+                                <div class="patient-avatar-sm">
+                                    <span id="patientInitialsMobile">--</span>
+                                </div>
+                                <div>
+                                    <p class="patient-name-sm" id="patientNameMobile">--</p>
+                                    <p class="text-xs text-muted" id="patientAgeMobile">--</p>
+                                </div>
+                            </div>
+                            <span class="toggle-arrow">▼</span>
+                        </button>
+                        
+                        <div class="card-expanded" id="mobileCardExpanded" style="display: none;">
+                            <div class="detail-section">
+                                <p class="text-sm mb-md"><strong>Medische geschiedenis:</strong></p>
+                                <p class="text-sm" id="patientHistoryMobile">--</p>
+                            </div>
+                            <div class="detail-section">
+                                <p class="text-sm mb-md"><strong>Allergieën:</strong></p>
+                                <div id="allergiesMobile"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dialogue Thread -->
+                    <div class="dialogue-thread" id="dialogueThread">
+                        <!-- Dialogue nodes будут добавлены сюда JavaScript'ом -->
+                    </div>
+                    
+                    <!-- Interaction Area (Options or Fill-in) -->
+                    <div class="interaction-area" id="interactionArea">
+                        <div class="loading-spinner-small" id="interactionLoading" style="display: none;"></div>
+                        <div id="interactionContent" style="display: none;"></div>
+                    </div>
+                    
+                </main>
+                
+                <!-- RIGHT SIDEBAR: TOOLS (Desktop/Tablet) -->
+                <aside class="vp-tools-sidebar hide-mobile" id="toolsSidebar">
+                    
+                    <!-- Score Widget -->
+                    <div class="tools-widget score-widget">
+                        <h4 class="widget-title">Punten</h4>
+                        <div class="score-display">
+                            <div class="score-value" id="sidebarScore">0</div>
+                            <div class="score-label">/ <span id="maxScore">100</span></div>
+                        </div>
+                        <div class="score-breakdown">
+                            <div class="score-item">
+                                <span class="score-label">Dialoog:</span>
+                                <span class="score-value" id="dialogueScore">0</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Woorden:</span>
+                                <span class="score-value" id="fillInScoreWidget">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Widget -->
+                    <div class="tools-widget progress-widget">
+                        <h4 class="widget-title">Voortgang</h4>
+                        <div class="progress-circle">
+                            <svg class="progress-svg" viewBox="0 0 100 100">
+                                <circle class="progress-bg" cx="50" cy="50" r="45"/>
+                                <circle class="progress-ring" cx="50" cy="50" r="45" id="progressRing"/>
+                            </svg>
+                            <div class="progress-text-center">
+                                <span class="progress-percent" id="progressPercent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes Widget -->
+                    <div class="tools-widget notes-widget">
+                        <h4 class="widget-title">Aantekeningen</h4>
+                        <textarea 
+                            id="notesArea" 
+                            class="notes-textarea"
+                            placeholder="Voeg hier je eigen aantekeningen in..."
+                            rows="8"
+                        ></textarea>
+                        <button class="btn btn-sm btn-outline mt-md" id="saveNotesBtn">
+                            Opslaan
+                        </button>
+                    </div>
+                    
+                    <!-- Time Widget -->
+                    <div class="tools-widget time-widget">
+                        <h4 class="widget-title">Tijd</h4>
+                        <div class="time-display">
+                            <span id="timeSpent">00:00</span>
+                        </div>
+                        <p class="text-xs text-muted text-center">minuten verstreken</p>
+                    </div>
+                    
+                </aside>
+                
+            </div>
+            
+        </div>
+        
+        <!-- COMPLETION MODAL -->
+        <div class="vp-modal" id="completionModal" style="display: none;">
+            <div class="modal-backdrop" id="modalBackdrop"></div>
+            <div class="modal-content completion-modal">
+                
+                <div class="modal-header">
+                    <h2>Goed gedaan!</h2>
+                    <button class="modal-close" id="modalCloseBtn">&times;</button>
+                </div>
+                
+                <div class="modal-body">
+                    
+                    <!-- Result Badge -->
+                    <div class="result-badge" id="resultBadge">
+                        <div class="badge-icon" id="badgeIcon">✓</div>
+                        <div class="badge-label" id="badgeLabel">Excellent</div>
+                    </div>
+                    
+                    <!-- Scores -->
+                    <div class="result-scores">
+                        <div class="score-row">
+                            <span>Totaalscore:</span>
+                            <span class="score-highlight" id="finalTotalScore">0</span>
+                        </div>
+                        <div class="score-row">
+                            <span>Percentage:</span>
+                            <span class="score-highlight" id="finalPercentage">0%</span>
+                        </div>
+                        <div class="score-row">
+                            <span>Dialoog punten:</span>
+                            <span id="finalDialogueScore">0</span>
+                        </div>
+                        <div class="score-row">
+                            <span>Fill-in punten:</span>
+                            <span id="finalFillInScore">0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Feedback -->
+                    <div class="result-feedback">
+                        <p id="feedbackMessage">Goed werk!</p>
+                    </div>
+                    
+                    <!-- Timeline Summary -->
+                    <div class="result-timeline">
+                        <h4>Samenvatting van je keuzes:</h4>
+                        <div class="timeline" id="resultTimeline"></div>
+                    </div>
+                    
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="continueBtn">
+                        Afronden
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- PATIENT INFO MODAL (Mobile) -->
+        <div class="vp-modal" id="patientModal" style="display: none;" aria-hidden="true" role="dialog" aria-labelledby="patientModalTitle">
+            <div class="modal-backdrop" id="patientModalBackdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="patientModalTitle">Patiëntinformatie</h2>
+                    <button class="modal-close" id="patientModalClose" aria-label="Sluiten">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Reuse left sidebar content quickly -->
+                    <div id="patientModalContent">
+                        <div class="patient-card">
+                            <div class="patient-header">
+                                <div class="patient-avatar"><span id="patientInitials">--</span></div>
+                                <div class="patient-basic-info">
+                                    <h3 class="patient-name" id="patientName">Laden...</h3>
+                                    <p class="patient-meta">
+                                        <span id="patientAge">--</span> jaar | 
+                                        <span id="patientGender">--</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="patient-details">
+                                <div class="detail-section">
+                                    <p class="toggle-label">Medische geschiedenis</p>
+                                    <div class="detail-content">
+                                        <p id="patientHistory">Geen informatie beschikbaar</p>
+                                    </div>
+                                </div>
+                                <div class="detail-section">
+                                    <p class="toggle-label">Allergieën</p>
+                                    <div class="detail-content"><div class="allergy-list"><span class="allergy-tag" id="allergiesContainer">Geen allergieën</span></div></div>
+                                </div>
+                                <div class="detail-section" id="vitalSignsSection">
+                                    <p class="toggle-label">Vitale functies</p>
+                                    <div class="detail-content"><div class="vitals-grid" id="vitalsContainer"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/vp-dialogue.js') }}"></script>
+    <script>
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const scenarioId = {{ scenario_id }};
+            const attemptId = {{ attempt_id }};
+            vpDialogue.init(scenarioId, attemptId);
+        });
+    </script>
+</body>
+</html>
+
+

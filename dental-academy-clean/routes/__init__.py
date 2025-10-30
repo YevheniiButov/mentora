@@ -19,7 +19,6 @@ from .admin_routes import admin_bp
 
 # Импорт основных роутов
 from .main_routes import main_bp
-from .dashboard_routes import dashboard_bp
 
 # Импорт роутов виртуальных пациентов
 from .virtual_patient_routes import virtual_patient_bp
@@ -50,9 +49,6 @@ def register_blueprints(app):
     
     # Административные функции
     app.register_blueprint(admin_bp)
-    
-    # Дашборд
-    app.register_blueprint(dashboard_bp)
     
     # Виртуальные пациенты
     app.register_blueprint(virtual_patient_bp)

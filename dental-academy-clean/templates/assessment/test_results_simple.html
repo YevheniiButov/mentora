@@ -243,7 +243,7 @@
             <div class="progress-bar-custom">
                 <div class="progress-bar-fill" style="width: {{ score_percentage }}%"></div>
             </div>
-            <p class="text-muted">{{ correct_answers }} van {{ total_questions }} vragen correct</p>
+            <p class="text-muted">{{ correct_answers }} van {{ questions_answered }} vragen correct</p>
             
             <!-- Stats Grid -->
             <div class="stats-grid">
@@ -256,7 +256,13 @@
                     <div class="stat-label">Correct</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value">{{ time_minutes }}:{{ '%02d' | format(time_seconds) }}</div>
+                    <div class="stat-value">
+                        {% if time_minutes >= 60 %}
+                            {{ (time_minutes // 60) }}u {{ (time_minutes % 60) }}m
+                        {% else %}
+                            {{ time_minutes }}:{{ '%02d' | format(time_seconds) }}
+                        {% endif %}
+                    </div>
                     <div class="stat-label">Tijd</div>
                 </div>
             </div>

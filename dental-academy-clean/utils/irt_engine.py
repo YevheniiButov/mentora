@@ -561,7 +561,7 @@ class IRTEngine:
         try:
             # First try: Get all questions with IRT parameters
             user_profession = get_user_profession_code(self.user) if self.user else 'huisarts'
-            questions = Question.query.join(IRTParameters).filter_by(profession=user_profession).all()
+            questions = Question.query.join(IRTParameters).filter(Question.profession == user_profession).all()
             logger.info(f"Found {len(questions)} questions with IRT parameters for profession {user_profession}")
             
             if not questions:

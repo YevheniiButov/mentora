@@ -98,3 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.triggerProgressUpdate(e.detail);
     });
 });
+
+
+
+
