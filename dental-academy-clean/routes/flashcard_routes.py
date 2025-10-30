@@ -40,8 +40,40 @@ def daily_session():
     try:
         current_app.logger.info(f"Daily session started for user: {current_user.id}")
         
-        # Get terms from ALL categories (mix of new and review) - limit to 10 for session
-        all_terms = MedicalTerm.query.limit(10).all()
+        # Get all available categories
+        categories = db.session.query(MedicalTerm.category).distinct().all()
+        categories = [c[0] for c in categories if c[0]]
+        
+        if not categories:
+            return render_template('flashcards/study_simple.html',
+                                 category='all',
+                                 terms=[],
+                                 total_terms=0,
+                                 message='No terms available in the database')
+        
+        # Collect terms from all categories (mix of new and review)
+        from utils.flashcard_helpers import get_session_terms
+        all_selected_terms = []
+        
+        # Get terms from each category and combine
+        terms_per_category = max(3, 10 // max(len(categories), 1))  # Distribute 10 terms across categories
+        for category in categories[:3]:  # Limit to first 3 categories to avoid too many
+            category_terms = get_session_terms(current_user, category, count=terms_per_category)
+            all_selected_terms.extend(category_terms)
+        
+        # If still not enough, get any terms
+        if len(all_selected_terms) < 10:
+            remaining = 10 - len(all_selected_terms)
+            if all_selected_terms:
+                any_terms = MedicalTerm.query.filter(
+                    ~MedicalTerm.id.in_([t.id for t in all_selected_terms])
+                ).limit(remaining).all()
+            else:
+                any_terms = MedicalTerm.query.limit(remaining).all()
+            all_selected_terms.extend(any_terms)
+        
+        # Limit to 10 total
+        all_terms = all_selected_terms[:10]
         
         if not all_terms:
             return render_template('flashcards/study_simple.html',
