@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dagelijkse Praktijk - Mentora</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.2/dist/lottie-player.js"></script>
     
@@ -764,10 +765,12 @@
                 const totalSeconds = (Date.now() - startTime) / 1000;
                 const timeSpent = Math.max(1, Math.floor(totalSeconds / 60)); // Минимум 1 минута
                 
+                const csrfToken = (document.querySelector('meta[name="csrf-token"]')||{}).content;
                 const response = await fetch('{{ url_for("learning.complete_automated_session") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken || ''
                 },
                 body: JSON.stringify({
                     questions_answered: questions.length,
