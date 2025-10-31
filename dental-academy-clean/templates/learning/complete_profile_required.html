@@ -189,6 +189,71 @@
     margin-right: 0.5rem;
 }
 
+/* Заголовок профиля */
+.profile-header-section {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.profile-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.profile-profession {
+    font-size: 1.1rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+/* Блок заполнения профиля */
+.profile-completion-section {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.completion-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2d3748;
+}
+
+.completion-bar {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.completion-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+
+.completion-text {
+    font-size: 0.95rem;
+    color: #718096;
+    font-weight: 500;
+    margin: 0;
+}
+
 @media (max-width: 768px) {
     .complete-profile-container {
         padding: 1rem;
@@ -210,6 +275,18 @@
     .icon-wrapper i {
         font-size: 2rem;
     }
+    
+    .profile-name {
+        font-size: 1.5rem;
+    }
+    
+    .profile-profession {
+        font-size: 1rem;
+    }
+    
+    .profile-completion-section {
+        padding: 1.25rem;
+    }
 }
 </style>
 {% endblock %}
@@ -217,6 +294,34 @@
 {% block content %}
 <div class="complete-profile-container">
     <div class="complete-profile-card">
+        <!-- Заголовок с именем и профессией -->
+        <div class="profile-header-section">
+            <h1 class="profile-name">
+                {{ user.get_display_name() }}
+            </h1>
+            <p class="profile-profession">
+                {% if user.profession == 'tandarts' %}{{ t('dentist', lang) | default('Tandarts') }}
+                {% elif user.profession == 'huisarts' %}{{ t('general_practitioner', lang) | default('Huisarts') }}
+                {% elif user.profession == 'verpleegkundige' %}{{ t('nurse', lang) | default('Verpleegkundige') }}
+                {% elif user.profession == 'apotheker' %}{{ t('pharmacist', lang) | default('Apotheker') }}
+                {% else %}{{ user.profession or t('profession_not_specified', lang) | default('Профессия не указана') }}
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- Блок заполнения профиля -->
+        <div class="profile-completion-section">
+            <h3 class="completion-title">
+                {{ t('profile_completion', lang) | default('Заполнение профиля') }}
+            </h3>
+            <div class="completion-bar">
+                <div class="completion-fill" style="width: {{ profile_completion_percentage }}%;"></div>
+            </div>
+            <p class="completion-text">
+                {{ profile_completion_percentage }}% {{ t('profile_completion_text', lang) | default('профиля заполнено') }}
+            </p>
+        </div>
+        
         <div class="header-section">
             <div class="icon-wrapper">
                 <i class="fas fa-user-edit"></i>
@@ -278,5 +383,24 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация прогресс-бара
+    const progressBar = document.querySelector('.completion-fill');
+    if (progressBar) {
+        // Сначала устанавливаем 0
+        progressBar.style.width = '0%';
+        
+        // Затем анимируем до нужного значения
+        setTimeout(() => {
+            const targetWidth = '{{ profile_completion_percentage }}%';
+            progressBar.style.width = targetWidth;
+        }, 300);
+    }
+});
+</script>
 {% endblock %}
 

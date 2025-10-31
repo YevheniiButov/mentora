@@ -893,13 +893,17 @@ def check_categories(lang):
 @login_required
 def complete_profile(lang):
     """Страница с призывом заполнить профиль перед доступом к карте обучения"""
+    from utils.profile_check import check_profile_complete, calculate_profile_completion_percentage
+    
     profile_check = check_profile_complete(current_user)
+    profile_completion_percentage = calculate_profile_completion_percentage(current_user)
     
     return render_template(
         'learning/complete_profile_required.html',
         lang=lang,
         user=current_user,
-        profile_check=profile_check
+        profile_check=profile_check,
+        profile_completion_percentage=profile_completion_percentage
     )
 
 @learning_map_bp.route("/")
