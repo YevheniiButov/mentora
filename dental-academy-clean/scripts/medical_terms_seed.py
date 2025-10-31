@@ -98,6 +98,17 @@ ADVANCED_TERMS = [
     ('de tachycardie', 'tachycardia (fast heart rate)', 'symptomatology_advanced'), ('de malaise', 'malaise', 'symptomatology_advanced'), 
     ('de icterus', 'jaundice', 'symptomatology_advanced'), ('de convulsie', 'convulsion / seizure', 'symptomatology_advanced'), 
     ('de asfyxie', 'asphyxia', 'symptomatology_advanced'), ('de retentie', 'retention (e.g., of urine)', 'symptomatology_advanced'),
+    # HEALTHCARE_ADMINISTRATION - 19 terms (Dutch healthcare system)
+    ('de eerstelijn', 'primary care / first-line care', 'healthcare_admin_advanced'), ('de tweedelijn', 'secondary care / second-line care', 'healthcare_admin_advanced'),
+    ('de POH-GGZ', 'Primary Care Mental Health Practitioner / Mental Health Practice Support', 'healthcare_admin_advanced'), ('de wachtpost', 'out-of-hours service / emergency service', 'healthcare_admin_advanced'),
+    ('het verwijsbeleid', 'referral policy', 'healthcare_admin_advanced'), ('het zorgpad', 'care pathway / clinical pathway', 'healthcare_admin_advanced'),
+    ('de zorgverzekeraar', 'health insurer / health insurance company', 'healthcare_admin_advanced'), ('de eigen risico', 'deductible / excess', 'healthcare_admin_advanced'),
+    ('de caseload', 'caseload', 'healthcare_admin_advanced'), ('de multidisciplinaire overleg (MDO)', 'Multidisciplinary Consultation / MDT', 'healthcare_admin_advanced'),
+    ('het tuchtrecht', 'disciplinary law', 'healthcare_admin_advanced'), ('de Wvggz', 'Mental Health Care Act / Compulsory Mental Health Care Act', 'healthcare_admin_advanced'),
+    ('de meldcode huiselijk geweld', 'Domestic Violence Reporting Code', 'healthcare_admin_advanced'), ('het journaal', 'medical journal / patient record', 'healthcare_admin_advanced'),
+    ('het beleid', 'policy', 'healthcare_admin_advanced'), ('het SOAP-model', 'SOAP model (Subjective, Objective, Assessment, Plan)', 'healthcare_admin_advanced'),
+    ('de overdracht', 'handover / transfer / referral', 'healthcare_admin_advanced'), ('de anamnese', 'medical history / anamnesis', 'healthcare_admin_advanced'),
+    ('het patiëntendossier', 'patient file / medical record / patient dossier', 'healthcare_admin_advanced'),
 ]
 
 # 3. ULTRA_ADVANCED_TERMS (C1-C2) - 50 terms
@@ -223,6 +234,7 @@ CATEGORY_DESCRIPTIONS = {
     'diagnostics_advanced': {'description': 'Technical medical procedures and examination methods (B2)', 'difficulty': 3, 'frequency': 5},
     'pharmacology_advanced': {'description': 'Drug types, mechanisms, and therapeutic concepts (B2-C1)', 'difficulty': 4, 'frequency': 3},
     'symptomatology_advanced': {'description': 'Clinical, high-level terms for patient complaints (B2)', 'difficulty': 3, 'frequency': 4},
+    'healthcare_admin_advanced': {'description': 'Dutch healthcare system administration, policies, and professional practice (B2-C1)', 'difficulty': 4, 'frequency': 5},
 
     # 3. ULTRA_ADVANCED (Difficulty 4-5)
     'pathophysiology_ultra': {'description': 'Advanced concepts of disease mechanisms and critical care (C1)', 'difficulty': 5, 'frequency': 4},
