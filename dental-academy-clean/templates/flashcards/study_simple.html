@@ -255,7 +255,8 @@
                 // Go back
                 goBack() {
                     if (confirm('Weet je zeker dat je wilt stoppen?')) {
-                        window.location.href = '/learning-map?tab=individual';
+                        const lang = '{{ session.get("lang", "nl") }}';
+                        window.location.href = `/${lang}/learning-map/irt`;
                     }
                 },
                 
@@ -291,10 +292,10 @@
                         console.error('Error updating progress:', error);
                     }
                     
-                    // Redirect to learning map and switch to individual plan tab
-                        console.log('Redirecting to learning map with tab=individual');
-                        // Force reload to ensure tab switching works
-                        window.location.href = '/learning-map?tab=individual&reload=true';
+                    // Redirect to learning map
+                        const lang = '{{ session.get("lang", "nl") }}';
+                        console.log('Redirecting to learning map:', `/${lang}/learning-map/irt`);
+                        window.location.href = `/${lang}/learning-map/irt`;
                 }
             };
         }
