@@ -424,3 +424,42 @@ def focus_on_category(category_id):
         traceback.print_exc()
         current_app.logger.error(f"Error starting category practice: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# Fallback endpoint for VP daily scenario (in case vp_daily_bp is not registered)
+@individual_plan_api_bp.route('/api/vp/daily-scenario', methods=['GET'])
+@login_required
+def fallback_vp_daily_scenario():
+    """
+    Fallback endpoint for VP daily scenario if vp_daily_bp is not registered
+    """
+    try:
+        from utils.virtual_patient_utils import VirtualPatientSelector
+        scenario = VirtualPatientSelector.get_daily_scenario(current_user)
+        
+        if not scenario:
+            return jsonify({
+                'success': False,
+                'message': 'No virtual patient scenarios available for your specialty'
+            }), 200
+        
+        return jsonify({
+            'success': True,
+            'scenario': {
+                'id': scenario.id,
+                'title': scenario.title,
+                'description': scenario.description,
+                'difficulty': scenario.difficulty,
+                'max_score': scenario.max_score,
+                'keywords': scenario.keywords_list,
+                'scenario_data': scenario.localized_data
+            }
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error in fallback VP daily scenario: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

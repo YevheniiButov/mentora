@@ -628,13 +628,21 @@ try:
     
     # Virtual Patient Daily Learning System
     try:
+        logger.info("🔄 Attempting to import Virtual Patient Daily Learning routes...")
         from routes.virtual_patient_daily import vp_daily_bp
+        logger.info("✅ Successfully imported vp_daily_bp")
         app.register_blueprint(vp_daily_bp)
         logger.info("✅ Virtual Patient Daily Learning blueprint registered successfully")
+    except ImportError as import_error:
+        logger.error(f"❌ IMPORT ERROR: Cannot import Virtual Patient Daily Learning routes: {import_error}")
+        import traceback
+        logger.error(f"❌ Import Traceback: {traceback.format_exc()}")
+        logger.warning("⚠️ Fallback endpoint available at /api/vp/daily-scenario via individual_plan_api_bp")
     except Exception as vp_daily_error:
         logger.error(f"❌ ERROR importing Virtual Patient Daily Learning routes: {vp_daily_error}")
         import traceback
         logger.error(f"❌ Traceback: {traceback.format_exc()}")
+        logger.warning("⚠️ Fallback endpoint available at /api/vp/daily-scenario via individual_plan_api_bp")
     
     # Daily Session Flow System
     try:
