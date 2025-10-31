@@ -4860,6 +4860,12 @@
                     try {
                         // Загрузить today's VP scenario
                         const scenarioResponse = await fetch('/api/vp/daily-scenario');
+                        if (!scenarioResponse.ok) {
+                            console.error('❌ VP daily-scenario request failed:', scenarioResponse.status, scenarioResponse.statusText);
+                            this.todayVPScenario = null;
+                            this.vpLoading = false;
+                            return;
+                        }
                         const scenarioData = await scenarioResponse.json();
                         
                         if (scenarioData.success && scenarioData.scenario) {

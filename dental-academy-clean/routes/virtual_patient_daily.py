@@ -31,7 +31,7 @@ def get_daily_scenario():
             return jsonify({
                 'success': False,
                 'message': 'No virtual patient scenarios available for your specialty'
-            }), 404
+            }), 200  # Возвращаем 200, а не 404 - роут найден, просто данных нет
         
         return jsonify({
             'success': True,
