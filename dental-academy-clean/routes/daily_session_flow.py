@@ -16,6 +16,15 @@ def daily_session_flow():
     2. 10 Dutch Terms
     3. 1 Virtual Patient
     """
+    # Check if profile is complete
+    from utils.profile_check import check_profile_complete
+    from flask import redirect, url_for, session
+    
+    profile_check = check_profile_complete(current_user)
+    if not profile_check['is_complete']:
+        lang = session.get('lang', 'nl')
+        return redirect(url_for('learning_map_bp.complete_profile', lang=lang))
+    
     try:
         # Загрузить today's VP
         vp_result = VirtualPatientSelector.get_daily_scenario(current_user)

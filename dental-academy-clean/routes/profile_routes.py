@@ -55,6 +55,34 @@ def personal_info(lang):
     """Personal information page"""
     return render_template('profile/personal_info.html', user=current_user, lang=lang)
 
+@profile_bp.route('/membership-card')
+@login_required
+def membership_card(lang):
+    """Display membership card in profile"""
+    # Generate member ID if not exists
+    if not hasattr(current_user, 'member_id') or not current_user.member_id:
+        import hashlib
+        user_hash = hashlib.md5(str(current_user.id).encode()).hexdigest()[:5].upper()
+        current_user.member_id = f"MNT-{user_hash}"
+        db.session.commit()
+    
+    # Set membership expiry date if not exists (1 year from now)
+    if not hasattr(current_user, 'membership_expires') or not current_user.membership_expires:
+        from datetime import datetime, timedelta
+        current_user.membership_expires = datetime.now() + timedelta(days=365)
+        db.session.commit()
+    
+    # Generate QR code if user is premium and doesn't have one
+    if (hasattr(current_user, 'membership_type') and current_user.membership_type == 'premium' and 
+        (not hasattr(current_user, 'qr_code_path') or not current_user.qr_code_path)):
+        try:
+            from routes.membership_routes import generate_member_qr
+            generate_member_qr(current_user)
+        except Exception as e:
+            current_app.logger.warning(f"Could not generate QR code: {e}")
+    
+    return render_template('membership/card.html')
+
 @profile_bp.route('/personal_info', methods=['POST'])
 @login_required
 def update_personal_info(lang):
@@ -83,6 +111,7 @@ def update_personal_info(lang):
         study_start_year = request.form.get('study_start_year', '').strip()
         study_end_year = request.form.get('study_end_year', '').strip()
         study_country = request.form.get('study_country', '').strip()
+        other_study_country = request.form.get('other_study_country', '').strip()
         medical_specialization = request.form.get('medical_specialization', '').strip()
         additional_education_info = request.form.get('additional_education_info', '').strip()
         work_experience = request.form.get('work_experience', '').strip()
@@ -143,6 +172,11 @@ def update_personal_info(lang):
                 pass
         if study_country:
             current_user.study_country = study_country
+            # Clear other_study_country if a standard country is selected
+            if study_country != 'OTHER':
+                current_user.other_study_country = None
+        if other_study_country:
+            current_user.other_study_country = other_study_country
         if medical_specialization:
             current_user.medical_specialization = medical_specialization
         if additional_education_info:
@@ -152,28 +186,27 @@ def update_personal_info(lang):
         if additional_qualifications:
             current_user.additional_qualifications = additional_qualifications
             
-        # Check if profile is complete and mark registration as completed
-        if not current_user.registration_completed:
-            # Check if essential fields are filled
-            essential_fields = [
-                current_user.first_name,
-                current_user.last_name,
-                current_user.profession,
-                current_user.legal_status
-            ]
-            
-            if all(essential_fields):
-                current_user.registration_completed = True
-                current_app.logger.info(f"Registration completed for user: {current_user.email}")
+        # Check if profile is complete using the same logic as learning map
+        from utils.profile_check import check_profile_complete
+        profile_check = check_profile_complete(current_user)
+        
+        # Mark registration as completed if profile is complete
+        profile_was_complete = current_user.registration_completed
+        if profile_check['is_complete']:
+            current_user.registration_completed = True
+            current_app.logger.info(f"Profile completed for user: {current_user.email}")
             
         db.session.commit()
         
-        # Check if this was a forced completion
-        if request.form.get('force_completion') == 'true':
-            flash('Profile completed successfully! Welcome to Mentora!', 'success')
-            return redirect(url_for('main.index', lang=lang))
+        # Show success message
+        if profile_check['is_complete'] and not profile_was_complete:
+            flash('Great! Your profile is now complete. You can now access the learning map!', 'success')
         else:
             flash('Personal information updated successfully!', 'success')
+        
+        # Check if this was a forced completion
+        if request.form.get('force_completion') == 'true':
+            return redirect(url_for('main.index', lang=lang))
         
     except Exception as e:
         current_app.logger.error(f"Error updating personal info: {e}", exc_info=True)

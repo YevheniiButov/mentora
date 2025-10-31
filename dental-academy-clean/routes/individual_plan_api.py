@@ -170,6 +170,15 @@ def start_daily_session():
     Start today's daily learning session.
     Redirects to IRT practice with today's selected questions.
     """
+    # Check if profile is complete
+    from utils.profile_check import check_profile_complete
+    profile_check = check_profile_complete(current_user)
+    
+    if not profile_check['is_complete']:
+        lang = session.get('lang', 'nl')
+        from flask import redirect, url_for
+        return redirect(url_for('learning_map_bp.complete_profile', lang=lang))
+    
     try:
         from utils.individual_plan_helpers import get_or_create_learning_plan
         from models import DiagnosticSession

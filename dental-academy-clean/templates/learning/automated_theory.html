@@ -258,7 +258,8 @@ function completeSession() {
         if (data.success) {
             alert('{{ t("session_completed", lang) }}');
             setTimeout(() => {
-                window.location.href = data.next_url || '{{ url_for("learning.dashboard", lang=lang) }}';
+                const lang = '{{ session.get("lang", "nl") }}';
+                window.location.href = data.next_url || `/${lang}/learning-map/daily-session`;
             }, 1500);
         } else {
             alert('{{ t("error_completing_session", lang) }}: ' + data.error);

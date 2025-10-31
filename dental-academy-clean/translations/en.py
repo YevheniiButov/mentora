@@ -3454,5 +3454,44 @@ translations = {
     'planner': 'Planner',
     'beta': 'BETA',
     'quick_test': 'Quick Test',
-    'quick_test_description': 'Fast knowledge check. Results shown at the end.'
+    'quick_test_description': 'Fast knowledge check. Results shown at the end.',
+    
+    # Membership Card
+    'your_membership_card': 'Your Mentora Membership Card',
+    'digital_card_subtitle': 'Digital card for medical professionals in the Netherlands',
+    'membership_card': 'Membership Card',
+    'membership_card_description': 'Your digital Mentora membership card with QR code',
+    'member_id': 'Member ID',
+    'valid_until': 'Valid until',
+    'scan_to_verify': 'Scan to verify',
+    'qr_not_generated': 'QR not generated',
+    'view_full_card': 'View card',
+    'download_png': 'Download PNG',
+    'download_pdf': 'Download PDF',
+    'generating_file': 'Generating file...',
+    'regenerate_qr': 'Update QR Code',
+    'qr_regenerated_success': 'QR code successfully updated!',
+    'qr_regeneration_error': 'Error updating QR code',
+    'privacy_settings': 'Privacy Settings',
+    'allow_public_verification': 'Allow others to view my profile information when scanning my QR code',
+    'privacy_note': 'When disabled, only your Member ID and verification status will be shown. Your name and other details will remain private.',
+    'profile_now_public': 'Your profile is now visible to others',
+    'profile_now_private': 'Your profile is now private',
+    'privacy_update_error': 'Error updating privacy settings',
+    
+    # Profile Completion
+    'complete_profile_required': 'Complete Your Profile',
+    'complete_profile_message': 'To access the learning map, please complete your profile with education and professional information.',
+    'missing_information': 'Missing Information',
+    'country_of_study': 'Country of Study',
+    'education_information': 'Education Information',
+    'at_least_one': 'at least one field',
+    'university_name': 'University Name',
+    'degree_type': 'Degree Type',
+    'diploma_info': 'Diploma Information',
+    'profile_completion_note': 'Completing your profile helps us personalize your learning experience and provide content tailored to your background and goals.',
+    'complete_profile_button': 'Complete Profile',
+    
+    # Countdown Timer
+    'time_left': 'Time until reset',
 }

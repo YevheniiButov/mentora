@@ -979,8 +979,8 @@ translations = {
     'login_subtitle': 'Welkom terug! Log in op uw account',
     
     # Quick Registration
-    'quick_registration': 'Snelle registratie',
-    'quick_registration_description': 'Snelle registratie voor het Mentora BIG voorbereidingsprogramma',
+    'quick_registration': 'Registratie',
+    'quick_registration_description': 'Registratie voor het Mentora BIG voorbereidingsprogramma',
     'quick_registration_subtitle': 'Vul de basisgegevens in voor snelle toegang tot het programma',
     'back_to_full_registration': 'Terug naar volledige registratie',
     'complete_registration': 'Registratie voltooien',
@@ -3252,5 +3252,44 @@ translations = {
     'planner': 'Planner',
     'beta': 'BETA',
     'quick_test': 'Snelle Test',
-    'quick_test_description': 'Snelle kenniscontrole. Resultaten getoond aan het einde.'
+    'quick_test_description': 'Snelle kenniscontrole. Resultaten getoond aan het einde.',
+    
+    # Membership Card
+    'your_membership_card': 'Uw Mentora Lidmaatschapskaart',
+    'digital_card_subtitle': 'Digitale kaart voor medische professionals in Nederland',
+    'membership_card': 'Lidmaatschapskaart',
+    'membership_card_description': 'Uw digitale Mentora lidmaatschapskaart met QR-code',
+    'member_id': 'Lid ID',
+    'valid_until': 'Geldig tot',
+    'scan_to_verify': 'Scan om te verifiëren',
+    'qr_not_generated': 'QR niet gegenereerd',
+    'view_full_card': 'Bekijk kaart',
+    'download_png': 'Download PNG',
+    'download_pdf': 'Download PDF',
+    'generating_file': 'Bestand genereren...',
+    'regenerate_qr': 'QR-code vernieuwen',
+    'qr_regenerated_success': 'QR-code succesvol bijgewerkt!',
+    'qr_regeneration_error': 'Fout bij het bijwerken van QR-code',
+    'privacy_settings': 'Privacy-instellingen',
+    'allow_public_verification': 'Sta anderen toe mijn profielinformatie te bekijken bij het scannen van mijn QR-code',
+    'privacy_note': 'Wanneer uitgeschakeld, worden alleen uw lid-ID en verificatiestatus getoond. Uw naam en andere gegevens blijven privé.',
+    'profile_now_public': 'Uw profiel is nu zichtbaar voor anderen',
+    'profile_now_private': 'Uw profiel is nu privé',
+    'privacy_update_error': 'Fout bij het bijwerken van privacy-instellingen',
+    
+    # Profile Completion
+    'complete_profile_required': 'Voltooi uw profiel',
+    'complete_profile_message': 'Om toegang te krijgen tot de leerkaart, voltooi uw profiel met onderwijs- en professionele informatie.',
+    'missing_information': 'Ontbrekende informatie',
+    'country_of_study': 'Land van studie',
+    'education_information': 'Onderwijsinformatie',
+    'at_least_one': 'ten minste één veld',
+    'university_name': 'Universiteitsnaam',
+    'degree_type': 'Graadtype',
+    'diploma_info': 'Diploma-informatie',
+    'profile_completion_note': 'Het voltooien van uw profiel helpt ons uw leerervaring te personaliseren en inhoud te bieden die is afgestemd op uw achtergrond en doelen.',
+    'complete_profile_button': 'Profiel voltooien',
+    
+    # Countdown Timer
+    'time_left': 'Tot reset',
 }

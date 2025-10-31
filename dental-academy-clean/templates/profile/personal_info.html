@@ -7,39 +7,99 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 <style>
+:root {
+    --primary-color: #667eea;
+    --primary-dark: #5568d3;
+    --primary-light: #764ba2;
+    --secondary-color: #f093fb;
+    --success-color: #10b981;
+    --error-color: #ef4444;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --bg-light: #f9fafb;
+    --bg-white: #ffffff;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
 .personal-info-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 20px;
-    padding-top: 100px; /* Отступ сверху для шапки */
+    padding-top: 100px;
+    background: linear-gradient(to bottom, #f9fafb, #ffffff);
+    min-height: 100vh;
 }
 
 .personal-info-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.personal-info-header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    border-radius: 2px;
 }
 
 .personal-info-header h1 {
-    color: #2c3e50;
-    margin-bottom: 10px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .personal-info-header p {
-    color: #7f8c8d;
-    font-size: 16px;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    font-weight: 400;
 }
 
 .personal-info-form {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 30px;
+    background: var(--bg-white);
+    border-radius: 20px;
+    box-shadow: var(--shadow-xl);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.personal-info-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light), var(--secondary-color));
 }
 
 .form-section {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #ecf0f1;
+    margin-bottom: 40px;
+    padding: 30px;
+    background: var(--bg-light);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .form-section:last-child {
@@ -47,74 +107,123 @@
 }
 
 .form-section h3 {
-    color: #2c3e50;
-    margin-bottom: 20px;
-    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+    font-size: 1.25rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .form-section h3 i {
-    margin-right: 10px;
-    color: #3498db;
+    margin-right: 12px;
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 8px;
 }
 
 .form-row {
     display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 24px;
+    margin-bottom: 24px;
 }
 
 .form-group {
     flex: 1;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 12px;
-    border: 2px solid #ecf0f1;
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.3s;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: var(--bg-white);
+    color: var(--text-primary);
+    font-family: inherit;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-group input.readonly-field {
+    background: var(--bg-light);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    border-color: var(--border-color);
+}
+
+.form-group input.readonly-field:hover {
+    border-color: var(--border-color);
+    box-shadow: none;
+    transform: none;
+}
+
+.form-group input.readonly-field:focus {
+    border-color: var(--border-color);
+    box-shadow: none;
+    transform: none;
 }
 
 .form-group .help-text {
-    font-size: 12px;
-    color: #7f8c8d;
-    margin-top: 5px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    font-weight: 400;
 }
 
 .required {
-    color: #e74c3c;
+    color: var(--error-color);
+    font-weight: 600;
 }
 
 .file-upload {
-    border: 2px dashed #bdc3c7;
-    border-radius: 5px;
-    padding: 20px;
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
     text-align: center;
-    transition: border-color 0.3s;
+    transition: all 0.3s ease;
+    background: var(--bg-light);
 }
 
 .file-upload:hover {
-    border-color: #3498db;
+    border-color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateY(-2px);
 }
 
 .file-upload input[type="file"] {
@@ -123,153 +232,267 @@
 
 .file-upload-label {
     cursor: pointer;
-    color: #3498db;
+    color: var(--primary-color);
     font-weight: 600;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s ease;
 }
 
 .file-upload-label:hover {
-    color: #2980b9;
+    color: var(--primary-dark);
 }
 
 .uploaded-files {
-    margin-top: 10px;
+    margin-top: 16px;
 }
 
 .uploaded-file {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 5px;
+    background: var(--bg-white);
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.uploaded-file:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color);
 }
 
 .uploaded-file .file-name {
     font-weight: 500;
+    color: var(--text-primary);
 }
 
 .uploaded-file .remove-file {
-    color: #e74c3c;
+    color: var(--error-color);
     cursor: pointer;
     font-weight: bold;
+    font-size: 1.2rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.uploaded-file .remove-file:hover {
+    background: rgba(239, 68, 68, 0.1);
+    transform: scale(1.1);
 }
 
 .checkbox-group {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 10px;
+    transition: background-color 0.2s ease;
+}
+
+.checkbox-group:hover {
+    background: var(--bg-light);
 }
 
 .checkbox-group input[type="checkbox"] {
-    margin-right: 10px;
-    transform: scale(1.2);
+    margin-right: 12px;
+    transform: scale(1.3);
+    cursor: pointer;
+    accent-color: var(--primary-color);
 }
 
 .checkbox-group label {
     margin-bottom: 0;
-    font-weight: normal;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
 }
 
 .submit-section {
     text-align: center;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #ecf0f1;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
-.btn-register {
-    background: linear-gradient(135deg, #3498db, #2980b9);
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--bg-white);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-back:hover {
+    background: var(--bg-light);
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-register,
+.btn-save {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
     color: white;
-    padding: 15px 40px;
+    padding: 14px 36px;
     border: none;
-    border-radius: 25px;
+    border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
-    min-width: 200px;
+    transition: all 0.3s ease;
+    min-width: 180px;
+    box-shadow: var(--shadow-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-.btn-register:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+.btn-register:hover,
+.btn-save:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
 }
 
-.btn-register:disabled {
-    background: #bdc3c7;
+.btn-register:active,
+.btn-save:active {
+    transform: translateY(-1px);
+}
+
+.btn-register:disabled,
+.btn-save:disabled {
+    background: var(--text-secondary);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+    opacity: 0.6;
 }
 
 .error-message {
-    color: #e74c3c;
-    font-size: 12px;
-    margin-top: 5px;
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin-top: 6px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.error-message::before {
+    content: '⚠';
+    font-size: 1rem;
 }
 
 .success-message {
-    color: #27ae60;
-    font-size: 12px;
-    margin-top: 5px;
+    color: var(--success-color);
+    font-size: 0.875rem;
+    margin-top: 6px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.success-message::before {
+    content: '✓';
+    font-size: 1rem;
 }
 
 /* Шаги навигации удалены */
 
 .consent-block {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    border: 2px solid var(--border-color);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+}
+
+.consent-block:hover {
+    box-shadow: var(--shadow-md);
+    border-left-color: var(--primary-light);
 }
 
 .consent-block h4 {
-    color: #2c3e50;
-    margin-bottom: 15px;
-    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
 }
 
 .consent-block h4 i {
-    margin-right: 8px;
-    color: #3498db;
+    margin-right: 12px;
+    color: var(--primary-color);
+    font-size: 1.2rem;
 }
 
 .consent-content {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 .consent-content p {
-    margin-bottom: 10px;
-    color: #555;
+    margin-bottom: 12px;
+    color: var(--text-primary);
     font-weight: 500;
+    line-height: 1.6;
 }
 
 .consent-content ul {
-    margin: 10px 0;
-    padding-left: 20px;
+    margin: 12px 0;
+    padding-left: 24px;
 }
 
 .consent-content li {
-    margin-bottom: 5px;
-    color: #666;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    line-height: 1.6;
 }
 
 .signature-block {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 20px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
+    border: 2px solid rgba(245, 158, 11, 0.3);
+    border-left: 4px solid #f59e0b;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 24px;
+    transition: all 0.3s ease;
+}
+
+.signature-block:hover {
+    box-shadow: var(--shadow-md);
+    border-left-color: #d97706;
 }
 
 .signature-block h4 {
-    color: #856404;
-    margin-bottom: 15px;
-    font-size: 16px;
+    color: #92400e;
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .signature-block .form-group {
@@ -278,59 +501,102 @@
 
 .phone-input-group {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: stretch;
 }
 
 .country-code-select {
     flex: 0 0 200px;
-    padding: 12px;
-    border: 2px solid #ecf0f1;
-    border-radius: 5px;
-    font-size: 14px;
-    background: white;
-    transition: border-color 0.3s;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    background: var(--bg-white);
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+}
+
+.country-code-select:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .country-code-select:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .phone-number-input {
     flex: 1;
-    padding: 12px;
-    border: 2px solid #ecf0f1;
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.3s;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: var(--bg-white);
+    color: var(--text-primary);
+}
+
+.phone-number-input:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .phone-number-input:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
+    .personal-info-container {
+        padding: 16px;
+        padding-top: 80px;
+    }
+
+    .personal-info-header h1 {
+        font-size: 2rem;
+    }
+
+    .personal-info-form {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+
+    .form-section {
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
     .form-row {
         flex-direction: column;
         gap: 0;
     }
     
-    /* Мобильные стили для шагов навигации удалены */
-    
     .consent-block,
     .signature-block {
-        padding: 15px;
+        padding: 16px;
     }
     
     .phone-input-group {
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
     }
     
     .country-code-select {
         flex: none;
+        width: 100%;
+    }
+
+    .submit-section {
+        flex-direction: column;
+    }
+
+    .btn-back,
+    .btn-register,
+    .btn-save {
         width: 100%;
     }
 }
@@ -347,88 +613,118 @@
 
 .password-toggle {
     position: absolute;
-    right: 12px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
     cursor: pointer;
-    color: #7f8c8d;
-    font-size: 16px;
-    padding: 5px;
-    transition: color 0.3s;
+    color: var(--text-secondary);
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .password-toggle:hover {
-    color: #3498db;
+    color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.1);
 }
 
 .password-toggle:focus {
     outline: none;
-    color: #3498db;
+    color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
 .nationality-search-container {
     position: relative;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .nationality-search {
     width: 100%;
-    padding: 10px 35px 10px 12px;
-    border: 2px solid #ecf0f1;
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.3s;
+    padding: 14px 40px 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: var(--bg-white);
+    color: var(--text-primary);
+}
+
+.nationality-search:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .nationality-search:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .nationality-search-icon {
     position: absolute;
-    right: 12px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
-    color: #7f8c8d;
-    font-size: 14px;
+    color: var(--text-secondary);
+    font-size: 16px;
 }
 
 .nationality-select {
     max-height: 200px;
     overflow-y: auto;
+    border-radius: 12px;
 }
 
 .nationality-select option {
-    padding: 8px 12px;
+    padding: 12px 16px;
+    transition: background-color 0.2s ease;
+}
+
+.nationality-select option:hover {
+    background: rgba(102, 126, 234, 0.1);
 }
 
 .year-range-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .year-input {
     flex: 1;
-    padding: 12px;
-    border: 2px solid #ecf0f1;
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.3s;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: var(--bg-white);
+    color: var(--text-primary);
+}
+
+.year-input:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .year-input:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
 }
 
 .year-separator {
-    color: #7f8c8d;
-    font-weight: bold;
-    font-size: 16px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 18px;
+    padding: 0 4px;
 }
 </style>
 {% endblock %}
@@ -677,17 +973,6 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="language_certificates">{{ t('upload_language_certificates', lang) | default('Upload Language Certificates') }}</label>
-                <div class="file-upload">
-                    <input type="file" id="language_certificates" name="language_certificates" multiple accept=".pdf,.jpg,.jpeg,.png">
-                    <label for="language_certificates" class="file-upload-label">
-                        <i class="fas fa-upload"></i> {{ t('upload_files', lang) | default('Upload Files') }}
-                    </label>
-                    <div class="help-text">{{ t('language_certificates_help', lang) | default('Upload your language certificates (PDF, JPG, PNG)') }}</div>
-                </div>
-                <div class="uploaded-files" id="language-certificates-list"></div>
-            </div>
         </div>
 
         <!-- Professional Information Section -->
@@ -697,25 +982,13 @@
             <!-- Professional Information -->
             <div class="form-group">
                 <label for="profession">{{ t('profession', lang) | default('Profession') }} <span class="required">*</span></label>
-                <select id="profession" name="profession" required onchange="toggleOtherField('profession', 'other_profession')">
+                <select id="profession" name="profession" required>
                     <option value="">{{ t('select_profession', lang) | default('Select Profession') }}</option>
                     <option value="tandarts" {% if user.profession == 'tandarts' %}selected{% endif %}>{{ t('dentist', lang) | default('Dentist') }}</option>
-                    <option value="apotheker" {% if user.profession == 'apotheker' %}selected{% endif %}>{{ t('pharmacist', lang) | default('Pharmacist') }}</option>
                     <option value="huisarts" {% if user.profession == 'huisarts' %}selected{% endif %}>{{ t('general_practitioner', lang) | default('General Practitioner') }}</option>
                     <option value="verpleegkundige" {% if user.profession == 'verpleegkundige' %}selected{% endif %}>{{ t('nurse', lang) | default('Nurse') }}</option>
-                    <option value="fysiotherapeut" {% if user.profession == 'fysiotherapeut' %}selected{% endif %}>{{ t('physiotherapist', lang) | default('Physiotherapist') }}</option>
-                    <option value="psycholoog" {% if user.profession == 'psycholoog' %}selected{% endif %}>{{ t('psychologist', lang) | default('Psychologist') }}</option>
-                    <option value="dietist" {% if user.profession == 'dietist' %}selected{% endif %}>{{ t('dietitian', lang) | default('Dietitian') }}</option>
-                    <option value="logopedist" {% if user.profession == 'logopedist' %}selected{% endif %}>{{ t('speech_therapist', lang) | default('Speech Therapist') }}</option>
-                    <option value="ergotherapeut" {% if user.profession == 'ergotherapeut' %}selected{% endif %}>{{ t('occupational_therapist', lang) | default('Occupational Therapist') }}</option>
-                    <option value="podotherapeut" {% if user.profession == 'podotherapeut' %}selected{% endif %}>{{ t('podiatrist', lang) | default('Podiatrist') }}</option>
-                    <option value="other" {% if user.profession == 'other' %}selected{% endif %}>{{ t('other_medical', lang) | default('Other Medical Profession') }}</option>
+                    <option value="apotheker" {% if user.profession == 'apotheker' %}selected{% endif %}>{{ t('pharmacist', lang) | default('Pharmacist') }}</option>
                 </select>
-            </div>
-
-            <div class="form-group" id="other_profession_group" style="display: none;">
-                <label for="other_profession">{{ t('specify_profession', lang) | default('Please specify your profession') }} <span class="required">*</span></label>
-                <input type="text" id="other_profession" name="other_profession" value="{{ user.other_profession or '' }}" placeholder="{{ t('profession_placeholder', lang) | default('Enter your medical profession') }}">
             </div>
 
             <div class="form-row">
@@ -835,23 +1108,6 @@
                     <input type="text" id="medical_specialization" name="medical_specialization" value="{{ user.medical_specialization or '' }}" placeholder="{{ t('specialization_placeholder', lang) | default('e.g., General Medicine, Dentistry, Pharmacy, Nursing, etc.') }}">
                 </div>
 
-                <div class="form-group">
-                    <label for="additional_education_info">{{ t('additional_education_info', lang) | default('Additional Education Information') }}</label>
-                    <textarea id="additional_education_info" name="additional_education_info" rows="2" placeholder="{{ t('additional_education_placeholder', lang) | default('Any additional information about your education, honors, awards, or special achievements') }}">{{ user.additional_education_info or '' }}</textarea>
-                    <div class="help-text">{{ t('additional_education_help', lang) | default('Optional: Include any honors, awards, or special achievements') }}</div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="work_experience">{{ t('work_experience', lang) | default('Work Experience') }}</label>
-                <textarea id="work_experience" name="work_experience" rows="3" placeholder="{{ t('work_experience_placeholder', lang) | default('Describe your professional work experience in the medical field') }}">{{ user.work_experience or '' }}</textarea>
-                <div class="help-text">{{ t('work_experience_help', lang) | default('Include years of experience, positions held, and areas of expertise') }}</div>
-            </div>
-
-            <div class="form-group">
-                <label for="additional_qualifications">{{ t('additional_qualifications', lang) | default('Additional Qualifications') }}</label>
-                <textarea id="additional_qualifications" name="additional_qualifications" rows="2" placeholder="{{ t('additional_qualifications_placeholder', lang) | default('Any additional certifications, courses, or specializations') }}">{{ user.additional_qualifications or '' }}</textarea>
-                <div class="help-text">{{ t('additional_qualifications_help', lang) | default('List any additional professional qualifications or certifications') }}</div>
             </div>
 
         </div>
@@ -867,6 +1123,76 @@
             </button>
         </div>
     </form>
+    
+    <!-- Membership Card Section -->
+    {% if user.member_id or user.membership_type == 'premium' %}
+    <style>
+        @keyframes miniGradientPulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+        .membership-preview-section .mini-card-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.08) 0%, rgba(20, 184, 166, 0.06) 40%, transparent 70%);
+            animation: miniGradientPulse 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .membership-preview-section .mini-card-content {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+    <div class="membership-preview-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e5e7eb;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.3rem; font-weight: 700; color: #111827; margin: 0; background: linear-gradient(135deg, #4f46e5, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                {{ t('membership_card', lang) | default('Lidmaatschapskaart') }}
+            </h3>
+            <a href="{{ url_for('profile.membership_card', lang=lang) }}" class="btn-view-card" style="padding: 0.625rem 1.5rem; background: linear-gradient(135deg, #4f46e5, #818cf8); color: white; border-radius: 12px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-id-card"></i> {{ t('view_full_card', lang) | default('Bekijk kaart') }}
+            </a>
+        </div>
+        <div class="mini-card-bg" style="background: linear-gradient(135deg, rgba(240, 249, 255, 0.9) 0%, rgba(224, 242, 254, 0.95) 25%, rgba(255, 255, 255, 1) 50%, rgba(240, 253, 250, 0.95) 75%, rgba(224, 242, 254, 0.9) 100%); border: 3px solid #e5e7eb; border-radius: 16px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1), 0 5px 15px rgba(20, 184, 166, 0.08); position: relative; overflow: hidden;">
+            <div class="mini-card-content" style="flex: 1;">
+                <div style="margin-bottom: 1rem;">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora" style="height: 35px; width: auto;">
+                </div>
+                <p style="color: #111827; font-size: 1.15rem; font-weight: 700; margin: 0.5rem 0;">{{ user.get_display_name() }}</p>
+                <p style="color: #14b8a6; font-size: 0.95rem; font-weight: 600; margin: 0.25rem 0;">
+                    {% if user.profession == 'tandarts' %}{{ t('dentist', lang) | default('Tandarts') }}
+                    {% elif user.profession == 'huisarts' %}{{ t('general_practitioner', lang) | default('Huisarts') }}
+                    {% elif user.profession == 'verpleegkundige' %}{{ t('nurse', lang) | default('Verpleegkundige') }}
+                    {% elif user.profession == 'apotheker' %}{{ t('pharmacist', lang) | default('Apotheker') }}
+                    {% else %}{{ user.profession or 'Medical Professional' }}
+                    {% endif %}
+                </p>
+                <p style="color: #6b7280; font-size: 0.8rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 2px solid #e5e7eb;"><strong>ID:</strong> {{ user.member_id or 'MNT-XXXXX' }}</p>
+            </div>
+            <div class="mini-card-content" style="margin-left: 1.5rem;">
+                {% if user.qr_code_path %}
+                <div style="background: white; border: 3px solid #e5e7eb; border-radius: 10px; padding: 0.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);">
+                    <img src="{{ url_for('static', filename=user.qr_code_path) }}" 
+                         alt="QR Code" 
+                         class="no-optimize"
+                         data-no-optimize="true"
+                         loading="eager"
+                         style="width: 90px; height: 90px; display: block;">
+                </div>
+                {% else %}
+                <div style="width: 90px; height: 90px; background: white; border: 3px solid #e5e7eb; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #cbd5e0; font-size: 0.7rem; text-align: center; padding: 0.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);">
+                    <i class="fas fa-qrcode" style="font-size: 2rem; margin-bottom: 0.25rem;"></i>
+                    <span style="font-size: 0.65rem;">{{ t('qr_not_generated', lang) | default('Niet gegenereerd') }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 
@@ -902,9 +1228,6 @@ function toggleOtherField(selectId, otherFieldId) {
 
 // Initialize other fields on page load
 function initializeOtherFields() {
-    // Check profession field
-    toggleOtherField('profession', 'other_profession');
-    
     // Check nationality field
     toggleOtherField('nationality', 'other_nationality');
     
@@ -1090,13 +1413,6 @@ function setupFileUploads() {
         handleFileUpload(e, diplomaList, 'diploma');
     });
     
-    // Language certificates upload
-    const languageInput = document.getElementById('language_certificates');
-    const languageList = document.getElementById('language-certificates-list');
-    
-    languageInput.addEventListener('change', function(e) {
-        handleFileUpload(e, languageList, 'language');
-    });
     
     // Additional documents upload
     const additionalInput = document.getElementById('additional_documents');
@@ -1125,8 +1441,7 @@ function handleFileUpload(event, container, type) {
 }
 
 function removeFile(type, index) {
-    const input = document.getElementById(type === 'diploma' ? 'diploma_file' : 
-                                   type === 'language' ? 'language_certificates' : 'additional_documents');
+    const input = document.getElementById(type === 'diploma' ? 'diploma_file' : 'additional_documents');
     
     // Create new FileList without the removed file
     const dt = new DataTransfer();
@@ -1138,14 +1453,22 @@ function removeFile(type, index) {
     input.files = dt.files;
     
     // Update display
-    const container = document.getElementById(type === 'diploma' ? 'diploma-list' : 
-                                           type === 'language' ? 'language-certificates-list' : 'additional-documents-list');
+    const container = document.getElementById(type === 'diploma' ? 'diploma-list' : 'additional-documents-list');
     handleFileUpload({target: {files: input.files}}, container, type);
 }
 
 function setupFormValidation() {
-    const form = document.getElementById('registrationForm');
+    const form = document.getElementById('personalInfoForm');
+    if (!form) {
+        console.warn('Form personalInfoForm not found');
+        return;
+    }
+    
     const submitBtn = document.getElementById('submitBtn');
+    if (!submitBtn) {
+        console.warn('Submit button not found');
+        return;
+    }
     
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -1165,7 +1488,10 @@ function setupFormValidation() {
 
 function validateForm() {
     let isValid = true;
-    const form = document.getElementById('registrationForm');
+    const form = document.getElementById('personalInfoForm');
+    if (!form) {
+        return false;
+    }
     
     // Check required fields
     const requiredFields = form.querySelectorAll('[required]');
@@ -1175,122 +1501,126 @@ function validateForm() {
         }
     });
     
-    // Check new diploma fields
+    // Check new diploma fields (only if they exist)
     const universityName = document.getElementById('university_name');
     const degreeType = document.getElementById('degree_type');
     const studyStartYear = document.getElementById('study_start_year');
     const studyEndYear = document.getElementById('study_end_year');
     const studyCountry = document.getElementById('study_country');
     
-    if (!universityName.value.trim()) {
+    if (universityName && !universityName.value.trim()) {
         showFieldError(universityName, '{{ t("university_required", lang) | default("University name is required") }}');
         isValid = false;
     }
     
-    if (!degreeType.value) {
+    if (degreeType && !degreeType.value) {
         showFieldError(degreeType, '{{ t("degree_type_required", lang) | default("Degree type is required") }}');
         isValid = false;
     }
     
-    if (!studyStartYear.value || !studyEndYear.value) {
-        if (!studyStartYear.value) {
-            showFieldError(studyStartYear, '{{ t("start_year_required", lang) | default("Start year is required") }}');
-        }
-        if (!studyEndYear.value) {
-            showFieldError(studyEndYear, '{{ t("end_year_required", lang) | default("End year is required") }}');
-        }
-        isValid = false;
-    } else {
-        // Validate year range
-        const startYear = parseInt(studyStartYear.value);
-        const endYear = parseInt(studyEndYear.value);
-        const currentYear = new Date().getFullYear();
-        
-        if (startYear > endYear) {
-            showFieldError(studyEndYear, '{{ t("end_year_before_start", lang) | default("End year must be after start year") }}');
+    if (studyStartYear && studyEndYear) {
+        if (!studyStartYear.value || !studyEndYear.value) {
+            if (!studyStartYear.value) {
+                showFieldError(studyStartYear, '{{ t("start_year_required", lang) | default("Start year is required") }}');
+            }
+            if (!studyEndYear.value) {
+                showFieldError(studyEndYear, '{{ t("end_year_required", lang) | default("End year is required") }}');
+            }
             isValid = false;
-        }
-        
-        if (startYear < 1950 || startYear > currentYear) {
-            showFieldError(studyStartYear, '{{ t("invalid_start_year", lang) | default("Start year must be between 1950 and current year") }}');
-            isValid = false;
-        }
-        
-        if (endYear < 1950 || endYear > currentYear) {
-            showFieldError(studyEndYear, '{{ t("invalid_end_year", lang) | default("End year must be between 1950 and current year") }}');
-            isValid = false;
+        } else {
+            // Validate year range
+            const startYear = parseInt(studyStartYear.value);
+            const endYear = parseInt(studyEndYear.value);
+            const currentYear = new Date().getFullYear();
+            
+            if (startYear > endYear) {
+                showFieldError(studyEndYear, '{{ t("end_year_before_start", lang) | default("End year must be after start year") }}');
+                isValid = false;
+            }
+            
+            if (startYear < 1950 || startYear > currentYear) {
+                showFieldError(studyStartYear, '{{ t("invalid_start_year", lang) | default("Start year must be between 1950 and current year") }}');
+                isValid = false;
+            }
+            
+            if (endYear < 1950 || endYear > currentYear) {
+                showFieldError(studyEndYear, '{{ t("invalid_end_year", lang) | default("End year must be between 1950 and current year") }}');
+                isValid = false;
+            }
         }
     }
     
-    if (!studyCountry.value) {
+    if (studyCountry && !studyCountry.value) {
         showFieldError(studyCountry, '{{ t("study_country_required", lang) | default("Country of study is required") }}');
         isValid = false;
     }
     
     // Check "Other" fields
-    const profession = document.getElementById('profession');
-    const otherProfession = document.getElementById('other_profession');
-    if (profession.value === 'other' && !otherProfession.value.trim()) {
-        showFieldError(otherProfession, '{{ t("other_profession_required", lang) | default("Please specify your profession") }}');
-        isValid = false;
-    }
-    
     const nationality = document.getElementById('nationality');
     const otherNationality = document.getElementById('other_nationality');
-    if (nationality.value === 'OTHER' && !otherNationality.value.trim()) {
+    if (nationality && otherNationality && nationality.value === 'OTHER' && !otherNationality.value.trim()) {
         showFieldError(otherNationality, '{{ t("other_nationality_required", lang) | default("Please specify your nationality") }}');
         isValid = false;
     }
     
     const legalStatus = document.getElementById('legal_status');
     const otherLegalStatus = document.getElementById('other_legal_status');
-    if (legalStatus.value === 'other' && !otherLegalStatus.value.trim()) {
+    if (legalStatus && otherLegalStatus && legalStatus.value === 'other' && !otherLegalStatus.value.trim()) {
         showFieldError(otherLegalStatus, '{{ t("other_legal_status_required", lang) | default("Please specify your legal status") }}');
         isValid = false;
     }
     
     const otherStudyCountry = document.getElementById('other_study_country');
-    if (studyCountry.value === 'OTHER' && !otherStudyCountry.value.trim()) {
+    if (studyCountry && otherStudyCountry && studyCountry.value === 'OTHER' && !otherStudyCountry.value.trim()) {
         showFieldError(otherStudyCountry, '{{ t("other_study_country_required", lang) | default("Please specify the country of study") }}');
         isValid = false;
     }
     
-    // Check password confirmation
+    // Check password confirmation (only if password fields exist - for registration forms)
     const password = document.getElementById('password');
     const confirmPassword = document.getElementById('confirm_password');
-    if (password.value !== confirmPassword.value) {
-        showFieldError(confirmPassword, '{{ t("passwords_dont_match", lang) | default("Passwords do not match") }}');
-        isValid = false;
-    }
-    
-    // Check password strength
-    if (password.value && !isPasswordStrong(password.value)) {
-        showFieldError(password, '{{ t("password_weak", lang) | default("Password must contain at least 8 characters with letters and numbers") }}');
-        isValid = false;
-    }
-    
-    // Check digital signature
-    const digitalSignature = document.getElementById('digital_signature');
-    const firstName = document.getElementById('first_name').value.trim();
-    const lastName = document.getElementById('last_name').value.trim();
-    const signature = digitalSignature.value.trim();
-    
-    if (!signature) {
-        showFieldError(digitalSignature, '{{ t("signature_required", lang) | default("Digital signature is required") }}');
-        isValid = false;
-    } else if (signature.length < 3) {
-        showFieldError(digitalSignature, '{{ t("signature_too_short", lang) | default("Digital signature must be at least 3 characters long") }}');
-        isValid = false;
-    } else {
-        // Check if signature contains both first and last name (flexible matching)
-        const firstNameLower = firstName.toLowerCase();
-        const lastNameLower = lastName.toLowerCase();
-        const signatureLower = signature.toLowerCase();
-        
-        if (firstNameLower && lastNameLower && 
-            (!signatureLower.includes(firstNameLower) || !signatureLower.includes(lastNameLower))) {
-            showFieldError(digitalSignature, '{{ t("signature_should_contain_name", lang) | default("Digital signature should contain your first and last name") }}');
+    if (password && confirmPassword) {
+        if (password.value !== confirmPassword.value) {
+            showFieldError(confirmPassword, '{{ t("passwords_dont_match", lang) | default("Passwords do not match") }}');
             isValid = false;
+        }
+        
+        // Check password strength
+        if (password.value && !isPasswordStrong(password.value)) {
+            showFieldError(password, '{{ t("password_weak", lang) | default("Password must contain at least 8 characters with letters and numbers") }}');
+            isValid = false;
+        }
+    }
+    
+    // Check digital signature (only if signature field exists - for registration forms)
+    const digitalSignature = document.getElementById('digital_signature');
+    if (digitalSignature) {
+        const firstName = document.getElementById('first_name');
+        const lastName = document.getElementById('last_name');
+        
+        if (firstName && lastName) {
+            const firstNameValue = firstName.value.trim();
+            const lastNameValue = lastName.value.trim();
+            const signature = digitalSignature.value.trim();
+            
+            if (!signature) {
+                showFieldError(digitalSignature, '{{ t("signature_required", lang) | default("Digital signature is required") }}');
+                isValid = false;
+            } else if (signature.length < 3) {
+                showFieldError(digitalSignature, '{{ t("signature_too_short", lang) | default("Digital signature must be at least 3 characters long") }}');
+                isValid = false;
+            } else {
+                // Check if signature contains both first and last name (flexible matching)
+                const firstNameLower = firstNameValue.toLowerCase();
+                const lastNameLower = lastNameValue.toLowerCase();
+                const signatureLower = signature.toLowerCase();
+                
+                if (firstNameLower && lastNameLower && 
+                    (!signatureLower.includes(firstNameLower) || !signatureLower.includes(lastNameLower))) {
+                    showFieldError(digitalSignature, '{{ t("signature_should_contain_name", lang) | default("Digital signature should contain your first and last name") }}');
+                    isValid = false;
+                }
+            }
         }
     }
     

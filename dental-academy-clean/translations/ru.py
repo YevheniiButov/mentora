@@ -3202,5 +3202,44 @@ translations = {
     'planner': 'Планировщик',
     'beta': 'БЕТА',
     'quick_test': 'Быстрый Тест',
-    'quick_test_description': 'Быстрая проверка знаний. Результаты показаны в конце.'
+    'quick_test_description': 'Быстрая проверка знаний. Результаты показаны в конце.',
+    
+    # Membership Card
+    'your_membership_card': 'Ваша карта участника Mentora',
+    'digital_card_subtitle': 'Цифровая карта для медицинских специалистов в Нидерландах',
+    'membership_card': 'Карта участника',
+    'membership_card_description': 'Ваша цифровая карта участника Mentora с QR-кодом',
+    'member_id': 'ID участника',
+    'valid_until': 'Действует до',
+    'scan_to_verify': 'Сканируйте для проверки',
+    'qr_not_generated': 'QR не сгенерирован',
+    'view_full_card': 'Просмотреть карту',
+    'download_png': 'Скачать PNG',
+    'download_pdf': 'Скачать PDF',
+    'generating_file': 'Генерация файла...',
+    'regenerate_qr': 'Обновить QR-код',
+    'qr_regenerated_success': 'QR-код успешно обновлен!',
+    'qr_regeneration_error': 'Ошибка при обновлении QR-кода',
+    'privacy_settings': 'Настройки приватности',
+    'allow_public_verification': 'Разрешить другим просматривать информацию моего профиля при сканировании QR-кода',
+    'privacy_note': 'Если отключено, будут показаны только ID участника и статус верификации. Ваше имя и другие данные останутся приватными.',
+    'profile_now_public': 'Ваш профиль теперь виден другим',
+    'profile_now_private': 'Ваш профиль теперь приватный',
+    'privacy_update_error': 'Ошибка при обновлении настроек приватности',
+    
+    # Profile Completion
+    'complete_profile_required': 'Завершите профиль',
+    'complete_profile_message': 'Для доступа к карте обучения, пожалуйста, заполните профиль информацией об образовании и профессии.',
+    'missing_information': 'Отсутствующая информация',
+    'country_of_study': 'Страна обучения',
+    'education_information': 'Информация об образовании',
+    'at_least_one': 'хотя бы одно поле',
+    'university_name': 'Название университета',
+    'degree_type': 'Тип степени',
+    'diploma_info': 'Информация о дипломе',
+    'profile_completion_note': 'Заполнение профиля помогает нам персонализировать ваш учебный опыт и предоставлять контент, соответствующий вашей подготовке и целям.',
+    'complete_profile_button': 'Завершить профиль',
+    
+    # Countdown Timer
+    'time_left': 'До сброса',
 }

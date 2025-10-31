@@ -42,33 +42,57 @@
     }
 }
 .quick-register-container {
-    max-width: 500px;
+    max-width: 550px;
     margin: 0 auto;
     padding: 20px;
     padding-top: 100px;
 }
 
+@media (max-width: 768px) {
+    .quick-register-header h1 {
+        font-size: 2rem;
+    }
+    
+    .quick-register-form {
+        padding: 30px 25px;
+    }
+}
+
 .quick-register-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .quick-register-header h1 {
-    color: #2c3e50;
-    margin-bottom: 10px;
-    font-size: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 15px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 .quick-register-header p {
-    color: #7f8c8d;
-    font-size: 16px;
+    color: #6b7280;
+    font-size: 17px;
+    line-height: 1.6;
+    max-width: 450px;
+    margin: 0 auto;
 }
 
 .quick-register-form {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    padding: 40px;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 10px rgba(0, 0, 0, 0.04);
+    padding: 45px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    transition: all 0.3s ease;
+}
+
+.quick-register-form:hover {
+    box-shadow: 0 15px 50px rgba(102, 126, 234, 0.12), 0 5px 15px rgba(0, 0, 0, 0.06);
 }
 
 .form-group {
@@ -77,24 +101,33 @@
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: 600;
-    color: #2c3e50;
+    color: #374151;
+    font-size: 15px;
+    letter-spacing: 0.2px;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
+    padding: 14px 18px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
     font-size: 16px;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    color: #111827;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-control:hover {
+    border-color: #d1d5db;
 }
 
 .form-row {
@@ -122,21 +155,28 @@
 
 .btn-submit {
     width: 100%;
-    background: linear-gradient(135deg, #007bff, #0056b3);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 16px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 17px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 30px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.btn-submit:active {
+    transform: translateY(-1px);
 }
 
 .btn-submit:disabled {
@@ -147,17 +187,31 @@
 
 .back-link {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .back-link a {
-    color: #007bff;
+    color: #667eea;
     text-decoration: none;
     font-weight: 500;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .back-link a:hover {
-    text-decoration: underline;
+    color: #764ba2;
+    transform: translateX(-3px);
+}
+
+.back-link a i {
+    transition: transform 0.3s ease;
+}
+
+.back-link a:hover i {
+    transform: translateX(-3px);
 }
 
 .recaptcha-container {
@@ -223,7 +277,6 @@
 <div class="quick-register-container">
     <div class="quick-register-header">
         <h1>
-            <i class="bi bi-lightning-charge text-primary"></i>
             {{ t('quick_registration', lang) | default('Быстрая регистрация') }}
         </h1>
         <p>{{ t('quick_registration_subtitle', lang) | default('Заполните основные данные для быстрого доступа к программе') }}</p>

@@ -784,6 +784,9 @@ def profession_learning_map(lang, profession):
 SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
 DEFAULT_LANGUAGE = 'en'
 
+# Import profile check utility
+from utils.profile_check import check_profile_complete
+
 @learning_map_bp.before_request
 def before_request_learning_map():
     """Выполняется перед каждым запросом к learning_map"""
@@ -806,6 +809,12 @@ def before_request_learning_map():
     # Обновляем сессию, если язык отличается
     if session.get('lang') != g.lang:
         session['lang'] = g.lang
+    
+    # Сохраняем проверку профиля в g для использования в routes
+    # Но не блокируем доступ к странице complete-profile
+    if (current_user.is_authenticated and 
+        request.endpoint != 'learning_map_bp.complete_profile'):
+        g.profile_check = check_profile_complete(current_user)
 
 @learning_map_bp.context_processor
 def inject_lang_learning_map():
@@ -880,12 +889,33 @@ def check_categories(lang):
         return f"<h1>Ошибка</h1><p>{str(e)}</p><p>Тип: {type(e).__name__}</p>"
 
 # --- Маршрут отображения карты обучения (обновленный) ---
+@learning_map_bp.route("/complete-profile")
+@login_required
+def complete_profile(lang):
+    """Страница с призывом заполнить профиль перед доступом к карте обучения"""
+    profile_check = check_profile_complete(current_user)
+    
+    return render_template(
+        'learning/complete_profile_required.html',
+        lang=lang,
+        user=current_user,
+        profile_check=profile_check
+    )
+
 @learning_map_bp.route("/")
 @learning_map_bp.route("/<string:path_id>")
 @login_required
 def learning_map(lang, path_id=None):
     """Отображает интерактивную карту обучения."""
     current_lang = g.lang
+    
+    # Проверка полноты профиля - если неполный, перенаправляем на страницу заполнения
+    profile_check = getattr(g, 'profile_check', None)
+    if not profile_check:
+        profile_check = check_profile_complete(current_user)
+    
+    if not profile_check['is_complete']:
+        return redirect(url_for('learning_map_bp.complete_profile', lang=current_lang))
     
     try:
         # Добавьте явный импорт ContentCategory

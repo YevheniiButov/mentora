@@ -13,44 +13,50 @@ daily_progress_bp = Blueprint('daily_progress', __name__, url_prefix='/api')
 @login_required
 def get_daily_progress():
     """
-    Получить прогресс пользователя на сегодня
+    Получить прогресс пользователя на сегодня (календарный день)
+    Все компоненты используют календарный день, сбрасываются в полночь
     """
     try:
-        # Используем последние 24 часа вместо календарного дня (UTC-aware)
+        # Используем календарный день (сброс в полночь)
         try:
             now = datetime.now(timezone.utc)
         except Exception:
             now = datetime.now()
-        yesterday = now - timedelta(hours=24)
         
-        # Tests progress - используем DiagnosticSession вместо TestAttempt
+        # Получаем начало и конец сегодняшнего дня в UTC
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+        
+        current_app.logger.info(f"Daily progress check: user={current_user.id}, today_start={today_start}, today_end={today_end}")
+        
+        # Tests progress - используем DiagnosticSession с календарным днем
         from models import DiagnosticSession
         tests_today = DiagnosticSession.query.filter(
             DiagnosticSession.user_id == current_user.id,
-            DiagnosticSession.started_at >= yesterday,
-            DiagnosticSession.started_at <= now
+            DiagnosticSession.started_at >= today_start,
+            DiagnosticSession.started_at < today_end  # До начала следующего дня
         ).all()
         
         tests_completed = len([t for t in tests_today if getattr(t, 'completed_at', None) is not None])
         tests_in_progress = len([t for t in tests_today if getattr(t, 'completed_at', None) is None])
         
-        # Terms progress - get from daily flashcard progress
+        # Terms progress - get from daily flashcard progress (уже использует календарный день)
         daily_flashcard = DailyFlashcardProgress.query.filter_by(
             user_id=current_user.id,
-            date=now.date()
+            date=now.date()  # Календарный день
         ).first()
         
         terms_completed = daily_flashcard.terms_studied if daily_flashcard and daily_flashcard.terms_studied is not None else 0
         terms_in_progress = 1 if terms_completed == 0 else 0  # Show as in progress if not completed
         
         # Log the progress
-        print(f"Daily progress check: user={current_user.id}, terms_studied={terms_completed}, daily_flashcard={daily_flashcard}")
+        current_app.logger.info(f"Daily progress check: user={current_user.id}, terms_studied={terms_completed}, daily_flashcard={daily_flashcard}")
         
-        # VP progress
+        # VP progress - используем календарный день
         vp_today = VirtualPatientAttempt.query.filter(
             VirtualPatientAttempt.user_id == current_user.id,
-            VirtualPatientAttempt.started_at >= yesterday,
-            VirtualPatientAttempt.started_at <= now
+            VirtualPatientAttempt.started_at >= today_start,
+            VirtualPatientAttempt.started_at < today_end  # До начала следующего дня
         ).all()
         
         vp_completed = len([v for v in vp_today if getattr(v, 'completed', False)])

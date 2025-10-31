@@ -23,7 +23,7 @@ def get_stripe_client():
     return stripe
 
 def generate_member_qr(user):
-    """Generate QR code for premium member"""
+    """Generate QR code for member verification"""
     import qrcode
     
     # Generate member ID if doesn't exist
@@ -34,10 +34,16 @@ def generate_member_qr(user):
     qr_dir = os.path.join(current_app.static_folder, 'qr_codes')
     os.makedirs(qr_dir, exist_ok=True)
     
-    # QR data: verification URL
-    qr_data = f"https://mentora.nl/verify/{user.member_id}"
+    # QR data: verification URL - configurable via environment variable
+    # Try multiple domain options in order of preference
+    base_url = os.getenv('QR_BASE_URL') or os.getenv('APP_URL') or 'https://bigmentor.nl'
+    # Remove trailing slash if present
+    base_url = base_url.rstrip('/')
+    qr_data = f"{base_url}/membership/verify/{user.member_id}"
     
-    # Generate QR with teal corner markers
+    current_app.logger.info(f"Generating QR code for {user.member_id} with URL: {qr_data}")
+    
+    # Generate QR code
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -60,22 +66,10 @@ def generate_member_qr(user):
     
     return user.qr_code_path
 
-@membership_bp.route('/verify/<member_id>')
-def verify_member(member_id):
-    """Public verification page when QR scanned"""
-    user = User.query.filter_by(member_id=member_id).first_or_404()
-    
-    # Check if membership valid
-    is_valid = (
-        user.membership_type == 'premium' and
-        user.membership_expires and
-        user.membership_expires > datetime.utcnow()
-    )
-    
-    return render_template('membership/verify.html',
-        member=user,
-        is_valid=is_valid
-    )
+# NOTE: The /verify/<member_id> route is now handled directly in app.py as a public route
+# without language prefix for QR code scanning. Keeping this route in blueprint would 
+# require language prefix which breaks QR codes.
+# See app.py:public_verify_member() for the implementation.
 
 @membership_bp.route('/generate-qr')
 @login_required
@@ -100,6 +94,75 @@ def generate_qr():
         current_app.logger.error(f"Error generating QR code: {e}")
         flash('Ошибка при генерации QR кода', 'error')
         return redirect(url_for('membership_card'))
+
+@membership_bp.route('/regenerate-qr', methods=['POST'])
+@login_required
+def regenerate_qr():
+    """Regenerate QR code with correct bigmentor.nl URL"""
+    if not current_user.is_authenticated:
+        return jsonify({'success': False, 'error': 'Not authenticated'}), 401
+    
+    try:
+        # Delete old QR code file if exists
+        if current_user.qr_code_path:
+            old_qr_path = os.path.join(current_app.static_folder, current_user.qr_code_path)
+            if os.path.exists(old_qr_path):
+                try:
+                    os.remove(old_qr_path)
+                except Exception as e:
+                    current_app.logger.warning(f"Could not delete old QR file: {e}")
+        
+        # Generate new QR code with correct URL
+        qr_path = generate_member_qr(current_user)
+        
+        current_app.logger.info(f"QR code regenerated for user {current_user.id}: {qr_path}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'QR code regenerated successfully',
+            'qr_path': qr_path
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error regenerating QR code: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@membership_bp.route('/update-privacy', methods=['POST'])
+@login_required
+def update_privacy():
+    """Update profile public visibility preference"""
+    if not current_user.is_authenticated:
+        return jsonify({'success': False, 'error': 'Not authenticated'}), 401
+    
+    try:
+        data = request.get_json()
+        profile_public = data.get('profile_public', True)
+        
+        # Update user preference
+        current_user.profile_public = profile_public
+        db.session.commit()
+        
+        current_app.logger.info(f"Privacy settings updated for user {current_user.id}: profile_public={profile_public}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Privacy settings updated successfully',
+            'profile_public': profile_public
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error updating privacy settings: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @membership_bp.route('/upgrade-to-premium')
 @login_required

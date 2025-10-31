@@ -93,11 +93,6 @@
         color: white;
     }
     
-    .menu-icon.documents {
-        background: linear-gradient(135deg, #f093fb, #f5576c);
-        color: white;
-    }
-    
     .menu-icon.settings {
         background: linear-gradient(135deg, #4facfe, #00f2fe);
         color: white;
@@ -108,8 +103,8 @@
         color: white;
     }
     
-    .menu-icon.statistics {
-        background: linear-gradient(135deg, #fa709a, #fee140);
+    .menu-icon.membership {
+        background: linear-gradient(135deg, #00bfa5, #00897b);
         color: white;
     }
     
@@ -123,17 +118,6 @@
     .menu-description {
         color: #718096;
         line-height: 1.5;
-    }
-    
-    .coming-soon-badge {
-        background: #fbbf24;
-        color: #92400e;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        display: inline-block;
-        margin-top: 0.5rem;
     }
     
     .profile-completion {
@@ -246,18 +230,6 @@
             </a>
             
             <a href="{{ url_for('profile.settings', lang=lang) }}" class="menu-card">
-                <div class="menu-icon documents">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                <h3 class="menu-title">
-                    {{ t('documents', lang) | default('Документы') }}
-                </h3>
-                <p class="menu-description">
-                    {{ t('documents_description', lang) | default('Загрузка дипломов, сертификатов и других документов') }}
-                </p>
-            </a>
-            
-            <a href="{{ url_for('profile.settings', lang=lang) }}" class="menu-card">
                 <div class="menu-icon settings">
                     <i class="fas fa-cog"></i>
                 </div>
@@ -281,20 +253,18 @@
                 </p>
             </a>
             
-            <a href="{{ url_for('profile.statistics', lang=lang) }}" class="menu-card">
-                <div class="menu-icon statistics">
-                    <i class="fas fa-chart-bar"></i>
+            <a href="{{ url_for('profile.membership_card', lang=lang) }}" class="menu-card">
+                <div class="menu-icon membership">
+                    <i class="fas fa-id-card"></i>
                 </div>
                 <h3 class="menu-title">
-                    {{ t('statistics', lang) | default('Статистика') }}
+                    {{ t('membership_card', lang) | default('Карта участника') }}
                 </h3>
                 <p class="menu-description">
-                    {{ t('statistics_description', lang) | default('Прогресс обучения и достижения') }}
+                    {{ t('membership_card_description', lang) | default('Ваша цифровая карта участника Mentora с QR-кодом') }}
                 </p>
-                <span class="coming-soon-badge">
-                    {{ t('coming_soon', lang) | default('Скоро') }}
-                </span>
             </a>
+            
         </div>
     </div>
 </div>

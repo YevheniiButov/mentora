@@ -560,18 +560,22 @@ def automated_practice(plan_id=None, week=None):
         week = session.get('current_week')
     
     current_session = session.get('current_session')
-    # Auto-rotate daily session by calendar date
+    # Auto-rotate daily session by calendar date (сброс в полночь)
     try:
         from datetime import date as _date
         session_date = session.get('daily_session_date')
-        if session_date and session_date != _date.today().isoformat():
+        today_str = _date.today().isoformat()
+        
+        if session_date and session_date != today_str:
             # Outdated daily session → start a new one
+            current_app.logger.info(f"Daily session date mismatch: session_date={session_date}, today={today_str}. Resetting session.")
             session.pop('daily_session_questions', None)
             session.pop('daily_session_diagnostic_id', None)
             session.pop('daily_session_active', None)
             session.pop('daily_session_date', None)
             return redirect(url_for('individual_plan_api.start_daily_session'))
-    except Exception:
+    except Exception as e:
+        current_app.logger.warning(f"Error checking daily session date: {e}")
         pass
     
     print(f"🔧 DEBUG: automated_practice - plan_id={plan_id}, week={week}, session={current_session}")
@@ -803,11 +807,17 @@ def complete_automated_session():
         db.session.commit()
         
         # Update session data
-        if next_session:
+        # ✅ Для дневных сессий всегда возвращаем на карту дневной сессии после завершения
+        if session.get('daily_session_active'):
+            # После завершения любой сессии в дневном режиме возвращаем на карту дневной сессии
+            # Пользователь сам выберет следующий шаг оттуда
+            lang = session.get('lang', 'nl')
+            redirect_url = f'/{lang}/learning-map/daily-session'
+        elif next_session:
             session['current_week'] = next_week['week_number']
             session['current_session'] = next_session
             
-            # Determine next redirect
+            # Determine next redirect (для не-дневных сессий)
             if next_session['type'] == 'theory':
                 redirect_url = url_for('learning.automated_theory')
             elif next_session['type'] == 'practice':
@@ -821,13 +831,9 @@ def complete_automated_session():
         else:
             # All sessions completed
             if session.get('daily_session_active'):
-                # Если это дневная сессия и план не знает «следующей», принудительно идём к терминам
-                session['current_session'] = {
-                    'type': 'theory',
-                    'day': (current_session or {}).get('day', 'Today'),
-                    'duration': 20
-                }
-                redirect_url = url_for('learning.automated_theory')
+                # Если это дневная сессия и план не знает «следующей», возвращаем на карту дневной сессии
+                lang = session.get('lang', 'nl')
+                redirect_url = f'/{lang}/learning-map/daily-session'
             else:
                 session.pop('learning_plan_id', None)
                 session.pop('current_week', None)

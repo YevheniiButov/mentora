@@ -674,39 +674,6 @@ try:
     # Система контроля доступа отключена (модуль не существует)
     # logger.info("ℹ️ Access control system not implemented")
     
-    # Membership card route
-    @app.route('/membership/card')
-    @login_required
-    def membership_card():
-        """Display digital membership card for authenticated users"""
-        if not current_user.is_authenticated:
-            return redirect(url_for('login'))
-        
-        # Generate member ID if not exists
-        if not hasattr(current_user, 'member_id') or not current_user.member_id:
-            # Generate a simple member ID based on user ID
-            import hashlib
-            user_hash = hashlib.md5(str(current_user.id).encode()).hexdigest()[:5].upper()
-            current_user.member_id = f"MNT-{user_hash}"
-            db.session.commit()
-        
-        # Set membership expiry date if not exists (1 year from now)
-        if not hasattr(current_user, 'membership_expires') or not current_user.membership_expires:
-            from datetime import datetime, timedelta
-            current_user.membership_expires = datetime.now() + timedelta(days=365)
-            db.session.commit()
-        
-        # Generate QR code if user is premium and doesn't have one
-        if (current_user.membership_type == 'premium' and 
-            (not hasattr(current_user, 'qr_code_path') or not current_user.qr_code_path)):
-            try:
-                from routes.membership_routes import generate_member_qr
-                generate_member_qr(current_user)
-            except Exception as e:
-                logger.warning(f"Could not generate QR code: {e}")
-        
-        return render_template('membership/card.html')
-    
 except ImportError as e:
     logger.warning(f"Could not import routes: {e}")
     logger.info("Creating minimal routes...")
@@ -736,6 +703,92 @@ except ImportError as e:
 
 # ========================================
 # SIMPLE TEST ROUTES
+# ========================================
+# PUBLIC MEMBERSHIP VERIFICATION ROUTE (for QR codes)
+# ========================================
+# This route MUST be outside try-except to guarantee registration
+# It's accessible without language prefix for QR code scanning
+
+@app.route('/membership/verify/<member_id>')
+def public_verify_member(member_id):
+    """Public verification page when QR scanned - accessible without language prefix"""
+    try:
+        from models import User
+        from datetime import datetime
+        
+        user = User.query.filter_by(member_id=member_id).first_or_404()
+        
+        # Check if user allows public profile visibility
+        profile_public = getattr(user, 'profile_public', True)  # Default to True for backwards compatibility
+        
+        # Check if membership is active
+        is_valid = (
+            user.membership_expires and
+            user.membership_expires > datetime.utcnow()
+        )
+        
+        # Mask email for privacy (show only first 2 chars and domain)
+        masked_email = None
+        if user.email and profile_public:
+            email_parts = user.email.split('@')
+            if len(email_parts) == 2:
+                username = email_parts[0]
+                domain = email_parts[1]
+                # Show first 2 chars + asterisks
+                masked_username = username[:2] + '*' * min(len(username) - 2, 5)
+                masked_email = f"{masked_username}@{domain}"
+            else:
+                masked_email = user.email[:3] + '***'
+        
+        # Set default language for template
+        if 'lang' not in session:
+            session['lang'] = 'nl'
+        g.lang = session.get('lang', 'nl')
+        
+        logger.info(f"Public membership verification: member_id={member_id}, profile_public={profile_public}")
+        
+        return render_template('membership/verify.html',
+            member=user,
+            is_valid=is_valid,
+            masked_email=masked_email,
+            profile_public=profile_public
+        )
+    except Exception as e:
+        logger.error(f"Error in public_verify_member for {member_id}: {e}", exc_info=True)
+        abort(404)
+
+@app.route('/membership/card')
+@login_required
+def membership_card():
+    """Display digital membership card for authenticated users"""
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
+    
+    # Generate member ID if not exists
+    if not hasattr(current_user, 'member_id') or not current_user.member_id:
+        # Generate a simple member ID based on user ID
+        import hashlib
+        user_hash = hashlib.md5(str(current_user.id).encode()).hexdigest()[:5].upper()
+        current_user.member_id = f"MNT-{user_hash}"
+        db.session.commit()
+    
+    # Set membership expiry date if not exists (1 year from now)
+    if not hasattr(current_user, 'membership_expires') or not current_user.membership_expires:
+        from datetime import datetime, timedelta
+        current_user.membership_expires = datetime.now() + timedelta(days=365)
+        db.session.commit()
+    
+    # Generate QR code if user is premium and doesn't have one
+    if (current_user.membership_type == 'premium' and 
+        (not hasattr(current_user, 'qr_code_path') or not current_user.qr_code_path)):
+        try:
+            from routes.membership_routes import generate_member_qr
+            generate_member_qr(current_user)
+        except Exception as e:
+            logger.warning(f"Could not generate QR code: {e}")
+    
+    return render_template('membership/card.html')
+
 # ========================================
 
 @app.route('/health')

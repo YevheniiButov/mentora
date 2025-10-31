@@ -99,6 +99,7 @@ class User(db.Model, UserMixin):
     study_start_year = db.Column(db.Integer, nullable=True)  # Start year of studies
     study_end_year = db.Column(db.Integer, nullable=True)  # End year of studies
     study_country = db.Column(db.String(50), nullable=True)  # Country where studies were completed
+    other_study_country = db.Column(db.String(100), nullable=True)  # Custom study country if "OTHER" selected
     medical_specialization = db.Column(db.String(100), nullable=True)  # Medical specialization
     additional_education_info = db.Column(db.Text, nullable=True)  # Additional education information
     
@@ -133,6 +134,7 @@ class User(db.Model, UserMixin):
     qr_code_path = db.Column(db.String(200), nullable=True)
     membership_type = db.Column(db.String(20), default='free')  # free, premium
     membership_expires = db.Column(db.DateTime, nullable=True)
+    profile_public = db.Column(db.Boolean, default=True)  # Allow public QR verification
     
     # Consent fields (new simplified structure)
     required_consents = db.Column(db.Boolean, default=False)  # Terms, Privacy, Data Processing, Data Usage

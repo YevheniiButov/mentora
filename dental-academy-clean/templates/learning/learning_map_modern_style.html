@@ -6,6 +6,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ t('learning_map', lang)|default('Learning Map') }} - {{ t('modern_style', lang)|default('Modern Style') }}</title>
     
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -1355,10 +1360,18 @@
         .plan-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 32px;
             padding-bottom: 20px;
             border-bottom: 2px solid #f3f4f6;
+            gap: 20px;
+        }
+
+        .plan-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
         }
 
         .plan-header h2 {
@@ -1366,6 +1379,75 @@
             font-weight: 700;
             color: #1f2937;
             margin: 0;
+        }
+
+        /* Countdown Timer Styles */
+        .countdown-timer {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #bfdbfe;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e40af;
+            transition: all 0.3s ease;
+        }
+
+        .countdown-timer i {
+            font-size: 16px;
+            animation: tick 1s ease-in-out infinite;
+        }
+
+        @keyframes tick {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        .countdown-timer .countdown-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .countdown-timer .countdown-time {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #1e40af;
+            min-width: 80px;
+        }
+
+        .countdown-timer.countdown-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #fbbf24;
+            color: #92400e;
+        }
+
+        .countdown-timer.countdown-warning .countdown-time {
+            color: #92400e;
+        }
+
+        .countdown-timer.countdown-urgent {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #f87171;
+            color: #991b1b;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .countdown-timer.countdown-urgent .countdown-time {
+            color: #991b1b;
+        }
+
+        .countdown-timer.countdown-urgent i {
+            animation: tick 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
         }
 
         .plan-status {
@@ -1628,8 +1710,22 @@
                 align-items: flex-start;
             }
 
+            .plan-header-left {
+                width: 100%;
+            }
+
             .plan-header h2 {
                 font-size: 24px;
+            }
+
+            .countdown-timer {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            .countdown-timer .countdown-time {
+                font-size: 13px;
+                min-width: 70px;
             }
 
             .plan-item {
@@ -3650,7 +3746,16 @@
                     <!-- TODAY'S PLAN CARD -->
                     <div class="daily-plan-card">
                     <div class="plan-header">
-                            <h2>Vandaag te doen</h2>
+                            <div class="plan-header-left">
+                                <h2>Vandaag te doen</h2>
+                                <!-- Countdown Timer -->
+                                <div class="countdown-timer" 
+                                     :class="{ 'countdown-warning': timeUntilMidnight.hours < 2, 'countdown-urgent': timeUntilMidnight.hours < 1 }">
+                                    <i class="bi bi-clock"></i>
+                                    <span class="countdown-label">{{ t('time_left', lang) | default('Tot reset') }}:</span>
+                                    <span class="countdown-time" x-text="formatCountdown()"></span>
+                                </div>
+                            </div>
                             <span class="plan-status" :class="'status-' + getTodayStatus()">
                                 <span x-text="getTodayCompletionPercentage() + '%'"></span> voltooid
                             </span>
@@ -4180,6 +4285,10 @@
                 showQuickDiagnosticModal: false,
                 individualPlanDataLoaded: false,
                 
+                // Countdown timer data
+                timeUntilMidnight: { hours: 0, minutes: 0, seconds: 0 },
+                countdownInterval: null,
+                
                 // Celebration data
                 showCelebration: false,
                 celebrationAnimation: '',
@@ -4248,9 +4357,62 @@
                         console.error('Failed to load games statistics:', error);
                     }
                 },
+                updateCountdown() {
+                    // Calculate time until midnight (UTC)
+                    const now = new Date();
+                    const midnight = new Date(now);
+                    midnight.setUTCHours(24, 0, 0, 0); // Next midnight in UTC
+                    
+                    const diff = midnight - now;
+                    
+                    if (diff <= 0) {
+                        // Already past midnight, reset to next day
+                        this.timeUntilMidnight = { hours: 0, minutes: 0, seconds: 0 };
+                        return;
+                    }
+                    
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    
+                    this.timeUntilMidnight = { hours, minutes, seconds };
+                },
+                
+                formatCountdown() {
+                    const h = String(this.timeUntilMidnight.hours).padStart(2, '0');
+                    const m = String(this.timeUntilMidnight.minutes).padStart(2, '0');
+                    const s = String(this.timeUntilMidnight.seconds).padStart(2, '0');
+                    return `${h}:${m}:${s}`;
+                },
+                
+                startCountdown() {
+                    // Update immediately
+                    this.updateCountdown();
+                    
+                    // Update every second
+                    if (this.countdownInterval) {
+                        clearInterval(this.countdownInterval);
+                    }
+                    this.countdownInterval = setInterval(() => {
+                        this.updateCountdown();
+                    }, 1000);
+                },
+                
+                // Cleanup countdown on component destroy
+                destroy() {
+                    if (this.countdownInterval) {
+                        clearInterval(this.countdownInterval);
+                        this.countdownInterval = null;
+                    }
+                },
+                
                 async init() {
                     console.log('🚀 Learning Map initialized');
                     console.log('Initial activeTab:', this.activeTab);
+                    
+                    // Start countdown timer
+                    this.startCountdown();
+                    
                     // Load user statistics first
                     await this.loadUserStats();
                     

@@ -1,124 +1,127 @@
 {% extends "base.html" %}
 
-{% block title %}Верификация участника Mentora{% endblock %}
+{% block title %}Mentora Member Verification{% endblock %}
 
 {% block extra_css %}
 <style>
+    body {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdfa 100%);
+        min-height: 100vh;
+    }
+    
     .verification-container {
-        max-width: 600px;
-        margin: 2rem auto;
-        padding: 2rem;
+        max-width: 650px;
+        margin: 6rem auto 2rem;
+        padding: 2.5rem;
         background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(79, 70, 229, 0.12), 0 10px 30px rgba(20, 184, 166, 0.08);
+        border: 2px solid #e5e7eb;
     }
     
     .verification-header {
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .verification-header .logo {
+        height: 50px;
+        margin-bottom: 1.5rem;
     }
     
     .verification-header h1 {
-        color: #2c3e50;
+        color: #111827;
+        font-size: 2rem;
+        font-weight: 700;
         margin-bottom: 0.5rem;
     }
     
     .verification-header .subtitle {
-        color: #6c757d;
-        font-size: 1.1rem;
+        color: #6b7280;
+        font-size: 1.05rem;
+        font-weight: 500;
     }
     
     .member-card {
-        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-        border: 2px solid #00bfa5;
-        border-radius: 16px;
+        background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+        border: 3px solid #e5e7eb;
+        border-radius: 20px;
         padding: 2rem;
-        color: #ffffff;
         margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .member-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .member-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+    
+    .member-profession {
+        font-size: 1.15rem;
+        color: #14b8a6;
+        font-weight: 600;
     }
     
     .member-info {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: 1.5rem;
         margin-bottom: 1.5rem;
     }
     
     .info-item {
         display: flex;
         flex-direction: column;
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: 12px;
     }
     
     .info-label {
-        font-size: 0.9rem;
-        color: #cccccc;
-        margin-bottom: 0.3rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .info-value {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #ffffff;
+        color: #111827;
     }
     
     .status-section {
         text-align: center;
         padding: 1.5rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     }
     
     .status-valid {
-        background: linear-gradient(135deg, #00bfa5, #00897b);
+        background: linear-gradient(135deg, #14b8a6, #0d9488);
         color: #ffffff;
     }
     
     .status-invalid {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        background: linear-gradient(135deg, #ef4444, #dc2626);
         color: #ffffff;
-    }
-    
-    .status-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-    
-    .status-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-    
-    .status-description {
-        font-size: 1rem;
-        opacity: 0.9;
-    }
-    
-    .member-since {
-        text-align: center;
-        color: #cccccc;
-        font-size: 0.9rem;
-        margin-top: 1rem;
-    }
-    
-    .back-link {
-        text-align: center;
-        margin-top: 2rem;
-    }
-    
-    .back-link a {
-        color: #00bfa5;
-        text-decoration: none;
-        font-weight: 600;
-    }
-    
-    .back-link a:hover {
-        text-decoration: underline;
     }
     
     @media (max-width: 768px) {
         .verification-container {
-            margin: 1rem;
+            margin: 5rem 1rem 2rem;
             padding: 1.5rem;
         }
         
@@ -136,72 +139,99 @@
 {% block content %}
 <div class="verification-container">
     <div class="verification-header">
-        <h1>Верификация участника</h1>
-        <p class="subtitle">Mentora - Клуб медицинских специалистов-беженцев</p>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora" class="logo">
+        <h1>Member Verification</h1>
+        <p class="subtitle">Mentora Medical Professional Community</p>
     </div>
     
-    <div class="member-card">
-        <div class="member-info">
-            <div class="info-item">
-                <span class="info-label">Имя</span>
-                <span class="info-value">{{ member.full_name or 'Не указано' }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Профессия</span>
-                <span class="info-value">{{ member.profession or 'Не указано' }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">ID участника</span>
-                <span class="info-value">{{ member.member_id }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Тип членства</span>
-                <span class="info-value">{{ member.membership_type.title() }}</span>
-            </div>
-        </div>
-        
-        <div class="status-section {% if is_valid %}status-valid{% else %}status-invalid{% endif %}">
-            <div class="status-icon">
-                {% if is_valid %}
-                    ✓
-                {% else %}
-                    ✗
-                {% endif %}
-            </div>
-            <div class="status-title">
-                {% if is_valid %}
-                    Действительное членство
-                {% else %}
-                    Недействительное членство
-                {% endif %}
-            </div>
-            <div class="status-description">
-                {% if is_valid %}
-                    Участник имеет активное премиум членство
-                {% else %}
-                    {% if member.membership_type != 'premium' %}
-                        Участник не имеет премиум членства
-                    {% elif not member.membership_expires %}
-                        Срок членства не установлен
-                    {% else %}
-                        Срок членства истек
-                    {% endif %}
-                {% endif %}
-            </div>
-        </div>
-        
-        {% if member.membership_expires %}
-        <div class="member-since">
-            Действительно до: {{ member.membership_expires.strftime('%d.%m.%Y') }}
-        </div>
+    <!-- Status Section -->
+    <div class="status-section {% if is_valid %}status-valid{% else %}status-invalid{% endif %}">
+        {% if is_valid %}
+            <h2 style="font-size: 1.75rem; margin: 0 0 0.5rem 0;"><i class="fas fa-check-circle"></i> Verified Member</h2>
+            <p style="font-size: 1.05rem; margin: 0;">Valid until {{ member.membership_expires.strftime('%d/%m/%Y') if member.membership_expires else 'No expiry date' }}</p>
+        {% else %}
+            <h2 style="font-size: 1.75rem; margin: 0 0 0.5rem 0;"><i class="fas fa-exclamation-circle"></i> Membership Expired</h2>
+            <p style="font-size: 1.05rem; margin: 0;">Please contact administration</p>
         {% endif %}
     </div>
     
-    <div class="back-link">
-        <a href="https://mentora.nl">← Вернуться на сайт Mentora</a>
+    <!-- Member Card -->
+    <div class="member-card">
+        {% if profile_public %}
+            <!-- Full Profile (User allows public view) -->
+            <div class="member-header">
+                <h3 class="member-name">{{ member.first_name }} {{ member.last_name }}</h3>
+                <p class="member-profession">
+                    {% if member.profession == 'tandarts' %}Dentist
+                    {% elif member.profession == 'huisarts' %}General Practitioner
+                    {% elif member.profession == 'verpleegkundige' %}Nurse
+                    {% elif member.profession == 'apotheker' %}Pharmacist
+                    {% else %}{{ member.profession or 'Medical Professional' }}
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="member-info">
+                <div class="info-item">
+                    <span class="info-label">Member ID</span>
+                    <span class="info-value">{{ member.member_id }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Membership Type</span>
+                    <span class="info-value" style="text-transform: capitalize; color: #14b8a6; font-weight: 700;">
+                        {{ member.membership_type or 'Standard' }}
+                    </span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Member Since</span>
+                    <span class="info-value">{{ member.created_at.strftime('%B %Y') if member.created_at else 'N/A' }}</span>
+                </div>
+                
+                {% if masked_email %}
+                <div class="info-item">
+                    <span class="info-label">Contact (Protected)</span>
+                    <span class="info-value" style="font-size: 0.95rem; color: #6b7280;">
+                        <i class="fas fa-envelope" style="margin-right: 0.5rem; color: #14b8a6;"></i>{{ masked_email }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <!-- Private Profile (User chose to hide details) -->
+            <div class="member-header" style="text-align: center; padding: 3rem 1rem;">
+                <i class="fas fa-user-lock" style="font-size: 3rem; color: #cbd5e0; margin-bottom: 1.5rem;"></i>
+                <h3 class="member-name" style="color: #6b7280;">Private Profile</h3>
+                <p style="color: #9ca3af; font-size: 1rem; margin-top: 1rem;">
+                    This member has chosen to keep their profile information private.
+                </p>
+            </div>
+            
+            <div class="member-info" style="grid-template-columns: 1fr;">
+                <div class="info-item" style="text-align: center;">
+                    <span class="info-label">Member ID</span>
+                    <span class="info-value">{{ member.member_id }}</span>
+                </div>
+                
+                <div class="info-item" style="text-align: center;">
+                    <span class="info-label">Status</span>
+                    <span class="info-value" style="color: #14b8a6; font-weight: 700;">
+                        {% if is_valid %}✓ Verified Member{% else %}Membership Expired{% endif %}
+                    </span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div style="text-align: center; margin-top: 2rem; padding: 1.5rem; background: #f9fafb; border-radius: 16px; border: 2px solid #e5e7eb;">
+        <p style="color: #6b7280; font-size: 0.95rem; margin: 0 0 0.5rem 0;">
+            <i class="fas fa-shield-alt" style="color: #14b8a6;"></i> <strong>Secure Verification</strong>
+        </p>
+        <p style="color: #9ca3af; font-size: 0.85rem; margin: 0;">
+            This page is publicly accessible via QR code for membership verification.<br>
+            Personal contact information is protected and partially hidden for security.
+        </p>
     </div>
 </div>
 {% endblock %}
-
-
-

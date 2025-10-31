@@ -914,6 +914,25 @@
     <!-- Mobile Dropdown Fix - Load last to avoid conflicts -->
     <!-- <script src="{{ url_for('static', filename='js/mobile-dropdown-fix.js') }}"></script> -->
     
+    <!-- Passive Event Listeners Fix for Better Performance -->
+    <script>
+        // Make touch/wheel events passive by default for better scroll performance
+        (function() {
+            if (typeof EventTarget !== 'undefined') {
+                const originalAddEventListener = EventTarget.prototype.addEventListener;
+                EventTarget.prototype.addEventListener = function(type, fn, options) {
+                    let opts = typeof options !== 'object' ? { capture: !!options } : Object.assign({}, options);
+                    // Make touch and wheel events passive by default unless explicitly set to false
+                    if (['touchstart', 'touchmove', 'touchend', 'touchcancel', 'wheel', 'mousewheel'].indexOf(type) !== -1) {
+                        if (opts.passive === undefined) {
+                            opts.passive = true;
+                        }
+                    }
+                    return originalAddEventListener.call(this, type, fn, opts);
+                };
+            }
+        })();
+    </script>
 
     <!-- Image Optimization -->
     <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}" data-cfasync="false"></script>
