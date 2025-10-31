@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Nederlandse Termen - Sessie</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/flashcards_simple.css') }}">
@@ -177,11 +178,15 @@
                     this.isAnswering = true;
                     
                     try {
+                        const csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
                         const response = await fetch(
                             `/flashcards/review/${this.currentTerm.id}`,
                             {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken || ''
+                                },
                                 body: JSON.stringify({ quality: quality })
                             }
                         );
@@ -217,9 +222,13 @@
                     this.timeSpent = Math.round((Date.now() - this.sessionStart) / 60000);
                     
                     try {
+                        const csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
                         const response = await fetch('/flashcards/api/session-complete', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken || ''
+                            },
                             body: JSON.stringify({
                                 terms_studied: this.totalTerms,
                                 total_xp: this.xpEarned,
@@ -261,9 +270,13 @@
                             terms_studied: this.currentIndex + 1
                         });
                         
+                        const csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
                         const response = await fetch('/api/daily-progress/update', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken || ''
+                            },
                             body: JSON.stringify({
                                 type: 'terms',
                                 status: 'completed',
