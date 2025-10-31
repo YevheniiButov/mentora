@@ -317,9 +317,9 @@ TRANSLATIONS = {
     'de fibromyalgie': {'ru': 'фибромиалгия', 'uk': 'фіброміалгія', 'es': 'fibromialgia', 'pt': 'fibromialgia', 'tr': 'fibromiyalji', 'fa': 'فیبرومیالژیا'},
     'het retinoblastoom': {'ru': 'ретинобластома', 'uk': 'ретинобластома', 'es': 'retinoblastoma', 'pt': 'retinoblastoma', 'tr': 'retinoblastom', 'fa': 'رتینوبلاستوما'},
 
-    # ADDITIONAL_VALIDATION_TERMS - 10
+    # ADDITIONAL_VALIDATION_TERMS - 19
     # Организационная структура и Первичная помощь
-    'De Eerstelijn': {
+    'de eerstelijn': {
         'ru': 'Первичное звено (Медицинская помощь, первый контакт, включая Huisarts)', 
         'en': 'Primary Care (The first level of healthcare, including the GP/Huisarts, which acts as the system\'s gatekeeper)', 
         'uk': 'Первинна ланка (Меддопомога, перший контакт)', 
@@ -328,7 +328,7 @@ TRANSLATIONS = {
         'tr': 'Birinci basamak (İlk tıbbi temas)', 
         'fa': 'مراقبت اولیه (اولین سطح مراقبت)'
     },
-    'De Tweedelijn': {
+    'de tweedelijn': {
         'ru': 'Вторичное звено (Специализированная помощь в больницах, доступ только по направлению)', 
         'en': 'Secondary Care (Specialized care, typically provided in hospitals and usually requiring a referral from a GP)', 
         'uk': 'Вторинна ланка (Спеціалізована допомога у лікарнях)', 
@@ -337,7 +337,7 @@ TRANSLATIONS = {
         'tr': 'İкинчи басамак (Uzman hastane bakımı)', 
         'fa': 'مراقبت ثانویه (مراقبت تخصصی در بیمارستان)'
     },
-    'De POH-GGZ': {
+    'de POH-GGZ': {
         'ru': 'Помощник семейного врача по психическому здоровью (POH-GGZ) (Оказывает краткосрочную психологическую помощь в практике GP)', 
         'en': 'GP Assistant Mental Health (POH-GGZ) (Provides short-term psychological support directly within the GP practice, a key feature of Dutch primary care)', 
         'uk': 'Помічник сімейного лікаря (Психічне здоров\'я, короткострокова допомога)', 
@@ -346,7 +346,7 @@ TRANSLATIONS = {
         'tr': 'Aile hekimi asistanı (Kısa süreli psikolojik destek)', 
         'fa': 'دستیار پزشک عمومی (سلامت روان، کمک کوتاه‌مدت)'
     },
-    'De Wachtpost': {
+    'de wachtpost': {
         'ru': 'Дежурный пункт (Huisartsenpost) (Оказывает срочную помощь семейного врача в нерабочее время)', 
         'en': 'GP Out-of-Hours Post (Huisartsenpost) (The point of contact for urgent GP care outside regular office hours)', 
         'uk': 'Черговий пункт (Невідкладна допомога GP у неробочий час)', 
@@ -355,7 +355,7 @@ TRANSLATIONS = {
         'tr': 'Nöbetçi istasyon (Mesai dışı acil hizmet)', 
         'fa': 'پست کشیک (مراقبت فوری در ساعات غیر اداری)'
     },
-    'Het Verwijsbeleid': {
+    'het verwijsbeleid': {
         'ru': 'Политика направлений (Протоколы, определяющие необходимость и порядок направления к специалисту)', 
         'en': 'Referral Policy (Protocols and guidelines that dictate when and how a patient is referred from primary to secondary care)', 
         'uk': 'Політика направлень (Протоколи для направлення до спеціаліста)', 
@@ -364,7 +364,7 @@ TRANSLATIONS = {
         'tr': 'Sevk politikası (Uzmanlara sevk kuralları)', 
         'fa': 'سیاست ارجاع (پروتکل‌های ارجاع به متخصص)'
     },
-    'Het Zorgpad': {
+    'het zorgpad': {
         'ru': 'Путь пациента (Zorgpad) (Стандартизированный, междисциплинарный протокол для лечения конкретного заболевания)', 
         'en': 'Care Pathway (Zorgpad) (A standardized, multi-disciplinary treatment protocol for a specific condition, aiming for efficiency and quality)', 
         'uk': 'Шлях пацієнта (Стандартизований протокол лікування)', 
@@ -373,7 +373,7 @@ TRANSLATIONS = {
         'tr': 'Bakım yolu (Standart tedavi protokolü)', 
         'fa': 'مسیر مراقبت (پروتکل درمانی استاندارد)'
     },
-    'De Zorgverzekeraar': {
+    'de zorgverzekeraar': {
         'ru': 'Страховщик (медицинское страхование) (Организация, оплачивающая большую часть медицинских расходов)', 
         'en': 'Health Insurer (The organization responsible for financing most healthcare costs in the mandatory Dutch system)', 
         'uk': 'Страховик (Організація, що оплачує медичні витрати)', 
@@ -382,7 +382,7 @@ TRANSLATIONS = {
         'tr': 'Sağlık sigortası şirketi (Giderleri ödeyen kurum)', 
         'fa': 'شرکت بیمه درمانی (سازمان تامین مالی)'
     },
-    'De Eigen Risico': {
+    'de eigen risico': {
         'ru': 'Собственный риск (франшиза) (Обязательная годовая сумма, которую пациент оплачивает сам до покрытия страховкой)', 
         'en': 'Deductible / Own Risk (The mandatory annual amount a patient must pay out-of-pocket before insurance coverage starts for certain costs)', 
         'uk': 'Власний ризик (Обов\'язкова річна сума оплати пацієнтом)', 
@@ -391,7 +391,7 @@ TRANSLATIONS = {
         'tr': 'Öz risk (Sigorta öncesi zorunlu yıllık miktar)', 
         'fa': 'ریسک شخصی (فرانشیز سالانه اجباری)'
     },
-    'De Caseload': {
+    'de caseload': {
         'ru': 'Общее количество пациентов (Рабочая нагрузка)', 
         'en': 'Caseload (The total number of patients/cases a healthcare provider or practice is responsible for)', 
         'uk': 'Загальна кількість пацієнтів (Робоче навантаження)', 
@@ -400,7 +400,7 @@ TRANSLATIONS = {
         'tr': 'Hasta yükü (Toplam hasta sayısı)', 
         'fa': 'بار مراجعین (تعداد کل بیماران)'
     },
-    'De Multidisciplinaire Overleg (MDO)': {
+    'de multidisciplinaire overleg (MDO)': {
         'ru': 'Мультидисциплинарное совещание (МДО) (Совещание разных специалистов для обсуждения сложного случая)', 
         'en': 'Multidisciplinary Team Meeting (MDO) (A consultation between various healthcare professionals to discuss and plan complex patient care)', 
         'uk': 'Мультидисциплінарна нарада (Обговорення складного випадку)', 
@@ -411,7 +411,7 @@ TRANSLATIONS = {
     },
     
     # Процедуры, Документация и Юридические рамки
-    'Het Tuchtrecht': {
+    'het tuchtrecht': {
         'ru': 'Дисциплинарное право (Система рассмотрения жалоб на профессиональное ненадлежащее поведение врача)', 
         'en': 'Disciplinary Law (The legal system used to judge and potentially sanction healthcare professionals for professional misconduct)', 
         'uk': 'Дисциплінарне право (Розгляд скарг на професійну поведінку)', 
@@ -420,7 +420,7 @@ TRANSLATIONS = {
         'tr': 'Disiplin hukuku (Mesleki suistimal yargılama sistemi)', 
         'fa': 'حقوق انضباطی (سیستم رسیدگی به تخلفات حرفه‌ای)'
     },
-    'De Wvggz': {
+    'de Wvggz': {
         'ru': 'Закон о принудительной психиатрической помощи (Закон, регулирующий недобровольное лечение в психиатрии)', 
         'en': 'Compulsory Mental Health Care Act (Wvggz) (The law governing involuntary admissions and treatment in mental healthcare)', 
         'uk': 'Закон про примусову психіатричну допомогу (Закон про недобровільне лікування)', 
@@ -429,7 +429,7 @@ TRANSLATIONS = {
         'tr': 'Zorunlu ruh sağlığı yasası (İstemsiz tedaviyi düzenleyen yasa)', 
         'fa': 'قانون مراقبت‌های اجباری روانی (قانون درمان غیر داوطلبانه)'
     },
-    'De Meldcode Huiselijk Geweld': {
+    'de meldcode huiselijk geweld': {
         'ru': 'Кодекс по сообщению о домашнем насилии (Обязательный протокол для медработников при подозрении на насилие)', 
         'en': 'Domestic Violence Reporting Code (A mandatory five-step protocol for healthcare workers when domestic violence or child abuse is suspected)', 
         'uk': 'Кодекс повідомлення про домашнє насильство (Обов\'язковий протокол)', 
@@ -438,7 +438,7 @@ TRANSLATIONS = {
         'tr': 'Aile içi şiddet bildirim kodu (Şüpheli durumlarda zorunlu protokol)', 
         'fa': 'کد گزارش خشونت خانگی (پروتکل اجباری برای متخصصین)'
     },
-    'Het Journaal': {
+    'het journaal': {
         'ru': 'Журнал (Амбулаторная карта/Бортовой журнал GP) (Хронологическая запись контактов с пациентом в первичной помощи)', 
         'en': 'Medical Record / Logbook (The chronological record of all patient contacts, central to documentation in primary care)', 
         'uk': 'Журнал (Хронологічний запис контактів пацієнта)', 
@@ -447,7 +447,7 @@ TRANSLATIONS = {
         'tr': 'Günlük (Hasta temaslarının kronolojik kaydı)', 
         'fa': 'مجله (سجل زمانی تماس با بیمار)'
     },
-    'Het Beleid': {
+    'het beleid': {
         'ru': 'План действий / Тактика лечения (Четко сформулированный план лечения и наблюдения)', 
         'en': 'Management Plan / Policy (The clearly stated plan for patient treatment and follow-up after diagnosis)', 
         'uk': 'План дій / Тактика лікування (Чіткий план лікування)', 
@@ -456,7 +456,7 @@ TRANSLATIONS = {
         'tr': 'Politika / Eylem planı (Tedavi taktiği)', 
         'fa': 'سياسة/برنامه عملی (تاکتیک درمانی)'
     },
-    'Het SOAP-model': {
+    'het SOAP-model': {
         'ru': 'Модель SOAP (S-Subjectief, O-Objectief, A-Analyse, P-Plan) (Стандарт структурированного ведения медицинских записей)', 
         'en': 'SOAP Model (S-Subjective, O-Objective, A-Assessment, P-Plan) (The standard structure for clinical note-taking in many medical settings)', 
         'uk': 'Модель SOAP (Стандарт ведення мед. записів)', 
@@ -465,7 +465,7 @@ TRANSLATIONS = {
         'tr': 'SOAP modeli (Klinik kayıt yapısı)', 
         'fa': 'مدل SOAP (ساختار ثبت سوابق بالینی)'
     },
-    'De Overdracht': {
+    'de overdracht': {
         'ru': 'Передача (информации о пациенте) (Процесс передачи ответственности и информации другому специалисту/отделению)', 
         'en': 'Handover / Transfer (The process of transferring patient responsibility and information to another professional or department, requiring high accuracy)', 
         'uk': 'Передача (Передача інформації про пацієнта)', 
@@ -474,7 +474,7 @@ TRANSLATIONS = {
         'tr': 'Devir (Hasta bilgisi ve sorumluluk aktarımı)', 
         'fa': 'انتقال (انتقال مسئولیت و اطلاعات بیمار)'
     },
-    'De Anamnese': {
+    'de anamnese': {
         'ru': 'Анамнез (Сбор истории болезни пациента)', 
         'en': 'Anamnesis / History Taking (The process of gathering the patient\'s medical history and current symptoms)', 
         'uk': 'Анамнез (Збір історії хвороби)', 
@@ -483,7 +483,7 @@ TRANSLATIONS = {
         'tr': 'Anamnez (Hastalık öyküsü toplama)', 
         'fa': 'شرح حال (جمع‌آوری تاریخچه پزشکی)'
     },
-    'Het Patiëntendossier': {
+    'het patiëntendossier': {
         'ru': 'Медицинская карта пациента (Полное собрание всех медицинских документов пациента)', 
         'en': 'Patient File / Dossier (The complete collection of all medical records and documentation for a patient)', 
         'uk': 'Медична карта пацієнта (Повний збір документів)', 
