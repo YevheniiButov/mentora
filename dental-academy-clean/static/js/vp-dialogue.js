@@ -71,8 +71,18 @@ class VirtualPatientDialogue {
       this.initTimerUpdate();
       this.initMobileModalControls();
       
-      // 4. Показать первый узел
-      // Получить первый узел из списка узлов
+      // 4. Показать initial_state (начальное сообщение пациента)
+      const initialState = this.scenario.scenario_data.initial_state;
+      if (initialState && initialState.patient_statement) {
+        this.addMessageToThread('from-patient', initialState.patient_statement);
+        
+        // Показать заметки врача если есть
+        if (initialState.notes_dentist) {
+          console.log('Initial notes:', initialState.notes_dentist);
+        }
+      }
+      
+      // 5. Показать первый узел с вариантами ответа
       const nodes = this.scenario.scenario_data.dialogue_nodes;
       if (nodes && nodes.length > 0) {
         this.currentNodeId = nodes[0].id;
