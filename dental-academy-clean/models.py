@@ -1878,7 +1878,7 @@ class VirtualPatientScenario(db.Model):
     
     @property
     def localized_data(self):
-        """Возвращает данные сценария в зависимости от языка"""
+        """Возвращает данные сценария на нидерландском языке (nl)"""
         try:
             data = json.loads(self.scenario_data)
             
@@ -1890,19 +1890,16 @@ class VirtualPatientScenario(db.Model):
             
             # Проверяем наличие translations (формат с переводами)
             if 'translations' in scenario_data:
-                # Пытаемся получить данные на голландском (nl), если нет - на русском (ru), иначе первый доступный
                 translations = scenario_data['translations']
+                # Всегда пытаемся получить данные на нидерландском (nl)
                 if 'nl' in translations:
                     return translations['nl']
-                elif 'ru' in translations:
-                    return translations['ru']
-                elif 'en' in translations:
-                    return translations['en']
+                # Если nl нет, берем первый доступный язык (fallback)
                 elif translations:
-                    # Берем первый доступный язык
                     return list(translations.values())[0]
             
             # Если нет translations, проверяем прямую структуру (patient_info, dialogue_nodes и т.д.)
+            # Такая структура считается нидерландской по умолчанию
             if 'patient_info' in scenario_data or 'dialogue_nodes' in scenario_data:
                 return scenario_data
             
@@ -1910,7 +1907,7 @@ class VirtualPatientScenario(db.Model):
             return scenario_data if scenario_data else data
             
         except (json.JSONDecodeError, TypeError) as e:
-            # Возвращаем структуру по умолчанию при ошибке парсинга
+            # Возвращаем структуру по умолчанию на нидерландском при ошибке парсинга
             return {
                 "patient_info": {
                     "name": "Patient",
@@ -1921,7 +1918,7 @@ class VirtualPatientScenario(db.Model):
                 "initial_state": {
                     "patient_statement": "Hallo dokter!",
                     "patient_emotion": "neutral",
-                    "notes": "Initial state"
+                    "notes": "Geen informatie"
                 },
                 "dialogue_nodes": [],
                 "outcomes": {}
