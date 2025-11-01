@@ -70,28 +70,29 @@ class VirtualPatientSelector:
                 return None
             
             # Фильтруем сценарии, которые доступны для пользователя
-            # Если user.specialty не установлена, пропускаем проверку specialty в is_available_for_user
+            # Проверяем, играл ли ЭТОТ пользователь этот сценарий недавно
             available_for_user = []
+            now_utc = datetime.now(timezone.utc)
+            three_days_ago = now_utc - timedelta(days=3)
+            
             for scenario in available_scenarios:
                 # Проверяем доступность, но пропускаем проверку specialty если она не установлена
                 user_specialty_attr = getattr(user, 'specialty', None)
                 if user_specialty_attr and user_specialty_attr != scenario.specialty:
                     continue
                 
-                # Проверяем только last_played_date (нормализуем к UTC для сравнения)
-                if scenario.last_played_date:
-                    # Приводим обе даты к UTC для корректного сравнения
-                    now_utc = datetime.now(timezone.utc)
-                    last_played_utc = scenario.last_played_date
-                    if last_played_utc.tzinfo is None:
-                        last_played_utc = last_played_utc.replace(tzinfo=timezone.utc)
-                    else:
-                        last_played_utc = last_played_utc.astimezone(timezone.utc)
-                    
-                    days_since_last = (now_utc - last_played_utc).days
-                    if days_since_last < 3:
-                        logger.debug(f"  ⏭️ Scenario {scenario.id} skipped: played {days_since_last} days ago")
-                        continue
+                # Проверяем, играл ли ЭТОТ пользователь этот сценарий за последние 3 дня
+                recent_attempt = VirtualPatientAttempt.query.filter(
+                    VirtualPatientAttempt.user_id == user.id,
+                    VirtualPatientAttempt.scenario_id == scenario.id,
+                    VirtualPatientAttempt.completed == True,
+                    VirtualPatientAttempt.completed_at >= three_days_ago
+                ).first()
+                
+                if recent_attempt:
+                    days_since = (now_utc - recent_attempt.completed_at.replace(tzinfo=timezone.utc) if recent_attempt.completed_at.tzinfo is None else recent_attempt.completed_at.astimezone(timezone.utc)).days
+                    logger.debug(f"  ⏭️ Scenario {scenario.id} skipped: user {user.id} played it {days_since} days ago")
+                    continue
                 
                 available_for_user.append(scenario)
             
