@@ -233,17 +233,25 @@ class VirtualPatientDialogue {
   }
   
   initProgressTracking() {
-    const totalNodes = this.scenario.scenario_data.dialogue_nodes.length;
-    document.getElementById('totalSteps').textContent = totalNodes;
+    const data = this.scenario.scenario_data || {};
+    const dialogueNodes = data.dialogue_nodes || [];
+    const totalNodes = dialogueNodes.length;
+    const totalStepsEl = document.getElementById('totalSteps');
+    if (totalStepsEl) {
+      totalStepsEl.textContent = totalNodes;
+    }
   }
   
   initTimerUpdate() {
+    const timeSpentEl = document.getElementById('timeSpent');
+    if (!timeSpentEl) return;
+    
     setInterval(() => {
       const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
       const minutes = Math.floor(elapsed / 60);
       const seconds = elapsed % 60;
       const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      document.getElementById('timeSpent').textContent = formatted;
+      timeSpentEl.textContent = formatted;
     }, 1000);
   }
   
