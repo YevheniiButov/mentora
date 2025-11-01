@@ -26,38 +26,88 @@ class VirtualPatientSelector:
             VirtualPatientScenario или None
         """
         try:
+            from app import current_app
+            import logging
+            logger = logging.getLogger(__name__)
+            
+            # Определяем специальность пользователя
+            user_specialty = getattr(user, 'specialty', None)
+            
+            # Если специальность не установлена, пытаемся определить из profession
+            if not user_specialty:
+                from utils.helpers import get_user_profession_code
+                profession_code = get_user_profession_code(user)
+                # Маппинг profession -> specialty
+                profession_to_specialty = {
+                    'tandarts': 'dentistry',
+                    'huisarts': 'general_practice',
+                    'apotheker': 'pharmacy',
+                    'verpleegkundige': 'nursing'
+                }
+                user_specialty = profession_to_specialty.get(profession_code, 'dentistry')
+                logger.info(f"User {user.id}: specialty not set, using profession '{profession_code}' -> specialty '{user_specialty}'")
+            
+            logger.info(f"🔍 Searching VP scenarios for user {user.id}: specialty='{user_specialty}'")
+            
             # Получаем все доступные сценарии для специальности пользователя
             available_scenarios = VirtualPatientScenario.query.filter(
-                VirtualPatientScenario.specialty == user.specialty,
+                VirtualPatientScenario.specialty == user_specialty,
                 VirtualPatientScenario.is_published == True
             ).all()
             
+            logger.info(f"📊 Found {len(available_scenarios)} published scenarios for specialty '{user_specialty}'")
+            
+            # Если нет сценариев для специальности пользователя, ищем любые опубликованные
             if not available_scenarios:
+                logger.warning(f"⚠️ No scenarios found for specialty '{user_specialty}', searching for any published scenarios")
+                available_scenarios = VirtualPatientScenario.query.filter(
+                    VirtualPatientScenario.is_published == True
+                ).all()
+                logger.info(f"📊 Found {len(available_scenarios)} total published scenarios (any specialty)")
+            
+            if not available_scenarios:
+                logger.error(f"❌ No published scenarios found at all!")
                 return None
             
             # Фильтруем сценарии, которые доступны для пользователя
-            available_for_user = [
-                scenario for scenario in available_scenarios
-                if scenario.is_available_for_user(user)
-            ]
+            # Если user.specialty не установлена, пропускаем проверку specialty в is_available_for_user
+            available_for_user = []
+            for scenario in available_scenarios:
+                # Проверяем доступность, но пропускаем проверку specialty если она не установлена
+                user_specialty_attr = getattr(user, 'specialty', None)
+                if user_specialty_attr and user_specialty_attr != scenario.specialty:
+                    continue
+                
+                # Проверяем только last_played_date
+                if scenario.last_played_date:
+                    days_since_last = (datetime.utcnow() - scenario.last_played_date).days
+                    if days_since_last < 3:
+                        continue
+                
+                available_for_user.append(scenario)
+            
+            logger.info(f"✅ Found {len(available_for_user)} scenarios available for user (after filtering)")
             
             if not available_for_user:
-                # Если нет доступных сценариев, выбираем случайный
+                # Если нет доступных сценариев, выбираем случайный из опубликованных
                 # Но сначала сбрасываем last_played_date чтобы он был доступен
                 if available_scenarios:
+                    logger.info(f"⚠️ No scenarios passed availability check, selecting random from {len(available_scenarios)} published scenarios")
                     selected = random.choice(available_scenarios)
                     # Сбросим дату последней игры если она слишком недавняя
                     if selected.last_played_date:
-                        from datetime import datetime, timedelta
                         days_since_last = (datetime.utcnow() - selected.last_played_date).days
                         if days_since_last < 3:
                             selected.last_played_date = datetime.utcnow() - timedelta(days=4)
                             db.session.commit()
+                    logger.info(f"✅ Selected scenario: ID={selected.id}, title='{selected.title}', specialty='{selected.specialty}'")
                     return selected
                 return None
             
             # Выбираем случайный из доступных
             selected_scenario = random.choice(available_for_user)
+            
+            logger.info(f"✅ Selected scenario: ID={selected_scenario.id}, title='{selected_scenario.title}', specialty='{selected_scenario.specialty}'")
             
             # Отмечаем как сыгранный
             selected_scenario.mark_played()
@@ -65,7 +115,9 @@ class VirtualPatientSelector:
             return selected_scenario
             
         except Exception as e:
-            print(f"Error getting daily scenario: {e}")
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"❌ Error getting daily scenario for user {user.id}: {e}", exc_info=True)
             return None
     
     @staticmethod
