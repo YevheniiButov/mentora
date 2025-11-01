@@ -193,15 +193,19 @@ class VirtualPatientDialogue {
     
     // Vital signs если есть
     const vitalSignsSection = document.getElementById('vitalSignsSection');
+    const vitalsContainer = document.getElementById('vitalsContainer');
     if (patientInfo.vital_signs && typeof patientInfo.vital_signs === 'object') {
-      document.getElementById('vitalSignsSection').style.display = 'block';
+      if (vitalSignsSection) vitalSignsSection.style.display = 'block';
       const vitalsHtml = Object.entries(patientInfo.vital_signs).map(([key, value]) => 
         `<div class="vital-item">
            <span class="vital-label">${this.translateVitalSign(key)}</span>
            <span class="vital-value">${value}</span>
          </div>`
       ).join('');
-      document.getElementById('vitalsContainer').innerHTML = vitalsHtml;
+      if (vitalsContainer) vitalsContainer.innerHTML = vitalsHtml;
+    } else {
+      if (vitalSignsSection) vitalSignsSection.style.display = 'none';
+      if (vitalsContainer) vitalsContainer.innerHTML = '';
     }
   }
   
