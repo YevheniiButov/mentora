@@ -632,6 +632,8 @@ try:
         from routes.virtual_patient_daily import vp_daily_bp
         logger.info("✅ Successfully imported vp_daily_bp")
         app.register_blueprint(vp_daily_bp)
+        # Exempt all POST routes in this blueprint from CSRF (API endpoints)
+        csrf.exempt(vp_daily_bp)
         logger.info("✅ Virtual Patient Daily Learning blueprint registered successfully")
     except ImportError as import_error:
         logger.error(f"❌ IMPORT ERROR: Cannot import Virtual Patient Daily Learning routes: {import_error}")
