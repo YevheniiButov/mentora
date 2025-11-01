@@ -10,7 +10,7 @@ from utils.virtual_patient_utils import (
     VirtualPatientSessionManager,
     VirtualPatientDailyIntegration
 )
-from extensions import db
+from extensions import db, csrf
 from models import VirtualPatientScenario, VirtualPatientAttempt
 from datetime import datetime
 import json
@@ -54,6 +54,7 @@ def get_daily_scenario():
 
 
 @vp_daily_bp.route('/start-attempt', methods=['POST'])
+@csrf.exempt
 @login_required
 def start_attempt():
     """
@@ -97,6 +98,7 @@ def start_attempt():
 
 
 @vp_daily_bp.route('/save-choice', methods=['POST'])
+@csrf.exempt
 @login_required
 def save_choice():
     """
