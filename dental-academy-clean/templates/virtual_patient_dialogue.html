@@ -11,6 +11,7 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/vp-medical-pro.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vp-enhanced.css') }}">
 </head>
 <body>
     <div class="vp-container" id="vpContainer">
@@ -105,6 +106,61 @@
                                 </button>
                                 <div class="detail-content" id="detail-vitals" style="display: none;">
                                     <div class="vitals-grid" id="vitalsContainer"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Emotional State (NEW - Enhanced VP) -->
+                            <div class="detail-section" id="emotionalStateSection" style="display: block;">
+                                <button class="detail-toggle" data-section="emotional">
+                                    <span class="toggle-label">🎭 Emotionele status</span>
+                                    <span class="toggle-icon">▼</span>
+                                </button>
+                                <div class="detail-content" id="detail-emotional" style="display: block;">
+                                    <div class="emotional-state-grid">
+                                        <!-- Trust -->
+                                        <div class="emotion-bar">
+                                            <div class="emotion-label">
+                                                <span>💙 Vertrouwen</span>
+                                                <span id="trustValue">50</span>%
+                                            </div>
+                                            <div class="emotion-progress">
+                                                <div class="emotion-fill trust" id="trustFill" style="width: 50%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Anxiety -->
+                                        <div class="emotion-bar">
+                                            <div class="emotion-label">
+                                                <span>😰 Angst</span>
+                                                <span id="anxietyValue">70</span>%
+                                            </div>
+                                            <div class="emotion-progress">
+                                                <div class="emotion-fill anxiety" id="anxietyFill" style="width: 70%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Pain -->
+                                        <div class="emotion-bar">
+                                            <div class="emotion-label">
+                                                <span>😣 Pijn</span>
+                                                <span id="painValue">80</span>%
+                                            </div>
+                                            <div class="emotion-progress">
+                                                <div class="emotion-fill pain" id="painFill" style="width: 80%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Cooperation -->
+                                        <div class="emotion-bar">
+                                            <div class="emotion-label">
+                                                <span>🤝 Samenwerking</span>
+                                                <span id="cooperationValue">60</span>%
+                                            </div>
+                                            <div class="emotion-progress">
+                                                <div class="emotion-fill cooperation" id="cooperationFill" style="width: 60%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -327,6 +383,7 @@
     </div>
     
     <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/vp-enhanced.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vp-dialogue.js') }}"></script>
     <script>
         // Initialize on page load
