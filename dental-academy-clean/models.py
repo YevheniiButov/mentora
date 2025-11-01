@@ -1881,20 +1881,47 @@ class VirtualPatientScenario(db.Model):
         """Возвращает данные сценария в зависимости от языка"""
         try:
             data = json.loads(self.scenario_data)
-            # Возвращаем default данные для простоты
-            return data.get('default', {})
-        except (json.JSONDecodeError, TypeError):
+            
+            # Если есть scenario_data вложенный объект, используем его
+            if 'scenario_data' in data:
+                scenario_data = data['scenario_data']
+            else:
+                scenario_data = data
+            
+            # Проверяем наличие translations (формат с переводами)
+            if 'translations' in scenario_data:
+                # Пытаемся получить данные на голландском (nl), если нет - на русском (ru), иначе первый доступный
+                translations = scenario_data['translations']
+                if 'nl' in translations:
+                    return translations['nl']
+                elif 'ru' in translations:
+                    return translations['ru']
+                elif 'en' in translations:
+                    return translations['en']
+                elif translations:
+                    # Берем первый доступный язык
+                    return list(translations.values())[0]
+            
+            # Если нет translations, проверяем прямую структуру (patient_info, dialogue_nodes и т.д.)
+            if 'patient_info' in scenario_data or 'dialogue_nodes' in scenario_data:
+                return scenario_data
+            
+            # Fallback: возвращаем весь scenario_data или data
+            return scenario_data if scenario_data else data
+            
+        except (json.JSONDecodeError, TypeError) as e:
+            # Возвращаем структуру по умолчанию при ошибке парсинга
             return {
                 "patient_info": {
-                    "name": "Пациент",
+                    "name": "Patient",
                     "age": 30,
-                    "gender": "male",
-                    "medical_history": "Данные недоступны"
+                    "gender": "unknown",
+                    "medical_history": "Geen informatie"
                 },
                 "initial_state": {
-                    "patient_statement": "Здравствуйте, доктор!",
+                    "patient_statement": "Hallo dokter!",
                     "patient_emotion": "neutral",
-                    "notes": "Начальное состояние"
+                    "notes": "Initial state"
                 },
                 "dialogue_nodes": [],
                 "outcomes": {}
