@@ -1,0 +1,345 @@
+{
+  "title": {
+    "nl": "🎯 Complete Enhanced VP: Acute Pijn en Complexe Keuzes"
+  },
+  "description": {
+    "nl": "Volledige simulatie met alle advanced features"
+  },
+  "scenario_data": {
+    "translations": {
+      "nl": {
+        "patient_info": {
+          "name": "Maria van den Berg",
+          "age": 42,
+          "gender": "female",
+          "medical_history": "Hypertensie (gecontroleerd), penicilline allergie",
+          "dental_history": "Vermijdt tandarts 5 jaar, zelfmedicatie",
+          "allergies": ["Penicilline"],
+          "symptoms": ["Acute kiespijn (3 dagen)", "Nachtelijke pijn", "Pijn bij kauwen", "Hoge angst"]
+        },
+        
+        "emotional_state": {
+          "trust": 35,
+          "anxiety": 78,
+          "pain": 85,
+          "cooperation": 50
+        },
+        
+        "hidden_information": [
+          {
+            "id": "financial_concern",
+            "content": "Recent werkloos, heeft maar €200 beschikbaar voor behandeling",
+            "reveals_when": ["trust >= 60", "direct_question_about_cost"],
+            "affects": ["prefers_cheap_extraction_over_expensive_endo"]
+          },
+          {
+            "id": "work_pressure",
+            "content": "Heeft morgen belangrijk sollicitatiegesprek om 10:00",
+            "reveals_when": ["trust >= 50", "question_about_time_constraints"],
+            "affects": ["urgent_need_for_quick_solution"]
+          },
+          {
+            "id": "lidocaine_sensitivity",
+            "content": "Vader had ernstige reactie op lidocaïne (hartritmestoornis)",
+            "reveals_when": ["anxiety < 60", "detailed_family_medical_history"],
+            "affects": ["anesthesia_choice_critical"]
+          }
+        ],
+        
+        "scenario_constraints": {
+          "time_available": 25,
+          "current_time": "14:30",
+          "next_patient_at": "15:00",
+          "resources": {
+            "xray_machine": {
+              "available": true,
+              "wait_time_minutes": 15,
+              "note": "Röntgen nu bezet, 15 min wachten"
+            },
+            "endodontist_specialist": {
+              "available": false,
+              "next_slot": "morgen 14:00",
+              "note": "Specialist alleen op afspraak"
+            },
+            "surgery_room": {
+              "available": true,
+              "time_limit": 30
+            }
+          },
+          "patient_budget": {
+            "max_affordable": 200,
+            "insurance_coverage": "basis",
+            "extraction_cost": 150,
+            "endodontic_treatment_cost": 450
+          }
+        },
+        
+        "initial_state": {
+          "patient_statement": "Goedendag dokter... Ik weet dat ik al lang niet bij de tandarts ben geweest, maar nu heb ik zulke erge pijn dat ik het gewoon niet meer kan verdragen. Mijn tand doet al drie dagen pijn, vooral 's nachts. Ik neem ibuprofen, maar het helpt nauwelijks.",
+          "patient_emotion": "anxious",
+          "body_language": "Handen trillen licht, vermijdt oogcontact, zit op rand van stoel",
+          "clinical_phase": "initial_contact",
+          "notes_dentist": "Tekenen van tandartsangst + acute pijn. Klassieke pulpitis symptomen.",
+          "available_actions": ["anamnese_starten", "direct_onderzoek", "angst_exploreren"]
+        },
+        
+        "dialogue_nodes": [
+          {
+            "id": "initial_response",
+            "title": "Eerste contact",
+            "patient_statement": "De pijn is echt ondraaglijk... Ik heb bijna niet geslapen vannacht.",
+            "patient_emotion": "anxious",
+            "clinical_phase": "initial_assessment",
+            "options": [
+              {
+                "text": "Ik begrijp dat de pijn zwaar is. Laten we eerst uw situatie grondig bespreken - wanneer begon het, wat maakt het erger? Dit helpt me de beste behandeling kiezen.",
+                "next_node": "detailed_anamnesis",
+                "trade_offs": {"empathy": "+20", "trust": "+15", "time_cost": "-8 min", "diagnostic_quality": "+high"},
+                "consequences": {"immediate": "Patiënt voelt zich gehoord", "delayed": "Betere diagnose, tijdsdruk stijgt"},
+                "body_language_reaction": "Schouders ontspannen iets, maakt oogcontact",
+                "hidden_info_unlock": ["work_pressure"]
+              },
+              {
+                "text": "Die pijn moeten we snel aanpakken. Laten we direct kijken en röntgen maken, dan starten we meteen met pijnbestrijding.",
+                "next_node": "quick_action_path",
+                "trade_offs": {"empathy": "+10", "trust": "+5", "time_cost": "-3 min", "pain_relief_speed": "+fast"},
+                "consequences": {"immediate": "Patiënt waardeert snelheid", "delayed": "Mogelijk gemiste details"},
+                "body_language_reaction": "Knikt opgelucht, blijft gespannen",
+                "hidden_info_unlock": []
+              },
+              {
+                "text": "Ik merk dat u veel pijn heeft én gespannen bent. Mag ik vragen: bent u nerveus voor de tandarts? Dit is belangrijk voor hoe we verdergaan.",
+                "next_node": "anxiety_first_approach",
+                "trade_offs": {"empathy": "+25", "trust": "+20", "anxiety": "-15", "time_cost": "-10 min"},
+                "consequences": {"immediate": "Diepe emotionele band", "delayed": "Excellente samenwerking, maar meer tijd"},
+                "body_language_reaction": "Ogen vochtig, knikt, opent zich",
+                "hidden_info_unlock": ["lidocaine_sensitivity", "financial_concern"]
+              }
+            ]
+          },
+          
+          {
+            "id": "detailed_anamnesis",
+            "title": "Gedetailleerde anamnese - DYNAMISCHE RESPONS",
+            "patient_statement_dynamic": {
+              "trust_low": "De pijn... het begon drie dagen geleden. Dat is alles wat ik weet.",
+              "trust_medium": "Drie dagen geleden begon het na een koud drankje. Nu is het constant aanwezig, vooral bij liggen.",
+              "trust_high": "Het begon drie dagen geleden met koud drankje. Gisteravond niet geslapen van de pijn. Ik ben zo bang dat ik de tand verlies... en eerlijk gezegd, ik heb net mijn baan verloren, dus geld is ook een issue."
+            },
+            "trust_threshold": {"low": 40, "medium": 60, "high": 75},
+            "patient_emotion": "focused_but_anxious",
+            "time_elapsed": 8,
+            "emotional_state_changes": {"trust": "+15", "anxiety": "-5"},
+            "options": [
+              {
+                "text": "Dank voor de info. Nu doe ik onderzoek: visueel, percussie, thermische test. Ik leg elke stap uit zodat u niet verrast wordt.",
+                "next_node": "systematic_examination",
+                "trade_offs": {"empathy": "+15", "trust": "+10", "time_cost": "-6 min", "diagnostic_quality": "+excellent"},
+                "body_language_reaction": "Knikt, opent mond voorzichtig",
+                "hidden_info_unlock": []
+              },
+              {
+                "text": "Dit klinkt naar pulpitis. Laten we röntgen maken voor zekerheid. Let op: röntgen is nu bezet, 15 minuten wachten.",
+                "next_node": "xray_wait_dilemma",
+                "trade_offs": {"diagnostic_quality": "+excellent", "time_cost": "-15 min wachten", "anxiety": "+10"},
+                "consequences": {"immediate": "Beste diagnose", "delayed": "Lang wachten verhoogt angst, tijdsdruk kritiek"},
+                "body_language_reaction": "Zucht, kijkt teleurgesteld naar klok",
+                "requires_resources": ["xray_machine"],
+                "resource_constraint": "15_minute_wait"
+              },
+              {
+                "text": "Ik hoor dat u lang wegbleef. Is er een reden? En... mag ik vragen naar uw budget voor behandeling? Dit helpt me realistische opties geven.",
+                "next_node": "financial_exploration",
+                "trade_offs": {"empathy": "+20", "trust": "+25", "time_cost": "-5 min"},
+                "consequences": {"immediate": "Ontdekt financiële situatie", "delayed": "Kan passende behandeling voorstellen"},
+                "body_language_reaction": "Aarzelt, dan: 'Ik heb maar €200...'",
+                "hidden_info_unlock": ["financial_concern"]
+              }
+            ]
+          },
+          
+          {
+            "id": "anxiety_first_approach",
+            "title": "Psychologische exploratie - TRUST-BASED",
+            "patient_statement_dynamic": {
+              "trust_low": "Ja, ik ben nerveus. Dat is alles.",
+              "trust_medium": "Ik ben heel bang voor de tandarts. Als kind had ik een slechte ervaring.",
+              "trust_high": "Toen ik 8 was, behandelde de tandarts me zonder verdoving. Ik schreeuwde, hij zei dat het normaal was. Sindsdien... ik kan niet eens in de buurt van een tandarts komen zonder te trillen. En mijn vader had een keer een hartaanval tijdens verdoving..."
+            },
+            "revealed_hidden_info_on_high_trust": ["lidocaine_sensitivity"],
+            "patient_emotion": "vulnerable",
+            "time_elapsed": 10,
+            "emotional_state_changes": {"trust": "+25", "anxiety": "-20", "cooperation": "+30"},
+            "options": [
+              {
+                "text": "Dank voor uw openheid. Ik beloof: elke stap leg ik uit, u heeft altijd controle. We stoppen wanneer u wilt. En we gebruiken geen lidocaïne gezien uw vader - er zijn veilige alternatieven.",
+                "next_node": "trauma_informed_treatment",
+                "trade_offs": {"empathy": "+30", "trust": "+25", "anxiety": "-25", "time_cost": "-12 min", "patient_satisfaction": "+40"},
+                "consequences": {"immediate": "Doorbraak in vertrouwen", "delayed": "Perfecte samenwerking, patiënt overwint fobie"},
+                "body_language_reaction": "Begint te huilen van opluchting, glimlacht door tranen",
+                "clinical_notes": "TRAUMA-INFORMED CARE: beste uitkomst voor angstige patiënt"
+              },
+              {
+                "text": "Begrijpelijk. Ik beloof voorzichtig te zijn. Laten we nu snel starten met onderzoek, hoe sneller we klaar zijn, hoe beter.",
+                "next_node": "gentle_but_rushed",
+                "trade_offs": {"empathy": "+10", "trust": "+5", "anxiety": "0", "time_cost": "-5 min"},
+                "consequences": {"immediate": "Patiënt accepteert", "delayed": "Angst blijft, gemiddelde ervaring"},
+                "body_language_reaction": "Knikt aarzelend, blijft gespannen"
+              }
+            ]
+          },
+          
+          {
+            "id": "xray_wait_dilemma",
+            "title": "Röntgen wachttijd dilemma - RESOURCE CONSTRAINT",
+            "patient_statement": "15 minuten wachten? Maar... ik moet over 30 minuten eigenlijk weer weg...",
+            "revealed_hidden_info": ["work_pressure"],
+            "patient_additional_statement": "Ik heb morgen om 10 uur een sollicitatiegesprek. Het is cruciaal voor mij. Kan het niet sneller?",
+            "resource_status": "xray_occupied_15_min",
+            "time_elapsed": 8,
+            "options": [
+              {
+                "text": "Ik begrijp uw situatie. Alternatief: ik doe nu klinisch onderzoek (5 min), dat geeft al veel info. Röntgen kunnen we overslaan of morgenavond doen.",
+                "next_node": "clinical_only_path",
+                "trade_offs": {"time_cost": "-5 min", "diagnostic_quality": "medium", "trust": "+15", "risk": "+missed_details"},
+                "consequences": {"immediate": "Patiënt opgelucht, op tijd klaar", "delayed": "Mogelijk gemiste fractuur/abces"},
+                "body_language_reaction": "Grote opluchting, glimlacht"
+              },
+              {
+                "text": "Voor beste behandeling is röntgen essentieel. We wachten 15 min. U kunt in wachtkamer zitten, ik roep u zodra het klaar is.",
+                "next_node": "waiting_room_event",
+                "trade_offs": {"diagnostic_quality": "+excellent", "time_cost": "-15 min", "anxiety": "+15", "time_pressure": "+critical"},
+                "consequences": {"immediate": "Patiënt ongerust over tijd", "delayed": "Perfecte diagnose, maar tijdsdruk extreem"},
+                "body_language_reaction": "Zucht gefrustreerd, kijkt constant op telefoon",
+                "triggers_event": "anxiety_spike_in_waiting_room"
+              },
+              {
+                "text": "Ik zie uw urgentie. Vandaag: noodbehandeling zonder röntgen (drainage + sterke pijnstillers). Morgenavond: volledige diagnose + definitieve behandeling. Veilig voor 24 uur.",
+                "next_node": "emergency_relief_defer_diagnosis",
+                "trade_offs": {"pain_relief": "+immediate", "time_cost": "-10 min", "diagnostic_quality": "low", "follow_up_required": true},
+                "consequences": {"immediate": "Pijn weg, op tijd voor gesprek", "delayed": "Moet morgen terugkomen (risico op no-show)"},
+                "body_language_reaction": "Knikt dankbaar, vraagt: 'Echt veilig?'"
+              }
+            ]
+          },
+          
+          {
+            "id": "financial_exploration",
+            "title": "Financiële situatie - BUDGET CONSTRAINT",
+            "patient_statement": "Eerlijk gezegd... ik heb onlangs mijn baan verloren. Ik heb maar ongeveer €200 beschikbaar. Is dat genoeg?",
+            "revealed_hidden_info": ["financial_concern"],
+            "budget_revealed": 200,
+            "patient_emotion": "embarrassed_and_worried",
+            "body_language": "Kijkt naar beneden, stem wordt zachter",
+            "time_elapsed": 13,
+            "emotional_state_changes": {"trust": "+20", "cooperation": "+15"},
+            "options": [
+              {
+                "text": "Dank voor uw eerlijkheid. Met €200 kunnen we: extractie (€150) - pijn meteen weg, tand verloren. Of: noodbehandeling nu (€100) + betaalregeling voor wortelkanaalbehandeling later (totaal €450). Wat heeft uw voorkeur?",
+                "next_node": "treatment_choice_with_budget",
+                "trade_offs": {"empathy": "+25", "trust": "+30", "patient_satisfaction": "+35"},
+                "consequences": {"immediate": "Patiënt voelt zich gerespecteerd", "delayed": "Realistische keuze mogelijk"},
+                "body_language_reaction": "Zichtbaar opgelucht, glimlacht dankbaar",
+                "clinical_notes": "ETHISCH: geeft patiënt echte keuze binnen budget"
+              },
+              {
+                "text": "Wortelkanaalbehandeling kost €450. Met uw budget kunnen we alleen extractie doen voor €150. Dat adviseer ik - tand is toch al slecht.",
+                "next_node": "forced_extraction_path",
+                "trade_offs": {"empathy": "-10", "trust": "-15", "patient_satisfaction": "-20", "efficiency": "+high"},
+                "consequences": {"immediate": "Patiënt voelt zich beperkt", "delayed": "Mogelijk spijt over verloren tand"},
+                "body_language_reaction": "Gezicht betrekt, zegt niets meer"
+              }
+            ]
+          },
+          
+          {
+            "id": "waiting_room_event",
+            "title": "RANDOM EVENT: Angstpiek in wachtkamer",
+            "event_type": "random_complication",
+            "patient_statement": "*Assistente roept u: 'Dokter, de patiënte in de wachtkamer hyperventileert!'*",
+            "patient_emotion": "panic_attack",
+            "body_language": "Snelle ademhaling, zweet op voorhoofd, handen trillen hevig",
+            "clinical_phase": "emergency_psychological",
+            "time_elapsed": 23,
+            "emotional_state_changes": {"anxiety": "+30", "cooperation": "-20", "trust": "0"},
+            "options": [
+              {
+                "text": "Ik kom direct. *Gaat naar wachtkamer* 'Maria, kijk naar mij. Adem met mij mee: in... uit... in... uit. U bent veilig. Wilt u verder, of stoppen we vandaag?'",
+                "next_node": "panic_management_excellent",
+                "trade_offs": {"empathy": "+35", "anxiety": "-40", "trust": "+20", "time_cost": "-10 min extra"},
+                "consequences": {"immediate": "Paniek gestopt, patiënt kalmeert", "delayed": "Tijd op, volgende patiënt ernstig vertraagd"},
+                "body_language_reaction": "Ademhaling normaliseert, huilt, fluistert: 'Sorry'",
+                "clinical_notes": "CRISIS MANAGEMENT: excellente response"
+              },
+              {
+                "text": "*Via assistente* 'Geef haar water en laat haar even zitten. Ik kom over 5 minuten als röntgen klaar is.'",
+                "next_node": "panic_ignored_bad_outcome",
+                "trade_offs": {"empathy": "-30", "trust": "-40", "anxiety": "+20", "patient_satisfaction": "-50"},
+                "consequences": {"immediate": "Patiënt voelt zich verlaten", "delayed": "Verliest patiënt, mogelijk klacht"},
+                "body_language_reaction": "Staat op, verlaat praktijk, komt niet terug"
+              }
+            ]
+          },
+          
+          {
+            "id": "treatment_choice_with_budget",
+            "title": "Behandelkeuze binnen budget - PATIENT EMPOWERMENT",
+            "patient_statement_dynamic": {
+              "trust_high": "Dank u wel voor uw eerlijkheid. Ik... ik wil de tand eigenlijk graag behouden als het kan. Misschien kan ik in termijnen betalen? Of werken voor het verschil?",
+              "trust_medium": "Hmm... wat raadt u aan dokter? Wat is het beste?",
+              "trust_low": "Ik weet het niet. Wat kost het minst?"
+            },
+            "clinical_phase": "shared_decision_making",
+            "time_elapsed": 18,
+            "options": [
+              {
+                "text": "Ik waardeer uw wens om de tand te behouden. Ik kan vandaag noodbehandeling doen (€100), pijn is weg. Voor wortelkanaal maken we betaalregeling: €50/maand gedurende 7 maanden. Geen rente. Akkoord?",
+                "next_node": "payment_plan_endodontics",
+                "trade_offs": {"empathy": "+30", "trust": "+35", "patient_satisfaction": "+45", "clinical_quality": "+excellent"},
+                "consequences": {"immediate": "Patiënt kan tand behouden", "delayed": "Langetermijn relatie, excellente uitkomst"},
+                "body_language_reaction": "Begint te huilen van dankbaarheid: 'Echt? Dank u!'",
+                "clinical_notes": "EXCELLENT: patient-centered care binnen financiële realiteit"
+              },
+              {
+                "text": "Extractie is meest praktisch en past uw budget. De tand is al ernstig aangetast. Laten we die route kiezen - sneller, goedkoper, probleem opgelost.",
+                "next_node": "pragmatic_extraction",
+                "trade_offs": {"efficiency": "+high", "cost": "+lowest", "trust": "+5", "patient_satisfaction": "+10"},
+                "consequences": {"immediate": "Probleem opgelost binnen budget", "delayed": "Tand verloren, mogelijk spijt later"},
+                "body_language_reaction": "Knikt langzaam, lijkt niet overtuigd"
+              }
+            ]
+          },
+          
+          {
+            "id": "panic_management_excellent",
+            "title": "Na crisis management - RECOVERY",
+            "patient_statement": "Het spijt me zo... Ik wist niet dat ik zo zou reageren. U bent zo aardig geweest. Ik wil doorgaan als dat nog kan.",
+            "patient_emotion": "grateful_but_vulnerable",
+            "time_elapsed": 33,
+            "emotional_state_changes": {"trust": "+40", "anxiety": "-35", "cooperation": "+40"},
+            "time_pressure": "CRITICAL - 3 minuten over tijd",
+            "next_patient_status": "wacht al 3 minuten",
+            "options": [
+              {
+                "text": "Geen probleem. U deed geweldig door door te gaan. We zijn nu over tijd, maar uw gezondheid is prioriteit. Ik maak het af - nog 20 minuten nodig voor goede behandeling. Volgende patiënt moet wachten.",
+                "next_node": "overtime_complete_treatment",
+                "trade_offs": {"patient_satisfaction": "+50", "time_cost": "-23 min overtime", "next_patient_satisfaction": "-30"},
+                "consequences": {"immediate": "Perfecte behandeling", "delayed": "Volgende patiënt boos, dag loopt uit schema"},
+                "body_language_reaction": "Glimlacht dankbaar: 'U bent een engel'",
+                "practice_impact": "schema_disrupted_rest_of_day"
+              },
+              {
+                "text": "Ik ben blij dat u doorgaat. We hebben nog 3 minuten. Ik doe nu snelle noodbehandeling (drainage + pijnstillers). Morgenavond maken we het af. Is dat oké?",
+                "next_node": "quick_emergency_defer",
+                "trade_offs": {"time_cost": "0 (on time)", "pain_relief": "+good", "follow_up_required": true},
+                "consequences": {"immediate": "Pijn verminderd, op schema", "delayed": "Moet terugkomen morgen"},
+                "body_language_reaction": "Knikt: 'Ja, dat is goed'"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+

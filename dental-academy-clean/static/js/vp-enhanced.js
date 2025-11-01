@@ -30,6 +30,12 @@ class EnhancedVPFeatures {
       this.emotionalState = { ...this.dialogue.scenario.scenario_data.emotional_state };
     }
     
+    // Load constraints
+    if (this.dialogue.scenario && this.dialogue.scenario.scenario_data.scenario_constraints) {
+      this.constraints = this.dialogue.scenario.scenario_data.scenario_constraints;
+      this.timeAvailable = this.constraints.time_available || 25;
+    }
+    
     // Update UI
     this.updateEmotionalStateUI();
     
@@ -391,6 +397,197 @@ class EnhancedVPFeatures {
       hiddenInfoUnlocked: this.hiddenInfoUnlocked.length,
       choices: this.choicesHistory.length
     });
+  }
+  
+  /**
+   * Get dynamic patient statement based on trust level
+   */
+  getDynamicStatement(node) {
+    if (!node.patient_statement_dynamic) {
+      return node.patient_statement || '';
+    }
+    
+    const trust = this.emotionalState.trust;
+    const thresholds = node.trust_threshold || { low: 40, medium: 60, high: 75 };
+    
+    if (trust >= thresholds.high && node.patient_statement_dynamic.trust_high) {
+      return node.patient_statement_dynamic.trust_high;
+    } else if (trust >= thresholds.medium && node.patient_statement_dynamic.trust_medium) {
+      return node.patient_statement_dynamic.trust_medium;
+    } else {
+      return node.patient_statement_dynamic.trust_low || node.patient_statement || '';
+    }
+  }
+  
+  /**
+   * Check resource availability
+   */
+  checkResourceAvailability(resourceName) {
+    if (!this.constraints || !this.constraints.resources) return true;
+    
+    const resource = this.constraints.resources[resourceName];
+    if (!resource) return true;
+    
+    return resource.available;
+  }
+  
+  getResourceWaitTime(resourceName) {
+    if (!this.constraints || !this.constraints.resources) return 0;
+    
+    const resource = this.constraints.resources[resourceName];
+    if (!resource) return 0;
+    
+    return resource.wait_time_minutes || 0;
+  }
+  
+  /**
+   * Trigger random event
+   */
+  triggerRandomEvent(eventType, probability = 0.3) {
+    if (Math.random() > probability) return false;
+    
+    console.log('🎲 Random event triggered:', eventType);
+    
+    // Event-specific handling
+    switch(eventType) {
+      case 'anxiety_spike_in_waiting_room':
+        this.showRandomEventNotification(
+          '⚠️ Onverwacht voorval!',
+          'Patiënte hyperventileert in wachtkamer - directe actie vereist!'
+        );
+        return true;
+      
+      case 'worse_than_expected':
+        this.showRandomEventNotification(
+          '🔍 Diagnostische verrassing!',
+          'Röntgen toont periapikaal abces - ernstiger dan verwacht!'
+        );
+        this.emotionalState.anxiety += 15;
+        this.updateEmotionalStateUI();
+        return true;
+      
+      case 'insurance_call':
+        this.showRandomEventNotification(
+          '📞 Verzekeraar belt',
+          'Assistente onderbreekt: verzekeraar wil bevestiging van behandeling'
+        );
+        this.timeElapsed += 5; // Lost time
+        this.updateTimeIndicator();
+        return true;
+        
+      default:
+        return false;
+    }
+  }
+  
+  showRandomEventNotification(title, message) {
+    const dialogueThread = document.getElementById('dialogueThread');
+    if (!dialogueThread) return;
+    
+    const notification = document.createElement('div');
+    notification.className = 'random-event-notification';
+    notification.innerHTML = `
+      <div class="event-header">
+        <strong>${title}</strong>
+      </div>
+      <div class="event-body">${message}</div>
+    `;
+    
+    dialogueThread.appendChild(notification);
+    notification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    // Add CSS if not exists
+    if (!document.getElementById('random-event-styles')) {
+      const style = document.createElement('style');
+      style.id = 'random-event-styles';
+      style.textContent = `
+        .random-event-notification {
+          padding: 16px;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border-left: 4px solid #f59e0b;
+          border-radius: 12px;
+          margin: 16px 0;
+          animation: eventPulse 0.6s ease-out;
+          box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+        }
+        .event-header {
+          font-size: 15px;
+          font-weight: 700;
+          color: #78350f;
+          margin-bottom: 8px;
+        }
+        .event-body {
+          font-size: 14px;
+          color: #92400e;
+          line-height: 1.5;
+        }
+        @keyframes eventPulse {
+          0% { transform: scale(0.95); opacity: 0; }
+          50% { transform: scale(1.02); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+  
+  /**
+   * Check budget constraints
+   */
+  checkBudgetAffordability(treatmentCost) {
+    if (!this.constraints || !this.constraints.patient_budget) return true;
+    
+    const budget = this.constraints.patient_budget.max_affordable || Infinity;
+    return treatmentCost <= budget;
+  }
+  
+  getBudgetInfo() {
+    if (!this.constraints || !this.constraints.patient_budget) return null;
+    
+    return this.constraints.patient_budget;
+  }
+  
+  /**
+   * Track delayed consequences
+   */
+  addDelayedConsequence(consequence, triggersInNodes) {
+    if (!this.delayedConsequences) {
+      this.delayedConsequences = [];
+    }
+    
+    this.delayedConsequences.push({
+      consequence: consequence,
+      triggersIn: triggersInNodes,
+      triggered: false
+    });
+  }
+  
+  checkAndTriggerConsequences(currentNodeId) {
+    if (!this.delayedConsequences) return;
+    
+    this.delayedConsequences.forEach(dc => {
+      if (!dc.triggered && dc.triggersIn.includes(currentNodeId)) {
+        dc.triggered = true;
+        this.showConsequenceNotification(dc.consequence);
+      }
+    });
+  }
+  
+  showConsequenceNotification(consequence) {
+    const dialogueThread = document.getElementById('dialogueThread');
+    if (!dialogueThread) return;
+    
+    const notification = document.createElement('div');
+    notification.className = 'consequence-notification';
+    notification.innerHTML = `
+      <span class="icon">⏳</span>
+      <div>
+        <strong>Gevolg van eerdere keuze:</strong> ${consequence}
+      </div>
+    `;
+    
+    dialogueThread.appendChild(notification);
+    notification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   
   /**
