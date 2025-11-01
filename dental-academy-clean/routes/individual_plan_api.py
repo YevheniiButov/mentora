@@ -8,7 +8,7 @@ This module provides REST API endpoints for:
 - Progress updates
 """
 
-from flask import Blueprint, jsonify, redirect, url_for, request, session, current_app
+from flask import Blueprint, jsonify, redirect, url_for, request, session, current_app, flash
 from flask_login import login_required, current_user
 from utils.individual_plan_helpers import (
     get_daily_tasks,
@@ -176,7 +176,6 @@ def start_daily_session():
     
     if not profile_check['is_complete']:
         lang = session.get('lang', 'nl')
-        from flask import redirect, url_for
         return redirect(url_for('learning_map_bp.complete_profile', lang=lang))
     
     try:
