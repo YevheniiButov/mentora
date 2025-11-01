@@ -5,7 +5,7 @@
 
 import json
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 from app import db
 from models import VirtualPatientScenario, VirtualPatientAttempt, User
@@ -78,10 +78,19 @@ class VirtualPatientSelector:
                 if user_specialty_attr and user_specialty_attr != scenario.specialty:
                     continue
                 
-                # Проверяем только last_played_date
+                # Проверяем только last_played_date (нормализуем к UTC для сравнения)
                 if scenario.last_played_date:
-                    days_since_last = (datetime.utcnow() - scenario.last_played_date).days
+                    # Приводим обе даты к UTC для корректного сравнения
+                    now_utc = datetime.now(timezone.utc)
+                    last_played_utc = scenario.last_played_date
+                    if last_played_utc.tzinfo is None:
+                        last_played_utc = last_played_utc.replace(tzinfo=timezone.utc)
+                    else:
+                        last_played_utc = last_played_utc.astimezone(timezone.utc)
+                    
+                    days_since_last = (now_utc - last_played_utc).days
                     if days_since_last < 3:
+                        logger.debug(f"  ⏭️ Scenario {scenario.id} skipped: played {days_since_last} days ago")
                         continue
                 
                 available_for_user.append(scenario)
@@ -90,17 +99,13 @@ class VirtualPatientSelector:
             
             if not available_for_user:
                 # Если нет доступных сценариев, выбираем случайный из опубликованных
-                # Но сначала сбрасываем last_played_date чтобы он был доступен
+                # Это нормально, если все сценарии были недавно сыграны
                 if available_scenarios:
-                    logger.info(f"⚠️ No scenarios passed availability check, selecting random from {len(available_scenarios)} published scenarios")
+                    logger.info(f"ℹ️ All scenarios were recently played, selecting random from {len(available_scenarios)} published scenarios")
                     selected = random.choice(available_scenarios)
-                    # Сбросим дату последней игры если она слишком недавняя
-                    if selected.last_played_date:
-                        days_since_last = (datetime.utcnow() - selected.last_played_date).days
-                        if days_since_last < 3:
-                            selected.last_played_date = datetime.utcnow() - timedelta(days=4)
-                            db.session.commit()
                     logger.info(f"✅ Selected scenario: ID={selected.id}, title='{selected.title}', specialty='{selected.specialty}'")
+                    # Отмечаем как сыгранный сейчас
+                    selected.mark_played()
                     return selected
                 return None
             
