@@ -167,6 +167,7 @@ def save_choice():
 
 
 @vp_daily_bp.route('/complete-attempt', methods=['POST'])
+@csrf.exempt
 @login_required
 def complete_attempt():
     """
@@ -221,6 +222,7 @@ def complete_attempt():
 
 
 @vp_daily_bp.route('/add-fill-in-answer', methods=['POST'])
+@csrf.exempt
 @login_required
 def add_fill_in_answer():
     """
@@ -300,6 +302,7 @@ def get_daily_session():
 
 
 @vp_daily_bp.route('/integrate-daily-learning', methods=['POST'])
+@csrf.exempt
 @login_required
 def integrate_daily_learning():
     """
