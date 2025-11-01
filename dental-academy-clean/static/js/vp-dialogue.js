@@ -73,7 +73,9 @@ class VirtualPatientDialogue {
       
       // 4. Показать initial_state (начальное сообщение пациента)
       const initialState = this.scenario.scenario_data.initial_state;
-      if (initialState && initialState.patient_statement) {
+      const hasInitialState = initialState && initialState.patient_statement;
+      
+      if (hasInitialState) {
         this.addMessageToThread('from-patient', initialState.patient_statement);
         
         // Показать заметки врача если есть
@@ -86,7 +88,8 @@ class VirtualPatientDialogue {
       const nodes = this.scenario.scenario_data.dialogue_nodes;
       if (nodes && nodes.length > 0) {
         this.currentNodeId = nodes[0].id;
-        await this.displayNode(this.currentNodeId);
+        // Не показываем patient_statement первого узла, если уже показали initial_state
+        await this.displayNode(this.currentNodeId, !hasInitialState);
       } else {
         this.showError('Сценарий не содержит узлов диалога');
         return;
@@ -265,7 +268,7 @@ class VirtualPatientDialogue {
     }, 1000);
   }
   
-  async displayNode(nodeId) {
+  async displayNode(nodeId, showPatientStatement = true) {
     this.interactionLoading.style.display = 'flex';
     this.interactionContent.style.display = 'none';
     
@@ -281,8 +284,11 @@ class VirtualPatientDialogue {
       }
       console.log('Found node:', node);
       
-      // Добавить сообщение пациента в диалог
-      this.addMessageToThread('from-patient', node.patient_statement);
+      // Добавить сообщение пациента в диалог только если нужно
+      // (для первого узла не показываем, если уже показали initial_state)
+      if (showPatientStatement && node.patient_statement) {
+        this.addMessageToThread('from-patient', node.patient_statement);
+      }
       
       // Обновить прогресс
       this.updateProgress(nodeId);
@@ -355,10 +361,42 @@ class VirtualPatientDialogue {
     
     const fillInConfig = node.fill_in;
     
+    // Проверяем, что fillInConfig существует и корректный
+    if (!fillInConfig) {
+      console.error('Fill-in config is missing for node:', node.id);
+      return;
+    }
+    
     // Текст с пропуском
     const textEl = document.createElement('p');
     textEl.className = 'fill-in-text';
-    const text = fillInConfig.text.replace('____', `<span class="blank">[?]</span>`);
+    
+    let text = '';
+    
+    // Если есть text в конфиге (старый формат с ____)
+    if (fillInConfig.text && typeof fillInConfig.text === 'string') {
+      text = fillInConfig.text.replace('____', `<span class="blank">[?]</span>`);
+    }
+    // Если есть word в конфиге (новый формат - заменяем слово в patient_statement)
+    else if (fillInConfig.word && typeof fillInConfig.word === 'string') {
+      // Используем patient_statement из узла, если есть
+      const sourceText = node.patient_statement || node.title || '';
+      
+      // Заменяем слово на пропуск (case-insensitive)
+      const wordRegex = new RegExp(`\\b${fillInConfig.word}\\b`, 'gi');
+      text = sourceText.replace(wordRegex, `<span class="blank">[?]</span>`);
+      
+      // Если замена не произошла, просто показываем текст с пропуском в конце
+      if (text === sourceText) {
+        text = sourceText + ' <span class="blank">[?]</span>';
+      }
+    }
+    // Fallback: используем patient_statement с пропуском
+    else {
+      const sourceText = node.patient_statement || node.title || 'Vul het ontbrekende woord in:';
+      text = sourceText + ' <span class="blank">[?]</span>';
+    }
+    
     textEl.innerHTML = text;
     container.appendChild(textEl);
     
@@ -471,7 +509,8 @@ class VirtualPatientDialogue {
       setTimeout(() => {
         if (option.next_node && option.next_node !== 'end') {
           this.currentNodeId = option.next_node;
-          this.displayNode(this.currentNodeId);
+          // Всегда показываем patient_statement для следующих узлов (после первого)
+          this.displayNode(this.currentNodeId, true);
         } else {
           // Сценарий завершен
           this.completeScenario();
@@ -484,7 +523,15 @@ class VirtualPatientDialogue {
   }
   
   showFillInHint(fillInConfig, input) {
-    const hint = fillInConfig.hint || 'Нет подсказки';
+    if (!fillInConfig) {
+      console.error('Fill-in config is missing for hint');
+      return;
+    }
+    
+    const hint = (fillInConfig.hint && typeof fillInConfig.hint === 'string') 
+      ? fillInConfig.hint 
+      : 'Geen hint beschikbaar';
+    
     const message = document.createElement('div');
     message.className = 'hint-message';
     message.textContent = hint;
@@ -537,7 +584,8 @@ class VirtualPatientDialogue {
           if (this.currentNodeId === 'end') {
             this.completeScenario();
           } else {
-            this.displayNode(this.currentNodeId);
+            // Всегда показываем patient_statement для следующих узлов
+            this.displayNode(this.currentNodeId, true);
           }
         }, 1500);
       } else {
