@@ -239,4 +239,46 @@ def api_scenarios():
     
     return jsonify(scenarios_data)
 
+@virtual_patient_bp.route('/virtual-patients/check', methods=['GET'])
+@login_required
+def check_vp_count():
+    """Публичный эндпоинт для проверки количества виртуальных пациентов (без админ прав)"""
+    try:
+        from sqlalchemy import func
+        
+        total_count = VirtualPatientScenario.query.count()
+        published_count = VirtualPatientScenario.query.filter_by(is_published=True).count()
+        
+        # Группировка по специальности
+        specialty_counts = db.session.query(
+            VirtualPatientScenario.specialty,
+            func.count(VirtualPatientScenario.id).label('count')
+        ).group_by(VirtualPatientScenario.specialty).all()
+        
+        scenarios_list = VirtualPatientScenario.query.order_by(VirtualPatientScenario.id).all()
+        
+        scenarios_data = []
+        for scenario in scenarios_list:
+            scenarios_data.append({
+                'id': scenario.id,
+                'title': scenario.title,
+                'specialty': scenario.specialty,
+                'difficulty': scenario.difficulty,
+                'is_published': scenario.is_published
+            })
+        
+        return jsonify({
+            'success': True,
+            'total_count': total_count,
+            'published_count': published_count,
+            'unpublished_count': total_count - published_count,
+            'by_specialty': {specialty: count for specialty, count in specialty_counts},
+            'scenarios': scenarios_data
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # Блокировка через CSS overlay - убрано для использования JavaScript overlay 
