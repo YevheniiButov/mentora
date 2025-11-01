@@ -1929,7 +1929,7 @@ translations = {
     'last_login': 'Вход',
     'email_confirmed': 'Email',
     'profile_completion': 'Заполнение профиля',
-    'profile_completion_text': '75% профиля заполнено',
+    'profile_completion_text': 'профиля заполнено',
     'personal_info': 'О себе',
     'personal_info_description': 'Базовая информация, контакты и личные данные',
     'documents': 'Документы',

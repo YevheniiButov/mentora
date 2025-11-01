@@ -3805,10 +3805,10 @@
                                     <span class="item-status-badge" x-show="termsCompleted">
                                         <i class="bi bi-check-circle-fill"></i> Klaar
                                     </span>
-                                    <span class="item-status-badge in-progress" x-show="termsInProgress">
+                                    <span class="item-status-badge in-progress" x-show="termsInProgress && testsCompleted">
                                         <i class="bi bi-play-circle"></i> Bezig
                                     </span>
-                                    <span class="item-status-badge locked" x-show="!testsCompleted && !termsCompleted">
+                                    <span class="item-status-badge locked" x-show="!testsCompleted || (!termsCompleted && !termsInProgress)">
                                         <i class="bi bi-lock"></i> Vergrendeld
                                     </span>
                     </div>

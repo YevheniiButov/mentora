@@ -145,35 +145,57 @@ def track_event():
         # Handle different content types
         if request.is_json:
             data = request.get_json()
-            current_app.logger.info(f"Parsed JSON data: {data}")
-        elif request.content_type and request.content_type.startswith('text/plain'):
-            # Handle sendBeacon requests (text/plain or text/plain;charset=UTF-8)
+            current_app.logger.debug(f"Parsed JSON data: {data}")
+        elif request.content_type and ('text/plain' in request.content_type or 'application/octet-stream' in request.content_type):
+            # Handle sendBeacon requests (text/plain, text/plain;charset=UTF-8, or Blob)
             raw_data = request.get_data(as_text=True)
-            current_app.logger.info(f"Raw sendBeacon data: {raw_data}")
+            current_app.logger.debug(f"Raw sendBeacon data (first 200 chars): {raw_data[:200] if raw_data else 'empty'}")
             try:
-                data = json.loads(raw_data)
-                current_app.logger.info(f"Parsed sendBeacon data: {data}")
+                if raw_data:
+                    data = json.loads(raw_data)
+                    current_app.logger.debug(f"Parsed sendBeacon data: {data}")
+                else:
+                    current_app.logger.debug("Empty sendBeacon data received")
+                    return jsonify({'error': 'Empty data received'}), 400
             except (json.JSONDecodeError, TypeError) as e:
-                current_app.logger.warning(f"Failed to parse sendBeacon data: {raw_data}, error: {str(e)}")
+                current_app.logger.debug(f"Failed to parse sendBeacon data: {str(e)}")
                 return jsonify({'error': 'Invalid JSON data'}), 400
+        elif request.data:
+            # Try to parse raw request data as JSON
+            try:
+                raw_data = request.get_data(as_text=True)
+                if raw_data:
+                    data = json.loads(raw_data)
+                    current_app.logger.debug(f"Parsed raw data as JSON: {data}")
+                else:
+                    data = None
+            except (json.JSONDecodeError, TypeError):
+                data = None
         else:
             # Try to parse as JSON from form data
             try:
-                data = json.loads(request.form.get('data', '{}'))
-                current_app.logger.info(f"Parsed form JSON data: {data}")
+                form_data = request.form.get('data', '{}')
+                if form_data and form_data != '{}':
+                    data = json.loads(form_data)
+                    current_app.logger.debug(f"Parsed form JSON data: {data}")
+                else:
+                    data = request.form.to_dict() if request.form else None
+                    if data:
+                        current_app.logger.debug(f"Parsed form data: {data}")
             except (json.JSONDecodeError, TypeError):
-                data = request.form.to_dict()
-                current_app.logger.info(f"Parsed form data: {data}")
+                data = request.form.to_dict() if request.form else None
+                if data:
+                    current_app.logger.debug(f"Parsed form data as dict: {data}")
         
         if not data:
-            current_app.logger.warning("No data received in track-event request")
+            current_app.logger.debug("No data received in track-event request")
             return jsonify({'error': 'No data received'}), 400
         
         event_name = data.get('event_name')
         event_data = data.get('event_data')
         
         if not event_name:
-            current_app.logger.warning(f"Event name missing in data: {data}")
+            current_app.logger.debug(f"Event name missing in data: {data}")
             return jsonify({'error': 'Event name is required'}), 400
         
         track_custom_event(event_name, event_data)

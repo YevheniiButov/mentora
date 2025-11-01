@@ -180,30 +180,51 @@ def start_daily_session():
         return redirect(url_for('learning_map_bp.complete_profile', lang=lang))
     
     try:
-        from utils.individual_plan_helpers import get_or_create_learning_plan
+        from utils.individual_plan_helpers import get_or_create_learning_plan, select_questions_for_today
         from models import DiagnosticSession
         
+        current_app.logger.info(f"🔄 Starting daily session for user {current_user.id}")
+        
         # Get or create learning plan
-        plan = get_or_create_learning_plan(current_user)
+        try:
+            plan = get_or_create_learning_plan(current_user)
+            current_app.logger.info(f"✅ Learning plan retrieved/created: {plan.id if plan else None}")
+        except Exception as e:
+            current_app.logger.error(f"❌ Error getting/creating learning plan: {e}", exc_info=True)
+            raise
         
         if not plan:
             flash('Kon geen leerplan vinden. Start eerst een diagnostische test.', 'warning')
             return redirect(url_for('dashboard.index'))
         
         # Select today's questions
-        questions = select_questions_for_today(current_user, count=20)
+        try:
+            questions = select_questions_for_today(current_user, count=20)
+            current_app.logger.info(f"✅ Selected {len(questions) if questions else 0} questions for today")
+        except Exception as e:
+            current_app.logger.error(f"❌ Error selecting questions: {e}", exc_info=True)
+            raise
         
+        # If no questions available, try with a smaller count or continue anyway
         if not questions:
-            flash('Geen vragen beschikbaar. Probeer later opnieuw.', 'warning')
-            return redirect(url_for('dashboard.index'))
+            current_app.logger.warning(f"⚠️ No questions available for user {current_user.id}, trying smaller count")
+            questions = select_questions_for_today(current_user, count=10)
+            if not questions:
+                flash('Geen vragen beschikbaar. Probeer later opnieuw.', 'warning')
+                return redirect(url_for('learning_map_bp.learning_map', lang=session.get('lang', 'nl'), path_id='irt'))
         
         # ✅ Create a DiagnosticSession for tracking today's practice
-        from datetime import datetime, timezone
-        diagnostic_session = DiagnosticSession.create_session(
-            user_id=current_user.id,
-            session_type='daily_practice',
-            ip_address=request.remote_addr
-        )
+        try:
+            from datetime import datetime, timezone
+            diagnostic_session = DiagnosticSession.create_session(
+                user_id=current_user.id,
+                session_type='daily_practice',
+                ip_address=request.remote_addr
+            )
+            current_app.logger.info(f"✅ Diagnostic session created: {diagnostic_session.id}")
+        except Exception as e:
+            current_app.logger.error(f"❌ Error creating diagnostic session: {e}", exc_info=True)
+            raise
         
         # Store question IDs and session IDs in Flask session for practice
         session['daily_session_questions'] = [q.id for q in questions]
@@ -232,11 +253,12 @@ def start_daily_session():
         return redirect(url_for('learning.automated_practice'))
         
     except Exception as e:
-        print(f"Error starting daily session: {e}")
+        current_app.logger.error(f"❌ CRITICAL ERROR starting daily session for user {current_user.id}: {e}", exc_info=True)
         import traceback
         traceback.print_exc()
-        flash('Fout bij starten sessie. Probeer opnieuw.', 'error')
-        return redirect(url_for('dashboard.index'))
+        flash(f'Fout bij starten sessie: {str(e)}. Probeer opnieuw.', 'error')
+        lang = session.get('lang', 'nl')
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
 
 
 @individual_plan_api_bp.route('/api/individual-plan/update-progress', methods=['POST'])

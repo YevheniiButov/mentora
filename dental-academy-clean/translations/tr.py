@@ -1490,7 +1490,7 @@ translations = {
     
     # Profile page translations
     'profile_completion': 'Profil Tamamlama',
-    'profile_completion_text': 'Profil %75 tamamlandı',
+    'profile_completion_text': 'profil tamamlandı',
     'profession_not_specified': 'Meslek belirtilmemiş',
     'personal_info_description': 'Temel bilgiler, iletişim ve kişisel veriler',
     'documents_description': 'Diploma, sertifika ve diğer belgeleri yükleme',

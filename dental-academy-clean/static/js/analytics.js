@@ -84,16 +84,20 @@ class AnalyticsTracker {
     }
     
     trackTimeOnPage() {
-        // Update time on page every 30 seconds
+        // Update time on page every 60 seconds (reduced frequency to avoid server overload)
+        // Only track if page has been visible for at least 10 seconds
         setInterval(() => {
             if (this.isPageVisible) {
                 const timeOnPage = Math.round((Date.now() - this.pageStartTime) / 1000);
-                this.sendEvent('time_on_page', {
-                    time_on_page: timeOnPage,
-                    session_id: this.sessionId
-                });
+                // Only send event if user has been on page for at least 10 seconds
+                if (timeOnPage >= 10) {
+                    this.sendEvent('time_on_page', {
+                        time_on_page: timeOnPage,
+                        session_id: this.sessionId
+                    });
+                }
             }
-        }, 30000);
+        }, 60000); // Changed from 30000 to 60000 (60 seconds instead of 30)
     }
     
     trackPageVisibility() {
@@ -177,14 +181,18 @@ class AnalyticsTracker {
         // Check if we're in development mode or if analytics endpoint is available
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             // Skip analytics in development mode
-
             return;
         }
         
         if (useBeacon && navigator.sendBeacon) {
             // Use sendBeacon for reliable delivery on page unload
             // Note: sendBeacon doesn't support custom headers, so CSRF is handled server-side for beacons
-            navigator.sendBeacon('/analytics/track-event', JSON.stringify(payload));
+            try {
+                const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=UTF-8' });
+                navigator.sendBeacon('/analytics/track-event', blob);
+            } catch (error) {
+                // Silently fail for sendBeacon errors
+            }
         } else {
             // Use fetch for normal events
             const csrfToken = document.querySelector('meta[name="csrf-token"]');
@@ -200,8 +208,22 @@ class AnalyticsTracker {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(payload)
-            }).catch(error => {
-                console.warn('Analytics tracking error:', error);
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Only log errors if it's not a 400 (which might be expected for invalid requests)
+                    if (response.status !== 400) {
+                        console.warn(`Analytics tracking error: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json().catch(() => ({}));
+                }
+                return response.json();
+            })
+            .catch(error => {
+                // Only log network errors, not 400 responses
+                if (error.name !== 'AbortError') {
+                    // Silently ignore analytics errors to avoid console spam
+                }
             });
         }
     }

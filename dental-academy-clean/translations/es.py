@@ -1580,7 +1580,7 @@ translations = {
     
     # Profile page translations
     'profile_completion': 'Completar Perfil',
-    'profile_completion_text': '75% del perfil completado',
+    'profile_completion_text': 'del perfil completado',
     'profession_not_specified': 'Profesión no especificada',
     'personal_info_description': 'Información básica, contactos y datos personales',
     'documents_description': 'Subir diplomas, certificados y otros documentos',

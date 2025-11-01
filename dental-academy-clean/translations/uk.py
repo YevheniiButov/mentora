@@ -1489,7 +1489,7 @@ translations = {
     
     # Profile page translations
     'profile_completion': 'Заповнення профілю',
-    'profile_completion_text': '75% профілю заповнено',
+    'profile_completion_text': 'профілю заповнено',
     'profession_not_specified': 'Професія не вказана',
     'personal_info_description': 'Базова інформація, контакти та особисті дані',
     'documents_description': 'Завантаження дипломів, сертифікатів та інших документів',
