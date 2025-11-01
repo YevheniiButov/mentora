@@ -122,51 +122,78 @@ class VirtualPatientDialogue {
   }
   
   initPatientInfo() {
-    const data = this.scenario.scenario_data;
-    const patientInfo = data.patient_info;
+    const data = this.scenario.scenario_data || {};
+    const patientInfo = data.patient_info || {};
+    
+    // Безопасные значения по умолчанию
+    const patientName = patientInfo.name || 'Patient';
+    const patientAge = patientInfo.age || 'Onbekend';
+    const patientGender = patientInfo.gender || 'unknown';
     
     // Инициалы
-    const initials = (patientInfo.name.split(' ').map(n => n[0]).join(''));
-    document.getElementById('patientInitials').textContent = initials.toUpperCase();
-    document.getElementById('patientInitialsMobile').textContent = initials.toUpperCase();
+    const initials = patientName && patientName.trim() 
+      ? (patientName.split(' ').map(n => n[0] || '').filter(Boolean).join('').toUpperCase() || 'P')
+      : 'P';
+    const initialsEl = document.getElementById('patientInitials');
+    const initialsMobileEl = document.getElementById('patientInitialsMobile');
+    if (initialsEl) initialsEl.textContent = initials;
+    if (initialsMobileEl) initialsMobileEl.textContent = initials;
     
     // Основная информация
-    document.getElementById('patientName').textContent = patientInfo.name;
-    document.getElementById('patientNameMobile').textContent = patientInfo.name;
-    document.getElementById('patientAge').textContent = patientInfo.age;
-    document.getElementById('patientAgeMobile').textContent = `${patientInfo.age} jaar`;
-    document.getElementById('patientGender').textContent = this.translateGender(patientInfo.gender);
+    const nameEl = document.getElementById('patientName');
+    const nameMobileEl = document.getElementById('patientNameMobile');
+    const ageEl = document.getElementById('patientAge');
+    const ageMobileEl = document.getElementById('patientAgeMobile');
+    const genderEl = document.getElementById('patientGender');
+    
+    if (nameEl) nameEl.textContent = patientName;
+    if (nameMobileEl) nameMobileEl.textContent = patientName;
+    if (ageEl) ageEl.textContent = patientAge;
+    if (ageMobileEl) ageMobileEl.textContent = `${patientAge} jaar`;
+    if (genderEl) genderEl.textContent = this.translateGender(patientGender);
     
     // История болезни
-    document.getElementById('patientHistory').textContent = patientInfo.medical_history || 'Geen informatie';
-    document.getElementById('patientHistoryMobile').textContent = patientInfo.medical_history || 'Geen informatie';
+    const historyEl = document.getElementById('patientHistory');
+    const historyMobileEl = document.getElementById('patientHistoryMobile');
+    const historyText = patientInfo.medical_history || 'Geen informatie';
+    if (historyEl) historyEl.textContent = historyText;
+    if (historyMobileEl) historyMobileEl.textContent = historyText;
     
     // Аллергии
-    if (patientInfo.allergies && patientInfo.allergies.length > 0) {
+    const allergiesContainer = document.getElementById('allergiesContainer');
+    const allergiesMobile = document.getElementById('allergiesMobile');
+    if (patientInfo.allergies && Array.isArray(patientInfo.allergies) && patientInfo.allergies.length > 0) {
       const allergiesHtml = patientInfo.allergies.map(a => 
         `<span class="allergy-tag">${a}</span>`
       ).join('');
-      document.getElementById('allergiesContainer').innerHTML = allergiesHtml;
+      if (allergiesContainer) allergiesContainer.innerHTML = allergiesHtml;
       
       const allergiesMobileHtml = patientInfo.allergies.map(a => 
         `<span class="allergy-tag">${a}</span>`
       ).join('');
-      document.getElementById('allergiesMobile').innerHTML = allergiesMobileHtml;
+      if (allergiesMobile) allergiesMobile.innerHTML = allergiesMobileHtml;
+    } else {
+      if (allergiesContainer) allergiesContainer.innerHTML = '';
+      if (allergiesMobile) allergiesMobile.innerHTML = '';
     }
     
     // Симптомы
-    if (patientInfo.symptoms && patientInfo.symptoms.length > 0) {
+    const symptomsContainer = document.getElementById('symptomsContainer');
+    if (patientInfo.symptoms && Array.isArray(patientInfo.symptoms) && patientInfo.symptoms.length > 0) {
       const symptomsHtml = patientInfo.symptoms.map(s => 
         `<div class="symptom-item">
            <span class="symptom-icon">⚠</span>
            <span>${s}</span>
          </div>`
       ).join('');
-      document.getElementById('symptomsContainer').innerHTML = symptomsHtml;
+      if (symptomsContainer) symptomsContainer.innerHTML = symptomsHtml;
+    } else {
+      if (symptomsContainer) symptomsContainer.innerHTML = '';
     }
     
     // Vital signs если есть
-    if (patientInfo.vital_signs) {
+    const vitalSignsSection = document.getElementById('vitalSignsSection');
+    if (patientInfo.vital_signs && typeof patientInfo.vital_signs === 'object') {
       document.getElementById('vitalSignsSection').style.display = 'block';
       const vitalsHtml = Object.entries(patientInfo.vital_signs).map(([key, value]) => 
         `<div class="vital-item">
