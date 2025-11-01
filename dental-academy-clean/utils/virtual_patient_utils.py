@@ -26,7 +26,7 @@ class VirtualPatientSelector:
             VirtualPatientScenario или None
         """
         try:
-            from app import current_app
+            from flask import current_app
             import logging
             logger = logging.getLogger(__name__)
             
