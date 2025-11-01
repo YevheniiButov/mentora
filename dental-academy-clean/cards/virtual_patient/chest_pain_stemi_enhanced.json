@@ -1,0 +1,593 @@
+{
+  "title": {
+    "nl": "🚨 Acute Pijn op de Borst: STEMI Crisis (Enhanced)"
+  },
+  "description": {
+    "nl": "Realistische STEMI emergency: 55-jarige man met drukkende pijn op borst. Time-critical decisions, family interference, patient resistance. Elke minuut telt."
+  },
+  "specialty": "general_medicine",
+  "difficulty": "expert",
+  "scenario_data": {
+    "translations": {
+      "nl": {
+        "patient_info": {
+          "name": "De heer Jansen",
+          "age": 55,
+          "gender": "male",
+          "medical_history": "Hypertensie (10 jaar), gestopt met roken 5 jaar geleden (20 pack-years), BMI 28, vader overleden aan hartinfarct op 58-jarige leeftijd",
+          "current_medications": "Lisinopril 10mg (compliance matig), Simvastatine 40mg",
+          "social_context": "Manager, stressvol leven, sport weinig. Vrouw en 2 kinderen thuis.",
+          "allergies": ["Geen bekende allergieën"],
+          "symptoms": [
+            "Drukkende pijn op de borst (8/10)",
+            "Uitstraling naar linkerarm en kaak",
+            "Zweten en misselijkheid",
+            "Bleek en angstig",
+            "Kortademig"
+          ],
+          "vital_signs": {
+            "Bloeddruk": "155/95 mmHg",
+            "Hartslag": "102/min (irregulier)",
+            "Ademhaling": "22/min",
+            "Saturatie": "94% (kamerlucht)",
+            "Temperatuur": "36.8°C"
+          }
+        },
+        
+        "emotional_state": {
+          "trust": 60,
+          "anxiety": 95,
+          "pain": 80,
+          "cooperation": 55,
+          "denial": 70
+        },
+        
+        "hidden_information": [
+          {
+            "id": "previous_angina_ignored",
+            "content": "Heeft al 2 weken intermitterende pijn bij inspanning, dacht dat het spierklachten waren. Heeft het niet gemeld.",
+            "reveals_when": ["trust >= 60", "ask_about_previous_symptoms"],
+            "affects": ["unstable_angina_diagnosis", "delayed_presentation", "higher_risk"]
+          },
+          {
+            "id": "stopped_medication_3_months_ago",
+            "content": "Stopte 3 maanden geleden met bloeddrukpillen omdat 'alles goed voelde'. Heeft dit niet aan vrouw verteld.",
+            "reveals_when": ["trust >= 65", "medication_compliance_question"],
+            "affects": ["uncontrolled_hypertension", "increased_risk", "compliance_issue"]
+          },
+          {
+            "id": "cocaine_use_last_night",
+            "content": "Gebruikte gisteravond cocaïne op zakelijk evenement. Bang voor consequenties op werk en thuis.",
+            "reveals_when": ["trust >= 75", "direct_substance_question", "after_family_leaves"],
+            "affects": ["cocaine_induced_MI", "nitrate_contraindication", "legal_issues"]
+          },
+          {
+            "id": "brother_died_in_ambulance",
+            "content": "Broer overleed 5 jaar geleden tijdens ambulancetransport (trauma). Daarom weigert patiënt ambulance.",
+            "reveals_when": ["trust >= 70", "after_ambulance_refusal"],
+            "affects": ["psychological_barrier", "transport_refusal", "need_for_extra_counseling"]
+          }
+        ],
+        
+        "scenario_constraints": {
+          "time_critical": {
+            "door_to_balloon_target": 90,
+            "time_elapsed_start": 0,
+            "symptom_onset": "20 minuten geleden",
+            "golden_hour": "40 minuten remaining",
+            "every_minute_counts": "13% mortaliteit reductie per 30 min sneller"
+          },
+          "resources": {
+            "ECG_apparaat": {
+              "available": true,
+              "time_required": 3,
+              "note": "12-lead ECG in praktijk"
+            },
+            "ambulance_112": {
+              "available": true,
+              "eta": "6-8 minuten",
+              "note": "Mobiele Coronair Unit beschikbaar"
+            },
+            "zuurstof": {
+              "available": true,
+              "note": "Bij saturatie < 94%"
+            },
+            "medications_available": {
+              "aspirine": "300mg beschikbaar",
+              "nitroglycerin_spray": "0.4mg sublingual",
+              "morphine": "5mg IV (indien beschikbaar)",
+              "clopidogrel": "300mg loading dose"
+            }
+          },
+          "location": {
+            "setting": "Huisartsenpraktijk",
+            "distance_to_PCI_center": "25 km (20 min met ambulance)",
+            "distance_to_nearest_hospital": "12 km (geen PCI faciliteit)"
+          }
+        },
+        
+        "initial_state": {
+          "patient_statement": "Dokter... *zwaar ademend* ...ik heb al 20 minuten een zwaar gevoel op mijn borst. Alsof een olifant erop zit. Het gaat naar mijn arm en kaak. Ik... ik ben bang dat het mijn hart is. Maar ik wil geen ambulance - kan ik niet gewoon naar het ziekenhuis rijden met mijn vrouw?",
+          "patient_emotion": "terrified_in_severe_pain",
+          "body_language": "Bleek, zwetend (diaphoresis), hand op borst, onrustig, vermijdt oogcontact bij vraag over ambulance",
+          "clinical_phase": "acute_emergency_triage",
+          "notes_dentist": "🚨 ALARM: Klassieke STEMI presentatie. Pijn >20 min, uitstraling, diaphoresis. Patiënt weigert ambulance - DIT IS KRITISCH.",
+          "time_stamp": "T+0 minuten",
+          "red_flags": [
+            "Pijn > 20 minuten (ongoing ischemia)",
+            "Uitstraling naar arm/kaak (typical ACS)",
+            "Diaphoresis + angst (sympathetic activation)",
+            "Ambulance refusal (delayed care risk)",
+            "Family history (vader MI op 58j)"
+          ]
+        },
+        
+        "dialogue_nodes": [
+          {
+            "id": "initial_triage_critical",
+            "title": "T+0 min: Eerste Assessment - AMBULANCE REFUSAL",
+            "patient_statement": "*Grijpt uw arm* Dokter, alsjeblieft geen ambulance. Mijn broer... hij is gestorven in een ambulance 5 jaar geleden. Ik wil gewoon dat mijn vrouw me naar het ziekenhuis brengt. Het gaat wel... de pijn is iets minder nu ik zit.",
+            "patient_statement_if_low_trust": "Geen ambulance! Ik ga gewoon zelf. Geef me wat pillen.",
+            "patient_emotion": "terrified_defensive_in_denial",
+            "body_language": "Trilt, tranen in ogen bij vermelding broer, maar lichaamshouding is defensief",
+            "clinical_phase": "crisis_negotiation_plus_medical_urgency",
+            "time_elapsed": 2,
+            "revealed_hidden_info": ["brother_died_in_ambulance"],
+            "vital_signs_current": {
+              "BP": "155/95",
+              "HR": "102 (irregulier)",
+              "Sat": "94%",
+              "Pain": "7/10 (was 8/10)"
+            },
+            "options": [
+              {
+                "text": "*Kijkt patiënt in de ogen, hand op schouder* 'Mijnheer Jansen, ik begrijp uw angst. Uw broer... dat is een trauma. MAAR: u heeft nu een hartinfarct. Elke minuut telt. De ambulance heeft medicatie en een getraind team - als uw hart stopt tijdens het rijden, kan uw vrouw niets doen. In de ambulance WEL. Ik ga naast u zitten terwijl we wachten. We doen dit samen. Oké?'",
+                "next_node": "patient_accepts_ambulance_trust",
+                "trade_offs": {
+                  "empathy": "+40",
+                  "trust": "+35",
+                  "anxiety": "-20",
+                  "cooperation": "+40",
+                  "time_cost": "-3 min (negotiation)",
+                  "door_to_balloon_delay": "+3 min",
+                  "survival_chance": "+high (safe transport)",
+                  "psychological_trauma_addressed": "yes"
+                },
+                "consequences": {
+                  "immediate": "Patiënt accepteert ambulance, voelt zich gesteund",
+                  "delayed": "Veilig transport, trauma wordt erkend, betere compliance"
+                },
+                "body_language_reaction": "Knikt met tranen: 'Oké... oké dokter. Blijft u bij me?'",
+                "hidden_info_unlock": [],
+                "clinical_notes": "EXCELLENT: Empathy + firmness + practical reasoning. Addresses psychological barrier."
+              },
+              {
+                "text": "*Urgente toon* 'Mijnheer Jansen, dit is levensgevaarlijk. Ik BEN uw dokter en ik VERPLICHT u de ambulance te nemen. Als u weigert, teken ik u uit. Uw leven is belangrijker dan uw angst. De ambulance komt eraan - geen discussie.'",
+                "next_node": "patient_reluctantly_accepts_authoritarian",
+                "trade_offs": {
+                  "empathy": "-10",
+                  "trust": "-15",
+                  "anxiety": "+10",
+                  "cooperation": "+20 (forced)",
+                  "time_cost": "-1 min (quick decision)",
+                  "door_to_balloon_delay": "+1 min",
+                  "survival_chance": "+high (safe transport)",
+                  "psychological_trauma_addressed": "no"
+                },
+                "consequences": {
+                  "immediate": "Patiënt accepteert uit angst voor 'uitschrijven', voelt zich niet gehoord",
+                  "delayed": "Veilig transport, maar trauma blijft. Mogelijk klacht achteraf."
+                },
+                "body_language_reaction": "Zakt in elkaar: 'Oké... u bent de dokter.' (Defeated)",
+                "clinical_notes": "GOOD medically, POOR psychologically. Paternalistic. Works but damages relationship."
+              },
+              {
+                "text": "*Kijkt naar klok* 'Ik begrijp uw angst, maar elke minuut telt. Kijk: uw vrouw MAG meerijden in de ambulance. Zo bent u samen, én heeft u medische begeleiding. Als compromis: ik bel 112 en leg uit dat u trauma heeft - ze zullen extra zorgzaam zijn. Akkoord?'",
+                "next_node": "wife_rides_along_compromise",
+                "trade_offs": {
+                  "empathy": "+30",
+                  "trust": "+30",
+                  "anxiety": "-15",
+                  "cooperation": "+35",
+                  "time_cost": "-2 min",
+                  "door_to_balloon_delay": "+2 min",
+                  "survival_chance": "+high",
+                  "family_involvement": "+excellent"
+                },
+                "consequences": {
+                  "immediate": "Patiënt accepteert, vrouw biedt emotionele steun",
+                  "delayed": "Veilig transport, trauma gedeeltelijk geadresseerd, family satisfaction"
+                },
+                "body_language_reaction": "Kijkt naar vrouw, vrouw knikt: 'Ja, dat is goed. Ik ga mee.'",
+                "hidden_info_unlock": [],
+                "clinical_notes": "EXCELLENT: Creative compromise. Fast + empathetic + family-centered."
+              },
+              {
+                "text": "*Zucht* 'Oké, als u echt weigert... Uw vrouw rijdt u dan. MAAR: ik geef aspirine en nitro NU, en ik bel het ziekenhuis dat u eraan komt. U tekent een vrijwaring. Als u onderweg stopt met ademen, bel 112 direct. Begrepen?'",
+                "next_node": "wife_drives_high_risk",
+                "trade_offs": {
+                  "empathy": "+10",
+                  "trust": "+5",
+                  "cooperation": "+15",
+                  "time_cost": "0 min (no wait for ambulance)",
+                  "door_to_balloon_delay": "-5 min (faster to hospital?)",
+                  "survival_chance": "-CRITICAL (no monitoring, no defib)",
+                  "medico_legal_risk": "+HIGH",
+                  "VWS_violation": "possible"
+                },
+                "consequences": {
+                  "immediate": "Snelle vertrek, maar geen monitoring",
+                  "delayed": "HOOG RISICO: cardiac arrest tijdens rit = fataal. Mogelijk tuchtklacht."
+                },
+                "body_language_reaction": "Staat direct op: 'Dank u. We gaan nu.'",
+                "triggers_event": "cardiac_arrest_in_car",
+                "clinical_notes": "⚠️ DANGEROUS: Patient autonomy respected, but high mortality risk. Legally questionable."
+              }
+            ]
+          },
+          
+          {
+            "id": "patient_accepts_ambulance_trust",
+            "title": "T+3 min: ABCDE + ECG - TIME PRESSURE",
+            "patient_statement": "*Ligt op brancard* Dokter, de pijn... hij is weer erger. Nu een 9/10. En ik voel me duizelig...",
+            "patient_emotion": "deteriorating_scared",
+            "body_language": "Grijpt borst, grimaceert, ogen half dicht",
+            "clinical_phase": "pre_hospital_stabilization",
+            "time_elapsed": 5,
+            "vital_signs_current": {
+              "BP": "140/85 (dalend)",
+              "HR": "115 (irregulier, snel)",
+              "Sat": "92%",
+              "Pain": "9/10",
+              "Consciousness": "Alert maar angstig"
+            },
+            "examination_results": "ECG toont: ST-elevatie 3mm in V2-V4 (anterior STEMI). Reciprocal ST-depressie in II, III, aVF.",
+            "time_until_ambulance": "3 minuten",
+            "options": [
+              {
+                "text": "*Snel maar kalm* 'Mijnheer Jansen, u heeft een hartinfarct - anterior wall. Ik geef NU: 1) Aspirine 300mg (kauw!), 2) Tweede nitro spray, 3) Clopidogrel 300mg, 4) Zuurstof 4L. Ambulance is er over 3 minuten. Blijf liggen. U bent in goede handen. Ik blijf bij u.'",
+                "next_node": "optimal_medication_protocol",
+                "trade_offs": {
+                  "empathy": "+25",
+                  "anxiety": "-15",
+                  "pain": "-20",
+                  "time_cost": "-2 min (efficient)",
+                  "medication_protocol": "GOLD STANDARD (ESC guidelines)",
+                  "door_to_balloon_time": "on track",
+                  "survival_chance": "+maximum"
+                },
+                "consequences": {
+                  "immediate": "Pijn daalt naar 6/10, bloeddruk stabiliseert",
+                  "delayed": "Optimale pre-hospital care, beste prognose"
+                },
+                "body_language_reaction": "Pijn minder, ademt rustiger: 'Dank u...'",
+                "clinical_notes": "OUTSTANDING: Complete MONA protocol (Morphine optional, O2, Nitro, Aspirin) + Clopidogrel. ESC-conform."
+              },
+              {
+                "text": "'Ik geef aspirine en nog een nitro. Ambulance is onderweg. Blijf rustig liggen en probeer langzaam adem te halen. Straks krijgt u in de ambulance verdere medicatie.'",
+                "next_node": "suboptimal_medication_delayed",
+                "trade_offs": {
+                  "empathy": "+15",
+                  "anxiety": "-5",
+                  "pain": "-10 (insufficient)",
+                  "time_cost": "-1 min",
+                  "medication_protocol": "INCOMPLETE (missing Clopidogrel, O2)",
+                  "door_to_balloon_time": "acceptable",
+                  "survival_chance": "+good"
+                },
+                "consequences": {
+                  "immediate": "Pijn blijft 8/10, O2 sat blijft 92%",
+                  "delayed": "Suboptimale pre-hospital care, mist kans op vroege P2Y12 inhibitie"
+                },
+                "body_language_reaction": "Nog steeds pijn: 'Het doet nog zo'n zeer...'",
+                "clinical_notes": "ADEQUATE maar niet optimaal. Mist Clopidogrel loading en O2."
+              },
+              {
+                "text": "'ECG is duidelijk: STEMI. Ik bel 112 en geef door. Ambulance moet snel komen - zij hebben de juiste medicatie. Ik geef u alleen aspirine nu.'",
+                "next_node": "delayed_treatment_waiting",
+                "trade_offs": {
+                  "empathy": "+5",
+                  "anxiety": "+10",
+                  "pain": "0 (geen verlichting)",
+                  "time_cost": "-0 min (passive waiting)",
+                  "medication_protocol": "POOR (only aspirin)",
+                  "survival_chance": "+reduced"
+                },
+                "consequences": {
+                  "immediate": "Patiënt lijdt onnodig, angst stijgt",
+                  "delayed": "Gemiste kans op symptoom controle en vroege behandeling"
+                },
+                "body_language_reaction": "Grijpt uw arm: 'Dokter, de pijn! Doe iets!'",
+                "triggers_event": "possible_arrhythmia",
+                "clinical_notes": "INSUFFICIENT: Huisarts heeft verantwoordelijkheid voor pre-hospital care. Nitro/Clopidogrel moeten gegeven."
+              }
+            ]
+          },
+          
+          {
+            "id": "optimal_medication_protocol",
+            "title": "T+6 min: Ambulance arriveert - FAMILY INTERFERENCE",
+            "patient_statement": "*Vrouw interrupts* 'Dokter, mag ik even? Mijn man... hij heeft gisteren iets gebruikt. Op een feest. Ik weet niet wat, maar ik rook het. Hij ontkent het. Kan dat belangrijk zijn?'",
+            "patient_emotion": "patiënt: paniek/schaamte | vrouw: bezorgd/guilty",
+            "body_language": "Patiënt kijkt weg, schudt hoofd. Vrouw huilt.",
+            "clinical_phase": "critical_information_disclosure",
+            "time_elapsed": 8,
+            "ambulance_crew_present": true,
+            "revealed_suspicion": "possible_cocaine_use",
+            "critical_decision": "Cocaine + Nitraten = LEVENSGEVAARLIJK (hypotensie)",
+            "options": [
+              {
+                "text": "*Naar patiënt, directe blik* 'Mijnheer Jansen, dit is LEVENSBELANGRIJK. Heeft u de afgelopen 24 uur cocaïne of andere drugs gebruikt? Ik oordeel niet - maar cocaïne + nitrospray kan u doden door bloeddrukdaling. Ik MOET het weten. Nu.'",
+                "next_node": "cocaine_confession_critical",
+                "trade_offs": {
+                  "trust": "+40 (life-saving honesty)",
+                  "anxiety": "+20 (shame)",
+                  "cooperation": "+50 (realizes urgency)",
+                  "time_cost": "-2 min",
+                  "medical_safety": "+CRITICAL (avoids nitrate)",
+                  "family_relationship": "strained but honest"
+                },
+                "consequences": {
+                  "immediate": "Patiënt bekent: 'Ja... gisteravond. Cocaïne.' Vrouw geschokt.",
+                  "delayed": "Treatment aangepast: GEEN extra nitro. Morphine voor pijn. Leven gered."
+                },
+                "body_language_reaction": "Patiënt breekt: 'Ja... het spijt me. Gisteravond.'",
+                "revealed_hidden_info": ["cocaine_use_last_night"],
+                "clinical_notes": "LIFE-SAVING: Direct, non-judgmental, medically critical question. Verhindert dodelijke medicatie-interactie."
+              },
+              {
+                "text": "*Naar vrouw* 'Dank u voor de informatie. *Naar patiënt* Mijnheer, als u iets gebruikt heeft, moet u het NU zeggen. Het beïnvloedt de behandeling. Ambulance crew moet het weten.'",
+                "next_node": "patient_denies_consequences",
+                "trade_offs": {
+                  "trust": "+10",
+                  "anxiety": "+15",
+                  "cooperation": "-10 (defensive)",
+                  "time_cost": "-1 min",
+                  "medical_safety": "0 (patient denies)",
+                  "risk": "HIGH (nitrates may be given in hospital)"
+                },
+                "consequences": {
+                  "immediate": "Patiënt ontkent: 'Nee, niets!' Vrouw twijfelt.",
+                  "delayed": "RISICO: In ziekenhuis krijgt mogelijk extra nitraten → hypotensie"
+                },
+                "body_language_reaction": "Schudt hoofd fel: 'Nee! Ik gebruik niks!'",
+                "triggers_event": "hospital_gives_nitrates_crash",
+                "clinical_notes": "INSUFFICIENT: Te indirect. Patiënt ontkent uit schaamte. Levensgevaarlijke informatie blijft verborgen."
+              },
+              {
+                "text": "*Naar ambulance crew* 'Familie vermoedt middelengebruik, maar patiënt ontkent. Jullie moeten het in het ziekenhuis checken. Ik heb hier geen tijd voor - hij moet NU weg.'",
+                "next_node": "delayed_discovery_hospital",
+                "trade_offs": {
+                  "empathy": "-15",
+                  "trust": "-10",
+                  "time_cost": "0 min (doorverwijzing)",
+                  "medical_safety": "-20 (delayed discovery)",
+                  "door_to_balloon_delay": "+10-15 min (toxicology screen in hospital)"
+                },
+                "consequences": {
+                  "immediate": "Snelle vertrek, maar kritieke info niet helder",
+                  "delayed": "Ziekenhuis doet toxicology screen → 15 min vertraging + mogelijk nitrate gegeven voor uitslag"
+                },
+                "body_language_reaction": "Ambulance crew kijkt geïrriteerd: 'We hadden dit moeten weten.'",
+                "clinical_notes": "POOR: Huisarts delegeert verantwoordelijkheid. Time-critical info niet gecommuniceerd."
+              }
+            ]
+          },
+          
+          {
+            "id": "cocaine_confession_critical",
+            "title": "T+10 min: TREATMENT ADJUSTMENT - ETHICAL DILEMMA",
+            "patient_statement": "*Fluisterend, vrouw is even weg* 'Dokter... niemand mag het weten. Mijn werk, mijn gezin... als dit uitkomt, ben ik alles kwijt. Kunt u het... weglaten uit het dossier?'",
+            "patient_emotion": "ashamed_desperate_pleading",
+            "body_language": "Kijkt smekend, tranen, hand op uw arm",
+            "clinical_phase": "ethical_crisis_plus_medical_urgency",
+            "time_elapsed": 12,
+            "ambulance_crew_waiting": "Crew is klaar om te vertrekken, wacht op laatste info",
+            "ethical_dilemma": "Patient privacy vs. Medical necessity vs. Legal obligation",
+            "options": [
+              {
+                "text": "'Mijnheer Jansen, ik MOET het doorgeven aan het ziekenhuis - uw leven hangt ervan af. Ze moeten weten dat u geen nitraten mag. MAAR: medisch dossier is vertrouwelijk. Alleen zorgteam ziet het. Ik documenteer het neutraal: 'recent sympathomimetisch middelengebruik'. Uw werkgever ziet dit nooit. Uw gezin: dat is uw keuze om te vertellen. Akkoord?'",
+                "next_node": "ethical_solution_compromise",
+                "trade_offs": {
+                  "trust": "+35",
+                  "anxiety": "-10",
+                  "medical_safety": "+CRITICAL",
+                  "ethical_integrity": "+HIGH",
+                  "patient_privacy": "+PROTECTED",
+                  "time_cost": "-2 min (explanation)"
+                },
+                "consequences": {
+                  "immediate": "Patiënt accepteert, crew krijgt info, veilige behandeling",
+                  "delayed": "Medisch veilig, privacy maximaal beschermd binnen wettelijke kaders"
+                },
+                "body_language_reaction": "Knikt opgelucht: 'Oké... dank u. Het spijt me.'",
+                "clinical_notes": "EXCELLENT: Balances medical necessity, privacy, honesty. Neutral documentation protects patient."
+              },
+              {
+                "text": "'Ik begrijp uw angst, maar ik kan niet liegen. Dit is medisch essentieel. Het ziekenhuis MOET het weten. Uw privacy is beschermd door het medisch beroepsgeheim - maar ik documenteer de waarheid. Dat is mijn plicht.'",
+                "next_node": "strict_honesty_documented",
+                "trade_offs": {
+                  "trust": "+15",
+                  "anxiety": "+10",
+                  "medical_safety": "+CRITICAL",
+                  "ethical_integrity": "+HIGH",
+                  "patient_satisfaction": "-15",
+                  "time_cost": "-1 min"
+                },
+                "consequences": {
+                  "immediate": "Patiënt geaccepteerd maar ongelukkig",
+                  "delayed": "Medisch correct, maar patient voelt zich exposed. Mogelijk latere klacht over 'discretie'."
+                },
+                "body_language_reaction": "Zakt terug: 'Oké... u bent de baas.'",
+                "clinical_notes": "GOOD: Ethisch en medisch correct, maar mist nuance in communication/privacy protection."
+              },
+              {
+                "text": "*Fluistert terug* 'Oké, ik zeg tegen ambulance: 'vermoedens middelengebruik, maar onbevestigd'. Zo staat het niet zwart-op-wit. U moet zelf in het ziekenhuis zeggen dat u 24u geleden iets gebruikte. Beloof me dat.'",
+                "next_node": "dangerous_compromise_vague",
+                "trade_offs": {
+                  "trust": "+20",
+                  "anxiety": "-15",
+                  "medical_safety": "-30 (RISK: vage info)",
+                  "ethical_integrity": "-20",
+                  "medico_legal_risk": "+HIGH",
+                  "time_cost": "-1 min"
+                },
+                "consequences": {
+                  "immediate": "Patiënt opgelucht, maar info is te vaag",
+                  "delayed": "RISICO: Ziekenhuis interpreteert 'vermoedens' als onzeker → geeft mogelijk toch nitraten. Patiënt vergeet/durft niet te vertellen."
+                },
+                "body_language_reaction": "Glimlacht dankbaar: 'Dank u, dokter.'",
+                "triggers_event": "patient_forgets_to_mention_crash",
+                "clinical_notes": "⚠️ DANGEROUS: Compromised patient safety for privacy. Legally and medically questionable."
+              }
+            ]
+          },
+          
+          {
+            "id": "ethical_solution_compromise",
+            "title": "T+14 min: RANDOM EVENT - Ventricular Arrhythmia",
+            "event_type": "medical_emergency",
+            "patient_statement": "*Grijpt plots naar borst* 'Dokter... mijn hart... het... bonkt... heel... raar...' *Bewustzijn daalt*",
+            "patient_emotion": "deteriorating_losing_consciousness",
+            "body_language": "Ogen draaien weg, lichaam slap, monitor alarmeert",
+            "clinical_phase": "acute_arrhythmia_VT",
+            "time_elapsed": 16,
+            "monitor_shows": "Ventricular Tachycardia (VT) - brede complex, 180/min",
+            "vital_signs_critical": {
+              "BP": "80/50 (shock)",
+              "HR": "180 (VT)",
+              "Consciousness": "Verminderd (GCS 12)",
+              "Pulse": "Zwak"
+            },
+            "ambulance_crew_present": true,
+            "defibrillator_ready": true,
+            "critical_decision": "Cardioversie NU of wachten?",
+            "options": [
+              {
+                "text": "*Naar crew* 'VT met hemodynamische instabiliteit! Synchronized cardioversie - 120 Joule. IK tel af: 1-2-3-SHOCK. Iedereen van de brancard!' *Strak protocol, kalme stem*",
+                "next_node": "successful_cardioversion",
+                "trade_offs": {
+                  "medical_competence": "+EXCELLENT",
+                  "team_leadership": "+HIGH",
+                  "time_cost": "-1 min (fast action)",
+                  "survival_chance": "+MAXIMUM",
+                  "family_trauma": "+HIGH (witnessing shock)"
+                },
+                "consequences": {
+                  "immediate": "Cardioversie succesvol → sinusritme 95/min. Patiënt ontwaakt: 'Wat... gebeurde?'",
+                  "delayed": "Leven gered, snelle stabilisatie, transport kan doorgaan"
+                },
+                "body_language_reaction": "*Na shock* Ogen openen: 'Dokter...?' Vrouw huilt van opluchting.",
+                "clinical_notes": "OUTSTANDING: Correct recognition + immediate action. Textbook emergency response."
+              },
+              {
+                "text": "*Naar crew* 'Hij heeft VT. Jullie kunnen dit beter dan ik - cardioversie in de ambulance onderweg? Of doen we het nu?' *Aarzelt*",
+                "next_node": "delayed_cardioversion_vfib",
+                "trade_offs": {
+                  "medical_competence": "-15 (hesitation)",
+                  "team_leadership": "-20",
+                  "time_cost": "+2-3 min (discussion + loading)",
+                  "survival_chance": "-MODERATE",
+                  "risk": "VT → VFib during loading"
+                },
+                "consequences": {
+                  "immediate": "Crew beslist: 'We doen het NU.' Maar 30 sec vertraging.",
+                  "delayed": "TIJDENS cardioversie voorbereiding → VT degenereert naar VFib. Reanimatie nodig."
+                },
+                "triggers_event": "VT_degenerates_to_VFib",
+                "clinical_notes": "POOR: Hesitation in time-critical moment. VT can rapidly deteriorate."
+              },
+              {
+                "text": "*Controleert pulse* 'Hij heeft nog een pols. Geef Amiodaron 150mg IV over 10 minuten. Laden en vertrekken - cardioversie in ambulance indien nodig.'",
+                "next_node": "pharmacological_conversion_attempt",
+                "trade_offs": {
+                  "medical_protocol": "ACCEPTABLE (ACLS guideline)",
+                  "time_cost": "+5 min (medication infusion)",
+                  "door_to_balloon_delay": "+8-10 min",
+                  "survival_chance": "+GOOD",
+                  "risk": "MODERATE (slower than cardioversion)"
+                },
+                "consequences": {
+                  "immediate": "Amiodaron start, VT blijft, maar hemodynamiek stabiel",
+                  "delayed": "VT converteert na 6 min → sinus. Transport vertraagd maar veilig."
+                },
+                "body_language_reaction": "Patiënt blijft soporeus, VT houdt aan tijdens transport",
+                "clinical_notes": "ACCEPTABLE: Conservative approach. Works but delays definitive treatment (PCI)."
+              }
+            ]
+          },
+          
+          {
+            "id": "successful_cardioversion",
+            "title": "T+18 min: Transport Start - FAMILY COUNSELING",
+            "patient_statement": "*Zwak maar bij bewustzijn* 'Dokter... ga ik dood? Mijn kinderen... ik wil... ze nog zien...'",
+            "patient_emotion": "vulnerable_mortal_fear",
+            "body_language": "Tranen, hand zoekt contact, stem breekt",
+            "clinical_phase": "pre_transport_counseling",
+            "time_elapsed": 20,
+            "vital_signs_stabilized": {
+              "BP": "120/75",
+              "HR": "95 (sinus)",
+              "Sat": "97% (O2 4L)",
+              "Consciousness": "Alert",
+              "Pain": "5/10 (morphine 5mg gegeven)"
+            },
+            "wife_present": true,
+            "children_called": "Onderweg naar praktijk",
+            "options": [
+              {
+                "text": "*Hand op schouder* 'Mijnheer Jansen, u bent nu gestabiliseerd. We hebben het ergste doorstaan. Over 15 minuten bent u in het ziekenhuis waar ze de verstopping gaan verhelpen met dotteren. Uw kansen zijn goed - u bent jong en sterk. Uw kinderen zien u straks in het ziekenhuis. Focus nu op ademhalen en vertrouwen. Oké?'",
+                "next_node": "outcome_excellent",
+                "trade_offs": {
+                  "empathy": "+40",
+                  "anxiety": "-30",
+                  "trust": "+35",
+                  "cooperation": "+30",
+                  "hope": "+HIGH",
+                  "family_satisfaction": "+EXCELLENT"
+                },
+                "consequences": {
+                  "immediate": "Patiënt kalmeert, vrouw bedankt u huilend",
+                  "delayed": "Succesvolle PCI, goede prognose, family coping excellent"
+                },
+                "body_language_reaction": "Knikt, sluit ogen: 'Dank u... voor alles.'",
+                "clinical_notes": "OUTSTANDING: Realistic hope + empathy + practical info. Optimal crisis communication."
+              },
+              {
+                "text": "'U heeft een hartinfarct gehad en een hartritmestoornis. We hebben u geschokt. Nu gaat u naar het ziekenhuis voor behandeling. De prognose hangt af van de schade. We hebben gedaan wat we konden.'",
+                "next_node": "outcome_good",
+                "trade_offs": {
+                  "empathy": "-5",
+                  "anxiety": "+10",
+                  "trust": "+10",
+                  "hope": "0",
+                  "family_satisfaction": "+MODERATE"
+                },
+                "consequences": {
+                  "immediate": "Patiënt blijft angstig, voelt zich onzeker",
+                  "delayed": "Medisch goed, maar emotioneel suboptimaal"
+                },
+                "body_language_reaction": "Kijkt angstig: 'Maar... hoe groot is de kans dat ik...'",
+                "clinical_notes": "ADEQUATE: Medically correct but lacks empathy/hope. Misses opportunity for psychological support."
+              }
+            ]
+          },
+          
+          {
+            "id": "wife_drives_high_risk",
+            "title": "DELAYED CONSEQUENCE: Cardiac Arrest in Car",
+            "event_type": "catastrophic_outcome",
+            "scenario": "10 minuten na vertrek belt de vrouw 112 huilend: 'Hij reageert niet meer! Hij ademt niet! We zijn op de A2, wat moet ik doen?!' *Geluid van paniek, auto toetert*",
+            "consequence_of": "allowing_patient_to_drive",
+            "clinical_outcome": "Patiënt krijgt VFib tijdens transport zonder monitoring. Vrouw kan niet reanimeren tijdens rijden. Ambulance arriveert 8 min later - te laat. Patiënt overlijdt.",
+            "learning_point": "STEMI patients NEVER self-transport. Ambulance is non-negotiable.",
+            "medico_legal": "Mogelijk tuchtklacht: 'Huisarts had ambulance moeten forceren.'",
+            "family_impact": "Vrouw traumatized, kinderen vaderlos, preventable death",
+            "outcome": "poor"
+          }
+        ]
+      }
+    }
+  }
+}
+
