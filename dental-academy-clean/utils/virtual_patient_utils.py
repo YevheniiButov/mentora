@@ -57,12 +57,16 @@ class VirtualPatientSelector:
             
             logger.info(f"📊 Found {len(available_scenarios)} published scenarios for specialty '{user_specialty}'")
             
+            # Флаг: используем ли мы fallback (все опубликованные сценарии)
+            using_fallback = False
+            
             # Если нет сценариев для специальности пользователя, ищем любые опубликованные
             if not available_scenarios:
                 logger.warning(f"⚠️ No scenarios found for specialty '{user_specialty}', searching for any published scenarios")
                 available_scenarios = VirtualPatientScenario.query.filter(
                     VirtualPatientScenario.is_published == True
                 ).all()
+                using_fallback = True  # Помечаем, что используем fallback
                 logger.info(f"📊 Found {len(available_scenarios)} total published scenarios (any specialty)")
             
             if not available_scenarios:
@@ -76,10 +80,13 @@ class VirtualPatientSelector:
             three_days_ago = now_utc - timedelta(days=3)
             
             for scenario in available_scenarios:
-                # Проверяем доступность, но пропускаем проверку specialty если она не установлена
-                user_specialty_attr = getattr(user, 'specialty', None)
-                if user_specialty_attr and user_specialty_attr != scenario.specialty:
-                    continue
+                # Если мы используем fallback (все опубликованные), не фильтруем по specialty
+                # Только если искали конкретную specialty - фильтруем
+                if not using_fallback:
+                    # Проверяем доступность, но пропускаем проверку specialty если она не установлена
+                    user_specialty_attr = getattr(user, 'specialty', None)
+                    if user_specialty_attr and user_specialty_attr != scenario.specialty:
+                        continue
                 
                 # Проверяем, играл ли ЭТОТ пользователь этот сценарий за последние 3 дня
                 recent_attempt = VirtualPatientAttempt.query.filter(
