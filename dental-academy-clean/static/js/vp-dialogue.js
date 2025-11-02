@@ -600,6 +600,15 @@ class VirtualPatientDialogue {
       // Добавить ответ врача в диалог
       this.addMessageToThread('from-doctor', option.text);
       
+      // Сохранить выбор в историю диалога
+      this.dialogueHistory.push({
+        node_id: node.id,
+        choice_id: option.id,
+        choice_text: option.text,
+        score: optionScore,
+        timestamp: new Date().toISOString()
+      });
+      
       // Переход к следующему узлу
       setTimeout(() => {
         const nextNodeId = option.next_node;
@@ -780,11 +789,26 @@ class VirtualPatientDialogue {
   
   async completeScenario() {
     try {
+      // Вычислить время в минутах
+      const timeSpentMinutes = Math.floor((Date.now() - this.startTime) / 1000 / 60);
+      
+      console.log('📊 Completing scenario:', {
+        attempt_id: this.attemptId,
+        score: this.score,
+        fillInScore: this.fillInScore,
+        totalScore: this.score + this.fillInScore,
+        timeSpent: timeSpentMinutes,
+        dialogueHistory: this.dialogueHistory.length
+      });
+      
       const response = await fetch('/api/vp/complete-attempt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          attempt_id: this.attemptId
+          attempt_id: this.attemptId,
+          score: this.score + this.fillInScore, // Общий счет
+          time_spent: timeSpentMinutes,
+          dialogue_history: this.dialogueHistory
         })
       });
       
@@ -792,14 +816,68 @@ class VirtualPatientDialogue {
       if (!result.success) throw new Error('Failed to complete');
       
       const attempt = result.attempt;
+      
+      // Добавить детальный feedback на основе истории
+      attempt.detailed_feedback = this.generateDetailedFeedback();
+      
       this.showResultsModal(attempt);
     } catch (error) {
       console.error('Error completing scenario:', error);
     }
   }
   
+  generateDetailedFeedback() {
+    // Анализируем историю диалога и формируем детальный feedback
+    const feedback = [];
+    
+    // Собираем информацию о выбранных опциях из истории
+    const dialogueHistory = this.dialogueHistory || [];
+    const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+    
+    // Группируем выборы по узлам
+    const choicesByNode = {};
+    dialogueHistory.forEach(entry => {
+      if (entry.node_id && entry.choice_id) {
+        if (!choicesByNode[entry.node_id]) {
+          choicesByNode[entry.node_id] = [];
+        }
+        choicesByNode[entry.node_id].push(entry);
+      }
+    });
+    
+    // Анализируем каждый выбор
+    Object.keys(choicesByNode).forEach(nodeId => {
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node || !node.options) return;
+      
+      const choice = choicesByNode[nodeId][0]; // Берем первый выбор
+      const selectedOption = node.options.find(opt => opt.id === choice.choice_id);
+      
+      if (selectedOption) {
+        const score = selectedOption.score || 0;
+        const optionText = selectedOption.text.substring(0, 80) + (selectedOption.text.length > 80 ? '...' : '');
+        
+        if (score > 0) {
+          feedback.push({
+            type: 'good',
+            node_title: node.title || nodeId,
+            message: `✅ Goed: "${optionText}" - Dit was een goede keuze! (+${score} punten)`
+          });
+        } else if (score < 0) {
+          feedback.push({
+            type: 'poor',
+            node_title: node.title || nodeId,
+            message: `⚠️ Verbetering: "${optionText}" - Deze keuze had beter gekund. (-${Math.abs(score)} punten)`
+          });
+        }
+      }
+    });
+    
+    return feedback;
+  }
+  
   showResultsModal(attempt) {
-    const level = attempt.level;
+    const level = attempt.level || (attempt.percentage >= 70 ? 'good' : 'needs_improvement');
     const badges = {
       'excellent': { icon: '✓', emoji: '⭐' },
       'good': { icon: '✓', emoji: '👍' },
@@ -813,27 +891,91 @@ class VirtualPatientDialogue {
     document.getElementById('badgeLabel').textContent = this.translateLevel(level);
     document.getElementById('badgeIcon').className = `badge-icon ${level}`;
     
-    document.getElementById('finalTotalScore').textContent = attempt.total_score;
-    document.getElementById('finalPercentage').textContent = attempt.percentage + '%';
-    document.getElementById('finalDialogueScore').textContent = attempt.score;
-    document.getElementById('finalFillInScore').textContent = attempt.fill_in_score;
-    document.getElementById('feedbackMessage').textContent = attempt.feedback;
+    // Используем правильные поля из attempt
+    const totalScore = attempt.total_score || attempt.score || 0;
+    const percentage = attempt.percentage || attempt.percentage_score || 0;
+    const dialogueScore = attempt.score || totalScore;
+    const fillInScore = attempt.fill_in_score || this.fillInScore || 0;
+    
+    document.getElementById('finalTotalScore').textContent = totalScore;
+    document.getElementById('finalPercentage').textContent = percentage + '%';
+    document.getElementById('finalDialogueScore').textContent = dialogueScore;
+    document.getElementById('finalFillInScore').textContent = fillInScore;
+    
+    // Генерируем улучшенное feedback сообщение
+    let feedbackMessage = attempt.feedback || 'Goed werk!';
+    if (attempt.detailed_feedback && attempt.detailed_feedback.length > 0) {
+      const goodChoices = attempt.detailed_feedback.filter(f => f.type === 'good').length;
+      const poorChoices = attempt.detailed_feedback.filter(f => f.type === 'poor').length;
+      
+      if (goodChoices > 0 || poorChoices > 0) {
+        feedbackMessage = `Je hebt ${goodChoices} goede keuze(s) gemaakt${poorChoices > 0 ? ` en ${poorChoices} keuze(s) die verbetering nodig heeft/hebben` : ''}. Bekijk de details hieronder.`;
+      }
+    }
+    document.getElementById('feedbackMessage').textContent = feedbackMessage;
+    
+    // Заполняем timeline с детальным feedback
+    this.populateTimeline(attempt.detailed_feedback || []);
     
     this.completionModal.style.display = 'flex';
     
-    // Buttons
-    document.getElementById('continueBtn').addEventListener('click', () => {
-      // Redirect to the modern learning map demo template
-      window.location.href = '/demo/learning-map-modern';
+    // Buttons (убираем старые обработчики, чтобы избежать дублирования)
+    const continueBtn = document.getElementById('continueBtn');
+    const closeBtn = document.getElementById('modalCloseBtn');
+    const backdrop = document.getElementById('modalBackdrop');
+    
+    // Удаляем старые обработчики
+    const newContinueBtn = continueBtn.cloneNode(true);
+    continueBtn.parentNode.replaceChild(newContinueBtn, continueBtn);
+    const newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    
+    newContinueBtn.addEventListener('click', () => {
+      window.location.href = '/learning-map/irt';
     });
     
-    document.getElementById('modalCloseBtn').addEventListener('click', () => {
+    newCloseBtn.addEventListener('click', () => {
       this.completionModal.style.display = 'none';
     });
     
-    document.getElementById('modalBackdrop').addEventListener('click', () => {
+    backdrop.addEventListener('click', () => {
       this.completionModal.style.display = 'none';
     });
+  }
+  
+  populateTimeline(feedbackItems) {
+    const timeline = document.getElementById('resultTimeline');
+    if (!timeline) return;
+    
+    timeline.innerHTML = '';
+    
+    if (feedbackItems.length === 0) {
+      timeline.innerHTML = '<p class="text-muted">Geen specifieke feedback beschikbaar.</p>';
+      return;
+    }
+    
+    feedbackItems.forEach((item, index) => {
+      const itemEl = document.createElement('div');
+      itemEl.className = `timeline-item ${item.type}`;
+      itemEl.innerHTML = `
+        <div class="timeline-marker ${item.type === 'good' ? 'success' : 'warning'}"></div>
+        <div class="timeline-content">
+          <h5>${item.node_title}</h5>
+          <p>${item.message}</p>
+        </div>
+      `;
+      timeline.appendChild(itemEl);
+    });
+  }
+  
+  translateLevel(level) {
+    const map = {
+      'excellent': 'Uitstekend',
+      'good': 'Goed',
+      'needs_improvement': 'Kan beter',
+      'poor': 'Moet beter'
+    };
+    return map[level] || 'Kan beter';
   }
   
   handleOutcome(node) {
