@@ -290,19 +290,18 @@ class VirtualPatientDialogue {
           if (outcomes[nodeId]) {
             outcomeData = outcomes[nodeId];
           }
+          
           // 2. Убираем префикс "outcome_" (outcome_anxious_good → outcomes.anxious_good)
-          else if (nodeId.startsWith('outcome_')) {
+          if (!outcomeData && nodeId.startsWith('outcome_')) {
             const outcomeKey = nodeId.replace('outcome_', '');
             if (outcomes[outcomeKey]) {
               outcomeData = outcomes[outcomeKey];
             }
           }
-          // 3. Проверяем стандартные outcomes (good, average, poor, excellent)
-          else if (outcomes[nodeId.replace('outcome_', '')]) {
-            outcomeData = outcomes[nodeId.replace('outcome_', '')];
-          }
-          // 4. Если nodeId содержит "good/average/poor/excellent" - берем последнее слово
-          else {
+          
+          // 3. Если не нашли, берем последнее слово после подчеркивания
+          // outcome_anxious_good → 'good' → outcomes.good
+          if (!outcomeData) {
             const parts = nodeId.split('_');
             const lastPart = parts[parts.length - 1]; // Берем последнее слово (good, average, poor, etc.)
             
@@ -313,7 +312,9 @@ class VirtualPatientDialogue {
               'average': 'average',
               'medium': 'average', // medium → average
               'poor': 'poor',
-              'bad': 'poor' // bad → poor
+              'bad': 'poor', // bad → poor
+              'suspected': 'good', // для старых сценариев
+              'default': 'good'
             };
             
             const mappedKey = outcomeKeyMap[lastPart] || lastPart;
