@@ -276,13 +276,33 @@ class VirtualPatientDialogue {
       // Найти узел в сценарии
       console.log('Looking for node:', nodeId);
       console.log('Available nodes:', this.scenario.scenario_data.dialogue_nodes);
-      const node = this.scenario.scenario_data.dialogue_nodes.find(n => n.id === nodeId);
+      let node = this.scenario.scenario_data.dialogue_nodes.find(n => n.id === nodeId);
+      
+      // Если узел не найден в dialogue_nodes, проверяем outcomes
       if (!node) {
-        console.error('Node not found:', nodeId);
-        console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
-        throw new Error(`Node not found: ${nodeId}`);
+        const outcomes = this.scenario.scenario_data.outcomes;
+        if (outcomes && outcomes[nodeId]) {
+          // Создаем временный outcome node
+          const outcomeData = outcomes[nodeId];
+          node = {
+            id: nodeId,
+            is_outcome: true,
+            title: outcomeData.title || 'Scenario Completed',
+            patient_statement: outcomeData.text || 'Scenario completed',
+            outcome_type: nodeId.startsWith('outcome_') ? nodeId.replace('outcome_', '') : 'default'
+          };
+          console.log('Found outcome:', node);
+        } else {
+          console.error('Node not found:', nodeId);
+          console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
+          if (outcomes) {
+            console.error('Available outcomes:', Object.keys(outcomes));
+          }
+          throw new Error(`Node not found: ${nodeId}`);
+        }
+      } else {
+        console.log('Found node:', node);
       }
-      console.log('Found node:', node);
       
       // Добавить сообщение пациента в диалог только если нужно
       // (для первого узла не показываем, если уже показали initial_state)
