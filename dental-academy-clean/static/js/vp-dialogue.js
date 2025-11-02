@@ -971,7 +971,9 @@ class VirtualPatientDialogue {
     closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
     
     newContinueBtn.addEventListener('click', () => {
-      window.location.href = '/learning-map/irt';
+      // Получаем язык из текущего URL или используем 'nl' по умолчанию
+      const currentLang = window.location.pathname.split('/')[1] || 'nl';
+      window.location.href = `/${currentLang}/learning-map/irt`;
     });
     
     newCloseBtn.addEventListener('click', () => {
