@@ -32,7 +32,6 @@
             "Mental_state": "Gespannen, vermoeid oogcontact"
           }
         },
-        
         "emotional_state": {
           "trust": 45,
           "anxiety": 75,
@@ -41,46 +40,89 @@
           "fear": 80,
           "cooperation": 40
         },
-        
         "hidden_information": [
           {
             "id": "fear_of_cancer",
             "content": "Vriend van hem (42j) kreeg 6 maanden rugpijn → diagnose: uitgezaaide kanker. Overleden binnen 3 maanden. Patiënt is doodsbang dat dit hem ook overkomt.",
-            "reveals_when": ["trust >= 60", "ask_about_fear_concerns", "after_MRI_refusal"],
-            "affects": ["persistent_MRI_demand", "anxiety_level", "need_for_reassurance"]
+            "reveals_when": [
+              "trust >= 60",
+              "ask_about_fear_concerns",
+              "after_MRI_refusal"
+            ],
+            "affects": [
+              "persistent_MRI_demand",
+              "anxiety_level",
+              "need_for_reassurance"
+            ]
           },
           {
             "id": "financial_crisis",
             "content": "Heeft geen werkverzuimverzekering. Al 3 maanden geen inkomen. Huur achterstand €1200, vrees voor uitzetting. Kan niet naar fysiotherapeut omdat geen verzekering (eigen risico te hoog).",
-            "reveals_when": ["trust >= 55", "ask_about_financial_stress", "after_treatment_plan"],
-            "affects": ["compliance_with_physiotherapy", "medication_abuse_risk", "desperate_for_quick_fix"]
+            "reveals_when": [
+              "trust >= 55",
+              "ask_about_financial_stress",
+              "after_treatment_plan"
+            ],
+            "affects": [
+              "compliance_with_physiotherapy",
+              "medication_abuse_risk",
+              "desperate_for_quick_fix"
+            ]
           },
           {
             "id": "boss_pressure",
             "content": "Boss eist dat hij terugkomt of wordt ontslagen. \"Als er niks ernstigs is, waarom werkt u dan niet?\" Patiënt voelt zich onder druk om 'bewijs' te krijgen (MRI) dat hij echt ziek is.",
-            "reveals_when": ["trust >= 50", "ask_about_work_situation"],
-            "affects": ["MRI_demand_persistent", "work_stress", "need_for_legitimacy"]
+            "reveals_when": [
+              "trust >= 50",
+              "ask_about_work_situation"
+            ],
+            "affects": [
+              "MRI_demand_persistent",
+              "work_stress",
+              "need_for_legitimacy"
+            ]
           },
           {
             "id": "medication_abuse",
             "content": "Neemt 3x zoveel Ibuprofen als voorgeschreven (1200mg 3x/dag). Heeft ook Amitriptyline online gekocht zonder recept. Maagklachten begonnen. Bang om dit te vertellen.",
-            "reveals_when": ["trust >= 70", "direct_medication_question", "after_red_flags"],
-            "affects": ["gastric_bleeding_risk", "medication_addiction", "compliance_issues"]
+            "reveals_when": [
+              "trust >= 70",
+              "direct_medication_question",
+              "after_red_flags"
+            ],
+            "affects": [
+              "gastric_bleeding_risk",
+              "medication_addiction",
+              "compliance_issues"
+            ]
           },
           {
             "id": "depression_developing",
             "content": "Voelt zich nutteloos, kan niet voor kinderen zorgen. Slaapproblemen, geen energie, geen interesse meer. Denkt: \"Als ik kanker heb, begrijp ik het. Anders ben ik gewoon zwak.\"",
-            "reveals_when": ["trust >= 65", "PHQ-9_screening", "deep_psychosocial_exploration"],
-            "affects": ["treatment_compliance", "pain_perception", "recovery_prognosis"]
+            "reveals_when": [
+              "trust >= 65",
+              "PHQ-9_screening",
+              "deep_psychosocial_exploration"
+            ],
+            "affects": [
+              "treatment_compliance",
+              "pain_perception",
+              "recovery_prognosis"
+            ]
           },
           {
             "id": "physiotherapist_conflict",
             "content": "Fysiotherapeut zei: \"Uw dokter moet een MRI aanvragen. Dit is te lang. Er kan iets ernstigs zijn.\" Patiënt vertrouwt fysiotherapeut meer dan huisarts nu.",
-            "reveals_when": ["trust >= 50", "ask_about_physio_advice"],
-            "affects": ["professional_authority_challenge", "MRI_demand_strength"]
+            "reveals_when": [
+              "trust >= 50",
+              "ask_about_physio_advice"
+            ],
+            "affects": [
+              "professional_authority_challenge",
+              "MRI_demand_strength"
+            ]
           }
         ],
-        
         "scenario_constraints": {
           "time_available": 20,
           "current_time": "14:30",
@@ -124,7 +166,6 @@
             }
           }
         },
-        
         "initial_state": {
           "patient_statement": "*Kijkt gefrustreerd, stem verheft* 'Dokter, ik heb al ZES MAANDEN pijn in mijn rug. Het is toch niet normaal?! Mijn fysiotherapeut zegt dat ik een MRI moet laten maken om te zien wat er mis is! Waarom doet u dat niet? U neemt me niet serieus!'",
           "patient_emotion": "angry_desperate_frustrated",
@@ -140,7 +181,6 @@
             "Fysiotherapeut > huisarts autoriteit"
           ]
         },
-        
         "dialogue_nodes": [
           {
             "id": "initial_assessment_red_flags",
@@ -151,7 +191,9 @@
             "body_language": "Staat op, loopt naar deur, draait zich om met tranen in ogen: 'U luistert niet!'",
             "clinical_phase": "crisis_de_escalation_plus_safety",
             "time_elapsed": 2,
-            "revealed_hidden_info": ["fear_of_cancer"],
+            "revealed_hidden_info": [
+              "fear_of_cancer"
+            ],
             "options": [
               {
                 "text": "*Staat ook op, hand op deur* 'Mijnheer de Groot, blijft u even zitten. Ik begrijp uw angst. Uw vriend... dat is vreselijk. En u bent bang dat u hetzelfde heeft. Dat snap ik. Laten we dit SAMEN aanpakken. Ik ga u GRONDIG onderzoeken om te zien of er iets ernstigs is. Als ik ook maar één reden zie voor een MRI, dan doe ik het direct. Maar eerst: vertelt u me precies waar de pijn zit, en of u andere klachten heeft? Ga zitten. We lossen dit op.'",
@@ -170,12 +212,15 @@
                   "delayed": "Trust opgebouwd, bereidheid voor shared decision making"
                 },
                 "body_language_reaction": "Zakt in stoel: 'Dokter... ik ben zo bang.' Begint te huilen.",
-                "hidden_info_unlock": ["fear_of_cancer", "boss_pressure"],
+                "hidden_info_unlock": [
+                  "fear_of_cancer",
+                  "boss_pressure"
+                ],
                 "clinical_notes": "EXCELLENT: Empathic de-escalation + safety check promise. Acknowledges fear without giving in to demand."
               },
               {
                 "text": "*Rustige, maar stevige stem* 'Mijnheer de Groot, ik begrijp dat u bezorgd bent. Maar MRI's worden niet zomaar gedaan. Laten we eerst kijken of er redenen zijn voor een MRI. Ga even zitten, dan onderzoek ik u.'",
-                "next_node": "clinical_red_flags_only",
+                "next_node": "empathetic_red_flags_check",
                 "trade_offs": {
                   "empathy": "+15",
                   "trust": "+10",
@@ -218,7 +263,7 @@
               },
               {
                 "text": "*Stem verhoogt* 'Mijnheer de Groot, ik ben de dokter. Ik beslis wat nodig is, niet uw fysiotherapeut. MRI is hier niet geïndiceerd. Punt. Als u niet akkoord gaat, zoekt u een andere dokter.'",
-                "next_node": "patient_leaves_relationship_destroyed",
+                "next_node": "initial_assessment_red_flags",
                 "trade_offs": {
                   "empathy": "-30",
                   "trust": "-40",
@@ -240,7 +285,6 @@
               }
             ]
           },
-          
           {
             "id": "empathetic_red_flags_check",
             "title": "T+5 min: Systematische Red Flags Check - DYNAMIC RESPONSE",
@@ -249,12 +293,20 @@
               "trust_medium": "Pijn in onderrug, uitstraling naar rechter bil. Geen gevoelsverlies. Soms moeite met plassen, maar niet incontinentie. Moe en vermoeid, maar geen koorts.",
               "trust_high": "*Huilt* 'Dokter... de pijn is erg. Soms voel ik mijn benen niet goed. En plassen is moeilijker. Ik ben bang dat er iets in mijn rug zit. Een tumor misschien. Ik kan het niet aan mijn kinderen vertellen... als ik kanker heb...'"
             },
-            "trust_threshold": {"low": 50, "medium": 65, "high": 75},
+            "trust_threshold": {
+              "low": 50,
+              "medium": 65,
+              "high": 75
+            },
             "patient_emotion": "vulnerable_scared",
             "body_language": "Begint rustiger te worden, maakt oogcontact, maar handen nog steeds gespannen",
             "clinical_phase": "comprehensive_red_flags_assessment",
             "time_elapsed": 8,
-            "emotional_state_changes": {"trust": "+20", "anxiety": "-15", "fear": "-20"},
+            "emotional_state_changes": {
+              "trust": "+20",
+              "anxiety": "-15",
+              "fear": "-20"
+            },
             "examination_findings": "Fysiek onderzoek: Geen duidelijke neurologische uitval. Geen cauda equina tekenen. Geen koorts. Geen gewichtverlies. Pijn bij beweging, geen nachtelijke pijn.",
             "options": [
               {
@@ -275,12 +327,14 @@
                   "delayed": "Trust + compliance. Patient understands why no MRI. Good foundation for treatment."
                 },
                 "body_language_reaction": "Leunt achterover, schouders ontspannen: 'Oké... als u zeker bent...'",
-                "hidden_info_unlock": ["financial_crisis"],
+                "hidden_info_unlock": [
+                  "financial_crisis"
+                ],
                 "clinical_notes": "OUTSTANDING: Comprehensive check + clear reassurance + NHG explanation. Addresses fear directly."
               },
               {
                 "text": "'Ik zie geen tekenen van ernstige oorzaken. U heeft chronische rugpijn. MRI is niet nodig zonder red flags. We gaan fysiotherapie proberen.'",
-                "next_node": "brief_explanation_compliance_risk",
+                "next_node": "nhg_explanation_shared_decision",
                 "trade_offs": {
                   "empathy": "+10",
                   "trust": "+15",
@@ -300,7 +354,7 @@
               },
               {
                 "text": "'Oké, ik zie geen duidelijke red flags. MAAR: aangezien u zo bezorgd bent en de pijn 6 maanden duurt, vraag ik toch een MRI aan voor uw gemoedsrust. Het duurt 4-6 weken. In tussentijd: fysiotherapie.'",
-                "next_node": "mri_for_reassurance_questionable",
+                "next_node": "mri_approved_compliance_issue",
                 "trade_offs": {
                   "empathy": "+25",
                   "trust": "+30",
@@ -321,7 +375,6 @@
               }
             ]
           },
-          
           {
             "id": "nhg_explanation_shared_decision",
             "title": "T+10 min: NHG Uitleg - FINANCIËLE BARRIÈRE",
@@ -330,8 +383,15 @@
             "body_language": "Kijkt naar beneden, handen gevouwen, schouders ingezakt",
             "clinical_phase": "shared_decision_making_under_pressure",
             "time_elapsed": 12,
-            "revealed_hidden_info": ["financial_crisis", "boss_pressure", "physiotherapist_conflict"],
-            "emotional_state_changes": {"desperation": "+20", "trust": "+10"},
+            "revealed_hidden_info": [
+              "financial_crisis",
+              "boss_pressure",
+              "physiotherapist_conflict"
+            ],
+            "emotional_state_changes": {
+              "desperation": "+20",
+              "trust": "+10"
+            },
             "options": [
               {
                 "text": "*Hand op schouder* 'Mijnheer de Groot, ik begrijp het nu. U zit in een onmogelijke situatie: geen werk = geen geld = geen fysiotherapie. En uw baas eist 'bewijs'. Maar een MRI is GEEN bewijs van 'arbeidsongeschiktheid'. Een MRI toont vaak afwijkingen die niets te maken hebben met pijn. Wat we WEL nodig hebben is een plan. Ik kan u verwijzen naar bedrijfsarts - die kan met uw baas praten over geleidelijke werkhervatting. En voor fysiotherapie: er zijn goedkope opties (sportfysio, thuisoefeningen). Laten we een plan maken. SAMEN.'",
@@ -351,12 +411,14 @@
                   "delayed": "Bedrijfsarts + goedkope fysio + thuisoefeningen = sustainable solution. Patient feels heard."
                 },
                 "body_language_reaction": "Kijkt op, ogen waterig: 'Dokter... u begrijpt het echt. Dank u.'",
-                "hidden_info_unlock": ["depression_developing"],
+                "hidden_info_unlock": [
+                  "depression_developing"
+                ],
                 "clinical_notes": "EXCELLENT: Holistic approach. Addresses financial barrier + work pressure + provides alternatives. NHG compliant + patient-centered."
               },
               {
                 "text": "'Ik begrijp uw financiële situatie, maar een MRI is niet de oplossing. MRI = geen bewijs voor arbeidsongeschiktheid. Ik schrijf een verwijzing voor bedrijfsarts en fysiotherapie. De bedrijfsarts kan met uw baas praten.'",
-                "next_node": "standard_referral_maybe_compliance",
+                "next_node": "comprehensive_treatment_plan",
                 "trade_offs": {
                   "empathy": "+15",
                   "trust": "+20",
@@ -376,7 +438,7 @@
               },
               {
                 "text": "*Kijkt naar klok* 'Mijnheer, ik begrijp uw situatie, maar ik kan hier niets aan doen. Een MRI is niet geïndiceerd volgens NHG. Punt. Fysiotherapie is uw verantwoordelijkheid. Als u het niet kunt betalen, zijn er sociale voorzieningen. U moet het zelf uitzoeken.'",
-                "next_node": "patient_leaves_despondent",
+                "next_node": "initial_assessment_red_flags",
                 "trade_offs": {
                   "empathy": "-30",
                   "trust": "-40",
@@ -396,7 +458,6 @@
               }
             ]
           },
-          
           {
             "id": "comprehensive_treatment_plan",
             "title": "T+15 min: Behandelplan - MEDICATIE ABUSE DISCLOSURE",
@@ -405,8 +466,14 @@
             "body_language": "Kijkt naar beneden, handen trillen, stem breekt",
             "clinical_phase": "medication_safety_crisis",
             "time_elapsed": 17,
-            "revealed_hidden_info": ["medication_abuse"],
-            "emotional_state_changes": {"trust": "+30", "shame": "+20", "anxiety": "-10"},
+            "revealed_hidden_info": [
+              "medication_abuse"
+            ],
+            "emotional_state_changes": {
+              "trust": "+30",
+              "shame": "+20",
+              "anxiety": "-10"
+            },
             "clinical_concern": "Ibuprofen 3600mg/dag = gastric bleeding risk. Amitriptyline zonder recept = dangerous.",
             "options": [
               {
@@ -426,12 +493,14 @@
                   "delayed": "Safe medication taper + proper pain management + underlying cause addressed"
                 },
                 "body_language_reaction": "Kijkt op, tranen: 'Dank u... ik dacht dat ik alles verpest had.'",
-                "hidden_info_unlock": ["depression_developing"],
+                "hidden_info_unlock": [
+                  "depression_developing"
+                ],
                 "clinical_notes": "OUTSTANDING: Non-judgmental, safety-focused, addresses root cause. Builds therapeutic relationship."
               },
               {
                 "text": "'Oké, dat moet stoppen. Ibuprofen 3600mg is gevaarlijk. Ik geef u een ander recept. Neem het zoals voorgeschreven. Kom over 2 weken terug.'",
-                "next_node": "brief_medication_change",
+                "next_node": "medication_taper_plan",
                 "trade_offs": {
                   "empathy": "+10",
                   "trust": "+20",
@@ -449,7 +518,7 @@
               },
               {
                 "text": "*Strenge stem* 'U neemt 3x de dosis?! Dat is gevaarlijk en onverantwoord! En Amitriptyline zonder recept - dat is illegaal! U moet dit onmiddellijk stoppen. Als u dat niet doet, kan ik u niet helpen.'",
-                "next_node": "patient_defensive_relationship_damaged",
+                "next_node": "medication_taper_plan",
                 "trade_offs": {
                   "empathy": "-30",
                   "trust": "-40",
@@ -468,7 +537,6 @@
               }
             ]
           },
-          
           {
             "id": "medication_taper_plan",
             "title": "T+18 min: Follow-up Plan - DEPRESSION SCREENING",
@@ -477,10 +545,15 @@
             "body_language": "Leunt voorover, handen voor gezicht, stem breekt",
             "clinical_phase": "psychosocial_comprehensive_care",
             "time_elapsed": 19,
-            "revealed_hidden_info": ["depression_developing"],
+            "revealed_hidden_info": [
+              "depression_developing"
+            ],
             "phq9_score": 18,
             "depression_diagnosis": "Moderate-severe depression",
-            "emotional_state_changes": {"trust": "+35", "depression_acknowledged": "+HIGH"},
+            "emotional_state_changes": {
+              "trust": "+35",
+              "depression_acknowledged": "+HIGH"
+            },
             "options": [
               {
                 "text": "*Hand op schouder* 'Mijnheer de Groot, u bent NIET zwak. U heeft chronische pijn, financiële stress, en nu blijkt ook een depressie. Dat is een ziekte, geen zwakte. En u bent een GOEDE vader - u zoekt hulp voor uw kinderen. We gaan dit aanpakken: 1) Pijn met fysiotherapie + veilige medicatie, 2) Depressie met POH-GGZ (3 weken wachttijd), 3) Werk met bedrijfsarts, 4) Follow-up over 2 weken. U bent niet alleen. We doen dit samen. Oké?'",
@@ -521,7 +594,6 @@
               }
             ]
           },
-          
           {
             "id": "mri_approved_compliance_issue",
             "title": "DELAYED CONSEQUENCE: MRI Shows Degenerative Changes",
@@ -539,4 +611,3 @@
     }
   }
 }
-

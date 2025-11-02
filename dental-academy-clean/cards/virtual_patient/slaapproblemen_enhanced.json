@@ -26,7 +26,6 @@
             "Concentratieproblemen"
           ]
         },
-        
         "emotional_state": {
           "trust": 40,
           "anxiety": 82,
@@ -34,34 +33,56 @@
           "cooperation": 45,
           "desperation": 85
         },
-        
         "hidden_information": [
           {
             "id": "previous_overspanning",
             "content": "Had 2 jaar geleden burn-out, was 3 maanden ziek. Bang voor herhaling.",
-            "reveals_when": ["trust >= 65", "question_about_past_mental_health"],
-            "affects": ["risk_of_relapse", "need_for_preventive_care"]
+            "reveals_when": [
+              "trust >= 65",
+              "question_about_past_mental_health"
+            ],
+            "affects": [
+              "risk_of_relapse",
+              "need_for_preventive_care"
+            ]
           },
           {
             "id": "work_deadline_crisis",
             "content": "Moet over 2 dagen belangrijke deadline halen, anders ontslag",
-            "reveals_when": ["trust >= 55", "question_about_urgency"],
-            "affects": ["desperate_for_quick_fix", "may_accept_benzos_anyway"]
+            "reveals_when": [
+              "trust >= 55",
+              "question_about_urgency"
+            ],
+            "affects": [
+              "desperate_for_quick_fix",
+              "may_accept_benzos_anyway"
+            ]
           },
           {
             "id": "teenager_problems",
             "content": "Dochter (16) is weggelopen, woont nu bij vader. Enorme schuldgevoelens.",
-            "reveals_when": ["trust >= 70", "deep_family_history"],
-            "affects": ["depression_risk", "root_cause_of_insomnia"]
+            "reveals_when": [
+              "trust >= 70",
+              "deep_family_history"
+            ],
+            "affects": [
+              "depression_risk",
+              "root_cause_of_insomnia"
+            ]
           },
           {
             "id": "already_bought_benzos_online",
             "content": "Heeft al Temazepam gekocht via illegale website, durft het niet te nemen",
-            "reveals_when": ["trust >= 75", "desperation >= 80"],
-            "affects": ["immediate_safety_concern", "addiction_risk"]
+            "reveals_when": [
+              "trust >= 75",
+              "desperation >= 80"
+            ],
+            "affects": [
+              "immediate_safety_concern",
+              "addiction_risk"
+            ]
           }
         ],
-        
         "scenario_constraints": {
           "time_available": 20,
           "current_time": "10:00",
@@ -87,20 +108,29 @@
             "benzos_allowed": true,
             "max_days_benzos": 7,
             "warning": "Strikt volgens NHG: alleen bij crisis, max 1 week",
-            "alternative_medications": ["Mirtazapine", "Trazodone"],
-            "non_addictive_options": ["Melatonine forte", "Valeriaan"]
+            "alternative_medications": [
+              "Mirtazapine",
+              "Trazodone"
+            ],
+            "non_addictive_options": [
+              "Melatonine forte",
+              "Valeriaan"
+            ]
           }
         },
-        
         "initial_state": {
           "patient_statement": "Dokter, ik trek dit niet langer. Ik slaap al 4 maanden slecht en lig elke nacht te piekeren. Ik heb alles geprobeerd - melatonine, thee, yoga... niets werkt! Kunt u me gewoon een sterk slaapmiddel geven? Iets dat écht werkt. Ik las over Temazepam...",
           "patient_emotion": "desperate_exhausted",
           "body_language": "Donkere wallen onder ogen, trillende handen, zit op rand van stoel, spreekt snel",
           "clinical_phase": "initial_contact",
           "notes_dentist": "Patiënte is uitgeput en gefrustreerd. Expliciete vraag naar benzodiazepine. Houding is defensief.",
-          "red_flags": ["chronische insomnia", "specifieke medicijn vraag", "uitputting", "mogelijk burn-out"]
+          "red_flags": [
+            "chronische insomnia",
+            "specifieke medicijn vraag",
+            "uitputting",
+            "mogelijk burn-out"
+          ]
         },
-        
         "dialogue_nodes": [
           {
             "id": "initial_medication_request",
@@ -125,7 +155,9 @@
                   "delayed": "Ontdekt root cause, betere lange-termijn uitkomst"
                 },
                 "body_language_reaction": "Zucht gefrustreerd, maar knikt langzaam: 'Oké... ik pieker over alles.'",
-                "hidden_info_unlock": ["work_deadline_crisis"],
+                "hidden_info_unlock": [
+                  "work_deadline_crisis"
+                ],
                 "clinical_notes": "NHG-conform: erkent leed, weigert verantwoord, focust op oorzaak"
               },
               {
@@ -148,7 +180,7 @@
               },
               {
                 "text": "Oké, ik begrijp dat u wanhopig bent. Voor nu geef ik Temazepam voor 7 dagen - dat is het maximum. Daarna moeten we de echte oorzaak aanpakken. Kom volgende week terug.",
-                "next_node": "benzo_prescribed_crisis_mode",
+                "next_node": "patient_frustrated",
                 "trade_offs": {
                   "empathy": "+10",
                   "trust": "+15",
@@ -167,7 +199,6 @@
               }
             ]
           },
-          
           {
             "id": "empathetic_exploration",
             "title": "Verdiepende exploratie - DYNAMIC RESPONSE",
@@ -176,11 +207,23 @@
               "trust_medium": "Ik heb veel druk op werk. Ik ben boekhouder, en het is belastingseizoen. Ik maak de hele dag lange uren, en thuis... het is ook moeilijk.",
               "trust_high": "Dokter... het is een ramp. Ik moet over 2 dagen een grote deadline halen, anders word ik ontslagen. En mijn dochter... ze woont niet meer bij mij. Ze is bij haar vader. Ik voel me zo schuldig. Ik lig 's nachts wakker en denk: ben ik een slechte moeder? Hoe betaal ik de huur? En... 2 jaar geleden had ik ook al een burn-out. Ik ben doodsbang dat het weer gebeurt."
             },
-            "revealed_hidden_info_on_high_trust": ["previous_overspanning", "work_deadline_crisis", "teenager_problems"],
-            "trust_threshold": {"low": 45, "medium": 60, "high": 70},
+            "revealed_hidden_info_on_high_trust": [
+              "previous_overspanning",
+              "work_deadline_crisis",
+              "teenager_problems"
+            ],
+            "trust_threshold": {
+              "low": 45,
+              "medium": 60,
+              "high": 70
+            },
             "patient_emotion": "vulnerable_overwhelmed",
             "time_elapsed": 8,
-            "emotional_state_changes": {"trust": "+20", "anxiety": "-15", "stress": "+5"},
+            "emotional_state_changes": {
+              "trust": "+20",
+              "anxiety": "-15",
+              "stress": "+5"
+            },
             "options": [
               {
                 "text": "Dat is enorm veel om te dragen. Burn-out, werkdruk, uw dochter, schuld... Geen wonder dat u niet slaapt. Dit is te groot voor alleen slaaphygiëne. Ik wil u vandaag HADS-vragenlijst laten invullen (5 min) en direct verwijzen naar POH-GGZ. Let op: wachttijd is 3 weken. Voor nu: kan ik u helpen met tijdelijk medicijn?",
@@ -197,12 +240,14 @@
                   "delayed": "3 weken wachten is risico, maar juiste zorg"
                 },
                 "body_language_reaction": "Begint te huilen: 'Eindelijk luistert iemand naar me...'",
-                "hidden_info_unlock": ["already_bought_benzos_online"],
+                "hidden_info_unlock": [
+                  "already_bought_benzos_online"
+                ],
                 "clinical_notes": "EXCELLENT: holistische approach + HADS + POH-GGZ + pragmatic medication discussion"
               },
               {
                 "text": "Dit klinkt ernstig. U heeft professionele psychologische hulp nodig - ik verwijs u naar POH-GGZ. Wachttijd is 3 weken. In tussentijd: slaaphygiëne tips en dagelijks wandelen. Geen medicatie nodig.",
-                "next_node": "three_week_wait_dilemma",
+                "next_node": "treatment_plan_discussion",
                 "trade_offs": {
                   "empathy": "+15",
                   "trust": "+10",
@@ -219,7 +264,6 @@
               }
             ]
           },
-          
           {
             "id": "treatment_plan_discussion",
             "title": "Behandelplan: Medicatie dilemma - RESOURCE CONSTRAINTS",
@@ -250,7 +294,7 @@
               },
               {
                 "text": "Oké, ik geef Temazepam voor 14 dagen (2 weken). Daarna stoppen, want anders raakt u eraan verslaafd. Afspraak over 2 weken verplicht om te evalueren.",
-                "next_node": "benzo_14_days_risky",
+                "next_node": "mirtazapine_compromise",
                 "trade_offs": {
                   "empathy": "+15",
                   "trust": "+10",
@@ -285,7 +329,6 @@
               }
             ]
           },
-          
           {
             "id": "patient_desperation_event",
             "title": "RANDOM EVENT: Patiënte onthult online aankoop",
@@ -293,15 +336,21 @@
             "patient_statement": "*Met trillende stem* 'Weet u wat? Ik vertel u iets... Ik heb al Temazepam gekocht. Via internet. Van een website. Ik heb de pillen al thuis, maar ik durfde ze niet te nemen omdat ik bang ben. Ik wilde het officieel van u krijgen. Maar als u me niet helpt...'",
             "patient_emotion": "desperate_vulnerable_confession",
             "body_language": "Huilt, haalt doosje uit tas, laat zien",
-            "revealed_hidden_info": ["already_bought_benzos_online"],
+            "revealed_hidden_info": [
+              "already_bought_benzos_online"
+            ],
             "clinical_phase": "crisis_intervention",
             "time_elapsed": 18,
-            "emotional_state_changes": {"trust": "+40", "anxiety": "-10", "desperation": "+20"},
+            "emotional_state_changes": {
+              "trust": "+40",
+              "anxiety": "-10",
+              "desperation": "+20"
+            },
             "safety_concern": "IMMEDIATE - illegale medicatie, onbekende kwaliteit",
             "options": [
               {
                 "text": "*Kalm* 'Dank u voor uw eerlijkheid. Dit is gevaarlijk - u weet niet wat erin zit. Geef mij die pillen, ik verniet ze veilig. Ik geef u WEL officieel medicijn, maar dan Mirtazapine (veilig) voor 3 weken. En ik maak spoed-afspraak met POH-GGZ binnen 1 week. U bent niet alleen.'",
-                "next_node": "crisis_resolution_excellent",
+                "next_node": "mirtazapine_compromise",
                 "trade_offs": {
                   "empathy": "+40",
                   "trust": "+50",
@@ -318,7 +367,7 @@
               },
               {
                 "text": "Dat is illegaal en gevaarlijk! U moet die pillen weggooien. Ik kan u niet helpen als u zulke dingen doet. Kom terug als u serieus bent over behandeling.",
-                "next_node": "relationship_destroyed",
+                "next_node": "patient_frustrated",
                 "trade_offs": {
                   "empathy": "-40",
                   "trust": "-60",
@@ -335,7 +384,6 @@
               }
             ]
           },
-          
           {
             "id": "mirtazapine_compromise",
             "title": "Follow-up: Evaluatie na 1 week Mirtazapine",
@@ -344,10 +392,14 @@
             "body_language": "Glimlacht, ontspannen schouders, maakt oogcontact",
             "clinical_phase": "positive_outcome",
             "time_elapsed": 25,
-            "emotional_state_changes": {"trust": "+30", "anxiety": "-40", "stress": "-30", "cooperation": "+40"},
+            "emotional_state_changes": {
+              "trust": "+30",
+              "anxiety": "-40",
+              "stress": "-30",
+              "cooperation": "+40"
+            },
             "outcome": "excellent"
           },
-          
           {
             "id": "patient_frustrated",
             "title": "Patiënte gefrustreerd door afwijzing",
@@ -356,20 +408,39 @@
             "body_language": "Arms crossed, raised voice, eye roll",
             "clinical_phase": "conflict",
             "time_elapsed": 5,
-            "emotional_state_changes": {"trust": "-20", "anxiety": "+15", "cooperation": "-25"},
+            "emotional_state_changes": {
+              "trust": "-20",
+              "anxiety": "+15",
+              "cooperation": "-25"
+            },
             "options": [
               {
                 "text": "*Kalmerende toon* 'Ik snap uw frustratie. Ik WIL u helpen, maar op een veilige manier. Geef me 10 minuten om uw situatie te begrijpen, dan zoeken we samen een oplossing. Mag dat?'",
-                "next_node": "repair_relationship",
-                "trade_offs": {"empathy": "+30", "trust": "+25", "anxiety": "-15", "time_cost": "-10 min"},
-                "consequences": {"immediate": "Relatie hersteld", "delayed": "Kan alsnog goede uitkomst hebben"},
+                "next_node": "empathetic_exploration",
+                "trade_offs": {
+                  "empathy": "+30",
+                  "trust": "+25",
+                  "anxiety": "-15",
+                  "time_cost": "-10 min"
+                },
+                "consequences": {
+                  "immediate": "Relatie hersteld",
+                  "delayed": "Kan alsnog goede uitkomst hebben"
+                },
                 "body_language_reaction": "Zucht, knikt: 'Oké... sorry.'"
               },
               {
                 "text": "Als u niet wilt luisteren naar mijn advies, kan ik u niet helpen. U moet realistisch zijn.",
-                "next_node": "relationship_destroyed",
-                "trade_offs": {"empathy": "-30", "trust": "-40", "compliance": "-60"},
-                "consequences": {"immediate": "Patiënte verlaat praktijk", "delayed": "Poor outcome, mogelijk klacht"},
+                "next_node": "patient_frustrated",
+                "trade_offs": {
+                  "empathy": "-30",
+                  "trust": "-40",
+                  "compliance": "-60"
+                },
+                "consequences": {
+                  "immediate": "Patiënte verlaat praktijk",
+                  "delayed": "Poor outcome, mogelijk klacht"
+                },
                 "body_language_reaction": "Staat op: 'Ik zoek een andere dokter.' Vertrekt."
               }
             ]
@@ -379,4 +450,3 @@
     }
   }
 }
-

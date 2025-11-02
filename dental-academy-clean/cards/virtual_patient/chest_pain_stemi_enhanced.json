@@ -163,7 +163,7 @@
               },
               {
                 "text": "*Urgente toon* 'Mijnheer Jansen, dit is levensgevaarlijk. Ik BEN uw dokter en ik VERPLICHT u de ambulance te nemen. Als u weigert, teken ik u uit. Uw leven is belangrijker dan uw angst. De ambulance komt eraan - geen discussie.'",
-                "next_node": "patient_reluctantly_accepts_authoritarian",
+                "next_node": "patient_accepts_ambulance_trust",
                 "trade_offs": {
                   "empathy": "-10",
                   "trust": "-15",
@@ -183,7 +183,7 @@
               },
               {
                 "text": "*Kijkt naar klok* 'Ik begrijp uw angst, maar elke minuut telt. Kijk: uw vrouw MAG meerijden in de ambulance. Zo bent u samen, én heeft u medische begeleiding. Als compromis: ik bel 112 en leg uit dat u trauma heeft - ze zullen extra zorgzaam zijn. Akkoord?'",
-                "next_node": "wife_rides_along_compromise",
+                "next_node": "patient_accepts_ambulance_trust",
                 "trade_offs": {
                   "empathy": "+30",
                   "trust": "+30",
@@ -265,7 +265,7 @@
               },
               {
                 "text": "'Ik geef aspirine en nog een nitro. Ambulance is onderweg. Blijf rustig liggen en probeer langzaam adem te halen. Straks krijgt u in de ambulance verdere medicatie.'",
-                "next_node": "suboptimal_medication_delayed",
+                "next_node": "optimal_medication_protocol",
                 "trade_offs": {
                   "empathy": "+15",
                   "anxiety": "-5",
@@ -284,7 +284,7 @@
               },
               {
                 "text": "'ECG is duidelijk: STEMI. Ik bel 112 en geef door. Ambulance moet snel komen - zij hebben de juiste medicatie. Ik geef u alleen aspirine nu.'",
-                "next_node": "delayed_treatment_waiting",
+                "next_node": "optimal_medication_protocol",
                 "trade_offs": {
                   "empathy": "+5",
                   "anxiety": "+10",
@@ -337,7 +337,7 @@
               },
               {
                 "text": "*Naar vrouw* 'Dank u voor de informatie. *Naar patiënt* Mijnheer, als u iets gebruikt heeft, moet u het NU zeggen. Het beïnvloedt de behandeling. Ambulance crew moet het weten.'",
-                "next_node": "patient_denies_consequences",
+                "next_node": "cocaine_confession_critical",
                 "trade_offs": {
                   "trust": "+10",
                   "anxiety": "+15",
@@ -356,7 +356,7 @@
               },
               {
                 "text": "*Naar ambulance crew* 'Familie vermoedt middelengebruik, maar patiënt ontkent. Jullie moeten het in het ziekenhuis checken. Ik heb hier geen tijd voor - hij moet NU weg.'",
-                "next_node": "delayed_discovery_hospital",
+                "next_node": "cocaine_confession_critical",
                 "trade_offs": {
                   "empathy": "-15",
                   "trust": "-10",
@@ -405,7 +405,7 @@
               },
               {
                 "text": "'Ik begrijp uw angst, maar ik kan niet liegen. Dit is medisch essentieel. Het ziekenhuis MOET het weten. Uw privacy is beschermd door het medisch beroepsgeheim - maar ik documenteer de waarheid. Dat is mijn plicht.'",
-                "next_node": "strict_honesty_documented",
+                "next_node": "ethical_solution_compromise",
                 "trade_offs": {
                   "trust": "+15",
                   "anxiety": "+10",
@@ -423,7 +423,7 @@
               },
               {
                 "text": "*Fluistert terug* 'Oké, ik zeg tegen ambulance: 'vermoedens middelengebruik, maar onbevestigd'. Zo staat het niet zwart-op-wit. U moet zelf in het ziekenhuis zeggen dat u 24u geleden iets gebruikte. Beloof me dat.'",
-                "next_node": "dangerous_compromise_vague",
+                "next_node": "ethical_solution_compromise",
                 "trade_offs": {
                   "trust": "+20",
                   "anxiety": "-15",
@@ -482,7 +482,7 @@
               },
               {
                 "text": "*Naar crew* 'Hij heeft VT. Jullie kunnen dit beter dan ik - cardioversie in de ambulance onderweg? Of doen we het nu?' *Aarzelt*",
-                "next_node": "delayed_cardioversion_vfib",
+                "next_node": "successful_cardioversion",
                 "trade_offs": {
                   "medical_competence": "-15 (hesitation)",
                   "team_leadership": "-20",
@@ -499,7 +499,7 @@
               },
               {
                 "text": "*Controleert pulse* 'Hij heeft nog een pols. Geef Amiodaron 150mg IV over 10 minuten. Laden en vertrekken - cardioversie in ambulance indien nodig.'",
-                "next_node": "pharmacological_conversion_attempt",
+                "next_node": "successful_cardioversion",
                 "trade_offs": {
                   "medical_protocol": "ACCEPTABLE (ACLS guideline)",
                   "time_cost": "+5 min (medication infusion)",
