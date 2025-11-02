@@ -70,17 +70,24 @@ def get_daily_progress():
         study_time = 0
         
         # Time from tests (DiagnosticSession)
+        tests_time = 0
         for t in tests_today:
             duration = getattr(t, 'actual_duration', 0) or 0
-            study_time += duration
+            tests_time += duration
+        study_time += tests_time
         
         # Time from virtual patients
+        vp_time = 0
         for v in vp_today:
             # VirtualPatientAttempt использует time_spent (в минутах)
             duration = getattr(v, 'time_spent', 0) or 0
-            study_time += duration
+            if duration > 0:
+                vp_time += duration
+                current_app.logger.info(f"VP time added: attempt_id={v.id}, time_spent={duration}, completed={v.completed}")
+        study_time += vp_time
         
         # Time from terms (DailyFlashcardProgress)
+        terms_time = 0
         if daily_flashcard:
             # Проверяем, есть ли поле time_spent в DailyFlashcardProgress
             terms_duration = getattr(daily_flashcard, 'time_spent', 0) or 0
@@ -88,7 +95,11 @@ def get_daily_progress():
                 # Fallback: вычисляем примерное время на основе количества изученных терминов
                 # Среднее время на термин ~ 1 минута
                 terms_duration = terms_completed * 1
-            study_time += terms_duration
+            terms_time = terms_duration
+        study_time += terms_time
+        
+        # Логирование для диагностики
+        current_app.logger.info(f"Daily study time calculation: user={current_user.id}, tests={tests_time}min, vp={vp_time}min, terms={terms_time}min, total={study_time}min")
         
         return jsonify({
             'success': True,
