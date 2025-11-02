@@ -607,6 +607,16 @@ class VirtualPatientDialogue {
   }
   
   async selectOption(option, node) {
+    // Логирование для диагностики - проверим что приходит в option
+    console.log('🎯 selectOption called:', {
+      option_id: option.id,
+      option_text_preview: option.text?.substring(0, 50) + '...',
+      has_score: option.score !== undefined,
+      has_trade_offs: !!option.trade_offs,
+      trade_offs_keys: option.trade_offs ? Object.keys(option.trade_offs) : [],
+      option_full: option  // Полный объект для проверки
+    });
+    
     // Disable all buttons
     const buttons = this.interactionContent.querySelectorAll('.option-button');
     buttons.forEach(btn => btn.disabled = true);
