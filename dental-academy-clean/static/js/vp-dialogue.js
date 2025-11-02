@@ -1156,22 +1156,46 @@ class VirtualPatientDialogue {
       
       if (selectedOption) {
         // Пробуем получить score из разных источников
+        // Используем ТУ ЖЕ логику, что и в selectOption
         let score = 0;
         
         if (selectedOption.score !== undefined && selectedOption.score !== null) {
           score = selectedOption.score;
         } else if (selectedOption.trade_offs) {
-          // Вычисляем score из trade_offs
+          // Вычисляем score из trade_offs - ТА ЖЕ логика, что в selectOption
           const values = [];
           Object.values(selectedOption.trade_offs).forEach(val => {
-            if (typeof val === 'string' && val.startsWith('+')) {
-              values.push(parseInt(val.slice(1)) || 0);
+            if (typeof val === 'string') {
+              if (val.startsWith('+')) {
+                const numVal = parseInt(val.slice(1));
+                if (!isNaN(numVal)) {
+                  values.push(numVal);
+                } else if (val.toUpperCase().includes('HIGH') || val.toUpperCase().includes('EXCELLENT')) {
+                  values.push(40);
+                } else if (val.toUpperCase().includes('MODERATE') || val.toUpperCase().includes('AVERAGE')) {
+                  values.push(20);
+                } else if (val.toUpperCase().includes('LOW')) {
+                  values.push(10);
+                }
+              } else if (val.startsWith('-')) {
+                // Отрицательные значения игнорируем
+              } else {
+                const numVal = parseInt(val);
+                if (!isNaN(numVal) && numVal > 0) {
+                  values.push(numVal);
+                }
+              }
             } else if (typeof val === 'number' && val > 0) {
               values.push(val);
             }
           });
           if (values.length > 0) {
-            score = Math.round(values.reduce((a, b) => a + b, 0) / values.length * 2);
+            // Среднее значение * 1.5 для нормализации (как в selectOption)
+            const sum = values.reduce((a, b) => a + b, 0);
+            const avg = sum / values.length;
+            score = Math.round(avg * 1.5);
+            // Ограничиваем диапазон 0-30 (как в selectOption)
+            score = Math.max(0, Math.min(30, score));
           }
         }
         
