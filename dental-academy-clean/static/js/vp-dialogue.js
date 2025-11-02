@@ -645,7 +645,22 @@ class VirtualPatientDialogue {
         
         // Переход к следующему узлу
         setTimeout(() => {
-          this.currentNodeId = node.next_node || 'end';
+          let nextNodeId = node.next_node;
+          
+          // Если next_node не указан, берем следующий узел по порядку в массиве
+          if (!nextNodeId || nextNodeId === 'end') {
+            const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+            const currentIndex = nodes.findIndex(n => n.id === node.id);
+            
+            if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
+              nextNodeId = nodes[currentIndex + 1].id;
+            } else {
+              nextNodeId = 'end';
+            }
+          }
+          
+          this.currentNodeId = nextNodeId;
+          
           if (this.currentNodeId === 'end') {
             this.completeScenario();
           } else {
