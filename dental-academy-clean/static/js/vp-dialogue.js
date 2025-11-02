@@ -352,7 +352,18 @@ class VirtualPatientDialogue {
       // Добавить сообщение пациента в диалог только если нужно
       // (для первого узла не показываем, если уже показали initial_state)
       if (showPatientStatement && node.patient_statement) {
+        console.log('💬 Adding patient statement:', {
+          node_id: node.id,
+          statement_preview: node.patient_statement.substring(0, 50) + '...'
+        });
         this.addMessageToThread('from-patient', node.patient_statement);
+      } else if (!node.patient_statement && showPatientStatement) {
+        console.warn('⚠️ Node has no patient_statement but showPatientStatement=true:', {
+          node_id: node.id,
+          has_options: !!node.options,
+          has_fill_in: !!node.fill_in,
+          is_outcome: !!node.is_outcome
+        });
       }
       
       // Обновить прогресс
@@ -511,6 +522,25 @@ class VirtualPatientDialogue {
     const buttons = this.interactionContent.querySelectorAll('.option-button');
     buttons.forEach(btn => btn.disabled = true);
     
+    // Защита от циклов: проверяем, что мы не пытаемся перейти на тот же узел
+    if (option.next_node === node.id) {
+      console.error('⚠️ Warning: next_node points to current node, this would cause infinite loop!', {
+        current_node: node.id,
+        next_node: option.next_node,
+        option_id: option.id
+      });
+      // Пропускаем этот переход или ищем следующий узел по порядку
+      const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+      const currentIndex = nodes.findIndex(n => n.id === node.id);
+      if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
+        option.next_node = nodes[currentIndex + 1].id;
+        console.log('🔄 Auto-fixed: using next sequential node:', option.next_node);
+      } else {
+        option.next_node = 'end';
+        console.log('🔄 Auto-fixed: using end node');
+      }
+    }
+    
     try {
       // Убедиться, что attempt существует
       if (!this.attemptId && this.scenario?.id) {
@@ -572,14 +602,38 @@ class VirtualPatientDialogue {
       
       // Переход к следующему узлу
       setTimeout(() => {
-        if (option.next_node && option.next_node !== 'end') {
-          this.currentNodeId = option.next_node;
-          // Всегда показываем patient_statement для следующих узлов (после первого)
-          this.displayNode(this.currentNodeId, true);
+        const nextNodeId = option.next_node;
+        
+        console.log('🔄 Transition:', {
+          from_node: node.id,
+          to_node: nextNodeId,
+          option_id: option.id,
+          option_text: option.text.substring(0, 50) + '...'
+        });
+        
+        // Проверяем, что next_node не указывает на текущий узел (дополнительная защита)
+        if (nextNodeId && nextNodeId === node.id) {
+          console.error('❌ Blocked infinite loop: next_node === current_node');
+          // Ищем следующий узел по порядку
+          const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+          const currentIndex = nodes.findIndex(n => n.id === node.id);
+          if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
+            this.currentNodeId = nodes[currentIndex + 1].id;
+            console.log('✅ Using sequential next node:', this.currentNodeId);
+          } else {
+            this.completeScenario();
+            return;
+          }
+        } else if (nextNodeId && nextNodeId !== 'end') {
+          this.currentNodeId = nextNodeId;
         } else {
           // Сценарий завершен
           this.completeScenario();
+          return;
         }
+        
+        // Всегда показываем patient_statement для следующих узлов
+        this.displayNode(this.currentNodeId, true);
       }, 1000);
     } catch (error) {
       console.error('Error selecting option:', error);
