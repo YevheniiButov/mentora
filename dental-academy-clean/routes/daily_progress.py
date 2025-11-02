@@ -68,12 +68,27 @@ def get_daily_progress():
         
         # Calculate study time (in minutes)
         study_time = 0
+        
+        # Time from tests (DiagnosticSession)
         for t in tests_today:
             duration = getattr(t, 'actual_duration', 0) or 0
             study_time += duration
+        
+        # Time from virtual patients
         for v in vp_today:
-            duration = getattr(v, 'duration', 0) or 0
+            # VirtualPatientAttempt использует time_spent (в минутах)
+            duration = getattr(v, 'time_spent', 0) or 0
             study_time += duration
+        
+        # Time from terms (DailyFlashcardProgress)
+        if daily_flashcard:
+            # Проверяем, есть ли поле time_spent в DailyFlashcardProgress
+            terms_duration = getattr(daily_flashcard, 'time_spent', 0) or 0
+            if terms_duration == 0:
+                # Fallback: вычисляем примерное время на основе количества изученных терминов
+                # Среднее время на термин ~ 1 минута
+                terms_duration = terms_completed * 1
+            study_time += terms_duration
         
         return jsonify({
             'success': True,
@@ -151,6 +166,7 @@ def update_daily_progress():
         # Update daily flashcard progress if it's a terms session
         if component_type == 'terms' and status == 'completed':
             today = datetime.now().date()
+            time_spent = data.get('time_spent', 0)  # Время в минутах
             
             # Get or create daily progress record
             daily_progress = DailyFlashcardProgress.query.filter_by(
@@ -171,12 +187,20 @@ def update_daily_progress():
             current_terms_completed = daily_progress.terms_completed or 0
             current_xp_earned = daily_progress.xp_earned or 0
             current_session_count = daily_progress.session_count or 0
+            current_time_spent = getattr(daily_progress, 'time_spent', 0) or 0
             
             daily_progress.terms_studied = min(current_terms_studied + terms_studied, 10)  # Cap at 10 terms per day
             daily_progress.terms_completed = current_terms_completed + 1  # One session completed
             daily_progress.xp_earned = current_xp_earned + score
             daily_progress.session_count = current_session_count + 1
             daily_progress.last_session = datetime.now()
+            
+            # Сохраняем время, если поле существует
+            if hasattr(daily_progress, 'time_spent'):
+                daily_progress.time_spent = current_time_spent + time_spent
+            else:
+                # Если поля нет, используем fallback вычисление позже
+                pass
             
             # Log the update
             print(f"Updated daily progress: user={current_user.id}, terms_studied={daily_progress.terms_studied}, terms_completed={daily_progress.terms_completed}")
