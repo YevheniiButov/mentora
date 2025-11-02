@@ -537,16 +537,48 @@ class VirtualPatientDialogue {
         next_node: option.next_node,
         option_id: option.id
       });
-      // Пропускаем этот переход или ищем следующий узел по порядку
+      
+      // Пытаемся найти следующий логический узел
       const nodes = this.scenario.scenario_data.dialogue_nodes || [];
       const currentIndex = nodes.findIndex(n => n.id === node.id);
-      if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
-        option.next_node = nodes[currentIndex + 1].id;
-        console.log('🔄 Auto-fixed: using next sequential node:', option.next_node);
-      } else {
-        option.next_node = 'end';
-        console.log('🔄 Auto-fixed: using end node');
+      
+      // Стратегия 1: Ищем другие опции в текущем узле, которые ведут в другое место
+      let fixedNextNode = null;
+      if (node.options && node.options.length > 1) {
+        const otherOptions = node.options.filter(opt => opt.next_node && opt.next_node !== node.id);
+        if (otherOptions.length > 0) {
+          // Берем next_node из другой опции
+          fixedNextNode = otherOptions[0].next_node;
+          console.log('🔄 Auto-fixed: using next_node from another option in same node:', fixedNextNode);
+        }
       }
+      
+      // Стратегия 2: Если не нашли, берем следующий узел по порядку
+      if (!fixedNextNode && currentIndex >= 0 && currentIndex < nodes.length - 1) {
+        // Пропускаем узлы без options (они могут быть промежуточными)
+        for (let i = currentIndex + 1; i < nodes.length; i++) {
+          if (nodes[i].options && nodes[i].options.length > 0) {
+            fixedNextNode = nodes[i].id;
+            console.log('🔄 Auto-fixed: using next sequential node with options:', fixedNextNode);
+            break;
+          }
+        }
+        
+        // Если не нашли узел с options, просто берем следующий
+        if (!fixedNextNode && currentIndex < nodes.length - 1) {
+          fixedNextNode = nodes[currentIndex + 1].id;
+          console.log('🔄 Auto-fixed: using next sequential node:', fixedNextNode);
+        }
+      }
+      
+      // Стратегия 3: Если ничего не найдено, завершаем сценарий
+      if (!fixedNextNode) {
+        fixedNextNode = 'end';
+        console.log('🔄 Auto-fixed: using end node (no valid next node found)');
+      }
+      
+      // Заменяем next_node
+      option.next_node = fixedNextNode;
     }
     
     try {
