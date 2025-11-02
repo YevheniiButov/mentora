@@ -166,6 +166,118 @@ def save_choice():
         }), 500
 
 
+@vp_daily_bp.route('/validate-fill-in', methods=['POST'])
+@csrf.exempt
+@login_required
+def validate_fill_in():
+    """
+    Валидировать ответ на вопрос с заполнением пропусков
+    """
+    try:
+        data = request.get_json()
+        attempt_id = data.get('attempt_id')
+        node_id = data.get('node_id')
+        user_answer = data.get('user_answer', '').strip()
+        
+        if not attempt_id or not node_id or not user_answer:
+            return jsonify({
+                'success': False,
+                'valid': False,
+                'message': 'Missing required fields'
+            }), 400
+        
+        # Получить попытку
+        attempt = VirtualPatientAttempt.query.get(attempt_id)
+        if not attempt:
+            return jsonify({
+                'success': False,
+                'valid': False,
+                'message': 'Attempt not found'
+            }), 404
+        
+        # Проверить доступ
+        if attempt.user_id != current_user.id:
+            return jsonify({
+                'success': False,
+                'valid': False,
+                'message': 'Access denied'
+            }), 403
+        
+        # Получить сценарий
+        scenario = VirtualPatientScenario.query.get(attempt.scenario_id)
+        if not scenario:
+            return jsonify({
+                'success': False,
+                'valid': False,
+                'message': 'Scenario not found'
+            }), 404
+        
+        # Получить данные сценария
+        scenario_data = scenario.localized_data
+        dialogue_nodes = scenario_data.get('dialogue_nodes', [])
+        
+        # Найти узел
+        node = next((n for n in dialogue_nodes if n.get('id') == node_id), None)
+        if not node or not node.get('fill_in'):
+            return jsonify({
+                'success': False,
+                'valid': False,
+                'message': 'Node or fill-in config not found'
+            }), 404
+        
+        fill_in_config = node['fill_in']
+        correct_word = fill_in_config.get('word', '').strip().lower()
+        user_answer_lower = user_answer.lower()
+        
+        # Проверяем совпадение (case-insensitive, допускаем частичное совпадение)
+        is_correct = False
+        score = 0
+        
+        if correct_word:
+            # Точное совпадение
+            if user_answer_lower == correct_word:
+                is_correct = True
+                score = 10  # Базовый балл за правильный ответ
+            # Частичное совпадение (если пользователь ввел часть слова)
+            elif correct_word in user_answer_lower or user_answer_lower in correct_word:
+                is_correct = True
+                score = 5  # Меньший балл за частичное совпадение
+        
+        # Обновить счет попытки
+        if is_correct:
+            attempt.score += score
+            db.session.commit()
+        
+        # Сообщение для пользователя
+        if is_correct:
+            message = 'Correct! Goed gedaan!' if score == 10 else f'Bijna correct! Het juiste antwoord is: {correct_word}'
+        else:
+            hint = fill_in_config.get('hint', '')
+            if hint:
+                message = f'Niet helemaal correct. Hint: {hint}'
+            else:
+                message = f'Niet correct. Probeer het opnieuw. Het juiste antwoord is: {correct_word}'
+        
+        return jsonify({
+            'success': True,
+            'valid': is_correct,
+            'score': score,
+            'message': message,
+            'correct_answer': correct_word if not is_correct else None
+        })
+        
+    except Exception as e:
+        print(f"Error in validate_fill_in: {e}")
+        import traceback
+        traceback.print_exc()
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'valid': False,
+            'message': str(e)
+        }), 500
+
+
 @vp_daily_bp.route('/complete-attempt', methods=['POST'])
 @csrf.exempt
 @login_required
