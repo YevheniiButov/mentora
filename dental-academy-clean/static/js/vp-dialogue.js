@@ -699,12 +699,7 @@ class VirtualPatientDialogue {
   updateScore(dialogueScore, fillInScore) {
     this.score = dialogueScore;
     this.fillInScore = fillInScore;
-    const total = this.score + this.fillInScore;
-    
-    document.getElementById('headerScore').textContent = total;
-    document.getElementById('sidebarScore').textContent = total;
-    document.getElementById('dialogueScore').textContent = this.score;
-    document.getElementById('fillInScoreWidget').textContent = this.fillInScore;
+    // Обновляем только внутренние переменные, больше не показываем счет пользователю
   }
   
   updateProgress(nodeId) {
