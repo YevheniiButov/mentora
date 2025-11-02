@@ -351,19 +351,27 @@ class VirtualPatientDialogue {
       
       // Добавить сообщение пациента в диалог только если нужно
       // (для первого узла не показываем, если уже показали initial_state)
-      if (showPatientStatement && node.patient_statement) {
-        console.log('💬 Adding patient statement:', {
-          node_id: node.id,
-          statement_preview: node.patient_statement.substring(0, 50) + '...'
-        });
-        this.addMessageToThread('from-patient', node.patient_statement);
-      } else if (!node.patient_statement && showPatientStatement) {
-        console.warn('⚠️ Node has no patient_statement but showPatientStatement=true:', {
-          node_id: node.id,
-          has_options: !!node.options,
-          has_fill_in: !!node.fill_in,
-          is_outcome: !!node.is_outcome
-        });
+      if (showPatientStatement) {
+        if (node.patient_statement) {
+          console.log('💬 Adding patient statement:', {
+            node_id: node.id,
+            statement_preview: node.patient_statement.substring(0, 50) + '...'
+          });
+          this.addMessageToThread('from-patient', node.patient_statement);
+        } else {
+          // Если у узла нет patient_statement, но он ожидается, показываем заглушку
+          // Это может быть промежуточный узел или узел без ответа пациента
+          console.warn('⚠️ Node has no patient_statement but showPatientStatement=true:', {
+            node_id: node.id,
+            has_options: !!node.options,
+            has_fill_in: !!node.fill_in,
+            is_outcome: !!node.is_outcome
+          });
+          
+          // Если есть title или notes_dentist, используем их как заглушку
+          // Или просто пропускаем - не добавляем сообщение пациента
+          // Это нормально для промежуточных узлов, где сразу идут опции доктора
+        }
       }
       
       // Обновить прогресс
