@@ -282,16 +282,16 @@ class VirtualPatientDialogue {
       if (!node) {
         const outcomes = this.scenario.scenario_data.outcomes;
         
-        if (outcomes) {
+        if (outcomes && typeof outcomes === 'object') {
           // Пробуем разные варианты маппинга outcome ID
           let outcomeData = null;
           
-          // 1. Прямое совпадение (outcome_pulpitis_suspected → outcomes.pulpitis_suspected)
+          // 1. Прямое совпадение (outcome_excellent → outcomes.excellent)
           if (outcomes[nodeId]) {
             outcomeData = outcomes[nodeId];
           }
           
-          // 2. Убираем префикс "outcome_" (outcome_anxious_good → outcomes.anxious_good)
+          // 2. Убираем префикс "outcome_" (outcome_excellent → outcomes.excellent)
           if (!outcomeData && nodeId.startsWith('outcome_')) {
             const outcomeKey = nodeId.replace('outcome_', '');
             if (outcomes[outcomeKey]) {
@@ -303,12 +303,12 @@ class VirtualPatientDialogue {
           // outcome_anxious_good → 'good' → outcomes.good
           if (!outcomeData) {
             const parts = nodeId.split('_');
-            const lastPart = parts[parts.length - 1]; // Берем последнее слово (good, average, poor, etc.)
+            const lastPart = parts[parts.length - 1]; // Берем последнее слово (good, average, poor, excellent, etc.)
             
             // Маппинг возможных вариантов
             const outcomeKeyMap = {
               'good': 'good',
-              'excellent': 'good', // excellent → good
+              'excellent': 'excellent', // Пробуем сначала excellent
               'average': 'average',
               'medium': 'average', // medium → average
               'poor': 'poor',
@@ -317,9 +317,15 @@ class VirtualPatientDialogue {
               'default': 'good'
             };
             
-            const mappedKey = outcomeKeyMap[lastPart] || lastPart;
-            if (outcomes[mappedKey]) {
-              outcomeData = outcomes[mappedKey];
+            // Пробуем сначала прямое значение
+            if (outcomes[lastPart]) {
+              outcomeData = outcomes[lastPart];
+            } else {
+              // Пробуем маппинг
+              const mappedKey = outcomeKeyMap[lastPart];
+              if (mappedKey && outcomes[mappedKey]) {
+                outcomeData = outcomes[mappedKey];
+              }
             }
           }
           
@@ -329,21 +335,45 @@ class VirtualPatientDialogue {
               id: nodeId,
               is_outcome: true,
               title: outcomeData.title || 'Scenario Completed',
-              patient_statement: outcomeData.text || 'Scenario completed',
+              patient_statement: outcomeData.text || outcomeData.description || 'Scenario completed',
               outcome_type: nodeId.startsWith('outcome_') ? nodeId.replace('outcome_', '') : 'default'
             };
             console.log('Found outcome:', node);
           } else {
             console.error('Node not found:', nodeId);
             console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
-            console.error('Available outcomes:', Object.keys(outcomes));
-            throw new Error(`Node not found: ${nodeId}`);
+            console.error('Available outcomes:', Object.keys(outcomes || {}));
+            
+            // Если outcomes есть, но нужного ключа нет - создаем дефолтный outcome
+            const defaultKeys = ['excellent', 'good', 'average', 'poor'];
+            for (const key of defaultKeys) {
+              if (outcomes[key]) {
+                console.log(`Using fallback outcome: ${key}`);
+                node = {
+                  id: nodeId,
+                  is_outcome: true,
+                  title: outcomes[key].title || 'Scenario Completed',
+                  patient_statement: outcomes[key].text || outcomes[key].description || 'Scenario completed',
+                  outcome_type: key
+                };
+                break;
+              }
+            }
+            
+            // Если ничего не найдено, завершаем сценарий
+            if (!node) {
+              console.warn('No outcome found, completing scenario');
+              this.completeScenario();
+              return;
+            }
           }
         } else {
+          // Outcomes секции нет - завершаем сценарий
+          console.warn('Outcomes section not found in scenario_data, completing scenario');
           console.error('Node not found:', nodeId);
           console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
-          console.error('Outcomes section not found in scenario_data');
-          throw new Error(`Node not found: ${nodeId}`);
+          this.completeScenario();
+          return;
         }
       } else {
         console.log('Found node:', node);
