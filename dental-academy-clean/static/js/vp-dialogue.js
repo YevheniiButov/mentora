@@ -23,7 +23,7 @@ class VirtualPatientDialogue {
     this.completionModal = document.getElementById('completionModal');
     this.modalBackdrop = document.getElementById('modalBackdrop');
     this.notesArea = document.getElementById('notesArea');
-    this.progressRing = document.getElementById('progressRing');
+    // progressRing больше не существует (удален с правым sidebar)
   }
   
   async init(scenarioId, attemptId) {
@@ -707,14 +707,21 @@ class VirtualPatientDialogue {
     const currentIndex = this.scenario.scenario_data.dialogue_nodes.findIndex(n => n.id === nodeId);
     const progress = ((currentIndex + 1) / totalNodes) * 100;
     
-    document.getElementById('currentStep').textContent = currentIndex + 1;
-    document.getElementById('progressFill').style.width = progress + '%';
-    document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+    // Обновляем только элементы, которые существуют
+    const currentStepEl = document.getElementById('currentStep');
+    if (currentStepEl) {
+      currentStepEl.textContent = currentIndex + 1;
+    }
     
-    // Update SVG ring
-    const circumference = 282.7;
-    const offset = circumference - (progress / 100) * circumference;
-    this.progressRing.style.strokeDashoffset = offset;
+    const totalStepsEl = document.getElementById('totalSteps');
+    if (totalStepsEl) {
+      totalStepsEl.textContent = totalNodes;
+    }
+    
+    const progressFillEl = document.getElementById('progressFill');
+    if (progressFillEl) {
+      progressFillEl.style.width = progress + '%';
+    }
   }
   
   async completeScenario() {
