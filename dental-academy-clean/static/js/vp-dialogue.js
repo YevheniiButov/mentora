@@ -759,6 +759,17 @@ class VirtualPatientDialogue {
         })
       });
       
+      // Проверяем статус ответа
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.error('❌ Endpoint /api/vp/validate-fill-in not found (404). This may mean the endpoint is not deployed yet.');
+          // Fallback: валидация на frontend
+          this.handleFillInFallback(input, node, fillInConfig, userAnswer);
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result = await response.json();
       
       if (result.valid) {
@@ -818,6 +829,85 @@ class VirtualPatientDialogue {
       }
     } catch (error) {
       console.error('Error validating fill-in:', error);
+      // Fallback на frontend валидацию при ошибке
+      this.handleFillInFallback(input, node, fillInConfig, userAnswer);
+    }
+  }
+  
+  handleFillInFallback(input, node, fillInConfig, userAnswer) {
+    // Frontend fallback валидация если backend недоступен
+    console.log('🔄 Using frontend fallback validation for fill-in');
+    
+    const correctWord = fillInConfig.word || '';
+    const userAnswerLower = userAnswer.toLowerCase();
+    const correctWordLower = correctWord.toLowerCase();
+    
+    let isCorrect = false;
+    let score = 0;
+    
+    if (correctWordLower) {
+      // Точное совпадение
+      if (userAnswerLower === correctWordLower) {
+        isCorrect = true;
+        score = 10;
+      }
+      // Частичное совпадение
+      else if (correctWordLower.includes(userAnswerLower) || userAnswerLower.includes(correctWordLower)) {
+        isCorrect = true;
+        score = 5;
+      }
+    }
+    
+    if (isCorrect) {
+      input.classList.add('success');
+      input.classList.remove('error');
+      input.disabled = true;
+      
+      this.fillInScore += score;
+      this.updateScore(this.score, this.fillInScore);
+      
+      this.showFeedback('success', `Correct! Goed gedaan! (+${score} punten)`);
+      this.addMessageToThread('from-doctor', userAnswer);
+      
+      // Переход к следующему узлу
+      setTimeout(() => {
+        let nextNodeId = node.next_node;
+        
+        if (!nextNodeId || nextNodeId === 'end') {
+          const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+          const currentIndex = nodes.findIndex(n => n.id === node.id);
+          
+          if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
+            nextNodeId = nodes[currentIndex + 1].id;
+          } else {
+            nextNodeId = 'end';
+          }
+        }
+        
+        this.currentNodeId = nextNodeId;
+        
+        if (this.currentNodeId === 'end') {
+          this.completeScenario();
+        } else {
+          this.displayNode(this.currentNodeId, true);
+        }
+      }, 1500);
+    } else {
+      input.classList.add('error');
+      input.classList.remove('success');
+      
+      const hint = fillInConfig.hint || '';
+      const message = hint 
+        ? `Niet helemaal correct. Hint: ${hint}`
+        : `Niet correct. Het juiste antwoord is: ${correctWord}`;
+      
+      this.showFeedback('error', message);
+      
+      setTimeout(() => {
+        input.value = '';
+        input.classList.remove('error');
+        input.focus();
+      }, 500);
     }
   }
   
