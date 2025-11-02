@@ -684,30 +684,45 @@ class VirtualPatientDialogue {
       // Пробуем получить score из разных мест
       let optionScore = 0;
       
+      console.log('🔍 Calculating score for option:', {
+        option_id: option.id,
+        has_explicit_score: option.score !== undefined,
+        explicit_score: option.score,
+        has_trade_offs: !!option.trade_offs,
+        trade_offs: option.trade_offs
+      });
+      
       if (option.score !== undefined && option.score !== null) {
         optionScore = option.score;
+        console.log('✅ Using explicit score:', optionScore);
       } else if (option.trade_offs) {
         // Если score нет, пытаемся вычислить из trade_offs
         // Берем среднее из empathy, trust, cooperation и т.д.
         const values = [];
-        Object.values(option.trade_offs).forEach(val => {
+        Object.entries(option.trade_offs).forEach(([key, val]) => {
+          console.log(`  Processing trade_off ${key}:`, val, typeof val);
           if (typeof val === 'string') {
             // Пробуем распарсить строку вида "+40", "-20", "+HIGH", "0", etc.
             if (val.startsWith('+')) {
               const numVal = parseInt(val.slice(1));
               if (!isNaN(numVal)) {
+                console.log(`    -> Parsed as +${numVal}`);
                 values.push(numVal);
               } else if (val.toUpperCase().includes('HIGH') || val.toUpperCase().includes('EXCELLENT')) {
+                console.log(`    -> Parsed as HIGH/EXCELLENT = 40`);
                 values.push(40); // HIGH/EXCELLENT = 40
               } else if (val.toUpperCase().includes('MODERATE') || val.toUpperCase().includes('AVERAGE')) {
+                console.log(`    -> Parsed as MODERATE/AVERAGE = 20`);
                 values.push(20); // MODERATE/AVERAGE = 20
               } else if (val.toUpperCase().includes('LOW')) {
+                console.log(`    -> Parsed as LOW = 10`);
                 values.push(10); // LOW = 10
               }
             } else if (val.startsWith('-')) {
               // Отрицательные значения учитываем, но с меньшим весом
               const numVal = parseInt(val.slice(1));
               if (!isNaN(numVal)) {
+                console.log(`    -> Negative value ignored: -${numVal}`);
                 // Отрицательные значения уменьшают score, но не ниже 0
                 // Мы не добавляем их напрямую, но учитываем при расчете
               }
@@ -715,32 +730,39 @@ class VirtualPatientDialogue {
               // Пробуем распарсить как число
               const numVal = parseInt(val);
               if (!isNaN(numVal) && numVal > 0) {
+                console.log(`    -> Parsed as number: ${numVal}`);
                 values.push(numVal);
+              } else {
+                console.log(`    -> Could not parse: ${val}`);
               }
             }
           } else if (typeof val === 'number' && val > 0) {
+            console.log(`    -> Using number value: ${val}`);
             values.push(val);
+          } else {
+            console.log(`    -> Skipped (not parseable):`, val);
           }
         });
+        
+        console.log('📊 Collected values:', values);
+        
         if (values.length > 0) {
+          const sum = values.reduce((a, b) => a + b, 0);
+          const avg = sum / values.length;
           // Среднее значение * 1.5 для нормализации
-          // Используем только положительные значения из empathy, trust, cooperation
-          optionScore = Math.round(values.reduce((a, b) => a + b, 0) / values.length * 1.5);
+          optionScore = Math.round(avg * 1.5);
           // Ограничиваем диапазон 0-30
           optionScore = Math.max(0, Math.min(30, optionScore));
+          console.log(`✅ Computed score: ${optionScore} (from ${values.length} values: sum=${sum}, avg=${avg.toFixed(2)})`);
+        } else {
+          console.warn('⚠️ No parseable values found in trade_offs:', option.trade_offs);
         }
-      }
-      
-      // Логируем для диагностики
-      if (optionScore === 0 && option.trade_offs) {
-        console.log('⚠️ Score is 0 but trade_offs exist:', {
-          option_id: option.id,
-          trade_offs: option.trade_offs,
-          computed_score: optionScore
-        });
+      } else {
+        console.warn('⚠️ No score and no trade_offs found in option:', option.id);
       }
       
       this.score += optionScore;
+      console.log(`💰 Total score after adding ${optionScore}: ${this.score}`);
       
       // Логирование для диагностики
       console.log('Sending choice data:', {
