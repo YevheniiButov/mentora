@@ -311,6 +311,24 @@ def complete_attempt():
         # Получить обновленную попытку
         attempt = VirtualPatientAttempt.query.get(attempt_id)
         
+        # Вычисляем процент
+        percentage_score = 0
+        if attempt.max_score and attempt.max_score > 0:
+            percentage_score = round((attempt.score / attempt.max_score) * 100)
+        elif attempt.max_score == 0:
+            # Если max_score не установлен, используем 100 как базовый
+            percentage_score = min(100, attempt.score)
+        
+        # Определяем уровень
+        if percentage_score >= 85:
+            level = 'excellent'
+        elif percentage_score >= 70:
+            level = 'good'
+        elif percentage_score >= 50:
+            level = 'needs_improvement'
+        else:
+            level = 'poor'
+        
         return jsonify({
             'success': True,
             'message': 'Attempt completed successfully',
@@ -318,11 +336,12 @@ def complete_attempt():
                 'id': attempt.id,
                 'score': attempt.score,
                 'max_score': attempt.max_score,
-                'percentage': attempt.percentage_score,
-                'level': 'good' if attempt.percentage_score >= 70 else 'needs_improvement',
+                'percentage': percentage_score,
+                'percentage_score': percentage_score,  # Добавляем для совместимости
+                'level': level,
                 'total_score': attempt.score,
                 'fill_in_score': 0,
-                'feedback': 'Goed gedaan!' if attempt.percentage_score >= 70 else 'Meer oefening nodig'
+                'feedback': 'Uitstekend!' if percentage_score >= 85 else ('Goed gedaan!' if percentage_score >= 70 else 'Meer oefening nodig')
             }
         })
         
