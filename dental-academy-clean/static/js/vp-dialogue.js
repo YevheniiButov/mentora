@@ -368,11 +368,46 @@ class VirtualPatientDialogue {
             }
           }
         } else {
-          // Outcomes секции нет - завершаем сценарий
-          console.warn('Outcomes section not found in scenario_data, completing scenario');
+          // Outcomes секции нет - создаем динамический outcome на основе score
+          console.warn('Outcomes section not found in scenario_data, creating dynamic outcome');
           console.error('Node not found:', nodeId);
           console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
-          this.completeScenario();
+          
+          // Создаем outcome на основе накопленного score
+          const totalScore = this.score + this.fillInScore;
+          let outcomeLevel = 'good';
+          let outcomeMessage = 'Goed gedaan! Je hebt de casus afgerond.';
+          
+          if (totalScore >= 150) {
+            outcomeLevel = 'excellent';
+            outcomeMessage = 'Uitstekend! Je hebt alle belangrijke aspecten goed aangepakt.';
+          } else if (totalScore >= 100) {
+            outcomeLevel = 'good';
+            outcomeMessage = 'Goed gedaan! Je hebt de casus goed aangepakt.';
+          } else if (totalScore >= 50) {
+            outcomeLevel = 'average';
+            outcomeMessage = 'Redelijk. Er is ruimte voor verbetering.';
+          } else {
+            outcomeLevel = 'poor';
+            outcomeMessage = 'Er is nog veel ruimte voor verbetering. Probeer het opnieuw.';
+          }
+          
+          // Создаем временный outcome node
+          node = {
+            id: nodeId,
+            is_outcome: true,
+            title: 'Scenario Voltooid',
+            patient_statement: outcomeMessage,
+            outcome_type: outcomeLevel
+          };
+          
+          // Добавляем финальное сообщение пациента
+          this.addMessageToThread('from-patient', outcomeMessage);
+          
+          // Ждем немного и завершаем
+          setTimeout(() => {
+            this.completeScenario();
+          }, 2000);
           return;
         }
       } else {
