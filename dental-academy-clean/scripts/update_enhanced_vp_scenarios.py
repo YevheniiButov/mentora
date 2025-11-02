@@ -110,6 +110,7 @@ def update_scenarios():
     
     total_updated = 0
     total_deleted = 0
+    total_replaced = 0
     
     with app.app_context():
         for config in ENHANCED_SCENARIOS:
@@ -145,62 +146,74 @@ def update_scenarios():
                 print(f"   🏥 Specialty: {new_specialty}")
                 print(f"   ⭐ Difficulty: {new_difficulty}")
                 
-                # Проверяем, не существует ли уже Enhanced версия
+                # Проверяем, существует ли уже Enhanced версия
                 existing_enhanced = VirtualPatientScenario.query.filter_by(title=new_title).first()
                 
                 if existing_enhanced:
-                    print(f"   ⚠️  Enhanced версия уже существует в БД. Пропускаем.")
-                    continue
-                
-                # Ищем старые сценарии
-                old_scenarios = []
-                for pattern in old_patterns:
-                    found = find_old_scenarios(pattern)
-                    for scenario in found:
-                        if scenario not in old_scenarios:
-                            old_scenarios.append(scenario)
-                
-                # Удаляем старые сценарии
-                deleted_ids = []
-                if old_scenarios:
-                    print(f"   🗑️  Найдено {len(old_scenarios)} старых сценариев для замены:")
-                    for old_scenario in old_scenarios:
-                        print(f"      - ID {old_scenario.id}: '{old_scenario.title}' ({old_scenario.specialty})")
-                        
-                        # Проверяем, есть ли попытки (attempts) у этого сценария
-                        attempts_count = VirtualPatientAttempt.query.filter_by(
-                            scenario_id=old_scenario.id
-                        ).count()
-                        
-                        if attempts_count > 0:
-                            print(f"         ⚠️  ВНИМАНИЕ: У сценария {attempts_count} попыток. "
-                                  f"Они останутся в БД (связь через scenario_id), но сценарий будет удален.")
-                        
-                        # Удаляем сценарий
-                        db.session.delete(old_scenario)
-                        deleted_ids.append(old_scenario.id)
-                        total_deleted += 1
+                    print(f"   ⚠️  Enhanced версия уже существует в БД (ID: {existing_enhanced.id})")
+                    print(f"   🔄 Обновляем существующую Enhanced версию...")
+                    
+                    # ОБНОВЛЯЕМ существующий Enhanced сценарий
+                    existing_enhanced.description = new_description
+                    existing_enhanced.specialty = new_specialty
+                    existing_enhanced.difficulty = new_difficulty
+                    existing_enhanced.max_score = new_max_score
+                    existing_enhanced.scenario_data = json.dumps(new_data, ensure_ascii=False)
+                    existing_enhanced.target_keywords = json.dumps(new_keywords, ensure_ascii=False)
+                    
+                    db.session.flush()
+                    print(f"   ✅ Enhanced версия обновлена (ID: {existing_enhanced.id})")
+                    total_replaced += 1
                 else:
-                    print(f"   ℹ️  Старые сценарии не найдены (возможно, уже обновлены)")
-                
-                # Создаем новый Enhanced сценарий
-                new_scenario = VirtualPatientScenario(
-                    title=new_title,
-                    description=new_description,
-                    specialty=new_specialty,
-                    difficulty=new_difficulty,
-                    max_score=new_max_score,
-                    is_published=True,
-                    scenario_data=json.dumps(new_data, ensure_ascii=False),
-                    target_keywords=json.dumps(new_keywords, ensure_ascii=False),
-                    created_at=datetime.now(timezone.utc)
-                )
-                
-                db.session.add(new_scenario)
-                db.session.flush()  # Получаем ID нового сценария
-                
-                print(f"   ✅ Создан новый Enhanced сценарий (ID: {new_scenario.id})")
-                total_updated += 1
+                    # Ищем старые сценарии
+                    old_scenarios = []
+                    for pattern in old_patterns:
+                        found = find_old_scenarios(pattern)
+                        for scenario in found:
+                            if scenario not in old_scenarios:
+                                old_scenarios.append(scenario)
+                    
+                    # Удаляем старые сценарии
+                    deleted_ids = []
+                    if old_scenarios:
+                        print(f"   🗑️  Найдено {len(old_scenarios)} старых сценариев для замены:")
+                        for old_scenario in old_scenarios:
+                            print(f"      - ID {old_scenario.id}: '{old_scenario.title}' ({old_scenario.specialty})")
+                            
+                            # Проверяем, есть ли попытки (attempts) у этого сценария
+                            attempts_count = VirtualPatientAttempt.query.filter_by(
+                                scenario_id=old_scenario.id
+                            ).count()
+                            
+                            if attempts_count > 0:
+                                print(f"         ⚠️  ВНИМАНИЕ: У сценария {attempts_count} попыток. "
+                                      f"Они останутся в БД (связь через scenario_id), но сценарий будет удален.")
+                            
+                            # Удаляем сценарий
+                            db.session.delete(old_scenario)
+                            deleted_ids.append(old_scenario.id)
+                            total_deleted += 1
+                    else:
+                        print(f"   ℹ️  Старые сценарии не найдены (возможно, уже обновлены)")
+                    
+                    # Создаем новый Enhanced сценарий
+                    new_scenario = VirtualPatientScenario(
+                        title=new_title,
+                        description=new_description,
+                        specialty=new_specialty,
+                        difficulty=new_difficulty,
+                        max_score=new_max_score,
+                        is_published=True,
+                        scenario_data=json.dumps(new_data, ensure_ascii=False),
+                        target_keywords=json.dumps(new_keywords, ensure_ascii=False),
+                        created_at=datetime.now(timezone.utc)
+                    )
+                    
+                    db.session.add(new_scenario)
+                    db.session.flush()  # Получаем ID нового сценария
+                    
+                    print(f"   ✅ Создан новый Enhanced сценарий (ID: {new_scenario.id})")
+                    total_updated += 1
                 
                 # Коммитим изменения
                 try:
@@ -222,7 +235,8 @@ def update_scenarios():
     
     print("\n" + "=" * 70)
     print(f"✅ ОБНОВЛЕНИЕ ЗАВЕРШЕНО")
-    print(f"   📊 Обновлено сценариев: {total_updated}")
+    print(f"   📊 Создано новых: {total_updated}")
+    print(f"   🔄 Обновлено существующих: {total_replaced}")
     print(f"   🗑️  Удалено старых: {total_deleted}")
     print()
 
@@ -266,4 +280,3 @@ if __name__ == '__main__':
             list_current_scenarios()
         else:
             print("\n❌ Обновление отменено пользователем")
-
