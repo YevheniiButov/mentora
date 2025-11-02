@@ -281,23 +281,67 @@ class VirtualPatientDialogue {
       // Если узел не найден в dialogue_nodes, проверяем outcomes
       if (!node) {
         const outcomes = this.scenario.scenario_data.outcomes;
-        if (outcomes && outcomes[nodeId]) {
-          // Создаем временный outcome node
-          const outcomeData = outcomes[nodeId];
-          node = {
-            id: nodeId,
-            is_outcome: true,
-            title: outcomeData.title || 'Scenario Completed',
-            patient_statement: outcomeData.text || 'Scenario completed',
-            outcome_type: nodeId.startsWith('outcome_') ? nodeId.replace('outcome_', '') : 'default'
-          };
-          console.log('Found outcome:', node);
+        
+        if (outcomes) {
+          // Пробуем разные варианты маппинга outcome ID
+          let outcomeData = null;
+          
+          // 1. Прямое совпадение (outcome_pulpitis_suspected → outcomes.pulpitis_suspected)
+          if (outcomes[nodeId]) {
+            outcomeData = outcomes[nodeId];
+          }
+          // 2. Убираем префикс "outcome_" (outcome_anxious_good → outcomes.anxious_good)
+          else if (nodeId.startsWith('outcome_')) {
+            const outcomeKey = nodeId.replace('outcome_', '');
+            if (outcomes[outcomeKey]) {
+              outcomeData = outcomes[outcomeKey];
+            }
+          }
+          // 3. Проверяем стандартные outcomes (good, average, poor, excellent)
+          else if (outcomes[nodeId.replace('outcome_', '')]) {
+            outcomeData = outcomes[nodeId.replace('outcome_', '')];
+          }
+          // 4. Если nodeId содержит "good/average/poor/excellent" - берем последнее слово
+          else {
+            const parts = nodeId.split('_');
+            const lastPart = parts[parts.length - 1]; // Берем последнее слово (good, average, poor, etc.)
+            
+            // Маппинг возможных вариантов
+            const outcomeKeyMap = {
+              'good': 'good',
+              'excellent': 'good', // excellent → good
+              'average': 'average',
+              'medium': 'average', // medium → average
+              'poor': 'poor',
+              'bad': 'poor' // bad → poor
+            };
+            
+            const mappedKey = outcomeKeyMap[lastPart] || lastPart;
+            if (outcomes[mappedKey]) {
+              outcomeData = outcomes[mappedKey];
+            }
+          }
+          
+          if (outcomeData) {
+            // Создаем временный outcome node
+            node = {
+              id: nodeId,
+              is_outcome: true,
+              title: outcomeData.title || 'Scenario Completed',
+              patient_statement: outcomeData.text || 'Scenario completed',
+              outcome_type: nodeId.startsWith('outcome_') ? nodeId.replace('outcome_', '') : 'default'
+            };
+            console.log('Found outcome:', node);
+          } else {
+            console.error('Node not found:', nodeId);
+            console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
+            console.error('Available outcomes:', Object.keys(outcomes));
+            throw new Error(`Node not found: ${nodeId}`);
+          }
         } else {
           console.error('Node not found:', nodeId);
           console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
-          if (outcomes) {
-            console.error('Available outcomes:', Object.keys(outcomes));
-          }
+          console.error('Outcomes section not found in scenario_data');
           throw new Error(`Node not found: ${nodeId}`);
         }
       } else {
