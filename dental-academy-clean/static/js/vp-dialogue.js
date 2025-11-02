@@ -630,7 +630,30 @@ class VirtualPatientDialogue {
       }
       
       // Получить точку перед сохранением
-      let optionScore = option.score || 0;
+      // Пробуем получить score из разных мест
+      let optionScore = 0;
+      
+      if (option.score !== undefined && option.score !== null) {
+        optionScore = option.score;
+      } else if (option.trade_offs) {
+        // Если score нет, пытаемся вычислить из trade_offs
+        // Берем среднее из empathy, trust, cooperation и т.д.
+        const values = [];
+        Object.values(option.trade_offs).forEach(val => {
+          if (typeof val === 'string' && val.startsWith('+')) {
+            values.push(parseInt(val.slice(1)) || 0);
+          } else if (typeof val === 'number') {
+            values.push(val);
+          }
+        });
+        if (values.length > 0) {
+          // Среднее значение * 2 для нормализации
+          optionScore = Math.round(values.reduce((a, b) => a + b, 0) / values.length * 2);
+          // Ограничиваем диапазон 0-30
+          optionScore = Math.max(0, Math.min(30, optionScore));
+        }
+      }
+      
       this.score += optionScore;
       
       // Логирование для диагностики
@@ -1014,20 +1037,63 @@ class VirtualPatientDialogue {
       const selectedOption = node.options.find(opt => opt.id === choice.choice_id);
       
       if (selectedOption) {
-        const score = selectedOption.score || 0;
+        // Пробуем получить score из разных источников
+        let score = 0;
+        
+        if (selectedOption.score !== undefined && selectedOption.score !== null) {
+          score = selectedOption.score;
+        } else if (selectedOption.trade_offs) {
+          // Вычисляем score из trade_offs
+          const values = [];
+          Object.values(selectedOption.trade_offs).forEach(val => {
+            if (typeof val === 'string' && val.startsWith('+')) {
+              values.push(parseInt(val.slice(1)) || 0);
+            } else if (typeof val === 'number' && val > 0) {
+              values.push(val);
+            }
+          });
+          if (values.length > 0) {
+            score = Math.round(values.reduce((a, b) => a + b, 0) / values.length * 2);
+          }
+        }
+        
         const optionText = selectedOption.text.substring(0, 80) + (selectedOption.text.length > 80 ? '...' : '');
         
-        if (score > 0) {
+        // Определяем тип feedback на основе trade_offs
+        let feedbackType = 'neutral';
+        if (selectedOption.trade_offs) {
+          const empathy = selectedOption.trade_offs.empathy || selectedOption.trade_offs.trust || 0;
+          const empathyValue = typeof empathy === 'string' ? parseInt(empathy.replace(/[+-]/, '')) || 0 : empathy || 0;
+          
+          if (empathyValue > 20 || score > 15) {
+            feedbackType = 'good';
+          } else if (empathyValue < -10 || score < 5) {
+            feedbackType = 'poor';
+          }
+        } else if (score > 0) {
+          feedbackType = 'good';
+        } else if (score < 0) {
+          feedbackType = 'poor';
+        }
+        
+        if (feedbackType === 'good') {
           feedback.push({
             type: 'good',
             node_title: node.title || nodeId,
-            message: `✅ Goed: "${optionText}" - Dit was een goede keuze! (+${score} punten)`
+            message: `✅ Goed: "${optionText}" - Dit was een goede keuze!${score > 0 ? ` (+${score} punten)` : ''}`
           });
-        } else if (score < 0) {
+        } else if (feedbackType === 'poor') {
           feedback.push({
             type: 'poor',
             node_title: node.title || nodeId,
-            message: `⚠️ Verbetering: "${optionText}" - Deze keuze had beter gekund. (-${Math.abs(score)} punten)`
+            message: `⚠️ Verbetering: "${optionText}" - Deze keuze had beter gekund.${score < 0 ? ` (${score} punten)` : ''}`
+          });
+        } else if (score > 0) {
+          // Нейтральные, но с положительным score
+          feedback.push({
+            type: 'good',
+            node_title: node.title || nodeId,
+            message: `✓ "${optionText}" - Correcte keuze (+${score} punten)`
           });
         }
       }
