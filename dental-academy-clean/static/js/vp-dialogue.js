@@ -424,8 +424,7 @@ class VirtualPatientDialogue {
           });
           this.addMessageToThread('from-patient', node.patient_statement);
         } else {
-          // Если у узла нет patient_statement, но он ожидается, показываем заглушку
-          // Это может быть промежуточный узел или узел без ответа пациента
+          // Если у узла нет patient_statement, но он ожидается, используем альтернативные источники
           console.warn('⚠️ Node has no patient_statement but showPatientStatement=true:', {
             node_id: node.id,
             has_options: !!node.options,
@@ -433,9 +432,26 @@ class VirtualPatientDialogue {
             is_outcome: !!node.is_outcome
           });
           
-          // Если есть title или notes_dentist, используем их как заглушку
-          // Или просто пропускаем - не добавляем сообщение пациента
-          // Это нормально для промежуточных узлов, где сразу идут опции доктора
+          // Пробуем использовать body_language, title или другие поля как заглушку
+          let fallbackMessage = null;
+          
+          if (node.body_language) {
+            // Используем body_language как описание невербального поведения пациента
+            fallbackMessage = `*${node.body_language}*`;
+          } else if (node.title && node.title.includes(':')) {
+            // Если title содержит описание, берем часть после двоеточия
+            const titleParts = node.title.split(':');
+            if (titleParts.length > 1) {
+              fallbackMessage = titleParts[1].trim();
+            }
+          }
+          
+          // Если нашли заглушку, добавляем её как сообщение пациента
+          if (fallbackMessage) {
+            console.log('💬 Using fallback patient statement:', fallbackMessage);
+            this.addMessageToThread('from-patient', fallbackMessage);
+          }
+          // Если заглушки нет, просто пропускаем - это нормально для промежуточных узлов
         }
       }
       
@@ -675,18 +691,53 @@ class VirtualPatientDialogue {
         // Берем среднее из empathy, trust, cooperation и т.д.
         const values = [];
         Object.values(option.trade_offs).forEach(val => {
-          if (typeof val === 'string' && val.startsWith('+')) {
-            values.push(parseInt(val.slice(1)) || 0);
-          } else if (typeof val === 'number') {
+          if (typeof val === 'string') {
+            // Пробуем распарсить строку вида "+40", "-20", "+HIGH", "0", etc.
+            if (val.startsWith('+')) {
+              const numVal = parseInt(val.slice(1));
+              if (!isNaN(numVal)) {
+                values.push(numVal);
+              } else if (val.toUpperCase().includes('HIGH') || val.toUpperCase().includes('EXCELLENT')) {
+                values.push(40); // HIGH/EXCELLENT = 40
+              } else if (val.toUpperCase().includes('MODERATE') || val.toUpperCase().includes('AVERAGE')) {
+                values.push(20); // MODERATE/AVERAGE = 20
+              } else if (val.toUpperCase().includes('LOW')) {
+                values.push(10); // LOW = 10
+              }
+            } else if (val.startsWith('-')) {
+              // Отрицательные значения учитываем, но с меньшим весом
+              const numVal = parseInt(val.slice(1));
+              if (!isNaN(numVal)) {
+                // Отрицательные значения уменьшают score, но не ниже 0
+                // Мы не добавляем их напрямую, но учитываем при расчете
+              }
+            } else {
+              // Пробуем распарсить как число
+              const numVal = parseInt(val);
+              if (!isNaN(numVal) && numVal > 0) {
+                values.push(numVal);
+              }
+            }
+          } else if (typeof val === 'number' && val > 0) {
             values.push(val);
           }
         });
         if (values.length > 0) {
-          // Среднее значение * 2 для нормализации
-          optionScore = Math.round(values.reduce((a, b) => a + b, 0) / values.length * 2);
+          // Среднее значение * 1.5 для нормализации
+          // Используем только положительные значения из empathy, trust, cooperation
+          optionScore = Math.round(values.reduce((a, b) => a + b, 0) / values.length * 1.5);
           // Ограничиваем диапазон 0-30
           optionScore = Math.max(0, Math.min(30, optionScore));
         }
+      }
+      
+      // Логируем для диагностики
+      if (optionScore === 0 && option.trade_offs) {
+        console.log('⚠️ Score is 0 but trade_offs exist:', {
+          option_id: option.id,
+          trade_offs: option.trade_offs,
+          computed_score: optionScore
+        });
       }
       
       this.score += optionScore;
