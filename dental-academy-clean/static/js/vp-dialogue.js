@@ -1090,8 +1090,9 @@ class VirtualPatientDialogue {
   
   async completeScenario() {
     try {
-      // Вычислить время в минутах
-      const timeSpentMinutes = Math.floor((Date.now() - this.startTime) / 1000 / 60);
+      // Вычислить время в минутах (с округлением вверх, минимум 1 минута)
+      const timeSpentSeconds = (Date.now() - this.startTime) / 1000;
+      const timeSpentMinutes = Math.max(1, Math.ceil(timeSpentSeconds / 60)); // Минимум 1 минута
       
       console.log('📊 Completing scenario:', {
         attempt_id: this.attemptId,
@@ -1099,7 +1100,10 @@ class VirtualPatientDialogue {
         fillInScore: this.fillInScore,
         totalScore: this.score + this.fillInScore,
         timeSpent: timeSpentMinutes,
-        dialogueHistory: this.dialogueHistory.length
+        timeSpentSeconds: timeSpentSeconds.toFixed(1),
+        dialogueHistory: this.dialogueHistory.length,
+        startTime: this.startTime,
+        endTime: Date.now()
       });
       
       const response = await fetch('/api/vp/complete-attempt', {
