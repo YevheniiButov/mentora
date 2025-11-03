@@ -502,6 +502,9 @@ class VirtualPatientDialogue {
     // Проверяем, является ли узел финальным (outcome)
     const isFinalNode = node.is_outcome || (node.outcome && !node.options && !node.fill_in);
     
+    // Если узел является delayed_consequence или event_type и нет взаимодействий - завершаем
+    const isEventNode = node.event_type === 'delayed_consequence' || node.event_type === 'catastrophic_outcome' || node.event_type === 'random_event';
+    
     // Если есть fill-in и это не финальный узел
     if (node.fill_in && !isFinalNode) {
       this.renderFillIn(node);
@@ -515,10 +518,34 @@ class VirtualPatientDialogue {
       console.log('Handling outcome node:', node.id, 'outcome:', node.outcome || node.outcome_type);
       this.handleOutcome(node);
     }
+    // Если это event node (delayed_consequence, etc.) без дальнейших действий - завершаем
+    else if (isEventNode && !node.options && !node.fill_in) {
+      console.log('Handling event node without interactions, completing scenario:', node.id);
+      // Создаем временный outcome на основе поля outcome в узле или используем score
+      const outcomeValue = node.outcome || 'poor'; // delayed_consequence обычно означает poor outcome
+      setTimeout(() => {
+        this.handleOutcome({
+          ...node,
+          is_outcome: true,
+          outcome_type: outcomeValue
+        });
+      }, 2000); // Даем время прочитать сообщение
+    }
     // Если ничего не подошло - проверяем наличие outcome поля
     else if (node.outcome) {
       console.log('Node has outcome but wasn\'t handled properly, completing scenario');
       this.handleOutcome(node);
+    }
+    // Если узел без взаимодействий и без outcome - завершаем на основе score
+    else if (!node.options && !node.fill_in && !node.is_outcome) {
+      console.warn('Node has no interactions and no outcome, completing scenario based on score:', node.id);
+      setTimeout(() => {
+        this.handleOutcome({
+          ...node,
+          is_outcome: true,
+          outcome_type: 'good' // Default
+        });
+      }, 2000);
     }
     else {
       console.warn('No interaction type found for node:', node.id);
@@ -527,7 +554,8 @@ class VirtualPatientDialogue {
         options_count: node.options?.length || 0,
         has_fill_in: !!node.fill_in,
         is_outcome: node.is_outcome,
-        outcome: node.outcome
+        outcome: node.outcome,
+        event_type: node.event_type
       });
     }
   }
