@@ -256,14 +256,14 @@ def validate_fill_in():
             if hint:
                 message = f'Niet helemaal correct. Hint: {hint}'
             else:
-                message = f'Niet correct. Probeer het opnieuw. Het juiste antwoord is: {correct_word}'
+                message = f'Niet correct. Het juiste antwoord is: {correct_word}'
         
         return jsonify({
             'success': True,
             'valid': is_correct,
             'score': score,
             'message': message,
-            'correct_answer': correct_word if not is_correct else None
+            'correct_answer': correct_word  # Всегда возвращаем правильный ответ
         })
         
     except Exception as e:
