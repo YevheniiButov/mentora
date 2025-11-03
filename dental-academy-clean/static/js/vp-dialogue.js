@@ -499,17 +499,36 @@ class VirtualPatientDialogue {
   renderInteraction(node) {
     this.interactionContent.innerHTML = '';
     
-    // Если есть fill-in
-    if (node.fill_in) {
+    // Проверяем, является ли узел финальным (outcome)
+    const isFinalNode = node.is_outcome || (node.outcome && !node.options && !node.fill_in);
+    
+    // Если есть fill-in и это не финальный узел
+    if (node.fill_in && !isFinalNode) {
       this.renderFillIn(node);
     }
-    // Если есть options
-    else if (node.options && node.options.length > 0) {
+    // Если есть options и это не финальный узел
+    else if (node.options && node.options.length > 0 && !isFinalNode) {
       this.renderOptions(node);
     }
     // Если это конец (outcome node)
-    else if (node.is_outcome) {
+    else if (isFinalNode) {
+      console.log('Handling outcome node:', node.id, 'outcome:', node.outcome || node.outcome_type);
       this.handleOutcome(node);
+    }
+    // Если ничего не подошло - проверяем наличие outcome поля
+    else if (node.outcome) {
+      console.log('Node has outcome but wasn\'t handled properly, completing scenario');
+      this.handleOutcome(node);
+    }
+    else {
+      console.warn('No interaction type found for node:', node.id);
+      console.warn('Node properties:', {
+        has_options: !!node.options,
+        options_count: node.options?.length || 0,
+        has_fill_in: !!node.fill_in,
+        is_outcome: node.is_outcome,
+        outcome: node.outcome
+      });
     }
   }
   
