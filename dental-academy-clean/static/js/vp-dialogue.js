@@ -370,25 +370,28 @@ class VirtualPatientDialogue {
         } else {
           // Outcomes секции нет - создаем динамический outcome на основе score
           console.warn('Outcomes section not found in scenario_data, creating dynamic outcome');
-          console.error('Node not found:', nodeId);
-          console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
           
-          // Создаем outcome на основе накопленного score
+          // Определяем уровень outcome на основе накопленного score
           const totalScore = this.score + this.fillInScore;
           let outcomeLevel = 'good';
+          let outcomeTitle = 'Scenario Voltooid';
           let outcomeMessage = 'Goed gedaan! Je hebt de casus afgerond.';
           
           if (totalScore >= 150) {
             outcomeLevel = 'excellent';
+            outcomeTitle = 'Uitstekend Resultaat';
             outcomeMessage = 'Uitstekend! Je hebt alle belangrijke aspecten goed aangepakt.';
           } else if (totalScore >= 100) {
             outcomeLevel = 'good';
+            outcomeTitle = 'Goed Resultaat';
             outcomeMessage = 'Goed gedaan! Je hebt de casus goed aangepakt.';
           } else if (totalScore >= 50) {
             outcomeLevel = 'average';
+            outcomeTitle = 'Redelijk Resultaat';
             outcomeMessage = 'Redelijk. Er is ruimte voor verbetering.';
           } else {
             outcomeLevel = 'poor';
+            outcomeTitle = 'Onvoldoende Resultaat';
             outcomeMessage = 'Er is nog veel ruimte voor verbetering. Probeer het opnieuw.';
           }
           
@@ -396,19 +399,16 @@ class VirtualPatientDialogue {
           node = {
             id: nodeId,
             is_outcome: true,
-            title: 'Scenario Voltooid',
+            title: outcomeTitle,
             patient_statement: outcomeMessage,
+            description: outcomeMessage,
             outcome_type: outcomeLevel
           };
           
-          // Добавляем финальное сообщение пациента
-          this.addMessageToThread('from-patient', outcomeMessage);
+          console.log('Created dynamic outcome:', node);
           
-          // Ждем немного и завершаем
-          setTimeout(() => {
-            this.completeScenario();
-          }, 2000);
-          return;
+          // Продолжаем обработку как обычный outcome node
+          // (не делаем return, чтобы код ниже обработал его)
         }
       } else {
         console.log('Found node:', node);
