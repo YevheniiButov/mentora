@@ -913,60 +913,49 @@ class VirtualPatientDialogue {
       
       const result = await response.json();
       
+      // Блокируем input
+      input.disabled = true;
+      
       if (result.valid) {
         // Правильно!
         input.classList.add('success');
         input.classList.remove('error');
-        input.disabled = true;
         
-        this.fillInScore += result.score;
+        this.fillInScore += result.score || 0;
         this.updateScore(this.score, this.fillInScore);
         
         // Feedback
-        this.showFeedback('success', result.message);
+        this.showFeedback('success', result.message || 'Correct! Goed gedaan!');
         
         // Добавить ответ в диалог
         this.addMessageToThread('from-doctor', userAnswer);
         
         // Переход к следующему узлу
-        setTimeout(() => {
-          let nextNodeId = node.next_node;
-          
-          // Если next_node не указан, берем следующий узел по порядку в массиве
-          if (!nextNodeId || nextNodeId === 'end') {
-            const nodes = this.scenario.scenario_data.dialogue_nodes || [];
-            const currentIndex = nodes.findIndex(n => n.id === node.id);
-            
-            if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
-              nextNodeId = nodes[currentIndex + 1].id;
-            } else {
-              nextNodeId = 'end';
-            }
-          }
-          
-          this.currentNodeId = nextNodeId;
-          
-          if (this.currentNodeId === 'end') {
-            this.completeScenario();
-          } else {
-            // Всегда показываем patient_statement для следующих узлов
-            this.displayNode(this.currentNodeId, true);
-          }
-        }, 1500);
+        this.continueAfterFillIn(node, result.correct_answer);
       } else {
-        // Неправильно
+        // Неправильно - показываем правильный ответ, но продолжаем
         input.classList.add('error');
         input.classList.remove('success');
         
-        // Feedback с подсказкой
-        this.showFeedback('error', result.message);
+        // Показываем правильный ответ
+        const correctAnswer = result.correct_answer || fillInConfig.word || 'N/A';
+        const feedbackMessage = result.message || `Niet correct. Het juiste antwoord is: "${correctAnswer}"`;
         
-        // Shake animation
+        // Feedback с правильным ответом
+        this.showFeedback('error', feedbackMessage);
+        
+        // Обновляем input чтобы показать правильный ответ
+        input.value = correctAnswer;
+        input.classList.remove('error');
+        input.classList.add('correct-answer-shown');
+        
+        // Добавить ответ в диалог (показываем пользовательский ответ, но потом правильный)
+        this.addMessageToThread('from-doctor', `${userAnswer} (correct: ${correctAnswer})`);
+        
+        // Переход к следующему узлу (не блокируем)
         setTimeout(() => {
-          input.value = '';
-          input.classList.remove('error');
-          input.focus();
-        }, 500);
+          this.continueAfterFillIn(node, correctAnswer);
+        }, 2000); // Даем время прочитать правильный ответ
       }
     } catch (error) {
       console.error('Error validating fill-in:', error);
@@ -999,10 +988,12 @@ class VirtualPatientDialogue {
       }
     }
     
+    // Блокируем input
+    input.disabled = true;
+    
     if (isCorrect) {
       input.classList.add('success');
       input.classList.remove('error');
-      input.disabled = true;
       
       this.fillInScore += score;
       this.updateScore(this.score, this.fillInScore);
@@ -1011,44 +1002,57 @@ class VirtualPatientDialogue {
       this.addMessageToThread('from-doctor', userAnswer);
       
       // Переход к следующему узлу
-      setTimeout(() => {
-        let nextNodeId = node.next_node;
-        
-        if (!nextNodeId || nextNodeId === 'end') {
-          const nodes = this.scenario.scenario_data.dialogue_nodes || [];
-          const currentIndex = nodes.findIndex(n => n.id === node.id);
-          
-          if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
-            nextNodeId = nodes[currentIndex + 1].id;
-          } else {
-            nextNodeId = 'end';
-          }
-        }
-        
-        this.currentNodeId = nextNodeId;
-        
-        if (this.currentNodeId === 'end') {
-          this.completeScenario();
-        } else {
-          this.displayNode(this.currentNodeId, true);
-        }
-      }, 1500);
+      this.continueAfterFillIn(node, correctWord);
     } else {
+      // Неправильно - показываем правильный ответ, но продолжаем
       input.classList.add('error');
       input.classList.remove('success');
       
       const hint = fillInConfig.hint || '';
       const message = hint 
-        ? `Niet helemaal correct. Hint: ${hint}`
-        : `Niet correct. Het juiste antwoord is: ${correctWord}`;
+        ? `Niet correct. Hint: ${hint}. Het juiste antwoord is: "${correctWord}"`
+        : `Niet correct. Het juiste antwoord is: "${correctWord}"`;
       
       this.showFeedback('error', message);
       
+      // Обновляем input чтобы показать правильный ответ
+      input.value = correctWord;
+      input.classList.remove('error');
+      input.classList.add('correct-answer-shown');
+      
+      // Добавить ответ в диалог
+      this.addMessageToThread('from-doctor', `${userAnswer} (correct: ${correctWord})`);
+      
+      // Переход к следующему узлу (не блокируем)
       setTimeout(() => {
-        input.value = '';
-        input.classList.remove('error');
-        input.focus();
-      }, 500);
+        this.continueAfterFillIn(node, correctWord);
+      }, 2000); // Даем время прочитать правильный ответ
+    }
+  }
+  
+  continueAfterFillIn(node, correctAnswer) {
+    // Общая логика продолжения после fill-in вопроса
+    let nextNodeId = node.next_node;
+    
+    // Если next_node не указан, берем следующий узел по порядку в массиве
+    if (!nextNodeId || nextNodeId === 'end') {
+      const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+      const currentIndex = nodes.findIndex(n => n.id === node.id);
+      
+      if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
+        nextNodeId = nodes[currentIndex + 1].id;
+      } else {
+        nextNodeId = 'end';
+      }
+    }
+    
+    this.currentNodeId = nextNodeId;
+    
+    if (this.currentNodeId === 'end') {
+      this.completeScenario();
+    } else {
+      // Всегда показываем patient_statement для следующих узлов
+      this.displayNode(this.currentNodeId, true);
     }
   }
   
