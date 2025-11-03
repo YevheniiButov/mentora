@@ -412,6 +412,18 @@ class VirtualPatientDialogue {
         }
       } else {
         console.log('Found node:', node);
+        
+        // Проверяем, есть ли у узла поле outcome - это означает финальный узел
+        if (node.outcome && !node.is_outcome) {
+          console.log('Node has outcome field, marking as outcome node:', node.outcome);
+          node.is_outcome = true;
+          node.outcome_type = node.outcome;
+          
+          // Если нет patient_statement, но есть body_language - используем его
+          if (!node.patient_statement && node.body_language) {
+            node.patient_statement = node.body_language;
+          }
+        }
       }
       
       // Добавить сообщение пациента в диалог только если нужно
