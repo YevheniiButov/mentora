@@ -591,6 +591,17 @@ class VirtualPatientDialogue {
       return;
     }
     
+    // Если есть явный вопрос - показываем его первым
+    if (fillInConfig.question && typeof fillInConfig.question === 'string') {
+      const questionEl = document.createElement('p');
+      questionEl.className = 'fill-in-question';
+      questionEl.style.fontWeight = '600';
+      questionEl.style.marginBottom = '12px';
+      questionEl.style.color = '#2563eb';
+      questionEl.textContent = fillInConfig.question;
+      container.appendChild(questionEl);
+    }
+    
     // Текст с пропуском
     const textEl = document.createElement('p');
     textEl.className = 'fill-in-text';
