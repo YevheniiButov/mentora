@@ -1051,7 +1051,7 @@
         <div class="header-container">
             <!-- Left part: logo and back button -->
             <div class="header-left">
-                <a href="/nl/" class="logo-link">
+                <a href="/{{ lang }}/" class="logo-link">
                     <img src="/static/images/logo.png" alt="Mentora" class="header-logo">
                 </a>
                 <a href="/{{ lang }}/big-info" class="back-button">
@@ -1066,16 +1066,16 @@
                 <div class="header-dropdown">
                     <button class="header-btn" id="langBtn">
                         <i class="fas fa-globe"></i>
-                        NL
+                        {{ lang.upper() }}
                     </button>
                     <div class="dropdown-content" id="langDropdown">
-                        <a href="/nl/big-info/eu/verpleegkundige" class="dropdown-item active">
+                        <a href="/nl/big-info/eu/verpleegkundige" class="dropdown-item {{ 'active' if lang == 'nl' else '' }}">
                             <span class="flag-icon">🇳🇱</span> Nederlands
                         </a>
-                        <a href="/en/big-info/eu/verpleegkundige" class="dropdown-item">
+                        <a href="/en/big-info/eu/verpleegkundige" class="dropdown-item {{ 'active' if lang == 'en' else '' }}">
                             <span class="flag-icon">🇬🇧</span> English
                         </a>
-                        <a href="/ru/big-info/eu/verpleegkundige" class="dropdown-item">
+                        <a href="/ru/big-info/eu/verpleegkundige" class="dropdown-item {{ 'active' if lang == 'ru' else '' }}">
                             <span class="flag-icon">🇷🇺</span> Русский
                         </a>
                     </div>
@@ -1691,11 +1691,11 @@
                     <h2>Klaar voor je snelle EU registratie?</h2>
                     <p>Begin vandaag met je automatische erkenning en werk binnen 2-4 maanden in Nederland</p>
                     <div class="cta-buttons">
-                        <a href="/nl/learning-path/eu-verpleegkunde" class="btn btn-primary">
+                        <a href="/{{ lang }}/learning-path/eu-verpleegkunde" class="btn btn-primary">
                             <i class="fas fa-rocket"></i>
                             Start EU procedure
                         </a>
-                        <a href="/nl/community/eu-verpleegkundigen" class="btn btn-secondary">
+                        <a href="/{{ lang }}/community/eu-verpleegkundigen" class="btn btn-secondary">
                             <i class="fas fa-users"></i>
                             Join EU community
                         </a>

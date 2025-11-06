@@ -103,6 +103,11 @@
                      onclick="">
                 <span class="fi fi-ir me-2"></span> فارسی{% if lang == 'fa' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
               </a></li>
+              <li><a class="dropdown-item {% if lang == 'ar' %}active{% endif %}" 
+                     href="{{ language_url('ar') }}"
+                     onclick="">
+                <span class="fi fi-sa me-2"></span> العربية{% if lang == 'ar' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
+              </a></li>
               <li><a class="dropdown-item {% if lang == 'tr' %}active{% endif %}" 
                      href="{{ language_url('tr') }}"
                      onclick="">
@@ -159,7 +164,7 @@
                 {{ t('logout', lang)|default('Logout') }}
               </a></li>
               {% else %}
-              <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout', lang=lang) }}">
+              <li><a class="dropdown-item text-danger" href="/auth/{{ lang }}/logout">
                 <i class="bi bi-box-arrow-right fs-5 me-2"></i>
                 {{ t('logout', lang)|default('Logout') }}
               </a></li>

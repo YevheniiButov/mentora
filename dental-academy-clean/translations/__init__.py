@@ -11,6 +11,7 @@ from .uk import translations as uk_translations
 from .fa import translations as fa_translations
 from .tr import translations as tr_translations
 from .ru import translations as ru_translations
+from .ar import translations as ar_translations
 from .domain_diagnostic_translations import DOMAIN_DIAGNOSTIC_TRANSLATIONS
 
 # Combine all translations
@@ -22,7 +23,8 @@ translations = {
     'uk': uk_translations,
     'fa': fa_translations,
     'tr': tr_translations,
-    'ru': ru_translations
+    'ru': ru_translations,
+    'ar': ar_translations,
 }
 
 # Default language (Dutch)
@@ -36,6 +38,7 @@ LANGUAGE_NAMES = {
     'pt': 'Português',
     'uk': 'Українська',
     'fa': 'فارسی',
+    'ar': 'العربية',
     'tr': 'Türkçe',
     'ru': 'Русский'
 }
@@ -51,6 +54,7 @@ COUNTRY_CODES = {
     'pt': 'pt',
     'uk': 'ua',
     'fa': 'ir',
+    'ar': 'sa',
     'tr': 'tr',
     'ru': 'ru'
 }
@@ -86,15 +90,22 @@ def get_translation(key, lang=DEFAULT_LANGUAGE, **kwargs):
     # Then check in main translations
     translation_value = translations[lang].get(key)
     
-    # If not found and not default language, try default
+    # If not found and not default language, try fallback languages
     if translation_value is None and lang != DEFAULT_LANGUAGE:
-        # Try domain diagnostic translations in default language
+        # First try default language (Dutch)
         if DEFAULT_LANGUAGE in DOMAIN_DIAGNOSTIC_TRANSLATIONS:
             translation_value = DOMAIN_DIAGNOSTIC_TRANSLATIONS[DEFAULT_LANGUAGE].get(key)
         
-        # If still not found, try main translations in default language
         if translation_value is None:
             translation_value = translations[DEFAULT_LANGUAGE].get(key)
+        
+        # If still not found, try English as secondary fallback
+        if translation_value is None and 'en' in translations and lang != 'en':
+            if 'en' in DOMAIN_DIAGNOSTIC_TRANSLATIONS:
+                translation_value = DOMAIN_DIAGNOSTIC_TRANSLATIONS['en'].get(key)
+            
+            if translation_value is None:
+                translation_value = translations['en'].get(key)
     
     # If still not found, return the key
     if translation_value is None:

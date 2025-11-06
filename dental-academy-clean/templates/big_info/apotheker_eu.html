@@ -910,12 +910,12 @@
         <div class="header-container">
             <!-- Left part: logo and back button -->
             <div class="header-left">
-                <a href="/nl/" class="logo-link">
+                <a href="/{{ lang }}/" class="logo-link">
                     <img src="/static/images/logo.png" alt="Mentora" class="header-logo">
                 </a>
-                <a href="/nl/big-info" class="back-button">
+                <a href="/{{ lang }}/big-info" class="back-button">
                     <i class="fas fa-arrow-left"></i>
-                    Terug
+                    {{ t('back', lang) | default('Back') }}
                 </a>
             </div>
             
@@ -925,16 +925,16 @@
                 <div class="header-dropdown">
                     <button class="header-btn" id="langBtn">
                         <i class="fas fa-globe"></i>
-                        NL
+                        {{ lang.upper() }}
                     </button>
                     <div class="dropdown-content" id="langDropdown">
-                        <a href="/nl/big-info/eu/verpleegkundige" class="dropdown-item active">
+                        <a href="/nl/big-info/eu/apotheker" class="dropdown-item {{ 'active' if lang == 'nl' else '' }}">
                             <span class="flag-icon">🇳🇱</span> Nederlands
                         </a>
-                        <a href="/en/big-info/eu/verpleegkundige" class="dropdown-item">
+                        <a href="/en/big-info/eu/apotheker" class="dropdown-item {{ 'active' if lang == 'en' else '' }}">
                             <span class="flag-icon">🇬🇧</span> English
                         </a>
-                        <a href="/ru/big-info/eu/verpleegkundige" class="dropdown-item">
+                        <a href="/ru/big-info/eu/apotheker" class="dropdown-item {{ 'active' if lang == 'ru' else '' }}">
                             <span class="flag-icon">🇷🇺</span> Русский
                         </a>
                     </div>
@@ -1550,11 +1550,11 @@
                     <h2>{{ t('ready_for_fast_eu_registration', lang) | default('Klaar voor je snelle EU registratie?') }}</h2>
                     <p>{{ t('start_today_automatic_recognition_work_2_4_months_netherlands', lang) | default('Begin vandaag met je automatische erkenning en werk binnen 2-4 maanden in Nederland') }}</p>
                     <div class="cta-buttons">
-                        <a href="/nl/learning-path/eu-farmacie" class="btn btn-primary">
+                        <a href="/{{ lang }}/learning-path/eu-farmacie" class="btn btn-primary">
                             <i class="fas fa-rocket"></i>
                             {{ t('start_eu_procedure', lang) | default('Start EU procedure') }}
                         </a>
-                        <a href="/nl/community/eu-apothekers" class="btn btn-secondary">
+                        <a href="/{{ lang }}/community/eu-apothekers" class="btn btn-secondary">
                             <i class="fas fa-users"></i>
                             {{ t('join_eu_community', lang) | default('Join EU community') }}
                         </a>
